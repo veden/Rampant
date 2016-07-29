@@ -1,0 +1,9 @@
+{
+    "name" : "Rampant",
+    "factorio_version" : "0.13",
+    "version" : "0.0.1",
+    "title" : "Rampant",
+    "author" : "Veden",
+    "description" : "Basic AI logic for enemy",
+    "dependencies" : ["base >= 0.13"]
+}
