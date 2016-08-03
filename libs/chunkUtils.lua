@@ -52,15 +52,12 @@ function checkChunkPassability(x, y, surface)
 end
 
 function checkChunkValues(x, y, surface)
-    local pV = 0
-    local pDV = 0
-    local eV = 0
-    local eDV = 0
+    local spawnerCount = surface.count_entities_filtered({area={{x, y},
+                                                                {x+32, y+32}},
+                                                          type="unit-spawner",
+                                                          force="enemy"})
     return { 
-            pV = pV,
-            pDV = pDV,
-            eV = eV,
-            eDV = eDV,
+            base = spawnerCount
            }
 end
 
@@ -68,37 +65,23 @@ function createChunk(topX, topY, surface)
     local directions = checkChunkPassability(topX, topY, surface)
     local scores = checkChunkValues(topX, topY, surface)
     return { 
-             pNS = directions.northSouth, -- passable north_south
-             pEW = directions.eastWest, -- passable east_west
-             pV = scores.pV, -- value of player structures
-             pDV = scores.pDV, -- value of player defenses
-             eV = scores.eV, -- value of enemy structures
-             eDV = scores.eDV, -- value of enemy defenses
-             rV = scores.rV -- value of resources
+                0,
+                0,
+                0,
+                nS = directions.northSouth, -- passable north_south
+                eW = directions.eastWest, -- passable east_west
+                bG = scores.base, -- value of pheromone base generator
            }
-end
-
-function addChunkToRegionMap(regionMap, x, y, surface)
-
-    local chunkX = x * 0.03125
-    local chunkY = y * 0.03125    
-    
-    local key = hashChunkCoordinates(chunkX, chunkY)
-    regionMap[key] = createChunk(x, y, surface)
-end
-
-function hashChunkCoordinates(x, y)
-    return tostring(x) .. "," .. tostring(y)
 end
 
 -- aux
 
-function showGrid(regionMap, surface)
-    for i, chunk in pairs(regionMap) do        
-        local x = chunk.x --math.floor(game.players[1].position.x / 32) * 32
-        local y = chunk.y --math.floor(game.players[1].position.y / 32) * 32
-    end
-end
+-- function showGrid(regionMap, surface)
+    -- for i, chunk in pairs(regionMap) do        
+        -- local x = chunk.x --math.floor(game.players[1].position.x / 32) * 32
+        -- local y = chunk.y --math.floor(game.players[1].position.y / 32) * 32
+    -- end
+-- end
 
 function colorChunk(x, y, tileType, surface)
     local tiles = {}
