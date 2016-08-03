@@ -1,19 +1,21 @@
-local DIFFUSION_AMOUNT = 0.04
-local MAX_PLAYER_PHEROMONE = 7000
+local regionUtils = {}
+
+local constants = require("Constants")
+
 local neighborArray = {1,2,3,4,5,6,7,8}
 local mExp = math.exp
 local mFloor = math.floor
 local mMin = math.min
 local mMax = math.max
 
-function addChunkToRegionMap(regionMap, x, y, surface)
+function regionUtils.addChunkToRegionMap(regionMap, chunk)
 
-    local chunkX = mFloor(x * 0.03125)
-    local chunkY = mFloor(y * 0.03125)
-    
-    local chunk = createChunk(x, y, surface)
+    local chunkX = mFloor(chunk.x * 0.03125)
+    local chunkY = mFloor(chunk.y * 0.03125)
+
     chunk.x = chunkX
     chunk.y = chunkY
+    
     if (regionMap == nil) then
         regionMap = {}
     end
@@ -23,26 +25,35 @@ function addChunkToRegionMap(regionMap, x, y, surface)
     regionMap[chunkX][chunkY] = chunk
 end
 
-function getChunkByPosition(regionMap, x, y)
+function regionUtils.getChunkByPosition(regionMap, x, y)
     local chunkX = mFloor(x * 0.03125)
     local chunkY = mFloor(y * 0.03125)
     
     return regionMap[chunkX][chunkY]
 end
 
-function getChunkByIndex(regionMap, chunkX, chunkY)
+function regionUtils.getChunkByIndex(regionMap, chunkX, chunkY)
     return regionMap[chunkX][chunkY]
 end
 
-function processPheromone(regionMap, surface)
+function regionUtils.processPheromone(regionMap, surface)
     local mathMin = mMin
-    local mathExp = mExp
     local neighbors = neighborArray
+    local getNeighborChunks = regionUtils.getNeighborChunks
+    local DIFFUSION_AMOUNT = constants.DIFFUSION_AMOUNT
+    local MAX_PHEROMONE = constants.MAX_PHEROMONE
+    
+    local count = 0
+    
     for _,ys in pairs(regionMap) do
         for _,chunk in pairs(ys) do
+            if (chunk.bG > 0) then
+                chunk[2] = chunk[2] + (chunk.bG * 10)
+                --surface.pollute({chunk.x *32, chunk.y *32}, 10)
+            end
             local chunks
             for x=1,3 do
-                if (chunk[x] > 50) then
+                if (chunk[x] > 75) then
                     if (chunks == nil) then
                         chunks = getNeighborChunks(regionMap, chunk.x, chunk.y, neighbors)
                     end
@@ -52,7 +63,7 @@ function processPheromone(regionMap, surface)
                         if (neighborChunk ~= nil) then
                             local diffusedAmount = (chunk[x] * DIFFUSION_AMOUNT)
                             totalDiffused = totalDiffused + diffusedAmount
-                            neighborChunk[x] = mathMin(MAX_PLAYER_PHEROMONE, neighborChunk[x] + diffusedAmount)
+                            neighborChunk[x] = mathMin(MAX_PHEROMONE, neighborChunk[x] + diffusedAmount)
                         end
                     end
                     chunk[x] = chunk[x] - totalDiffused
@@ -64,21 +75,27 @@ function processPheromone(regionMap, surface)
             end
             -- local printMe = false
             -- for x=1,3 do
-                -- if (chunk[x] > 0) then
+                -- if (chunk[x] > 0) thena
                     -- printMe = true
                 -- end
             -- end
             -- if (printMe) then
                 -- print(serpent.dump(chunk))
             -- end
+            count = count + 1
+            if (count % 1250 == 0) then
+                coroutine.yield()
+            end
         end
     end
     -- print("--")
 end
 
-function placePheromone(regionMap, x, y, pType, amount)
-    local chunk = getChunkByPosition(regionMap, x, y)
-    chunk[pType] = mMin(MAX_PLAYER_PHEROMONE, chunk[pType] + amount)
+function regionUtils.placePheromone(regionMap, x, y, pType, amount)
+    local MAX_PHEROMONE = constants.MAX_PHEROMONE
+    
+    local chunk = regionUtils.getChunkByPosition(regionMap, x, y)
+    chunk[pType] = mMin(MAX_PHEROMONE, chunk[pType] + amount)
 end
 
 --[[
@@ -88,7 +105,7 @@ end
      /|\
     6 7 8
 ]]--
-function getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
+function regionUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
     local xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
         neighbors[1] = xChunks[chunkY-1]
@@ -109,3 +126,5 @@ function getNeighborChunks(regionMap, chunkX, chunkY, neighbors)
     
     return neighbors
 end
+
+return regionUtils

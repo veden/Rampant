@@ -1,2 +1,2 @@
 # Rampant
-Factorio Mod
+Factorio Mod - Basic AI Replacement
