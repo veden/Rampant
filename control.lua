@@ -1,71 +1,93 @@
 local chunkUtils = require("libs/ChunkUtils")
 local regionUtils = require("libs/RegionUtils")
 local constants = require("libs/Constants")
+local ai = require("libs/AI")
+local tests = require("Tests")
 
-local pheromoneRoutine
+local pheromoneRoutine --coroutine holding state of in progress processing
 local chunkRoutine
 
-local regionMaps
-local chunkProcessingQueue
+local regionMaps -- chunk based map
+local chunkProcessingQueue -- pending chunks to be processed
+local units -- units that are being commanded
 
 
 -- hook functions
 
 function onInit()
+    print("init")
     global.regionMaps = {}
     global.chunkProcessingQueue = {}
+    global.units = {}
     
     regionMaps = global.regionMaps
     chunkProcessingQueue = global.chunkProcessingQueue
+    units = global.units
     
+    -- turn off enemy ai
     game.surfaces[1].peaceful_mode = true
+    -- remove enemies that aren't off
+    game.forces.enemy.kill_all_units()
+    
+    -- queue all current chunks that wont be generated during play
+    local surface = game.surfaces[1]
+    for chunk in surface.get_chunks() do
+        onChunkGenerated({surface=surface, 
+                          area={left_top={x=chunk.x * 32,
+                                          y=chunk.y * 32}}})
+    end
 end
 
 function onLoad()
+    print("load")
     regionMaps = global.regionMaps
     chunkProcessingQueue = global.chunkProcessingQueue
+    units = global.units
 end
 
 function onChunkGenerated(event)
+    -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
+    -- are generated, which messes up the scoring.
     chunkProcessingQueue[#chunkProcessingQueue+1] = event
-end
-
-function chunkProcess()
-    chunkUtils.processChunks(regionMaps, chunkProcessingQueue)
-end
-
-function pheromoneProcess()
-    local player = game.players[1]
-    regionUtils.placePheromone(regionMaps[player.surface.index], player.position.x, player.position.y, constants.PLAYER_PHEROMONE, 100)
-    regionUtils.processPheromone(regionMaps[player.surface.index], player.surface, 2)
 end
 
 function onTick(event)
     if (event.tick % 45 == 0) then
+        -- using coroutines to keep the cpu load time managable will still being able to work large maps
+        
         if (#chunkProcessingQueue > 0) and ((chunkRoutine == nil) or (coroutine.status(chunkRoutine)=="dead")) then
-            chunkRoutine = coroutine.create(chunkProcess)
+            -- coroutines start suspended, so you have to resume them after creation
+            chunkRoutine = coroutine.create(chunkUtils.chunkProcess)
         end
-        coroutine.resume(chunkRoutine)
+        if (chunkRoutine ~= nil) then
+            coroutine.resume(chunkRoutine)
+        end
         
         if (pheromoneRoutine == nil) or (coroutine.status(pheromoneRoutine)=="dead") then
-            pheromoneRoutine = coroutine.create(pheromoneProcess)
+            pheromoneRoutine = coroutine.create(regionUtils.pheromoneProcess)
         end
-        coroutine.resume(pheromoneRoutine)
+        if (pheromoneRoutine ~= nil) then
+            coroutine.resume(pheromoneRoutine)
+        end
+        
+        
     end
 end
 
--- function pheromones(event)
-    -- local player = event.player
-    
--- end
-
--- hooks
-
+-- setup variables in the various modules
 function onInitialTick(event)
-    -- initTester()
-    --tester()
+    ai.init(regionMaps, units)
+    regionUtils.init(regionMaps)
+    chunkUtils.init(regionMaps, chunkProcessingQueue)
+    
+    -- used for debugging
+    tests.initTester()
+    
+    -- swap to real on tick function
     script.on_event(defines.events.on_tick, onTick)
 end
+
+-- hooks
 
 script.on_init(onInit)
 script.on_load(onLoad)
@@ -74,35 +96,5 @@ script.on_event(defines.events.on_tick, onInitialTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampant", {
-                                    test1 = function () 
-                                                local player = game.players[1]
-                                                local regionMap = regionMaps[player.surface.index]
-                                                local playerChunkX = math.floor(player.position.x / 32)
-                                                local playerChunkY = math.floor(player.position.y / 32)
-                                                print("------")
-                                                print(playerChunkX .. ", " .. playerChunkY)
-                                                print("--")
-                                                for x=playerChunkX-3, playerChunkX+3 do
-                                                    for y=playerChunkY-3, playerChunkY+3 do
-                                                        if (regionMap[x] ~= nil) then
-                                                            local chunk = regionMap[x][y]
-                                                            if (chunk ~= nil) then
-                                                                print(serpent.dump(chunk))
-                                                            end
-                                                        end
-                                                    end
-                                                end
-                                            end,
-                                    test2 = test2,
-                                    test3 = test3,
+                                    test1 = tests.test1
                                 })
-
--- aux
-
--- function printDebug(o)
-    -- if (type(o) == "table") then
-        -- print(serpent.dump(o))
-    -- else
-        -- print(o)
-    -- end
--- end

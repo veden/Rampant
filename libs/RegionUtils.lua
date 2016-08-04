@@ -2,6 +2,7 @@ local regionUtils = {}
 
 local constants = require("Constants")
 
+local regionMaps
 local neighborArray = {1,2,3,4,5,6,7,8}
 local mExp = math.exp
 local mFloor = math.floor
@@ -42,14 +43,14 @@ function regionUtils.processPheromone(regionMap, surface)
     local getNeighborChunks = regionUtils.getNeighborChunks
     local DIFFUSION_AMOUNT = constants.DIFFUSION_AMOUNT
     local MAX_PHEROMONE = constants.MAX_PHEROMONE
+    local BASE_PHEROMONE = constants.BASE_PHEROMONE
     
     local count = 0
     
     for _,ys in pairs(regionMap) do
         for _,chunk in pairs(ys) do
             if (chunk.bG > 0) then
-                chunk[2] = chunk[2] + (chunk.bG * 10)
-                --surface.pollute({chunk.x *32, chunk.y *32}, 10)
+                chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + (chunk.bG * 10)
             end
             local chunks
             for x=1,3 do
@@ -73,29 +74,17 @@ function regionUtils.processPheromone(regionMap, surface)
                     chunk[x] = 0
                 end
             end
-            -- local printMe = false
-            -- for x=1,3 do
-                -- if (chunk[x] > 0) thena
-                    -- printMe = true
-                -- end
-            -- end
-            -- if (printMe) then
-                -- print(serpent.dump(chunk))
-            -- end
             count = count + 1
             if (count % 1250 == 0) then
                 coroutine.yield()
             end
         end
     end
-    -- print("--")
 end
 
 function regionUtils.placePheromone(regionMap, x, y, pType, amount)
-    local MAX_PHEROMONE = constants.MAX_PHEROMONE
-    
     local chunk = regionUtils.getChunkByPosition(regionMap, x, y)
-    chunk[pType] = mMin(MAX_PHEROMONE, chunk[pType] + amount)
+    chunk[pType] = mMin(constants.MAX_PHEROMONE, chunk[pType] + amount)
 end
 
 --[[
@@ -125,6 +114,16 @@ function regionUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)
     neighbors[7] = xChunks[chunkY+1]
     
     return neighbors
+end
+
+function regionUtils.init(maps)
+    regionMaps = maps
+end
+
+function regionUtils.pheromoneProcess()
+    local player = game.players[1]
+    regionUtils.placePheromone(regionMaps[player.surface.index], player.position.x, player.position.y, constants.PLAYER_PHEROMONE, 100)
+    regionUtils.processPheromone(regionMaps[player.surface.index], player.surface, 2)
 end
 
 return regionUtils

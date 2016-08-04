@@ -2,7 +2,8 @@ local chunkUtils = {}
 
 local regionUtils = require("RegionUtils")
 local constants = require("Constants")
-
+local regionMaps
+local chunkProcessingQueue
 
 function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, chunkSize, surface)
     local NORTH_SOUTH = constants.NORTH_SOUTH
@@ -124,15 +125,6 @@ function chunkUtils.createChunk(topX, topY, directions, scores)
            }
 end
 
--- aux
-
--- function showGrid(regionMap, surface)
-    -- for i, chunk in pairs(regionMap) do        
-        -- local x = chunk.x --math.floor(game.players[1].position.x / 32) * 32
-        -- local y = chunk.y --math.floor(game.players[1].position.y / 32) * 32
-    -- end
--- end
-
 function chunkUtils.colorChunk(x, y, tileType, surface)
     local CHUNK_SIZE = constants.CHUNK_SIZE
     
@@ -143,6 +135,15 @@ function chunkUtils.colorChunk(x, y, tileType, surface)
         end
     end
     surface.set_tiles(tiles, false)
+end
+
+function chunkUtils.init(maps, chunkQueue)
+    regionMaps = maps
+    chunkProcessingQueue = chunkQueue
+end
+
+function chunkUtils.chunkProcess()
+    chunkUtils.processChunks(regionMaps, chunkProcessingQueue)
 end
 
 return chunkUtils
