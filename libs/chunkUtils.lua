@@ -1,7 +1,9 @@
 local chunkUtils = {}
 
-local regionUtils = require("RegionUtils")
+local mapUtils = require("MapUtils")
 local constants = require("Constants")
+
+local natives
 local regionMaps
 local chunkProcessingQueue
 
@@ -28,11 +30,14 @@ function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate
     return deadEnd
 end
 
-function chunkUtils.checkChunkPassability(x, y, surface)
+function chunkUtils.checkChunkPassability(chunk, surface, natives)
     local checkForDeadendTiles = chunkUtils.checkForDeadendTiles
     local NORTH_SOUTH = constants.NORTH_SOUTH
     local EAST_WEST = constants.EAST_WEST
     local CHUNK_SIZE = constants.CHUNK_SIZE
+    
+    local x = chunk.pX
+    local y = chunk.pY
     
     local passableNorthSouth = false
     local passableEastWest = false
@@ -59,70 +64,43 @@ function chunkUtils.checkChunkPassability(x, y, surface)
     else
         chunkUtils.colorChunk(x, y, "concrete", surface)
     end
-    return {eastWest = passableEastWest, northSouth = passableNorthSouth}
+    
+    chunk.eW = passableEastWest
+    chunk.nS = passableNorthSouth
 end
 
-function chunkUtils.checkChunkValues(x, y, surface)
+function chunkUtils.scoreChunk(chunk, surface, natives)
+    local x = chunk.pX
+    local y = chunk.pY
+    local cX = chunk.cX
+    local cY = chunk.cY
     local CHUNK_SIZE = constants.CHUNK_SIZE
     
-    local spawnerCount = surface.count_entities_filtered({area={{x, y},
-                                                                {x+CHUNK_SIZE, y+CHUNK_SIZE}},
-                                                          type="unit-spawner",
-                                                          force="enemy"})
-    return { 
-            base = spawnerCount
-           }
-end
-
-function chunkUtils.processChunks(regionMaps, stack)
-    local createChunk = chunkUtils.createChunk
-    local addChunkToRegionMap = regionUtils.addChunkToRegionMap
-    local checkChunkPassability = chunkUtils.checkChunkPassability
-    local checkChunkValues = chunkUtils.checkChunkValues
-    
-    local count = 0
-    while (#stack > 0) do
-        local event = stack[#stack]
-        stack[#stack] = nil
-        local surface = event.surface
-        local surfaceIndex = surface.index
-        
-        if (surfaceIndex == 1) then
-            if (regionMaps[surfaceIndex] == nil) then
-                regionMaps[surfaceIndex] = {}
-            end
-            
-            local topX = event.area.left_top.x
-            local topY = event.area.left_top.y
-            
-            local directions = checkChunkPassability(topX, topY, surface)
-            local scores = checkChunkValues(topX, topY, surface)
-            local chunk = createChunk(topX,
-                                      topY, 
-                                      directions,
-                                      scores)
-            
-            addChunkToRegionMap(regionMaps[surfaceIndex],
-                                chunk)
-        end
-        count = count + 1
-        if (count % 7 == 0) and (#stack < 70) then
-            coroutine.yield()
-        end
+    local spawners = surface.count_entities_filtered({area={{x, y},
+                                                            {x+CHUNK_SIZE, y+CHUNK_SIZE}},
+                                                      type="unit-spawner",
+                                                      force="enemy"})
+    if (natives.bases[cX] == nil) then
+        natives.bases[cX] = {}
     end
+    local nativeX = natives.bases[cX]
+    if (nativeX[cY] == nil) then
+        nativeX[cY] = {}
+    end
+    nativeX[cY].bG = spawners
 end
 
-function chunkUtils.createChunk(topX, topY, directions, scores)
-    return { 
-                0,
-                0,
-                0,
-                x = topX,
-                y = topY,
-                nS = directions.northSouth, -- passable north_south
-                eW = directions.eastWest, -- passable east_west
-                bG = scores.base, -- value of pheromone base generator
-           }
+function chunkUtils.createChunk(topX, topY)
+    local chunk = { 
+                    pX = topX,
+                    pY = topY,
+                    cX = topX * 0.03125,
+                    cY = topY * 0.03125
+                  }
+    chunk[constants.BASE_PHEROMONE] = 0
+    chunk[constants.PLAYER_PHEROMONE] = 0
+    chunk[constants.DEATH_PHEROMONE] = 0
+    return chunk
 end
 
 function chunkUtils.colorChunk(x, y, tileType, surface)
@@ -135,15 +113,6 @@ function chunkUtils.colorChunk(x, y, tileType, surface)
         end
     end
     surface.set_tiles(tiles, false)
-end
-
-function chunkUtils.init(maps, chunkQueue)
-    regionMaps = maps
-    chunkProcessingQueue = chunkQueue
-end
-
-function chunkUtils.chunkProcess()
-    chunkUtils.processChunks(regionMaps, chunkProcessingQueue)
 end
 
 return chunkUtils

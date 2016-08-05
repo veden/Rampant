@@ -1,14 +1,13 @@
 local tests = {}
 
-local regionMaps
+local regionMap
 
 function tests.initTester() 
-    regionMaps = global.regionMaps
+    regionMap = global.regionMap
 end
 
 function tests.test1() 
     local player = game.players[1]
-    local regionMap = regionMaps[player.surface.index]
     local playerChunkX = math.floor(player.position.x / 32)
     local playerChunkY = math.floor(player.position.y / 32)
     print("------")
@@ -26,10 +25,12 @@ function tests.test1()
     end
 end
 
--- function test2()
+function test2()
     -- local playerPosition = game.players[1].position
-    -- spreadPheromone(regionMaps[1], playerPosition.x, playerPosition.y)
--- end
+    -- playerPosition.x = playerPosition.x + 10
+    -- local turret = game.surfaces[1].create_entity({name="small-worm-turret", position=playerPosition})
+    -- turret
+end
 
 -- function test3()
     -- local playerPosition = game.players[1].position
