@@ -25,7 +25,26 @@ function tests.test1()
     end
 end
 
-function test2()
+function tests.test2()
+    local position = game.players[1].position
+    
+    local spawners = game.surfaces[1].find_entities_filtered({type="unit-spawner"})
+    for i=1, #spawners do
+        local spawner = spawners[i]
+        if (spawner ~= nil) and spawner.valid then
+            spawner.destroy()
+        end
+    end
+    
+    game.forces.enemy.kill_all_units()
+    
+    position.x = position.x + 10
+    position.y = position.y - 40
+    
+    for i=position.x, position.x+30, 5 do
+        game.surfaces[1].create_entity({name="biter-spawner",
+                                        position={i, position.y}})
+    end
     -- local playerPosition = game.players[1].position
     -- playerPosition.x = playerPosition.x + 10
     -- local turret = game.surfaces[1].create_entity({name="small-worm-turret", position=playerPosition})

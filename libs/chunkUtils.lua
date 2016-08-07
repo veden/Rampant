@@ -69,6 +69,8 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
     chunk.nS = passableNorthSouth
 end
 
+local spawnCount = 0
+
 function chunkUtils.scoreChunk(chunk, surface, natives)
     local x = chunk.pX
     local y = chunk.pY
@@ -80,14 +82,7 @@ function chunkUtils.scoreChunk(chunk, surface, natives)
                                                             {x+CHUNK_SIZE, y+CHUNK_SIZE}},
                                                       type="unit-spawner",
                                                       force="enemy"})
-    if (natives.bases[cX] == nil) then
-        natives.bases[cX] = {}
-    end
-    local nativeX = natives.bases[cX]
-    if (nativeX[cY] == nil) then
-        nativeX[cY] = {}
-    end
-    nativeX[cY].bG = spawners
+    chunk.bG = spawners
 end
 
 function chunkUtils.createChunk(topX, topY)
@@ -97,7 +92,7 @@ function chunkUtils.createChunk(topX, topY)
                     cX = topX * 0.03125,
                     cY = topY * 0.03125
                   }
-    chunk[constants.BASE_PHEROMONE] = 0
+    chunk[constants.ENEMY_BASE_PHEROMONE] = 0
     chunk[constants.PLAYER_PHEROMONE] = 0
     chunk[constants.DEATH_PHEROMONE] = 0
     return chunk

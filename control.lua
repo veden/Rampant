@@ -1,5 +1,6 @@
 local chunkUtils = require("libs/ChunkUtils")
 local mapUtils = require("libs/MapUtils")
+local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
@@ -65,26 +66,34 @@ end
 function onTick(event)
     if (event.tick % 40 == 0) then       
         -- using coroutines to keep the cpu load time managable will still being able to work large maps
+        local working, errorMsg = true, nil
         if (chunkRoutine ~= nil) and (coroutine.status(chunkRoutine) ~= "dead") then
-            coroutine.resume(chunkRoutine)
+            working, errorMsg = coroutine.resume(chunkRoutine)
         elseif (#pendingChunks > 0) then
             -- coroutines start suspended, so you have to resume them after creation
             chunkRoutine = coroutine.create(chunkProcessor.processPendingChunks)
-            coroutine.resume(chunkRoutine, regionMap, surface, natives, pendingChunks)
+            working, errorMsg = coroutine.resume(chunkRoutine, regionMap, surface, natives, pendingChunks)
+        end
+        if not working then
+            error(errorMsg)
         end
         
         -- put down player pheromone for player hunters
-        -- pheromoneUtils.playerScent(regionMap, game.players)
+        pheromoneUtils.playerScent(regionMap, game.players)
         
         -- ai.attackPlayerNearNest(regionMap, surface, natives, game.players)
         
         if (mapRoutine ~= nil) and (coroutine.status(mapRoutine) ~= "dead") then
-            coroutine.resume(mapRoutine)
+            working, errorMsg = coroutine.resume(mapRoutine)
         elseif (mapRoutine == nil) or (coroutine.status(mapRoutine) == "dead") then
             mapRoutine = coroutine.create(mapProcessor.processMap)
-            coroutine.resume(mapRoutine, regionMap, surface, natives)
+            working, errorMsg = coroutine.resume(mapRoutine, regionMap, surface, natives)
+        end
+        if not working then
+            error(errorMsg)
         end
         
+        unitGroupUtils.regroupSquads(natives)
     end
 end
 
@@ -96,12 +105,11 @@ function onDeath(event)
         pheromoneUtils.deathScent(regionMap, 
                                   entityPosition.x,
                                   entityPosition.y,
-                                  50)
+                                  200)
         
-        ai.addAutonomousUnitGroup(entity.unit_group, natives)
+        local squad = unitGroupUtils.convertUnitGroupToSquad(natives, entity.unit_group)
         
-        --ai.purgeUnitGroups(natives)
-        ai.retreatUnitGroup(entityPosition, entity.unit_group, regionMap, surface, natives)
+        ai.retreatUnits(entityPosition, squad, regionMap, surface, natives)
     end
 end
 
@@ -111,12 +119,19 @@ function onInitialTick(event)
     if (surface == nil) then
         surface = game.surfaces[1]
     end
+    
+    game.forces.player.research_all_technologies()
+    game.players[1].cheat_mode = true
+    
+    -- turn off base expansion
+    game.forces.enemy.ai_controllable = false
+    
     -- add processing handler into generated chunk event loop
-    -- chunkProcessor.install(chunkUtils.checkChunkPassability)
-    -- chunkProcessor.install(chunkUtils.scoreChunk)
+    chunkProcessor.install(chunkUtils.checkChunkPassability)
+    chunkProcessor.install(chunkUtils.scoreChunk)
     
     -- add processing handler into chunk map processing
-    -- mapProcessor.install(pheromoneUtils.enemyBaseScent)
+    mapProcessor.install(pheromoneUtils.enemyBaseScent)
     -- mapProcessor.install(ai.sendScouts)
     mapProcessor.install(pheromoneUtils.processPheromone)
     
