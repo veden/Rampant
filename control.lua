@@ -81,7 +81,9 @@ function onTick(event)
         -- put down player pheromone for player hunters
         pheromoneUtils.playerScent(regionMap, game.players)
         
-        -- ai.attackPlayerNearNest(regionMap, surface, natives, game.players)
+        unitGroupUtils.regroupSquads(natives)
+        
+        ai.squadAttackPlayer(regionMap, surface, natives, game.players)
         
         if (mapRoutine ~= nil) and (coroutine.status(mapRoutine) ~= "dead") then
             working, errorMsg = coroutine.resume(mapRoutine)
@@ -92,8 +94,6 @@ function onTick(event)
         if not working then
             error(errorMsg)
         end
-        
-        unitGroupUtils.regroupSquads(natives)
     end
 end
 
@@ -123,8 +123,15 @@ function onInitialTick(event)
     game.forces.player.research_all_technologies()
     game.players[1].cheat_mode = true
     
+        -- turn off enemy ai
+    -- game.surfaces[1].peaceful_mode = true
+    -- game.surfaces[1].peaceful_mode = false
+    -- remove enemies that aren't off
+    -- game.forces.enemy.kill_all_units()
+    
     -- turn off base expansion
-    game.forces.enemy.ai_controllable = false
+    -- game.forces.enemy.ai_controllable = false
+    game.map_settings.enemy_expansion.enabled = false
     
     -- add processing handler into generated chunk event loop
     chunkProcessor.install(chunkUtils.checkChunkPassability)

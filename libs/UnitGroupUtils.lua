@@ -3,14 +3,14 @@ local unitGroupUtils = {}
 local utils = require("Utils")
 local constants = require("Constants")
 
-function unitGroupUtils.findNearBySquad(natives, position, distance)
+function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local getDistance = utils.euclideanDistanceNamed
     local squads = natives.squads
     local i = 1
     while (i <= #squads) do
         local squad = squads[i]
         local unitGroup = squad.group
-        if (unitGroup ~= nil) and unitGroup.valid then
+        if (unitGroup ~= nil) and unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
             if (getDistance(unitGroup.position, position) <= distance) then
                 return squad
             end
@@ -30,7 +30,7 @@ function unitGroupUtils.createSquad(position, surface, natives)
 end
 
 function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
-    if members ~= nil then
+    if (members ~= nil) then
         local group = squad.group
         for i=1,#members do
             local member = members[i]
@@ -51,7 +51,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
         local i = 1
         while (i <= #squads) and addUnitGroup do
             local squad = squads[i]
-            if (squad.group == unitGroup) then
+            if (squad.group == unitGroup) then  
                 addUnitGroup = false
                 returnSquad = squad
             end

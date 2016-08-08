@@ -37,7 +37,7 @@ function pheromoneUtils.playerScent(regionMap, players)
     for i=1, #players do
         local playerPosition = players[i].position
         local playerChunk = regionMap[mathFloor(playerPosition.x * 0.03125)][mathFloor(playerPosition.y * 0.03125)]
-        playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + 100
+        playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + 300
     end
 end
 

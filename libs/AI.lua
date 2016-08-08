@@ -5,47 +5,42 @@ local retreatPosition = {x=0, y=0} -- used to minimize garbage generation
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
+local utils = require("Utils")
 local unitGroupUtils = require("UnitGroupUtils")
 
-function ai.attackPlayerNearNest(regionMap, surface, natives, players)
-    local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
+function ai.squadAttackPlayer(regionMap, surface, natives, players)
+    local SQUAD_RETREATING = constants.SQUAD_RETREATING
+    local SQUAD_ATTACKING = constants.SQUAD_ATTACKING
+    local SQUAD_GUARDING = constants.SQUAD_GUARDING
+    local SQUAD_SUICIDE = constants.SQUAD_SUICIDE
+    local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+    local findDistance = utils.euclideanDistanceNamed
     
-    for i=1,#players do
-        local player = players[i]
-        local chunk = mapUtils.getChunkByPosition(regionMap, player.position.x, player.position.y)
-        if (chunk ~= nil) and (chunk[ENEMY_BASE_PHEROMONE] > 125) then -- TODO scaled base
-            local enemies = surface.find_enemy_units(player.position, 
-                                                     30)
-            if (#enemies > 0) then
-                local unitGroup
-                local enemyIndex = 1
-                -- while (enemyIndex <= #enemies) and (unitGroup == nil) do
-                    -- local enemy = enemies[enemyIndex]
-                    -- if (enemy.unit_group ~= nil) thena
-                        -- unitGroup = enemy.unit_group
-                    -- end
-                    -- enemyIndex = enemyIndex + 1
-                -- end
-                if (unitGroup == nil) then
-                    unitGroup = surface.create_unit_group({position=enemies[1].position})
-                    natives.squads[#natives.squads+1] = unitGroup
+    local squads = natives.squads
+    
+    for si=1, #squads do
+        local squad = squads[si]
+        if (squad.group.valid) and (squad.status == SQUAD_GUARDING) then
+            local closestPlayer
+            local closestDistance = MAGIC_MAXIMUM_NUMBER
+            for pi=1, #players do
+                local playerCharacer = players[pi].character
+                local distance = findDistance(playerCharacer.position, squad.group.position)
+                if (distance < closestDistance) then
+                    closestPlayer = playerCharacer
+                    closestDistance = distance
                 end
-                
-                for x=1,#enemies do
-                    local enemy = enemies[x]
-                    if (enemy.unit_group == nil) then
-                        unitGroup.add_member(enemy)
-                        -- enemy.set_command({type=defines.command.group,
-                                           -- group=unitGroup,
-                                           -- distraction=defines.distraction.none})
-                    end
+            end
+            if (closestDistance < 60) then
+                local squadType = SQUAD_ATTACKING
+                if (math.random() < 0.10) then -- TODO add sliding scale based on number of members
+                    squadType = SQUAD_SUICIDE
                 end
-                
-                if (unitGroup.state == defines.group_state.gathering) then
-                    unitGroup.set_command({type=defines.command.attack,
-                                           target=player.character})
-                end
-                unitGroup.start_moving()
+                unitGroupUtils.setSquadCommand(squad,
+                                               {type=defines.command.attack,
+                                                target=closestPlayer},
+                                               squadType,
+                                               0)
             end
         end
     end
@@ -63,14 +58,12 @@ function ai.retreatUnits(position, squad, regionMap, surface, natives)
         local enemiesToSquad
         
         if (squad == nil) then
-            enemiesToSquad = surface.find_enemy_units(position, 20)
+            enemiesToSquad = surface.find_enemy_units(position, 15)
             if (#enemiesToSquad > 0) then
                 performRetreat = true
             end
         elseif (squad ~= nil) and squad.group.valid and (squad.status ~= constants.SQUAD_RETREATING) and (squad.status ~= constants.SQUAD_SUICIDE) then
-            if (#squad.group.members == 0) then
-                squad.group.destroy()
-            else
+            if (#squad.group.members ~= 0) then
                 performRetreat = true
             end
         end
@@ -89,7 +82,9 @@ function ai.retreatUnits(position, squad, regionMap, surface, natives)
                     retreatPosition.x = neighborChunk.pX
                     retreatPosition.y = neighborChunk.pY
                     
-                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] - neighborChunk[ENEMY_BASE_PHEROMONE]
+                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + 
+                                        -- putting a unit group in a nest causing pathing and disbanding issues
+                                        (neighborChunk.bG * 200) - neighborChunk[ENEMY_BASE_PHEROMONE]
                     if (dangerScore < exitScore) then
                         exitScore = dangerScore
                         exitPath = neighborChunk
@@ -104,31 +99,30 @@ function ai.retreatUnits(position, squad, regionMap, surface, natives)
             
             -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
             -- to each unit
+            local filter = {}
+            filter[constants.SQUAD_RETREATING] = true
             local newSquad = unitGroupUtils.findNearBySquad(natives, 
-                                                            retreatPosition, 
-                                                            18)
+                                                            retreatPosition,
+                                                            18,
+                                                            filter)
+            
             if (newSquad == nil) then
                 newSquad = unitGroupUtils.createSquad(retreatPosition, surface, natives)
+                newSquad.status = constants.SQUAD_RETREATING
+                newSquad.cycles = 2
             end
             if (enemiesToSquad ~= nil) then
                 unitGroupUtils.membersToSquad(newSquad, enemiesToSquad, false)
             else
                 unitGroupUtils.membersToSquad(newSquad, squad.group.members, true)
             end
-            newSquad.status = constants.SQUAD_RETREATING
-            newSquad.cycles = 5
-            -- unitGroupUtils.setSquadCommand(newSquad,
-                                           -- {type=defines.command.go_to_location,
-                                            -- destination=retreatPosition,
-                                            -- distraction=defines.distraction.by_enemy},
-                                           -- constants.SQUAD_RETREATING)
         end
     end
 end
 
--- function ai.sendScouts(regionMap, surface, natives, chunk, neighbors, validNeighbors)
+function ai.sendScouts(regionMap, surface, natives, chunk, neighbors, validNeighbors)
     
-    -- return validNeighbors
--- end
+    return validNeighbors
+end
 
 return ai
