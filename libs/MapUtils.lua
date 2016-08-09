@@ -14,7 +14,12 @@ function mapUtils.getChunkByPosition(regionMap, x, y)
     return nil
 end
 
-
+function mapUtils.removeUnitSpawner(regionMap, x, y)
+    local bases = mapUtils.getChunkByPosition(regionMap, x, y)
+    if (bases ~= nil) then
+        bases.bG = mMax(0, bases.bG - 1)
+    end
+end
 
 --[[
     1 2 3

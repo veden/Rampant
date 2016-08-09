@@ -30,7 +30,7 @@ function onInit()
     pendingChunks = global.pendingChunks
     natives = global.natives
     natives.squads = {}
-    natives.bases = {}
+    natives.scouts = {}
     
     -- game.map_settings.enemy_expansion.enabled = false
     
@@ -83,6 +83,7 @@ function onTick(event)
         
         unitGroupUtils.regroupSquads(natives)
         
+        -- ai.scouting(regionMap, surface, natives)
         ai.squadAttackPlayer(regionMap, surface, natives, game.players)
         
         if (mapRoutine ~= nil) and (coroutine.status(mapRoutine) ~= "dead") then
@@ -99,17 +100,24 @@ end
 
 function onDeath(event)
     local entity = event.entity
-    if (entity.force.name == "enemy") and (entity.type == "unit") then
+    if (entity.force.name == "enemy") then
+        if (entity.type == "unit") then
         local entityPosition = entity.position
-        -- drop death pheromone where unit died
-        pheromoneUtils.deathScent(regionMap, 
-                                  entityPosition.x,
-                                  entityPosition.y,
-                                  200)
-        
-        local squad = unitGroupUtils.convertUnitGroupToSquad(natives, entity.unit_group)
-        
-        ai.retreatUnits(entityPosition, squad, regionMap, surface, natives)
+            -- drop death pheromone where unit died
+            pheromoneUtils.deathScent(regionMap, 
+                                      entityPosition.x,
+                                      entityPosition.y,
+                                      200)
+            
+            local squad = unitGroupUtils.convertUnitGroupToSquad(natives, entity.unit_group)
+            
+            ai.retreatUnits(entityPosition, squad, regionMap, surface, natives)
+            
+            -- ai.removeScout(regionMap, surface, entity, natives)
+        elseif (entity.type == "unit-spawner") then
+            local entityPosition = entity.position
+            mapUtils.removeUnitSpawner(regionMap, entityPosition.x, entityPosition.y)
+        end
     end
 end
 
@@ -139,7 +147,7 @@ function onInitialTick(event)
     
     -- add processing handler into chunk map processing
     mapProcessor.install(pheromoneUtils.enemyBaseScent)
-    -- mapProcessor.install(ai.sendScouts)
+    mapProcessor.install(ai.sendScouts)
     mapProcessor.install(pheromoneUtils.processPheromone)
     
     -- used for debugging
