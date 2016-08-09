@@ -81,20 +81,41 @@ end
 function unitGroupUtils.regroupSquads(natives)
     local SQUAD_RETREATING = constants.SQUAD_RETREATING
     local SQUAD_GUARDING = constants.SQUAD_GUARDING
+    local findDistance = utils.euclideanDistanceNamed
+    local mergeSquadMembers = unitGroupUtils.membersToSquad
+
+    local squads = natives.squads
+    for i=1,#squads do
+        local squad = squads[i]
+        if squad.group.valid then
+            local squadPosition = squad.group.position
+            for x=i+1, #squads do
+                local mergeSquad = squads[x]
+                local mergeGroup = mergeSquad.group
+                if mergeGroup.valid and (mergeSquad.status == squad.status) and (findDistance(squadPosition, mergeGroup.position) < 3) then
+                    mergeSquadMembers(squad, mergeGroup.members, true)
+                    mergeGroup.destroy()
+                end
+            end
+        end
+    end
     
-    for i=#natives.squads,1,-1 do
-        local squad = natives.squads[i]
+    local squads = natives.squads
+    for i=#squads,1,-1 do
+        local squad = squads[i]
         if (squad.group == nil) then
-            table.remove(natives.squads, i)
+            table.remove(squads, i)
         elseif not squad.group.valid then
-            table.remove(natives.squads, i)
+            table.remove(squads, i)
         elseif (#squad.group.members == 0) then
             squad.group.destroy()
-            table.remove(natives.squads, i)
-        elseif (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
-            squad.status = SQUAD_GUARDING
-        elseif (squad.cycles > 0) then
-            squad.cycles = squad.cycles - 1
+            table.remove(squads, i)
+        else            
+            if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
+                squad.status = SQUAD_GUARDING
+            elseif (squad.cycles > 0) then
+                squad.cycles = squad.cycles - 1
+            end
         end
     end
 end
