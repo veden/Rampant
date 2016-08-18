@@ -51,4 +51,17 @@ function tests.test3()
     print("--")
 end
 
+function tests.test4()
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    local entity = game.surfaces[1].find_nearest_enemy({position={chunkX, chunkY},
+                                                          max_distance=constants.CHUNK_SIZE,
+                                                          force = "enemy"})
+    if (entity ~= nil) then
+        print(entity.name)
+    end
+    print("--")
+end
+
 return tests

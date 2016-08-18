@@ -187,5 +187,6 @@ script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 remote.add_interface("rampant", {
                                     test1 = tests.test1,
                                     test2 = tests.test2,
-                                    test3 = tests.test3
+                                    test3 = tests.test3,
+                                    test4 = tests.test4
                                 })

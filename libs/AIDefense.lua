@@ -48,7 +48,7 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                     retreatPosition.x = neighborChunk.pX
                     retreatPosition.y = neighborChunk.pY
                     
-                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE] - neighborChunk[ENEMY_BASE_PHEROMONE] + neighborChunk[ENEMY_BASE_GENERATOR]
+                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE] - neighborChunk[ENEMY_BASE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 5)
                     if (dangerScore < exitScore) then
                         exitScore = dangerScore
                         exitPath = neighborChunk
@@ -60,7 +60,14 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             utils.positionDirectionToChunkCorner(exitDirection, exitPath, retreatPosition)
             -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
             -- to each unit
+            -- retreatPosition.x = exitPath.pX + constants.HALF_CHUNK_SIZE
+            -- retreatPosition.y = exitPath.pY + constants.HALF_CHUNK_SIZE
 
+            if (squad ~= nil) and (squad.cX ~= nil) then
+                local chunk = mapUtils.getChunkByIndex(regionMap, squad.cX, squad.cY)
+                chunk[constants.DEATH_PHEROMONE] = chunk[constants.DEATH_PHEROMONE] + constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
+            end
+            
             local newSquad = unitGroupUtils.findNearBySquad(natives, 
                                                             retreatPosition,
                                                             constants.HALF_CHUNK_SIZE,

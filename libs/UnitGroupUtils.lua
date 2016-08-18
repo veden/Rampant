@@ -116,6 +116,8 @@ function unitGroupUtils.regroupSquads(natives)
             table.remove(squads, i)
         else            
             if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
+                squad.cX = nil
+                squad.cY = nil
                 squad.status = SQUAD_GUARDING
             elseif (squad.cycles > 0) then
                 squad.cycles = squad.cycles - 1

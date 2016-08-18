@@ -17,29 +17,29 @@ end
 function utils.positionDirectionToChunkCorner(direction, chunk, position)
     -- local position = {}
     if (direction == 1) then
-        position.x = chunk.pX
-        position.y = chunk.pY
+        position.x = chunk.pX + constants.QUARTER_CHUNK_SIZE 
+        position.y = chunk.pY + constants.QUARTER_CHUNK_SIZE
     elseif (direction == 2) then
         position.x = chunk.pX + constants.HALF_CHUNK_SIZE
-        position.y = chunk.pY
+        position.y = chunk.pY + constants.QUARTER_CHUNK_SIZE
     elseif (direction == 3) then
-        position.x = chunk.pX + constants.CHUNK_SIZE
-        position.y = chunk.pY
+        position.x = chunk.pX + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
+        position.y = chunk.pY + constants.QUARTER_CHUNK_SIZE
     elseif (direction == 4) then
-        position.x = chunk.pX
+        position.x = chunk.pX + constants.QUARTER_CHUNK_SIZE
         position.y = chunk.pY + constants.HALF_CHUNK_SIZE
     elseif (direction == 5) then
-        position.x = chunk.pX + constants.CHUNK_SIZE
+        position.x = chunk.pX + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
         position.y = chunk.pY + constants.HALF_CHUNK_SIZE
     elseif (direction == 6) then
-        position.x = chunk.pX 
-        position.y = chunk.pY + constants.CHUNK_SIZE
+        position.x = chunk.pX + constants.QUARTER_CHUNK_SIZE
+        position.y = chunk.pY + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
     elseif (direction == 7) then
         position.x = chunk.pX + constants.HALF_CHUNK_SIZE
-        position.y = chunk.pY + constants.CHUNK_SIZE
+        position.y = chunk.pY + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
     elseif (direction == 8) then
-        position.x = chunk.pX + constants.CHUNK_SIZE
-        position.y = chunk.pY + constants.CHUNK_SIZE
+        position.x = chunk.pX + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
+        position.y = chunk.pY + constants.HALF_CHUNK_SIZE + constants.QUARTER_CHUNK_SIZE
     end
     return position
 end

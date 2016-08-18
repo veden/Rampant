@@ -12,18 +12,15 @@ local nearestTable = {position=nearestEnemyPosition,
 
 function pheromoneUtils.deathScent(regionMap, surface, x, y, amount)
     
-    -- nearestEnemyPosition.x = x
-    -- nearestEnemyPosition.y = y
-    -- local playerKiller = surface.find_nearest_enemy(nearestTable)
-    -- if (playerKiller ~= nil) then
-        -- local chunk = regionMap[mathFloor(playerKiller.position.x * 0.03125)]
-        -- if (chunk ~= nil) then
-            -- chunk = chunk[mathFloor(playerKiller.position.y * 0.03125)]
-            -- if (chunk ~= nil) then
-                -- chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + amount
-            -- end
-        -- end 
-    -- end
+    nearestEnemyPosition.x = x
+    nearestEnemyPosition.y = y
+    local playerKiller = surface.find_nearest_enemy(nearestTable)
+    if (playerKiller ~= nil) then
+        local chunk = mapUtils.getChunkByPosition(regionMap, x, y)
+        if (chunk ~= nil) then
+            chunk[constants.DEATH_PHEROMONE] = chunk[constants.DEATH_PHEROMONE] + amount
+        end
+    end
     
     local chunk = mapUtils.getChunkByPosition(regionMap, x, y)
     if (chunk ~= nil) then
@@ -41,7 +38,7 @@ end
 function pheromoneUtils.playerBaseScent(regionMap, surface, natives, chunk, neighbors)
     local baseScore = chunk[constants.PLAYER_BASE_GENERATOR]
     if (baseScore > 0) then
-        chunk[constants.PLAYER_BASE_PHEROMONE] = chunk[constants.PLAYER_BASE_PHEROMONE] + baseScore
+        chunk[constants.PLAYER_BASE_PHEROMONE] = chunk[constants.PLAYER_BASE_PHEROMONE] + (baseScore * 2)
     end
 end
 
@@ -78,10 +75,10 @@ function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, nei
         local persistence
         if (x == DEATH_PHEROMONE) then
             diffusionAmount = DEATH_PHEROMONE_DIFFUSION_AMOUNT
-            persistence = 0.99
+            persistence = 0.98
         else
             diffusionAmount = STANDARD_PHERONOME_DIFFUSION_AMOUNT
-            persistence = 0.98
+            persistence = 0.95
         end
         local totalDiffused = 0
         for i=1,4 do
