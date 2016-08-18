@@ -5,7 +5,8 @@ local chunkProcessor = require("libs/ChunkProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
-local ai = require("libs/AI")
+local aiDefense = require("libs/AIDefense")
+local aiAttack = require("libs/AIAttack")
 local tests = require("Tests")
 
 local mapRoutine --coroutine holding state of in progress processing
@@ -30,14 +31,8 @@ function onInit()
     pendingChunks = global.pendingChunks
     natives = global.natives
     natives.squads = {}
+    natives.troopToSquad = {}
     natives.scouts = {}
-    
-    -- game.map_settings.enemy_expansion.enabled = false
-    
-    -- turn off enemy ai
-    -- game.surfaces[1].peaceful_mode = true
-    -- remove enemies that aren't off
-    -- game.forces.enemy.kill_all_units()
     
     -- queue all current chunks that wont be generated during play
     surface = game.surfaces[1]
@@ -82,9 +77,12 @@ function onTick(event)
         pheromoneUtils.playerScent(regionMap, game.players)
         
         unitGroupUtils.regroupSquads(natives)
-        
+                
         -- ai.scouting(regionMap, surface, natives)
-        ai.squadAttackPlayer(regionMap, surface, natives, game.players)
+        aiAttack.squadAttackPlayer(regionMap, surface, natives, game.players)
+        
+        aiAttack.squadBeginAttack(natives)
+        aiAttack.squadAttackLocation(regionMap, surface, natives)
         
         if (mapRoutine ~= nil) and (coroutine.status(mapRoutine) ~= "dead") then
             working, errorMsg = coroutine.resume(mapRoutine)
@@ -98,26 +96,37 @@ function onTick(event)
     end
 end
 
+function onBuild(event)
+    mapUtils.addRemoveObject(regionMap, event.created_entity, true)
+end
+
+function onPickUp(event)
+    mapUtils.addRemoveObject(regionMap, event.entity, false)
+end
+
 function onDeath(event)
     local entity = event.entity
     if (entity.force.name == "enemy") then
         if (entity.type == "unit") then
-        local entityPosition = entity.position
+            local entityPosition = entity.position
             -- drop death pheromone where unit died
-            pheromoneUtils.deathScent(regionMap, 
+            pheromoneUtils.deathScent(regionMap,
+                                      surface,
                                       entityPosition.x,
                                       entityPosition.y,
-                                      200)
+                                      constants.DEATH_PHEROMONE_GENERATOR_AMOUNT)
             
-            local squad = unitGroupUtils.convertUnitGroupToSquad(natives, entity.unit_group)
-            
-            ai.retreatUnits(entityPosition, squad, regionMap, surface, natives)
+            if (event.force ~= nil) and (event.force.name == "player") then
+                local squad = unitGroupUtils.convertUnitGroupToSquad(natives, entity.unit_group)
+                aiDefense.retreatUnits(entityPosition, squad, regionMap, surface, natives)
+            end
             
             -- ai.removeScout(regionMap, surface, entity, natives)
         elseif (entity.type == "unit-spawner") then
-            local entityPosition = entity.position
-            mapUtils.removeUnitSpawner(regionMap, entityPosition.x, entityPosition.y)
+            mapUtils.addRemoveObject(regionMap, entity, false)
         end
+    elseif (entity.force.name == "player") then
+        mapUtils.addRemoveObject(regionMap, entity, false)
     end
 end
 
@@ -128,18 +137,18 @@ function onInitialTick(event)
         surface = game.surfaces[1]
     end
     
-    game.forces.player.research_all_technologies()
-    game.players[1].cheat_mode = true
+    -- game.forces.player.research_all_technologies()
+    -- game.players[1].cheat_mode = true
     
-        -- turn off enemy ai
+    -- turn off enemy ai
     -- game.surfaces[1].peaceful_mode = true
     -- game.surfaces[1].peaceful_mode = false
     -- remove enemies that aren't off
     -- game.forces.enemy.kill_all_units()
     
     -- turn off base expansion
-    -- game.forces.enemy.ai_controllable = false
-    game.map_settings.enemy_expansion.enabled = false
+    game.forces.enemy.ai_controllable = false
+    -- game.map_settings.enemy_expansion.enabled = false
     
     -- add processing handler into generated chunk event loop
     chunkProcessor.install(chunkUtils.checkChunkPassability)
@@ -147,8 +156,10 @@ function onInitialTick(event)
     
     -- add processing handler into chunk map processing
     mapProcessor.install(pheromoneUtils.enemyBaseScent)
-    mapProcessor.install(ai.sendScouts)
+    mapProcessor.install(pheromoneUtils.playerDefenseScent)
+    mapProcessor.install(pheromoneUtils.playerBaseScent)
     mapProcessor.install(pheromoneUtils.processPheromone)
+    -- mapProcessor.install(ai.sendScouts)
     
     -- used for debugging
     tests.initTester()
@@ -162,11 +173,19 @@ end
 script.on_init(onInit)
 script.on_load(onLoad)
 
+script.on_event({defines.events.on_preplayer_mined_item,
+                 defines.events.on_robot_pre_mined}, 
+                onPickUp)
+script.on_event({defines.events.on_built_entity,
+                 defines.events.on_robot_built_entity}, 
+                onBuild)
+                
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onInitialTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampant", {
                                     test1 = tests.test1,
-                                    test2 = tests.test2
+                                    test2 = tests.test2,
+                                    test3 = tests.test3
                                 })

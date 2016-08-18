@@ -3,6 +3,10 @@ local unitGroupUtils = {}
 local utils = require("Utils")
 local constants = require("Constants")
 
+local groupingCommand = {type=defines.command.group,
+                         group=1,
+                         distraction=0}
+
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local getDistance = utils.euclideanDistanceNamed
     local squads = natives.squads
@@ -24,20 +28,20 @@ function unitGroupUtils.createSquad(position, surface, natives)
     
     local squad = { group = unitGroup, 
                     status = constants.SQUAD_GUARDING,
-                    cycles = -1 }
+                    cycles = 0 }
     natives.squads[#natives.squads+1] = squad
     return squad
 end
 
-function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
+function unitGroupUtils.membersToSquad(squad, members, overwriteGroup, distraction)
     if (members ~= nil) then
         local group = squad.group
         for i=1,#members do
             local member = members[i]
             if (member ~= nil) and member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
-                member.set_command({type=defines.command.group,
-                                    group=group,
-                                    distraction=defines.distraction.none})
+                groupingCommand.group = group
+                groupingCommand.distraction = distraction
+                member.set_command(groupingCommand)
             end
         end
     end
@@ -60,7 +64,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
         if addUnitGroup then
             returnSquad = { group = unitGroup,
                             status = constants.SQUAD_GUARDING,
-                            cycles = -1 }
+                            cycles = 0 }
             squads[#squads+1] = returnSquad
         end
     end
@@ -68,15 +72,15 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
     return returnSquad
 end
 
-function unitGroupUtils.setSquadCommand(squad, command, state, cycles)
-    local group = squad.group
-    if (group ~= nil) and group.valid then
-        squad.status = state
-        squad.cycles = cycles
-        group.set_command(command)
+-- function unitGroupUtils.setSquadCommand(squad, command, state, cycles)
+    -- local group = squad.group
+    -- if (group ~= nil) and group.valid then
+        -- squad.status = state
+        -- squad.cycles = cycles
+        -- group.set_command(command)
         -- group.start_moving()
-    end
-end
+    -- end
+-- end
 
 function unitGroupUtils.regroupSquads(natives)
     local SQUAD_RETREATING = constants.SQUAD_RETREATING
@@ -92,7 +96,7 @@ function unitGroupUtils.regroupSquads(natives)
             for x=i+1, #squads do
                 local mergeSquad = squads[x]
                 local mergeGroup = mergeSquad.group
-                if mergeGroup.valid and (mergeSquad.status == squad.status) and (findDistance(squadPosition, mergeGroup.position) < 3) then
+                if mergeGroup.valid and (mergeSquad.status == squad.status) and (findDistance(squadPosition, mergeGroup.position) < constants.HALF_CHUNK_SIZE) then
                     mergeSquadMembers(squad, mergeGroup.members, true)
                     mergeGroup.destroy()
                 end

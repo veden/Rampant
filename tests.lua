@@ -1,9 +1,13 @@
 local tests = {}
 
+local constants = require("libs/Constants")
+
 local regionMap
+local natives
 
 function tests.initTester() 
     regionMap = global.regionMap
+    natives = global.natives
 end
 
 function tests.test1() 
@@ -26,34 +30,25 @@ function tests.test1()
 end
 
 function tests.test2()
-    local position = game.players[1].position
-    
-    local spawners = game.surfaces[1].find_entities_filtered({type="unit-spawner"})
-    for i=1, #spawners do
-        local spawner = spawners[i]
-        if (spawner ~= nil) and spawner.valid then
-            spawner.destroy()
+    for i=1, #natives.squads do
+        local squad = natives.squads[i]
+        if squad.group.valid then
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state)
         end
     end
-    
-    game.forces.enemy.kill_all_units()
-    
-    position.x = position.x + 10
-    position.y = position.y - 40
-    
-    for i=position.x, position.x+30, 5 do
-        game.surfaces[1].create_entity({name="biter-spawner",
-                                        position={i, position.y}})
-    end
-    -- local playerPosition = game.players[1].position
-    -- playerPosition.x = playerPosition.x + 10
-    -- local turret = game.surfaces[1].create_entity({name="small-worm-turret", position=playerPosition})
-    -- turret
 end
 
--- function test3()
-    -- local playerPosition = game.players[1].position
-    -- decayPheromone(regionMaps[1], playerPosition.x, playerPosition.y, 3)
--- end
+function tests.test3()
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    local entities = game.surfaces[1].find_entities_filtered({area={{chunkX, chunkY},
+                                                                    {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
+                                                              force="player"})
+    for i=1, #entities do
+        print(entities[i].name)
+    end
+    print("--")
+end
 
 return tests

@@ -5,82 +5,96 @@ local constants = require("Constants")
 local mMin = math.min
 local mFloor = math.floor
 
-function pheromoneUtils.deathScent(regionMap, x, y, amount)
-    local mathFloor = mFloor
-    local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
+local nearestEnemyPosition = {x=1,y=2}
+local nearestTable = {position=nearestEnemyPosition,
+                      max_distance=constants.CHUNK_SIZE,
+                      force="enemy"}
+
+function pheromoneUtils.deathScent(regionMap, surface, x, y, amount)
     
-    local chunk = regionMap[mathFloor(x * 0.03125)]
+    -- nearestEnemyPosition.x = x
+    -- nearestEnemyPosition.y = y
+    -- local playerKiller = surface.find_nearest_enemy(nearestTable)
+    -- if (playerKiller ~= nil) then
+        -- local chunk = regionMap[mathFloor(playerKiller.position.x * 0.03125)]
+        -- if (chunk ~= nil) then
+            -- chunk = chunk[mathFloor(playerKiller.position.y * 0.03125)]
+            -- if (chunk ~= nil) then
+                -- chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + amount
+            -- end
+        -- end 
+    -- end
+    
+    local chunk = mapUtils.getChunkByPosition(regionMap, x, y)
     if (chunk ~= nil) then
-        chunk = chunk[mathFloor(y * 0.03125)]
-        if (chunk ~= nil) then
-            chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + amount
-        end
+        chunk[constants.DEATH_PHEROMONE] = chunk[constants.DEATH_PHEROMONE] + amount
     end
 end
 
-function pheromoneUtils.enemyBaseScent(regionMap, surface, natives, chunk, neighbors, validNeighbors)
-    local BASE_PHEROMONE_PRODUCTION = constants.BASE_PHEROMONE_PRODUCTION
-    local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
-
-    local spawners = chunk.bG
-    if (spawners > 0) then
-        chunk[ENEMY_BASE_PHEROMONE] = chunk[ENEMY_BASE_PHEROMONE] + (spawners * constants.BASE_PHEROMONE_PRODUCTION)
+function pheromoneUtils.playerDefenseScent(regionMap, surface, natives, chunk, neighbors)    
+    local baseScore = chunk[constants.PLAYER_DEFENSE_GENERATOR]
+    if (baseScore > 0) then
+        chunk[constants.PLAYER_DEFENSE_PHEROMONE] = chunk[constants.PLAYER_DEFENSE_PHEROMONE] + baseScore
     end
-    return validNeighbors
+end
+
+function pheromoneUtils.playerBaseScent(regionMap, surface, natives, chunk, neighbors)
+    local baseScore = chunk[constants.PLAYER_BASE_GENERATOR]
+    if (baseScore > 0) then
+        chunk[constants.PLAYER_BASE_PHEROMONE] = chunk[constants.PLAYER_BASE_PHEROMONE] + baseScore
+    end
+end
+
+function pheromoneUtils.enemyBaseScent(regionMap, surface, natives, chunk, neighbors)
+    local spawners = chunk[constants.ENEMY_BASE_GENERATOR]
+    if (spawners > 0) then
+        chunk[constants.ENEMY_BASE_PHEROMONE] = chunk[constants.ENEMY_BASE_PHEROMONE] + spawners
+    end
 end
 
 function pheromoneUtils.playerScent(regionMap, players)
-    local placePheromoneByPosition = pheromoneUtils.placePheromoneByPosition
+    local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
     local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
+    local getChunkByPosition = mapUtils.getChunkByPosition
     local mathFloor = mFloor
     
     for i=1, #players do
         local playerPosition = players[i].position
-        local playerChunk = regionMap[mathFloor(playerPosition.x * 0.03125)][mathFloor(playerPosition.y * 0.03125)]
-        playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + 300
+        local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+        if (playerChunk ~= nil) then
+            playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+        end
     end
 end
 
-function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, neighbors, validNeighbors)
-    local mathMin = mMin
-    local getNeighborChunks = mapUtils.getNeighborChunks
-    local DIFFUSION_AMOUNT = constants.DIFFUSION_AMOUNT
-    local DEATH_DIFFUSION_AMOUNT = constants.DEATH_DIFFUSION_AMOUNT
-    local MAX_PHEROMONE = constants.MAX_PHEROMONE
+function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, neighbors)   
+    local STANDARD_PHERONOME_DIFFUSION_AMOUNT = constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT
+    local DEATH_PHEROMONE_DIFFUSION_AMOUNT = constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT
     local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
+    -- local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
-    for x=1,3 do
-        local threshold
+    for x=1,5 do
         local diffusionAmount
+        local persistence
         if (x == DEATH_PHEROMONE) then
-            threshold = 125
-            diffusionAmount = DEATH_DIFFUSION_AMOUNT
+            diffusionAmount = DEATH_PHEROMONE_DIFFUSION_AMOUNT
+            persistence = 0.99
         else
-            threshold = 75
-            diffusionAmount = DIFFUSION_AMOUNT
+            diffusionAmount = STANDARD_PHERONOME_DIFFUSION_AMOUNT
+            persistence = 0.98
         end
-        if (chunk[x] > threshold) then
-            if not validNeighbors then
-                getNeighborChunks(regionMap, chunk.cX, chunk.cY, neighbors)
-                validNeighbors = true
+        local totalDiffused = 0
+        for i=1,4 do
+            local neighborChunk = neighbors[i]
+            if (neighborChunk ~= nil) then
+                local diffusedAmount = (chunk[x] * diffusionAmount)
+                totalDiffused = totalDiffused + diffusedAmount
+                neighborChunk[x] = neighborChunk[x] + diffusedAmount
             end
-            local totalDiffused = 0
-            for i=1,8 do
-                local neighborChunk = neighbors[i]
-                if (neighborChunk ~= nil) then
-                    local diffusedAmount = (chunk[x] * diffusionAmount)
-                    totalDiffused = totalDiffused + diffusedAmount
-                    neighborChunk[x] = mathMin(MAX_PHEROMONE, neighborChunk[x] + diffusedAmount)
-                end
-            end
-            chunk[x] = chunk[x] - totalDiffused
         end
-        chunk[x] = chunk[x] * 0.995
-        if (chunk[x] < 2) then
-            chunk[x] = 0
-        end
+        chunk[x] = chunk[x] - totalDiffused
+        chunk[x] = chunk[x] * persistence
     end
-    return validNeighbors
 end
 
 return pheromoneUtils
