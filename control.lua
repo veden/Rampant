@@ -7,6 +7,7 @@ local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
 local aiDefense = require("libs/AIDefense")
 local aiAttack = require("libs/AIAttack")
+local aiBuilding = require("libs/AIBuilding")
 local tests = require("Tests")
 
 local mapRoutine --coroutine holding state of in progress processing
@@ -31,8 +32,8 @@ function onInit()
     pendingChunks = global.pendingChunks
     natives = global.natives
     natives.squads = {}
-    natives.troopToSquad = {}
     natives.scouts = {}
+    natives.points = 0
     
     -- queue all current chunks that wont be generated during play
     surface = game.surfaces[1]
@@ -73,12 +74,14 @@ function onTick(event)
             error(errorMsg)
         end
         
+        aiBuilding.accumulatePoints(natives)
+        
         -- put down player pheromone for player hunters
         pheromoneUtils.playerScent(regionMap, game.players)
         
         unitGroupUtils.regroupSquads(natives)
                 
-        -- ai.scouting(regionMap, surface, natives)
+        -- aiBuilding.scouting(regionMap, surface, natives)
         aiAttack.squadAttackPlayer(regionMap, surface, natives, game.players)
         
         aiAttack.squadBeginAttack(natives)
@@ -97,11 +100,11 @@ function onTick(event)
 end
 
 function onBuild(event)
-    mapUtils.addRemoveObject(regionMap, event.created_entity, true)
+    mapUtils.addRemoveObject(regionMap, event.created_entity, natives, true)
 end
 
 function onPickUp(event)
-    mapUtils.addRemoveObject(regionMap, event.entity, false)
+    mapUtils.addRemoveObject(regionMap, event.entity, natives, false)
 end
 
 function onDeath(event)
@@ -121,12 +124,12 @@ function onDeath(event)
                 aiDefense.retreatUnits(entityPosition, squad, regionMap, surface, natives)
             end
             
-            -- ai.removeScout(regionMap, surface, entity, natives)
+            aiBuilding.removeScout(entity, natives)
         elseif (entity.type == "unit-spawner") then
-            mapUtils.addRemoveObject(regionMap, entity, false)
+            mapUtils.addRemoveObject(regionMap, entity, natives, false)
         end
     elseif (entity.force.name == "player") then
-        mapUtils.addRemoveObject(regionMap, entity, false)
+        mapUtils.addRemoveObject(regionMap, entity, natives, false)
     end
 end
 
@@ -155,11 +158,12 @@ function onInitialTick(event)
     chunkProcessor.install(chunkUtils.scoreChunk)
     
     -- add processing handler into chunk map processing
-    mapProcessor.install(pheromoneUtils.enemyBaseScent)
-    mapProcessor.install(pheromoneUtils.playerDefenseScent)
-    mapProcessor.install(pheromoneUtils.playerBaseScent)
-    mapProcessor.install(pheromoneUtils.processPheromone)
-    -- mapProcessor.install(ai.sendScouts)
+    mapProcessor.install(pheromoneUtils.enemyBaseScent, 0, 1)
+    mapProcessor.install(pheromoneUtils.playerDefenseScent, 0, 1)
+    mapProcessor.install(pheromoneUtils.playerBaseScent, 0, 1)
+    mapProcessor.install(aiBuilding.sendScouts, 0.05, 0.10)
+    mapProcessor.install(aiBuilding.formSquads, 0.11, 0.20)
+    mapProcessor.install(pheromoneUtils.processPheromone, 0, 1)
     
     -- used for debugging
     tests.initTester()
@@ -188,5 +192,6 @@ remote.add_interface("rampant", {
                                     test1 = tests.test1,
                                     test2 = tests.test2,
                                     test3 = tests.test3,
-                                    test4 = tests.test4
+                                    test4 = tests.test4,
+                                    test5 = tests.test5
                                 })

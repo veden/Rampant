@@ -64,4 +64,8 @@ function tests.test4()
     print("--")
 end
 
+function tests.test5()
+    print(natives.points)
+end
+
 return tests

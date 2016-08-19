@@ -85,7 +85,7 @@ function mapUtils.getEntityOverlapChunks(regionMap, entity)
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
 end
 
-function mapUtils.addRemoveObject(regionMap, entity, addObject)
+function mapUtils.addRemoveObject(regionMap, entity, natives, addObject)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     local pheromoneType
@@ -103,6 +103,8 @@ function mapUtils.addRemoveObject(regionMap, entity, addObject)
         leftTop, rightTop, leftBottom, rightBottom = mapUtils.getEntityOverlapChunks(regionMap, entity)
         if not addObject then
             entityValue = -entityValue
+        elseif (pheromoneType ~= constants.ENEMY_BASE_GENERATOR) then
+            natives.points = natives.points + entityValue
         end
         if (leftTop ~= nil) then
             leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue

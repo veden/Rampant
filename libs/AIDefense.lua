@@ -42,7 +42,7 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             local exitPath
             local exitScore = constants.MAGIC_MAXIMUM_NUMBER
             local exitDirection
-            for i=1, 4 do
+            for i=1, #retreatNeighbors do
                 local neighborChunk = retreatNeighbors[i]
                 if (neighborChunk ~= nil) then
                     retreatPosition.x = neighborChunk.pX

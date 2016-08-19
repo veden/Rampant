@@ -57,18 +57,18 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
         if group.valid and ((squadStatus == SQUAD_RAIDING) or (squadStatus == SQUAD_SUICIDE_RAID)) then
             if ((group.state == group_states.finished) or (group.state == group_states.gathering) or (group.state == group_states.moving)) and (squad.cycles == 0) then
                 local cX, cY
-                -- if (squad.cX == nil) then
+                if (squad.cX == nil) then
                     cX, cY = positionToChunk(group.position)
-                -- else
-                    -- cX = squad.cX
-                    -- cY = squad.cY
-                -- end
+                else
+                    cX = squad.cX
+                    cY = squad.cY
+                end
                 getNeighborChunks(regionMap, cX, cY, attackLocationNeighbors)
                 local attackChunk
                 local attackScore = -MAGIC_MAXIMUM_NUMBER
                 local attackDirection            
                 -- print("------")
-                for x=1, 8 do
+                for x=1, #attackLocationNeighbors do
                     local neighborChunk = attackLocationNeighbors[x]
                     if (neighborChunk ~= nil) then
                         attackPosition.x = neighborChunk.pX

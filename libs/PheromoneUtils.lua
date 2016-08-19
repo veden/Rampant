@@ -75,7 +75,7 @@ function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, nei
         local persistence
         if (x == DEATH_PHEROMONE) then
             diffusionAmount = DEATH_PHEROMONE_DIFFUSION_AMOUNT
-            persistence = 0.98
+            persistence = 0.99
         else
             diffusionAmount = STANDARD_PHERONOME_DIFFUSION_AMOUNT
             persistence = 0.95

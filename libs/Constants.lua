@@ -6,6 +6,17 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 -- constants.MAX_PHEROMONE = 20000
 constants.RETREAT_LEVEL_DEATH_PHEROMONE = 15000
 
+-- ai
+
+constants.AI_POINT_GENERATOR_AMOUNT = 10
+constants.AI_SCOUT_COST = 45
+constants.AI_SQUAD_COST = 150
+constants.AI_SETTLER_COST = 75
+constants.AI_BASE_BUILDING_COST = 500
+
+constants.AI_MAX_SQUAD_SIZE = 150
+constants.AI_MAX_SQUAD_COUNT = 30
+
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
@@ -16,15 +27,15 @@ constants.EAST_WEST = 2
 
 -- pheromone amounts
 
-constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 150
+constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 35
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 25
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 35
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 75
 
 -- pheromone diffusion amounts
 
 constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.03
-constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.00
+constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.00125
 
 -- chunk attributes
 
@@ -33,14 +44,14 @@ constants.ENEMY_BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
 constants.PLAYER_BASE_PHEROMONE = 4
 constants.PLAYER_DEFENSE_PHEROMONE = 5
--- constants.MOVEMENT_PHEROMONE = 6
+constants.MOVEMENT_PHEROMONE = 6
 
-constants.ENEMY_BASE_GENERATOR = 6
-constants.PLAYER_BASE_GENERATOR = 7
-constants.PLAYER_DEFENSE_GENERATOR = 8
+constants.ENEMY_BASE_GENERATOR = 7
+constants.PLAYER_BASE_GENERATOR = 8
+constants.PLAYER_DEFENSE_GENERATOR = 9
 
-constants.NORTH_SOUTH_PASSABLE = 9
-constants.EAST_WEST_PASSABLE = 10
+constants.NORTH_SOUTH_PASSABLE = 10
+constants.EAST_WEST_PASSABLE = 11
 
 -- Squad status
 
