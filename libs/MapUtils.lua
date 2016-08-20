@@ -1,9 +1,31 @@
 local mapUtils = {}
 
+-- imports
+
 local constants = require("Constants")
 
+-- constants
+
+local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
+local DEFENSE_PHEROMONES = constants.DEFENSE_PHEROMONES
+
+local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
+local PLAYER_DEFENSE_GENERATOR = constants.PLAYER_DEFENSE_GENERATOR
+local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+
+local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+
+local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
+local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+
+local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
+-- imported functions
+
 local mFloor = math.floor
-local mAbs = math.abs
+
+-- module code
 
 function mapUtils.getChunkByPosition(regionMap, x, y)
     local cX = mFloor(x * 0.03125)
@@ -27,9 +49,6 @@ function mapUtils.positionToChunkOffset(position)
 end
 
 function mapUtils.getEntityOverlapChunks(regionMap, entity)
-    local mathFloor = mFloor
-    local mathAbs = mAbs
-    
     local boundingBox = entity.prototype.selection_box;
     
     local leftTopChunk
@@ -57,16 +76,16 @@ function mapUtils.getEntityOverlapChunks(regionMap, entity)
             bottomYOffset = boundingBox.right_bottom.y
         end
         
-        local leftTopChunkX = mathFloor((center.x + topXOffset) * 0.03125)
-        local leftTopChunkY = mathFloor((center.y + topYOffset) * 0.03125)
+        local leftTopChunkX = mFloor((center.x + topXOffset) * 0.03125)
+        local leftTopChunkY = mFloor((center.y + topYOffset) * 0.03125)
         
         -- used to force things on chunk boundary to not spill over 0.0001
-        local rightTopChunkX = mathFloor((center.x + bottomXOffset - 0.0001) * 0.03125)
+        local rightTopChunkX = mFloor((center.x + bottomXOffset - 0.0001) * 0.03125)
         local rightTopChunkY = leftTopChunkY
         
         -- used to force things on chunk boundary to not spill over 0.0001
         local leftBottomChunkX = leftTopChunkX
-        local leftBottomChunkY = mathFloor((center.y + bottomYOffset - 0.0001) * 0.03125)
+        local leftBottomChunkY = mFloor((center.y + bottomYOffset - 0.0001) * 0.03125)
             
         local rightBottomChunkX = rightTopChunkX 
         local rightBottomChunkY = leftBottomChunkY
@@ -89,21 +108,21 @@ function mapUtils.addRemoveObject(regionMap, entity, natives, addObject)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     local pheromoneType
-    if (constants.buildingPheromones[entity.type] ~= nil) then
-        entityValue = constants.buildingPheromones[entity.type]
-        pheromoneType = constants.PLAYER_BASE_GENERATOR
-    elseif (constants.defensePheromones[entity.type] ~= nil) then
-        entityValue = constants.defensePheromones[entity.type]
-        pheromoneType = constants.PLAYER_DEFENSE_GENERATOR
+    if (BUILDING_PHEROMONES[entity.type] ~= nil) then
+        entityValue = BUILDING_PHEROMONES[entity.type]
+        pheromoneType = PLAYER_BASE_GENERATOR
+    elseif (DEFENSE_PHEROMONES[entity.type] ~= nil) then
+        entityValue = DEFENSE_PHEROMONES[entity.type]
+        pheromoneType = PLAYER_DEFENSE_GENERATOR
     elseif (entity.type == "unit-spawner") and (entity.force.name == "enemy") then
-        entityValue = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-        pheromoneType = constants.ENEMY_BASE_GENERATOR
+        entityValue = ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+        pheromoneType = ENEMY_BASE_GENERATOR
     end
     if (entityValue ~= nil) then
         leftTop, rightTop, leftBottom, rightBottom = mapUtils.getEntityOverlapChunks(regionMap, entity)
         if not addObject then
             entityValue = -entityValue
-        elseif (pheromoneType ~= constants.ENEMY_BASE_GENERATOR) then
+        elseif (pheromoneType ~= ENEMY_BASE_GENERATOR) then
             natives.points = natives.points + entityValue
         end
         if (leftTop ~= nil) then
@@ -128,12 +147,17 @@ end
      /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
+function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)   
+    local neighbors = {1,2,3,4,5,6,7,8}
     local xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
         neighbors[1] = xChunks[chunkY-1]
         neighbors[4] = xChunks[chunkY]
         neighbors[6] = xChunks[chunkY+1]
+    else
+        neighbors[1] = nil
+        neighbors[4] = nil
+        neighbors[6] = nil
     end
     
     xChunks = regionMap[chunkX+1]
@@ -141,13 +165,21 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)
         neighbors[3] = xChunks[chunkY-1]
         neighbors[5] = xChunks[chunkY]
         neighbors[8] = xChunks[chunkY+1]
+    else
+        neighbors[3] = nil
+        neighbors[5] = nil
+        neighbors[8] = nil
     end
     
     xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
         neighbors[2] = xChunks[chunkY-1]
         neighbors[7] = xChunks[chunkY+1]
+    else
+        neighbors[2] = nil
+        neighbors[7] = nil
     end
+    return neighbors
 end
 
 --[[
@@ -157,24 +189,109 @@ end
       |
       4 
 ]]--
-function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY, neighbors)   
+function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)   
+    local neighbors = {1,2,3,4}
     local xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
         neighbors[1] = xChunks[chunkY-1]
         neighbors[4] = xChunks[chunkY+1]
+    else
+        neighbors[1] = nil
+        neighbors[4] = nil
     end
     
     xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
         neighbors[2] = xChunks[chunkY]
+    else
+        neighbors[2] = nil
     end
     
     xChunks = regionMap[chunkX+1]
     if (xChunks ~= nil) then
         neighbors[3] = xChunks[chunkY]
+    else
+        neighbors[3] = nil
     end
     
+    return neighbors
+end
 
+function mapUtils.euclideanDistanceNamed(p1, p2)
+    local xs = p1.x - p2.x
+    local ys = p1.y - p2.y
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+function mapUtils.euclideanDistanceArray(p1, p2)
+    local xs = p1[1] - p2[1]
+    local ys = p1[2] - p2[2]
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+--[[
+      1
+      |
+    2- -3
+      |
+      4 
+]]--
+function mapUtils.canMoveChunkDirectionCardinal(direction, startChunk, endChunk)
+    local canMove = false
+    if ((direction == 1) or (direction == 4)) and startChunk[NORTH_SOUTH_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] then
+        canMove = true
+    elseif ((direction == 2) or (direction == 3)) and startChunk[EAST_WEST_PASSABLE] and endChunk[EAST_WEST_PASSABLE] then
+        canMove = true
+    end
+    return canMove
+end
+
+function mapUtils.positionDirectionToChunkCornerCardinal(direction, chunk)
+    local position = {x=0,y=0}
+    if (direction == 1) then
+        position.x = chunk.pX + HALF_CHUNK_SIZE
+        position.y = chunk.pY 
+    elseif (direction == 2) then
+        position.x = chunk.pX 
+        position.y = chunk.pY + HALF_CHUNK_SIZE
+    elseif (direction == 3) then
+        position.x = chunk.pX + CHUNK_SIZE
+        position.y = chunk.pY + HALF_CHUNK_SIZE
+    elseif (direction == 4) then
+        position.x = chunk.pX + HALF_CHUNK_SIZE
+        position.y = chunk.pY + CHUNK_SIZE
+    end
+    return position
+end
+
+function mapUtils.positionDirectionToChunkCorner(direction, chunk)
+    local position = {x=0, y=0}
+    if (direction == 1) then
+        position.x = chunk.pX  
+        position.y = chunk.pY 
+    elseif (direction == 2) then
+        position.x = chunk.pX + HALF_CHUNK_SIZE
+        position.y = chunk.pY 
+    elseif (direction == 3) then
+        position.x = chunk.pX + CHUNK_SIZE
+        position.y = chunk.pY
+    elseif (direction == 4) then
+        position.x = chunk.pX
+        position.y = chunk.pY + HALF_CHUNK_SIZE
+    elseif (direction == 5) then
+        position.x = chunk.pX + CHUNK_SIZE
+        position.y = chunk.pY + HALF_CHUNK_SIZE
+    elseif (direction == 6) then
+        position.x = chunk.pX 
+        position.y = chunk.pY + CHUNK_SIZE
+    elseif (direction == 7) then
+        position.x = chunk.pX + HALF_CHUNK_SIZE
+        position.y = chunk.pY + CHUNK_SIZE
+    elseif (direction == 8) then
+        position.x = chunk.pX + CHUNK_SIZE
+        position.y = chunk.pY + CHUNK_SIZE
+    end
+    return position
 end
 
 return mapUtils

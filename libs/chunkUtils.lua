@@ -1,20 +1,39 @@
 local chunkUtils = {}
 
+-- imports
+
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 
--- optimize table creation and referencing
-local areaBoundingBox = {{1,2},
-                         {3,4}}
-local enemyChunkQuery = {area=areaBoundingBox,
-                         type="unit-spawner",
-                         force="enemy"}
-local playerChunkQuery = {area=areaBoundingBox,
-                          force="player"}
+-- constants
 
+local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
+local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
+local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
+local PLAYER_BASE_PHEROMONE = constants.PLAYER_BASE_PHEROMONE
+local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
+local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
+local DEFENSE_PHEROMONES = constants.DEFENSE_PHEROMONES
+local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
+
+local PLAYER_DEFENSE_GENERATOR = constants.PLAYER_DEFENSE_GENERATOR
+local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
+
+local NORTH_SOUTH = constants.NORTH_SOUTH
+local EAST_WEST = constants.EAST_WEST
+
+local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
+local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+
+-- module code
+                          
 function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, chunkSize, surface)
-    local NORTH_SOUTH = constants.NORTH_SOUTH
     local get_tile = surface.get_tile
     
     local deadEnd = false
@@ -36,13 +55,7 @@ function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate
     return deadEnd
 end
 
-function chunkUtils.checkChunkPassability(chunk, surface, natives)
-    local checkForDeadendTiles = chunkUtils.checkForDeadendTiles
-    local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
-    local NORTH_SOUTH = constants.NORTH_SOUTH
-    local EAST_WEST = constants.EAST_WEST
-    local CHUNK_SIZE = constants.CHUNK_SIZE
-    
+function chunkUtils.checkChunkPassability(chunk, surface, natives)   
     local x = chunk.pX
     local y = chunk.pY
     
@@ -50,14 +63,14 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
     local passableEastWest = false
     local xi = x
     while not passableNorthSouth and (xi < x + CHUNK_SIZE) do
-        if (not checkForDeadendTiles(xi, y, NORTH_SOUTH, CHUNK_SIZE, surface)) then
+        if (not chunkUtils.checkForDeadendTiles(xi, y, NORTH_SOUTH, CHUNK_SIZE, surface)) then
             passableNorthSouth = true
         end
         xi = xi + 1
     end
     local yi = y
     while not passableEastWest and (yi < y + CHUNK_SIZE) do
-        if (not checkForDeadendTiles(yi, x, EAST_WEST, CHUNK_SIZE, surface)) then
+        if (not chunkUtils.checkForDeadendTiles(yi, x, EAST_WEST, CHUNK_SIZE, surface)) then
             passableEastWest = true
         end
         yi = yi + 1
@@ -73,54 +86,54 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
     -- end
     
     if passableEastWest then
-        chunk[constants.EAST_WEST_PASSABLE] = true
+        chunk[EAST_WEST_PASSABLE] = true
     else
-        chunk[constants.EAST_WEST_PASSABLE] = false
+        chunk[EAST_WEST_PASSABLE] = false
     end
     if passableNorthSouth then
-        chunk[constants.NORTH_SOUTH_PASSABLE] = true
+        chunk[NORTH_SOUTH_PASSABLE] = true
     else
-        chunk[constants.NORTH_SOUTH_PASSABLE] = false
+        chunk[NORTH_SOUTH_PASSABLE] = false
     end
 end
 
-function chunkUtils.scoreChunk(chunk, surface, natives)
-    local PLAYER_DEFENSE_PHEROMONES = constants.defensePheromones
-    local PLAYER_BASE_PHEROMONES = constants.buildingPheromones
-    
+function chunkUtils.scoreChunk(chunk, surface, natives)   
     local x = chunk.pX
     local y = chunk.pY
-
-    areaBoundingBox[1][1] = x
-    areaBoundingBox[1][2] = y
-    areaBoundingBox[2][1] = x+constants.CHUNK_SIZE
-    areaBoundingBox[2][2] = y+constants.CHUNK_SIZE
+    
+    local areaBoundingBox = {{x, y},
+                             {x + CHUNK_SIZE, y + CHUNK_SIZE}}
+    local enemyChunkQuery = {area=areaBoundingBox,
+                             type="unit-spawner",
+                             force="enemy"}
+    local playerChunkQuery = {area=areaBoundingBox,
+                              force="player"}
                    
     local entities = surface.count_entities_filtered(enemyChunkQuery)
     local spawners = 0
     local playerObjects = 0
     local playerDefenses = 0
     
-    spawners = entities * constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+    spawners = entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
                    
     entities = surface.find_entities_filtered(playerChunkQuery)
     
     for i=1, #entities do
         local entityType = entities[i].type
         
-        local entityScore = PLAYER_DEFENSE_PHEROMONES[entityType]
+        local entityScore = DEFENSE_PHEROMONES[entityType]
         if (entityScore ~= nil) then
             playerDefenses = playerDefenses + entityScore
         end
-        entityScore = PLAYER_BASE_PHEROMONES[entityType]
+        entityScore = BUILDING_PHEROMONES[entityType]
         if (entityScore ~= nil) then
             playerObjects = playerObjects + entityScore
         end
     end
     
-    chunk[constants.PLAYER_BASE_GENERATOR] = playerObjects
-    chunk[constants.PLAYER_DEFENSE_GENERATOR] = playerDefenses
-    chunk[constants.ENEMY_BASE_GENERATOR] = spawners
+    chunk[PLAYER_BASE_GENERATOR] = playerObjects
+    chunk[PLAYER_DEFENSE_GENERATOR] = playerDefenses
+    chunk[ENEMY_BASE_GENERATOR] = spawners
 end
 
 function chunkUtils.createChunk(topX, topY)
@@ -130,17 +143,16 @@ function chunkUtils.createChunk(topX, topY)
                     cX = topX * 0.03125,
                     cY = topY * 0.03125
                   }
-    chunk[constants.DEATH_PHEROMONE] = 0
-    chunk[constants.ENEMY_BASE_PHEROMONE] = 0
-    chunk[constants.PLAYER_PHEROMONE] = 0
-    chunk[constants.PLAYER_BASE_PHEROMONE] = 0
-    chunk[constants.PLAYER_DEFENSE_PHEROMONE] = 0
+    chunk[DEATH_PHEROMONE] = 0
+    chunk[ENEMY_BASE_PHEROMONE] = 0
+    chunk[PLAYER_PHEROMONE] = 0
+    chunk[PLAYER_BASE_PHEROMONE] = 0
+    chunk[PLAYER_DEFENSE_PHEROMONE] = 0
+    chunk[MOVEMENT_PHEROMONE] = 0
     return chunk
 end
 
 function chunkUtils.colorChunk(x, y, tileType, surface)
-    local CHUNK_SIZE = constants.CHUNK_SIZE
-    
     local tiles = {}
     for xi=x+5, x + CHUNK_SIZE-5 do
         for yi=y+5, y + CHUNK_SIZE-5 do

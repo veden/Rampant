@@ -1,60 +1,74 @@
 local pheromoneUtils = {}
 
+-- imports
+
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
-local mMin = math.min
+
+-- constants
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
+local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
+local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
+local PLAYER_BASE_PHEROMONE = constants.PLAYER_BASE_PHEROMONE
+local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
+local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
+
+local PLAYER_DEFENSE_GENERATOR = constants.PLAYER_DEFENSE_GENERATOR
+local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
+
+local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
+
+local STANDARD_PHERONOME_DIFFUSION_AMOUNT = constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT
+local DEATH_PHEROMONE_DIFFUSION_AMOUNT = constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT
+
+-- imported functions
+
+local getChunkByPosition = mapUtils.getChunkByPosition
+
 local mFloor = math.floor
 
-local nearestEnemyPosition = {x=1,y=2}
-local nearestTable = {position=nearestEnemyPosition,
-                      max_distance=constants.CHUNK_SIZE,
-                      force="enemy"}
+-- module code
+                      
+function pheromoneUtils.deathScent(regionMap, surface, x, y, squad, amount)
 
-function pheromoneUtils.deathScent(regionMap, surface, x, y, amount)
-    
-    nearestEnemyPosition.x = x
-    nearestEnemyPosition.y = y
-    local playerKiller = surface.find_nearest_enemy(nearestTable)
-    if (playerKiller ~= nil) then
-        local chunk = mapUtils.getChunkByPosition(regionMap, x, y)
+    if (squad ~= nil) and (squad.cX ~= nil) then
+        local chunk = getChunkByPosition(regionMap, x, y)
         if (chunk ~= nil) then
-            chunk[constants.DEATH_PHEROMONE] = chunk[constants.DEATH_PHEROMONE] + amount
+            chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + (amount * 5)
         end
     end
     
-    local chunk = mapUtils.getChunkByPosition(regionMap, x, y)
+    local chunk = getChunkByPosition(regionMap, x, y)
     if (chunk ~= nil) then
-        chunk[constants.DEATH_PHEROMONE] = chunk[constants.DEATH_PHEROMONE] + amount
+        chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + amount
     end
 end
 
-function pheromoneUtils.playerDefenseScent(regionMap, surface, natives, chunk, neighbors)    
-    local baseScore = chunk[constants.PLAYER_DEFENSE_GENERATOR]
+function pheromoneUtils.playerDefenseScent(regionMap, surface, natives, chunk, neighbors, evolution_factor)    
+    local baseScore = chunk[PLAYER_DEFENSE_GENERATOR]
     if (baseScore > 0) then
-        chunk[constants.PLAYER_DEFENSE_PHEROMONE] = chunk[constants.PLAYER_DEFENSE_PHEROMONE] + baseScore
+        chunk[PLAYER_DEFENSE_PHEROMONE] = chunk[PLAYER_DEFENSE_PHEROMONE] + baseScore
     end
 end
 
-function pheromoneUtils.playerBaseScent(regionMap, surface, natives, chunk, neighbors)
-    local baseScore = chunk[constants.PLAYER_BASE_GENERATOR]
+function pheromoneUtils.playerBaseScent(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+    local baseScore = chunk[PLAYER_BASE_GENERATOR]
     if (baseScore > 0) then
-        chunk[constants.PLAYER_BASE_PHEROMONE] = chunk[constants.PLAYER_BASE_PHEROMONE] + (baseScore * 2)
+        chunk[PLAYER_BASE_PHEROMONE] = chunk[PLAYER_BASE_PHEROMONE] + baseScore
     end
 end
 
-function pheromoneUtils.enemyBaseScent(regionMap, surface, natives, chunk, neighbors)
-    local spawners = chunk[constants.ENEMY_BASE_GENERATOR]
+function pheromoneUtils.enemyBaseScent(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+    local spawners = chunk[ENEMY_BASE_GENERATOR]
     if (spawners > 0) then
-        chunk[constants.ENEMY_BASE_PHEROMONE] = chunk[constants.ENEMY_BASE_PHEROMONE] + spawners
+        chunk[ENEMY_BASE_PHEROMONE] = chunk[ENEMY_BASE_PHEROMONE] + spawners
     end
 end
 
 function pheromoneUtils.playerScent(regionMap, players)
-    local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
-    local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-    local getChunkByPosition = mapUtils.getChunkByPosition
-    local mathFloor = mFloor
-    
     for i=1, #players do
         local playerPosition = players[i].position
         local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
@@ -64,13 +78,8 @@ function pheromoneUtils.playerScent(regionMap, players)
     end
 end
 
-function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, neighbors)   
-    local STANDARD_PHERONOME_DIFFUSION_AMOUNT = constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT
-    local DEATH_PHEROMONE_DIFFUSION_AMOUNT = constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT
-    local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
-    -- local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
-
-    for x=1,5 do
+function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+    for x=1,6 do
         local diffusionAmount
         local persistence
         if (x == DEATH_PHEROMONE) then

@@ -2,14 +2,6 @@ local tests = {}
 
 local constants = require("libs/Constants")
 
-local regionMap
-local natives
-
-function tests.initTester() 
-    regionMap = global.regionMap
-    natives = global.natives
-end
-
 function tests.test1() 
     local player = game.players[1]
     local playerChunkX = math.floor(player.position.x / 32)
@@ -19,8 +11,8 @@ function tests.test1()
     print("--")
     for x=playerChunkX-3, playerChunkX+3 do
         for y=playerChunkY-3, playerChunkY+3 do
-            if (regionMap[x] ~= nil) then
-                local chunk = regionMap[x][y]
+            if (global.regionMap[x] ~= nil) then
+                local chunk = global.regionMap[x][y]
                 if (chunk ~= nil) then
                     print(serpent.dump(chunk))
                 end
@@ -30,10 +22,12 @@ function tests.test1()
 end
 
 function tests.test2()
-    for i=1, #natives.squads do
-        local squad = natives.squads[i]
+    print("--")
+    for i=1, #global.natives.squads do
+        local squad = global.natives.squads[i]
         if squad.group.valid then
             print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state)
+            print(serpent.dump(squad))
         end
     end
 end
@@ -56,8 +50,8 @@ function tests.test4()
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     local entity = game.surfaces[1].find_nearest_enemy({position={chunkX, chunkY},
-                                                          max_distance=constants.CHUNK_SIZE,
-                                                          force = "enemy"})
+                                                        max_distance=constants.CHUNK_SIZE,
+                                                        force = "enemy"})
     if (entity ~= nil) then
         print(entity.name)
     end
@@ -65,7 +59,7 @@ function tests.test4()
 end
 
 function tests.test5()
-    print(natives.points)
+    print(global.natives.points)
 end
 
 return tests

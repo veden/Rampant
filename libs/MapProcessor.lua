@@ -1,41 +1,46 @@
 local mapProcessor = {}
 
+-- imports
+
 local mapUtils = require("MapUtils")
 
+-- imported functions
+
+local getCardinalChunks = mapUtils.getCardinalChunks
+
 local mRandom = math.random
-local neighborsArray = {1,2,3,4,5,6,7,8}
-local cardinalArray = {1,2,3,4}
+
+-- premade tables 
+
 local processors = {}
 local processorsProbabilityLow = {}
 local processorsProbabilityHigh = {}
 
-function mapProcessor.processMap(regionMap, surface, natives)
-    local getNeighborChunks = mapUtils.getCardinalChunks
-    local mathRandom = mRandom
-    
-    local neighbors = cardinalArray    
+-- module code
+
+function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
     local count = 0
     
-    local roll = mathRandom()
-    print("--")
-    print(roll)
-    print("--")
-    for _,ys in pairs(regionMap) do
-        for _,chunk in pairs(ys) do
-        
-            getNeighborChunks(regionMap, chunk.cX, chunk.cY, neighbors)
-            -- validNeighbors flag if the processor retrieved the neighbors of the chunk then true
-            for i=1, #processors do
-                if (processorsProbabilityLow[i] <= roll) and (roll <= processorsProbabilityHigh[i]) then
-                    validNeighbors = processors[i](regionMap, surface, natives, chunk, neighbors)
-                end
-            end
-            
-            count = count + 1
-            if (count % 1000 == 0) then
-                coroutine.yield()
+    if (regionMap.pP == 1) then
+        regionMap.pR = mRandom()
+    end
+    
+    local roll = regionMap.pR
+    
+    local chunkQueue = regionMap.pQ[regionMap.pP]
+    for x=1, #chunkQueue do
+        local chunk = chunkQueue[x]
+        local cardinalArray = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
+        for i=1, #processors do
+            if (processorsProbabilityLow[i] <= roll) and (roll <= processorsProbabilityHigh[i]) then
+                processors[i](regionMap, surface, natives, chunk, cardinalArray, evolution_factor)
             end
         end
+    end
+    
+    regionMap.pP = regionMap.pP + 1
+    if (regionMap.pP > regionMap.pI) then
+        regionMap.pP = 1
     end
 end
 

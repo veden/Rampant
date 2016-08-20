@@ -1,14 +1,33 @@
 local chunkProcessor = {}
 
+-- imports
+
 local chunkUtils = require("ChunkUtils")
+local constants = require("Constants")
+
+-- constants
+
+local CHUNK_MAX_QUEUE_SIZE = constants.CHUNK_MAX_QUEUE_SIZE
+
+-- imported functions
+
+local createChunk = chunkUtils.createChunk
+
+-- premade tables
 
 local processors = {}
 
+-- module code
+
 function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendingStack)
-    local createChunk = chunkUtils.createChunk
+    local processAll = false
+    
+    if (#pendingStack > 100) then
+        processAll = true
+    end
     
     local count = 0
-    while (#pendingStack > 0) do
+    for i=#pendingStack, 1, -1 do
         local event = pendingStack[#pendingStack]
         pendingStack[#pendingStack] = nil
 
@@ -25,10 +44,19 @@ function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendin
         for i=1, #processors do
             processors[i](chunk, surface, natives)
         end
-
+        
+        local processQueue = regionMap.pQ[regionMap.pI]
+        if (#processQueue == CHUNK_MAX_QUEUE_SIZE) then
+            regionMap.pI = regionMap.pI + 1
+            regionMap.pQ[regionMap.pI] = {}
+            processQueue = regionMap.pQ[regionMap.pI]
+        end
+        
+        processQueue[#processQueue+1] = chunk
+        
         count = count + 1
-        if (count % 5 == 0) and (#pendingStack < 20) then
-            coroutine.yield()
+        if (count == 5) and not processAll then
+            break
         end
     end
 end

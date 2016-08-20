@@ -4,7 +4,9 @@ local constants = {}
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest score
 -- constants.MAX_PHEROMONE = 20000
-constants.RETREAT_LEVEL_DEATH_PHEROMONE = 15000
+constants.RETREAT_DEATH_PHEROMONE_LEVEL = 12000
+
+constants.CHUNK_MAX_QUEUE_SIZE = 1000
 
 -- ai
 
@@ -14,7 +16,7 @@ constants.AI_SQUAD_COST = 150
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
 
-constants.AI_MAX_SQUAD_SIZE = 150
+constants.AI_MAX_SQUAD_SIZE = 120
 constants.AI_MAX_SQUAD_COUNT = 30
 
 -- chunk properties
@@ -27,10 +29,11 @@ constants.EAST_WEST = 2
 
 -- pheromone amounts
 
+constants.MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 35
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 35
-constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 75
+constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 -- pheromone diffusion amounts
 
@@ -68,33 +71,33 @@ constants.SQUAD_SUICIDE_RAID = 9 -- when player stuff is close with no retreat
 
 -- player building pheromones
 
-constants.buildingPheromones = {}
+constants.BUILDING_PHEROMONES = {}
 -- constants.buildingPheromones["container"] = 1
 -- constants.buildingPheromones["storage-tank"] = 1
-constants.buildingPheromones["generator"] = 30
-constants.buildingPheromones["pump"] = 4
-constants.buildingPheromones["offshore-pump"] = 4
+constants.BUILDING_PHEROMONES["generator"] = 60
+constants.BUILDING_PHEROMONES["pump"] = 8
+constants.BUILDING_PHEROMONES["offshore-pump"] = 8
 -- constants.buildingPheromones["constant-combinator"] = 1
 -- constants.buildingPheromones["train-stop"] = 2
 -- constants.buildingPheromones["rail-signal"] = 1
-constants.buildingPheromones["electric-pole"] = 2
-constants.buildingPheromones["transport-belt"] = 2
-constants.buildingPheromones["accumulator"] = 20
-constants.buildingPheromones["solar-panel"] = 16
-constants.buildingPheromones["boiler"] = 30
-constants.buildingPheromones["assembling-machine"] = 24
-constants.buildingPheromones["roboport"] = 20
-constants.buildingPheromones["beacon"] = 20
-constants.buildingPheromones["furnace"] = 30
-constants.buildingPheromones["mining-drill"] = 40
+constants.BUILDING_PHEROMONES["electric-pole"] = 4
+constants.BUILDING_PHEROMONES["transport-belt"] = 4
+constants.BUILDING_PHEROMONES["accumulator"] = 40
+constants.BUILDING_PHEROMONES["solar-panel"] = 32
+constants.BUILDING_PHEROMONES["boiler"] = 60
+constants.BUILDING_PHEROMONES["assembling-machine"] = 48
+constants.BUILDING_PHEROMONES["roboport"] = 40
+constants.BUILDING_PHEROMONES["beacon"] = 40
+constants.BUILDING_PHEROMONES["furnace"] = 60
+constants.BUILDING_PHEROMONES["mining-drill"] = 80
 
 -- player defense pheromones
 
-constants.defensePheromones = {}
-constants.defensePheromones["ammo-turret"] = 5
-constants.defensePheromones["electric-turret"] = 7.5
-constants.defensePheromones["fluid-turret"] = 10
-constants.defensePheromones["turret"] = 3
+constants.DEFENSE_PHEROMONES = {}
+constants.DEFENSE_PHEROMONES["ammo-turret"] = 5
+constants.DEFENSE_PHEROMONES["electric-turret"] = 7.5
+constants.DEFENSE_PHEROMONES["fluid-turret"] = 10
+constants.DEFENSE_PHEROMONES["turret"] = 3
 
 -- enemy units
 
