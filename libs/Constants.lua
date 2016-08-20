@@ -6,7 +6,7 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 -- constants.MAX_PHEROMONE = 20000
 constants.RETREAT_DEATH_PHEROMONE_LEVEL = 12000
 
-constants.CHUNK_MAX_QUEUE_SIZE = 1000
+constants.CHUNK_MAX_QUEUE_SIZE = 400
 
 -- ai
 

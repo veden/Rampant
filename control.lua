@@ -12,7 +12,7 @@ local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
 local tests = require("Tests")
 
--- state
+-- global state references
 
 local regionMap -- chunk based map
 local pendingChunks -- pending chunks to be processed
@@ -79,12 +79,14 @@ function onInit()
     natives.scouts = {}
     natives.points = 0
     
+    game.forces.player.research_all_technologies()
+    
     -- queue all current chunks that wont be generated during play
     local surface = game.surfaces[1]
     for chunk in surface.get_chunks() do
         onChunkGenerated({ surface = surface, 
-                           area = {left_top = { x = chunk.x * 32,
-                                                y = chunk.y * 32 }}})
+                           area = { left_top = { x = chunk.x * 32,
+                                                 y = chunk.y * 32 }}})
     end
 end
 
@@ -93,7 +95,6 @@ function onLoad()
     regionMap = global.regionMap
     pendingChunks = global.pendingChunks
     natives = global.natives
-    -- commands = global.commands
 end
 
 function onChunkGenerated(event)
@@ -105,27 +106,32 @@ function onChunkGenerated(event)
 end
 
 function onTick(event)
-    if (event.tick % 40 == 0) then
+    if (event.tick % 20 == 0) then
         local surface = game.surfaces[1]
         
+        if (event.tick % 60 == 0) then
+            if not game.players[1].cheat_mode then
+                game.players[1].cheat_mode = true
+            end
+            
+            accumulatePoints(natives)
+            
+            -- put down player pheromone for player hunters
+            playerScent(regionMap, game.players)
+            
+            regroupSquads(natives)
+                    
+            scouting(regionMap, surface, natives)
+            
+            squadAttackPlayer(regionMap, surface, natives, game.players)
+            
+            squadBeginAttack(natives)
+            squadAttackLocation(regionMap, surface, natives)
+        end
         processPendingChunks(regionMap, surface, natives, pendingChunks)
         
-        accumulatePoints(natives)
-        
-        -- put down player pheromone for player hunters
-        playerScent(regionMap, game.players)
-        
-        regroupSquads(natives)
-                
-        scouting(regionMap, surface, natives)
-        
         processMap(regionMap, surface, natives, game.evolution_factor)
-        
-        squadAttackPlayer(regionMap, surface, natives, game.players)
-        
-        squadBeginAttack(natives)
-        squadAttackLocation(regionMap, surface, natives)
-    end    
+    end
 end
 
 function onBuild(event)
