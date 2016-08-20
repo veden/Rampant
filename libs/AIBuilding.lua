@@ -85,6 +85,9 @@ function aiBuilding.scouting(regionMap, surface, natives)
     -- if ()
 end
 
+function aiBuilding.digTunnel(regionMap, surface, natives)
+
+end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then

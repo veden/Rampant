@@ -109,7 +109,7 @@ function onTick(event)
     if (event.tick % 20 == 0) then
         local surface = game.surfaces[1]
         
-        if (event.tick % 60 == 0) then
+        if (event.tick % 40 == 0) then
             if not game.players[1].cheat_mode then
                 game.players[1].cheat_mode = true
             end

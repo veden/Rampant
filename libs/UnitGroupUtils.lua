@@ -149,6 +149,7 @@ function unitGroupUtils.regroupSquads(natives)
             if (squad.status == SQUAD_RETREATING) and ((squad.cycles == 0) or (squad.group.state == GROUP_STATE_FINISHED)) then
                 squad.status = SQUAD_GUARDING
                 squad.cycles = 0
+                -- print("reseting squad status")
             elseif (squad.cycles > 0) then
                 squad.cycles = squad.cycles - 1
             end

@@ -18,6 +18,10 @@ local processorsProbabilityHigh = {}
 
 -- module code
 
+-- processing is not consistant as it depends on the number of chunks that have been generated
+-- so 200 chunks is processed 3 times a second and 1200 chunks is processed once a second
+-- In theory, this might be fine as smaller bases have less surface to attack and need to have 
+-- pheromone dissipate at a faster rate.
 function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
     local count = 0
     

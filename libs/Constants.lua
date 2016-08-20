@@ -15,6 +15,7 @@ constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 150
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
+constants.AI_TUNNEL_COST = 100
 
 constants.AI_MAX_SQUAD_SIZE = 120
 constants.AI_MAX_SQUAD_COUNT = 30
