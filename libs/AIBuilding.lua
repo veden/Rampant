@@ -91,7 +91,7 @@ end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then
-        local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE]
+        local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
         if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (mRandom() < 0.03) then
             local squadNeighbors = getNeighborChunks(regionMap, 
                                                      chunk.cX, 
@@ -102,12 +102,12 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, ev
             local squadPosition = {x = 0, y = 0}
             for i=1, #squadNeighbors do
                 local neighborChunk = squadNeighbors[i]
-                if (neighborChunk ~= nil) then
+                if (neighborChunk ~= nil) and (neighborChunk[ENEMY_BASE_GENERATOR] == 0) then
                     squadPosition.x = neighborChunk.pX
                     squadPosition.y = neighborChunk.pY
                     if (neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]) then
                         local attackScore = surface.get_pollution(squadPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
-                        local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] - (neighborChunk[ENEMY_BASE_GENERATOR] * 5) - neighborChunk[DEATH_PHEROMONE]
+                        local avoidScore = neighborChunk[DEATH_PHEROMONE] -- + neighborChunk[ENEMY_BASE_PHEROMONE]
                         local score = attackScore - avoidScore
                         if (squadScore < attackScore) then
                             squadScore = attackScore
@@ -118,7 +118,7 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, ev
                 end
             end
             
-            if (squadPath ~= nil) then
+            if (squadPath ~= nil) and (squadScore > 0) then
                 squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
                 squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
                 

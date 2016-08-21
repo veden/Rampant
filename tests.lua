@@ -62,4 +62,29 @@ function tests.test5()
     print(global.natives.points)
 end
 
+function tests.test6()
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    game.surfaces[1].set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
+                                {name="fillableDirt", position={chunkX, chunkY-1}},
+                                {name="fillableDirt", position={chunkX-1, chunkY}},
+                                {name="fillableDirt", position={chunkX, chunkY}}}, 
+                               false)
+end
+
+function tests.test7()
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    game.surfaces[1].create_entity({name="tunnel-entrance", position={chunkX, chunkY}})
+end
+
+function tests.test8(x)
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    game.surfaces[1].create_entity({name=x, force="enemy", position={chunkX, chunkY}})
+end
+
 return tests

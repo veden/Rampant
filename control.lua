@@ -77,6 +77,7 @@ function onInit()
     natives = global.natives
     natives.squads = {}
     natives.scouts = {}
+    natives.tunnels = {}
     natives.points = 0
     
     game.forces.player.research_all_technologies()
@@ -172,10 +173,16 @@ function onDeath(event)
     end
 end
 
+function onPutItem(event)
+    print(serpent.dump(event))
+end
+
 -- hooks
 
 script.on_init(onInit)
 script.on_load(onLoad)
+
+script.on_event(defines.events.on_player_built_tile, onPutItem)
 
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
@@ -193,5 +200,8 @@ remote.add_interface("rampant", {
                                     test2 = tests.test2,
                                     test3 = tests.test3,
                                     test4 = tests.test4,
-                                    test5 = tests.test5
+                                    test5 = tests.test5,
+                                    test6 = tests.test6,
+                                    test7 = tests.test7,
+                                    test8 = tests.test8
                                 })

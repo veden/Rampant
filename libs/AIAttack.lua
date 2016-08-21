@@ -77,7 +77,7 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
                         attackPosition.y = neighborChunk.pY
                         local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
                         local damageScore = surface.get_pollution(attackPosition) + neighborChunk[PLAYER_BASE_PHEROMONE] + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_GENERATOR]
-                        local avoidScore = neighborChunk[DEATH_PHEROMONE] --+ neighborChunk[ENEMY_BASE_GENERATOR] + neighborChunk[ENEMY_BASE_PHEROMONE]
+                        local avoidScore = neighborChunk[DEATH_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 2) --+ (neighborChunk[ENEMY_BASE_PHEROMONE] * 0.5)
                         local score = damageScore - avoidScore - squadMovementPenalty
                         if (score > attackScore) then
                             attackScore = score

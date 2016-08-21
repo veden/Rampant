@@ -1,6 +1,11 @@
 # Rampant
 Factorio Mod - Uses potential fields to improve the enemy AI
 
+# Recommend Map Settings
+
+Enemy Bases Frequeny:Very Low, Size:Very Big
+Everything else is open to what ever you like
+
 # Features
 
 Tactical Retreats
