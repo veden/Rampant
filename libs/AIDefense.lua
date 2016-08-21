@@ -47,7 +47,7 @@ local retreatFilter = {[SQUAD_RETREATING] = true}
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then -- TODO sliding scale of death based on evolution
+    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
         local performRetreat = false
         local enemiesToSquad
     
@@ -93,10 +93,6 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             -- retreatPosition.x = exitPath.pX + constants.HALF_CHUNK_SIZE
             -- retreatPosition.y = exitPath.pY + constants.HALF_CHUNK_SIZE
 
-            if (squad ~= nil) and (squad.cX ~= nil) then
-                local chunk = getChunkByIndex(regionMap, squad.cX, squad.cY)
-                chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
-            end
             
             local newSquad = findNearBySquad(natives, 
                                              retreatPosition,
@@ -112,6 +108,10 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                 membersToSquad(newSquad, enemiesToSquad, false, DISTRACTION_NONE)
             else
                 -- newSquad.penalties = squad.penalties
+                -- newSquad.lastCX = squad.cX
+                -- newSquad.lastCY = squad.cY
+                -- newSquad.lastDirection = squad.direction
+                -- newSquad.canTunnel = true
                 membersToSquad(newSquad, squad.group.members, true, DISTRACTION_NONE)
             end
         end

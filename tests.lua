@@ -14,7 +14,17 @@ function tests.test1()
             if (global.regionMap[x] ~= nil) then
                 local chunk = global.regionMap[x][y]
                 if (chunk ~= nil) then
-                    print(serpent.dump(chunk))
+                    local str = ""
+                    for i=1,#chunk do
+                        str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
+                    end
+                    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
+                        print("*", chunk.cX, chunk.cY, str)
+                    else
+                        print(chunk.cX, chunk.cY, str)
+                    end
+                    -- print(str)
+                    print("-")
                 end
             end
         end

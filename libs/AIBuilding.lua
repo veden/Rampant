@@ -8,6 +8,9 @@ local unitGroupUtils = require("UnitGroupUtils")
 
 -- constants
 
+local SQUAD_GUARDING = constants.SQUAD_GUARDING
+local SQUAD_BURROWING = constants.SQUAD_BURROWING
+
 local PLAYER_BASE_PHEROMONE = constants.PLAYER_BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
@@ -20,6 +23,7 @@ local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
 local AI_SCOUT_COST = constants.AI_SCOUT_COST
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_TUNNEL_COST = constants.AI_TUNNEL_COST
 
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_MAX_SQUAD_SIZE = constants.AI_MAX_SQUAD_SIZE
@@ -83,10 +87,6 @@ function aiBuilding.scouting(regionMap, surface, natives)
                                -- target=game.players[1].character})
                                
     -- if ()
-end
-
-function aiBuilding.digTunnel(regionMap, surface, natives)
-
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, evolution_factor)

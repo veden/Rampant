@@ -61,7 +61,7 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
         local group = squad.group
         if group.valid and ((squad.status == SQUAD_RAIDING) or (squad.status == SQUAD_SUICIDE_RAID)) then
             local groupState = group.state
-            if (groupState == GROUP_STATE_FINISHED) or (groupState == GROUP_STATE_GATHERING) or (groupState == GROUP_STATE_MOVING) then
+            if (groupState == GROUP_STATE_FINISHED) or (groupState == GROUP_STATE_GATHERING) or ((groupState == GROUP_STATE_MOVING) and (squad.cycles == 0)) then
                 local chunk = positionToChunk(regionMap, group.position.x, group.position.y)
                 addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
                 local attackLocationNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
@@ -77,7 +77,7 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
                         attackPosition.y = neighborChunk.pY
                         local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
                         local damageScore = surface.get_pollution(attackPosition) + neighborChunk[PLAYER_BASE_PHEROMONE] + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_GENERATOR]
-                        local avoidScore = neighborChunk[DEATH_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 2) --+ (neighborChunk[ENEMY_BASE_PHEROMONE] * 0.5)
+                        local avoidScore = neighborChunk[DEATH_PHEROMONE] + neighborChunk[ENEMY_BASE_PHEROMONE]
                         local score = damageScore - avoidScore - squadMovementPenalty
                         if (score > attackScore) then
                             attackScore = score
@@ -96,6 +96,8 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
                         attackPosition = positionDirectionToChunkCornerCardinal(attackDirection, attackChunk)
                         squad.cX = attackChunk.cX
                         squad.cY = attackChunk.cY
+                        squad.cycles = 2
+                        squad.direction = attackDirection
                         
                         group.set_command({type=COMMAND_ATTACK_AREA,
                                            destination=attackPosition,

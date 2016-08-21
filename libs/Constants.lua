@@ -2,15 +2,14 @@ local constants = {}
 
 -- misc
 
-constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest score
--- constants.MAX_PHEROMONE = 20000
-constants.RETREAT_DEATH_PHEROMONE_LEVEL = 12000
+constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
+constants.RETREAT_DEATH_PHEROMONE_LEVEL = 10000
 
 constants.CHUNK_MAX_QUEUE_SIZE = 400
 
 -- ai
 
-constants.AI_POINT_GENERATOR_AMOUNT = 10
+constants.AI_POINT_GENERATOR_AMOUNT = 5
 constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 150
 constants.AI_SETTLER_COST = 75
@@ -33,13 +32,16 @@ constants.EAST_WEST = 2
 constants.MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 35
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 35
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 100
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 -- pheromone diffusion amounts
 
 constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.03
-constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.00125
+constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.00250
+
+constants.DEATH_PHEROMONE_PERSISTANCE = 0.99
+constants.STANDARD_PHEROMONE_PERSISTANCE = 0.95
 
 -- chunk attributes
 
@@ -62,13 +64,13 @@ constants.EAST_WEST_PASSABLE = 11
 constants.SQUAD_RETREATING = 1 -- used during squad retreat
 constants.SQUAD_GUARDING = 2 -- used when squad is idle
 constants.SQUAD_ATTACKING = 3 -- used as an attack state to be transitioned into hunt, raid, siege, burrow
--- constants.SQUAD_SIEGE = 3 
 constants.SQUAD_HUNTING = 4 -- used when player is close to unit group
 constants.SQUAD_SUICIDE_HUNT = 5 -- used when player is close with no retreat
--- constants.SQUAD_BURROWING = 6 
--- constants.SQUAD_SCOUTING = 7
+constants.SQUAD_BURROWING = 6 
 constants.SQUAD_RAIDING = 8 -- used when player stuff is close
 constants.SQUAD_SUICIDE_RAID = 9 -- when player stuff is close with no retreat
+-- constants.SQUAD_SCOUTING = 7
+-- constants.SQUAD_SIEGE = 3 
 
 -- player building pheromones
 

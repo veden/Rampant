@@ -3,6 +3,8 @@ if RampantConfig == nil then
 end
 
 require("prototypes/buildings/tunnel")
+
 require("prototypes/tile/fillableDirt")
 
 require("prototypes/enemies/suicideBiters")
+require("prototypes/enemies/fireSpitters")

@@ -18,22 +18,6 @@ local regionMap -- chunk based map
 local pendingChunks -- pending chunks to be processed
 local natives -- units that are being commanded
 
--- initialization
-
-chunkProcessor.install(chunkUtils.checkChunkPassability)
-chunkProcessor.install(chunkUtils.scoreChunk)
-
-mapProcessor.install(pheromoneUtils.enemyBaseScent, 0, 1)
-mapProcessor.install(pheromoneUtils.playerDefenseScent, 0, 1)
-mapProcessor.install(pheromoneUtils.playerBaseScent, 0, 1)
-mapProcessor.install(aiBuilding.sendScouts, 0.05, 0.10)
-mapProcessor.install(aiBuilding.formSquads, 0.11, 0.25)
-mapProcessor.install(pheromoneUtils.processPheromone, 0, 1)
-
--- constants
-
-local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
-
 -- imported functions
 
 local processPendingChunks = chunkProcessor.processPendingChunks
@@ -43,6 +27,7 @@ local processMap = mapProcessor.processMap
 local accumulatePoints = aiBuilding.accumulatePoints
 local removeScout = aiBuilding.removeScout
 local scouting = aiBuilding.scouting
+local digTunnel = aiBuilding.digTunnel
 
 local playerScent = pheromoneUtils.playerScent
 local deathScent = pheromoneUtils.deathScent
@@ -57,8 +42,6 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 local retreatUnits = aiDefense.retreatUnits
 
 local addRemoveObject = mapUtils.addRemoveObject
-
-local mRandom = math.random
 
 -- hook functions
 
@@ -127,8 +110,12 @@ function onTick(event)
             squadAttackPlayer(regionMap, surface, natives, game.players)
             
             squadBeginAttack(natives)
+            -- digTunnel(regionMap, surface, natives)
             squadAttackLocation(regionMap, surface, natives)
+            
+            -- print(natives.points)
         end
+        
         processPendingChunks(regionMap, surface, natives, pendingChunks)
         
         processMap(regionMap, surface, natives, game.evolution_factor)
@@ -149,18 +136,13 @@ function onDeath(event)
         if (entity.type == "unit") then
             local entityPosition = entity.position
             -- drop death pheromone where unit died
-            local squad = convertUnitGroupToSquad(natives, entity.unit_group)
             
             local surface = game.surfaces[1]
             
-            deathScent(regionMap,
-                       surface,
-                       entityPosition.x,
-                       entityPosition.y,
-                       squad,
-                       DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            deathScent(regionMap, surface, entityPosition.x, entityPosition.y)
             
             if (event.force ~= nil) and (event.force.name == "player") then
+                local squad = convertUnitGroupToSquad(natives, entity.unit_group)
                 retreatUnits(entityPosition, squad, regionMap, surface, natives)
             end
             
@@ -174,7 +156,10 @@ function onDeath(event)
 end
 
 function onPutItem(event)
-    print(serpent.dump(event))
+    -- local player = game.players[event.player_index]
+    -- if (player.surface.index==1) then
+        -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
+    -- end
 end
 
 -- hooks

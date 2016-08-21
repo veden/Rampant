@@ -12,10 +12,8 @@ local CHUNK_MAX_QUEUE_SIZE = constants.CHUNK_MAX_QUEUE_SIZE
 -- imported functions
 
 local createChunk = chunkUtils.createChunk
-
--- premade tables
-
-local processors = {}
+local checkChunkPassability = chunkUtils.checkChunkPassability
+local scoreChunk = chunkUtils.scoreChunk
 
 -- module code
 
@@ -41,9 +39,8 @@ function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendin
         end
         regionMap[chunkX][chunk.cY] = chunk
         
-        for i=1, #processors do
-            processors[i](chunk, surface, natives)
-        end
+        checkChunkPassability(chunk, surface, natives)
+        scoreChunk(chunk, surface, natives)
         
         local processQueue = regionMap.pQ[regionMap.pI]
         if (#processQueue == CHUNK_MAX_QUEUE_SIZE) then
@@ -59,10 +56,6 @@ function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendin
             break
         end
     end
-end
-
-function chunkProcessor.install(processor)
-    processors[#processors+1] = processor
 end
 
 return chunkProcessor
