@@ -76,8 +76,8 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                     retreatPosition.x = neighborChunk.pX
                     retreatPosition.y = neighborChunk.pY
                     
-                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 10)
-                    local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] 
+                    local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] - (neighborChunk[ENEMY_BASE_GENERATOR] * 3)
+                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
                     local score = avoidScore - dangerScore
                     if (exitScore < score) then
                         exitScore = score

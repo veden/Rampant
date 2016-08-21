@@ -27,7 +27,6 @@ local processMap = mapProcessor.processMap
 local accumulatePoints = aiBuilding.accumulatePoints
 local removeScout = aiBuilding.removeScout
 local scouting = aiBuilding.scouting
-local digTunnel = aiBuilding.digTunnel
 
 local playerScent = pheromoneUtils.playerScent
 local deathScent = pheromoneUtils.deathScent
@@ -63,7 +62,7 @@ function onInit()
     natives.tunnels = {}
     natives.points = 0
     
-    game.forces.player.research_all_technologies()
+    -- game.forces.player.research_all_technologies()
     
     -- queue all current chunks that wont be generated during play
     local surface = game.surfaces[1]
@@ -94,9 +93,9 @@ function onTick(event)
         local surface = game.surfaces[1]
         
         if (event.tick % 40 == 0) then
-            if not game.players[1].cheat_mode then
-                game.players[1].cheat_mode = true
-            end
+            -- if not game.players[1].cheat_mode then
+                -- game.players[1].cheat_mode = true
+            -- end
             
             accumulatePoints(natives)
             
@@ -110,7 +109,6 @@ function onTick(event)
             squadAttackPlayer(regionMap, surface, natives, game.players)
             
             squadBeginAttack(natives)
-            -- digTunnel(regionMap, surface, natives)
             squadAttackLocation(regionMap, surface, natives)
             
             -- print(natives.points)

@@ -73,7 +73,6 @@ function aiBuilding.sendScouts(regionMap, surface, natives, chunk, neighbors, ev
                                                        max_distance = HALF_CHUNK_SIZE})
             
             if (enemy ~= nil) and (enemy.type == "unit") then
-                -- print("making scouts", natives.points)
                 natives.points = natives.points - AI_SCOUT_COST
                 scouts[#scouts+1] = enemy
             end
@@ -83,10 +82,7 @@ end
 
 function aiBuilding.scouting(regionMap, surface, natives)
     -- print("scouting")
-    -- enemy.set_command({type=defines.command.attack,
-                               -- target=game.players[1].character})
-                               
-    -- if ()
+                  
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, evolution_factor)
@@ -106,8 +102,8 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, ev
                     squadPosition.x = neighborChunk.pX
                     squadPosition.y = neighborChunk.pY
                     if (neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]) then
-                        local attackScore = surface.get_pollution(squadPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
-                        local avoidScore = neighborChunk[DEATH_PHEROMONE] -- + neighborChunk[ENEMY_BASE_PHEROMONE]
+                        local attackScore = surface.get_pollution(squadPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]  
+                        local avoidScore = neighborChunk[DEATH_PHEROMONE] 
                         local score = attackScore - avoidScore
                         if (squadScore < attackScore) then
                             squadScore = attackScore
@@ -130,7 +126,6 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, ev
                                                               unit_count = AI_MAX_SQUAD_SIZE * evolution_factor,
                                                               unit_search_distance = (CHUNK_SIZE*2) })
                 if (foundUnits > 0) then
-                    -- print("making squad", natives.points, foundUnits, squadPath.cX, squadPath.cY)
                     natives.points = natives.points - AI_SQUAD_COST
                 end
             end
