@@ -8,9 +8,9 @@ Everything else is open to what ever you like
 
 # Features
 
-Tactical Retreats
-Unit Group Merging
-Unit Group Forming
-Probing Behaviour Against Defenses
-Player Hunting
+Tactical Retreats  
+Unit Group Merging  
+Unit Group Forming  
+Probing Behaviour Against Defenses  
+Player Hunting  
 
