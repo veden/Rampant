@@ -9,3 +9,8 @@ Unit Group Forming
 Probing Behaviour Against Defenses  
 Player Hunting  
 
+# Planned Features
+
+Tunneling biters  
+Base Expansion  
+

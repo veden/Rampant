@@ -10,7 +10,7 @@ local pheromoneUtils = require("libs/PheromoneUtils")
 local aiDefense = require("libs/AIDefense")
 local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
-local tests = require("Tests")
+local tests = require("tests")
 
 -- global state references
 
