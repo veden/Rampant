@@ -1,4 +1,4 @@
-# THIS IS STILL AN ALPHA - Please only use if you want to test and give feedback
+# THIS IS STILL AN ALPHA
 
 # Rampant
 Factorio Mod - Uses potential fields/pheromones to improve the enemy AI  
