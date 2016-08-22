@@ -1,5 +1,3 @@
-# THIS IS STILL AN ALPHA
-
 # Rampant
 Factorio Mod - Uses potential fields/pheromones to improve the enemy AI  
 
