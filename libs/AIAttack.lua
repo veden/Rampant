@@ -63,47 +63,49 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
             local groupState = group.state
             if (groupState == GROUP_STATE_FINISHED) or (groupState == GROUP_STATE_GATHERING) or ((groupState == GROUP_STATE_MOVING) and (squad.cycles == 0)) then
                 local chunk = positionToChunk(regionMap, group.position.x, group.position.y)
-                addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
-                local attackLocationNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
-                local attackChunk
-                local attackScore = -MAGIC_MAXIMUM_NUMBER
-                local attackDirection    
-                local attackPosition = {x=0, y=0}
-                -- print("------")
-                for x=1, #attackLocationNeighbors do
-                    local neighborChunk = attackLocationNeighbors[x]
-                    if (neighborChunk ~= nil) and canMove(x, chunk, neighborChunk) then
-                        attackPosition.x = neighborChunk.pX
-                        attackPosition.y = neighborChunk.pY
-                        local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-                        local damageScore = surface.get_pollution(attackPosition) + neighborChunk[PLAYER_BASE_PHEROMONE] + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_GENERATOR]
-                        local avoidScore = neighborChunk[DEATH_PHEROMONE] + neighborChunk[ENEMY_BASE_PHEROMONE]
-                        local score = damageScore - avoidScore - squadMovementPenalty
-                        if (score > attackScore) then
-                            attackScore = score
-                            attackChunk = neighborChunk
-                            attackDirection = x
+                if (chunk ~= nil) then
+                    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
+                    local attackLocationNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
+                    local attackChunk
+                    local attackScore = -MAGIC_MAXIMUM_NUMBER
+                    local attackDirection    
+                    local attackPosition = {x=0, y=0}
+                    -- print("------")
+                    for x=1, #attackLocationNeighbors do
+                        local neighborChunk = attackLocationNeighbors[x]
+                        if (neighborChunk ~= nil) and canMove(x, chunk, neighborChunk) then
+                            attackPosition.x = neighborChunk.pX
+                            attackPosition.y = neighborChunk.pY
+                            local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
+                            local damageScore = surface.get_pollution(attackPosition) + neighborChunk[PLAYER_BASE_PHEROMONE] + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_GENERATOR]
+                            local avoidScore = neighborChunk[DEATH_PHEROMONE] + neighborChunk[ENEMY_BASE_PHEROMONE]
+                            local score = damageScore - avoidScore - squadMovementPenalty
+                            if (score > attackScore) then
+                                attackScore = score
+                                attackChunk = neighborChunk
+                                attackDirection = x
+                            end
+                            -- print(x, score, damageScore, avoidScore, neighborChunk.cX, neighborChunk.cY)
                         end
-                        -- print(x, score, damageScore, avoidScore, neighborChunk.cX, neighborChunk.cY)
                     end
-                end
-                if (attackChunk ~= nil) then
-                    -- print("==")
-                    -- print (attackDirection, chunk.cX, chunk.cY)
-                    if ((attackChunk[PLAYER_BASE_GENERATOR] == 0) or (attackChunk[PLAYER_DEFENSE_GENERATOR] == 0)) or 
-                        ((groupState == GROUP_STATE_FINISHED) or (groupState == GROUP_STATE_GATHERING)) then
-                        -- print("attacking")
-                        attackPosition = positionDirectionToChunkCornerCardinal(attackDirection, attackChunk)
-                        squad.cX = attackChunk.cX
-                        squad.cY = attackChunk.cY
-                        squad.cycles = 2
-                        squad.direction = attackDirection
-                        
-                        group.set_command({type=COMMAND_ATTACK_AREA,
-                                           destination=attackPosition,
-                                           radius=HALF_CHUNK_SIZE,
-                                           distraction=DISTRACTION_BY_ANYTHING})
-                        group.start_moving()
+                    if (attackChunk ~= nil) then
+                        -- print("==")
+                        -- print (attackDirection, chunk.cX, chunk.cY)
+                        if ((attackChunk[PLAYER_BASE_GENERATOR] == 0) or (attackChunk[PLAYER_DEFENSE_GENERATOR] == 0)) or 
+                            ((groupState == GROUP_STATE_FINISHED) or (groupState == GROUP_STATE_GATHERING)) then
+                            -- print("attacking")
+                            attackPosition = positionDirectionToChunkCornerCardinal(attackDirection, attackChunk)
+                            squad.cX = attackChunk.cX
+                            squad.cY = attackChunk.cY
+                            squad.cycles = 2
+                            squad.direction = attackDirection
+                            
+                            group.set_command({type=COMMAND_ATTACK_AREA,
+                                               destination=attackPosition,
+                                               radius=HALF_CHUNK_SIZE,
+                                               distraction=DISTRACTION_BY_ANYTHING})
+                            group.start_moving()
+                        end
                     end
                 end
             end

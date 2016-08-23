@@ -4,6 +4,7 @@
     "version" : "0.0.4",
     "title" : "Rampant AI",
     "author" : "Veden",
+    "homepage" : "https://forums.factorio.com/viewtopic.php?f=94&t=31445",
     "description" : "Uses potential fields to improve the enemy AI",
     "dependencies" : ["base >= 0.13", "? bobenemies", "? Natural_Evolution_Enemies"]
 }
