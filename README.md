@@ -1,11 +1,15 @@
-# THIS IS STILL AN ALPHA
-
 # Rampant
 Factorio Mod - Uses potential fields/pheromones to improve the enemy AI  
+
+# Forum Post
+
+https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
+
+Still working on MP  
 
 # Features
 
@@ -18,5 +22,12 @@ Pathfinding - unit groups will use potential fields to perform only single step 
 
 # Planned Features
 
-Tunneling biters  
+Tunneling Biters  
+Fire Biters  
+Suicide Biters  
 Base Expansion  
+
+# Version History
+
+0.0.5 - fix for nil chunk in ai attack, checks for main surface
+0.0.4 - initial release

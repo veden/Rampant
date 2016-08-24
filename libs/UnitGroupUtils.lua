@@ -9,8 +9,6 @@ local constants = require("Constants")
 
 local MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT
 
-local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
-
 local GROUP_STATE_FINISHED = defines.group_state.finished
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
@@ -26,8 +24,7 @@ local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
                           
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local squads = natives.squads
-    local i = 1
-    while (i <= #squads) do
+    for i=1, #squads do
         local squad = squads[i]
         local unitGroup = squad.group
         if (unitGroup ~= nil) and unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
@@ -35,7 +32,6 @@ function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
                 return squad
             end
         end
-        i = i + 1
     end
 end
 
@@ -68,23 +64,17 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
     local returnSquad
     if (unitGroup ~= nil) then
         local squads = natives.squads
-        local addUnitGroup = true
-        local i = 1
-        while (i <= #squads) and addUnitGroup do
+        for i=1, #squads do
             local squad = squads[i]
             if (squad.group == unitGroup) then  
-                addUnitGroup = false
-                returnSquad = squad
+                return squad
             end
-            i = i + 1
         end
-        if addUnitGroup then
-            returnSquad = { group = unitGroup,
-                            status = SQUAD_GUARDING,
-                            penalties = {},
-                            cycles = 0 }
-            squads[#squads+1] = returnSquad
-        end
+        returnSquad = { group = unitGroup,
+                        status = SQUAD_GUARDING,
+                        penalties = {},
+                        cycles = 0 }
+        squads[#squads+1] = returnSquad
     end
     
     return returnSquad
@@ -128,7 +118,7 @@ function unitGroupUtils.regroupSquads(natives)
             for x=i+1, #squads do
                 local mergeSquad = squads[x]
                 local mergeGroup = mergeSquad.group
-                if mergeGroup.valid and (mergeSquad.status == squad.status) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < HALF_CHUNK_SIZE) then
+                if mergeGroup.valid and (mergeSquad.status == squad.status) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < 16) then
                     unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
                     mergeGroup.destroy()
                 end

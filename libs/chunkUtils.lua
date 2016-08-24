@@ -27,32 +27,27 @@ local EAST_WEST = constants.EAST_WEST
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
 
 -- module code
                           
-function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, chunkSize, surface)
+function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
     local get_tile = surface.get_tile
     
-    local deadEnd = false
-    local x = iteratingCoordinate
-    while not deadEnd and (x < iteratingCoordinate + chunkSize) do
+    for x=iteratingCoordinate, iteratingCoordinate + 31 do
         local tile
         if (direction == NORTH_SOUTH) then
             tile = get_tile(constantCoordinate, x)
         else
             tile = get_tile(x, constantCoordinate)
         end
-        if (tile.collides_with("player-layer")) then
-            deadEnd = true
+        if tile.collides_with("player-layer") then
+            return true
         -- else
             -- surface.set_tiles({{name="sand-dark", position=tile.position}}, false)
         end
-        x = x + 1
     end
-    return deadEnd
+    return false
 end
 
 function chunkUtils.checkChunkPassability(chunk, surface, natives)   
@@ -61,19 +56,17 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
     
     local passableNorthSouth = false
     local passableEastWest = false
-    local xi = x
-    while not passableNorthSouth and (xi < x + CHUNK_SIZE) do
-        if (not chunkUtils.checkForDeadendTiles(xi, y, NORTH_SOUTH, CHUNK_SIZE, surface)) then
+    for xi=x, x + 31 do
+        if (not chunkUtils.checkForDeadendTiles(xi, y, NORTH_SOUTH, surface)) then
             passableNorthSouth = true
+            break
         end
-        xi = xi + 1
     end
-    local yi = y
-    while not passableEastWest and (yi < y + CHUNK_SIZE) do
-        if (not chunkUtils.checkForDeadendTiles(yi, x, EAST_WEST, CHUNK_SIZE, surface)) then
+    for yi=y, y + 31 do
+        if (not chunkUtils.checkForDeadendTiles(yi, x, EAST_WEST, surface)) then
             passableEastWest = true
+            break
         end
-        yi = yi + 1
     end
     -- if passableNorthSouth and passableEastWest then
         -- chunkUtils.colorChunk(x, y, "grass", surface)
@@ -85,16 +78,8 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
         -- chunkUtils.colorChunk(x, y, "concrete", surface)
     -- end
     
-    if passableEastWest then
-        chunk[EAST_WEST_PASSABLE] = true
-    else
-        chunk[EAST_WEST_PASSABLE] = false
-    end
-    if passableNorthSouth then
-        chunk[NORTH_SOUTH_PASSABLE] = true
-    else
-        chunk[NORTH_SOUTH_PASSABLE] = false
-    end
+    chunk[EAST_WEST_PASSABLE] = passableEastWest
+    chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
 function chunkUtils.scoreChunk(chunk, surface, natives)   
@@ -102,7 +87,7 @@ function chunkUtils.scoreChunk(chunk, surface, natives)
     local y = chunk.pY
     
     local areaBoundingBox = {{x, y},
-                             {x + CHUNK_SIZE, y + CHUNK_SIZE}}
+                             {x + 32, y + 32}}
     local enemyChunkQuery = {area=areaBoundingBox,
                              type="unit-spawner",
                              force="enemy"}
@@ -154,8 +139,8 @@ end
 
 function chunkUtils.colorChunk(x, y, tileType, surface)
     local tiles = {}
-    for xi=x+5, x + CHUNK_SIZE-5 do
-        for yi=y+5, y + CHUNK_SIZE-5 do
+    for xi=x+5, x + 27 do
+        for yi=y+5, y + 27 do
             tiles[#tiles+1] = {name=tileType, position={xi, yi}}
         end
     end

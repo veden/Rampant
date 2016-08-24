@@ -3,7 +3,7 @@ local tests = {}
 local constants = require("libs/Constants")
 
 function tests.test1() 
-    local player = game.players[1]
+    local player = game.player.character
     local playerChunkX = math.floor(player.position.x / 32)
     local playerChunkY = math.floor(player.position.y / 32)
     print("------")
@@ -69,7 +69,7 @@ function tests.test4()
 end
 
 function tests.test5()
-    print(global.natives.points)
+    print(global.natives.points, game.tick)
 end
 
 function tests.test6()

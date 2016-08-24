@@ -64,17 +64,20 @@ function aiBuilding.removeScout(entity, natives)
     end
 end
 
-function aiBuilding.sendScouts(regionMap, surface, natives, chunk, neighbors, evolution_factor)
-    if (natives.points > AI_SCOUT_COST) then
-        local scouts = natives.scouts
-        if (#scouts < 5) and (mRandom() < 0.05)  then -- TODO scaled with evolution factor
-            local enemy = surface.find_nearest_enemy({ position = {x = chunk.pX + HALF_CHUNK_SIZE,
-                                                                   y = chunk.pY + HALF_CHUNK_SIZE },
-                                                       max_distance = HALF_CHUNK_SIZE})
+function aiBuilding.sendScouts(surface, natives, chunk, evolution_factor)
+    if (natives.points > constants.AI_SCOUT_COST) then
+        -- local scouts = natives.scouts
+        if (#natives.scouts < 5) and (mRandom() < 0.05)  then -- TODO scaled with evolution factor
+            local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + constants.HALF_CHUNK_SIZE,
+                                                                    y = chunk.pY + constants.HALF_CHUNK_SIZE },
+                                                       max_distance = constants.HALF_CHUNK_SIZE})
             
-            if (enemy ~= nil) and (enemy.type == "unit") then
-                natives.points = natives.points - AI_SCOUT_COST
-                scouts[#scouts+1] = enemy
+            if (enemy ~= nil) and enemy.valid and (enemy.type == "unit") then
+                natives.points = natives.points - constants.AI_SCOUT_COST
+                natives.scouts[#natives.scouts+1] = enemy
+                -- enemy.set_command({type=defines.command.attack_area,
+                                   -- destination={0,0},
+                                   -- radius=32})
             end
         end
     end
@@ -85,10 +88,10 @@ function aiBuilding.scouting(regionMap, surface, natives)
                   
 end
 
-function aiBuilding.formSquads(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
-        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (mRandom() < 0.03) then
+        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (mRandom(0, 100) < 3) then
             local squadNeighbors = getNeighborChunks(regionMap, 
                                                      chunk.cX, 
                                                      chunk.cY)

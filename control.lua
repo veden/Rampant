@@ -12,12 +12,6 @@ local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
 local tests = require("tests")
 
--- global state references
-
-local regionMap -- chunk based map
-local pendingChunks -- pending chunks to be processed
-local natives -- units that are being commanded
-
 -- imported functions
 
 local processPendingChunks = chunkProcessor.processPendingChunks
@@ -50,17 +44,14 @@ function onInit()
     global.pendingChunks = {}
     global.natives = {}
     
-    regionMap = global.regionMap
-    pendingChunks = global.pendingChunks
-    regionMap.pQ = {{}} -- processing queue
-    regionMap.pI = 1 -- insertion location for chunk processing
-    regionMap.pP = 1 -- index for the chunk set to process
-    regionMap.pR = -1 -- current processing roll
-    natives = global.natives
-    natives.squads = {}
-    natives.scouts = {}
-    natives.tunnels = {}
-    natives.points = 0
+    global.regionMap.pQ = {{}} -- processing queue
+    global.regionMap.pI = 1 -- insertion location for chunk processing
+    global.regionMap.pP = 1 -- index for the chunk set to process
+    global.regionMap.pR = -1 -- current processing roll
+    global.natives.squads = {}
+    global.natives.scouts = {}
+    global.natives.tunnels = {}
+    global.natives.points = 0
     
     -- game.forces.player.research_all_technologies()
     
@@ -75,16 +66,16 @@ end
 
 function onLoad()
     -- print("load")
-    regionMap = global.regionMap
-    pendingChunks = global.pendingChunks
-    natives = global.natives
+    -- regionMap = global.regionMap
+    -- pendingChunks = global.pendingChunks
+    -- natives = global.natives
 end
 
 function onChunkGenerated(event)
     -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
     -- are generated, which messes up the scoring.
     if (event.surface.index == 1) then
-        pendingChunks[#pendingChunks+1] = event
+        global.pendingChunks[#global.pendingChunks+1] = event
     end
 end
 
@@ -97,59 +88,57 @@ function onTick(event)
                 -- game.players[1].cheat_mode = true
             -- end
             
-            accumulatePoints(natives)
+            accumulatePoints(global.natives)
             
             -- put down player pheromone for player hunters
-            playerScent(regionMap, game.players)
+            playerScent(global.regionMap, game.players)
             
-            regroupSquads(natives)
+            regroupSquads(global.natives)
                     
-            scouting(regionMap, surface, natives)
+            -- scouting(regionMap, surface, natives)
             
-            squadAttackPlayer(regionMap, surface, natives, game.players)
+            squadAttackPlayer(global.natives, game.players)
             
-            squadBeginAttack(natives)
-            squadAttackLocation(regionMap, surface, natives)
-            
-            -- print(natives.points)
+            squadBeginAttack(global.natives)
+            squadAttackLocation(global.regionMap, surface, global.natives)
         end
         
-        processPendingChunks(regionMap, surface, natives, pendingChunks)
+        processPendingChunks(global.regionMap, surface, global.natives, global.pendingChunks)
         
-        processMap(regionMap, surface, natives, game.evolution_factor)
+        processMap(global.regionMap, surface, global.natives, game.evolution_factor)
     end
 end
 
 function onBuild(event)
-    addRemoveObject(regionMap, event.created_entity, natives, true)
+    addRemoveObject(global.regionMap, event.created_entity, global.natives, true)
 end
 
 function onPickUp(event)
-    addRemoveObject(regionMap, event.entity, natives, false)
+    addRemoveObject(global.regionMap, event.entity, global.natives, false)
 end
 
 function onDeath(event)
     local entity = event.entity
-    if (entity.force.name == "enemy") then
-        if (entity.type == "unit") then
-            local entityPosition = entity.position
-            -- drop death pheromone where unit died
-            
-            local surface = game.surfaces[1]
-            
-            deathScent(regionMap, surface, entityPosition.x, entityPosition.y)
-            
-            if (event.force ~= nil) and (event.force.name == "player") then
-                local squad = convertUnitGroupToSquad(natives, entity.unit_group)
-                retreatUnits(entityPosition, squad, regionMap, surface, natives)
+    if (entity.surface.index == 1) then
+        if (entity.force.name == "enemy") then
+            if (entity.type == "unit") then
+                local entityPosition = entity.position
+                
+                -- drop death pheromone where unit died
+                deathScent(global.regionMap, entityPosition.x, entityPosition.y)
+                
+                if (event.force ~= nil) and (event.force.name == "player") then
+                    local squad = convertUnitGroupToSquad(global.natives, entity.unit_group)
+                    retreatUnits(entityPosition, squad, global.regionMap, game.surfaces[1], global.natives)
+                end
+                
+                -- removeScout(entity, global.natives)
+            elseif (entity.type == "unit-spawner") then
+                addRemoveObject(global.regionMap, entity, global.natives, false)
             end
-            
-            removeScout(entity, natives)
-        elseif (entity.type == "unit-spawner") then
-            addRemoveObject(regionMap, entity, natives, false)
+        elseif (entity.force.name == "player") then
+            addRemoveObject(global.regionMap, entity, global.natives, false)
         end
-    elseif (entity.force.name == "player") then
-        addRemoveObject(regionMap, entity, natives, false)
     end
 end
 

@@ -29,6 +29,8 @@ local SQUAD_SUICIDE_RAID = constants.SQUAD_SUICIDE_RAID
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
+local RETREAT_FILTER = constants.RETREAT_FILTER
+
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -39,15 +41,13 @@ local findNearBySquad = unitGroupUtils.findNearBySquad
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 
--- premade tables
-
-local retreatFilter = {[SQUAD_RETREATING] = true}
+local mfloor = math.floor
 
 -- module code
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
+    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > mfloor(game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
         local performRetreat = false
         local enemiesToSquad
     
@@ -63,15 +63,11 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
         end
                 
         if performRetreat then
-            local retreatNeighbors = getCardinalChunks(regionMap, 
-                                                       chunk.cX, 
-                                                       chunk.cY)
             local exitPath
             local exitScore = -MAGIC_MAXIMUM_NUMBER
             local exitDirection
             local retreatPosition = {x=0, y=0}
-            for i=1, #retreatNeighbors do
-                local neighborChunk = retreatNeighbors[i]
+            for i, neighborChunk in pairs(getCardinalChunks(regionMap, chunk.cX, chunk.cY)) do
                 if (neighborChunk ~= nil) then
                     retreatPosition.x = neighborChunk.pX
                     retreatPosition.y = neighborChunk.pY
@@ -88,11 +84,9 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             end
             
             retreatPosition = positionDirectionToChunkCornerCardinal(exitDirection, exitPath)
+            
             -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
             -- to each unit
-            -- retreatPosition.x = exitPath.pX + constants.HALF_CHUNK_SIZE
-            -- retreatPosition.y = exitPath.pY + constants.HALF_CHUNK_SIZE
-
             
             local newSquad = findNearBySquad(natives, 
                                              retreatPosition,
@@ -107,11 +101,6 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             if (enemiesToSquad ~= nil) then
                 membersToSquad(newSquad, enemiesToSquad, false, DISTRACTION_NONE)
             else
-                -- newSquad.penalties = squad.penalties
-                -- newSquad.lastCX = squad.cX
-                -- newSquad.lastCY = squad.cY
-                -- newSquad.lastDirection = squad.direction
-                -- newSquad.canTunnel = true
                 membersToSquad(newSquad, squad.group.members, true, DISTRACTION_NONE)
             end
         end

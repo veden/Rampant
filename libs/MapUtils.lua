@@ -28,8 +28,7 @@ local mFloor = math.floor
 -- module code
 
 function mapUtils.getChunkByPosition(regionMap, x, y)
-    local cX = mFloor(x * 0.03125)
-    local chunkX = regionMap[cX]
+    local chunkX = regionMap[mFloor(x * 0.03125)]
     if (chunkX ~= nil) then
         return chunkX[mFloor(y * 0.03125)]
     end

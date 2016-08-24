@@ -36,7 +36,7 @@ local mFloor = math.floor
 
 -- module code
               
-function pheromoneUtils.scents(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+function pheromoneUtils.scents(chunk)
     local amount = chunk[PLAYER_DEFENSE_GENERATOR]
     if (amount > 0) then
         chunk[PLAYER_DEFENSE_PHEROMONE] = chunk[PLAYER_DEFENSE_PHEROMONE] + amount
@@ -53,7 +53,7 @@ function pheromoneUtils.scents(regionMap, surface, natives, chunk, neighbors, ev
     end
 end
             
-function pheromoneUtils.deathScent(regionMap, surface, x, y)
+function pheromoneUtils.deathScent(regionMap, x, y)
     local chunk = getChunkByPosition(regionMap, x, y)
     if (chunk ~= nil) then
         chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
@@ -61,19 +61,21 @@ function pheromoneUtils.deathScent(regionMap, surface, x, y)
 end
 
 function pheromoneUtils.playerScent(regionMap, players)
-    for i=1, #players do
-        local playerPosition = players[i].position
-        local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
-        if (playerChunk ~= nil) then
-            playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    for _,player in pairs(players) do
+        if player.connected and (player.character ~= nil) and (player.surface.index == 1) then
+            local playerPosition = player.character.position
+            local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+            if (playerChunk ~= nil) then
+                playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+            end
         end
     end
 end
 
-function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, neighbors, evolution_factor)
+function pheromoneUtils.processPheromone(chunk, neighbors)
+    local diffusionAmount
+    local persistence
     for x=1,6 do
-        local diffusionAmount
-        local persistence
         if (x == DEATH_PHEROMONE) then
             diffusionAmount = DEATH_PHEROMONE_DIFFUSION_AMOUNT
             persistence = DEATH_PHEROMONE_PERSISTANCE
@@ -82,16 +84,13 @@ function pheromoneUtils.processPheromone(regionMap, surface, natives, chunk, nei
             persistence = STANDARD_PHEROMONE_PERSISTANCE
         end
         local totalDiffused = 0
-        for i=1,#neighbors do
-            local neighborChunk = neighbors[i]
-            if (neighborChunk ~= nil) then
-                local diffusedAmount = (chunk[x] * diffusionAmount)
-                totalDiffused = totalDiffused + diffusedAmount
-                neighborChunk[x] = neighborChunk[x] + diffusedAmount
-            end
+        local chunkValue = chunk[x]
+        for _,neighborChunk in pairs(neighbors) do
+            local diffusedAmount = chunkValue * diffusionAmount
+            totalDiffused = totalDiffused + diffusedAmount
+            neighborChunk[x] = neighborChunk[x] + diffusedAmount
         end
-        chunk[x] = chunk[x] - totalDiffused
-        chunk[x] = chunk[x] * persistence
+        chunk[x] = (chunkValue - totalDiffused) * persistence
     end
 end
 

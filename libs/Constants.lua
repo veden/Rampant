@@ -5,7 +5,7 @@ local constants = {}
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.RETREAT_DEATH_PHEROMONE_LEVEL = 10000
 
-constants.CHUNK_MAX_QUEUE_SIZE = 400
+constants.CHUNK_MAX_QUEUE_SIZE = 350
 
 -- ai
 
@@ -106,6 +106,9 @@ constants.DEFENSE_PHEROMONES["turret"] = 3
 
 -- constants.deathPheromones = {}
 -- constants.deathPheromones[""] 
+
+constants.retreatFilter = {}
+constants.retreatFilter[constants.SQUAD_RETREATING] = true
 
 return constants
 
