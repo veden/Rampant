@@ -36,22 +36,33 @@ local retreatUnits = aiDefense.retreatUnits
 
 local addRemoveObject = mapUtils.addRemoveObject
 
+-- local references to global
+
+local regionMap
+local natives
+local pendingChunks
+
 -- hook functions
 
 function onInit()
     -- print("init")
+    global.version = constants.VERSION_5
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
     
-    global.regionMap.pQ = {{}} -- processing queue
-    global.regionMap.pI = 1 -- insertion location for chunk processing
-    global.regionMap.pP = 1 -- index for the chunk set to process
-    global.regionMap.pR = -1 -- current processing roll
-    global.natives.squads = {}
-    global.natives.scouts = {}
-    global.natives.tunnels = {}
-    global.natives.points = 0
+    regionMap = global.regionMap
+    natives = global.natives
+    pendingChunks = global.pendingChunks
+    
+    regionMap.pQ = {{}} -- processing queue
+    regionMap.pI = 1 -- insertion location for chunk processing
+    regionMap.pP = 1 -- index for the chunk set to process
+    regionMap.pR = -1 -- current processing roll
+    natives.squads = {}
+    natives.scouts = {}
+    natives.tunnels = {}
+    natives.points = 0
     
     -- game.forces.player.research_all_technologies()
     
@@ -66,16 +77,39 @@ end
 
 function onLoad()
     -- print("load")
-    -- regionMap = global.regionMap
-    -- pendingChunks = global.pendingChunks
-    -- natives = global.natives
+    regionMap = global.regionMap
+    natives = global.natives
+    pendingChunks = global.pendingChunks
+end
+
+function onConfigChanged()
+    if (global.version == nil) then
+        -- print("reprocess")
+        regionMap.pQ = {{}} -- processing queue
+        regionMap.pI = 1 -- insertion location for chunk processing
+        regionMap.pP = 1 -- index for the chunk set to process
+        regionMap.pR = -1 -- current processing roll
+        natives.squads = {}
+        natives.scouts = {}
+        natives.tunnels = {}
+        natives.points = 0
+        pendingChunks = {}
+        
+        local surface = game.surfaces[1]
+        for chunk in surface.get_chunks() do
+            onChunkGenerated({ surface = surface, 
+                               area = { left_top = { x = chunk.x * 32,
+                                                     y = chunk.y * 32 }}})
+        end
+        global.version = constants.VERSION_5
+    end
 end
 
 function onChunkGenerated(event)
     -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
     -- are generated, which messes up the scoring.
     if (event.surface.index == 1) then
-        global.pendingChunks[#global.pendingChunks+1] = event
+        pendingChunks[#pendingChunks+1] = event
     end
 end
 
@@ -88,33 +122,33 @@ function onTick(event)
                 -- game.players[1].cheat_mode = true
             -- end
             
-            accumulatePoints(global.natives)
+            accumulatePoints(natives)
             
             -- put down player pheromone for player hunters
-            playerScent(global.regionMap, game.players)
+            playerScent(regionMap, game.players)
             
-            regroupSquads(global.natives)
+            regroupSquads(natives)
                     
             -- scouting(regionMap, surface, natives)
             
-            squadAttackPlayer(global.natives, game.players)
+            squadAttackPlayer(natives, game.players)
             
-            squadBeginAttack(global.natives)
-            squadAttackLocation(global.regionMap, surface, global.natives)
+            squadBeginAttack(natives)
+            squadAttackLocation(regionMap, surface, natives)
         end
         
-        processPendingChunks(global.regionMap, surface, global.natives, global.pendingChunks)
+        processPendingChunks(regionMap, surface, natives, pendingChunks)
         
-        processMap(global.regionMap, surface, global.natives, game.evolution_factor)
+        processMap(regionMap, surface, natives, game.evolution_factor)
     end
 end
 
 function onBuild(event)
-    addRemoveObject(global.regionMap, event.created_entity, global.natives, true)
+    addRemoveObject(regionMap, event.created_entity, natives, true)
 end
 
 function onPickUp(event)
-    addRemoveObject(global.regionMap, event.entity, global.natives, false)
+    addRemoveObject(regionMap, event.entity, natives, false)
 end
 
 function onDeath(event)
@@ -125,19 +159,19 @@ function onDeath(event)
                 local entityPosition = entity.position
                 
                 -- drop death pheromone where unit died
-                deathScent(global.regionMap, entityPosition.x, entityPosition.y)
+                deathScent(regionMap, entityPosition.x, entityPosition.y)
                 
                 if (event.force ~= nil) and (event.force.name == "player") then
-                    local squad = convertUnitGroupToSquad(global.natives, entity.unit_group)
-                    retreatUnits(entityPosition, squad, global.regionMap, game.surfaces[1], global.natives)
+                    local squad = convertUnitGroupToSquad(natives, entity.unit_group)
+                    retreatUnits(entityPosition, squad, regionMap, game.surfaces[1], natives)
                 end
                 
                 -- removeScout(entity, global.natives)
             elseif (entity.type == "unit-spawner") then
-                addRemoveObject(global.regionMap, entity, global.natives, false)
+                addRemoveObject(regionMap, entity, natives, false)
             end
         elseif (entity.force.name == "player") then
-            addRemoveObject(global.regionMap, entity, global.natives, false)
+            addRemoveObject(regionMap, entity, natives, false)
         end
     end
 end
@@ -153,6 +187,7 @@ end
 
 script.on_init(onInit)
 script.on_load(onLoad)
+script.on_configuration_changed(onConfigChanged)
 
 script.on_event(defines.events.on_player_built_tile, onPutItem)
 

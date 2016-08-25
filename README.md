@@ -29,5 +29,8 @@ Base Expansion
 
 # Version History
 
-0.0.5 - fix for nil chunk in ai attack, checks for main surface
+0.0.5 - fix for nil chunk in ai attack (https://mods.factorio.com/mods/Veden/Rampant/discussion/2512)
+        checks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)
+        updated info with forum homepage
+        
 0.0.4 - initial release

@@ -1,5 +1,9 @@
 local constants = {}
 
+-- versions
+
+constants.VERSION_5 = 5
+
 -- misc
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
