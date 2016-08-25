@@ -37,7 +37,7 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
         scouts = true
     end
     
-    if (0.11 <= roll) and (roll <= 0.25) then
+    if (0.11 <= roll) and (roll <= 0.35) then
         squads = true
     end
     
