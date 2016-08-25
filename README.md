@@ -9,7 +9,7 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
 
-Still working on MP  
+MP should be working
 
 # Features
 
@@ -28,6 +28,8 @@ Suicide Biters
 Base Expansion  
 
 # Version History
+
+0.0.6 - some speed improvements and MP is working
 
 0.0.5 - fix for nil chunk in ai attack (https://mods.factorio.com/mods/Veden/Rampant/discussion/2512)  
         checks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)  

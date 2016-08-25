@@ -97,4 +97,15 @@ function tests.test8(x)
     game.surfaces[1].create_entity({name=x, force="enemy", position={chunkX, chunkY}})
 end
 
+function tests.test9()
+    local enemy = game.surfaces[1].find_nearest_enemy({position={0,0},
+                                                       max_distance = 1000})
+    if (enemy ~= nil) and enemy.valid then
+        print(enemy, enemy.unit_number)
+        enemy.set_command({type=defines.command.attack_area,
+                           destination={0,0},
+                           radius=32})
+    end
+end
+
 return tests

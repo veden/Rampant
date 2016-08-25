@@ -24,7 +24,7 @@ local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
                           
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local squads = natives.squads
-    for i=1, #squads do
+    for i=1,#squads do
         local squad = squads[i]
         local unitGroup = squad.group
         if (unitGroup ~= nil) and unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
@@ -51,7 +51,7 @@ function unitGroupUtils.membersToSquad(squad, members, overwriteGroup, distracti
         local group = squad.group
         for i=1,#members do
             local member = members[i]
-            if (member ~= nil) and member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
+            if member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
                 member.set_command({ type = defines.command.group,
                                      group = group,
                                      distraction = distraction })
@@ -64,7 +64,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
     local returnSquad
     if (unitGroup ~= nil) then
         local squads = natives.squads
-        for i=1, #squads do
+        for i=1,#squads do
             local squad = squads[i]
             if (squad.group == unitGroup) then  
                 return squad
@@ -82,8 +82,8 @@ end
 
 function unitGroupUtils.addSquadMovementPenalty(squad, chunkX, chunkY)   
     local penalties = squad.penalties
-    for penaltyIndex=1, #penalties do
-        local penalty = squad.penalties[penaltyIndex]
+    for i=1,#penalties do
+        local penalty = penalties[i]
         if (penalty.x == chunkX) and (penalty.y == chunkY) then
             penalty.v = penalty.v + MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT
             return
@@ -99,8 +99,8 @@ end
 
 function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
     local penalties = squad.penalties
-    for penaltyIndex=1, #penalties do
-        local penalty = penalties[penaltyIndex]
+    for i=1,#penalties do
+        local penalty = penalties[i]
         if (penalty.x == chunkX) and (penalty.y == chunkY) then
             return penalty.v
         end
@@ -109,7 +109,6 @@ function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
 end
 
 function unitGroupUtils.regroupSquads(natives)
-
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]

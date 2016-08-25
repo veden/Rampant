@@ -11,12 +11,10 @@ local aiBuilding = require("AIBuilding")
 local scents = pheromoneUtils.scents
 local processPheromone = pheromoneUtils.processPheromone
 
-local sendScouts = aiBuilding.sendScouts
+local makeScouts = aiBuilding.makeScouts
 local formSquads = aiBuilding.formSquads
 
 local getCardinalChunks = mapUtils.getCardinalChunks
-
-local mRandom = math.random
 
 -- module code
 
@@ -27,21 +25,32 @@ local mRandom = math.random
 function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
     local roll = regionMap.pR
     local index = regionMap.pP
+    local scouts = false
+    local squads = false
     
     if (regionMap.pP == 1) then
-        regionMap.pR = mRandom()
-        roll = regionMap.pR
+        roll = math.random()
+        regionMap.pR = roll
+    end
+    
+    if (0.05 <= roll) and (roll <= 0.10) then
+        scouts = true
+    end
+    
+    if (0.11 <= roll) and (roll <= 0.25) then
+        squads = true
     end
     
     local chunkQueue = regionMap.pQ[index]
-    for x,chunk in ipairs(chunkQueue) do
+    for x=1,#chunkQueue do
+        local chunk = chunkQueue[x]
         
         scents(chunk)
         
-        if (0.05 <= roll) and (roll <= 0.10) then
-            sendScouts(surface, natives, chunk, evolution_factor)
+        if scouts then
+            makeScouts(surface, natives, chunk, evolution_factor)
         end
-        if (0.11 <= roll) and (roll <= 0.25) then
+        if squads then
             formSquads(regionMap, surface, natives, chunk, evolution_factor)
         end
         

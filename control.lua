@@ -63,7 +63,7 @@ function onInit()
     natives.scouts = {}
     natives.tunnels = {}
     natives.points = 0
-    
+       
     -- game.forces.player.research_all_technologies()
     
     -- queue all current chunks that wont be generated during play
@@ -103,6 +103,9 @@ function onConfigChanged()
         end
         global.version = constants.VERSION_5
     end
+    if (global.version < constants.VERSION_6) then
+        global.version = constants.VERSION_6
+    end
 end
 
 function onChunkGenerated(event)
@@ -128,8 +131,8 @@ function onTick(event)
             playerScent(regionMap, game.players)
             
             regroupSquads(natives)
-                    
-            -- scouting(regionMap, surface, natives)
+            
+            -- scouting(regionMap, natives)
             
             squadAttackPlayer(natives, game.players)
             
@@ -166,7 +169,7 @@ function onDeath(event)
                     retreatUnits(entityPosition, squad, regionMap, game.surfaces[1], natives)
                 end
                 
-                -- removeScout(entity, global.natives)
+                removeScout(entity, global.natives)
             elseif (entity.type == "unit-spawner") then
                 addRemoveObject(regionMap, entity, natives, false)
             end
@@ -210,5 +213,9 @@ remote.add_interface("rampant", {
                                     test5 = tests.test5,
                                     test6 = tests.test6,
                                     test7 = tests.test7,
-                                    test8 = tests.test8
+                                    test8 = tests.test8,
+                                    test9 = tests.test9,
+                                    test10 = function () 
+                                                scouting(regionMap, natives)
+                                             end
                                 })

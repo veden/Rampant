@@ -33,32 +33,35 @@ local PLAYER_DEFENSE_GENERATOR = constants.PLAYER_DEFENSE_GENERATOR
 
 -- imported functions
 
-local getCardinalChunks = mapUtils.getCardinalChunks
+local getCardinalChunksWithDirection = mapUtils.getCardinalChunksWithDirection
 local positionToChunk = mapUtils.getChunkByPosition
 local canMove = mapUtils.canMoveChunkDirectionCardinal
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
 local positionDirectionToChunkCornerCardinal = mapUtils.positionDirectionToChunkCornerCardinal
 local findDistance = mapUtils.euclideanDistanceNamed
-                             
-local mRandom = math.random
 
 -- module code
 
 function aiAttack.squadAttackLocation(regionMap, surface, natives)
-    for _,squad in ipairs(natives.squads) do
+    local squads = natives.squads
+    for i=1,#squads do
+        local squad = squads[i]
         local group = squad.group
         if group.valid and ((squad.status == SQUAD_RAIDING) or (squad.status == SQUAD_SUICIDE_RAID)) then 
             if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) or ((group.state == defines.group_state.moving) and (squad.cycles == 0)) then
                 local chunk = positionToChunk(regionMap, group.position.x, group.position.y)
                 if (chunk ~= nil) then
                     addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
+                    local neighborDirectionChunks = getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY)
                     local attackChunk
                     local attackScore = -MAGIC_MAXIMUM_NUMBER
                     local attackDirection    
                     local attackPosition = {x=0, y=0}
-                    for x,neighborChunk in pairs(getCardinalChunks(regionMap, chunk.cX, chunk.cY)) do
-                        if canMove(x, chunk, neighborChunk) then
+                    for x=1,#neighborDirectionChunks do
+                        local neighborDirectionChunk = neighborDirectionChunks[x]
+                        local neighborChunk = neighborDirectionChunk.c
+                        if (neighborChunk ~= nil) and canMove(x, chunk, neighborChunk) then
                             attackPosition.x = neighborChunk.pX
                             attackPosition.y = neighborChunk.pY
                             local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
@@ -68,7 +71,7 @@ function aiAttack.squadAttackLocation(regionMap, surface, natives)
                             if (score > attackScore) then
                                 attackScore = score
                                 attackChunk = neighborChunk
-                                attackDirection = x
+                                attackDirection = neighborDirectionChunk.d
                             end
                         end
                     end
@@ -94,13 +97,16 @@ end
 
 
 function aiAttack.squadAttackPlayer(natives, players)
-    for _,squad in ipairs(natives.squads) do
+    local squads = natives.squads
+    for i=1,#squads do
+        local squad = squads[i]
         local group = squad.group
         if (group.valid) and (squad.status == SQUAD_GUARDING) then
             local closestPlayer
             local closestDistance = MAGIC_MAXIMUM_NUMBER
-            for _,player in pairs(players) do
-                if player.connected and (player.character ~= nil) and (player.character.surface.index == 1) then
+            for x=1,#players do
+                local player = players[x]
+                if (player ~= nil) and player.connected and (player.character ~= nil) and (player.character.surface.index == 1) then
                     local playerCharacter = player.character
                     local distance = findDistance(playerCharacter.position, group.position)
                     if (distance < closestDistance) then
@@ -111,7 +117,7 @@ function aiAttack.squadAttackPlayer(natives, players)
             end
             if (closestDistance < 75) then
                 local squadType = SQUAD_HUNTING
-                if (mRandom() < 0.10) then -- TODO add sliding scale based on number of members and evolution
+                if (math.random() < 0.10) then -- TODO add sliding scale based on number of members and evolution
                     squadType = SQUAD_SUICIDE_HUNT
                 end
                 squad.status = squadType
@@ -123,9 +129,11 @@ function aiAttack.squadAttackPlayer(natives, players)
 end
 
 function aiAttack.squadBeginAttack(natives)
-    for _,squad in ipairs(natives.squads) do
-        if (squad.status == SQUAD_GUARDING) and (mRandom() < 0.70) then
-            if (mRandom() < 0.05) then
+    local squads = natives.squads
+    for i=1,#squads do
+        local squad = squads[i]
+        if (squad.status == SQUAD_GUARDING) and (math.random() < 0.70) then
+            if (math.random() < 0.05) then
                 squad.status = SQUAD_SUICIDE_RAID
             else
                 squad.status = SQUAD_RAIDING

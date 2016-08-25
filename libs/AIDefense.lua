@@ -34,7 +34,7 @@ local RETREAT_FILTER = constants.RETREAT_FILTER
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
-local getCardinalChunks = mapUtils.getCardinalChunks
+local getCardinalChunksWithDirection = mapUtils.getCardinalChunksWithDirection
 local positionDirectionToChunkCornerCardinal = mapUtils.positionDirectionToChunkCornerCardinal
 local getChunkByIndex = mapUtils.getChunkByIndex
 local findNearBySquad = unitGroupUtils.findNearBySquad
@@ -63,11 +63,14 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
         end
                 
         if performRetreat then
+            local neighborDirectionChunks = getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY)
             local exitPath
             local exitScore = -MAGIC_MAXIMUM_NUMBER
             local exitDirection
             local retreatPosition = {x=0, y=0}
-            for i, neighborChunk in pairs(getCardinalChunks(regionMap, chunk.cX, chunk.cY)) do
+            for i=1,#neighborDirectionChunks do
+                local neighborDirectionChunk = neighborDirectionChunks[i]
+                local neighborChunk = neighborDirectionChunk.c
                 if (neighborChunk ~= nil) then
                     retreatPosition.x = neighborChunk.pX
                     retreatPosition.y = neighborChunk.pY
@@ -78,7 +81,7 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                     if (exitScore < score) then
                         exitScore = score
                         exitPath = neighborChunk
-                        exitDirection = i
+                        exitDirection = neighborDirectionChunk.d
                     end
                 end
             end
@@ -88,10 +91,7 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
             -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
             -- to each unit
             
-            local newSquad = findNearBySquad(natives, 
-                                             retreatPosition,
-                                             HALF_CHUNK_SIZE,
-                                             retreatFilter)
+            local newSquad = findNearBySquad(natives, retreatPosition, HALF_CHUNK_SIZE, retreatFilter)
             
             if (newSquad == nil) then
                 newSquad = createSquad(retreatPosition, surface, natives)

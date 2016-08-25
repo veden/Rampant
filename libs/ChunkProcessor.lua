@@ -18,19 +18,12 @@ local scoreChunk = chunkUtils.scoreChunk
 -- module code
 
 function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendingStack)
-    local processAll = false
-    
-    if (#pendingStack > 100) then
-        processAll = true
-    end
-    
-    local count = 0
+  
     for i=#pendingStack, 1, -1 do
         local event = pendingStack[#pendingStack]
         pendingStack[#pendingStack] = nil
 
-        local chunk = createChunk(event.area.left_top.x,
-                                  event.area.left_top.y)
+        local chunk = createChunk(event.area.left_top.x, event.area.left_top.y)
 
         local chunkX = chunk.cX
         
@@ -50,11 +43,6 @@ function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendin
         end
         
         processQueue[#processQueue+1] = chunk
-        
-        count = count + 1
-        if (count == 5) and not processAll then
-            break
-        end
     end
 end
 

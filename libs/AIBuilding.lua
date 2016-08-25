@@ -45,7 +45,6 @@ local getNeighborChunks = mapUtils.getNeighborChunks
 local createSquad = unitGroupUtils.createSquad
 
 local tableRemove = table.remove
-local mRandom = math.random
                           
 -- module code
 
@@ -64,44 +63,49 @@ function aiBuilding.removeScout(entity, natives)
     end
 end
 
-function aiBuilding.sendScouts(surface, natives, chunk, evolution_factor)
-    if (natives.points > constants.AI_SCOUT_COST) then
-        -- local scouts = natives.scouts
-        if (#natives.scouts < 5) and (mRandom() < 0.05)  then -- TODO scaled with evolution factor
-            local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + constants.HALF_CHUNK_SIZE,
-                                                                    y = chunk.pY + constants.HALF_CHUNK_SIZE },
-                                                       max_distance = constants.HALF_CHUNK_SIZE})
+function aiBuilding.makeScouts(surface, natives, chunk, evolution_factor)
+    if (natives.points > AI_SCOUT_COST) then
+        if (#global.natives.scouts < 5) and (math.random() < 0.05)  then -- TODO scaled with evolution factor
+            local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + HALF_CHUNK_SIZE,
+                                                                    y = chunk.pY + HALF_CHUNK_SIZE },
+                                                       max_distance = 100})
             
             if (enemy ~= nil) and enemy.valid and (enemy.type == "unit") then
-                natives.points = natives.points - constants.AI_SCOUT_COST
-                natives.scouts[#natives.scouts+1] = enemy
-                -- enemy.set_command({type=defines.command.attack_area,
-                                   -- destination={0,0},
-                                   -- radius=32})
+                natives.points = natives.points - AI_SCOUT_COST
+                global.natives.scouts[#global.natives.scouts+1] = enemy
+                -- print(enemy, enemy.unit_number)
             end
         end
     end
 end
 
-function aiBuilding.scouting(regionMap, surface, natives)
+function aiBuilding.scouting(regionMap, natives)
     -- print("scouting")
-                  
+    local scouts = natives.scouts
+    for i=1,#scouts do 
+        local scout = scouts[i]
+        if scout.valid then
+            -- print("scout", i, game.tick, scout, scout.has_command())
+            scout.set_command({type=defines.command.attack_area,
+                               destination={0,0},
+                               radius=32,
+                               distraction=defines.distraction.none})
+        end
+    end
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
-        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (mRandom(0, 100) < 3) then
-            local squadNeighbors = getNeighborChunks(regionMap, 
-                                                     chunk.cX, 
-                                                     chunk.cY)
+        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (math.random() < 0.03) then
+            local neighborChunks = getNeighborChunks(regionMap, chunk.cX, chunk.cY)
             local squadPath
             local squadScore = -MAGIC_MAXIMUM_NUMBER
             local squadDirection
             local squadPosition = {x = 0, y = 0}
-            for i=1, #squadNeighbors do
-                local neighborChunk = squadNeighbors[i]
-                if (neighborChunk ~= nil) and (neighborChunk[ENEMY_BASE_GENERATOR] == 0) then
+            for i=1,#neighborChunks do
+                local neighborChunk = neighborChunks[i]
+                if (neighborChunk == nil) and (neighborChunk[ENEMY_BASE_GENERATOR] == 0) then
                     squadPosition.x = neighborChunk.pX
                     squadPosition.y = neighborChunk.pY
                     if (neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]) then
