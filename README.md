@@ -29,6 +29,8 @@ Base Expansion
 
 # Version History
 
+0.0.7 - updated for 0.14
+
 0.0.6 - some speed improvements 
         MP is working (https://github.com/veden/Rampant/issues/1)
 
