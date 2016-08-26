@@ -1,4 +1,4 @@
-# Rampant
+# Rampant Tactics
 Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, and player hunting  
 
 # Forum Post
