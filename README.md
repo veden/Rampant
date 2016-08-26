@@ -1,5 +1,5 @@
 # Rampant
-Factorio Mod - Uses potential fields/pheromones to improve the enemy AI  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, and player hunting  
 
 # Forum Post
 
@@ -29,7 +29,7 @@ Base Expansion
 
 # Version History
 
-0.0.7 - updated for 0.14
+0.0.7 - updated for 0.14  
 
 0.0.6 - some speed improvements 
         MP is working (https://github.com/veden/Rampant/issues/1)
