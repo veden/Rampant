@@ -5,6 +5,7 @@ local aiDefense = {}
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
+local neighborUtils = require("NeighborUtils")
 
 -- constants
 
@@ -31,19 +32,33 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 local RETREAT_FILTER = constants.RETREAT_FILTER
 
+local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
+local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
-local getCardinalChunksWithDirection = mapUtils.getCardinalChunksWithDirection
-local positionDirectionToChunkCornerCardinal = mapUtils.positionDirectionToChunkCornerCardinal
+local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
+local positionDirectionToChunkCorner = mapUtils.positionDirectionToChunkCorner
 local getChunkByIndex = mapUtils.getChunkByIndex
 local findNearBySquad = unitGroupUtils.findNearBySquad
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
+local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
 
 local mfloor = math.floor
 
 -- module code
+
+local function validRetreatLocation(x, chunk, neighborChunk)
+    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]
+end
+
+local function scoreRetreatLocation(position, squad, neighborChunk, surface)
+    local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
+    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
+    return avoidScore - dangerScore
+end
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
@@ -63,45 +78,33 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
         end
                 
         if performRetreat then
-            local neighborDirectionChunks = getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY)
-            local exitPath
-            local exitScore = -MAGIC_MAXIMUM_NUMBER
-            local exitDirection
-            local retreatPosition = {x=0, y=0}
-            for i=1,#neighborDirectionChunks do
-                local neighborDirectionChunk = neighborDirectionChunks[i]
-                local neighborChunk = neighborDirectionChunk.c
-                if (neighborChunk ~= nil) then
-                    retreatPosition.x = neighborChunk.pX
-                    retreatPosition.y = neighborChunk.pY
-                    
-                    local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] - (neighborChunk[ENEMY_BASE_GENERATOR] * 3)
-                    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(retreatPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
-                    local score = avoidScore - dangerScore
-                    if (exitScore < score) then
-                        exitScore = score
-                        exitPath = neighborChunk
-                        exitDirection = neighborDirectionChunk.d
-                    end
+            local exitPath, exitDirection = scoreNeighborsWithDirection(chunk,
+                                                                        getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
+                                                                        validRetreatLocation,
+                                                                        scoreRetreatLocation,
+                                                                        nil,
+                                                                        surface)
+            if (exitPath ~= nil) then
+                -- retreatPosition = positionDirectionToChunkCorner(exitDirection, exitPath)
+                local retreatPosition = {}
+                retreatPosition.x = exitPath.pX + HALF_CHUNK_SIZE
+                retreatPosition.y = exitPath.pY + HALF_CHUNK_SIZE
+                
+                -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
+                -- to each unit
+                
+                local newSquad = findNearBySquad(natives, retreatPosition, HALF_CHUNK_SIZE, retreatFilter)
+                
+                if (newSquad == nil) then
+                    newSquad = createSquad(retreatPosition, surface, natives)
+                    newSquad.status = SQUAD_RETREATING
+                    newSquad.cycles = 4
                 end
-            end
-            
-            retreatPosition = positionDirectionToChunkCornerCardinal(exitDirection, exitPath)
-            
-            -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
-            -- to each unit
-            
-            local newSquad = findNearBySquad(natives, retreatPosition, HALF_CHUNK_SIZE, retreatFilter)
-            
-            if (newSquad == nil) then
-                newSquad = createSquad(retreatPosition, surface, natives)
-                newSquad.status = SQUAD_RETREATING
-                newSquad.cycles = 4
-            end
-            if (enemiesToSquad ~= nil) then
-                membersToSquad(newSquad, enemiesToSquad, false, DISTRACTION_NONE)
-            else
-                membersToSquad(newSquad, squad.group.members, true, DISTRACTION_NONE)
+                if (enemiesToSquad ~= nil) then
+                    membersToSquad(newSquad, enemiesToSquad, false, DISTRACTION_NONE)
+                else
+                    membersToSquad(newSquad, squad.group.members, true, DISTRACTION_NONE)
+                end
             end
         end
     end

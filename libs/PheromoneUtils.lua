@@ -7,8 +7,6 @@ local constants = require("Constants")
 
 -- constants
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-
 local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
 local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
 local PLAYER_BASE_PHEROMONE = constants.PLAYER_BASE_PHEROMONE
@@ -53,8 +51,8 @@ function pheromoneUtils.scents(chunk)
     end
 end
             
-function pheromoneUtils.deathScent(regionMap, x, y)
-    local chunk = getChunkByPosition(regionMap, x, y)
+function pheromoneUtils.deathScent(regionMap, position)
+    local chunk = getChunkByPosition(regionMap, position.x, position.y)
     if (chunk ~= nil) then
         chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
     end
@@ -63,7 +61,7 @@ end
 function pheromoneUtils.playerScent(regionMap, players)
     for i=1,#players do
         local player = players[i]
-        if (player ~= nil) and player.connected and (player.character ~= nil) and (player.surface.index == 1) then
+        if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.surface.index == 1) then
             local playerPosition = player.character.position
             local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
             if (playerChunk ~= nil) then

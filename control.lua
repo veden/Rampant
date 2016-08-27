@@ -1,7 +1,6 @@
 -- imports
 
-local chunkUtils = require("libs/ChunkUtils")
-local mapUtils = require("libs/MapUtils")
+local entityUtils = require("libs/EntityUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapProcessor = require("libs/MapProcessor")
@@ -34,7 +33,7 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
-local addRemoveObject = mapUtils.addRemoveObject
+local addRemoveEntity = entityUtils.addRemoveEntity
 
 -- local references to global
 
@@ -46,7 +45,6 @@ local pendingChunks
 
 function onInit()
     -- print("init")
-    global.version = constants.VERSION_5
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
@@ -54,25 +52,8 @@ function onInit()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    
-    regionMap.pQ = {{}} -- processing queue
-    regionMap.pI = 1 -- insertion location for chunk processing
-    regionMap.pP = 1 -- index for the chunk set to process
-    regionMap.pR = -1 -- current processing roll
-    natives.squads = {}
-    natives.scouts = {}
-    natives.tunnels = {}
-    natives.points = 0
-       
-    -- game.forces.player.research_all_technologies()
-    
-    -- queue all current chunks that wont be generated during play
-    local surface = game.surfaces[1]
-    for chunk in surface.get_chunks() do
-        onChunkGenerated({ surface = surface, 
-                           area = { left_top = { x = chunk.x * 32,
-                                                 y = chunk.y * 32 }}})
-    end
+        
+    onConfigChanged()
 end
 
 function onLoad()
@@ -83,8 +64,8 @@ function onLoad()
 end
 
 function onConfigChanged()
+    -- print("reprocess")
     if (global.version == nil) then
-        -- print("reprocess")
         regionMap.pQ = {{}} -- processing queue
         regionMap.pI = 1 -- insertion location for chunk processing
         regionMap.pP = 1 -- index for the chunk set to process
@@ -95,16 +76,18 @@ function onConfigChanged()
         natives.points = 0
         pendingChunks = {}
         
+        global.version = constants.VERSION_5
+    end
+    if (global.version < constants.VERSION_8) then
+    
+        -- queue all current chunks that wont be generated during play
         local surface = game.surfaces[1]
         for chunk in surface.get_chunks() do
             onChunkGenerated({ surface = surface, 
                                area = { left_top = { x = chunk.x * 32,
                                                      y = chunk.y * 32 }}})
         end
-        global.version = constants.VERSION_5
-    end
-    if (global.version < constants.VERSION_6) then
-        global.version = constants.VERSION_6
+        global.version = constants.VERSION_8
     end
 end
 
@@ -121,9 +104,6 @@ function onTick(event)
         local surface = game.surfaces[1]
         
         if (event.tick % 40 == 0) then
-            -- if not game.players[1].cheat_mode then
-                -- game.players[1].cheat_mode = true
-            -- end
             
             accumulatePoints(natives)
             
@@ -133,11 +113,10 @@ function onTick(event)
             regroupSquads(natives)
             
             -- scouting(regionMap, natives)
-            
-            squadAttackPlayer(natives, game.players)
-            
-            squadBeginAttack(natives)
+                        
+            squadBeginAttack(natives, game.players, game.evolution_factor)
             squadAttackLocation(regionMap, surface, natives)
+            squadAttackPlayer(regionMap, surface, natives)
         end
         
         processPendingChunks(regionMap, surface, natives, pendingChunks)
@@ -147,34 +126,39 @@ function onTick(event)
 end
 
 function onBuild(event)
-    addRemoveObject(regionMap, event.created_entity, natives, true)
+    addRemoveEntity(regionMap, event.created_entity, natives, true)
 end
 
 function onPickUp(event)
-    addRemoveObject(regionMap, event.entity, natives, false)
+    addRemoveEntity(regionMap, event.entity, natives, false)
 end
 
 function onDeath(event)
     local entity = event.entity
-    if (entity.surface.index == 1) then
+    local surface = entity.surface
+    if (surface.index == 1) then
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
                 local entityPosition = entity.position
                 
                 -- drop death pheromone where unit died
-                deathScent(regionMap, entityPosition.x, entityPosition.y)
+                deathScent(regionMap, entityPosition)
                 
-                if (event.force ~= nil) and (event.force.name == "player") then
-                    local squad = convertUnitGroupToSquad(natives, entity.unit_group)
-                    retreatUnits(entityPosition, squad, regionMap, game.surfaces[1], natives)
+                if (event.force ~= nil) and (event.force.name == "player") then 
+                    retreatUnits(entityPosition, 
+                                 convertUnitGroupToSquad(natives, 
+                                                         entity.unit_group),
+                                 regionMap, 
+                                 surface, 
+                                 natives)
                 end
                 
                 removeScout(entity, global.natives)
             elseif (entity.type == "unit-spawner") then
-                addRemoveObject(regionMap, entity, natives, false)
+                addRemoveEntity(regionMap, entity, natives, false)
             end
         elseif (entity.force.name == "player") then
-            addRemoveObject(regionMap, entity, natives, false)
+            addRemoveEntity(regionMap, entity, natives, false)
         end
     end
 end
@@ -215,7 +199,5 @@ remote.add_interface("rampant", {
                                     test7 = tests.test7,
                                     test8 = tests.test8,
                                     test9 = tests.test9,
-                                    test10 = function () 
-                                                scouting(regionMap, natives)
-                                             end
+                                    test10 = tests.test10
                                 })

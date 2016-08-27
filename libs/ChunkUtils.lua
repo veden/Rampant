@@ -43,8 +43,6 @@ function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate
         end
         if tile.collides_with("player-layer") then
             return true
-        -- else
-            -- surface.set_tiles({{name="sand-dark", position=tile.position}}, false)
         end
     end
     return false
@@ -68,15 +66,6 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
             break
         end
     end
-    -- if passableNorthSouth and passableEastWest then
-        -- chunkUtils.colorChunk(x, y, "grass", surface)
-    -- elseif passableNorthSouth then
-        -- chunkUtils.colorChunk(x, y, "dirt", surface)
-    -- elseif passableEastWest then
-        -- chunkUtils.colorChunk(x, y, "sand", surface)
-    -- else
-        -- chunkUtils.colorChunk(x, y, "concrete", surface)
-    -- end
     
     chunk[EAST_WEST_PASSABLE] = passableEastWest
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
@@ -137,14 +126,14 @@ function chunkUtils.createChunk(topX, topY)
     return chunk
 end
 
-function chunkUtils.colorChunk(x, y, tileType, surface)
-    local tiles = {}
-    for xi=x+5, x + 27 do
-        for yi=y+5, y + 27 do
-            tiles[#tiles+1] = {name=tileType, position={xi, yi}}
-        end
-    end
-    surface.set_tiles(tiles, false)
-end
+-- function chunkUtils.colorChunk(x, y, tileType, surface)
+    -- local tiles = {}
+    -- for xi=x+5, x + 27 do
+        -- for yi=y+5, y + 27 do
+            -- tiles[#tiles+1] = {name=tileType, position={xi, yi}}
+        -- end
+    -- end
+    -- surface.set_tiles(tiles, false)
+-- end
 
 return chunkUtils

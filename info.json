@@ -6,5 +6,5 @@
     "author" : "Veden",
     "homepage" : "https://forums.factorio.com/viewtopic.php?f=94&t=31445",
     "description" : "Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, and player hunting",
-    "dependencies" : ["base >= 0.14", "? bobenemies", "? Natural_Evolution_Enemies"]
+    "dependencies" : ["base >= 0.13.17", "? bobenemies", "? Natural_Evolution_Enemies"]
 }

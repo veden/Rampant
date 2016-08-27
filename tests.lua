@@ -108,4 +108,9 @@ function tests.test9()
     end
 end
 
+function tests.test10()
+    game.players[1].cheat_mode = true
+    game.forces.player.research_all_technologies()
+end
+
 return tests

@@ -5,6 +5,7 @@ local aiBuilding = {}
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
+local neighborUtils = require("NeighborUtils")
 
 -- constants
 
@@ -42,11 +43,22 @@ local DISTRACTION_BY_DAMAGE = defines.distraction.by_damage
 -- imported functions
 
 local getNeighborChunks = mapUtils.getNeighborChunks
+local scoreNeighbors = neighborUtils.scoreNeighbors
 local createSquad = unitGroupUtils.createSquad
 
 local tableRemove = table.remove
                           
 -- module code
+
+local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
+    local attackScore = surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]  
+    local avoidScore = neighborChunk[DEATH_PHEROMONE] 
+    return attackScore - avoidScore
+end
+
+local function validUnitGroupLocation(x, chunk, neighborChunk)
+    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]
+end
 
 function aiBuilding.accumulatePoints(natives)
     natives.points = natives.points + AI_POINT_GENERATOR_AMOUNT
@@ -98,30 +110,14 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
         if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (math.random() < 0.03) then
-            local neighborChunks = getNeighborChunks(regionMap, chunk.cX, chunk.cY)
-            local squadPath
-            local squadScore = -MAGIC_MAXIMUM_NUMBER
-            local squadDirection
-            local squadPosition = {x = 0, y = 0}
-            for i=1,#neighborChunks do
-                local neighborChunk = neighborChunks[i]
-                if (neighborChunk == nil) and (neighborChunk[ENEMY_BASE_GENERATOR] == 0) then
-                    squadPosition.x = neighborChunk.pX
-                    squadPosition.y = neighborChunk.pY
-                    if (neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]) then
-                        local attackScore = surface.get_pollution(squadPosition) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]  
-                        local avoidScore = neighborChunk[DEATH_PHEROMONE] 
-                        local score = attackScore - avoidScore
-                        if (squadScore < attackScore) then
-                            squadScore = attackScore
-                            squadPath = neighborChunk
-                            squadDirection = i
-                        end
-                    end
-                end
-            end
-            
+            local squadPath, squadScore = scoreNeighbors(chunk,
+                                                         getNeighborChunks(regionMap, chunk.cX, chunk.cY),
+                                                         validUnitGroupLocation,
+                                                         scoreUnitGroupLocation,
+                                                         nil,
+                                                         surface)
             if (squadPath ~= nil) and (squadScore > 0) then
+                local squadPosition = {}
                 squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
                 squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
                 

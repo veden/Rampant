@@ -3,7 +3,7 @@ local constants = {}
 -- versions
 
 constants.VERSION_5 = 5
-constants.VERSION_6 = 6
+constants.VERSION_8 = 8
 
 -- misc
 
@@ -36,14 +36,14 @@ constants.EAST_WEST = 2
 
 constants.MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 35
+constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 175
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 100
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 -- pheromone diffusion amounts
 
-constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.03
-constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.00250
+constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.05
+constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.02
 
 constants.DEATH_PHEROMONE_PERSISTANCE = 0.99
 constants.STANDARD_PHEROMONE_PERSISTANCE = 0.95
@@ -103,6 +103,7 @@ constants.BUILDING_PHEROMONES["mining-drill"] = 80
 
 constants.DEFENSE_PHEROMONES = {}
 constants.DEFENSE_PHEROMONES["ammo-turret"] = 5
+constants.DEFENSE_PHEROMONES["wall"] = 0.5
 constants.DEFENSE_PHEROMONES["electric-turret"] = 7.5
 constants.DEFENSE_PHEROMONES["fluid-turret"] = 10
 constants.DEFENSE_PHEROMONES["turret"] = 3

@@ -29,6 +29,8 @@ Base Expansion
 
 # Version History
 
+0.0.8 - 
+
 0.0.7 - updated for 0.14  
 
 0.0.6 - some speed improvements 
