@@ -30,8 +30,6 @@ local STANDARD_PHEROMONE_PERSISTANCE = constants.STANDARD_PHEROMONE_PERSISTANCE
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
-local mFloor = math.floor 
-
 -- module code
               
 function pheromoneUtils.scents(chunk)
@@ -61,7 +59,7 @@ end
 function pheromoneUtils.playerScent(regionMap, players)
     for i=1,#players do
         local player = players[i]
-        if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.surface.index == 1) then
+        if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then
             local playerPosition = player.character.position
             local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
             if (playerChunk ~= nil) then
@@ -74,7 +72,7 @@ end
 function pheromoneUtils.processPheromone(chunk, neighbors)
     local diffusionAmount
     local persistence
-    for x=1,6 do
+    for x=1,6 do -- pheromone level indexes on chunks are 1 - 6
         if (x == DEATH_PHEROMONE) then
             diffusionAmount = DEATH_PHEROMONE_DIFFUSION_AMOUNT
             persistence = DEATH_PHEROMONE_PERSISTANCE
