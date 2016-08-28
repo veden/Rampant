@@ -55,9 +55,9 @@ local function validRetreatLocation(x, chunk, neighborChunk)
 end
 
 local function scoreRetreatLocation(position, squad, neighborChunk, surface)
-    local avoidScore = neighborChunk[ENEMY_BASE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
-    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]
-    return avoidScore - dangerScore
+    local safeScore = neighborChunk[ENEMY_BASE_PHEROMONE]
+    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
+    return safeScore - dangerScore
 end
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)

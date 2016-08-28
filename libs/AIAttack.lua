@@ -138,15 +138,14 @@ end
 
 function aiAttack.squadBeginAttack(natives, players, evolution_factor)
     local squads = natives.squads
-    local threshold = 0.05 + (evolution_factor * 0.20)
-    local groupSizeThreshold = mMax((evolution_factor * constants.AI_MAX_SQUAD_SIZE) + 1, 20)
     for i=1,#squads do
         local squad = squads[i]
         if (squad.status == SQUAD_GUARDING) and squad.group.valid then
+            local threshold = 0.05 + (evolution_factor * 0.20) + (#squad.group.members * 0.0033)
+            
             -- check to hunt player
             if (math.random() < 0.30) and playersWithinProximityToPosition(players, squad.group.position, 100) then
-                print("player hunt")
-                if (math.random() < threshold) or (groupSizeThreshold <= #squad.group.members) then
+                if (math.random() < threshold) then
                     squad.status = SQUAD_SUICIDE_HUNT
                 else
                     squad.status = SQUAD_HUNTING
@@ -155,8 +154,7 @@ function aiAttack.squadBeginAttack(natives, players, evolution_factor)
             
             -- check to raid base
             if (squad.status == SQUAD_GUARDING) and (math.random() < 0.70) then
-                print("raid")
-                if (math.random() < threshold) or (groupSizeThreshold <= #squad.group.members) then
+                if (math.random() < threshold) then
                     squad.status = SQUAD_SUICIDE_RAID
                 else
                     squad.status = SQUAD_RAIDING
