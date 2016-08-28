@@ -97,7 +97,6 @@ function aiBuilding.scouting(regionMap, natives)
     for i=1,#scouts do 
         local scout = scouts[i]
         if scout.valid then
-            -- print("scout", i, game.tick, scout, scout.has_command())
             scout.set_command({type=defines.command.attack_area,
                                destination={0,0},
                                radius=32,

@@ -29,6 +29,8 @@ Base Expansion
 
 # Version History
 
+0.0.9 - 
+
 0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
         added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
         increased squad size max from 125 to 150, (larger waves)   

@@ -27,8 +27,7 @@ local deathScent = pheromoneUtils.deathScent
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
-local squadAttackPlayer = aiAttack.squadAttackPlayer
-local squadAttackLocation = aiAttack.squadAttackLocation
+local squadAttack = aiAttack.squadAttack
 local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
@@ -78,7 +77,7 @@ function onConfigChanged()
         
         global.version = constants.VERSION_5
     end
-    if (global.version < constants.VERSION_8) then
+    if (global.version < constants.VERSION_9) then
     
         -- queue all current chunks that wont be generated during play
         local surface = game.surfaces[1]
@@ -87,7 +86,7 @@ function onConfigChanged()
                                area = { left_top = { x = chunk.x * 32,
                                                      y = chunk.y * 32 }}})
         end
-        global.version = constants.VERSION_8
+        global.version = constants.VERSION_9
     end
 end
 
@@ -115,8 +114,7 @@ function onTick(event)
             -- scouting(regionMap, natives)
                         
             squadBeginAttack(natives, game.players, game.evolution_factor)
-            squadAttackLocation(regionMap, surface, natives)
-            squadAttackPlayer(regionMap, surface, natives)
+            squadAttack(regionMap, surface, natives)
         end
         
         processPendingChunks(regionMap, surface, natives, pendingChunks)
@@ -199,5 +197,6 @@ remote.add_interface("rampant", {
                                     test7 = tests.test7,
                                     test8 = tests.test8,
                                     test9 = tests.test9,
-                                    test10 = tests.test10
+                                    test10 = tests.test10,
+                                    test11 = tests.test11
                                 })

@@ -66,47 +66,22 @@ local function scoreHuntPlayerLocation(position, squad, neighborChunk, surface)
     return damageScore - avoidScore - squadMovementPenalty
 end
 
-function aiAttack.squadAttackLocation(regionMap, surface, natives)
+function aiAttack.squadAttack(regionMap, surface, natives)
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
-        if group.valid and ((squad.status == SQUAD_RAIDING) or (squad.status == SQUAD_SUICIDE_RAID)) then 
-            if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) then
-                local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
-                if (chunk ~= nil) then
-                    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
-                    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-                                                                                     getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY),
-                                                                                     validLocation,
-                                                                                     scoreAttackLocation,
-                                                                                     squad,
-                                                                                     surface)
-                    if (attackChunk ~= nil) then
-                        if ((attackChunk[PLAYER_BASE_GENERATOR] == 0) and (attackChunk[PLAYER_DEFENSE_GENERATOR] == 0)) or
-                            ((group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering)) then
-                            
-                            attackPosition = positionFromDirectionAndChunkCardinal(attackDirection, attackChunk)
-                            
-                            group.set_command({type=defines.command.attack_area,
-                                               destination=attackPosition,
-                                               radius=32,
-                                               distraction=defines.distraction.by_anything})
-                            group.start_moving()
-                        end
-                    end
-                end
-            end
+        local raiding = false
+        local hunting = false
+        local scoreLocation
+        if (squad.status == SQUAD_RAIDING) or (squad.status == SQUAD_SUICIDE_RAID) then
+            raiding = true
+            scoreLocation = scoreAttackLocation
+        elseif (squad.status == SQUAD_HUNTING) or (squad.status == SQUAD_SUICIDE_HUNT) then
+            hunting = true
+            scoreLocation = scoreHuntPlayerLocation
         end
-    end
-end
-
-function aiAttack.squadAttackPlayer(regionMap, surface, natives)
-    local squads = natives.squads
-    for i=1,#squads do
-        local squad = squads[i]
-        local group = squad.group
-        if (group.valid) and ((squad.status == SQUAD_HUNTING) or (squad.status == SQUAD_SUICIDE_HUNT)) then
+        if group.valid and (raiding or hunting) then 
             if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) then
                 local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
                 if (chunk ~= nil) then
@@ -114,7 +89,7 @@ function aiAttack.squadAttackPlayer(regionMap, surface, natives)
                     local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
                                                                                      getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY),
                                                                                      validLocation,
-                                                                                     scoreHuntPlayerLocation,
+                                                                                     scoreLocation,
                                                                                      squad,
                                                                                      surface)
                     if (attackChunk ~= nil) then
