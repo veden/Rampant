@@ -32,31 +32,35 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 -- module code
               
-function pheromoneUtils.scents(chunk)
+function pheromoneUtils.scents(chunk, pheromoneTotals)
     local amount = chunk[PLAYER_DEFENSE_GENERATOR]
     if (amount > 0) then
         chunk[PLAYER_DEFENSE_PHEROMONE] = chunk[PLAYER_DEFENSE_PHEROMONE] + amount
+        -- pheromoneTotals[PLAYER_DEFENSE_PHEROMONE] = pheromoneTotals[PLAYER_DEFENSE_PHEROMONE] + amount
     end
     
     amount = chunk[PLAYER_BASE_GENERATOR]
     if (amount > 0) then
         chunk[PLAYER_BASE_PHEROMONE] = chunk[PLAYER_BASE_PHEROMONE] + amount
+        -- pheromoneTotals[PLAYER_BASE_PHEROMONE] = pheromoneTotals[PLAYER_BASE_PHEROMONE] + amount
     end
     
     amount = chunk[ENEMY_BASE_GENERATOR]
     if (amount > 0) then
         chunk[ENEMY_BASE_PHEROMONE] = chunk[ENEMY_BASE_PHEROMONE] + amount
+        -- pheromoneTotals[ENEMY_BASE_PHEROMONE] = pheromoneTotals[ENEMY_BASE_PHEROMONE] + amount
     end
 end
             
-function pheromoneUtils.deathScent(regionMap, position)
+function pheromoneUtils.deathScent(regionMap, position, pheromoneTotals)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
     if (chunk ~= nil) then
         chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
+        -- pheromoneTotals[DEATH_PHEROMONE] = pheromoneTotals[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
     end
 end
 
-function pheromoneUtils.playerScent(regionMap, players)
+function pheromoneUtils.playerScent(regionMap, players, pheromoneTotals)
     for i=1,#players do
         local player = players[i]
         if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then
@@ -64,12 +68,13 @@ function pheromoneUtils.playerScent(regionMap, players)
             local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
             if (playerChunk ~= nil) then
                 playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+                -- pheromoneTotals[PLAYER_PHEROMONE] = pheromoneTotals[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
             end
         end
     end
 end
 
-function pheromoneUtils.processPheromone(chunk, neighbors)
+function pheromoneUtils.processPheromone(chunk, neighbors, pheromoneTotals)
     local diffusionAmount
     local persistence
     for x=1,6 do -- pheromone level indexes on chunks are 1 - 6
@@ -81,7 +86,7 @@ function pheromoneUtils.processPheromone(chunk, neighbors)
             persistence = STANDARD_PHEROMONE_PERSISTANCE
         end
         local totalDiffused = 0
-        local chunkValue = chunk[x]
+        local chunkValue = chunk[x] * persistence
         for i=1,#neighbors do
             local neighborChunk = neighbors[i]
             if (neighborChunk ~= nil) then
@@ -90,7 +95,8 @@ function pheromoneUtils.processPheromone(chunk, neighbors)
                 neighborChunk[x] = neighborChunk[x] + diffusedAmount
             end
         end
-        chunk[x] = (chunkValue - totalDiffused) * persistence
+        -- pheromoneTotals[x] = pheromoneTotals[x] + (chunkValue - chunk[x])
+        chunk[x] = (chunkValue - totalDiffused)
     end
 end
 

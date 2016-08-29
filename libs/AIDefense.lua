@@ -46,8 +46,6 @@ local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
 
-local mfloor = math.floor
-
 -- module code
 
 local function validRetreatLocation(x, chunk, neighborChunk)
@@ -62,7 +60,7 @@ end
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > mfloor(game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
+    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
         local performRetreat = false
         local enemiesToSquad
     

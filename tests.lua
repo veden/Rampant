@@ -7,6 +7,7 @@ function tests.test1()
     local playerChunkX = math.floor(player.position.x / 32)
     local playerChunkY = math.floor(player.position.y / 32)
     print("------")
+    print(#global.regionMap.processQueue)
     print(playerChunkX .. ", " .. playerChunkY)
     print("--")
     for x=playerChunkX-3, playerChunkX+3 do
@@ -111,6 +112,10 @@ end
 function tests.test10()
     game.players[1].cheat_mode = true
     game.forces.player.research_all_technologies()
+end
+
+function tests.test11()
+    print(serpent.dump(global.pheromoneTotals))
 end
 
 return tests

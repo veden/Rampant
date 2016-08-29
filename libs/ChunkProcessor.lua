@@ -35,13 +35,7 @@ function chunkProcessor.processPendingChunks(regionMap, surface, natives, pendin
         checkChunkPassability(chunk, surface, natives)
         scoreChunk(chunk, surface, natives)
         
-        local processQueue = regionMap.pQ[regionMap.pI]
-        if (#processQueue == CHUNK_MAX_QUEUE_SIZE) then
-            regionMap.pI = regionMap.pI + 1
-            regionMap.pQ[regionMap.pI] = {}
-            processQueue = regionMap.pQ[regionMap.pI]
-        end
-        
+        local processQueue = regionMap.processQueue
         processQueue[#processQueue+1] = chunk
     end
 end

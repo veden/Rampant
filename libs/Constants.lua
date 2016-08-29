@@ -10,7 +10,8 @@ constants.VERSION_9 = 9
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.RETREAT_DEATH_PHEROMONE_LEVEL = 10000
 
-constants.CHUNK_MAX_QUEUE_SIZE = 350
+constants.PROCESS_QUEUE_SIZE = 350
+constants.SCAN_QUEUE_SIZE = 10
 
 -- ai
 
@@ -42,11 +43,11 @@ constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 -- pheromone diffusion amounts
 
-constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.05
+constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.10
 constants.DEATH_PHEROMONE_DIFFUSION_AMOUNT = 0.02
 
 constants.DEATH_PHEROMONE_PERSISTANCE = 0.99
-constants.STANDARD_PHEROMONE_PERSISTANCE = 0.95
+constants.STANDARD_PHEROMONE_PERSISTANCE = 0.98
 
 -- chunk attributes
 

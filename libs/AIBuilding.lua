@@ -65,6 +65,7 @@ function aiBuilding.accumulatePoints(natives)
 end
 
 function aiBuilding.removeScout(entity, natives)
+    --[[
     local scouts = natives.scouts
     for i=1, #scouts do
         local scout = scouts[i]
@@ -73,9 +74,11 @@ function aiBuilding.removeScout(entity, natives)
             return
         end
     end
+    --]]
 end
 
 function aiBuilding.makeScouts(surface, natives, chunk, evolution_factor)
+    --[[
     if (natives.points > AI_SCOUT_COST) then
         if (#global.natives.scouts < 5) and (math.random() < 0.05)  then -- TODO scaled with evolution factor
             local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + HALF_CHUNK_SIZE,
@@ -89,10 +92,11 @@ function aiBuilding.makeScouts(surface, natives, chunk, evolution_factor)
             end
         end
     end
+    --]]
 end
 
 function aiBuilding.scouting(regionMap, natives)
-    -- print("scouting")
+    --[[
     local scouts = natives.scouts
     for i=1,#scouts do 
         local scout = scouts[i]
@@ -103,12 +107,13 @@ function aiBuilding.scouting(regionMap, natives)
                                distraction=defines.distraction.none})
         end
     end
+    --]]
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
-        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < AI_MAX_SQUAD_COUNT * evolution_factor) and (math.random() < 0.03) then
+        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) and (math.random() < 0.03) then
             local squadPath, squadScore = scoreNeighbors(chunk,
                                                          getNeighborChunks(regionMap, chunk.cX, chunk.cY),
                                                          validUnitGroupLocation,

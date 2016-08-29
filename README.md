@@ -25,11 +25,12 @@ Pathfinding - unit groups will use potential fields to perform only single step 
 Tunneling Biters  
 Fire Biters  
 Suicide Biters  
+infesting Biters  
 Base Expansion  
 
 # Version History
 
-0.0.9 - 
+0.0.9 - fixed ai created bases not being counted in logic
 
 0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
         added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   

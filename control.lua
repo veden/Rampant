@@ -16,6 +16,7 @@ local tests = require("tests")
 local processPendingChunks = chunkProcessor.processPendingChunks
 
 local processMap = mapProcessor.processMap
+local scanMap = mapProcessor.scanMap
 
 local accumulatePoints = aiBuilding.accumulatePoints
 local removeScout = aiBuilding.removeScout
@@ -38,6 +39,7 @@ local addRemoveEntity = entityUtils.addRemoveEntity
 
 local regionMap
 local natives
+local pheromoneTotals
 local pendingChunks
 
 -- hook functions
@@ -47,11 +49,13 @@ function onInit()
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
+    global.pheromoneTotals = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-        
+    pheromoneTotals = global.pheromoneTotals
+    
     onConfigChanged()
 end
 
@@ -60,15 +64,18 @@ function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
+    pheromoneTotals = global.pheromoneTotals
 end
 
 function onConfigChanged()
     -- print("reprocess")
     if (global.version == nil) then
-        regionMap.pQ = {{}} -- processing queue
-        regionMap.pI = 1 -- insertion location for chunk processing
-        regionMap.pP = 1 -- index for the chunk set to process
-        regionMap.pR = -1 -- current processing roll
+
+        -- removed in version 9
+        -- regionMap.pQ = {{}} -- processing queue
+        -- regionMap.pI = 1 -- insertion location for chunk processing
+        -- regionMap.pP = 1 -- index for the chunk set to process
+        -- regionMap.pR = -1 -- current processing roll
         natives.squads = {}
         natives.scouts = {}
         natives.tunnels = {}
@@ -78,7 +85,25 @@ function onConfigChanged()
         global.version = constants.VERSION_5
     end
     if (global.version < constants.VERSION_9) then
-    
+        
+        -- remove version 5 references
+        regionMap.pQ = nil
+        regionMap.pI = nil
+        regionMap.pP = nil
+        regionMap.pR = nil
+        
+        regionMap.processQueue = {}
+        regionMap.processPointer = 1
+        regionMap.scanPointer = 1
+        regionMap.processRoll = -1
+        
+        pheromoneTotals[constants.DEATH_PHEROMONE] = 0
+        pheromoneTotals[constants.ENEMY_BASE_PHEROMONE] = 0
+        pheromoneTotals[constants.PLAYER_PHEROMONE] = 0
+        pheromoneTotals[constants.PLAYER_BASE_PHEROMONE] = 0
+        pheromoneTotals[constants.PLAYER_DEFENSE_PHEROMONE] = 0
+        pheromoneTotals[constants.MOVEMENT_PHEROMONE] = 0
+        
         -- queue all current chunks that wont be generated during play
         local surface = game.surfaces[1]
         for chunk in surface.get_chunks() do
@@ -107,7 +132,7 @@ function onTick(event)
             accumulatePoints(natives)
             
             -- put down player pheromone for player hunters
-            playerScent(regionMap, game.players)
+            playerScent(regionMap, game.players, pheromoneTotals)
             
             regroupSquads(natives)
             
@@ -119,7 +144,9 @@ function onTick(event)
         
         processPendingChunks(regionMap, surface, natives, pendingChunks)
         
-        processMap(regionMap, surface, natives, game.evolution_factor)
+        scanMap(regionMap, surface)
+        
+        processMap(regionMap, surface, natives, pheromoneTotals, game.evolution_factor)
     end
 end
 
@@ -140,7 +167,7 @@ function onDeath(event)
                 local entityPosition = entity.position
                 
                 -- drop death pheromone where unit died
-                deathScent(regionMap, entityPosition)
+                deathScent(regionMap, entityPosition, pheromoneTotals)
                 
                 if (event.force ~= nil) and (event.force.name == "player") then 
                     retreatUnits(entityPosition, 

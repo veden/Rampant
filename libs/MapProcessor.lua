@@ -5,6 +5,7 @@ local mapProcessor = {}
 local mapUtils = require("MapUtils")
 local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
+local constants = require("Constants")
 
 -- imported functions
 
@@ -16,21 +17,23 @@ local formSquads = aiBuilding.formSquads
 
 local getCardinalChunks = mapUtils.getCardinalChunks
 
+local mMin = math.min
+
 -- module code
 
 -- processing is not consistant as it depends on the number of chunks that have been generated
 -- so 200 chunks is processed 3 times a second and 1200 chunks is processed once a second
 -- In theory, this might be fine as smaller bases have less surface to attack and need to have 
 -- pheromone dissipate at a faster rate.
-function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
-    local roll = regionMap.pR
-    local index = regionMap.pP
+function mapProcessor.processMap(regionMap, surface, natives, pheromoneTotals, evolution_factor)   
+    local roll = regionMap.processRoll
+    local index = regionMap.processPointer
     local scouts = false
     local squads = false
     
-    if (regionMap.pP == 1) then
+    if (index == 1) then
         roll = math.random()
-        regionMap.pR = roll
+        regionMap.processRoll = roll
     end
     
     if (0.05 <= roll) and (roll <= 0.10) then
@@ -41,11 +44,12 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
         squads = true
     end
     
-    local chunkQueue = regionMap.pQ[index]
-    for x=1,#chunkQueue do
-        local chunk = chunkQueue[x]
+    local processQueue = regionMap.processQueue
+    local endIndex = mMin(index + constants.PROCESS_QUEUE_SIZE, #processQueue)
+    for x=index,endIndex do
+        local chunk = processQueue[x]
         
-        scents(chunk)
+        scents(chunk, pheromoneTotals)
         
         if scouts then
             makeScouts(surface, natives, chunk, evolution_factor)
@@ -54,12 +58,35 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
             formSquads(regionMap, surface, natives, chunk, evolution_factor)
         end
         
-        processPheromone(chunk, getCardinalChunks(regionMap, chunk.cX, chunk.cY))
+        processPheromone(chunk, getCardinalChunks(regionMap, chunk.cX, chunk.cY), pheromoneTotals)
     end
     
-    regionMap.pP = regionMap.pP + 1
-    if (regionMap.pP > regionMap.pI) then
-        regionMap.pP = 1
+    if (endIndex == #processQueue) then
+        regionMap.processPointer = 1
+    else
+        regionMap.processPointer = endIndex + 1
+    end
+end
+
+function mapProcessor.scanMap(regionMap, surface)
+    local index = regionMap.scanPointer
+        
+    local processQueue = regionMap.processQueue
+    local endIndex = mMin(index + constants.SCAN_QUEUE_SIZE, #processQueue)
+    for x=index,endIndex do
+        local chunk = processQueue[x]
+        
+        local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
+                                                                  {chunk.pX + constants.CHUNK_SIZE, chunk.pY + constants.CHUNK_SIZE}},
+                                                          type = "unit-spawner",
+                                                          force = "enemy"})
+        chunk[constants.ENEMY_BASE_GENERATOR] = spawners * constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+    end
+    
+    if (endIndex == #processQueue) then
+        regionMap.scanPointer = 1
+    else
+        regionMap.scanPointer = endIndex + 1
     end
 end
 
