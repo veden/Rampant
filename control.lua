@@ -1,5 +1,6 @@
 -- imports
 
+local setupUtils = require("setupUtils")
 local entityUtils = require("libs/EntityUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -41,6 +42,7 @@ local regionMap
 local natives
 local pheromoneTotals
 local pendingChunks
+local temps
 
 -- hook functions
 
@@ -50,11 +52,13 @@ function onInit()
     global.pendingChunks = {}
     global.natives = {}
     global.pheromoneTotals = {}
+    global.temps = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
     pheromoneTotals = global.pheromoneTotals
+    temps = global.temps
     
     onConfigChanged()
 end
@@ -65,6 +69,7 @@ function onLoad()
     natives = global.natives
     pendingChunks = global.pendingChunks
     pheromoneTotals = global.pheromoneTotals
+    temps = global.temps
 end
 
 function onConfigChanged()
@@ -96,6 +101,8 @@ function onConfigChanged()
         regionMap.processPointer = 1
         regionMap.scanPointer = 1
         regionMap.processRoll = -1
+        
+        setupUtils.initTemps(temps)
         
         pheromoneTotals[constants.DEATH_PHEROMONE] = 0
         pheromoneTotals[constants.ENEMY_BASE_PHEROMONE] = 0
@@ -132,21 +139,21 @@ function onTick(event)
             accumulatePoints(natives)
             
             -- put down player pheromone for player hunters
-            playerScent(regionMap, game.players, pheromoneTotals)
+            playerScent(regionMap, game.players)
             
-            regroupSquads(natives)
+            regroupSquads(natives, temps)
             
             -- scouting(regionMap, natives)
                         
             squadBeginAttack(natives, game.players, game.evolution_factor)
-            squadAttack(regionMap, surface, natives)
+            squadAttack(regionMap, surface, natives, temps)
         end
         
-        processPendingChunks(regionMap, surface, natives, pendingChunks)
+        processPendingChunks(regionMap, surface, pendingChunks)
         
         scanMap(regionMap, surface)
         
-        processMap(regionMap, surface, natives, pheromoneTotals, game.evolution_factor)
+        processMap(regionMap, surface, natives, game.evolution_factor, temps)
     end
 end
 
@@ -175,7 +182,8 @@ function onDeath(event)
                                                          entity.unit_group),
                                  regionMap, 
                                  surface, 
-                                 natives)
+                                 natives,
+                                 temps)
                 end
                 
                 removeScout(entity, global.natives)

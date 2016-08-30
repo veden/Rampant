@@ -66,8 +66,11 @@ local function scoreHuntPlayerLocation(position, squad, neighborChunk, surface)
     return damageScore - avoidScore - squadMovementPenalty
 end
 
-function aiAttack.squadAttack(regionMap, surface, natives)
+function aiAttack.squadAttack(regionMap, surface, natives, temps)
     local squads = natives.squads
+    local attackPosition = temps[constants.ATTACK_POSITION]
+    local cmd = temps[constants.ATTACK_COMMAND]
+    local neighborsWithDirection = temps[constants.ATTACK_DIRECTION]
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
@@ -86,22 +89,21 @@ function aiAttack.squadAttack(regionMap, surface, natives)
                 local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
                 if (chunk ~= nil) then
                     addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
+                    getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY, neighborsWithDirection)
                     local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-                                                                                     getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY),
+                                                                                     neighborsWithDirection,
                                                                                      validLocation,
                                                                                      scoreLocation,
                                                                                      squad,
-                                                                                     surface)
+                                                                                     surface,
+                                                                                     attackPosition)
                     if (attackChunk ~= nil) then
                         if ((attackChunk[PLAYER_BASE_GENERATOR] == 0) and (attackChunk[PLAYER_DEFENSE_GENERATOR] == 0)) or
                             ((group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering)) then
                             
-                            attackPosition = positionFromDirectionAndChunkCardinal(attackDirection, attackChunk)
+                            positionFromDirectionAndChunkCardinal(attackDirection, attackChunk, attackPosition)
                             
-                            group.set_command({type=defines.command.attack_area,
-                                               destination=attackPosition,
-                                               radius=32,
-                                               distraction=defines.distraction.by_anything})
+                            group.set_command(cmd)
                             group.start_moving()
                         end
                     end

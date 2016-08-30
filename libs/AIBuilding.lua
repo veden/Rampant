@@ -110,28 +110,31 @@ function aiBuilding.scouting(regionMap, natives)
     --]]
 end
 
-function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
+function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, temps)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
         if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) and (math.random() < 0.03) then
+            local squadPosition = temps[constants.SQUAD_POSITION]            
+            
             local squadPath, squadScore = scoreNeighbors(chunk,
                                                          getNeighborChunks(regionMap, chunk.cX, chunk.cY),
                                                          validUnitGroupLocation,
                                                          scoreUnitGroupLocation,
                                                          nil,
-                                                         surface)
+                                                         surface,
+                                                         squadPosition)
             if (squadPath ~= nil) and (squadScore > 0) then
-                local squadPosition = {}
                 squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
                 squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
                 
-                local squad = createSquad(squadPosition, surface, natives)
+                local multiGroupCmd = temps[constants.MULTI_GROUP_COMMAND]
+                local groupCmd = temps[constants.GROUP_COMMAND]
                 
-                local foundUnits = surface.set_multi_command({command = { type = COMMAND_GROUP,
-                                                                          group = squad.group,
-                                                                          distraction = DISTRACTION_BY_DAMAGE },
-                                                              unit_count = AI_MAX_SQUAD_SIZE * evolution_factor,
-                                                              unit_search_distance = (CHUNK_SIZE*2) })
+                local squad = createSquad(squadPosition, surface, natives)
+                multiGroupCmd.unit_count = evolution_factor * AI_MAX_SQUAD_SIZE
+                groupCmd.group = squad.group
+                
+                local foundUnits = surface.set_multi_command(multiGroupCmd)
                 if (foundUnits > 0) then
                     natives.points = natives.points - AI_SQUAD_COST
                 end

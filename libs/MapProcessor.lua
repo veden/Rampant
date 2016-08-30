@@ -25,7 +25,7 @@ local mMin = math.min
 -- so 200 chunks is processed 3 times a second and 1200 chunks is processed once a second
 -- In theory, this might be fine as smaller bases have less surface to attack and need to have 
 -- pheromone dissipate at a faster rate.
-function mapProcessor.processMap(regionMap, surface, natives, pheromoneTotals, evolution_factor)   
+function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, temps)   
     local roll = regionMap.processRoll
     local index = regionMap.processPointer
     local scouts = false
@@ -49,16 +49,16 @@ function mapProcessor.processMap(regionMap, surface, natives, pheromoneTotals, e
     for x=index,endIndex do
         local chunk = processQueue[x]
         
-        scents(chunk, pheromoneTotals)
+        scents(chunk)
         
         if scouts then
             makeScouts(surface, natives, chunk, evolution_factor)
         end
         if squads then
-            formSquads(regionMap, surface, natives, chunk, evolution_factor)
+            formSquads(regionMap, surface, natives, chunk, evolution_factor, temps)
         end
         
-        processPheromone(chunk, getCardinalChunks(regionMap, chunk.cX, chunk.cY), pheromoneTotals)
+        processPheromone(chunk, getCardinalChunks(regionMap, chunk.cX, chunk.cY))
     end
     
     if (endIndex == #processQueue) then

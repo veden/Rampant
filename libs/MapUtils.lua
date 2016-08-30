@@ -81,8 +81,8 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
     return neighbors
 end
 
-function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY)   
-    local neighbors = {{d=1},{d=2},{d=3},{d=4},{d=5},{d=6},{d=7},{d=8}}
+function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY, neighbors)   
+    -- local neighbors = {{d=1},{d=2},{d=3},{d=4},{d=5},{d=6},{d=7},{d=8}}
     local xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
         neighbors[1].c = xChunks[chunkY-1]
@@ -112,8 +112,8 @@ end
       |
       4 
 ]]--
-function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)   
-    local neighbors = {{d=1},{d=2},{d=3},{d=4}}
+function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY, neighbors)   
+    -- local neighbors = {{d=1},{d=2},{d=3},{d=4}}
     local xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
         neighbors[1].c = xChunks[chunkY-1]
@@ -129,7 +129,7 @@ function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)
     if (xChunks ~= nil) then
         neighbors[3].c = xChunks[chunkY]
     end
-    return neighbors
+    -- return neighbors
 end
 
 function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)   
@@ -188,8 +188,8 @@ function mapUtils.canMoveChunkDirectionCardinal(direction, startChunk, endChunk)
     return canMove
 end
 
-function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk)
-    local position = {x=0,y=0}
+function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk, position)
+    -- local position = {x=0,y=0}
     if (direction == 1) then
         position.x = chunk.pX + HALF_CHUNK_SIZE
         position.y = chunk.pY 
@@ -203,7 +203,7 @@ function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk)
         position.x = chunk.pX + HALF_CHUNK_SIZE
         position.y = chunk.pY + CHUNK_SIZE
     end
-    return position
+    -- return position
 end
 
 function mapUtils.positionFromDirectionAndChunk(direction, chunk)

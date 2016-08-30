@@ -2,7 +2,7 @@ local chunkUtils = {}
 
 -- imports
 
-local mapUtils = require("MapUtils")
+-- local mapUtils = require("MapUtils")
 local constants = require("Constants")
 
 -- constants
@@ -48,7 +48,7 @@ function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate
     return false
 end
 
-function chunkUtils.checkChunkPassability(chunk, surface, natives)   
+function chunkUtils.checkChunkPassability(chunk, surface)   
     local x = chunk.pX
     local y = chunk.pY
     
@@ -71,7 +71,7 @@ function chunkUtils.checkChunkPassability(chunk, surface, natives)
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
-function chunkUtils.scoreChunk(chunk, surface, natives)   
+function chunkUtils.scoreChunk(chunk, surface)   
     local x = chunk.pX
     local y = chunk.pY
     
@@ -84,11 +84,10 @@ function chunkUtils.scoreChunk(chunk, surface, natives)
                               force="player"}
                    
     local entities = surface.count_entities_filtered(enemyChunkQuery)
-    local spawners = 0
     local playerObjects = 0
     local playerDefenses = 0
     
-    spawners = entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+    chunk[ENEMY_BASE_GENERATOR] = entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
                    
     entities = surface.find_entities_filtered(playerChunkQuery)
     
@@ -107,7 +106,6 @@ function chunkUtils.scoreChunk(chunk, surface, natives)
     
     chunk[PLAYER_BASE_GENERATOR] = playerObjects
     chunk[PLAYER_DEFENSE_GENERATOR] = playerDefenses
-    chunk[ENEMY_BASE_GENERATOR] = spawners
 end
 
 function chunkUtils.createChunk(topX, topY)

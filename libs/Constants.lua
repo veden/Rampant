@@ -13,6 +13,22 @@ constants.RETREAT_DEATH_PHEROMONE_LEVEL = 10000
 constants.PROCESS_QUEUE_SIZE = 350
 constants.SCAN_QUEUE_SIZE = 10
 
+-- temps
+
+constants.ATTACK_POSITION = 1
+constants.ATTACK_COMMAND = 2
+constants.ATTACK_DIRECTION = 3
+
+constants.GROUP_COMMAND = 4
+
+constants.SQUAD_POSITION = 5
+
+constants.RETREAT_POSITION = 6
+constants.RETREAT_NEIGHBORS_WITH_DIRECTION = 7
+-- constants.RETREAT_COMMAND = 8
+
+constants.MULTI_GROUP_COMMAND = 8
+
 -- ai
 
 constants.AI_POINT_GENERATOR_AMOUNT = 5

@@ -5,7 +5,6 @@ luac.out
 *.src.rock
 *.zip
 *.tar.gz
-*.rkt
 
 # Object files
 *.o
@@ -40,3 +39,12 @@ luac.out
 *.x86_64
 *.hex
 *.bat
+
+# extra
+*.rkt
+*.lua#
+*.rkt~
+*.lua~
+*.dumpjump
+/.emacs.desktop
+/.emacs.desktop.lock
