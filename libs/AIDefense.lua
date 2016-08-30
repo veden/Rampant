@@ -58,7 +58,7 @@ local function scoreRetreatLocation(position, squad, neighborChunk, surface)
     return safeScore - dangerScore
 end
 
-function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
+function aiDefense.retreatUnits(position, squad, regionMap, surface, natives, temps)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
     if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
         local performRetreat = false
@@ -76,15 +76,17 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
         end
                 
         if performRetreat then
+            local retreatPosition = {x=0, y=0}
             local exitPath, exitDirection = scoreNeighborsWithDirection(chunk,
                                                                         getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
                                                                         validRetreatLocation,
                                                                         scoreRetreatLocation,
                                                                         nil,
-                                                                        surface)
+                                                                        surface,
+                                                                        retreatPosition)
             if (exitPath ~= nil) then
                 -- retreatPosition = positionDirectionToChunkCorner(exitDirection, exitPath)
-                local retreatPosition = {}
+                
                 retreatPosition.x = exitPath.pX + HALF_CHUNK_SIZE
                 retreatPosition.y = exitPath.pY + HALF_CHUNK_SIZE
                 
@@ -99,9 +101,9 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                     newSquad.cycles = 4
                 end
                 if (enemiesToSquad ~= nil) then
-                    membersToSquad(newSquad, enemiesToSquad, false, DISTRACTION_NONE)
+                    membersToSquad(newSquad, enemiesToSquad, false, temps)
                 else
-                    membersToSquad(newSquad, squad.group.members, true, DISTRACTION_NONE)
+                    membersToSquad(newSquad, squad.group.members, true, temps)
                 end
             end
         end
