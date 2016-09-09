@@ -151,7 +151,7 @@ function onTick(event)
         
         processPendingChunks(regionMap, surface, pendingChunks)
         
-        scanMap(regionMap, surface)
+        -- scanMap(regionMap, surface)
         
         processMap(regionMap, surface, natives, game.evolution_factor, temps)
     end
@@ -217,8 +217,8 @@ script.on_event({defines.events.on_preplayer_mined_item,
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 
                 onBuild)
-                
--- script.on_event(defines.events.on_entity_died, onDeath)
+
+script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
