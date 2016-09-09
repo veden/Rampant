@@ -136,17 +136,17 @@ function onTick(event)
         
         if (event.tick % 40 == 0) then
             
-            -- accumulatePoints(natives)
+            accumulatePoints(natives)
             
             -- put down player pheromone for player hunters
-            -- playerScent(regionMap, game.players)
+            playerScent(regionMap, game.players)
             
-            -- regroupSquads(natives, temps)
+            regroupSquads(natives, temps)
             
             -- scouting(regionMap, natives)
                         
-            -- squadBeginAttack(natives, game.players, game.evolution_factor)
-            -- squadAttack(regionMap, surface, natives, temps)
+            squadBeginAttack(natives, game.players, game.evolution_factor)
+            squadAttack(regionMap, surface, natives, temps)
         end
         
         processPendingChunks(regionMap, surface, pendingChunks)
