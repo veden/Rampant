@@ -136,17 +136,17 @@ function onTick(event)
         
         if (event.tick % 40 == 0) then
             
-            accumulatePoints(natives)
+            -- accumulatePoints(natives)
             
             -- put down player pheromone for player hunters
-            playerScent(regionMap, game.players)
+            -- playerScent(regionMap, game.players)
             
-            regroupSquads(natives, temps)
+            -- regroupSquads(natives, temps)
             
             -- scouting(regionMap, natives)
                         
-            squadBeginAttack(natives, game.players, game.evolution_factor)
-            squadAttack(regionMap, surface, natives, temps)
+            -- squadBeginAttack(natives, game.players, game.evolution_factor)
+            -- squadAttack(regionMap, surface, natives, temps)
         end
         
         processPendingChunks(regionMap, surface, pendingChunks)
@@ -218,7 +218,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 
                 onBuild)
                 
-script.on_event(defines.events.on_entity_died, onDeath)
+-- script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
