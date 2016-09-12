@@ -92,9 +92,9 @@ function pheromoneUtils.processPheromone(chunk, neighbors)
     diffusionAmount = STANDARD_PHERONOME_DIFFUSION_AMOUNT
     persistence = STANDARD_PHEROMONE_PERSISTANCE
     for x=2,6 do 
-        local totalDiffused = 0
-        local chunkValue = chunk[x] * persistence
-        local diffusedAmount = chunkValue * diffusionAmount
+        totalDiffused = 0
+        chunkValue = chunk[x] * persistence
+        diffusedAmount = chunkValue * diffusionAmount
         for i=1,#neighbors do
             local neighborChunk = neighbors[i]
             if (neighborChunk ~= nil) then

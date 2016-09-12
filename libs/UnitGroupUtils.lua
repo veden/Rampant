@@ -46,14 +46,14 @@ function unitGroupUtils.createSquad(position, surface, natives)
     return squad
 end
 
-function unitGroupUtils.membersToSquad(squad, members, overwriteGroup, temps)
+function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
     if (members ~= nil) then
-        local groupCmd = temps[constants.GROUP_COMMAND]
-        groupCmd.group = squad.group
-        for i=1,#members do
+	for i=1,#members do
             local member = members[i]
             if member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
-		member.set_command(groupCmd)
+		member.set_command({ type = defines.command.group,
+				     group = squad.group,
+				     distraction = defines.distraction.by_anything })
             end
         end
     end
@@ -107,7 +107,7 @@ function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
     return 0
 end
 
-function unitGroupUtils.regroupSquads(natives, temps)
+function unitGroupUtils.regroupSquads(natives)
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]
@@ -117,7 +117,7 @@ function unitGroupUtils.regroupSquads(natives, temps)
                 local mergeSquad = squads[x]
                 local mergeGroup = mergeSquad.group
                 if mergeGroup.valid and (mergeSquad.status == squad.status) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < 16) then
-                    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true, temps)
+                    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
                     mergeGroup.destroy()
                 end
             end	    

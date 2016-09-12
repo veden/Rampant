@@ -50,7 +50,7 @@ local function scoreRetreatLocation(position, squad, neighborChunk, surface)
     return safeScore - dangerScore
 end
 
-function aiDefense.retreatUnits(position, squad, regionMap, surface, natives, temps)
+function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
     if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
         local performRetreat = false
@@ -68,12 +68,9 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives, te
         end
                 
         if performRetreat then
-            local retreatPosition = temps[constants.RETREAT_POSITION]
-            local retreatNeighborsWithDirection = temps[constants.RETREAT_NEIGHBORS_WITH_DIRECTION]
-            getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY, retreatNeighborsWithDirection)
-            
+	    local retreatPosition = {x=0, y=0}
             local exitPath,_  = scoreNeighborsWithDirection(chunk,
-							    retreatNeighborsWithDirection,
+							    getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
 							    validRetreatLocation,
 							    scoreRetreatLocation,
 							    nil,
@@ -97,9 +94,9 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives, te
                 end
 		
                 if (enemiesToSquad ~= nil) then
-                    membersToSquad(newSquad, enemiesToSquad, false, temps)
+                    membersToSquad(newSquad, enemiesToSquad, false)
                 else
-                    membersToSquad(newSquad, squad.group.members, true, temps)
+                    membersToSquad(newSquad, squad.group.members, true)
                 end
             end
         end

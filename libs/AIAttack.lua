@@ -68,9 +68,6 @@ end
 
 function aiAttack.squadAttack(regionMap, surface, natives, temps)
     local squads = natives.squads
-    local attackPosition = temps[constants.ATTACK_POSITION]
-    local cmd = temps[constants.ATTACK_COMMAND]
-    local neighborsWithDirection = temps[constants.ATTACK_DIRECTION]
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
@@ -88,10 +85,10 @@ function aiAttack.squadAttack(regionMap, surface, natives, temps)
             if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) then
                 local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
                 if (chunk ~= nil) then
+		    local attackPosition = {x=0, y=0}
                     addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
-                    getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY, neighborsWithDirection)
                     local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-                                                                                     neighborsWithDirection,
+                                                                                     getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY),
                                                                                      validLocation,
                                                                                      scoreLocation,
                                                                                      squad,
@@ -103,7 +100,10 @@ function aiAttack.squadAttack(regionMap, surface, natives, temps)
                             
                             positionFromDirectionAndChunkCardinal(attackDirection, attackChunk, attackPosition)
                             
-                            group.set_command(cmd)
+                            group.set_command({ type = defines.command.attack_area,
+						destination = attackPosition,
+						radius = 32,
+						distraction = defines.distraction.by_anything })
                             group.start_moving()
                         end
                     end

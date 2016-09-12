@@ -110,11 +110,11 @@ function aiBuilding.scouting(regionMap, natives)
     --]]
 end
 
-function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, temps)
+function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
         if (score > 70) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) and (math.random() < 0.03) then
-            local squadPosition = temps[constants.SQUAD_POSITION]            
+	    local squadPosition = {x=0, y=0}
             
             local squadPath, squadScore = scoreNeighbors(chunk,
                                                          getNeighborChunks(regionMap, chunk.cX, chunk.cY),
@@ -127,14 +127,13 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
                 squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
                 squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
                 
-                local multiGroupCmd = temps[constants.MULTI_GROUP_COMMAND]
-                local groupCmd = temps[constants.GROUP_COMMAND]
-                
                 local squad = createSquad(squadPosition, surface, natives)
-                multiGroupCmd.unit_count = evolution_factor * AI_MAX_SQUAD_SIZE
-                groupCmd.group = squad.group
                 
-                local foundUnits = surface.set_multi_command(multiGroupCmd)
+                local foundUnits = surface.set_multi_command({ command = { type = defines.command.group,
+									group = squad.group,
+									distraction = defines.distraction.none },
+							       unit_count = evolution_factor * AI_MAX_SQUAD_SIZE,
+							       unit_search_distance = (constants.CHUNK_SIZE * 2)})
                 if (foundUnits > 0) then
                     natives.points = natives.points - AI_SQUAD_COST
                 end

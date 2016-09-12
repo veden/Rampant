@@ -1,6 +1,5 @@
 -- imports
 
-local setupUtils = require("setupUtils")
 local entityUtils = require("libs/EntityUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -42,7 +41,6 @@ local regionMap
 local natives
 local pheromoneTotals
 local pendingChunks
-local temps
 
 -- hook functions
 
@@ -52,7 +50,6 @@ local function onLoad()
     natives = global.natives
     pendingChunks = global.pendingChunks
     pheromoneTotals = global.pheromoneTotals
-    temps = global.temps
 end
 
 local function onChunkGenerated(event)
@@ -93,8 +90,6 @@ local function onConfigChanged()
         regionMap.scanPointer = 1
         regionMap.processRoll = -1
         
-        setupUtils.initTemps(temps)
-        
         pheromoneTotals[constants.DEATH_PHEROMONE] = 0
         pheromoneTotals[constants.ENEMY_BASE_PHEROMONE] = 0
         pheromoneTotals[constants.PLAYER_PHEROMONE] = 0
@@ -127,15 +122,15 @@ local function onTick(event)
             -- put down player pheromone for player hunters
             playerScent(regionMap, game.players)
             
-            regroupSquads(natives, temps)
+            regroupSquads(natives)
             
             -- scouting(regionMap, natives)
                         
             squadBeginAttack(natives, game.players, game.evolution_factor)
-            squadAttack(regionMap, surface, natives, temps)
+            squadAttack(regionMap, surface, natives)
         end
 
-	processMap(regionMap, surface, natives, game.evolution_factor, temps) 
+	processMap(regionMap, surface, natives, game.evolution_factor) 
     end
 end
 
@@ -164,8 +159,7 @@ local function onDeath(event)
                                                          entity.unit_group),
                                  regionMap, 
                                  surface, 
-                                 natives,
-                                 temps)
+                                 natives)
                 end
                 
                 removeScout(entity, global.natives)
@@ -178,7 +172,7 @@ local function onDeath(event)
     end
 end
 
-local function onPutItem(event)
+local function onSurfaceTileChange(event)
     -- local player = game.players[event.player_index]
     -- if (player.surface.index==1) then
         -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
@@ -191,13 +185,11 @@ local function onInit()
     global.pendingChunks = {}
     global.natives = {}
     global.pheromoneTotals = {}
-    global.temps = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
     pheromoneTotals = global.pheromoneTotals
-    temps = global.temps
     
     onConfigChanged()
 end
@@ -209,7 +201,7 @@ script.on_init(onInit)
 script.on_load(onLoad)
 script.on_configuration_changed(onConfigChanged)
 
-script.on_event(defines.events.on_player_built_tile, onPutItem)
+script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
