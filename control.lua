@@ -21,7 +21,7 @@ local scanMap = mapProcessor.scanMap
 
 local accumulatePoints = aiBuilding.accumulatePoints
 local removeScout = aiBuilding.removeScout
-local scouting = aiBuilding.scouting
+-- local scouting = aiBuilding.scouting
 
 local playerScent = pheromoneUtils.playerScent
 local deathScent = pheromoneUtils.deathScent
@@ -46,24 +46,7 @@ local temps
 
 -- hook functions
 
-function onInit()
-    -- print("init")
-    global.regionMap = {}
-    global.pendingChunks = {}
-    global.natives = {}
-    global.pheromoneTotals = {}
-    global.temps = {}
-    
-    regionMap = global.regionMap
-    natives = global.natives
-    pendingChunks = global.pendingChunks
-    pheromoneTotals = global.pheromoneTotals
-    temps = global.temps
-    
-    onConfigChanged()
-end
-
-function onLoad()
+local function onLoad()
     -- print("load")
     regionMap = global.regionMap
     natives = global.natives
@@ -72,7 +55,15 @@ function onLoad()
     temps = global.temps
 end
 
-function onConfigChanged()
+local function onChunkGenerated(event)
+    -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
+    -- are generated, which messes up the scoring.
+    if (event.surface.index == 1) then
+        pendingChunks[#pendingChunks+1] = event
+    end
+end
+
+local function onConfigChanged()
     -- print("reprocess")
     if (global.version == nil) then
 
@@ -122,18 +113,13 @@ function onConfigChanged()
     end
 end
 
-function onChunkGenerated(event)
-    -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
-    -- are generated, which messes up the scoring.
-    if (event.surface.index == 1) then
-        pendingChunks[#pendingChunks+1] = event
-    end
-end
-
-function onTick(event)
+local function onTick(event)   
     if (event.tick % 20 == 0) then
-        local surface = game.surfaces[1]
+	local surface = game.surfaces[1]
         
+        processPendingChunks(regionMap, surface, pendingChunks)
+        scanMap(regionMap, surface)
+
         if (event.tick % 40 == 0) then
             
             accumulatePoints(natives)
@@ -148,24 +134,20 @@ function onTick(event)
             squadBeginAttack(natives, game.players, game.evolution_factor)
             squadAttack(regionMap, surface, natives, temps)
         end
-        
-        processPendingChunks(regionMap, surface, pendingChunks)
-        
-        -- scanMap(regionMap, surface)
-        
-        processMap(regionMap, surface, natives, game.evolution_factor, temps)
+
+	processMap(regionMap, surface, natives, game.evolution_factor, temps) 
     end
 end
 
-function onBuild(event)
+local function onBuild(event)
     addRemoveEntity(regionMap, event.created_entity, natives, true)
 end
 
-function onPickUp(event)
+local function onPickUp(event)
     addRemoveEntity(regionMap, event.entity, natives, false)
 end
 
-function onDeath(event)
+local function onDeath(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
@@ -196,12 +178,30 @@ function onDeath(event)
     end
 end
 
-function onPutItem(event)
+local function onPutItem(event)
     -- local player = game.players[event.player_index]
     -- if (player.surface.index==1) then
         -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
     -- end
 end
+
+local function onInit()
+    -- print("init")
+    global.regionMap = {}
+    global.pendingChunks = {}
+    global.natives = {}
+    global.pheromoneTotals = {}
+    global.temps = {}
+    
+    regionMap = global.regionMap
+    natives = global.natives
+    pendingChunks = global.pendingChunks
+    pheromoneTotals = global.pheromoneTotals
+    temps = global.temps
+    
+    onConfigChanged()
+end
+
 
 -- hooks
 

@@ -113,7 +113,7 @@ end
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, temps)
     if (natives.points > AI_SQUAD_COST) then
         local score = chunk[PLAYER_BASE_PHEROMONE] + chunk[PLAYER_PHEROMONE] + chunk[PLAYER_DEFENSE_PHEROMONE] + surface.get_pollution({chunk.pX, chunk.pY})
-        if (score > 20) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) and (math.random() < 0.03) then
+        if (score > 70) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) and (math.random() < 0.03) then
             local squadPosition = temps[constants.SQUAD_POSITION]            
             
             local squadPath, squadScore = scoreNeighbors(chunk,
