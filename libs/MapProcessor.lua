@@ -7,6 +7,15 @@ local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
 local constants = require("Constants")
 
+-- constants
+
+local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
+local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
+local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
+
 -- imported functions
 
 local scents = pheromoneUtils.scents
@@ -45,7 +54,7 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, 
     end
     
     local processQueue = regionMap.processQueue
-    local endIndex = mMin(index + constants.PROCESS_QUEUE_SIZE, #processQueue)
+    local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
         local chunk = processQueue[x]
         
@@ -72,15 +81,15 @@ function mapProcessor.scanMap(regionMap, surface)
     local index = regionMap.scanPointer
         
     local processQueue = regionMap.processQueue
-    local endIndex = mMin(index + constants.SCAN_QUEUE_SIZE, #processQueue)
+    local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
         local chunk = processQueue[x]
         
         local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
-                                                                  {chunk.pX + constants.CHUNK_SIZE, chunk.pY + constants.CHUNK_SIZE}},
+                                                                  {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
                                                           type = "unit-spawner",
                                                           force = "enemy"})
-        chunk[constants.ENEMY_BASE_GENERATOR] = spawners * constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+        chunk[ENEMY_BASE_GENERATOR] = spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
     end
     
     if (endIndex == #processQueue) then

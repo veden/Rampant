@@ -41,7 +41,6 @@ luac.out
 *.bat
 
 # extra
-*.rkt
 *.lua#
 *.rkt~
 *.lua~

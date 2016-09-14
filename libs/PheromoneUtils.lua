@@ -79,15 +79,16 @@ function pheromoneUtils.processPheromone(chunk, neighbors)
     local totalDiffused = 0
     local chunkValue = chunk[DEATH_PHEROMONE] * persistence
     local diffusedAmount = chunkValue * diffusionAmount
-    for i=1,#neighbors do
-        local neighborChunk = neighbors[i]
-        if (neighborChunk ~= nil) then
-            totalDiffused = totalDiffused + diffusedAmount
-            neighborChunk[DEATH_PHEROMONE] = neighborChunk[DEATH_PHEROMONE] + diffusedAmount
-        end
+    if (chunkValue > 2) then
+	for i=1,#neighbors do
+	    local neighborChunk = neighbors[i]
+	    if (neighborChunk ~= nil) then
+		totalDiffused = totalDiffused + diffusedAmount
+		neighborChunk[DEATH_PHEROMONE] = neighborChunk[DEATH_PHEROMONE] + diffusedAmount
+	    end
+	end
     end
     chunk[DEATH_PHEROMONE] = (chunkValue - totalDiffused)
-    
     
     diffusionAmount = STANDARD_PHERONOME_DIFFUSION_AMOUNT
     persistence = STANDARD_PHEROMONE_PERSISTANCE
@@ -95,13 +96,15 @@ function pheromoneUtils.processPheromone(chunk, neighbors)
         totalDiffused = 0
         chunkValue = chunk[x] * persistence
         diffusedAmount = chunkValue * diffusionAmount
-        for i=1,#neighbors do
-            local neighborChunk = neighbors[i]
-            if (neighborChunk ~= nil) then
-                totalDiffused = totalDiffused + diffusedAmount
-                neighborChunk[x] = neighborChunk[x] + diffusedAmount
-            end
-        end
+        if (chunkValue > 2) then
+	    for i=1,#neighbors do
+		local neighborChunk = neighbors[i]
+		if (neighborChunk ~= nil) then
+		    totalDiffused = totalDiffused + diffusedAmount
+		    neighborChunk[x] = neighborChunk[x] + diffusedAmount
+		end
+	    end
+	end
         chunk[x] = (chunkValue - totalDiffused)
     end
 end
