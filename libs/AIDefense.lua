@@ -34,6 +34,7 @@ local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
 local findNearBySquad = unitGroupUtils.findNearBySquad
+local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
@@ -58,11 +59,11 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     
         if (squad == nil) then
             enemiesToSquad = surface.find_enemy_units(position, 15)
-            if (#enemiesToSquad > 0) then
+            if (#enemiesToSquad > 1) then
                 performRetreat = true
             end
         elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and (squad.status ~= SQUAD_SUICIDE_HUNT) and (squad.status ~= SQUAD_SUICIDE_RAID) then
-            if (#squad.group.members ~= 0) then
+            if (#squad.group.members > 1) then
                 performRetreat = true
             end
         end
@@ -90,14 +91,19 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                 if (newSquad == nil) then
                     newSquad = createSquad(retreatPosition, surface, natives)
                     newSquad.status = SQUAD_RETREATING
-                    newSquad.cycles = 4
+                    newSquad.cycles = 6
                 end
 		
                 if (enemiesToSquad ~= nil) then
                     membersToSquad(newSquad, enemiesToSquad, false)
                 else
                     membersToSquad(newSquad, squad.group.members, true)
+		    newSquad.penalties = squad.penalties
+		    if squad.rabid then
+			newSquad.rabid = true
+		    end
                 end
+		addSquadMovementPenalty(newSquad, chunk.cX, chunk.cY)
             end
         end
     end

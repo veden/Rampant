@@ -7,6 +7,8 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
+The 0.14.4 factorio version fixed some issues with unit groups commands
+
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
 
 MP should be working  
@@ -30,9 +32,15 @@ Base Expansion
 
 # Version History
 
-0.13.1 - fixed ai created bases not being counted in logic
-	Optimization to offset ai created bases scanning
-	fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
+0.14.2 - adjusted unit retreat group size threshold   
+	adjusted squad attack pattern (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=20#p203861) __
+
+0.14.1 - fixed ai created bases not being counted in logic   
+	Optimization to offset ai created bases scanning   
+
+0.13.1 - backported 0.14 factorio version to 0.13 factorio version   
+
+0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
 	added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
 	increased squad size max from 125 to 150, (larger waves)   
 

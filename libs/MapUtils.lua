@@ -188,23 +188,42 @@ function mapUtils.canMoveChunkDirectionCardinal(direction, startChunk, endChunk)
     return canMove
 end
 
-function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk, position)
+function mapUtils.positionFromDirectionAndChunkCardinal(direction, startPosition, position)
     -- local position = {x=0,y=0}
     if (direction == 1) then
-        position.x = chunk.pX + HALF_CHUNK_SIZE
-        position.y = chunk.pY 
+        position.x = startPosition.x 
+        position.y = startPosition.y - CHUNK_SIZE
     elseif (direction == 2) then
-        position.x = chunk.pX 
-        position.y = chunk.pY + HALF_CHUNK_SIZE
+        position.x = startPosition.x - CHUNK_SIZE
+        position.y = startPosition.y 
     elseif (direction == 3) then
-        position.x = chunk.pX + CHUNK_SIZE
-        position.y = chunk.pY + HALF_CHUNK_SIZE
+        position.x = startPosition.x + CHUNK_SIZE
+        position.y = startPosition.y 
     elseif (direction == 4) then
-        position.x = chunk.pX + HALF_CHUNK_SIZE
-        position.y = chunk.pY + CHUNK_SIZE
+        position.x = startPosition.x 
+        position.y = startPosition.y + CHUNK_SIZE
     end
     -- return position
 end
+
+
+-- function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk, position)
+--     -- local position = {x=0,y=0}
+--     if (direction == 1) then
+--         position.x = chunk.pX + HALF_CHUNK_SIZE
+--         position.y = chunk.pY 
+--     elseif (direction == 2) then
+--         position.x = chunk.pX 
+--         position.y = chunk.pY + HALF_CHUNK_SIZE
+--     elseif (direction == 3) then
+--         position.x = chunk.pX + CHUNK_SIZE
+--         position.y = chunk.pY + HALF_CHUNK_SIZE
+--     elseif (direction == 4) then
+--         position.x = chunk.pX + HALF_CHUNK_SIZE
+--         position.y = chunk.pY + CHUNK_SIZE
+--     end
+--     -- return position
+-- end
 
 function mapUtils.positionFromDirectionAndChunk(direction, chunk)
     local position = {x=0, y=0}

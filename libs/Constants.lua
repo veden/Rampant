@@ -15,19 +15,19 @@ constants.SCAN_QUEUE_SIZE = 10
 
 -- temps
 
-constants.ATTACK_POSITION = 1
-constants.ATTACK_COMMAND = 2
-constants.ATTACK_DIRECTION = 3
+-- constants.ATTACK_POSITION = 1
+-- constants.ATTACK_COMMAND = 2
+-- constants.ATTACK_DIRECTION = 3
 
-constants.GROUP_COMMAND = 4
+-- constants.GROUP_COMMAND = 4
 
-constants.SQUAD_POSITION = 5
+-- constants.SQUAD_POSITION = 5
 
-constants.RETREAT_POSITION = 6
-constants.RETREAT_NEIGHBORS_WITH_DIRECTION = 7
--- constants.RETREAT_COMMAND = 8
+-- constants.RETREAT_POSITION = 6
+-- constants.RETREAT_NEIGHBORS_WITH_DIRECTION = 7
+-- -- constants.RETREAT_COMMAND = 8
 
-constants.MULTI_GROUP_COMMAND = 8
+-- constants.MULTI_GROUP_COMMAND = 8
 
 -- ai
 
@@ -105,7 +105,7 @@ constants.BUILDING_PHEROMONES["offshore-pump"] = 8
 -- constants.buildingPheromones["constant-combinator"] = 1
 -- constants.buildingPheromones["train-stop"] = 2
 -- constants.buildingPheromones["rail-signal"] = 1
-constants.BUILDING_PHEROMONES["electric-pole"] = 4
+-- constants.BUILDING_PHEROMONES["electric-pole"] = 4
 constants.BUILDING_PHEROMONES["transport-belt"] = 4
 constants.BUILDING_PHEROMONES["accumulator"] = 40
 constants.BUILDING_PHEROMONES["solar-panel"] = 32
