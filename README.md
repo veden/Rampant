@@ -46,8 +46,6 @@ Base Expansion
 	added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
 	increased squad size max from 125 to 150, (larger waves)   
 
-0.0.7 - updated for 0.14   
-
 0.0.6 - some speed improvements   
 	MP is working (https://github.com/veden/Rampant/issues/1)   
 

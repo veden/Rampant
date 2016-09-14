@@ -49,11 +49,11 @@ function pheromoneUtils.scents(chunk)
     end
 end
             
-function pheromoneUtils.deathScent(regionMap, position, pheromoneTotals)
+function pheromoneUtils.deathScent(regionMap, position)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
     if (chunk ~= nil) then
         chunk[DEATH_PHEROMONE] = chunk[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
-        pheromoneTotals[DEATH_PHEROMONE] = pheromoneTotals[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
+--        pheromoneTotals[DEATH_PHEROMONE] = pheromoneTotals[DEATH_PHEROMONE] + DEATH_PHEROMONE_GENERATOR_AMOUNT
     end
 end
 

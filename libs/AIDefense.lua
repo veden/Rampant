@@ -34,6 +34,7 @@ local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
 local findNearBySquad = unitGroupUtils.findNearBySquad
+local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
