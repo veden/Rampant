@@ -30,10 +30,10 @@ Base Expansion
 
 # Version History
 
-0.14.1 - fixed ai created bases not being counted in logic
-	Optimization to offset ai created bases scanning
+0.14.1 - fixed ai created bases not being counted in logic  
+	Optimization to offset ai created bases scanning  
 
-0.13.1 - backported 0.14 factorio version to 0.13 factorio version
+0.13.1 - backported 0.14 factorio version to 0.13 factorio version  
 
 0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
 	added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
