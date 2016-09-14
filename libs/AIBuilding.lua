@@ -129,7 +129,7 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
                 
                 local squad = createSquad(squadPosition, surface, natives)
 
-		if (math.random() < 0.05) then
+		if (math.random() < 0.03) then
 		    squad.rabid = true
 		end
 		
