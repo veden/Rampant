@@ -37,6 +37,7 @@ local findNearBySquad = unitGroupUtils.findNearBySquad
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
+local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 
 -- module code
 
@@ -97,10 +98,12 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                     membersToSquad(newSquad, enemiesToSquad, false)
                 else
                     membersToSquad(newSquad, squad.group.members, true)
+		    newSquad.penalties = squad.penalties
 		    if squad.rabid then
 			newSquad.rabid = true
 		    end
                 end
+		addSquadMovementPenalty(newSquad, chunk.cX, chunk.cY)
             end
         end
     end
