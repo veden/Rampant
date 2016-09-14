@@ -53,7 +53,7 @@ function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
             if member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
 		member.set_command({ type = defines.command.group,
 				     group = squad.group,
-				     distraction = defines.distraction.by_anything })
+				     distraction = defines.distraction.none })
             end
         end
     end
