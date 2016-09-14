@@ -78,7 +78,7 @@ local function onConfigChanged()
         global.version = constants.VERSION_5
     end
     if (global.version < constants.VERSION_9) then
-        
+	
         -- remove version 5 references
         regionMap.pQ = nil
         regionMap.pI = nil
@@ -89,7 +89,12 @@ local function onConfigChanged()
         regionMap.processPointer = 1
         regionMap.scanPointer = 1
         regionMap.processRoll = -1
-        
+
+	if (pheromoneTotals == nil) then
+	    global.pheromoneTotals = {}
+	    pheromoneTotals = global.pheromoneTotals
+	end
+	
         pheromoneTotals[constants.DEATH_PHEROMONE] = 0
         pheromoneTotals[constants.ENEMY_BASE_PHEROMONE] = 0
         pheromoneTotals[constants.PLAYER_PHEROMONE] = 0
@@ -97,14 +102,23 @@ local function onConfigChanged()
         pheromoneTotals[constants.PLAYER_DEFENSE_PHEROMONE] = 0
         pheromoneTotals[constants.MOVEMENT_PHEROMONE] = 0
         
-        -- queue all current chunks that wont be generated during play
+	global.version = constants.VERSION_9
+    end
+    if (global.version < constants.VERSION_10) then
+	for _,squad in pairs(natives.squads) do
+	    squad.frenzy = false
+	    squad.frenzyPosition = {x=0,y=0}
+	    squad.rabid = false
+	end
+	
+	-- queue all current chunks that wont be generated during play
         local surface = game.surfaces[1]
         for chunk in surface.get_chunks() do
             onChunkGenerated({ surface = surface, 
                                area = { left_top = { x = chunk.x * 32,
                                                      y = chunk.y * 32 }}})
         end
-        global.version = constants.VERSION_9
+	global.version = constants.VERSION_10
     end
 end
 
