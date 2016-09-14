@@ -128,12 +128,16 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
                 squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
                 
                 local squad = createSquad(squadPosition, surface, natives)
-                
+
+		if (math.random() < 0.05) then
+		    squad.rabid = true
+		end
+		
                 local foundUnits = surface.set_multi_command({ command = { type = defines.command.group,
-									group = squad.group,
-									distraction = defines.distraction.none },
+									   group = squad.group,
+									   distraction = defines.distraction.none },
 							       unit_count = evolution_factor * AI_MAX_SQUAD_SIZE,
-							       unit_search_distance = (constants.CHUNK_SIZE * 2)})
+							       unit_search_distance = (CHUNK_SIZE * 2)})
                 if (foundUnits > 0) then
                     natives.points = natives.points - AI_SQUAD_COST
                 end

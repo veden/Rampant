@@ -58,11 +58,11 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     
         if (squad == nil) then
             enemiesToSquad = surface.find_enemy_units(position, 15)
-            if (#enemiesToSquad > 0) then
+            if (#enemiesToSquad > 1) then
                 performRetreat = true
             end
         elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and (squad.status ~= SQUAD_SUICIDE_HUNT) and (squad.status ~= SQUAD_SUICIDE_RAID) then
-            if (#squad.group.members ~= 0) then
+            if (#squad.group.members > 1) then
                 performRetreat = true
             end
         end
@@ -90,13 +90,16 @@ function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
                 if (newSquad == nil) then
                     newSquad = createSquad(retreatPosition, surface, natives)
                     newSquad.status = SQUAD_RETREATING
-                    newSquad.cycles = 4
+                    newSquad.cycles = 6
                 end
 		
                 if (enemiesToSquad ~= nil) then
                     membersToSquad(newSquad, enemiesToSquad, false)
                 else
                     membersToSquad(newSquad, squad.group.members, true)
+		    if squad.rabid then
+			newSquad.rabid = true
+		    end
                 end
             end
         end

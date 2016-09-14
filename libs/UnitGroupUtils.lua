@@ -41,6 +41,10 @@ function unitGroupUtils.createSquad(position, surface, natives)
     local squad = { group = unitGroup, 
                     status = SQUAD_GUARDING,
                     penalties = {},
+		    rabid = false,
+		    frenzy = false,
+		    frenzyPosition = {x = 0,
+				      y = 0},
                     cycles = 0 }
     natives.squads[#natives.squads+1] = squad
     return squad
@@ -48,12 +52,13 @@ end
 
 function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
     if (members ~= nil) then
+	local cmd = { type = defines.command.group,
+		      group = squad.group,
+		      distraction = defines.distraction.none }
 	for i=1,#members do
             local member = members[i]
             if member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
-		member.set_command({ type = defines.command.group,
-				     group = squad.group,
-				     distraction = defines.distraction.none })
+		member.set_command(cmd)
             end
         end
     end
@@ -72,6 +77,10 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
         returnSquad = { group = unitGroup,
                         status = SQUAD_GUARDING,
                         penalties = {},
+			rabid = false,
+			frenzy = false,
+			frenzyPosition = {x = 0,
+					  y = 0},
                         cycles = 0 }
         squads[#squads+1] = returnSquad
     end
@@ -134,9 +143,13 @@ function unitGroupUtils.regroupSquads(natives)
             squad.group.destroy()
             tableRemove(squads, i)
         else         
-            if (squad.status == SQUAD_RETREATING) and ((squad.cycles == 0) or (squad.group.state == GROUP_STATE_FINISHED)) then
+            if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
                 squad.status = SQUAD_GUARDING
-                squad.cycles = 0
+		squad.frenzy = true
+		squad.frenzyPosition.x = squad.group.position.x
+		squad.frenzyPosition.y = squad.group.position.y
+	    elseif (squad.group.state == GROUP_STATE_FINISHED) then
+		squad.status = SQUAD_GUARDING
             elseif (squad.cycles > 0) then
                 squad.cycles = squad.cycles - 1
             end
