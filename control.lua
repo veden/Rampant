@@ -39,7 +39,7 @@ local addRemoveEntity = entityUtils.addRemoveEntity
 
 local regionMap
 local natives
-local pheromoneTotals
+-- local pheromoneTotals
 local pendingChunks
 
 -- hook functions
@@ -49,7 +49,7 @@ local function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    pheromoneTotals = global.pheromoneTotals
+--    pheromoneTotals = global.pheromoneTotals
 end
 
 local function onChunkGenerated(event)
@@ -89,19 +89,7 @@ local function onConfigChanged()
         regionMap.processPointer = 1
         regionMap.scanPointer = 1
         regionMap.processRoll = -1
-
-	if (pheromoneTotals == nil) then
-	    global.pheromoneTotals = {}
-	    pheromoneTotals = global.pheromoneTotals
-	end
-	
-        pheromoneTotals[constants.DEATH_PHEROMONE] = 0
-        pheromoneTotals[constants.ENEMY_BASE_PHEROMONE] = 0
-        pheromoneTotals[constants.PLAYER_PHEROMONE] = 0
-        pheromoneTotals[constants.PLAYER_BASE_PHEROMONE] = 0
-        pheromoneTotals[constants.PLAYER_DEFENSE_PHEROMONE] = 0
-        pheromoneTotals[constants.MOVEMENT_PHEROMONE] = 0
-        
+      
 	global.version = constants.VERSION_9
     end
     if (global.version < constants.VERSION_10) then
@@ -165,7 +153,7 @@ local function onDeath(event)
                 local entityPosition = entity.position
                 
                 -- drop death pheromone where unit died
-                deathScent(regionMap, entityPosition, pheromoneTotals)
+                deathScent(regionMap, entityPosition)
                 
                 if (event.force ~= nil) and (event.force.name == "player") then 
                     retreatUnits(entityPosition, 
@@ -198,12 +186,12 @@ local function onInit()
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
-    global.pheromoneTotals = {}
+--    global.pheromoneTotals = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    pheromoneTotals = global.pheromoneTotals
+--    pheromoneTotals = global.pheromoneTotals
     
     onConfigChanged()
 end
