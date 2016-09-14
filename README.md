@@ -31,8 +31,7 @@ Base Expansion
 # Version History
 
 0.0.9 - fixed ai created bases not being counted in logic
-	removing black magic for making unit groups work
-	
+	Optimization to offset ai created bases scanning
 
 0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
 	added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
