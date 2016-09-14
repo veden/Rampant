@@ -34,11 +34,12 @@ Base Expansion
 
 0.14.2 - adjusted unit retreat group size threshold   
 	adjusted squad attack pattern (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=20#p203861) __
+	Fixed migration issue   
 
 0.14.1 - fixed ai created bases not being counted in logic   
 	Optimization to offset ai created bases scanning   
 
-0.13.2 = 0.14.2
+0.13.2 = 0.14.2   
 
 0.13.1 - backported 0.14 factorio version to 0.13 factorio version   
 
