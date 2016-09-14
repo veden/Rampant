@@ -38,6 +38,7 @@ local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
+local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 
 -- module code
 

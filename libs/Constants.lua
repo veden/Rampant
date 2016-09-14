@@ -4,6 +4,7 @@ local constants = {}
 
 constants.VERSION_5 = 5
 constants.VERSION_9 = 9
+constants.VERSION_10 = 10
 
 -- misc
 
