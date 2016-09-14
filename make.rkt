@@ -5,7 +5,7 @@
         
     ;(define modFolder "C:/Users/veden/AppData/Roaming/Factorio/mods/")
     ;(define zipModFolder "C:/Program Files/Factorio_0.14.1/mods/")
-    (define modFolder "/home/veden/.factorio/mods/")
+    (define modFolder "/data/games/factorio13.20/mods/")
     (define zipModFolder "/data/games/factorio13.20/mods/")
     (define configuration (call-with-input-file "info.json"
                             (lambda (port)
