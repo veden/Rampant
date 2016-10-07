@@ -7,7 +7,8 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
-The 0.14.4 factorio version fixed some issues with unit groups commands
+0.14.10 factorio version fixed more pathing issues
+0.14.4 factorio version fixed some issues with unit groups commands
 
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
 
@@ -32,12 +33,22 @@ Base Expansion
 
 # Version History
 
+0.14.3 - slightly lowered Rampant attack wave frequency  
+	Altered attack wave size to ramp up slower  
+	Added configuration options for:  
+		attack wave generation area  
+		attack wave threshold  
+		attack wave size  
+		turn off rampant attack waves  
+
 0.14.2 - adjusted unit retreat group size threshold   
 	adjusted squad attack pattern (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=20#p203861)  
 	Fixed migration issue   
 
 0.14.1 - fixed ai created bases not being counted in logic   
 	Optimization to offset ai created bases scanning   
+
+0.13.3 = 0.14.3   
 
 0.13.2 = 0.14.2   
 

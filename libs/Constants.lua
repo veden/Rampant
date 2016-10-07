@@ -32,14 +32,15 @@ constants.SCAN_QUEUE_SIZE = 10
 
 -- ai
 
-constants.AI_POINT_GENERATOR_AMOUNT = 5
+constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 150
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
+constants.AI_MAX_POINTS = 30000
 
-constants.AI_MAX_SQUAD_SIZE = 150
+--constants.AI_MAX_SQUAD_SIZE = 150
 constants.AI_MAX_SQUAD_COUNT = 30
 
 -- chunk properties

@@ -39,7 +39,6 @@ local addRemoveEntity = entityUtils.addRemoveEntity
 
 local regionMap
 local natives
--- local pheromoneTotals
 local pendingChunks
 
 -- hook functions
@@ -49,7 +48,7 @@ local function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
---    pheromoneTotals = global.pheromoneTotals
+    --    pheromoneTotals = global.pheromoneTotals
 end
 
 local function onChunkGenerated(event)
