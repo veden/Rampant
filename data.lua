@@ -1,6 +1,4 @@
-if RampantConfig == nil then 
-    RampantConfig = {}
-end
+-- local config = require("config")
 
 require("prototypes/buildings/tunnel")
 
