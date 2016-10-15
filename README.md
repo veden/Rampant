@@ -7,7 +7,7 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
-0.14.14 factorio version fixed save corruption
+0.14.14 factorio version fixed save corruption  
 0.14.10 factorio version fixed more pathing issues  
 0.14.4 factorio version fixed some issues with unit groups commands  
 
