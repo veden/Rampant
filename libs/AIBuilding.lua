@@ -11,42 +11,26 @@ local config = require("config")
 
 -- constants
 
--- local SQUAD_GUARDING = constants.SQUAD_GUARDING
--- local SQUAD_BURROWING = constants.SQUAD_BURROWING
-
-local PLAYER_BASE_PHEROMONE = constants.PLAYER_BASE_PHEROMONE
+local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
--- local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
-local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
-
-local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
-local AI_MAX_POINTS = constants.AI_MAX_POINTS
+local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
--- local AI_SCOUT_COST = constants.AI_SCOUT_COST
-local AI_SQUAD_COST = constants.AI_SQUAD_COST
--- local AI_TUNNEL_COST = constants.AI_TUNNEL_COST
-
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
+
+local AI_SQUAD_COST = constants.AI_SQUAD_COST
 
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
-
--- local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
-
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 
--- local COMMAND_GROUP = defines.command.group
--- local DISTRACTION_BY_DAMAGE = defines.distraction.by_damage
-
 local CONFIG_USE_PLAYER_PROXIMITY = config.attackWaveGenerationUsePlayerProximity
-local CONFIG_USE_PLAYER_BASE_PROXIMITY = config.attackWaveGenerationUsePlayerBaseProximity
-local CONFIG_USE_PLAYER_DEFENSE_PROXIMITY = config.attackWaveGenerationUsePlayerDefenseProximity
 local CONFIG_USE_POLLUTION_PROXIMITY = config.attackWaveGenerationUsePollution
-local CONFIG_USE_THRESHOLD = config.attackWaveGenerationThreshold
+local CONFIG_USE_THRESHOLD_MIN = config.attackWaveGenerationThresholdMin
+local CONFIG_USE_THRESHOLD_MAX = config.attackWaveGenerationThresholdMax
+local CONFIG_USE_THRESHOLD_RANGE = CONFIG_USE_THRESHOLD_MAX - CONFIG_USE_THRESHOLD_MIN
 
 -- imported functions
 
@@ -55,25 +39,23 @@ local scoreNeighbors = neighborUtils.scoreNeighbors
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
 
+local mMax = math.max
+
 -- module code
 
-local function attackWaveValidCandidate(chunk, surface)
+local function attackWaveValidCandidate(chunk, surface, evolutionFactor)
     local total = 0;
 
     if CONFIG_USE_PLAYER_PROXIMITY then
 	total = total + chunk[PLAYER_PHEROMONE]
     end
-    if CONFIG_USE_PLAYER_BASE_PROXIMITY then
-	total = total + chunk[PLAYER_BASE_PHEROMONE]
-    end
-    if CONFIG_USE_PLAYER_DEFENSE_PROXIMITY then
-	total = total + chunk[PLAYER_DEFENSE_PHEROMONE]
-    end
     if CONFIG_USE_POLLUTION_PROXIMITY then
 	total = total + surface.get_pollution({chunk.pX, chunk.pY})
     end
+
+    local delta = CONFIG_USE_THRESHOLD_RANGE * evolutionFactor
     
-    if (total >= CONFIG_USE_THRESHOLD) then
+    if (total > (CONFIG_USE_THRESHOLD_MAX - delta)) then
 	return true
     else 
 	return false
@@ -81,19 +63,11 @@ local function attackWaveValidCandidate(chunk, surface)
 end
 
 local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
-    local attackScore = surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE]  
-    local avoidScore = neighborChunk[DEATH_PHEROMONE] 
-    return attackScore - avoidScore
+    return surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
 
 local function validUnitGroupLocation(x, chunk, neighborChunk)
     return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]
-end
-
-function aiBuilding.accumulatePoints(natives)
-    if (natives.points < AI_MAX_POINTS) then
-	natives.points = natives.points + math.floor(AI_POINT_GENERATOR_AMOUNT * math.random())
-    end
 end
 
 function aiBuilding.removeScout(entity, natives)
@@ -142,12 +116,10 @@ function aiBuilding.scouting(regionMap, natives)
     --]]
 end
 
-
-
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
     if (natives.points > AI_SQUAD_COST) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
-	local valid = attackWaveValidCandidate(chunk, surface)
-	if valid and (math.random() < 0.03) then
+	local valid = attackWaveValidCandidate(chunk, surface, evolution_factor)
+	if valid and (math.random() < mMax((0.25 * evolution_factor), 0.10)) then
 	    local squadPosition = {x=0, y=0}
 	    local squadPath, squadScore = scoreNeighbors(chunk,
 							 getNeighborChunks(regionMap, chunk.cX, chunk.cY),

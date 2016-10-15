@@ -7,6 +7,7 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
+0.14.14 factorio version fixed save corruption
 0.14.10 factorio version fixed more pathing issues  
 0.14.4 factorio version fixed some issues with unit groups commands  
 
@@ -33,36 +34,56 @@ Base Expansion
 
 # Version History
 
-0.14.3 - slightly lowered Rampant attack wave frequency  
-	Altered attack wave size to ramp up slower  
-	Added configuration options for:  
-		attack wave generation area  
-		attack wave threshold  
-		attack wave size  
-		turn off rampant attack waves  
+0.14.4 -  
+- Fixed a bug in the processing queue when upgrading mod  
+- Greatly decreased Player pheromone radius, now sits at roughly 4 chunks around the player  
+- Reworked pheromone pathfinding  
+- Removed base and defense attack wave trigger, in favor of using player pheromone and pollution  
+- Added periods of time where the enemy is not sending Rampant attack waves   
+- Adjusted retreat percentage to suit the reduced attack wave size  
+- Improved responsiveness on larger maps  
+- Reduced AI max build points  
+- Fixed player iteration bug  
 
-0.14.2 - adjusted unit retreat group size threshold   
-	adjusted squad attack pattern (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=20#p203861)  
-	Fixed migration issue   
+0.14.3 -   
+- Slightly lowered Rampant attack wave frequency  
+- Altered attack wave size to ramp up slower  
+- Added configuration options for:  
+	- - Attack wave generation area  
+	- - Attack wave threshold  
+	- - Attack wave size  
+	- - Turn off rampant attack waves  
 
-0.14.1 - fixed ai created bases not being counted in logic   
-	Optimization to offset ai created bases scanning   
+0.14.2 -  
+- Adjusted unit retreat group size threshold   
+- Adjusted squad attack pattern (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=20#p203861)  
+- Fixed migration issue   
+
+0.14.1 -   
+- Fixed ai created bases not being counted in logic   
+- Optimization to offset ai created bases scanning   
+
+0.13.4 = 0.14.4   
 
 0.13.3 = 0.14.3   
 
 0.13.2 = 0.14.2   
 
-0.13.1 - backported 0.14 factorio version to 0.13 factorio version   
+0.13.1 - Backported 0.14 factorio version to 0.13 factorio version   
 
-0.0.8 - fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
-	added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
-	increased squad size max from 125 to 150, (larger waves)   
+0.0.8 -   
+- Fixed retreat oscillations (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p198750)   
+- Added scaling for kamikaze attack (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=10#p199401)   
+- Increased squad size max from 125 to 150, (larger waves)   
 
-0.0.6 - some speed improvements   
-	MP is working (https://github.com/veden/Rampant/issues/1)   
+0.0.6 -  
+- Some speed improvements   
+- MP is working (https://github.com/veden/Rampant/issues/1)   
 
-0.0.5 - fix for nil chunk in ai attack (https://mods.factorio.com/mods/Veden/Rampant/discussion/2512)   
-	checks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)   
-	updated info with forum homepage   
+0.0.5 -  
+- Fix for nil chunk in ai attack (https://mods.factorio.com/mods/Veden/Rampant/discussion/2512)   
+- Xhecks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)   
+- Updated info with forum homepage   
         
 0.0.4 - initial release   
+	
