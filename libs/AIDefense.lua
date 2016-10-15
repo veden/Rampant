@@ -9,12 +9,11 @@ local neighborUtils = require("NeighborUtils")
 
 -- constants
 
-local DEATH_PHEROMONE = constants.DEATH_PHEROMONE
+local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local ENEMY_BASE_PHEROMONE = constants.ENEMY_BASE_PHEROMONE
-local PLAYER_DEFENSE_PHEROMONE = constants.PLAYER_DEFENSE_PHEROMONE
+local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
-local RETREAT_DEATH_PHEROMONE_LEVEL = constants.RETREAT_DEATH_PHEROMONE_LEVEL
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
 
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
@@ -46,14 +45,14 @@ local function validRetreatLocation(x, chunk, neighborChunk)
 end
 
 local function scoreRetreatLocation(position, squad, neighborChunk, surface)
-    local safeScore = neighborChunk[ENEMY_BASE_PHEROMONE]
-    local dangerScore = neighborChunk[DEATH_PHEROMONE] + surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[PLAYER_DEFENSE_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
+    local safeScore = -neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE]
+    local dangerScore = surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
     return safeScore - dangerScore
 end
 
 function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) and (chunk[DEATH_PHEROMONE] > (game.evolution_factor * RETREAT_DEATH_PHEROMONE_LEVEL)) then
+    if (chunk ~= nil) and (chunk[MOVEMENT_PHEROMONE] > -(game.evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
         local performRetreat = false
         local enemiesToSquad
     

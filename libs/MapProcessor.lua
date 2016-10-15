@@ -2,10 +2,10 @@ local mapProcessor = {}
 
 -- imports
 
-local mapUtils = require("MapUtils")
 local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
 local constants = require("Constants")
+local mapUtils = require("MapUtils")
 
 -- constants
 
@@ -15,6 +15,11 @@ local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
+local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+
+local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
+local CHUNK_TICK = constants.CHUNK_TICK
+
 
 -- imported functions
 
@@ -24,17 +29,38 @@ local processPheromone = pheromoneUtils.processPheromone
 local makeScouts = aiBuilding.makeScouts
 local formSquads = aiBuilding.formSquads
 
-local getCardinalChunks = mapUtils.getCardinalChunks
+local getChunkByIndex = mapUtils.getChunkByIndex
+local getChunkByPosition = mapUtils.getChunkByPosition
+
+local playerScent = pheromoneUtils.playerScent
 
 local mMin = math.min
 
 -- module code
 
--- processing is not consistant as it depends on the number of chunks that have been generated
--- so 200 chunks is processed 3 times a second and 1200 chunks is processed once a second
--- In theory, this might be fine as smaller bases have less surface to attack and need to have 
--- pheromone dissipate at a faster rate.
-function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, temps)   
+
+local function nonRepeatingRandom(players)
+    local ordering = {}
+    for _,player in pairs(players) do
+	ordering[#ordering+1] = player.index
+    end
+    for i=#ordering,1,-1 do
+	local s = math.random(i)
+	local t = ordering[i]
+	ordering[i] = ordering[s]
+	ordering[s] = t
+    end
+    return ordering
+end
+
+--[[
+    processing is not consistant as it depends on the number of chunks that have been generated
+    so if we process 400 chunks an iteration and 200 chunks have been generated than these are
+    processed 3 times a second and 1200 generated chunks would be processed once a second
+    In theory, this might be fine as smaller bases have less surface to attack and need to have 
+    pheromone dissipate at a faster rate.
+--]]
+function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
     local roll = regionMap.processRoll
     local index = regionMap.processPointer
     local scouts = false
@@ -49,8 +75,8 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, 
         scouts = true
     end
     
-    if (0.11 <= roll) and (roll <= 0.35) then
-        squads = true
+    if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.35) then
+	squads = true
     end
     
     local processQueue = regionMap.processQueue
@@ -64,10 +90,10 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, 
             makeScouts(surface, natives, chunk, evolution_factor)
         end
         if squads then
-            formSquads(regionMap, surface, natives, chunk, evolution_factor, temps)
+            formSquads(regionMap, surface, natives, chunk, evolution_factor)
         end
         
-        processPheromone(chunk, getCardinalChunks(regionMap, chunk.cX, chunk.cY))
+        processPheromone(regionMap, chunk)
     end
     
     if (endIndex == #processQueue) then
@@ -77,25 +103,90 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor, 
     end
 end
 
+--[[
+    Localized player radius were processing takes place in realtime, doesn't store state
+    between calls.
+    vs 
+    the slower passive version processing the entire map in multiple passes.
+--]]
+function mapProcessor.processPlayers(players, regionMap, surface, natives, evolution_factor, tick)
+    -- put down player pheromone for player hunters
+    -- randomize player order to ensure a single player isn't singled out
+    local playerOrdering = nonRepeatingRandom(players)
+    
+    local scouts = false
+    local squads = false
+    local roll = math.random() 
+
+    if (0.05 <= roll) and (roll <= 0.7) then
+	scouts = true
+    end
+    
+    if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.20) then
+	squads = true
+    end
+    
+    for i=1,#playerOrdering do
+	local player = players[playerOrdering[i]]
+	if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then 
+	    local playerPosition = player.character.position
+	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+	    
+	    if (playerChunk ~= nil) then
+		playerScent(playerChunk)
+	    end
+	end
+    end
+    for i=1,#playerOrdering do
+	local player = players[playerOrdering[i]]
+	if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then 
+	    local playerPosition = player.character.position
+	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+	    
+	    if (playerChunk ~= nil) then
+		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
+		    for y=playerChunk.cY - PROCESS_PLAYER_BOUND, playerChunk.cY + PROCESS_PLAYER_BOUND do
+			local chunk = getChunkByIndex(regionMap, x, y)
+	    
+			if (chunk ~= nil) and (chunk[CHUNK_TICK] ~= tick) then
+			    chunk[CHUNK_TICK] = tick
+			    scents(chunk)
+		
+			    if scouts then
+				makeScouts(surface, natives, chunk, evolution_factor)
+			    end
+			    if squads then
+				formSquads(regionMap, surface, natives, chunk, evolution_factor)
+			    end
+		
+			    processPheromone(regionMap, chunk)
+			end
+		    end
+		end
+	    end
+	end
+    end
+end
+
 function mapProcessor.scanMap(regionMap, surface)
     local index = regionMap.scanPointer
         
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
-        local chunk = processQueue[x]
+	local chunk = processQueue[x]
         
-        local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
-                                                                  {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-                                                          type = "unit-spawner",
-                                                          force = "enemy"})
-        chunk[ENEMY_BASE_GENERATOR] = spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+	local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
+							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
+							  type = "unit-spawner",
+							  force = "enemy"})
+	chunk[ENEMY_BASE_GENERATOR] = spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
     end
     
     if (endIndex == #processQueue) then
-        regionMap.scanPointer = 1
+	regionMap.scanPointer = 1
     else
-        regionMap.scanPointer = endIndex + 1
+	regionMap.scanPointer = endIndex + 1
     end
 end
 

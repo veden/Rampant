@@ -47,3 +47,4 @@ luac.out
 *.dumpjump
 /.emacs.desktop
 /.emacs.desktop.lock
+/README.html

@@ -9,20 +9,27 @@ local pheromoneUtils = require("libs/PheromoneUtils")
 local aiDefense = require("libs/AIDefense")
 local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
+local aiPlanning = require("libs/AIPlanning")
+local mathUtils = require("libs/MathUtils")
 local tests = require("tests")
+
+-- constants
+
+local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 -- imported functions
 
 local processPendingChunks = chunkProcessor.processPendingChunks
 
 local processMap = mapProcessor.processMap
+local processPlayers = mapProcessor.processPlayers
 local scanMap = mapProcessor.scanMap
 
-local accumulatePoints = aiBuilding.accumulatePoints
+local planning = aiPlanning.planning
 local removeScout = aiBuilding.removeScout
 -- local scouting = aiBuilding.scouting
 
-local playerScent = pheromoneUtils.playerScent
 local deathScent = pheromoneUtils.deathScent
 
 local regroupSquads = unitGroupUtils.regroupSquads
@@ -35,6 +42,8 @@ local retreatUnits = aiDefense.retreatUnits
 
 local addRemoveEntity = entityUtils.addRemoveEntity
 
+local roundToNearest = mathUtils.roundToNearest
+
 -- local references to global
 
 local regionMap
@@ -44,11 +53,9 @@ local pendingChunks
 -- hook functions
 
 local function onLoad()
-    -- print("load")
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    --    pheromoneTotals = global.pheromoneTotals
 end
 
 local function onChunkGenerated(event)
@@ -60,7 +67,6 @@ local function onChunkGenerated(event)
 end
 
 local function onConfigChanged()
-    -- print("reprocess")
     if (global.version == nil) then
 
         -- removed in version 9
@@ -83,11 +89,6 @@ local function onConfigChanged()
         regionMap.pI = nil
         regionMap.pP = nil
         regionMap.pR = nil
-        
-        regionMap.processQueue = {}
-        regionMap.processPointer = 1
-        regionMap.scanPointer = 1
-        regionMap.processRoll = -1
       
 	global.version = constants.VERSION_9
     end
@@ -98,40 +99,64 @@ local function onConfigChanged()
 	    squad.rabid = false
 	end
 	
-	-- queue all current chunks that wont be generated during play
-        local surface = game.surfaces[1]
-        for chunk in surface.get_chunks() do
-            onChunkGenerated({ surface = surface, 
-                               area = { left_top = { x = chunk.x * 32,
-                                                     y = chunk.y * 32 }}})
-        end
 	global.version = constants.VERSION_10
+    end
+    if (global.version < constants.VERSION_11) then
+	for _,squad in pairs(natives.squads) do
+	    squad.status = constants.SQUAD_GUARDING
+	end
+
+	natives.state = constants.AI_STATE_AGGRESSIVE
+	natives.temperament = 0
+	-- needs to be on inner logic tick loop interval
+	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	
+	-- clear old regionMap processing Queue
+	-- prevents queue adding duplicate chunks
+	-- chunks are by key, so should overwrite old
+	regionMap.processQueue = {}
+	regionMap.processPointer = 1
+	regionMap.scanPointer = 1
+	-- clear pending chunks, will be added when loop runs below
+	pendingChunks = {}
+	
+	-- queue all current chunks that wont be generated during play
+	local surface = game.surfaces[1]
+	for chunk in surface.get_chunks() do
+	    onChunkGenerated({ surface = surface, 
+			       area = { left_top = { x = chunk.x * 32,
+						     y = chunk.y * 32 }}})
+	end
+	
+	global.version = constants.VERSION_11
     end
 end
 
 local function onTick(event)   
-    if (event.tick % 20 == 0) then
+    if (event.tick % INTERVAL_PROCESS == 0) then
 	local surface = game.surfaces[1]
-        
-        processPendingChunks(regionMap, surface, pendingChunks)
-        scanMap(regionMap, surface)
+	local evolutionFactor = game.evolution_factor
+	local players = game.players
+	
+	processPendingChunks(regionMap, surface, pendingChunks)
+	scanMap(regionMap, surface)
 
-        if (event.tick % 40 == 0) then
-            
-            accumulatePoints(natives)
-            
-            -- put down player pheromone for player hunters
-            playerScent(regionMap, game.players)
-            
-            regroupSquads(natives)
-            
-            -- scouting(regionMap, natives)
-                        
-            squadBeginAttack(natives, game.players, game.evolution_factor)
-            squadAttack(regionMap, surface, natives)
-        end
+	if (event.tick % INTERVAL_LOGIC == 0) then
+	    local tick = game.tick
+	    planning(natives, evolutionFactor, tick)
+	    
+	    regroupSquads(natives)
+	    
+	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
+	    
+	    -- scouting(regionMap, natives)
+	    
+	    squadBeginAttack(natives, players, evolutionFactor)
+	    squadAttack(regionMap, surface, natives)
+	end
 
-	processMap(regionMap, surface, natives, game.evolution_factor) 
+	processMap(regionMap, surface, natives, evolutionFactor) 
     end
 end
 
@@ -181,16 +206,13 @@ local function onSurfaceTileChange(event)
 end
 
 local function onInit()
-    -- print("init")
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
---    global.pheromoneTotals = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
---    pheromoneTotals = global.pheromoneTotals
     
     onConfigChanged()
 end
@@ -216,15 +238,15 @@ script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampant", {
-                                    test1 = tests.test1,
-                                    test2 = tests.test2,
-                                    test3 = tests.test3,
-                                    test4 = tests.test4,
-                                    test5 = tests.test5,
-                                    test6 = tests.test6,
-                                    test7 = tests.test7,
-                                    test8 = tests.test8,
-                                    test9 = tests.test9,
-                                    test10 = tests.test10,
-                                    test11 = tests.test11
-                                })
+			 test1 = tests.test1,
+			 test2 = tests.test2,
+			 test3 = tests.test3,
+			 test4 = tests.test4,
+			 test5 = tests.test5,
+			 test6 = tests.test6,
+			 test7 = tests.test7,
+			 test8 = tests.test8,
+			 test9 = tests.test9,
+			 test10 = tests.test10,
+			 test11 = tests.test11
+})

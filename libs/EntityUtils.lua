@@ -8,10 +8,8 @@ local constants = require("Constants")
 -- constants
 
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
-local DEFENSE_PHEROMONES = constants.DEFENSE_PHEROMONES
 
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
-local PLAYER_DEFENSE_GENERATOR = constants.PLAYER_DEFENSE_GENERATOR
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
@@ -87,9 +85,6 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) then
         entityValue = BUILDING_PHEROMONES[entity.type]
         pheromoneType = PLAYER_BASE_GENERATOR
-    elseif (DEFENSE_PHEROMONES[entity.type] ~= nil) then
-        entityValue = DEFENSE_PHEROMONES[entity.type]
-        pheromoneType = PLAYER_DEFENSE_GENERATOR
     elseif (entity.type == "unit-spawner") and (entity.force.name == "enemy") then
         entityValue = ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
         pheromoneType = ENEMY_BASE_GENERATOR

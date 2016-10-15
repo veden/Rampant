@@ -7,7 +7,7 @@ local constants = require("Constants")
 
 -- constants
 
-local MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT
+local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 
 local GROUP_STATE_FINISHED = defines.group_state.finished
 
@@ -93,14 +93,14 @@ function unitGroupUtils.addSquadMovementPenalty(squad, chunkX, chunkY)
     for i=1,#penalties do
         local penalty = penalties[i]
         if (penalty.x == chunkX) and (penalty.y == chunkY) then
-            penalty.v = penalty.v + MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT
+            penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
             return
         end
     end
     if (#penalties == 10) then
         tableRemove(penalties, 10)
     end
-    tableInsert(penalties, 1, { v = MOVEMENT_PENALTY_PHEROMONE_GENERATOR_AMOUNT,
+    tableInsert(penalties, 1, { v = MOVEMENT_PHEROMONE_GENERATOR_AMOUNT,
                                 x = chunkX,
                                 y = chunkY })
 end

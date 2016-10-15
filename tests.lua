@@ -10,8 +10,8 @@ function tests.test1()
     print(#global.regionMap.processQueue)
     print(playerChunkX .. ", " .. playerChunkY)
     print("--")
-    for x=playerChunkX-3, playerChunkX+3 do
-        for y=playerChunkY-3, playerChunkY+3 do
+    for x=playerChunkX-9, playerChunkX+9 do
+        for y=playerChunkY-9, playerChunkY+9 do
             if (global.regionMap[x] ~= nil) then
                 local chunk = global.regionMap[x][y]
                 if (chunk ~= nil) then
@@ -19,13 +19,14 @@ function tests.test1()
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-                    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
-                        print("*", chunk.cX, chunk.cY, str)
-                    else
-                        print(chunk.cX, chunk.cY, str)
-                    end
-                    -- print(str)
-                    print("-")
+		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution({x=chunk.pX, y=chunk.pY})
+		    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
+			print("*", chunk.cX, chunk.cY, str)
+		    else
+			print(chunk.cX, chunk.cY, str)
+		    end
+		    -- print(str)
+		    print("-")
                 end
             end
         end
