@@ -14,7 +14,7 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
 constants.SCAN_QUEUE_SIZE = 10
-constants.PROCESS_PLAYER_BOUND = 3
+constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
@@ -132,68 +132,68 @@ constants.retreatFilter[constants.SQUAD_RETREATING] = true
 return constants
 
 --[[ types
-inserter
-loader
+    inserter
+    loader
 
-offshore-pump
-accumulator
-power-switch
-generator
-pump
-boiler
-solar-panel
+    offshore-pump
+    accumulator
+    power-switch
+    generator
+    pump
+    boiler
+    solar-panel
 
-constant-combinator
-arithmetic-combinator
-decider-combinator
+    constant-combinator
+    arithmetic-combinator
+    decider-combinator
 
-player-port
-rocket-silo
-roboport
-assembling-machine
-mining-drill
-lab
-beacon
-radar
-furnace
-unit-spawner
+    player-port
+    rocket-silo
+    roboport
+    assembling-machine
+    mining-drill
+    lab
+    beacon
+    radar
+    furnace
+    unit-spawner
 
-lamp
+    lamp
 
-land-mine
-ammo-turret
-wall
-gate
-electric-turret
-fluid-turret
-turret
+    land-mine
+    ammo-turret
+    wall
+    gate
+    electric-turret
+    fluid-turret
+    turret
 
-resource
+    resource
 
-logistic-robot
-construction-robot
-unit
-player
-combat-robot
+    logistic-robot
+    construction-robot
+    unit
+    player
+    combat-robot
 
-locomotive
-cargo-wagon
-car
+    locomotive
+    cargo-wagon
+    car
 
-smart-container
-logistic-container
-container
-storage-tank
+    smart-container
+    logistic-container
+    container
+    storage-tank
 
-transport-belt
-underground-belt
-splitter
-pipe-to-ground
-electric-pole
-curved-rail
-straight-rail
-train-stop
-rail-signal
-rail-chain-signal
-pipe
+    transport-belt
+    underground-belt
+    splitter
+    pipe-to-ground
+    electric-pole
+    curved-rail
+    straight-rail
+    train-stop
+    rail-signal
+    rail-chain-signal
+    pipe
 ]]--
