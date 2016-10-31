@@ -18,7 +18,7 @@ config.attackWaveGenerationUsePlayerProximity = true
     starts 20 @ 0.0 evolution
     ends 0 @ 100.0 evolution
     default max is 20
-    default min is 00
+    default min is 0
 --]]
 config.attackWaveGenerationThresholdMax = 20
 config.attackWaveGenerationThresholdMin = 0

@@ -30,12 +30,12 @@ local CONFIG_ATTACK_WAVE_MAX_SIZE = config.attackWaveMaxSize
 
 -- imported functions
 
-local getCardinalChunksWithDirection = mapUtils.getCardinalChunksWithDirection
+local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
 local getChunkByPosition = mapUtils.getChunkByPosition
-local canMoveChunkDirectionCardinal = mapUtils.canMoveChunkDirectionCardinal
+local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
-local positionFromDirectionAndChunkCardinal = mapUtils.positionFromDirectionAndChunkCardinal
+local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
 
@@ -48,12 +48,12 @@ local mLog = math.log10
 -- module code
 
 local function validLocation(x, chunk, neighborChunk)
-    return canMoveChunkDirectionCardinal(x, chunk, neighborChunk)
+    return canMoveChunkDirection(x, chunk, neighborChunk)
 end
 
 local function scoreAttackLocation(position, squad, neighborChunk, surface)
     local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + neighborChunk[PLAYER_PHEROMONE]
+    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25)
     return r - squadMovementPenalty
 end
 
@@ -75,19 +75,19 @@ function aiAttack.squadAttack(regionMap, surface, natives)
             if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) or ((group.state == defines.group_state.moving) and (squad.cycles == 0)) then
                 local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
                 if (chunk ~= nil) then
-                    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
                     local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-                                                                                     getCardinalChunksWithDirection(regionMap, chunk.cX, chunk.cY),
+                                                                                     getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
                                                                                      validLocation,
                                                                                      scoreAttackLocation,
                                                                                      squad,
                                                                                      surface,
                                                                                      attackPosition)
+		    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
                     if (attackChunk ~= nil) then
                         if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
 			((group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering)) then
                             
-			    positionFromDirectionAndChunkCardinal(attackDirection, squad.group.position, attackPosition)
+			    positionFromDirectionAndChunk(attackDirection, squad.group.position, attackPosition)
 
 			    squad.cycles = 3
 

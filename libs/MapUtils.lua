@@ -81,53 +81,66 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
     return neighbors
 end
 
+function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
+    local canMove = false
+    if ((direction == 2) or (direction == 7)) and startChunk[NORTH_SOUTH_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] then
+        canMove = true
+    elseif ((direction == 4) or (direction == 5)) and startChunk[EAST_WEST_PASSABLE] and endChunk[EAST_WEST_PASSABLE] then
+        canMove = true
+    elseif (startChunk[NORTH_SOUTH_PASSABLE] and startChunk[EAST_WEST_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] and
+	    endChunk[EAST_WEST_PASSABLE]) then
+	canMove = true
+    end
+    return canMove
+end
+
 function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY)   
     local neighbors = {{d=1},{d=2},{d=3},{d=4},{d=5},{d=6},{d=7},{d=8}}
     local xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
-        neighbors[1].c = xChunks[chunkY-1]
-        neighbors[4].c = xChunks[chunkY]
-        neighbors[6].c = xChunks[chunkY+1]
+	neighbors[1].c = xChunks[chunkY-1]
+	neighbors[4].c = xChunks[chunkY]
+	neighbors[6].c = xChunks[chunkY+1]
     end
     
     xChunks = regionMap[chunkX+1]
     if (xChunks ~= nil) then
-        neighbors[3].c = xChunks[chunkY-1]
-        neighbors[5].c = xChunks[chunkY]
-        neighbors[8].c = xChunks[chunkY+1]
+	neighbors[3].c = xChunks[chunkY-1]
+	neighbors[5].c = xChunks[chunkY]
+	neighbors[8].c = xChunks[chunkY+1]
     end
     
     xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
-        neighbors[2].c = xChunks[chunkY-1]
-        neighbors[7].c = xChunks[chunkY+1]
+	neighbors[2].c = xChunks[chunkY-1]
+	neighbors[7].c = xChunks[chunkY+1]
     end
     return neighbors
 end
 
 --[[
-      1
-      |
+    1
+    |
     2- -3
-      |
-      4 
+    |
+    4 
 ]]--
 function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)   
     local neighbors = {{d=1},{d=2},{d=3},{d=4}}
     local xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
-        neighbors[1].c = xChunks[chunkY-1]
-        neighbors[4].c = xChunks[chunkY+1]
+	neighbors[1].c = xChunks[chunkY-1]
+	neighbors[4].c = xChunks[chunkY+1]
     end
     
     xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
-        neighbors[2].c = xChunks[chunkY]
+	neighbors[2].c = xChunks[chunkY]
     end
     
     xChunks = regionMap[chunkX+1]
     if (xChunks ~= nil) then
-        neighbors[3].c = xChunks[chunkY]
+	neighbors[3].c = xChunks[chunkY]
     end
     return neighbors
 end
@@ -136,25 +149,25 @@ function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
     local neighbors = {1,2,3,4}
     local xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
-        neighbors[1] = xChunks[chunkY-1]
-        neighbors[4] = xChunks[chunkY+1]
+	neighbors[1] = xChunks[chunkY-1]
+	neighbors[4] = xChunks[chunkY+1]
     else
-        neighbors[1] = nil
-        neighbors[4] = nil
+	neighbors[1] = nil
+	neighbors[4] = nil
     end
     
     xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
-        neighbors[2] = xChunks[chunkY]
+	neighbors[2] = xChunks[chunkY]
     else
-        neighbors[2] = nil
+	neighbors[2] = nil
     end
     
     xChunks = regionMap[chunkX+1]
     if (xChunks ~= nil) then
-        neighbors[3] = xChunks[chunkY]
+	neighbors[3] = xChunks[chunkY]
     else
-        neighbors[3] = nil
+	neighbors[3] = nil
     end
     return neighbors
 end
@@ -172,18 +185,18 @@ function mapUtils.euclideanDistanceArray(p1, p2)
 end
 
 --[[
-      1
-      |
+    1
+    |
     2- -3
-      |
-      4 
+    |
+    4 
 ]]--
 function mapUtils.canMoveChunkDirectionCardinal(direction, startChunk, endChunk)
     local canMove = false
     if ((direction == 1) or (direction == 4)) and startChunk[NORTH_SOUTH_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] then
-        canMove = true
+	canMove = true
     elseif ((direction == 2) or (direction == 3)) and startChunk[EAST_WEST_PASSABLE] and endChunk[EAST_WEST_PASSABLE] then
-        canMove = true
+	canMove = true
     end
     return canMove
 end
@@ -191,66 +204,47 @@ end
 function mapUtils.positionFromDirectionAndChunkCardinal(direction, startPosition, position)
     -- local position = {x=0,y=0}
     if (direction == 1) then
-        position.x = startPosition.x 
-        position.y = startPosition.y - CHUNK_SIZE
+	position.x = startPosition.x 
+	position.y = startPosition.y - CHUNK_SIZE
     elseif (direction == 2) then
-        position.x = startPosition.x - CHUNK_SIZE
-        position.y = startPosition.y 
+	position.x = startPosition.x - CHUNK_SIZE
+	position.y = startPosition.y 
     elseif (direction == 3) then
-        position.x = startPosition.x + CHUNK_SIZE
-        position.y = startPosition.y 
+	position.x = startPosition.x + CHUNK_SIZE
+	position.y = startPosition.y 
     elseif (direction == 4) then
-        position.x = startPosition.x 
-        position.y = startPosition.y + CHUNK_SIZE
+	position.x = startPosition.x 
+	position.y = startPosition.y + CHUNK_SIZE
     end
     -- return position
 end
 
-
--- function mapUtils.positionFromDirectionAndChunkCardinal(direction, chunk, position)
---     -- local position = {x=0,y=0}
---     if (direction == 1) then
---         position.x = chunk.pX + HALF_CHUNK_SIZE
---         position.y = chunk.pY 
---     elseif (direction == 2) then
---         position.x = chunk.pX 
---         position.y = chunk.pY + HALF_CHUNK_SIZE
---     elseif (direction == 3) then
---         position.x = chunk.pX + CHUNK_SIZE
---         position.y = chunk.pY + HALF_CHUNK_SIZE
---     elseif (direction == 4) then
---         position.x = chunk.pX + HALF_CHUNK_SIZE
---         position.y = chunk.pY + CHUNK_SIZE
---     end
---     -- return position
--- end
-
-function mapUtils.positionFromDirectionAndChunk(direction, chunk)
-    local position = {x=0, y=0}
+function mapUtils.positionFromDirectionAndChunk(direction, startPosition, position)
+    --    local position = {x=0, y=0}
     if (direction == 1) then
-        position.x = chunk.pX  
-        position.y = chunk.pY 
+	position.x = startPosition.x - CHUNK_SIZE  
+	position.y = startPosition.y - CHUNK_SIZE
     elseif (direction == 2) then
-        position.x = chunk.pX + HALF_CHUNK_SIZE
-        position.y = chunk.pY 
+	position.x = startPosition.x
+	position.y = startPosition.y - CHUNK_SIZE
     elseif (direction == 3) then
-        position.x = chunk.pX + CHUNK_SIZE
-        position.y = chunk.pY
+	position.x = startPosition.x + CHUNK_SIZE
+	position.y = startPosition.y - CHUNK_SIZE
     elseif (direction == 4) then
-        position.x = chunk.pX
-        position.y = chunk.pY + HALF_CHUNK_SIZE
+	position.x = startPosition.x - CHUNK_SIZE
+	position.y = startPosition.y
     elseif (direction == 5) then
-        position.x = chunk.pX + CHUNK_SIZE
-        position.y = chunk.pY + HALF_CHUNK_SIZE
+	position.x = startPosition.x + CHUNK_SIZE
+	position.y = startPosition.y
     elseif (direction == 6) then
-        position.x = chunk.pX 
-        position.y = chunk.pY + CHUNK_SIZE
+	position.x = startPosition.x - CHUNK_SIZE 
+	position.y = startPosition.y + CHUNK_SIZE
     elseif (direction == 7) then
-        position.x = chunk.pX + HALF_CHUNK_SIZE
-        position.y = chunk.pY + CHUNK_SIZE
+	position.x = startPosition.x
+	position.y = startPosition.y + CHUNK_SIZE
     elseif (direction == 8) then
-        position.x = chunk.pX + CHUNK_SIZE
-        position.y = chunk.pY + CHUNK_SIZE
+	position.x = startPosition.x + CHUNK_SIZE
+	position.y = startPosition.y + CHUNK_SIZE
     end
     return position
 end

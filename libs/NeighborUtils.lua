@@ -28,6 +28,10 @@ function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunk
             end
         end
     end
+
+    if scoreFunction(position, squad, chunk, surface) > highestScore then
+	return nil, -1
+    end
     
     return highestChunk, highestDirection
 end
@@ -46,6 +50,10 @@ function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scor
                 highestChunk = neighborChunk
             end
         end
+    end
+
+    if scoreFunction(position, squad, chunk, surface) > highestScore then
+	return nil, -1
     end
     
     return highestChunk, highestScore

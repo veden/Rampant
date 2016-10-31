@@ -34,6 +34,12 @@ Base Expansion
 
 # Version History
 
+0.14.5 -  
+- Improvement: Enlarged player processing bubble from 3 to 4 (pheromone radius is still 4)  
+- Fix: Increased player scoring weight, so biter groups correctly hunt once more (https://forums.factorio.com/viewtopic.php?f=94&t=31445#p216119)  
+- Improvement: Adjusted attack pathing, so groups can move diagonally  
+- Fix: Unit group retreating when player occupies same chunk  
+
 0.14.4 -  
 - Fixed a bug in the processing queue when upgrading mod  
 - Greatly decreased Player pheromone radius, now sits at roughly 4 chunks around the player  
@@ -62,6 +68,8 @@ Base Expansion
 0.14.1 -   
 - Fixed ai created bases not being counted in logic   
 - Optimization to offset ai created bases scanning   
+
+0.13.5 = 0.14.5   
 
 0.13.4 = 0.14.4   
 

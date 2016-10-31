@@ -25,9 +25,6 @@ local SQUAD_SUICIDE_RAID = constants.SQUAD_SUICIDE_RAID
 
 local RETREAT_FILTER = constants.RETREAT_FILTER
 
-local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
-local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
-
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -37,16 +34,17 @@ local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
+local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 
 -- module code
 
 local function validRetreatLocation(x, chunk, neighborChunk)
-    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]
+    return canMoveChunkDirection(x, chunk, neighborChunk)
 end
 
 local function scoreRetreatLocation(position, squad, neighborChunk, surface)
     local safeScore = -neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE]
-    local dangerScore = surface.get_pollution(position) + neighborChunk[PLAYER_PHEROMONE] + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
+    local dangerScore = surface.get_pollution(position) + (neighborChunk[PLAYER_PHEROMONE] * 25) + (neighborChunk[ENEMY_BASE_GENERATOR] * 6)
     return safeScore - dangerScore
 end
 
