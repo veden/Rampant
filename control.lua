@@ -102,15 +102,22 @@ local function onConfigChanged()
 	global.version = constants.VERSION_10
     end
     if (global.version < constants.VERSION_11) then
-	for _,squad in pairs(natives.squads) do
-	    squad.status = constants.SQUAD_GUARDING
-	end
-
 	natives.state = constants.AI_STATE_AGGRESSIVE
 	natives.temperament = 0
 	-- needs to be on inner logic tick loop interval
 	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
 	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+		
+	global.version = constants.VERSION_11
+    end
+    if (global.version < constants.VERSION_12) then
+	for _,squad in pairs(natives.squads) do
+	    squad.status = constants.SQUAD_GUARDING
+	    squad.kamikaze = false
+	end
+	
+	-- reset ai build points due to error in earning points
+	natives.points = 0
 	
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
@@ -119,8 +126,8 @@ local function onConfigChanged()
 	regionMap.processPointer = 1
 	regionMap.scanPointer = 1
 	-- clear pending chunks, will be added when loop runs below
-	pendingChunks = {}
-	
+	pendingChunks = {} 
+
 	-- queue all current chunks that wont be generated during play
 	local surface = game.surfaces[1]
 	for chunk in surface.get_chunks() do
@@ -128,13 +135,14 @@ local function onConfigChanged()
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
-	
-	global.version = constants.VERSION_11
+
+	global.version = constants.VERSION_12
     end
 end
 
-local function onTick(event)   
-    if (event.tick % INTERVAL_PROCESS == 0) then
+local function onTick(event)
+    local tick = event.tick
+    if (tick % INTERVAL_PROCESS == 0) then
 	local surface = game.surfaces[1]
 	local evolutionFactor = game.evolution_factor
 	local players = game.players
@@ -142,8 +150,7 @@ local function onTick(event)
 	processPendingChunks(regionMap, surface, pendingChunks)
 	scanMap(regionMap, surface)
 
-	if (event.tick % INTERVAL_LOGIC == 0) then
-	    local tick = game.tick
+	if (tick % INTERVAL_LOGIC == 0) then
 	    planning(natives, evolutionFactor, tick)
 	    
 	    regroupSquads(natives)
@@ -161,11 +168,11 @@ local function onTick(event)
 end
 
 local function onBuild(event)
-    addRemoveEntity(regionMap, event.created_entity, natives, true)
+    addRemoveEntity(regionMap, event.created_entity, natives, true, false)
 end
 
 local function onPickUp(event)
-    addRemoveEntity(regionMap, event.entity, natives, false)
+    addRemoveEntity(regionMap, event.entity, natives, false, false)
 end
 
 local function onDeath(event)
@@ -180,20 +187,24 @@ local function onDeath(event)
                 deathScent(regionMap, entityPosition)
                 
                 if (event.force ~= nil) and (event.force.name == "player") then 
-                    retreatUnits(entityPosition, 
-                                 convertUnitGroupToSquad(natives, 
-                                                         entity.unit_group),
-                                 regionMap, 
-                                 surface, 
-                                 natives)
+		    retreatUnits(entityPosition, 
+				 convertUnitGroupToSquad(natives, 
+							 entity.unit_group),
+				 regionMap, 
+				 surface, 
+				 natives)
                 end
                 
                 removeScout(entity, global.natives)
             elseif (entity.type == "unit-spawner") then
-                addRemoveEntity(regionMap, entity, natives, false)
+                addRemoveEntity(regionMap, entity, natives, false, false)
             end
         elseif (entity.force.name == "player") then
-            addRemoveEntity(regionMap, entity, natives, false)
+	    local creditNatives = false
+	    if (event.force ~= nil) and (event.force.name == "enemy") then
+		creditNatives = true
+	    end
+	    addRemoveEntity(regionMap, entity, natives, false, creditNatives)
         end
     end
 end

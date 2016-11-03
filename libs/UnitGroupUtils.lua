@@ -43,6 +43,7 @@ function unitGroupUtils.createSquad(position, surface, natives)
                     penalties = {},
 		    rabid = false,
 		    frenzy = false,
+		    kamikaze = false,
 		    frenzyPosition = {x = 0,
 				      y = 0},
                     cycles = 0 }
@@ -79,6 +80,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
                         penalties = {},
 			rabid = false,
 			frenzy = false,
+			kamikaze = false,
 			frenzyPosition = {x = 0,
 					  y = 0},
                         cycles = 0 }
@@ -127,7 +129,10 @@ function unitGroupUtils.regroupSquads(natives)
                 local mergeGroup = mergeSquad.group
                 if mergeGroup.valid and (mergeSquad.status == squad.status) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < 16) then
                     unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
-                    mergeGroup.destroy()
+		    if mergeSquad.kamikaze then
+			squad.kamikaze = true
+		    end
+		    mergeGroup.destroy()
                 end
             end	    
         end

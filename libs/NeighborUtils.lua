@@ -10,7 +10,7 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 -- module code
 
-function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunks, validFunction, scoreFunction, squad, surface, position) 
+function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection    
@@ -29,14 +29,14 @@ function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunk
         end
     end
 
-    if scoreFunction(position, squad, chunk, surface) > highestScore then
+    if scoreSelf and scoreFunction(position, squad, chunk, surface) > highestScore then
 	return nil, -1
     end
     
     return highestChunk, highestDirection
 end
 
-function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scoreFunction, squad, surface, position) 
+function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     for x=1,#neighborChunks do
@@ -52,7 +52,7 @@ function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scor
         end
     end
 
-    if scoreFunction(position, squad, chunk, surface) > highestScore then
+    if scoreSelf and scoreFunction(position, squad, chunk, surface) > highestScore then
 	return nil, -1
     end
     

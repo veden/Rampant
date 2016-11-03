@@ -1,6 +1,7 @@
 local tests = {}
 
 local constants = require("libs/Constants")
+local mathUtils = require("libs/MathUtils")
 
 function tests.test1() 
     local player = game.player.character
@@ -71,7 +72,7 @@ function tests.test4()
 end
 
 function tests.test5()
-    print(global.natives.points, game.tick)
+    print(global.natives.points, game.tick, global.natives.state, global.natives.temperament, global.natives.stateTick, global.natives.temperamentTick)
 end
 
 function tests.test6()
@@ -116,7 +117,19 @@ function tests.test10()
 end
 
 function tests.test11()
-    print(serpent.dump(global.pheromoneTotals))
+    local result = {}
+    for x=0,100,1 do
+    	result[x] = 0
+    end
+    for _=1,10000 do
+	local s = mathUtils.roundToNearest(mathUtils.gaussianRandomRange(10, 17, 0, 100), 1)
+	result[s] = result[s] + 1
+    end
+    for x=0,100,1 do
+    	print(x, result[x])
+    end
 end
+
+
 
 return tests

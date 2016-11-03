@@ -127,7 +127,8 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 							 scoreUnitGroupLocation,
 							 nil,
 							 surface,
-							 squadPosition)
+							 squadPosition,
+							 false)
 	    if (squadPath ~= nil) and (squadScore > 0) then
 		squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
 		squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
@@ -137,12 +138,13 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 		if (math.random() < 0.03) then
 		    squad.rabid = true
 		end
-		
+
+		local scaledWaveSize = attackWaveScaling(evolution_factor) 
 		local foundUnits = surface.set_multi_command({ command = { type = defines.command.group,
 									   group = squad.group,
 									   distraction = defines.distraction.none },
-							       unit_count = attackWaveScaling(evolution_factor),
-							       unit_search_distance = (CHUNK_SIZE * 2)})
+							       unit_count = scaledWaveSize,
+							       unit_search_distance = (CHUNK_SIZE * 3)})
 		if (foundUnits > 0) then
 		    natives.points = natives.points - AI_SQUAD_COST
 		end

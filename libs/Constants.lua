@@ -6,6 +6,7 @@ constants.VERSION_5 = 5
 constants.VERSION_9 = 9
 constants.VERSION_10 = 10
 constants.VERSION_11 = 11
+constants.VERSION_12 = 12
 
 -- misc
 
@@ -59,8 +60,8 @@ constants.EAST_WEST = 2
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 15
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 100
+constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 30
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 75
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 100
 
 -- pheromone diffusion amounts
@@ -69,6 +70,7 @@ constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.05
 constants.MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT = 0.02
 
 constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.98
+constants.REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE = 0.65
 constants.STANDARD_PHEROMONE_PERSISTANCE = 0.98
 
 -- chunk attributes
@@ -89,12 +91,8 @@ constants.CHUNK_TICK = 8
 
 constants.SQUAD_RETREATING = 1 -- used during squad retreat
 constants.SQUAD_GUARDING = 2 -- used when squad is idle
-constants.SQUAD_ATTACKING = 3 -- used as an attack state to be transitioned into hunt, raid, siege, burrow
-constants.SQUAD_BURROWING = 4
-constants.SQUAD_RAIDING = 5 -- used when player stuff is close
-constants.SQUAD_SUICIDE_RAID = 6 -- when player stuff is close with no retreat
--- constants.SQUAD_SCOUTING = 7
--- constants.SQUAD_SIEGE = 3 
+constants.SQUAD_BURROWING = 3
+constants.SQUAD_RAIDING = 4 -- used when player stuff is close
 
 -- player building pheromones
 
