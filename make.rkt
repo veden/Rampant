@@ -6,7 +6,7 @@
     ;(define modFolder "C:/Users/veden/AppData/Roaming/Factorio/mods/")
     ;(define zipModFolder "C:/Program Files/Factorio_0.14.1/mods/")
     (define modFolder "/home/veden/.factorio/mods/")
-    (define zipModFolder "/data/games/factorio14.17/mods/")
+    (define zipModFolder "/data/games/factorio14.18/mods/")
     (define configuration (call-with-input-file "info.json"
                             (lambda (port)
                               (string->jsexpr (port->string port)))))
@@ -73,7 +73,7 @@
         (copyDirectory "graphics" modFolder)
         (copyDirectory "prototypes" modFolder)))
     
-    ;;(copyFiles modFolder)
+    ;;    (copyFiles modFolder)
     ;;    (copyFiles zipModFolder)
     (makeZip modFolder)
     ;;(makeZip zipModFolder)

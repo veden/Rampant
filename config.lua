@@ -1,5 +1,8 @@
 local config = {}
 
+local mathUtils = require("libs/MathUtils")
+local gaussianRandomRange = mathUtils.gaussianRandomRange
+
 --[[
     the attackWaveGenerationUse* options are used to score chunks with biter nests that will generate a Rampant attack wave.
     Pollution, the vanilla pollution mechanic (shown on the minimap).
@@ -34,7 +37,10 @@ config.attackWaveMaxSize = 150
     DOES NOT affect vanilla biters waves
 --]]
 config.attackWaveScaling = function (evolutionFactor)
-    return math.ceil(config.attackWaveMaxSize * (evolutionFactor ^ 1.666667))
+    return math.ceil(gaussianRandomRange(config.attackWaveMaxSize * (evolutionFactor ^ 1.66667),
+					 (config.attackWaveMaxSize * 0.5) * 0.333,
+					 1,
+					 config.attackWaveMaxSize + (config.attackWaveMaxSize * 0.25)))
 end
 
 return config

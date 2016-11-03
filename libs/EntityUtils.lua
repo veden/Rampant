@@ -78,7 +78,7 @@ local function getEntityOverlapChunks(regionMap, entity)
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
 end
 
-function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject)
+function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, creditNatives)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     local pheromoneType
@@ -92,22 +92,23 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject)
     if (entityValue ~= nil) then
         leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
         if not addObject then
-            entityValue = -entityValue
-        elseif (pheromoneType ~= ENEMY_BASE_GENERATOR) then
-            natives.points = natives.points + entityValue
-        end
-        if (leftTop ~= nil) then
-            leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue
-        end
-        if (rightTop ~= nil) then
-            rightTop[pheromoneType] = rightTop[pheromoneType] + entityValue
-        end
-        if (leftBottom ~= nil) then
-            leftBottom[pheromoneType] = leftBottom[pheromoneType] + entityValue
-        end
-        if (rightBottom ~= nil) then
-            rightBottom[pheromoneType] = rightBottom[pheromoneType] + entityValue
-        end
+	    if creditNatives and (pheromoneType ~= ENEMY_BASE_GENERATOR) then
+		natives.points = natives.points + entityValue
+	    end
+	    entityValue = -entityValue
+	end
+	if (leftTop ~= nil) then
+	    leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue
+	end
+	if (rightTop ~= nil) then
+	    rightTop[pheromoneType] = rightTop[pheromoneType] + entityValue
+	end
+	if (leftBottom ~= nil) then
+	    leftBottom[pheromoneType] = leftBottom[pheromoneType] + entityValue
+	end
+	if (rightBottom ~= nil) then
+	    rightBottom[pheromoneType] = rightBottom[pheromoneType] + entityValue
+	end
     end
 end
 

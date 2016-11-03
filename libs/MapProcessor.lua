@@ -20,7 +20,6 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
 
-
 -- imported functions
 
 local scents = pheromoneUtils.scents
@@ -37,7 +36,6 @@ local playerScent = pheromoneUtils.playerScent
 local mMin = math.min
 
 -- module code
-
 
 local function nonRepeatingRandom(players)
     local ordering = {}
@@ -168,6 +166,9 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     end
 end
 
+--[[
+    Passive scan to find ai generated nests, required while ai creates bases or until an event is exposed by devs
+--]]
 function mapProcessor.scanMap(regionMap, surface)
     local index = regionMap.scanPointer
         

@@ -21,6 +21,7 @@ local STANDARD_PHERONOME_DIFFUSION_AMOUNT = constants.STANDARD_PHERONOME_DIFFUSI
 local MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT = constants.MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT
 
 local MOVEMENT_PHEROMONE_PERSISTANCE = constants.MOVEMENT_PHEROMONE_PERSISTANCE
+local REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE = constants.REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE
 local STANDARD_PHEROMONE_PERSISTANCE = constants.STANDARD_PHEROMONE_PERSISTANCE
 
 -- imported functions
@@ -51,7 +52,12 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     -- pheromone level indexes on chunks are 1 - 3
     -- unrolled loop one level
     local diffusionAmount = MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT
-    local persistence = MOVEMENT_PHEROMONE_PERSISTANCE
+    local persistence
+    if (chunk[BASE_PHEROMONE] < 0) then
+	persistence = REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE
+    else
+	persistence = MOVEMENT_PHEROMONE_PERSISTANCE
+    end
     local totalDiffused = 0
     local chunkValue = chunk[MOVEMENT_PHEROMONE] * persistence
     local diffusedAmount = chunkValue * diffusionAmount
@@ -73,7 +79,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
 	totalDiffused = 0
 	chunkValue = chunk[x] * persistence
 	diffusedAmount = chunkValue * diffusionAmount
-	if (diffusedAmount > 1.5) then
+	if (diffusedAmount > 1.5) or (diffusedAmount < -1.5) then
 	    if (neighbors == nil) then
 		neighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
 	    end
