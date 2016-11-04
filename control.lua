@@ -107,7 +107,7 @@ local function onConfigChanged()
 	-- needs to be on inner logic tick loop interval
 	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
 	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-		
+	
 	global.version = constants.VERSION_11
     end
     if (global.version < constants.VERSION_12) then
@@ -212,7 +212,7 @@ end
 local function onSurfaceTileChange(event)
     -- local player = game.players[event.player_index]
     -- if (player.surface.index==1) then
-        -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
+    -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
     -- end
 end
 
@@ -239,10 +239,10 @@ script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
-                onPickUp)
+    onPickUp)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 
-                onBuild)
+    onBuild)
 
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
