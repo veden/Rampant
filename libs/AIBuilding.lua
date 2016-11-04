@@ -20,6 +20,7 @@ local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -116,9 +117,14 @@ function aiBuilding.scouting(regionMap, natives)
     --]]
 end
 
-function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor)
-    if (natives.points > AI_SQUAD_COST) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
-	local valid = attackWaveValidCandidate(chunk, surface, evolution_factor)
+function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)
+    if (natives.points > cost) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
+	local valid = false
+	if (cost == AI_VENGENCE_SQUAD_COST) then
+	    valid = true
+	elseif (cost == AI_SQUAD_COST) then
+	    valid = attackWaveValidCandidate(chunk, surface, evolution_factor)
+	end
 	if valid and (math.random() < mMax((0.25 * evolution_factor), 0.10)) then
 	    local squadPosition = {x=0, y=0}
 	    local squadPath, squadScore = scoreNeighbors(chunk,
@@ -129,12 +135,12 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 							 surface,
 							 squadPosition,
 							 false)
-	    if (squadPath ~= nil) and (squadScore > 0) then
+	    if (squadPath ~= nil) then
 		squadPosition.x = squadPath.pX + HALF_CHUNK_SIZE
 		squadPosition.y = squadPath.pY + HALF_CHUNK_SIZE
-                
+		
 		local squad = createSquad(squadPosition, surface, natives)
-
+		
 		if (math.random() < 0.03) then
 		    squad.rabid = true
 		end
@@ -146,7 +152,7 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = (CHUNK_SIZE * 3)})
 		if (foundUnits > 0) then
-		    natives.points = natives.points - AI_SQUAD_COST
+		    natives.points = natives.points - cost
 		end
 	    end
 	end
