@@ -60,7 +60,7 @@ Base Expansion
 
 0.14.5 -  
 - Improvement: Enlarged player processing bubble from 3 to 4 chunks (pheromone radius is still 4 chunks)  
-- Fix: Increased player scoring weight, so biter groups correctly hunt once more (https://forums.factorio.com/viewtopic.php?f=94&t=31445#p216119)  
+- Fix: Increased player scoring weight, so biter groups correctly hunt once more (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=40#p216119)  
 - Improvement: Adjusted attack pathing, so groups can move diagonally  
 - Fix: Unit group retreating when player occupies same chunk  
 
