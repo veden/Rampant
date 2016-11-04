@@ -71,7 +71,7 @@ Base Expansion
 - Slightly lowered Rampant attack wave frequency  
 - Altered attack wave size to ramp up slower  
 - Added configuration options for:  
-	- - Attack wave generation area  
+- - Attack wave generation area  
 	- - Attack wave threshold  
 	- - Attack wave size  
 	- - Turn off rampant attack waves  
@@ -89,7 +89,7 @@ Base Expansion
 
 0.13.4 = 0.14.4   
 
-	0.13.3 = 0.14.3   
+0.13.3 = 0.14.3   
 
 0.13.2 = 0.14.2   
 
@@ -106,7 +106,7 @@ Base Expansion
 
 0.0.5 -  
 - Fix for nil chunk in ai attack (https://mods.factorio.com/mods/Veden/Rampant/discussion/2512)   
-- Xhecks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)   
+- Checks for main surface (https://forums.factorio.com/viewtopic.php?f=94&t=31445&p=198228#p198563)   
 - Updated info with forum homepage   
         
 0.0.4 - initial release   
