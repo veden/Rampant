@@ -11,6 +11,9 @@ local mapUtils = require("MapUtils")
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
+
 local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -19,6 +22,11 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
+
+local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+
+local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
 -- imported functions
 
@@ -88,7 +96,7 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
             makeScouts(surface, natives, chunk, evolution_factor)
         end
         if squads then
-            formSquads(regionMap, surface, natives, chunk, evolution_factor)
+            formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_SQUAD_COST)
         end
         
         processPheromone(regionMap, chunk)
@@ -114,6 +122,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     
     local scouts = false
     local squads = false
+    local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
     local roll = math.random() 
 
     if (0.05 <= roll) and (roll <= 0.7) then
@@ -142,19 +151,26 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
 	    
 	    if (playerChunk ~= nil) then
+		local vengence = false
+		if (playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold) then
+		    vengence = true
+		end
 		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
 		    for y=playerChunk.cY - PROCESS_PLAYER_BOUND, playerChunk.cY + PROCESS_PLAYER_BOUND do
 			local chunk = getChunkByIndex(regionMap, x, y)
-	    
+			
 			if (chunk ~= nil) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 			    scents(chunk)
-		
+			    
 			    if scouts then
 				makeScouts(surface, natives, chunk, evolution_factor)
 			    end
 			    if squads then
-				formSquads(regionMap, surface, natives, chunk, evolution_factor)
+				formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_SQUAD_COST)
+			    end
+			    if vengence then
+				formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_VENGENCE_SQUAD_COST)
 			    end
 		
 			    processPheromone(regionMap, chunk)
