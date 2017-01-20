@@ -4,24 +4,37 @@ local unitGroupUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
+package.path = "../?.lua;" .. package.path
+local config = require("config")
 
 -- constants
 
 local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 
 local GROUP_STATE_FINISHED = defines.group_state.finished
+local GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
+local GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
+local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
+
+local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
+local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
+local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
+
+local CONFIG_ATTACK_WAVE_MAX_SIZE = config.attackWaveMaxSize
 
 -- imported functions
+
+local mLog = math.log10
 
 local tableRemove = table.remove
 local tableInsert = table.insert
 local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
 
 -- module code
-                          
+
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local squads = natives.squads
     for i=1,#squads do
@@ -118,48 +131,65 @@ function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
     return 0
 end
 
-function unitGroupUtils.regroupSquads(natives)
+function unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
+    local kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
+    local squadSizeBonus = mLog((#squad.group.members / CONFIG_ATTACK_WAVE_MAX_SIZE) + 0.1) + 1
+    return kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
+end
+
+local function isAttacking(squad)
+    return (squad.state == GROUP_STATE_ATTACKING_TARGET) or (squad.state == GROUP_STATE_ATTACKING_DISTRACTION)
+end
+
+function unitGroupUtils.regroupSquads(natives, evolution_factor)
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]
-        if squad.group.valid then
+        if squad.group.valid and not isAttacking(squad) then
             local squadPosition = squad.group.position
-            for x=i+1, #squads do
-                local mergeSquad = squads[x]
-                local mergeGroup = mergeSquad.group
-                if mergeGroup.valid and (mergeSquad.status == squad.status) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < 16) then
-                    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
+	    local mergedSquads = false
+	    for x=i+1, #squads do
+		local mergeSquad = squads[x]
+		local mergeGroup = mergeSquad.group
+		if mergeGroup.valid and (mergeSquad.status == squad.status) and not isAttacking(mergeSquad) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) then
+		    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
 		    if mergeSquad.kamikaze then
 			squad.kamikaze = true
 		    end
+		    mergedSquads = true
 		    mergeGroup.destroy()
-                end
-            end	    
-        end
+		end
+	    end
+	    if mergedSquads and not squad.kamikaze then
+		local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
+		if (math.random() < kamikazeThreshold) then
+		    squad.kamikaze = true
+		end
+	    end
+	end
     end
-    
+
     for i=#squads,1,-1 do
-        local squad = squads[i]
-        if (squad.group == nil) then
-            tableRemove(squads, i)
-        elseif not squad.group.valid then
-            tableRemove(squads, i)
-        elseif (#squad.group.members == 0) then
-            squad.group.destroy()
-            tableRemove(squads, i)
-        else         
-            if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
-                squad.status = SQUAD_GUARDING
+	local squad = squads[i]
+	if (squad.group == nil) then
+	    tableRemove(squads, i)
+	elseif not squad.group.valid then
+	    tableRemove(squads, i)
+	elseif (#squad.group.members == 0) then
+	    squad.group.destroy()
+	    tableRemove(squads, i)
+	else         
+	    if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
+		squad.status = SQUAD_GUARDING
 		squad.frenzy = true
 		squad.frenzyPosition.x = squad.group.position.x
 		squad.frenzyPosition.y = squad.group.position.y
 	    elseif (squad.group.state == GROUP_STATE_FINISHED) then
 		squad.status = SQUAD_GUARDING
-            elseif (squad.cycles > 0) then
-                squad.cycles = squad.cycles - 1
-            end
-	    
-        end
+	    elseif (squad.cycles > 0) then
+		squad.cycles = squad.cycles - 1
+	    end
+	end
     end
 end
 

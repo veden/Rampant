@@ -33,9 +33,15 @@ local CONFIG_USE_THRESHOLD_MIN = config.attackWaveGenerationThresholdMin
 local CONFIG_USE_THRESHOLD_MAX = config.attackWaveGenerationThresholdMax
 local CONFIG_USE_THRESHOLD_RANGE = CONFIG_USE_THRESHOLD_MAX - CONFIG_USE_THRESHOLD_MIN
 
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
+
+local RALLY_CRY_DISTANCE = 3
+
 -- imported functions
 
 local getNeighborChunks = mapUtils.getNeighborChunks
+local getChunkByPosition = mapUtils.getChunkByPosition
+local getChunkByIndex = mapUtils.getChunkByIndex
 local scoreNeighbors = neighborUtils.scoreNeighbors
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
@@ -91,7 +97,7 @@ function aiBuilding.makeScouts(surface, natives, chunk, evolution_factor)
 	local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + HALF_CHUNK_SIZE,
 	y = chunk.pY + HALF_CHUNK_SIZE },
 	max_distance = 100})
-            
+	
 	if (enemy ~= nil) and enemy.valid and (enemy.type == "unit") then
 	natives.points = natives.points - AI_SCOUT_COST
 	global.natives.scouts[#global.natives.scouts+1] = enemy
@@ -115,6 +121,19 @@ function aiBuilding.scouting(regionMap, natives)
 	end
 	end
     --]]
+end
+
+function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor)
+    local cX = chunk.cX
+    local cY = chunk.cY
+    for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
+	for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
+	    local rallyChunk = getChunkByIndex(regionMap, x, y)
+	    if (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
+		aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
+	    end
+	end
+    end	
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)

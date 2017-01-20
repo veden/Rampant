@@ -7,8 +7,6 @@ local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local playerUtils = require("PlayerUtils")
 local neighborUtils = require("NeighborUtils")
-package.path = "../?.lua;" .. package.path
-local config = require("config")
 
 -- constants
           
@@ -21,12 +19,6 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
-local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
-local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
-local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
-
-local CONFIG_ATTACK_WAVE_MAX_SIZE = config.attackWaveMaxSize
-
 -- imported functions
 
 local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
@@ -34,6 +26,7 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
+local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
@@ -41,8 +34,6 @@ local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
 
 local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
-
-local mLog = math.log10
 
 -- module code
 
@@ -104,7 +95,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 			    group.set_command(attackCmd)
 			    group.start_moving()
 			elseif not squad.frenzy and not squad.rabid and
-			    ((group.state == defines.group_state.attacking_distraction) or (group.state == defines.group_state.attacking_distraction) or
+			    ((group.state == defines.group_state.attacking_distraction) or (group.state == defines.group_state.attacking_target) or
 				(attackChunk[PLAYER_BASE_GENERATOR] ~= 0)) then
 				squad.frenzy = true
 				squad.frenzyPosition.x = squad.group.position.x
@@ -122,9 +113,7 @@ function aiAttack.squadBeginAttack(natives, players, evolution_factor)
     for i=1,#squads do
         local squad = squads[i]
         if (squad.status == SQUAD_GUARDING) and squad.group.valid then
-            local kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-	    local squadSizeBonus = mLog((#squad.group.members / CONFIG_ATTACK_WAVE_MAX_SIZE) + 0.1) + 1
-	    kamikazeThreshold = kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
+	    local kamikazeThreshold = calculateKamikazeThreshold(squad, evolution_factor)
 	    
 	    local playerNearby = playersWithinProximityToPosition(players, squad.group.position, 100)
 	    if playerNearby then

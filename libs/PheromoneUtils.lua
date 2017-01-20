@@ -30,16 +30,13 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 local getCardinalChunks = mapUtils.getCardinalChunks
 
 -- module code
-              
+
 function pheromoneUtils.scents(chunk)
     chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR] - chunk[ENEMY_BASE_GENERATOR]
 end
-            
-function pheromoneUtils.deathScent(regionMap, position)
-    local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) then
-        chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
-    end
+
+function pheromoneUtils.deathScent(chunk)
+    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
 end
 
 function pheromoneUtils.playerScent(playerChunk)
