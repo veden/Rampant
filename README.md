@@ -22,6 +22,7 @@ Unit Group Merging  - if multiple unit groups retreat at the same time there is 
 Unit Group Forming - any chunks with spawners in it that is covered by a pollution, player, player base pheromone clouds will form groups based on the evolution factor  
 Probing Behavior Against Defenses - unit groups will attempt to avoid chunks that are soaked in death  
 Player Hunting - unit groups will track the player based on there emitted pheromone cloud  
+Rallying Death Cry - when a unit is killed on a chunk that is past the retreat threshold, the unit will attempt to summon reinforcements to help them  
 Counterattacks - when the player is in combat near nests they will send reinforcements to unit groups  
 Reinforcements - nests will send assistance to nearby nests under attack by the player  
 Pathfinding - unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
