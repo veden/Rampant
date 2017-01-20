@@ -153,7 +153,7 @@ local function onConfigChanged()
 
 	global.version = constants.VERSION_12
     end
-    if (global.version <= constants.VERSION_13) then
+    if (global.version < constants.VERSION_13) then
 	-- switched over to tick event
 	regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
 	regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
