@@ -1,6 +1,7 @@
 -- imports
 
 local entityUtils = require("libs/EntityUtils")
+local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapProcessor = require("libs/MapProcessor")
@@ -18,7 +19,19 @@ local tests = require("tests")
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
+local MAX_RALLY_CRIES = constants.MAX_RALLY_CRIES
+local MAX_RETREATS = constants.MAX_RETREATS
+
+local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+
+local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
+local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
+
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
+
 -- imported functions
+
+local getChunkByPosition = mapUtils.getChunkByPosition
 
 local processPendingChunks = chunkProcessor.processPendingChunks
 
@@ -27,8 +40,10 @@ local processPlayers = mapProcessor.processPlayers
 local scanMap = mapProcessor.scanMap
 
 local planning = aiPlanning.planning
-local removeScout = aiBuilding.removeScout
+-- local removeScout = aiBuilding.removeScout
 -- local scouting = aiBuilding.scouting
+
+local rallyUnits = aiBuilding.rallyUnits
 
 local deathScent = pheromoneUtils.deathScent
 
@@ -89,7 +104,7 @@ local function onConfigChanged()
         regionMap.pI = nil
         regionMap.pP = nil
         regionMap.pR = nil
-      
+	
 	global.version = constants.VERSION_9
     end
     if (global.version < constants.VERSION_10) then
@@ -138,11 +153,23 @@ local function onConfigChanged()
 
 	global.version = constants.VERSION_12
     end
+    if (global.version <= constants.VERSION_13) then
+	-- switched over to tick event
+	regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+
+	-- used to rate limit the number of rally cries during a period of time
+	natives.rallyCries = MAX_RALLY_CRIES
+	natives.retreats = MAX_RETREATS
+
+	global.version = constants.VERSION_13
+    end
 end
 
 local function onTick(event)
     local tick = event.tick
-    if (tick % INTERVAL_PROCESS == 0) then
+    if (tick == regionMap.processTick) then
+	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
 	local surface = game.surfaces[1]
 	local evolutionFactor = game.evolution_factor
 	local players = game.players
@@ -150,10 +177,16 @@ local function onTick(event)
 	processPendingChunks(regionMap, surface, pendingChunks)
 	scanMap(regionMap, surface)
 
-	if (tick % INTERVAL_LOGIC == 0) then
+	if (tick == regionMap.logicTick) then
+	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
+
+	    natives.rallyCries = MAX_RALLY_CRIES
+
+	    natives.retreats = MAX_RETREATS
+	    
 	    planning(natives, evolutionFactor, tick)
 	    
-	    regroupSquads(natives)
+	    regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
 	    
@@ -182,20 +215,38 @@ local function onDeath(event)
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
                 local entityPosition = entity.position
-                
-                -- drop death pheromone where unit died
-                deathScent(regionMap, entityPosition)
-                
-                if (event.force ~= nil) and (event.force.name == "player") then 
-		    retreatUnits(entityPosition, 
-				 convertUnitGroupToSquad(natives, 
-							 entity.unit_group),
-				 regionMap, 
-				 surface, 
-				 natives)
+		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
+
+		if (deathChunk ~= nil) then
+		    -- drop death pheromone where unit died
+		    deathScent(deathChunk)
+		    
+		    if ((event.force ~= nil) and (event.force.name == "player")) then
+			local evolutionFactor = game.evolution_factor
+
+			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
+			    if (natives.retreats >= 0) then
+				retreatUnits(deathChunk, 
+					     convertUnitGroupToSquad(natives, 
+								     entity.unit_group),
+					     regionMap, 
+					     surface, 
+					     natives)
+			    end
+			    local rallyThreshold = BASE_RALLY_CHANCE + (evolutionFactor * BONUS_RALLY_CHANCE)
+			    if (natives.rallyCries >= 0) and (math.random() < rallyThreshold) then
+				natives.rallyCries = natives.rallyCries - 1
+				rallyUnits(deathChunk,
+					   regionMap,
+					   surface,
+					   natives,
+					   evolutionFactor)
+			    end
+			end
+		    end
                 end
                 
-                removeScout(entity, global.natives)
+                -- removeScout(entity, natives)
             elseif (entity.type == "unit-spawner") then
                 addRemoveEntity(regionMap, entity, natives, false, false)
             end

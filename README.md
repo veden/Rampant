@@ -36,6 +36,18 @@ Base Expansion
 
 # Version History
 
+0.14.8 -  
+- Feature: Rallying death cry, when a native dies on a chunk past the death threshold it will attempt to summon reinforcements from nearby nests  
+- Tweak: Increased unit group merge distance from 16 to 28 tiles  
+- Tweak: Increased retreat grab radius from 15 tiles to 24 tiles  
+- Tweak: Decreased vengence squad cost from 50 to 45  
+- Improvement: On group merge recalculate the kamikaze threshold, so groups that become large have a chance to kamikaze before attacking  
+- Improvement: Disallow group merges when units are taking and receiving damage  
+- Fix: Corrected unit group frenzy trigger based on engaging a target  
+- Optimization: Switched to increment tick counter for processing and logic event  
+- Optimization: Rate limited rally cry to 3/0.75 sec  
+- Optimization: Rate limited retreat to 8/0.75 sec  
+
 0.14.7 -  
 - Feature: Counterattack waves trigger when the player is standing in a chunk with the death pheromone past the retreat threshold  
 - Feature: Reinforcement waves trigger when the player is standind in a chunk that contains a nest  

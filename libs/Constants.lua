@@ -7,6 +7,7 @@ constants.VERSION_9 = 9
 constants.VERSION_10 = 10
 constants.VERSION_11 = 11
 constants.VERSION_12 = 12
+constants.VERSION_13 = 13
 
 -- misc
 
@@ -28,7 +29,7 @@ constants.INTERVAL_LOGIC = 40
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 175
-constants.AI_VENGENCE_SQUAD_COST = 50
+constants.AI_VENGENCE_SQUAD_COST = 45
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
@@ -95,6 +96,20 @@ constants.SQUAD_GUARDING = 2 -- used when squad is idle
 constants.SQUAD_BURROWING = 3
 constants.SQUAD_RAIDING = 4 -- used when player stuff is close
 
+-- Squad Related
+
+constants.RETREAT_GRAB_RADIUS = 24
+
+constants.BASE_RALLY_CHANCE = 0.01
+constants.BONUS_RALLY_CHANCE = 0.01
+
+constants.MAX_RETREATS = 7
+
+constants.MAX_RALLY_CRIES = 2
+constants.RALLY_CRY_DISTANCE = 3
+
+constants.GROUP_MERGE_DISTANCE = 28
+ 
 -- player building pheromones
 
 constants.BUILDING_PHEROMONES = {}

@@ -9,11 +9,11 @@ local neighborUtils = require("NeighborUtils")
 
 -- constants
 
+local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
+
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
-
-local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
 
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
@@ -25,7 +25,6 @@ local RETREAT_FILTER = constants.RETREAT_FILTER
 
 -- imported functions
 
-local getChunkByPosition = mapUtils.getChunkByPosition
 local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
 local findNearBySquad = unitGroupUtils.findNearBySquad
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
@@ -46,14 +45,14 @@ local function scoreRetreatLocation(position, squad, neighborChunk, surface)
     return safeScore - dangerScore
 end
 
-function aiDefense.retreatUnits(position, squad, regionMap, surface, natives)
-    local chunk = getChunkByPosition(regionMap, position.x, position.y)
-    if (chunk ~= nil) and (chunk[MOVEMENT_PHEROMONE] < -(game.evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) and (chunk[ENEMY_BASE_GENERATOR] == 0) then
+function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives)
+    if (chunk[ENEMY_BASE_GENERATOR] == 0) then
 	local performRetreat = false
 	local enemiesToSquad
     
 	if (squad == nil) then
-	    enemiesToSquad = surface.find_enemy_units(position, 15)
+	    enemiesToSquad = surface.find_enemy_units({x=chunk.pX,
+						       y=chunk.pY}, RETREAT_GRAB_RADIUS)
 	    if (#enemiesToSquad > 0) then
 		performRetreat = true
 	    end

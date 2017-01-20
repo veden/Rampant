@@ -73,7 +73,7 @@
         (copyDirectory "graphics" modFolder)
         (copyDirectory "prototypes" modFolder)))
     
-    ;;    (copyFiles modFolder)
+    ;;(copyFiles modFolder)
     ;;    (copyFiles zipModFolder)
     (makeZip modFolder)
     ;;(makeZip zipModFolder)
