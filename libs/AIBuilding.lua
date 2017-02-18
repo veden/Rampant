@@ -129,7 +129,7 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFact
     for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
 	for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
 	    local rallyChunk = getChunkByIndex(regionMap, x, y)
-	    if (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
+	    if (rallyChunk ~= nil) and (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
 		aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
 	    end
 	end
