@@ -226,6 +226,7 @@ local function onDeath(event)
 
 			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
 			    if (natives.retreats >= 0) then
+				natives.retreats = natives.retreats - 1
 				retreatUnits(deathChunk, 
 					     convertUnitGroupToSquad(natives, 
 								     entity.unit_group),
