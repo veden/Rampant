@@ -51,7 +51,7 @@ function biterFunctions.makeSpitter(biterAttributes, biterAttack, biterResistanc
                 attack_parameters = biterAttack,
                 vision_distance = 30,
                 movement_speed = biterAttributes.movement,
-                distance_per_frame = 0.1,
+                distance_per_frame = biterAttributes.distancePerFrame,
                 pollution_to_join_attack = 200,
                 distraction_cooldown = 300,
                 dying_explosion = biterAttributes.explosion,
@@ -102,15 +102,11 @@ function biterFunctions.createSuicideAttack(attributes)
            }
 end
 
-local turret_gun_shift = {
-
-}
-
 function biterFunctions.createFireAttack(attributes)
     return {
               type = "stream",
               ammo_category = "flame-thrower",
-              cooldown = 4,
+              cooldown = attributes.cooldown,
               range = attributes.range,
               min_range = attributes.minRange,
               
