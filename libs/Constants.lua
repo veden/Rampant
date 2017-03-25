@@ -113,15 +113,9 @@ constants.GROUP_MERGE_DISTANCE = 28
 -- player building pheromones
 
 constants.BUILDING_PHEROMONES = {}
--- constants.buildingPheromones["container"] = 1
--- constants.buildingPheromones["storage-tank"] = 1
 constants.BUILDING_PHEROMONES["generator"] = 8
 constants.BUILDING_PHEROMONES["pump"] = 2
 constants.BUILDING_PHEROMONES["offshore-pump"] = 2
--- constants.buildingPheromones["constant-combinator"] = 1
--- constants.buildingPheromones["train-stop"] = 2
--- constants.buildingPheromones["rail-signal"] = 1
--- constants.BUILDING_PHEROMONES["electric-pole"] = 4
 constants.BUILDING_PHEROMONES["transport-belt"] = 1
 constants.BUILDING_PHEROMONES["accumulator"] = 10
 constants.BUILDING_PHEROMONES["solar-panel"] = 8
