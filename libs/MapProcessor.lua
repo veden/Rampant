@@ -66,7 +66,7 @@ end
     In theory, this might be fine as smaller bases have less surface to attack and need to have 
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)   
+function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
     local roll = regionMap.processRoll
     local index = regionMap.processPointer
     local scouts = false
@@ -76,9 +76,9 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
         roll = math.random()
         regionMap.processRoll = roll
     end
-    
+
     if (0.05 <= roll) and (roll <= 0.10) then
-        scouts = true
+	scouts = true
     end
     
     if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.35) then
@@ -119,7 +119,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(players)
-    
+
     local scouts = false
     local squads = false
     local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
@@ -172,7 +172,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 			    if vengence then
 				formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_VENGENCE_SQUAD_COST)
 			    end
-		
+			    
 			    processPheromone(regionMap, chunk)
 			end
 		    end
@@ -187,7 +187,7 @@ end
 --]]
 function mapProcessor.scanMap(regionMap, surface)
     local index = regionMap.scanPointer
-        
+    
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do

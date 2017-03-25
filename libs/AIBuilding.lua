@@ -133,17 +133,19 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFact
 		aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
 	    end
 	end
-    end	
+    end
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)
     if (natives.points > cost) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
 	local valid = false
-	if (cost == AI_VENGENCE_SQUAD_COST) then
-	    valid = true
-	elseif (cost == AI_SQUAD_COST) then
-	    valid = attackWaveValidCandidate(chunk, surface, evolution_factor)
-	end
+	if not surface.peaceful_mode then
+	    if (cost == AI_VENGENCE_SQUAD_COST) then
+		valid = true
+	    elseif (cost == AI_SQUAD_COST) then
+		valid = attackWaveValidCandidate(chunk, surface, evolution_factor)
+	    end
+	end 
 	if valid and (math.random() < mMax((0.25 * evolution_factor), 0.10)) then
 	    local squadPosition = {x=0, y=0}
 	    local squadPath, squadScore = scoreNeighbors(chunk,
