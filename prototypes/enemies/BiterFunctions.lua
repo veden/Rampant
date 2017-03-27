@@ -1,6 +1,11 @@
 local biterFunctions = {}
 
+require "BiterFire"
+
 function biterFunctions.makeBiter(biterAttributes, biterAttack, biterResistances)
+    biterAttack.scale = biterAttributes.scale;
+    biterAttack.tint1 = biterAttributes.tint1;
+    biterAttack.tint2 = biterAttributes.tint2;
     return {
                 type = "unit",
                 name = biterAttributes.name,
@@ -32,6 +37,9 @@ end
 
 
 function biterFunctions.makeSpitter(biterAttributes, biterAttack, biterResistances)
+    -- biterAttack.scale = biterAttributes.scale;
+    -- biterAttack.tint1 = biterAttributes.tint1;
+    -- biterAttack.tint2 = biterAttributes.tint2;
     return {
                 type = "unit",
                 name = biterAttributes.name,
@@ -132,7 +140,7 @@ function biterFunctions.createFireAttack(attributes)
                   action_delivery =
                   {
                     type = "stream",
-                    stream = "flamethrower-fire-stream",
+                    stream = "green-fire-stream",
                     duration = 160,
                   }
                 }

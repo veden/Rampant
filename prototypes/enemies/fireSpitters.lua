@@ -2,78 +2,32 @@ local utils = require("BiterFunctions")
 
 local createFireAttack = utils.createFireAttack
 local makeSpitter = utils.makeSpitter
+local makeResistance = utils.makeResistance
+
+local smallFireBiterScale = 0.53
+local smallFireBiterTint1 = {r=0.8, g=0.0, b=0.20, a=0.8}
+local smallFireBiterTint2 = {r=0.7, g=0.0, b=0.30, a=0.4}
 
 data:extend({
 	makeSpitter({name = "small-fire-spitter",
-		     health = 30,
-		     movement = 0.2,
-		     distancePerFrame = 0.1,
+		     health = 15,
+		     movement = 0.19,
+		     distancePerFrame = 0.04,
 		     healing = 0.01,
-		     scale = 0.5,
-		     tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-		     tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
+		     scale = smallFireBiterScale,
+		     tint1 = smallFireBiterTint1,
+		     tint2 = smallFireBiterTint2,
 		     explosion = "blood-explosion-small"},
-	    createFireAttack({ scale = 0.5,
-			       tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-			       tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-			       range = 10,
+	    createFireAttack({ scale = smallFireBiterScale,
+			       tint1 = smallFireBiterTint1,
+			       tint2 = smallFireBiterTint2,
+			       range = 12,
 			       minRange = 1,
-			       cooldown = 20,
+			       cooldown = 55,
 			       turnRange = 1.0/3.0,
-			       firePenalty = 15})),
+			       firePenalty = 15}),
+	    {
+		makeResistance("fire", 0, 15)
+	})
 	
-	makeSpitter({name = "medium-fire-spitter",
-		     health = 30,
-		     movement = 0.18,
-		     distancePerFrame = 0.07,
-		     healing = 0.01,
-		     scale = 0.5,
-		     tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-		     tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-		     explosion = "blood-explosion-small"},
-	    createFireAttack({ scale = 0.5,
-			       tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-			       tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-			       range = 10,
-			       minRange = 1,
-			       turnRange = 1.0/3.0,
-			       cooldown = 17,
-			       firePenalty = 15})),
-	
-	makeSpitter({name = "big-fire-spitter",
-		     health = 250,
-		     movement = 0.16,
-		     distancePerFrame = 0.07,
-		     healing = 0.01,
-		     scale = 0.5,
-		     tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-		     tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-		     explosion = "blood-explosion-small"},
-	    createFireAttack({ scale = 0.5,
-			       tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-			       tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-			       range = 10,
-			       minRange = 1,
-			       cooldown = 15,
-			       turnRange = 1.0/3.0,
-			       firePenalty = 15})),
-
-	
-	makeSpitter({name = "behemoth-fire-spitter",
-		     health = 2200,
-		     movement = 0.18,
-		     distancePerFrame = 0.07,
-		     healing = 0.01,
-		     scale = 0.5,
-		     tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-		     tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-		     explosion = "blood-explosion-small"},
-	    createFireAttack({ scale = 0.5,
-			       tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-			       tint2 = {r=0.7, g=0.0, b=0.72, a=0.4},
-			       range = 10,
-			       minRange = 1,
-			       cooldown = 10,
-			       turnRange = 1.0/3.0,
-			       firePenalty = 15}))
 })
