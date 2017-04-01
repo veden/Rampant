@@ -97,7 +97,8 @@ function tests.test8(x)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[1].create_entity({name=x, force="enemy", position={chunkX, chunkY}})
+    local entity = game.surfaces[1].create_entity({name=x, force="enemy", position={chunkX, chunkY}})
+    --entity.insert({ name = "flame-thrower-ammo", count = 1})
 end
 
 function tests.test9()

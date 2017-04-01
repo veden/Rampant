@@ -1,6 +1,8 @@
+local biterStreamUtils = {}
+
 local math3d = require "math3d"
 
-local function make_color(r_,g_,b_,a_)
+function biterStreamUtils.make_color(r_,g_,b_,a_)
     return { r = r_ * a_, g = g_ * a_, b = b_ * a_, a = a_ }	
 end
 
@@ -10,7 +12,7 @@ function foreach(table_, fun_)
 end
 
 -- biter stream attack
-local function createBiterStreamAttack(attributes)
+function biterStreamUtils.createBiterStreamAttack(attributes)
 
     ----- UTILS
     local function create_burnt_patch_pictures()
@@ -776,7 +778,7 @@ local function createBiterStreamAttack(attributes)
 			    scale = 0.6,
 			    shift = {-0.109375 * 0.6, -1.1875 * 0.6},
 			    animation_speed = 0.5,
-			    tint = make_color(0,1,0, 0.75),
+			    tint = biterStreamUtils.make_color(0,1,0, 0.75),
 			},
 			{ 
 			    filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-2.png",
@@ -789,7 +791,7 @@ local function createBiterStreamAttack(attributes)
 			    scale = 0.6,
 			    shift = {-0.203125 * 0.6, -1.21875 * 0.6},
 			    animation_speed = 0.5,
-			    tint = make_color(0,1,0, 0.75),
+			    tint = biterStreamUtils.make_color(0,1,0, 0.75),
 			},
 		    },
 		
@@ -817,70 +819,4 @@ local function createBiterStreamAttack(attributes)
     }})    
 end
 
-
-
---- biter attacks
-
-createBiterStreamAttack(
-    {
-	fireFlameStreamName = "green-fire-stream",
-	firePictureTint = {r=0.35,g=0.90,b=0,a=1},
-	smallTreeFlameTint = {r=0.35,g=0.8,b=0,a=1},
-	particleTimeout = 2,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
-	particleTint = {r=0, g=1, b=1, a=0.5},
-	actions = {
-			{
-			    type = "direct",
-			    action_delivery =
-				{
-				    type = "instant",
-				    target_effects =
-					{
-					    {
-						type = "create-fire",
-						entity_name = "green-fire-flame"
-					    }
-					}
-				}
-			},
-			{
-			    type = "area",
-			    perimeter = 2.5,
-			    action_delivery =
-				{
-				    type = "instant",
-				    target_effects =
-					{
-					    {
-						type = "create-sticker",
-						sticker = "green-fire-sticker"
-					    },
-					    {
-						type = "damage",
-						damage = { amount = 1, type = "fire" }
-					    }
-					}
-				}
-			}
-	},
-	spineAnimationTint = {r=0, g=1, b=1, a=0.5},	
-	fireFlameName = "green-fire-flame",
-	fireFlameTint = {r=0, g=0.9, b=0, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-green-fire-smoke",
-	softSmokeTint = make_color(0.3, 0.75, 0.3, 0.1),
-	smokeName = "green-fire-smoke",
-	smokeTint = {r=0.2, g=0.8, b=0.2, a=0.25},
-	stickerName = "green-fire-sticker",
-	stickerTint = { r = 0.25, g = 0.5, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "green-fire-smoke-without-glow",
-	smokeWithoutGlowTint = make_color(0.25,0.75,0.1, 0.25),
-	spawnEntityName = "green-fire-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "green-fire-smoke-on-adding-fuel"
-    }
-)
+return biterStreamUtils

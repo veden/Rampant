@@ -1,0 +1,101 @@
+local vanillaUpdates = {}
+
+local biterUtils = require("BiterUtils")
+
+function vanillaUpdates.useDumbProjectiles()
+    local turrets = data.raw["turret"];
+
+    turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 30,
+	    range = 17,
+	    min_range = 5,
+	    turn_range = 1,
+	    fire_penalty = 0,
+	    scale = 0.8
+	},
+	"acid-ball-stream-rampant")
+
+    turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 50,
+	    range = 20,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 0,
+	    scale = 1
+	},
+	"acid-ball-1-stream-rampant")
+
+
+    turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 50,
+	    range = 25,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 0,
+	    scale = 1.2
+	},
+	"acid-ball-2-stream-rampant")
+
+    local units = data.raw["unit"];
+
+    local unit = units["small-spitter"]
+    unit["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 55,
+	    range = 15,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit),
+	    tint1 = biterUtils.findTint(unit),
+	    tint2 = biterUtils.findTint(unit)
+	},
+	"acid-ball-stream-rampant")
+
+    unit = units["medium-spitter"]
+    unit["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 50,
+	    range = 15,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit),
+	    tint1 = biterUtils.findTint(unit),
+	    tint2 = biterUtils.findTint(unit)
+	},
+	"acid-ball-1-stream-rampant")
+
+    unit = units["big-spitter"]
+    unit["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 48,
+	    range = 15,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit),
+	    tint1 = biterUtils.findTint(unit),
+	    tint2 = biterUtils.findTint(unit)
+	},
+	"acid-ball-2-stream-rampant")
+
+    unit = units["behemoth-spitter"]
+    unit["attack_parameters"] = biterUtils.createFireAttack(
+	{
+	    cooldown = 45,
+	    range = 15,
+	    min_range = 3,
+	    turn_range = 1,
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit),
+	    tint1 = biterUtils.findTint(unit),
+	    tint2 = biterUtils.findTint(unit)
+	},
+	"acid-ball-3-stream-rampant")
+end
+
+return vanillaUpdates

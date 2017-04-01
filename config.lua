@@ -4,6 +4,11 @@ local mathUtils = require("libs/MathUtils")
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 --[[
+    turns off homing projectiles for worms and spitters
+]]
+config.useDumbProjectiles = true
+
+--[[
     the attackWaveGenerationUse* options are used to score chunks with biter nests that will generate a Rampant attack wave.
     Pollution, the vanilla pollution mechanic (shown on the minimap).
     Player Proximity, if a player moves near a biter nest there is a chance for the nest to spawn attack waves (not shown on the minimap).
