@@ -168,6 +168,10 @@ function biterFunctions.findRunScale(entity)
     return entity.run_animation.layers[1].scale
 end
 
+function biterFunctions.findRange(entity)
+    return entity.attack_parameters.range
+end
+
 function biterFunctions.findTint(entity)
     return entity.run_animation.layers[2].tint
 end
@@ -183,6 +187,10 @@ function biterFunctions.createFireAttack(attributes, fireAttack)
 	turn_range = attributes.turnRange,
 	fire_penalty = attributes.firePenalty,
 
+	warmup = attributes.warmup or 0,
+	
+	damage_modifier = attributes.damageModifier or 1.0,
+	
 	gun_barrel_length = 2 * attributes.scale,
 	gun_center_shift = {
 	    north = {0, -0.65 * attributes.scale},

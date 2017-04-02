@@ -9,6 +9,14 @@ local gaussianRandomRange = mathUtils.gaussianRandomRange
 config.useDumbProjectiles = true
 
 --[[
+    ONLY FOR USE WITH NATURAL EVOLUTION ENEMIES
+    use the NE unit launchers with medium and big worms.
+    if set to false this will still allow the dumb projectiles but without the unit spawning
+    A side effect of the dumb projectiles cause the units to be spawned as if two shots were fired
+]]
+config.useNEUnitLaunchers = true
+
+--[[
     the attackWaveGenerationUse* options are used to score chunks with biter nests that will generate a Rampant attack wave.
     Pollution, the vanilla pollution mechanic (shown on the minimap).
     Player Proximity, if a player moves near a biter nest there is a chance for the nest to spawn attack waves (not shown on the minimap).
