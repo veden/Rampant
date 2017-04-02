@@ -37,6 +37,7 @@ Configure Options:
 - Reinforcements - nests will send assistance to nearby nests under attack by the player  
 - No Homing Projectiles - all projectiles are fired at locations and no longer track the player  
 - Pathfinding - unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
+- Peace mode - if something sets peace mode, Rampant will respect it  
 
 # Planned Features
 
