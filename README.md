@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, rallying death cry, and player hunting  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, rallying death cry, and player hunting. Also removes homing biter projectiles.
 
 # Forum Post
 
@@ -15,18 +15,27 @@ There will be a slight pause the first time this is started up due to indexing a
 
 MP should be working  
 
+Configure Options:
+- Max biter wave size
+- Ramp up to max biter wave size
+- Use dumb projectiles
+- Use Natural Evolution unit launchers (Requires NE)
+- Togglable attack wave triggers (pollution, player)
+- Attack wave pollution trigger threshold
+
 # Features
 
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
 - Tactical Retreats - these will take place when a unit group is in a chunk that has reached a death threshold  
-- Unit Group Merging  - if multiple unit groups retreat at the same time there is a chance the groups will merge  
+- Unit Group Merging - if multiple unit groups retreat at the same time there is a chance the groups will merge  
 - Unit Group Forming - any chunks with spawners in it that is covered by a pollution or player clouds will form groups based on the evolution factor  
 - Probing Behavior Against Defenses - unit groups will attempt to avoid chunks that are soaked in death  
 - Player Hunting - unit groups will track the player based on there emitted pheromone cloud  
 - Rallying Death Cry - when a unit is killed on a chunk that is past the retreat threshold, the unit will attempt to summon reinforcements to help them  
 - Counterattacks - when the player is in combat near nests they will send reinforcements to unit groups  
 - Reinforcements - nests will send assistance to nearby nests under attack by the player  
+- No Homing Projectiles - all projectiles are fired at locations and no longer track the player  
 - Pathfinding - unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 
 # Planned Features
@@ -41,6 +50,7 @@ MP should be working
 # Version History
 
 0.14.10 -  
+- Feature: Replaces homing projectiles with non homing versions  
 - Improvement: Respect for peace mode. To be used with something like the True Peace Mod  
 - Fix: Enforce rate limit for retreats  
 
