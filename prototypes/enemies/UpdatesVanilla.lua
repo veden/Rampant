@@ -7,7 +7,7 @@ function vanillaUpdates.useDumbProjectiles()
 
     turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 30,
+	    cooldown = 50,
 	    range = 17,
 	    min_range = 5,
 	    turn_range = 1,
@@ -18,7 +18,7 @@ function vanillaUpdates.useDumbProjectiles()
 
     turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 50,
+	    cooldown = 80,
 	    range = 20,
 	    min_range = 3,
 	    turn_range = 1,
@@ -30,7 +30,7 @@ function vanillaUpdates.useDumbProjectiles()
 
     turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 50,
+	    cooldown = 80,
 	    range = 25,
 	    min_range = 3,
 	    turn_range = 1,
@@ -44,8 +44,9 @@ function vanillaUpdates.useDumbProjectiles()
     local unit = units["small-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 55,
-	    range = 15,
+	    cooldown = 80,
+	    range = 13,
+	    warmup = 30,
 	    min_range = 3,
 	    turn_range = 1,
 	    fire_penalty = 15,
@@ -58,9 +59,10 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["medium-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 50,
-	    range = 15,
+	    cooldown = 80,
+	    range = 14,
 	    min_range = 3,
+	    warmup = 30,
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
@@ -72,9 +74,10 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["big-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 48,
+	    cooldown = 80,
 	    range = 15,
 	    min_range = 3,
+	    warmup = 30,
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
@@ -86,9 +89,10 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["behemoth-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 45,
+	    cooldown = 80,
 	    range = 15,
 	    min_range = 3,
+	    warmup = 30,
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
