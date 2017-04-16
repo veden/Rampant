@@ -134,23 +134,6 @@ local function onConfigChanged()
 	-- reset ai build points due to error in earning points
 	natives.points = 0
 	
-	-- clear old regionMap processing Queue
-	-- prevents queue adding duplicate chunks
-	-- chunks are by key, so should overwrite old
-	regionMap.processQueue = {}
-	regionMap.processPointer = 1
-	regionMap.scanPointer = 1
-	-- clear pending chunks, will be added when loop runs below
-	pendingChunks = {} 
-
-	-- queue all current chunks that wont be generated during play
-	local surface = game.surfaces[1]
-	for chunk in surface.get_chunks() do
-	    onChunkGenerated({ surface = surface, 
-			       area = { left_top = { x = chunk.x * 32,
-						     y = chunk.y * 32 }}})
-	end
-
 	global.version = constants.VERSION_12
     end
     if (global.version < constants.VERSION_13) then
@@ -163,6 +146,29 @@ local function onConfigChanged()
 	natives.retreats = MAX_RETREATS
 
 	global.version = constants.VERSION_13
+    end
+    if (global.version < constants.VERSION_14) then
+	-- clear old regionMap processing Queue
+	-- prevents queue adding duplicate chunks
+	-- chunks are by key, so should overwrite old
+	regionMap.processQueue = {}
+	regionMap.processPointer = 1
+	regionMap.scanPointer = 1
+	-- clear pending chunks, will be added when loop runs below
+	pendingChunks = {}
+
+	game.map_settings.unit_group.member_disown_distance = 5
+	game.map_settings.unit_group.max_member_speedup_when_behind = 1.1
+	game.map_settings.unit_group.max_member_slowdown_when_ahead = 1.0
+	game.map_settings.unit_group.max_group_slowdown_factor = 0.9
+
+	-- queue all current chunks that wont be generated during play
+	local surface = game.surfaces[1]
+	for chunk in surface.get_chunks() do
+	    onChunkGenerated({ surface = surface, 
+			       area = { left_top = { x = chunk.x * 32,
+						     y = chunk.y * 32 }}})
+	end
     end
 end
 
@@ -248,7 +254,7 @@ local function onDeath(event)
                 end
                 
                 -- removeScout(entity, natives)
-            elseif (entity.type == "unit-spawner") then
+            elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
                 addRemoveEntity(regionMap, entity, natives, false, false)
             end
         elseif (entity.force.name == "player") then

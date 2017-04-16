@@ -74,7 +74,7 @@ local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
 end
 
 local function validUnitGroupLocation(x, chunk, neighborChunk)
-    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE]
+    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[ENEMY_BASE_GENERATOR] == 0
 end
 
 function aiBuilding.removeScout(entity, natives)

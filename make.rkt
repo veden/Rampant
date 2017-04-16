@@ -4,10 +4,8 @@
   (require file/zip)
   (require json)
   
-  ;(define modFolder "C:/Users/veden/AppData/Roaming/Factorio/mods/")
-  ;(define zipModFolder "C:/Program Files/Factorio_0.14.1/mods/")
   (define modFolder "/home/veden/.factorio/mods/")
-  (define zipModFolder "/data/games/factorio14.18/mods/")
+  ;;  (define zipModFolder "/data/games/factorio14.18/mods/")
   (define configuration (call-with-input-file "info.json"
                           (lambda (port)
                             (string->jsexpr (port->string port)))))
@@ -32,9 +30,7 @@
          (string->path "data-updates.lua")
          (string->path "LICENSE.md")
          (string->path "tests.lua")
-         ;             (string->path "setupUtils.lua")
          (string->path "README.md")
-         ; (string->path "setup.lua")
          (string->path "NOTICE")
          (string->path "libs")
          (string->path "locale")
@@ -42,7 +38,6 @@
          (string->path "prototypes")))
   
   
-  ;(current-directory "..")
   (define (copyFile fileName modFolder)
     (copy-file (string->path fileName)
                (string->path (string-append modFolder
@@ -67,7 +62,6 @@
       (copyFile "control.lua" modFolder)
       (copyFile "config.lua" modFolder)
       (copyFile "info.json" modFolder)
-      ;           (copyFile "setupUtils.lua" modFolder)
       (copyFile "data.lua" modFolder)
       (copyFile "data-updates.lua" modFolder)
       (copyFile "tests.lua" modFolder)
@@ -77,9 +71,7 @@
       (copyDirectory "prototypes" modFolder)))
   
   (define (run)
-;    (copyFiles modFolder)
-    ;;    (copyFiles zipModFolder)
+    ;(copyFiles modFolder)
     (makeZip modFolder)
-    ;;(makeZip zipModFolder)
     )
   )

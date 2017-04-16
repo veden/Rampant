@@ -197,7 +197,11 @@ function mapProcessor.scanMap(regionMap, surface)
 							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
 							  type = "unit-spawner",
 							  force = "enemy"})
-	chunk[ENEMY_BASE_GENERATOR] = spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+	local worms = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
+							   {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
+						       type = "turret",
+						       force = "enemy"})
+	chunk[ENEMY_BASE_GENERATOR] = (spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
     end
     
     if (endIndex == #processQueue) then

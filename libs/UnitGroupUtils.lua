@@ -25,6 +25,8 @@ local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MA
 
 local CONFIG_ATTACK_WAVE_MAX_SIZE = config.attackWaveMaxSize
 
+local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
+
 -- imported functions
 
 local mLog = math.log10
@@ -151,7 +153,7 @@ function unitGroupUtils.regroupSquads(natives, evolution_factor)
 	    for x=i+1, #squads do
 		local mergeSquad = squads[x]
 		local mergeGroup = mergeSquad.group
-		if mergeGroup.valid and (mergeSquad.status == squad.status) and not isAttacking(mergeSquad) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) then
+		if mergeGroup.valid and ((#mergeGroup.members + #squad.group.members) < AI_MAX_BITER_GROUP_SIZE) and (mergeSquad.status == squad.status) and not isAttacking(mergeSquad) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) then
 		    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
 		    if mergeSquad.kamikaze then
 			squad.kamikaze = true
@@ -178,7 +180,10 @@ function unitGroupUtils.regroupSquads(natives, evolution_factor)
 	elseif (#squad.group.members == 0) then
 	    squad.group.destroy()
 	    tableRemove(squads, i)
-	else         
+	elseif (#squad.group.members > AI_MAX_BITER_GROUP_SIZE) then
+	    squad.group.destroy()
+	    tableRemove(squads, i)
+	else
 	    if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
 		squad.status = SQUAD_GUARDING
 		squad.frenzy = true
