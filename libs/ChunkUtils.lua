@@ -75,14 +75,18 @@ function chunkUtils.scoreChunk(chunk, surface)
     local enemyChunkQuery = {area=areaBoundingBox,
                              type="unit-spawner",
                              force="enemy"}
+    local enemyWormChunkQuery = {area=areaBoundingBox,
+                             type="turret",
+                             force="enemy"}
     local playerChunkQuery = {area=areaBoundingBox,
                               force="player"}
                    
     local entities = surface.count_entities_filtered(enemyChunkQuery)
+    local worms = surface.count_entities_filtered(enemyWormChunkQuery)
     local playerObjects = 0
     
-    chunk[ENEMY_BASE_GENERATOR] = entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-                   
+    chunk[ENEMY_BASE_GENERATOR] = (entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
+
     entities = surface.find_entities_filtered(playerChunkQuery)
     
     for i=1, #entities do

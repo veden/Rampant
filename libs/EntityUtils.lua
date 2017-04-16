@@ -82,11 +82,14 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, cred
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     local pheromoneType
-    if (BUILDING_PHEROMONES[entity.type] ~= nil) then
+    if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
         entityValue = BUILDING_PHEROMONES[entity.type]
         pheromoneType = PLAYER_BASE_GENERATOR
     elseif (entity.type == "unit-spawner") and (entity.force.name == "enemy") then
         entityValue = ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
+        pheromoneType = ENEMY_BASE_GENERATOR
+    elseif (entity.type == "turret") and (entity.force.name == "enemy") then
+        entityValue = 1
         pheromoneType = ENEMY_BASE_GENERATOR
     end
     if (entityValue ~= nil) then

@@ -50,6 +50,42 @@ Configure Options:
 
 # Version History
 
+0.14.11 -  
+- Tweak: Increased pheromone generation on (This only potential affects target selection and pathfinding, these do not trigger biter waves):  
+  - Generators from 8 to 12  
+  - Pumps from 2 to 5  
+  - Offshore Pumps from 2 to 5  
+  - Transport Belts from 1 to 2  
+  - Accumulator from 10 to 14  
+  - Solar Panel from 8 to 12  
+  - Boiler from 12 to 16  
+  - Assembling Machines from 10 to 16  
+  - Roboport from 10 to 14  
+  - Beacon from 10 to 14  
+  - Furance from 12 to 16  
+  - Mining Drills from 15 to 19  
+  - Ammo Turret from 2.5 to 5  
+  - Wall from 0.25 to 0.55  
+  - Electric Turret from 4.25 to 7  
+  - Fluid Turret from 5 to 9  
+  - Turret from 3.5 to 5  
+- Tweak: Reduced map scan speed from 10 chunks to 8 chunks to account for worms in calculation  
+- Tweak: Increased pheromone dispersion from 0.05 to 0.1  
+- Tweak: Increased unit group move distance from 32 to 40  
+- Tweak: Reduced unit group member disown distance from 10 to 5  
+- Tweak: Increased unit group max slow down when ahead from 0.6 to 1  
+- Tweak: Reduced unit group max speedup when behind from 1.4 to 1.1  
+- Tweak: Increased unit group max slowdown from slow members from 0.3 to 0.9 (this is max speed multipler, so this is faster)  
+- Tweak: Increased unit attack radius from 20 to 28 tiles  
+- Improvement: Increased movement cycles for larger groups from 4 cycles to 6 cycles  
+- Improvement: Biter groups should attempt to avoid getting too close to water (screws up pathing)  
+- Improvement: Added worms to chunk calculation for determining better unit group formation and pathing  
+- Improvement: Removed nest negative contribution to base pheromone map for better pathing  
+- Improvement: Pheromones no longer travel over impassable terrain  
+- Fix: Prevent group spawning on chunks with enemy structures  
+- Fix: Capped the max group size that can be created by merging to 600 biters  
+- Fix: Dispand unit groups larger than 600 (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=80#p255243, Thank you Nerchio for the save game)  
+
 0.14.10 -  
 - Feature: Replaces homing projectiles with non homing versions  
 - Improvement: Respect for peace mode. To be used with something like the True Peace Mod  

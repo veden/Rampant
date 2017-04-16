@@ -24,6 +24,9 @@ local MOVEMENT_PHEROMONE_PERSISTANCE = constants.MOVEMENT_PHEROMONE_PERSISTANCE
 local REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE = constants.REDUCED_MOVEMENT_PHEROMONE_PERSISTANCE
 local STANDARD_PHEROMONE_PERSISTANCE = constants.STANDARD_PHEROMONE_PERSISTANCE
 
+local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
+local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -32,7 +35,14 @@ local getCardinalChunks = mapUtils.getCardinalChunks
 -- module code
 
 function pheromoneUtils.scents(chunk)
-    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR] - chunk[ENEMY_BASE_GENERATOR]
+    -- if (chunk[]) then
+    -- end
+    if not chunk[NORTH_SOUTH_PASSABLE] and not chunk[EAST_WEST_PASSABLE] then
+	chunk[BASE_PHEROMONE] = -100;
+    else
+	chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR] -- chunk[ENEMY_BASE_GENERATOR]
+    end
+    
 end
 
 function pheromoneUtils.deathScent(chunk)
@@ -45,7 +55,7 @@ end
 
 function pheromoneUtils.processPheromone(regionMap, chunk)
     local neighbors
-    
+
     -- pheromone level indexes on chunks are 1 - 3
     -- unrolled loop one level
     local diffusionAmount = MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT
@@ -62,7 +72,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
 	neighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
 	for i=1,#neighbors do
 	    local neighborChunk = neighbors[i]
-	    if (neighborChunk ~= nil) then
+	    if (neighborChunk ~= nil) and (neighborChunk[NORTH_SOUTH_PASSABLE] or neighborChunk[EAST_WEST_PASSABLE]) then
 		totalDiffused = totalDiffused + diffusedAmount
 		neighborChunk[MOVEMENT_PHEROMONE] = neighborChunk[MOVEMENT_PHEROMONE] + diffusedAmount
 	    end
@@ -82,7 +92,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
 	    end
 	    for i=1,#neighbors do
 		local neighborChunk = neighbors[i]
-		if (neighborChunk ~= nil) then
+		if (neighborChunk ~= nil) and (neighborChunk[NORTH_SOUTH_PASSABLE] or neighborChunk[EAST_WEST_PASSABLE]) then
 		    totalDiffused = totalDiffused + diffusedAmount
 		    neighborChunk[x] = neighborChunk[x] + diffusedAmount
 		end

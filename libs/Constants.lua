@@ -8,6 +8,7 @@ constants.VERSION_10 = 10
 constants.VERSION_11 = 11
 constants.VERSION_12 = 12
 constants.VERSION_13 = 13
+constants.VERSION_14 = 14
 
 -- misc
 
@@ -15,7 +16,7 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
-constants.SCAN_QUEUE_SIZE = 10
+constants.SCAN_QUEUE_SIZE = 8
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60
@@ -36,6 +37,7 @@ constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000
 
 constants.AI_MAX_SQUAD_COUNT = 40
+constants.AI_MAX_BITER_GROUP_SIZE = 600
 
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
@@ -68,7 +70,7 @@ constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 100
 
 -- pheromone diffusion amounts
 
-constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.05
+constants.STANDARD_PHERONOME_DIFFUSION_AMOUNT = 0.1
 constants.MOVEMENT_PHEROMONE_DIFFUSION_AMOUNT = 0.02
 
 constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.98
@@ -113,26 +115,26 @@ constants.GROUP_MERGE_DISTANCE = 28
 -- player building pheromones
 
 constants.BUILDING_PHEROMONES = {}
-constants.BUILDING_PHEROMONES["generator"] = 8
-constants.BUILDING_PHEROMONES["pump"] = 2
-constants.BUILDING_PHEROMONES["offshore-pump"] = 2
-constants.BUILDING_PHEROMONES["transport-belt"] = 1
-constants.BUILDING_PHEROMONES["accumulator"] = 10
-constants.BUILDING_PHEROMONES["solar-panel"] = 8
-constants.BUILDING_PHEROMONES["boiler"] = 12
-constants.BUILDING_PHEROMONES["assembling-machine"] = 12
-constants.BUILDING_PHEROMONES["roboport"] = 10
-constants.BUILDING_PHEROMONES["beacon"] = 10
-constants.BUILDING_PHEROMONES["furnace"] = 12
-constants.BUILDING_PHEROMONES["mining-drill"] = 15
+constants.BUILDING_PHEROMONES["generator"] = 12
+constants.BUILDING_PHEROMONES["pump"] = 5
+constants.BUILDING_PHEROMONES["offshore-pump"] = 5
+constants.BUILDING_PHEROMONES["transport-belt"] = 2
+constants.BUILDING_PHEROMONES["accumulator"] = 14
+constants.BUILDING_PHEROMONES["solar-panel"] = 12
+constants.BUILDING_PHEROMONES["boiler"] = 16
+constants.BUILDING_PHEROMONES["assembling-machine"] = 16
+constants.BUILDING_PHEROMONES["roboport"] = 14
+constants.BUILDING_PHEROMONES["beacon"] = 14
+constants.BUILDING_PHEROMONES["furnace"] = 16
+constants.BUILDING_PHEROMONES["mining-drill"] = 19
 
 -- player defense pheromones
 
-constants.BUILDING_PHEROMONES["ammo-turret"] = 2.5
-constants.BUILDING_PHEROMONES["wall"] = 0.25
-constants.BUILDING_PHEROMONES["electric-turret"] = 4.25
-constants.BUILDING_PHEROMONES["fluid-turret"] = 5
-constants.BUILDING_PHEROMONES["turret"] = 3.5
+constants.BUILDING_PHEROMONES["ammo-turret"] = 5
+constants.BUILDING_PHEROMONES["wall"] = 0.55
+constants.BUILDING_PHEROMONES["electric-turret"] = 7
+constants.BUILDING_PHEROMONES["fluid-turret"] = 9
+constants.BUILDING_PHEROMONES["turret"] = 5
 
 constants.retreatFilter = {}
 constants.retreatFilter[constants.SQUAD_RETREATING] = true
