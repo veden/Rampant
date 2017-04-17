@@ -50,6 +50,12 @@ Configure Options:
 
 # Version History
 
+0.14.12 -  
+- Tweak: Decreased slow map scan chunks scanned per logic cycle from 8 to 6  
+- Fix: Didn't set new version number forcing chunk recalculation every load  
+- Improvement: Added player buildings to slow map scan to catch buildings made outside factorio event system, (i.e. FARL)  
+- Improvement: Added console message when upgrading  
+
 0.14.11 -  
 - Tweak: Increased pheromone generation on (This only potential affects target selection and pathfinding, these do not trigger biter waves):  
   - Generators from 8 to 12  

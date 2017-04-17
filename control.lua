@@ -13,6 +13,7 @@ local aiBuilding = require("libs/AIBuilding")
 local aiPlanning = require("libs/AIPlanning")
 local mathUtils = require("libs/MathUtils")
 local tests = require("tests")
+local config = require("config")
 
 -- constants
 
@@ -56,6 +57,7 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 local retreatUnits = aiDefense.retreatUnits
 
 local addRemoveEntity = entityUtils.addRemoveEntity
+local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local roundToNearest = mathUtils.roundToNearest
 
@@ -94,7 +96,7 @@ local function onConfigChanged()
         natives.tunnels = {}
         natives.points = 0
         pendingChunks = {}
-        
+
         global.version = constants.VERSION_5
     end
     if (global.version < constants.VERSION_9) then
@@ -104,7 +106,7 @@ local function onConfigChanged()
         regionMap.pI = nil
         regionMap.pP = nil
         regionMap.pR = nil
-	
+
 	global.version = constants.VERSION_9
     end
     if (global.version < constants.VERSION_10) then
@@ -148,6 +150,16 @@ local function onConfigChanged()
 	global.version = constants.VERSION_13
     end
     if (global.version < constants.VERSION_14) then
+	game.map_settings.unit_group.member_disown_distance = 5
+	game.map_settings.unit_group.max_member_speedup_when_behind = 1.1
+	game.map_settings.unit_group.max_member_slowdown_when_ahead = 1.0
+	game.map_settings.unit_group.max_group_slowdown_factor = 0.9
+
+	game.surfaces[1].print("Rampant - Version 0.14.11")
+	global.version = constants.VERSION_14
+    end
+    if (global.version < constants.VERSION_15) then
+
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old
@@ -157,10 +169,6 @@ local function onConfigChanged()
 	-- clear pending chunks, will be added when loop runs below
 	pendingChunks = {}
 
-	game.map_settings.unit_group.member_disown_distance = 5
-	game.map_settings.unit_group.max_member_speedup_when_behind = 1.1
-	game.map_settings.unit_group.max_member_slowdown_when_ahead = 1.0
-	game.map_settings.unit_group.max_group_slowdown_factor = 0.9
 
 	-- queue all current chunks that wont be generated during play
 	local surface = game.surfaces[1]
@@ -169,6 +177,9 @@ local function onConfigChanged()
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
+
+	game.surfaces[1].print("Rampant - Version 0.14.12")
+	global.version = constants.VERSION_15
     end
 end
 
@@ -262,7 +273,11 @@ local function onDeath(event)
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
 	    end
-	    addRemoveEntity(regionMap, entity, natives, false, creditNatives)
+	    if config.safeBuildings and (config.safeEntities[entity.type] or config.safeEntityName[entity.name]) then
+		makeImmortalEntity(surface, entity)
+	    else
+		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
+	    end
         end
     end
 end
