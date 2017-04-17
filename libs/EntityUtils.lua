@@ -60,7 +60,7 @@ local function getEntityOverlapChunks(regionMap, entity)
         -- used to force things on chunk boundary to not spill over 0.0001
         local leftBottomChunkX = leftTopChunkX
         local leftBottomChunkY = mFloor((center.y + bottomYOffset - 0.0001) * 0.03125)
-            
+	
         local rightBottomChunkX = rightTopChunkX 
         local rightBottomChunkY = leftBottomChunkY
         
@@ -115,5 +115,18 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, cred
     end
 end
 
+
+function entityUtils.makeImmortalEntity(surface, entity)
+    local repairPosition = entity.position
+    local repairName = entity.name
+    local repairForce = entity.force
+    local repairDirection = entity.direction
+    entity.destroy()
+    local entityRepaired = surface.create_entity({position=repairPosition,
+						  name=repairName,
+						  direction=repairDirection,
+						  force=repairForce})
+    entityRepaired.destructible = false
+end
 
 return entityUtils

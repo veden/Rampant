@@ -27,6 +27,8 @@ local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 -- imported functions
 
@@ -183,7 +185,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 end
 
 --[[
-    Passive scan to find ai generated nests, required while ai creates bases or until an event is exposed by devs
+    Passive scan to find entities that have been generated outside the factorio event system
 --]]
 function mapProcessor.scanMap(regionMap, surface)
     local index = regionMap.scanPointer
@@ -192,7 +194,11 @@ function mapProcessor.scanMap(regionMap, surface)
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
 	local chunk = processQueue[x]
-        
+
+	local entities = surface.find_entities_filtered({area = {{chunk.pX, chunk.pY},
+							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
+							  force = "player"})
+	
 	local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
 							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
 							  type = "unit-spawner",
@@ -201,7 +207,17 @@ function mapProcessor.scanMap(regionMap, surface)
 							   {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
 						       type = "turret",
 						       force = "enemy"})
+	local playerBaseGenerator = 0
+	for i=1,#entities do
+	    local entity = entities[i]
+	    local value = BUILDING_PHEROMONES[entity.type]
+	    if (value ~= nil) then
+		playerBaseGenerator = playerBaseGenerator + value
+	    end
+	end
+
 	chunk[ENEMY_BASE_GENERATOR] = (spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
+	chunk[PLAYER_BASE_GENERATOR] = playerBaseGenerator
     end
     
     if (endIndex == #processQueue) then

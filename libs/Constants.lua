@@ -9,6 +9,7 @@ constants.VERSION_11 = 11
 constants.VERSION_12 = 12
 constants.VERSION_13 = 13
 constants.VERSION_14 = 14
+constants.VERSION_15 = 15
 
 -- misc
 
@@ -16,7 +17,7 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
-constants.SCAN_QUEUE_SIZE = 8
+constants.SCAN_QUEUE_SIZE = 6
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60

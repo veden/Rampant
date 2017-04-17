@@ -4,8 +4,20 @@ local mathUtils = require("libs/MathUtils")
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 --[[
+    Causes buildings to regenerate and become untargetable after they are destroyed by biters
+    Currently doesn't work **** IGNORE ****
+--]]
+config.safeBuildings = false
+config.safeEntities = {}
+config.safeEntityName = {}
+config.safeEntities["curved-rail"] = true
+config.safeEntities["straight-rail"] = true
+--config.safeEntities["electric-pole"] = true
+config.safeEntityName["big-electric-pole"] = true
+
+--[[
     turns off homing projectiles for worms and spitters
-]]
+--]]
 config.useDumbProjectiles = true
 
 --[[
@@ -13,7 +25,7 @@ config.useDumbProjectiles = true
     use the NE unit launchers with medium and big worms.
     if set to false this will still allow the dumb projectiles but without the unit spawning
     A side effect of the dumb projectiles cause the units to be spawned as if two shots were fired
-]]
+--]]
 config.useNEUnitLaunchers = true
 
 --[[
