@@ -55,7 +55,7 @@ Configure Options:
 0.14.13 -  
 - Reverted: Pheromone generation tweaks from 0.14.11  
 - Feature: Recycling large biter swarms that are stuck (causes a big attack wave, and pops up a message)  
-- Feature: Biters destroying player buildings will attract other unit groups  
+- Feature: Breaching, Biters destroying player buildings will attract other unit groups  
 - Tweak: Reduced unit group max size from 600 to 450  
 - Tweak: Reduced unit group radius from 30 to 20  
 - Fix: Unit groups merging during combat  
