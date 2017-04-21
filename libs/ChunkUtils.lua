@@ -24,6 +24,8 @@ local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GEN
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
+
 -- module code
                           
 function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
@@ -116,6 +118,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
+    chunk[RETREAT_TRIGGERED] = 0
     return chunk
 end
 

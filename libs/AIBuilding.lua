@@ -54,7 +54,10 @@ local function attackWaveValidCandidate(chunk, surface, evolutionFactor)
     local total = 0;
 
     if CONFIG_USE_PLAYER_PROXIMITY then
-	total = total + chunk[PLAYER_PHEROMONE]
+	local playerPheromone = chunk[PLAYER_PHEROMONE]
+	if (playerPheromone > 7) then
+	    total = total + chunk[PLAYER_PHEROMONE]
+	end
     end
     if CONFIG_USE_POLLUTION_PROXIMITY then
 	total = total + surface.get_pollution({chunk.pX, chunk.pY})

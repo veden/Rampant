@@ -29,7 +29,7 @@ local mMax = math.max
 function aiPlanning.planning(natives, evolution_factor, tick)
     local maxPoints = AI_MAX_POINTS * evolution_factor
     if (natives.points < maxPoints) then
-	natives.points = natives.points + math.floor(AI_POINT_GENERATOR_AMOUNT * math.random())
+	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)))
     end
     
     if (natives.temperamentTick == tick) then

@@ -42,7 +42,7 @@ function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     for i=1,#squads do
         local squad = squads[i]
         local unitGroup = squad.group
-        if (unitGroup ~= nil) and unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
+        if unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
             if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
                 return squad
             end
@@ -139,63 +139,91 @@ function unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
     return kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
 end
 
-local function isAttacking(squad)
-    return (squad.state == GROUP_STATE_ATTACKING_TARGET) or (squad.state == GROUP_STATE_ATTACKING_DISTRACTION)
+local function isAttacking(group)
+    local state = group.state
+    return (state == GROUP_STATE_ATTACKING_TARGET) or (state == GROUP_STATE_ATTACKING_DISTRACTION)
 end
 
 function unitGroupUtils.regroupSquads(natives, evolution_factor)
     local squads = natives.squads
-    for i=1,#squads do
-        local squad = squads[i]
-        if squad.group.valid and not isAttacking(squad) then
-            local squadPosition = squad.group.position
-	    local mergedSquads = false
-	    for x=i+1, #squads do
-		local mergeSquad = squads[x]
-		local mergeGroup = mergeSquad.group
-		if mergeGroup.valid and ((#mergeGroup.members + #squad.group.members) < AI_MAX_BITER_GROUP_SIZE) and (mergeSquad.status == squad.status) and not isAttacking(mergeSquad) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) then
-		    unitGroupUtils.membersToSquad(squad, mergeGroup.members, true)
-		    if mergeSquad.kamikaze then
-			squad.kamikaze = true
-		    end
-		    mergedSquads = true
-		    mergeGroup.destroy()
-		end
-	    end
-	    if mergedSquads and not squad.kamikaze then
-		local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
-		if (math.random() < kamikazeThreshold) then
-		    squad.kamikaze = true
-		end
+    local squadCount = #squads
+
+    for i=1,squadCount do
+	local squad = squads[i]
+	local group = squad.group
+	if group.valid then
+	    local memberCount = #group.members
+	    if (memberCount == 0) or (memberCount > AI_MAX_BITER_GROUP_SIZE) then
+		group.destroy()
 	    end
 	end
     end
 
-    for i=#squads,1,-1 do
+    local groupThreshold = AI_MAX_BITER_GROUP_SIZE * 0.75
+    
+    for i=1,squadCount do
 	local squad = squads[i]
-	if (squad.group == nil) then
-	    tableRemove(squads, i)
-	elseif not squad.group.valid then
-	    tableRemove(squads, i)
-	elseif (#squad.group.members == 0) then
-	    squad.group.destroy()
-	    tableRemove(squads, i)
-	elseif (#squad.group.members > AI_MAX_BITER_GROUP_SIZE) then
-	    squad.group.destroy()
-	    tableRemove(squads, i)
-	else
-	    if (squad.status == SQUAD_RETREATING) and (squad.cycles == 0) then
+	local group = squad.group
+	if group.valid then
+	    local status = squad.status
+	    local memberCount = #group.members
+	    local squadPosition = group.position
+	    
+	    if not isAttacking(group) and (memberCount < groupThreshold) then
+	        local mergedSquads = false
+	        for x=i+1,squadCount do
+		    local mergeSquad = squads[x]
+		    local mergeGroup = mergeSquad.group
+		    if mergeGroup.valid then
+			local mergeMembers = mergeGroup.members
+			local mergeCount = #mergeMembers
+	    		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
+	    		    for memberIndex=1, mergeCount do
+	    			group.add_member(mergeMembers[memberIndex])
+	    		    end
+	    		    if mergeSquad.kamikaze then
+	    			squad.kamikaze = true
+	    		    end
+	    		    mergedSquads = true
+	    		    mergeGroup.destroy()
+			end
+			memberCount = memberCount + mergeCount
+			if (memberCount > groupThreshold) then
+			    break
+			end
+		    end
+	        end
+	        if mergedSquads and not squad.kamikaze then
+		    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
+		    if (math.random() < kamikazeThreshold) then
+			squad.kamikaze = true
+		    end
+	        end
+	    end
+	    
+	    local cycles = squad.cycles
+	    if (status == SQUAD_RETREATING) and (cycles == 0) then
 		squad.status = SQUAD_GUARDING
 		squad.frenzy = true
-		squad.frenzyPosition.x = squad.group.position.x
-		squad.frenzyPosition.y = squad.group.position.y
-	    elseif (squad.group.state == GROUP_STATE_FINISHED) then
+		squad.frenzyPosition.x = squadPosition.x
+		squad.frenzyPosition.y = squadPosition.y
+	    elseif (group.state == GROUP_STATE_FINISHED) then
 		squad.status = SQUAD_GUARDING
-	    elseif (squad.cycles > 0) then
-		squad.cycles = squad.cycles - 1
+	    elseif (cycles > 0) then
+		squad.cycles = cycles - 1
 	    end
 	end
     end
+
+    local cleanSquads = {}
+    for i=1,squadCount do
+	local squad = squads[i]
+	if squad.group.valid then
+	    cleanSquads[#cleanSquads+1] = squad
+	end
+    end
+    
+    natives.squads = cleanSquads
 end
 
 
