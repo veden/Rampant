@@ -32,8 +32,6 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
-local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
-
 -- imported functions
 
 local scents = pheromoneUtils.scents
@@ -193,7 +191,7 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor, tick)
+function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
     local index = regionMap.scanPointer
     
     local processQueue = regionMap.processQueue
@@ -232,11 +230,6 @@ function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor, tic
 
 	    if (natives.points > (AI_MAX_POINTS * 3)) then
 		natives.points = (AI_MAX_POINTS * 3)
-	    end
-
-	    if (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) then
-		natives.lastShakeMessage = tick
-		surface.print("Rampant: The ground begins to shake")
 	    end
 	end
 

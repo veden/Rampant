@@ -198,7 +198,7 @@ local function onTick(event)
 	local players = game.players
 	
 	processPendingChunks(regionMap, surface, pendingChunks)
-	scanMap(regionMap, surface, natives, evolutionFactor, tick)
+	scanMap(regionMap, surface, natives, evolutionFactor)
 
 	if (tick == regionMap.logicTick) then
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
@@ -207,7 +207,7 @@ local function onTick(event)
 
 	    natives.retreats = MAX_RETREATS
 	    
-	    planning(natives, evolutionFactor, tick)
+	    planning(natives, evolutionFactor, tick, surface)
 	    
 	    regroupSquads(natives, evolutionFactor)
 	    

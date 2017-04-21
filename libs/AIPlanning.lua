@@ -18,6 +18,8 @@ local AI_MIN_TEMPERAMENT_DURATION = constants.AI_MIN_TEMPERAMENT_DURATION
 local AI_MAX_STATE_DURATION = constants.AI_MAX_STATE_DURATION
 local AI_MAX_TEMPERAMENT_DURATION = constants.AI_MAX_TEMPERAMENT_DURATION
 
+local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
+
 -- imported functions
 
 local randomTickEvent = mathUtils.randomTickEvent
@@ -26,7 +28,7 @@ local mMax = math.max
 
 -- module code
 
-function aiPlanning.planning(natives, evolution_factor, tick)
+function aiPlanning.planning(natives, evolution_factor, tick, surface)
     local maxPoints = AI_MAX_POINTS * evolution_factor
     if (natives.points < maxPoints) then
 	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)))
@@ -45,7 +47,12 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 	    natives.state = AI_STATE_AGGRESSIVE
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
-    end 
+    end
+
+    if (natives.state == AI_STATE_AGGRESSIVE) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and (natives.points > AI_MAX_POINTS) then
+	natives.lastShakeMessage = tick
+	surface.print("Rampant: The ground begins to shake")
+    end
 end
 
 return aiPlanning
