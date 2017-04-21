@@ -47,6 +47,7 @@ local planning = aiPlanning.planning
 local rallyUnits = aiBuilding.rallyUnits
 
 local deathScent = pheromoneUtils.deathScent
+local victoryScent = pheromoneUtils.victoryScent
 
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
@@ -145,7 +146,6 @@ local function onConfigChanged()
 
 	-- used to rate limit the number of rally cries during a period of time
 	natives.rallyCries = MAX_RALLY_CRIES
-	natives.retreats = MAX_RETREATS
 
 	global.version = constants.VERSION_13
     end
@@ -158,8 +158,14 @@ local function onConfigChanged()
 	game.surfaces[1].print("Rampant - Version 0.14.11")
 	global.version = constants.VERSION_14
     end
-    if (global.version < constants.VERSION_15) then
+    if (global.version < constants.VERSION_16) then
 
+	natives.lastShakeMessage = 0
+	--remove version 14 retreat limit, it has been made redundant
+	natives.retreats = nil
+	
+	game.map_settings.unit_group.max_group_radius = 20
+	
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old
@@ -178,8 +184,8 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	game.surfaces[1].print("Rampant - Version 0.14.12")
-	global.version = constants.VERSION_15
+	game.surfaces[1].print("Rampant - Version 0.14.13")
+	global.version = constants.VERSION_16
     end
 end
 
@@ -192,7 +198,7 @@ local function onTick(event)
 	local players = game.players
 	
 	processPendingChunks(regionMap, surface, pendingChunks)
-	scanMap(regionMap, surface)
+	scanMap(regionMap, surface, natives, evolutionFactor, tick)
 
 	if (tick == regionMap.logicTick) then
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
@@ -242,15 +248,13 @@ local function onDeath(event)
 			local evolutionFactor = game.evolution_factor
 
 			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
-			    if (natives.retreats >= 0) then
-				natives.retreats = natives.retreats - 1
-				retreatUnits(deathChunk, 
-					     convertUnitGroupToSquad(natives, 
-								     entity.unit_group),
-					     regionMap, 
-					     surface, 
-					     natives)
-			    end
+			    retreatUnits(deathChunk, 
+					 convertUnitGroupToSquad(natives, 
+								 entity.unit_group),
+					 regionMap, 
+					 surface, 
+					 natives,
+					 event.tick)
 			    local rallyThreshold = BASE_RALLY_CHANCE + (evolutionFactor * BONUS_RALLY_CHANCE)
 			    if (natives.rallyCries >= 0) and (math.random() < rallyThreshold) then
 				natives.rallyCries = natives.rallyCries - 1
@@ -272,6 +276,9 @@ local function onDeath(event)
 	    local creditNatives = false
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
+		local entityPosition = entity.position
+		local victoryChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
+		victoryScent(victoryChunk, entity.type)
 	    end
 	    if config.safeBuildings and (config.safeEntities[entity.type] or config.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)

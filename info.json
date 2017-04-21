@@ -1,10 +1,10 @@
 {
     "name" : "Rampant",
     "factorio_version" : "0.14",
-    "version" : "0.14.12",
+    "version" : "0.14.13",
     "title" : "Rampant AI",
     "author" : "Veden",
     "homepage" : "https://forums.factorio.com/viewtopic.php?f=94&t=31445",
-    "description" : "Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, rallying death cry, and player hunting. Also removes homing biter projectiles.",
+    "description" : "Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles.",
     "dependencies" : ["base >= 0.13.17", "? bobenemies", "? Natural_Evolution_Enemies"]
 }

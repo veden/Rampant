@@ -16,6 +16,7 @@ local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LE
 
 local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
+local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
@@ -23,12 +24,15 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
+
+local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
 -- imported functions
 
@@ -91,17 +95,17 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
         local chunk = processQueue[x]
-        
-        scents(chunk)
-        
+	
+	processPheromone(regionMap, chunk)
+
         if scouts then
             makeScouts(surface, natives, chunk, evolution_factor)
         end
         if squads then
             formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_SQUAD_COST)
-        end
-        
-        processPheromone(regionMap, chunk)
+        end        
+	
+        scents(chunk)
     end
     
     if (endIndex == #processQueue) then
@@ -163,7 +167,8 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 			
 			if (chunk ~= nil) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
-			    scents(chunk)
+
+			    processPheromone(regionMap, chunk)
 			    
 			    if scouts then
 				makeScouts(surface, natives, chunk, evolution_factor)
@@ -174,8 +179,9 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 			    if vengence then
 				formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_VENGENCE_SQUAD_COST)
 			    end
-			    
-			    processPheromone(regionMap, chunk)
+
+			    scents(chunk)
+
 			end
 		    end
 		end
@@ -187,7 +193,7 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanMap(regionMap, surface)
+function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor, tick)
     local index = regionMap.scanPointer
     
     local processQueue = regionMap.processQueue
@@ -196,17 +202,44 @@ function mapProcessor.scanMap(regionMap, surface)
 	local chunk = processQueue[x]
 
 	local entities = surface.find_entities_filtered({area = {{chunk.pX, chunk.pY},
-							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-							  force = "player"})
+							     {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
+							 force = "player"})
 	
 	local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
 							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
 							  type = "unit-spawner",
 							  force = "enemy"})
+
 	local worms = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
 							   {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
 						       type = "turret",
 						       force = "enemy"})
+	
+	local unitCount = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
+							       {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
+							   type = "unit",
+							   force = "enemy"})
+
+	if (unitCount > 550) then
+	    local weight = AI_UNIT_REFUND * evolution_factor
+	    local units = surface.find_enemy_units({chunk.pX, chunk.pY},
+						    CHUNK_SIZE * 3)
+
+	    for i=1,#units do
+		units[i].destroy()
+		natives.points = natives.points + weight
+	    end
+
+	    if (natives.points > (AI_MAX_POINTS * 3)) then
+		natives.points = (AI_MAX_POINTS * 3)
+	    end
+
+	    if (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) then
+		natives.lastShakeMessage = tick
+		surface.print("Rampant: The ground begins to shake")
+	    end
+	end
+
 	local playerBaseGenerator = 0
 	for i=1,#entities do
 	    local entity = entities[i]
@@ -219,7 +252,7 @@ function mapProcessor.scanMap(regionMap, surface)
 	chunk[ENEMY_BASE_GENERATOR] = (spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
 	chunk[PLAYER_BASE_GENERATOR] = playerBaseGenerator
     end
-    
+
     if (endIndex == #processQueue) then
 	regionMap.scanPointer = 1
     else

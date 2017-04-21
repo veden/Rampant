@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, rallying death cry, and player hunting. Also removes homing biter projectiles.
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles.
 
 # Forum Post
 
@@ -15,16 +15,18 @@ There will be a slight pause the first time this is started up due to indexing a
 
 MP should be working  
 
-Configure Options:
-- Max biter wave size
-- Ramp up to max biter wave size
-- Use dumb projectiles
-- Use Natural Evolution unit launchers (Requires NE)
-- Togglable attack wave triggers (pollution, player)
-- Attack wave pollution trigger threshold
+Configure Options:  
+- Max biter wave size  
+- Ramp up to max biter wave size  
+- Use dumb projectiles  
+- Use Natural Evolution unit launchers (Requires NE)  
+- Togglable attack wave triggers (pollution, player)  
+- Attack wave pollution trigger threshold  
 
 # Features
 
+- Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causes attack waves proportional to the number of units removed.  
+- Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
 - Tactical Retreats - these will take place when a unit group is in a chunk that has reached a death threshold  
@@ -49,6 +51,18 @@ Configure Options:
 - Base Expansion  
 
 # Version History
+
+0.14.13 -  
+- Reverted: Pheromone generation tweaks from 0.14.11  
+- Feature: Recycling large biter swarms that are stuck (causes a big attack wave, and pops up a message)  
+- Feature: Biters destroying player buildings will attract other unit groups  
+- Tweak: Reduced unit group max size from 600 to 450  
+- Tweak: Reduced unit group radius from 30 to 20  
+- Fix: Unit groups merging during combat  
+- Optimization: Cleaned up regroup squad function to scale better  
+- Optimization: Retreats only fire once per chunk for every logic cycle  
+- Improvement: Cleaned up dispersion function for Pheromones  
+- Improvement: Increased attack wave frequency based on evolution factor (mainly for endgame)  
 
 0.14.12 -  
 - Tweak: Decreased slow map scan chunks scanned per logic cycle from 8 to 6  
