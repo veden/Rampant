@@ -46,8 +46,8 @@ Configure Options:
 - Tunneling Biters  
 - Fire Biters  
 - Suicide Biters  
-- infesting Biters  
-- adaptive aliens  
+- Infesting Biters  
+- Adaptive aliens  
 - Base Expansion  
 
 # Version History
