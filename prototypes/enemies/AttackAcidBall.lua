@@ -23,7 +23,7 @@ biterStreamUtils.createBiterStreamAttack(
 				{
 				    {
 					type = "damage",
-					damage = { amount = 7, type = "acid" }
+					damage = { amount = 15, type = "acid" }
 				    }
 				}
 			}
@@ -80,7 +80,7 @@ biterStreamUtils.createBiterStreamAttack(
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 15, type = "acid" }
+				    damage = { amount = 22, type = "acid" }
 				},
 				{
 				    type= "create-entity",
