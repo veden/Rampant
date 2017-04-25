@@ -179,7 +179,7 @@ end
 function biterFunctions.createFireAttack(attributes, fireAttack)
     local attack = {
 	type = "stream",
-	ammo_category = "flame-thrower",
+	ammo_category = "flamethrower",
 	cooldown = attributes.cooldown,
 	range = attributes.range,
 	min_range = attributes.minRange,
@@ -200,7 +200,7 @@ function biterFunctions.createFireAttack(attributes, fireAttack)
 	},
 	ammo_type =
 	    {
-                category = "flame-thrower",
+                category = "flamethrower",
                 action =
 		    {
 			type = "direct",

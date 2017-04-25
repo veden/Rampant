@@ -25,7 +25,7 @@ Configure Options:
 
 # Features
 
-- Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causes attack waves proportional to the number of units removed.  
+- Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
 - Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
@@ -51,6 +51,13 @@ Configure Options:
 - Base Expansion  
 
 # Version History
+
+0.15.1 -  
+- Tweak: Increased small spitter damage from 7 to 15  
+- Tweak: Increased medium spitter damage from 15 to 22  
+- Improvement: Replaced game.evolution with game.forces.enemy.evolution  
+- Improvement: Fixed flame-thrower to flamethrower  
+- Improvement: Changed tunnel to have non-zero hp  
 
 0.14.13 -  
 - Reverted: Pheromone generation tweaks from 0.14.11  

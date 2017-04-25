@@ -166,6 +166,11 @@ local function onConfigChanged()
 	
 	game.map_settings.unit_group.max_group_radius = 20
 	
+	game.surfaces[1].print("Rampant - Version 0.14.13")
+	global.version = constants.VERSION_16
+    end
+    if (global.version < constants.VERSION_17) then
+	
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old
@@ -184,8 +189,8 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	game.surfaces[1].print("Rampant - Version 0.14.13")
-	global.version = constants.VERSION_16
+	game.surfaces[1].print("Rampant - Version 0.15.1")
+	global.version = constants.VERSION_17
     end
 end
 
@@ -194,7 +199,7 @@ local function onTick(event)
     if (tick == regionMap.processTick) then
 	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
 	local surface = game.surfaces[1]
-	local evolutionFactor = game.evolution_factor
+	local evolutionFactor = game.forces.enemy.evolution_factor
 	local players = game.players
 	
 	processPendingChunks(regionMap, surface, pendingChunks)
@@ -245,7 +250,7 @@ local function onDeath(event)
 		    deathScent(deathChunk)
 		    
 		    if ((event.force ~= nil) and (event.force.name == "player")) then
-			local evolutionFactor = game.evolution_factor
+			local evolutionFactor = game.forces.enemy.evolution_factor
 
 			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
 			    retreatUnits(deathChunk, 
