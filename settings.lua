@@ -66,7 +66,70 @@ data:extend({
 	    default_value = 150,
 	    order = "d[modifier]-a[wave]",
 	    per_user = false
-	}
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-a[safe]",
+	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-curvedRail",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-b[safe]",
+	    per_user = false
+	},
 
 		
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-straightRail",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-c[safe]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-bigElectricPole",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-d[safe]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-railSignals",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-e[safe]",
+	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-railChainSignals",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-f[safe]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-safeBuildings-trainStops",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "e[modifier]-g[safe]",
+	    per_user = false
+	}
+
 })

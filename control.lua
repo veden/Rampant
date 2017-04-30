@@ -30,6 +30,8 @@ local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
 
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -279,14 +281,31 @@ local function onDeath(event)
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false
+	    local entityPosition = entity.position
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
-		local entityPosition = entity.position
 		local victoryChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
 		victoryScent(victoryChunk, entity.type)
 	    end
-	    if config.safeBuildings and (config.safeEntities[entity.type] or config.safeEntityName[entity.name]) then
-		makeImmortalEntity(surface, entity)
+	    if creditNatives and config.safeBuildings and (config.safeEntities[entity.type] or config.safeEntityName[entity.name]) then
+		-- makeImmortalEntity(surface, entity)
+
+		-- patch (Needs to be removed)
+		local repairPosition = entityPosition
+		local repairName = entity.name
+		local repairForce = entity.force
+		local repairDirection = entity.direction
+		entity.destroy()
+		surface.create_entity({position=repairPosition,
+				       name=repairName,
+				       direction=repairDirection,
+				       force=repairForce})
+		-- forces enemy to disperse 
+		local enemies = surface.find_enemy_units({repairPosition.x, repairPosition.y}, CHUNK_SIZE)
+		for i=1, #enemies do
+		    enemies[i].set_command({type=defines.command.wander,
+					    distraction=defines.distraction.by_enemy})
+		end
 	    else
 		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
 	    end
