@@ -1,5 +1,3 @@
-local config = require("config")
-
 local vanillaUpdates = require("prototypes/enemies/UpdatesVanilla")
 local bobsUpdates = require("prototypes/enemies/UpdatesBobs")
 local NEUpdates = require("prototypes/enemies/UpdatesNE")
@@ -12,7 +10,7 @@ local function NEDetected()
     return data.raw["unit"]["medium-spitter-Mk3"] ~= nil
 end
 
-if config.useDumbProjectiles then
+if settings.startup["rampant-useDumbProjectiles"].value then
     vanillaUpdates.useDumbProjectiles()
     if bobsDetected() then
     	require("prototypes/enemies/AttackBobs")
@@ -21,7 +19,7 @@ if config.useDumbProjectiles then
     if NEDetected() then
     	require("prototypes/enemies/AttackNE")
     	NEUpdates.useDumbProjectiles()
-    	if config.useNEUnitLaunchers then
+    	if settings.startup["rampant-useNEUnitLaunchers"].value then
     	    NEUpdates.useNEUnitLaunchers()
     	end
     end

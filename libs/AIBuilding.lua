@@ -27,10 +27,10 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 
-local CONFIG_USE_PLAYER_PROXIMITY = config.attackWaveGenerationUsePlayerProximity
-local CONFIG_USE_POLLUTION_PROXIMITY = config.attackWaveGenerationUsePollution
-local CONFIG_USE_THRESHOLD_MIN = config.attackWaveGenerationThresholdMin
-local CONFIG_USE_THRESHOLD_MAX = config.attackWaveGenerationThresholdMax
+local CONFIG_USE_PLAYER_PROXIMITY = settings.startup["rampant-attackWaveGenerationUsePlayerProximity"].value
+local CONFIG_USE_POLLUTION_PROXIMITY = settings.startup["rampant-attackWaveGenerationUsePollution"].value
+local CONFIG_USE_THRESHOLD_MIN = settings.startup["rampant-attackWaveGenerationThresholdMin"].value
+local CONFIG_USE_THRESHOLD_MAX = settings.startup["rampant-attackWaveGenerationThresholdMax"].value
 local CONFIG_USE_THRESHOLD_RANGE = CONFIG_USE_THRESHOLD_MAX - CONFIG_USE_THRESHOLD_MIN
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL

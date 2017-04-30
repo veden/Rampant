@@ -1,5 +1,3 @@
-local config = require("config")
-
 require("prototypes/enemies/AttackAcidBall")
 require("prototypes/enemies/AttackAcidFlame")
 
