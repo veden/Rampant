@@ -48,6 +48,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.3 -  
+- Improvement: Added configuration for safe buildings. This will be improved after a bug fix in factorio  
+
 0.15.2 -  
 - Improvement: Created in game options for  
   - Max biter wave size  
