@@ -15,13 +15,9 @@ There will be a slight pause the first time this is started up due to indexing a
 
 MP should be working  
 
-Configure Options:  
-- Max biter wave size  
+Configure Options not in game menu:  
 - Ramp up to max biter wave size  
-- Use dumb projectiles  
-- Use Natural Evolution unit launchers (Requires NE)  
-- Togglable attack wave triggers (pollution, player)  
-- Attack wave pollution trigger threshold  
+
 
 # Features
 
@@ -51,6 +47,14 @@ Configure Options:
 - Base Expansion  
 
 # Version History
+
+0.15.2 -  
+- Improvement: Created in game options for  
+  - Max biter wave size  
+  - Use dumb projectiles  
+  - Use Natural Evolution unit launchers (Requires NE)  
+  - Togglable attack wave triggers (pollution, player)  
+  - Attack wave pollution trigger threshold  
 
 0.15.1 -  
 - Tweak: Increased small spitter damage from 7 to 15  

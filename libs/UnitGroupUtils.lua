@@ -4,8 +4,6 @@ local unitGroupUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
-package.path = "../?.lua;" .. package.path
-local config = require("config")
 
 -- constants
 
@@ -23,7 +21,7 @@ local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
 local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
-local CONFIG_ATTACK_WAVE_MAX_SIZE = config.attackWaveMaxSize
+local CONFIG_ATTACK_WAVE_MAX_SIZE = settings.startup["rampant-attackWaveMaxSize"].value
 
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 
