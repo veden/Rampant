@@ -48,6 +48,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.4 -  
+- Fixed: Changed setting name from "make buildings safe from biters" to "Enable building safety." This is to clarify what the setting does.  
+
 0.15.3 -  
 - Improvement: Added configuration for safe buildings. This will be improved after a bug fix in factorio  
 
