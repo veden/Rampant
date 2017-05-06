@@ -14,8 +14,6 @@ local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-
 -- imported functions
 
 local getChunkByIndex = mapUtils.getChunkByIndex

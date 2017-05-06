@@ -22,7 +22,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePollution",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = true,
 	    order = "b[modifier]-a[trigger]",
 	    per_user = false
@@ -31,7 +31,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePlayerProximity",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = true,
 	    order = "b[modifier]-b[trigger]",
 	    per_user = false
@@ -39,8 +39,18 @@ data:extend({
 
 	{
 	    type = "double-setting",
+	    name = "rampant-attackPlayerThreshold",
+	    setting_type = "runtime-global",
+	    minimum_value = 0,
+	    default_value = 7,
+	    order = "c[modifier]-b[threshold]",
+	    per_user = false
+	},
+	
+	{
+	    type = "double-setting",
 	    name = "rampant-attackWaveGenerationThresholdMax",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 20,
 	    order = "c[modifier]-b[threshold]",
@@ -50,7 +60,7 @@ data:extend({
 	{
 	    type = "double-setting",
 	    name = "rampant-attackWaveGenerationThresholdMin",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 0,
 	    order = "c[modifier]-a[threshold]",
@@ -60,9 +70,9 @@ data:extend({
 	{
 	    type = "int-setting",
 	    name = "rampant-attackWaveMaxSize",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    minimum_value = 20,
-	    maximum_value = 250,
+	    maximum_value = 400,
 	    default_value = 150,
 	    order = "d[modifier]-a[wave]",
 	    per_user = false
@@ -71,7 +81,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-a[safe]",
 	    per_user = false
@@ -80,7 +90,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-curvedRail",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-b[safe]",
 	    per_user = false
@@ -90,7 +100,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-straightRail",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-c[safe]",
 	    per_user = false
@@ -99,7 +109,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-bigElectricPole",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-d[safe]",
 	    per_user = false
@@ -108,7 +118,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-railSignals",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-e[safe]",
 	    per_user = false
@@ -117,7 +127,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-railChainSignals",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-f[safe]",
 	    per_user = false
@@ -126,7 +136,7 @@ data:extend({
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-trainStops",
-	    setting_type = "startup",
+	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-g[safe]",
 	    per_user = false
