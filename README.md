@@ -48,8 +48,15 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.5 -  
+- Tweak: Increased ai refund from 2 to 3  
+- Fix: Signals, Chain Signals, and Train stops now correctly rebuild when the corresponding make safe is toggled  
+- Feature: Remote interfaces for adjusting wave size, thresholds, ai build points, ai state, player thresholds, and attack triggers  
+- Improvement: Added reactor, programmable speaker, radars, lights, and rocket silo to biter targets  
+- Improvement: Switched all configs to global runtime except Dumb projectiles and NE Unit Launcher Options  
+
 0.15.4 -  
-- Fixed: Changed setting name from "make buildings safe from biters" to "Enable building safety." This is to clarify what the setting does.  
+- Fix: Changed setting name from "make buildings safe from biters" to "Enable building safety." This is to clarify what the setting does.  
 
 0.15.3 -  
 - Improvement: Added configuration for safe buildings. This will be improved after a bug fix in factorio  

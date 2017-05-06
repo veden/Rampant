@@ -7,4 +7,3 @@ require("prototypes/tile/fillableDirt")
 
 require("prototypes/enemies/UnitSuicideBiters")
 require("prototypes/enemies/UnitFireSpitters")
-

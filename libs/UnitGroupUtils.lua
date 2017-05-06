@@ -21,8 +21,6 @@ local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
 local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
-local CONFIG_ATTACK_WAVE_MAX_SIZE = settings.startup["rampant-attackWaveMaxSize"].value
-
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 
 -- imported functions
@@ -131,9 +129,10 @@ function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
     return 0
 end
 
-function unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
+function unitGroupUtils.calculateKamikazeThreshold(squad, natives, evolution_factor)
+    local maxSize = natives.attackWaveMaxSize
     local kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-    local squadSizeBonus = mLog((#squad.group.members / CONFIG_ATTACK_WAVE_MAX_SIZE) + 0.1) + 1
+    local squadSizeBonus = mLog((#squad.group.members / maxSize) + 0.1) + 1
     return kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
 end
 
@@ -192,7 +191,7 @@ function unitGroupUtils.regroupSquads(natives, evolution_factor)
 		    end
 	        end
 	        if mergedSquads and not squad.kamikaze then
-		    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, evolution_factor)
+		    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives, evolution_factor)
 		    if (math.random() < kamikazeThreshold) then
 			squad.kamikaze = true
 		    end

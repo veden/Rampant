@@ -118,7 +118,7 @@ function aiAttack.squadBeginAttack(natives, players, evolution_factor)
     for i=1,#squads do
         local squad = squads[i]
         if (squad.status == SQUAD_GUARDING) and squad.group.valid then
-	    local kamikazeThreshold = calculateKamikazeThreshold(squad, evolution_factor)
+	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives, evolution_factor)
 	    
 	    local playerNearby = playersWithinProximityToPosition(players, squad.group.position, 100)
 	    if playerNearby then

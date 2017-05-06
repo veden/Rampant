@@ -37,7 +37,6 @@ local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 local scents = pheromoneUtils.scents
 local processPheromone = pheromoneUtils.processPheromone
 
-local makeScouts = aiBuilding.makeScouts
 local formSquads = aiBuilding.formSquads
 
 local getChunkByIndex = mapUtils.getChunkByIndex
@@ -73,18 +72,13 @@ end
 function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
     local roll = regionMap.processRoll
     local index = regionMap.processPointer
-    local scouts = false
     local squads = false
     
     if (index == 1) then
         roll = math.random()
         regionMap.processRoll = roll
     end
-
-    if (0.05 <= roll) and (roll <= 0.10) then
-	scouts = true
-    end
-    
+   
     if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.35) then
 	squads = true
     end
@@ -96,9 +90,6 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
 	
 	processPheromone(regionMap, chunk)
 
-        if scouts then
-            makeScouts(surface, natives, chunk, evolution_factor)
-        end
         if squads then
             formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_SQUAD_COST)
         end        
@@ -124,15 +115,10 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(players)
 
-    local scouts = false
     local squads = false
     local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
     local roll = math.random() 
 
-    if (0.05 <= roll) and (roll <= 0.7) then
-	scouts = true
-    end
-    
     if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.20) then
 	squads = true
     end
@@ -168,9 +154,6 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 
 			    processPheromone(regionMap, chunk)
 			    
-			    if scouts then
-				makeScouts(surface, natives, chunk, evolution_factor)
-			    end
 			    if squads then
 				formSquads(regionMap, surface, natives, chunk, evolution_factor, AI_SQUAD_COST)
 			    end

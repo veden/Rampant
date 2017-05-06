@@ -12,8 +12,8 @@ local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
 local aiPlanning = require("libs/AIPlanning")
 local mathUtils = require("libs/MathUtils")
+local interop = require("libs/Interop")
 local tests = require("tests")
-local config = require("config")
 
 -- constants
 
@@ -21,7 +21,6 @@ local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 local MAX_RALLY_CRIES = constants.MAX_RALLY_CRIES
-local MAX_RETREATS = constants.MAX_RETREATS
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -43,8 +42,6 @@ local processPlayers = mapProcessor.processPlayers
 local scanMap = mapProcessor.scanMap
 
 local planning = aiPlanning.planning
--- local removeScout = aiBuilding.removeScout
--- local scouting = aiBuilding.scouting
 
 local rallyUnits = aiBuilding.rallyUnits
 
@@ -60,7 +57,7 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 local retreatUnits = aiDefense.retreatUnits
 
 local addRemoveEntity = entityUtils.addRemoveEntity
-local makeImmortalEntity = entityUtils.makeImmortalEntity
+--local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local roundToNearest = mathUtils.roundToNearest
 
@@ -84,6 +81,32 @@ local function onChunkGenerated(event)
     if (event.surface.index == 1) then
         pendingChunks[#pendingChunks+1] = event
     end
+end
+
+local function onModSettingsChange(event)
+
+    if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
+	return
+    end
+    
+    natives.safeBuildings = settings.global["rampant-safeBuildings"].value   
+    
+    natives.safeEntities["curved-rail"] = settings.global["rampant-safeBuildings-curvedRail"].value
+    natives.safeEntities["straight-rail"] = settings.global["rampant-safeBuildings-straightRail"].value    
+    natives.safeEntities["rail-signal"] = settings.global["rampant-safeBuildings-railSignals"].value
+    natives.safeEntities["rail-chain-signal"] = settings.global["rampant-safeBuildings-railChainSignals"].value
+    natives.safeEntities["train-stop"] = settings.global["rampant-safeBuildings-trainStops"].value
+    
+    natives.safeEntityName["big-electric-pole"] = settings.global["rampant-safeBuildings-bigElectricPole"].value
+    
+    natives.attackUsePlayer = settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value
+    natives.attackUsePollution = settings.global["rampant-attackWaveGenerationUsePollution"].value
+    
+    natives.attackThresholdMin = settings.global["rampant-attackWaveGenerationThresholdMin"].value
+    natives.attackThresholdMax = settings.global["rampant-attackWaveGenerationThresholdMax"].value
+    natives.attackThresholdRange = natives.attackThresholdMax - natives.attackThresholdMin
+    natives.attackWaveMaxSize = settings.global["rampant-attackWaveMaxSize"].value
+    natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
 end
 
 local function onConfigChanged()
@@ -171,7 +194,12 @@ local function onConfigChanged()
 	game.surfaces[1].print("Rampant - Version 0.14.13")
 	global.version = constants.VERSION_16
     end
-    if (global.version < constants.VERSION_17) then
+    if (global.version < constants.VERSION_18) then
+
+	natives.safeEntities = {}
+	natives.safeEntityName = {}
+	
+	onModSettingsChange(nil)
 	
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
@@ -182,7 +210,6 @@ local function onConfigChanged()
 	-- clear pending chunks, will be added when loop runs below
 	pendingChunks = {}
 
-
 	-- queue all current chunks that wont be generated during play
 	local surface = game.surfaces[1]
 	for chunk in surface.get_chunks() do
@@ -191,8 +218,8 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	game.surfaces[1].print("Rampant - Version 0.15.1")
-	global.version = constants.VERSION_17
+	game.surfaces[1].print("Rampant - Version 0.15.5")
+	global.version = constants.VERSION_18
     end
 end
 
@@ -212,15 +239,11 @@ local function onTick(event)
 
 	    natives.rallyCries = MAX_RALLY_CRIES
 
-	    natives.retreats = MAX_RETREATS
-	    
 	    planning(natives, evolutionFactor, tick, surface)
 	    
 	    regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
-	    
-	    -- scouting(regionMap, natives)
 	    
 	    squadBeginAttack(natives, players, evolutionFactor)
 	    squadAttack(regionMap, surface, natives)
@@ -287,7 +310,7 @@ local function onDeath(event)
 		local victoryChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
 		victoryScent(victoryChunk, entity.type)
 	    end
-	    if creditNatives and config.safeBuildings and (config.safeEntities[entity.type] or config.safeEntityName[entity.name]) then
+	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		-- makeImmortalEntity(surface, entity)
 
 		-- patch (Needs to be removed)
@@ -337,6 +360,8 @@ end
 
 script.on_init(onInit)
 script.on_load(onLoad)
+script.on_event(defines.events.on_runtime_mod_setting_changed,
+		onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
 
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
@@ -352,7 +377,7 @@ script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
-remote.add_interface("rampant", {
+remote.add_interface("rampantTests", {
 			 test1 = tests.test1,
 			 test2 = tests.test2,
 			 test3 = tests.test3,
@@ -363,5 +388,7 @@ remote.add_interface("rampant", {
 			 test8 = tests.test8,
 			 test9 = tests.test9,
 			 test10 = tests.test10,
-			 test11 = tests.test11
+			 test11 = tests.test11			 
 })
+
+remote.add_interface("rampant", interop)

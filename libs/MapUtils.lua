@@ -9,7 +9,6 @@ local constants = require("Constants")
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 
-local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
@@ -37,7 +36,6 @@ end
 function mapUtils.positionToChunkOffset(position)
     return mFloor(position.x * 0.03125), mFloor(position.y * 0.03125)
 end
-
 
 --[[
     1 2 3
@@ -121,7 +119,7 @@ end
 --[[
     1
     |
-    2- -3
+  2- -3
     |
     4 
 ]]--
@@ -187,7 +185,7 @@ end
 --[[
     1
     |
-    2- -3
+  2- -3
     |
     4 
 ]]--
