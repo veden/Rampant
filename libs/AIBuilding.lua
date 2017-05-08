@@ -72,52 +72,6 @@ local function validUnitGroupLocation(x, chunk, neighborChunk)
     return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[ENEMY_BASE_GENERATOR] == 0
 end
 
--- function aiBuilding.removeScout(entity, natives)
---     --[[
--- 	local scouts = natives.scouts
--- 	for i=1, #scouts do
--- 	local scout = scouts[i]
--- 	if (scout == entity) then
--- 	tableRemove(scouts, i)
--- 	return
--- 	end
--- 	end
---     --]]
--- end
-
--- function aiBuilding.makeScouts(surface, natives, chunk, evolution_factor)
---     --[[
--- 	if (natives.points > AI_SCOUT_COST) then
--- 	if (#global.natives.scouts < 5) and (math.random() < 0.05)  then -- TODO scaled with evolution factor
--- 	local enemy = surface.find_nearest_enemy({ position = { x = chunk.pX + HALF_CHUNK_SIZE,
--- 	y = chunk.pY + HALF_CHUNK_SIZE },
--- 	max_distance = 100})
-	
--- 	if (enemy ~= nil) and enemy.valid and (enemy.type == "unit") then
--- 	natives.points = natives.points - AI_SCOUT_COST
--- 	global.natives.scouts[#global.natives.scouts+1] = enemy
--- 	-- print(enemy, enemy.unit_number)
--- 	end
--- 	end
--- 	end
---     --]]
--- end
-
--- function aiBuilding.scouting(regionMap, natives)
---     --[[
--- 	local scouts = natives.scouts
--- 	for i=1,#scouts do 
--- 	local scout = scouts[i]
--- 	if scout.valid then
--- 	scout.set_command({type=defines.command.attack_area,
--- 	destination={0,0},
--- 	radius=32,
--- 	distraction=defines.distraction.none})
--- 	end
--- 	end
---     --]]
--- end
-
 function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor)
     local cX = chunk.cX
     local cY = chunk.cY

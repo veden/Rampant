@@ -13,6 +13,7 @@ constants.VERSION_15 = 15
 constants.VERSION_16 = 16
 constants.VERSION_17 = 17
 constants.VERSION_18 = 18
+constants.VERSION_19 = 19
 
 -- misc
 
@@ -53,6 +54,17 @@ constants.AI_MAX_STATE_DURATION = 4
 constants.AI_MIN_TEMPERAMENT_DURATION = 5
 constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
+-- ai base
+
+constants.BASE_DISTANCE_THRESHOLD = 15
+
+constants.BASE_ALIGNMENT_NEUTRAL = 1
+constants.BASE_ALIGNMENT_FIRE = 2
+constants.BASE_ALIGNMENT_BURROW = 3
+constants.BASE_ALIGNMENT_SUICIDE = 4
+constants.BASE_ALIGNMENT_INFEST = 5
+
+
 -- ai retreat
 
 constants.NO_RETREAT_BASE_PERCENT = 0.10
@@ -87,15 +99,17 @@ constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.MOVEMENT_PHEROMONE = 1
 constants.BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
+constants.RESOURCE_PHEROMONE = 4
 
-constants.ENEMY_BASE_GENERATOR = 4
-constants.PLAYER_BASE_GENERATOR = 5
+constants.ENEMY_BASE_GENERATOR = 5
+constants.PLAYER_BASE_GENERATOR = 6
 
-constants.NORTH_SOUTH_PASSABLE = 6
-constants.EAST_WEST_PASSABLE = 7
+constants.NORTH_SOUTH_PASSABLE = 7
+constants.EAST_WEST_PASSABLE = 8
 
-constants.CHUNK_TICK = 8
-constants.RETREAT_TRIGGERED = 9
+constants.CHUNK_TICK = 9
+constants.RETREAT_TRIGGERED = 10
+constants.CHUNK_BASE = 11
 
 -- Squad status
 
