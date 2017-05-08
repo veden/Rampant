@@ -26,6 +26,8 @@ local CHUNK_TICK = constants.CHUNK_TICK
 
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 
+local CHUNK_BASE = constants.CHUNK_BASE
+
 -- module code
 
 function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
@@ -121,6 +123,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
     chunk[RETREAT_TRIGGERED] = 0
+    chunk[CHUNK_BASE] = nil
     return chunk
 end
 
