@@ -22,6 +22,7 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
 constants.SCAN_QUEUE_SIZE = 6
+constants.BASE_QUEUE_SIZE = 10
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60
@@ -101,15 +102,14 @@ constants.BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 
-constants.ENEMY_BASE_GENERATOR = 5
-constants.PLAYER_BASE_GENERATOR = 6
+constants.PLAYER_BASE_GENERATOR = 5
 
-constants.NORTH_SOUTH_PASSABLE = 7
-constants.EAST_WEST_PASSABLE = 8
+constants.NORTH_SOUTH_PASSABLE = 6
+constants.EAST_WEST_PASSABLE = 7
 
-constants.CHUNK_TICK = 9
-constants.RETREAT_TRIGGERED = 10
-constants.CHUNK_BASE = 11
+constants.CHUNK_TICK = 8
+constants.RETREAT_TRIGGERED = 9
+constants.CHUNK_BASE = 10
 
 -- Squad status
 

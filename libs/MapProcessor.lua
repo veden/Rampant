@@ -18,11 +18,12 @@ local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 local CHUNK_SIZE = constants.CHUNK_SIZE
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
+
+local CHUNK_BASE = constants.CHUNK_BASE
 
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
@@ -142,7 +143,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 	    
 	    if (playerChunk ~= nil) then
 		local vengence = false
-		if (playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold) then
+		if (playerChunk[CHUNK_BASE] ~= nil) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold) then
 		    vengence = true
 		end
 		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
@@ -225,7 +226,7 @@ function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
 	    end
 	end
 
-	chunk[ENEMY_BASE_GENERATOR] = (spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
+	--chunk[ENEMY_BASE_GENERATOR] = (spawners * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
 	chunk[PLAYER_BASE_GENERATOR] = playerBaseGenerator
     end
 

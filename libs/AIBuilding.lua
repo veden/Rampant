@@ -15,8 +15,6 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
-
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
@@ -28,6 +26,8 @@ local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 
 local RALLY_CRY_DISTANCE = 3
+
+local CHUNK_BASE = constants.CHUNK_BASE
 
 -- imported functions
 
@@ -69,7 +69,7 @@ local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
 end
 
 local function validUnitGroupLocation(x, chunk, neighborChunk)
-    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[ENEMY_BASE_GENERATOR] == 0
+    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[CHUNK_BASE] ~= nil
 end
 
 function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor)
@@ -78,7 +78,7 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFact
     for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
 	for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
 	    local rallyChunk = getChunkByIndex(regionMap, x, y)
-	    if (rallyChunk ~= nil) and (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
+	    if (rallyChunk ~= nil) and (x ~= cX) and (y ~= cY) and (rallyChunk[CHUNK_BASE] ~= nil) then
 		aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
 	    end
 	end
@@ -86,7 +86,7 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFact
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)
-    if (natives.points > cost) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
+    if (natives.points > cost) and (chunk[CHUNK_BASE] ~= nil) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
 	local valid = false
 	if not surface.peaceful_mode then
 	    if (cost == AI_VENGENCE_SQUAD_COST) then
