@@ -95,7 +95,7 @@ function spawner_die_animation(variation, tint)
 end
 
 
-biter_spawner_tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+local biter_spawner_powered_tint = {r=1.0, g=1.0, b=1.0, a=1.0}
 
 data:extend({
 
@@ -108,13 +108,6 @@ data:extend({
 	    max_health = 350,
 	    order="b-b-g",
 	    subgroup="enemies",
-	    energy_source =
-		{
-		    type = "electric",
-		    usage_priority = "secondary-input",
-		    emissions = 0.05 / 1.5
-		},
-	    energy_usage = "90kW",
 	    resistances =
 		{
 		    {
@@ -166,10 +159,10 @@ data:extend({
 	    max_friends_around_to_spawn = 5,
 	    animations =
 		{
-		    spawner_idle_animation(0, biter_spawner_tint),
-		    spawner_idle_animation(1, biter_spawner_tint),
-		    spawner_idle_animation(2, biter_spawner_tint),
-		    spawner_idle_animation(3, biter_spawner_tint)
+		    spawner_idle_animation(0, biter_spawner_powered_tint),
+		    spawner_idle_animation(1, biter_spawner_powered_tint),
+		    spawner_idle_animation(2, biter_spawner_powered_tint),
+		    spawner_idle_animation(3, biter_spawner_powered_tint)
 		},
 	    result_units = (function()
 		    local res = {}
@@ -191,7 +184,6 @@ data:extend({
 	    spawning_spacing = 3,
 	    max_spawn_shift = 0,
 	    max_richness_for_spawn_shift = 100,
-	    autoplace = enemy_spawner_autoplace(0),
 	    call_for_help_radius = 50
 	}
 

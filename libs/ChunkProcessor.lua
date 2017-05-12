@@ -3,7 +3,6 @@ local chunkProcessor = {}
 -- imports
 
 local chunkUtils = require("ChunkUtils")
-local baseUtils = require("BaseUtils")
 
 -- imported functions
 
@@ -11,11 +10,9 @@ local createChunk = chunkUtils.createChunk
 local checkChunkPassability = chunkUtils.checkChunkPassability
 local scoreChunk = chunkUtils.scoreChunk
 
-local annexNest = baseUtils.annexNest
-
 -- module code
 
-function chunkProcessor.processPendingChunks(regionMap, surface, pendingStack, natives)
+function chunkProcessor.processPendingChunks(regionMap, surface, pendingStack, natives, tick)
     local processQueue = regionMap.processQueue
     
     for _=#pendingStack, 1, -1 do
@@ -32,8 +29,7 @@ function chunkProcessor.processPendingChunks(regionMap, surface, pendingStack, n
         regionMap[chunkX][chunk.cY] = chunk
         
         checkChunkPassability(chunk, surface)
-        scoreChunk(chunk, surface)
-	annexNest(natives, chunk, event.tick)
+        scoreChunk(chunk, surface, regionMap, natives, tick)
         processQueue[#processQueue+1] = chunk
     end
 end

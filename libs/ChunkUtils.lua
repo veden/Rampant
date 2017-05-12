@@ -4,6 +4,10 @@ local chunkUtils = {}
 
 local constants = require("Constants")
 
+local entityUtils = require("EntityUtils")
+
+local baseUtils = require("BaseUtils")
+
 -- constants
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -12,7 +16,6 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
 local NORTH_SOUTH = constants.NORTH_SOUTH
 local EAST_WEST = constants.EAST_WEST
@@ -20,13 +23,16 @@ local EAST_WEST = constants.EAST_WEST
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 
-local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-
 local CHUNK_TICK = constants.CHUNK_TICK
 
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 
 local CHUNK_BASE = constants.CHUNK_BASE
+
+-- imported functions
+
+local addRemoveEntity = entityUtils.addRemoveEntity
+local annexChunk = baseUtils.annexChunk
 
 -- module code
 
@@ -70,7 +76,7 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
-function chunkUtils.scoreChunk(chunk, surface)   
+function chunkUtils.scoreChunk(chunk, surface, regionMap, natives, tick)
     local x = chunk.pX
     local y = chunk.pY
     
@@ -79,21 +85,34 @@ function chunkUtils.scoreChunk(chunk, surface)
 	{x + 32, y + 32}
     }
     local enemyChunkQuery = {area=areaBoundingBox,
-                             type="unit-spawner",
                              force="enemy"}
-    local enemyWormChunkQuery = {area=areaBoundingBox,
-				 type="turret",
-				 force="enemy"}
     local playerChunkQuery = {area=areaBoundingBox,
                               force="player"}
     
-    local entities = surface.count_entities_filtered(enemyChunkQuery)
-    local worms = surface.count_entities_filtered(enemyWormChunkQuery)
-    local playerObjects = 0
-    
-    chunk[ENEMY_BASE_GENERATOR] = (entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
+    local enemies = surface.find_entities_filtered(enemyChunkQuery)
 
-    entities = surface.find_entities_filtered(playerChunkQuery)
+    local nestsRemoved = 0
+    local wormsRemoved = 0
+    
+    for i=1, #enemies do
+        local entityType = enemies[i].type
+	if (entityType == "unit-spawner") then
+	    nestsRemoved = nestsRemoved + 1
+	elseif (entityType == "turret") then
+	    wormsRemoved = wormsRemoved + 1
+	end
+    end
+
+    if ((nestsRemoved > 0) or (wormsRemoved > 0)) and (chunk[CHUNK_BASE] == nil) then
+	local base = annexChunk(natives, chunk, tick, surface)
+	for i=1, #enemies do
+	    enemies[i].destroy()
+	end
+	base.upgradePoints = base.upgradePoints + (nestsRemoved * 2) + wormsRemoved
+    end
+    
+    local playerObjects = 0
+    local entities = surface.find_entities_filtered(playerChunkQuery)
     
     for i=1, #entities do
         local entityType = entities[i].type
@@ -117,7 +136,6 @@ function chunkUtils.createChunk(topX, topY)
     chunk[MOVEMENT_PHEROMONE] = 0
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
-    chunk[ENEMY_BASE_GENERATOR] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false

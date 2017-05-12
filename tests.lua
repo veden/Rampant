@@ -99,14 +99,7 @@ function tests.createEnemy(x)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[1].create_entity({name=x, force="enemy", position={chunkX, chunkY}})
-end
-
-function tests.createEnemyBase()
-    local playerPosition = game.players[1].position
-    local chunkX = math.floor(playerPosition.x * 0.03125) * 33
-    local chunkY = math.floor(playerPosition.y * 0.03125) * 33
-    game.surfaces[1].create_entity({name="biter-spawner", force="enemy", position={chunkX, chunkY}})
+    game.surfaces[1].create_entity({name=x, position={chunkX, chunkY}})
 end
 
 function tests.attackOrigin()
@@ -146,9 +139,10 @@ end
 
 function tests.baseStats()
     local natives = global.natives
+    print ("cX", "cY", "pX", "pY", "created", "alignment", "strength", "numberOfChunks", "upgradePoints")
     for i=1, #natives.bases do
 	local base = natives.bases[i]
-	print(base.cX, base.cY, base.cX * 32, base.cY * 32, base.created, base.alignment, base.strength, #base.chunks)
+	print(base.cX, base.cY, base.cX * 32, base.cY * 32, base.created, base.alignment, base.strength, #base.chunks, base.upgradePoints)
     end
 end
 
@@ -178,28 +172,25 @@ function tests.clearBases()
 	local base = global.natives.bases[x]
 	for c=1,#base.chunks do
 	    local chunk = base.chunks[c]
-	    local areaBoundingBox = {
-		{chunk.cX * 32, chunk.cY * 32},
-		{(chunk.cX * 32) + 32, (chunk.cY *32) + 32}
-	    }	    
-	    local entities = surface.find_entities_filtered({area=areaBoundingBox,
-							     force="enemy"})
-	    for e=1,#entities do
-		local entity = entities[e]
-		entity.destroy()
-	    end
+	    chunkUtils.clearChunkNests(chunk, surface)
 	end
 
 	base.chunks = {}
 
-	if (surface.can_place_entity({name="biter-spawner", position={base.cX * 32, base.cY * 32}})) then
-	    surface.create_entity({name="biter-spawner", force="enemy", position={base.cX * 32, base.cY * 32}})
+	if (surface.can_place_entity({name="biter-spawner-powered", position={base.cX * 32, base.cY * 32}})) then
+	    surface.create_entity({name="biter-spawner-powered", position={base.cX * 32, base.cY * 32}})
 	    local slice = math.pi / 12
 	    local pos = 0
 	    for i=1,24 do
-		distance = mathUtils.roundToNearest(mathUtils.gaussianRandomRange(45, 5, 37, 60), 1)
-		if (surface.can_place_entity({name="biter-spawner", position={base.cX * 32 + (distance*math.cos(pos)), base.cY * 32 + (distance*math.sin(pos))}})) then
-		    surface.create_entity({name="biter-spawner", force="enemy", position={base.cX * 32 + (distance*math.cos(pos)), base.cY * 32 + (distance*math.sin(pos))}})
+		if (math.random() < 0.8) then
+		    local distance = mathUtils.roundToNearest(mathUtils.gaussianRandomRange(45, 5, 37, 60), 1)
+		    if (surface.can_place_entity({name="biter-spawner", position={base.cX * 32 + (distance*math.sin(pos)), base.cY * 32 + (distance*math.cos(pos))}})) then
+			if (math.random() < 0.3) then
+			    surface.create_entity({name="small-worm-turret", position={base.cX * 32 + (distance*math.sin(pos)), base.cY * 32 + (distance*math.cos(pos))}})
+			else
+			    surface.create_entity({name="biter-spawner", position={base.cX * 32 + (distance*math.sin(pos)), base.cY * 32 + (distance*math.cos(pos))}})
+			end
+		    end
 		end
 		pos = pos + slice
 	    end

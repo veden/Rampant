@@ -117,6 +117,8 @@ function upgrade.attempt(natives, regionMap)
 
 	natives.baseDistanceMin = 0
 
+	natives.baseIndex = 1
+
 	game.forces.enemy.ai_controllable = false
 	
 	game.surfaces[1].print("Rampant - Version 0.15.6")

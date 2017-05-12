@@ -18,7 +18,6 @@ local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
 -- imported functions
 
@@ -44,7 +43,7 @@ end
 
 local function scoreAttackLocation(position, squad, neighborChunk, surface)
     local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25) - neighborChunk[ENEMY_BASE_GENERATOR]
+    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25) --- neighborChunk[ENEMY_BASE_GENERATOR]
     return r - squadMovementPenalty
 end
 

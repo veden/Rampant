@@ -9,7 +9,6 @@ local constants = require("Constants")
 
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
@@ -82,37 +81,38 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, cred
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     local pheromoneType
+    local enemy = false
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
         entityValue = BUILDING_PHEROMONES[entity.type]
         pheromoneType = PLAYER_BASE_GENERATOR
     elseif (entity.type == "unit-spawner") and (entity.force.name == "enemy") then
         entityValue = ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-        pheromoneType = ENEMY_BASE_GENERATOR
+	enemy = true
     elseif (entity.type == "turret") and (entity.force.name == "enemy") then
         entityValue = 1
-        pheromoneType = ENEMY_BASE_GENERATOR
+	enemy = true
     end
-    if (entityValue ~= nil) then
-        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
-        if not addObject then
-	    if creditNatives and (pheromoneType ~= ENEMY_BASE_GENERATOR) then
-		natives.points = natives.points + entityValue
-	    end
-	    entityValue = -entityValue
-	end
-	if (leftTop ~= nil) then
-	    leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue
-	end
-	if (rightTop ~= nil) then
-	    rightTop[pheromoneType] = rightTop[pheromoneType] + entityValue
-	end
-	if (leftBottom ~= nil) then
-	    leftBottom[pheromoneType] = leftBottom[pheromoneType] + entityValue
-	end
-	if (rightBottom ~= nil) then
-	    rightBottom[pheromoneType] = rightBottom[pheromoneType] + entityValue
-	end
-    end
+    -- if (entityValue ~= nil) then
+    --     leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+    --     if not addObject then
+    -- 	    if creditNatives and not enemy then
+    -- 		natives.points = natives.points + entityValue
+    -- 	    end
+    -- 	    entityValue = -entityValue
+    -- 	end
+    -- 	if (leftTop ~= nil) then
+    -- 	    leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue
+    -- 	end
+    -- 	if (rightTop ~= nil) then
+    -- 	    rightTop[pheromoneType] = rightTop[pheromoneType] + entityValue
+    -- 	end
+    -- 	if (leftBottom ~= nil) then
+    -- 	    leftBottom[pheromoneType] = leftBottom[pheromoneType] + entityValue
+    -- 	end
+    -- 	if (rightBottom ~= nil) then
+    -- 	    rightBottom[pheromoneType] = rightBottom[pheromoneType] + entityValue
+    -- 	end
+    -- end
 end
 
 
