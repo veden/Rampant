@@ -48,6 +48,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.6 -  
+- Feature: Nocturnal Mode - causes Rampant attacks waves to only spawn at night. Best use with daylight Extender mod.
+
 0.15.5 -  
 - Tweak: Increased ai refund from 2 to 3  
 - Fix: Signals, Chain Signals, and Train stops now correctly rebuild when the corresponding make safe is toggled  
