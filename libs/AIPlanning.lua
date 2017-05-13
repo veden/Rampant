@@ -4,11 +4,13 @@ local aiPlanning = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
+local nocturnalUtils = require("NocturnalUtils")
 
 -- constants
 
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
@@ -22,6 +24,8 @@ local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
 -- imported functions
 
+local canAttackNocturnal = nocturnalUtils.canAttack
+
 local randomTickEvent = mathUtils.randomTickEvent
 
 local mMax = math.max
@@ -30,6 +34,9 @@ local mMax = math.max
 
 function aiPlanning.planning(natives, evolution_factor, tick, surface)
     local maxPoints = AI_MAX_POINTS * evolution_factor
+    if natives.aiNocturnalMode then
+	maxPoints = maxPoints * 0.85
+    end
     if (natives.points < maxPoints) then
 	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)))
     end
@@ -43,13 +50,15 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	local roll = math.random() * mMax(1 - evolution_factor, 0.15)
 	if (roll > natives.temperament) then
 	    natives.state = AI_STATE_PEACEFUL
+	elseif (natives.aiNocturnalMode) then
+	    natives.state = AI_STATE_NOCTURNAL
 	else
 	    natives.state = AI_STATE_AGGRESSIVE
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
-    if (natives.state == AI_STATE_AGGRESSIVE) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and (natives.points > AI_MAX_POINTS) then
+    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and (natives.points > AI_MAX_POINTS) then
 	natives.lastShakeMessage = tick
 	surface.print("Rampant: The ground begins to shake")
     end
