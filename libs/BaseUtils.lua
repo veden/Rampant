@@ -56,7 +56,7 @@ function baseUtils.annexChunk(natives, chunk, tick, surface)
     if (annex ~= nil) then
 	return annex
     end
-    return baseUtils.createBase(natives, chunk, tick, surface)
+    return nil
 end
 
 function baseUtils.removeNest(natives, chunk)
@@ -110,10 +110,43 @@ function baseUtils.createBase(natives, chunk, tick, surface)
     chunks[#chunks+1] = chunk
     chunk[CHUNK_BASE] = base
     bases[#bases+1] = base
-    if (surface.can_place_entity({name="biter-spawner", position={base.cX * 32, base.cY * 32}})) then
-	surface.create_entity({name="biter-spawner", position={base.cX * 32, base.cY * 32}})
+    local basePlacement = {
+	name="biter-spawner",
+	position={
+	    chunk.pX,
+	    chunk.pY
+	}
+    }
+    print("creating base")
+    if (surface.can_place_entity(basePlacement)) then
+	print("created base")
+	local nest = surface.create_entity(basePlacement)
+	addRemoveEnemyEntity
     end
     return base
+end
+
+function baseUtils.addBaseToChunk(chunk, entity, base)
+    local bases = chunk[CHUNK_BASE]
+    bases[#bases+1] = base
+    base.nests[entity.unit_number] = entity
+end
+
+function baseUtils.removeBaseFromChunk(chunk, entity, base)
+    if (chunk[ENEMY_BUILDING_COUNT] - 1 <= 0) then
+	local bases = chunk[CHUNK_BASE]
+	local baseIndex
+	for i=1,#bases do
+	    local b = bases[i]
+	    if (b == base) then
+		table.remove(bases, i)
+		return true
+	    end
+	end
+    else
+	base.nests[entity.unit_number] = nil
+    end
+    return false
 end
 
 -- function baseUtils.mergeBases(natives)
