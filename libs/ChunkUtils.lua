@@ -14,6 +14,7 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
+local ENEMY_BUILDING_COUNT = constants.ENEMY_BUILDING_COUNT
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
@@ -33,6 +34,7 @@ local CHUNK_BASE = constants.CHUNK_BASE
 
 local addRemoveEntity = entityUtils.addRemoveEntity
 local annexChunk = baseUtils.annexChunk
+local createBase = baseUtils.createBase
 
 -- module code
 
@@ -93,22 +95,25 @@ function chunkUtils.scoreChunk(chunk, surface, regionMap, natives, tick)
 
     local nestsRemoved = 0
     local wormsRemoved = 0
+    local bitersRemoved = 0
     
     for i=1, #enemies do
         local entityType = enemies[i].type
 	if (entityType == "unit-spawner") then
-	    nestsRemoved = nestsRemoved + 1
+	    nestsRemoved = nestsRemoved + 3
 	elseif (entityType == "turret") then
-	    wormsRemoved = wormsRemoved + 1
+	    wormsRemoved = wormsRemoved + 2
+	elseif (entityType == "unit") then
+	    bitersRemoved = bitersRemoved + 1
 	end
     end
 
-    if ((nestsRemoved > 0) or (wormsRemoved > 0)) and (chunk[CHUNK_BASE] == nil) then
-	local base = annexChunk(natives, chunk, tick, surface)
+    if ((nestsRemoved > 0) or (wormsRemoved > 0) or (bitersRemoved > 0)) and (chunk[CHUNK_BASE] == nil) then
 	for i=1, #enemies do
 	    enemies[i].destroy()
 	end
-	base.upgradePoints = base.upgradePoints + (nestsRemoved * 2) + wormsRemoved
+	local foundBase = annexChunk(natives, chunk, tick, surface) or createBase(natives, chunk, tick, surface)
+	foundBase.upgradePoints = foundBase.upgradePoints + nestsRemoved + wormsRemoved + bitersRemoved
     end
     
     local playerObjects = 0
@@ -137,11 +142,12 @@ function chunkUtils.createChunk(topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
+    chunk[ENEMY_BUILDING_COUNT] = 0
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
     chunk[RETREAT_TRIGGERED] = 0
-    chunk[CHUNK_BASE] = nil
+    chunk[CHUNK_BASE] = {}
     return chunk
 end
 

@@ -4,6 +4,7 @@ local entityUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
+local baseUtils = require("BaseUtils")
 
 -- constants
 
@@ -11,11 +12,12 @@ local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
-local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-
 -- imported functions
 
 local getChunkByIndex = mapUtils.getChunkByIndex
+
+local addBaseToChunk = baseUtils.addBaseToChunk
+local removeBaseFromChunk = baseUtils.removeBaseFromChunk
 
 local mFloor = math.floor
 
@@ -77,42 +79,55 @@ local function getEntityOverlapChunks(regionMap, entity)
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
 end
 
-function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, creditNatives)
+function entityUtils.addRemovePlayerEntity(regionMap, entity, natives, addObject, creditNatives)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
-    local pheromoneType
-    local enemy = false
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
         entityValue = BUILDING_PHEROMONES[entity.type]
-        pheromoneType = PLAYER_BASE_GENERATOR
-    elseif (entity.type == "unit-spawner") and (entity.force.name == "enemy") then
-        entityValue = ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
-	enemy = true
-    elseif (entity.type == "turret") and (entity.force.name == "enemy") then
-        entityValue = 1
-	enemy = true
+
+        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+        if not addObject then
+    	    if creditNatives then
+    		natives.points = natives.points + entityValue
+    	    end
+    	    entityValue = -entityValue
+    	end
+    	if (leftTop ~= nil) then
+    	    leftTop[PLAYER_BASE_GENERATOR] = leftTop[PLAYER_BASE_GENERATOR] + entityValue
+    	end
+    	if (rightTop ~= nil) then
+    	    rightTop[PLAYER_BASE_GENERATOR] = rightTop[PLAYER_BASE_GENERATOR] + entityValue
+    	end
+    	if (leftBottom ~= nil) then
+    	    leftBottom[PLAYER_BASE_GENERATOR] = leftBottom[PLAYER_BASE_GENERATOR] + entityValue
+    	end
+    	if (rightBottom ~= nil) then
+    	    rightBottom[PLAYER_BASE_GENERATOR] = rightBottom[PLAYER_BASE_GENERATOR] + entityValue
+    	end
     end
-    -- if (entityValue ~= nil) then
-    --     leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
-    --     if not addObject then
-    -- 	    if creditNatives and not enemy then
-    -- 		natives.points = natives.points + entityValue
-    -- 	    end
-    -- 	    entityValue = -entityValue
-    -- 	end
-    -- 	if (leftTop ~= nil) then
-    -- 	    leftTop[pheromoneType] = leftTop[pheromoneType] + entityValue
-    -- 	end
-    -- 	if (rightTop ~= nil) then
-    -- 	    rightTop[pheromoneType] = rightTop[pheromoneType] + entityValue
-    -- 	end
-    -- 	if (leftBottom ~= nil) then
-    -- 	    leftBottom[pheromoneType] = leftBottom[pheromoneType] + entityValue
-    -- 	end
-    -- 	if (rightBottom ~= nil) then
-    -- 	    rightBottom[pheromoneType] = rightBottom[pheromoneType] + entityValue
-    -- 	end
-    -- end
+end
+
+function entityUtils.addRemoveEnemyEntity(regionMap, entity, base, addObject)
+    local leftTop, rightTop, leftBottom, rightBottom
+    local entityType = entity.type
+    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
+        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+
+	local op = (addObject and addBaseToChunk) or removeBaseFromChunk
+	
+    	if (leftTop ~= nil) then
+    	    op(leftTop, base)
+    	end
+    	if (rightTop ~= nil) then
+	    op(rightTop, base)
+    	end
+    	if (leftBottom ~= nil) then
+	    op(leftBottom, base)
+    	end
+    	if (rightBottom ~= nil) then
+	    op(rightBottom, base)
+    	end
+    end
 end
 
 
