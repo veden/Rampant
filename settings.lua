@@ -140,6 +140,15 @@ data:extend({
 	    default_value = false,
 	    order = "e[modifier]-g[safe]",
 	    per_user = false
-	}
+	},
 
+	{
+	    type = "bool-setting",
+	    name = "rampant-permanentNocturnal",
+	    description = "rampant-permanentNocturnal",
+	    setting_type = "runtime-global",
+	    default_value = false,
+	    order = "f[modifier]-a[ai]",
+	    per_user = false
+	}
 })

@@ -4,6 +4,7 @@ local unitGroupUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
+local nocturnalUtils = require("NocturnalUtils")
 
 -- constants
 

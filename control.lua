@@ -107,6 +107,7 @@ local function onModSettingsChange(event)
     natives.attackThresholdRange = natives.attackThresholdMax - natives.attackThresholdMin
     natives.attackWaveMaxSize = settings.global["rampant-attackWaveMaxSize"].value
     natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
+    natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
 end
 
 local function onConfigChanged()
@@ -198,7 +199,12 @@ local function onConfigChanged()
 
 	natives.safeEntities = {}
 	natives.safeEntityName = {}
-	
+
+	game.surfaces[1].print("Rampant - Version 0.15.5")
+	global.version = constants.VERSION_18
+    end
+    if (global.version < constants.VERSION_19) then
+
 	onModSettingsChange(nil)
 	
 	-- clear old regionMap processing Queue
@@ -218,8 +224,8 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	game.surfaces[1].print("Rampant - Version 0.15.5")
-	global.version = constants.VERSION_18
+	game.surfaces[1].print("Rampant - Version 0.15.6")
+	global.version = constants.VERSION_19
     end
 end
 
@@ -354,7 +360,6 @@ local function onInit()
     
     onConfigChanged()
 end
-
 
 -- hooks
 
