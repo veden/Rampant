@@ -22,7 +22,7 @@ Configure Options not in game menu:
 # Features
 
 - Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
-- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks.  
+- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
 - Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
 - Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
@@ -53,10 +53,10 @@ Configure Options not in game menu:
 0.15.7 -  
 - Feature: Difficulty Scaling - A mod options to control how quickly the ai performs actions  
 - Fixed: Spelling on mod option  
-- Improvement: Exposed nocturnal toggle and difficulty scaling to interop  
+- Improvement: Exposed nocturnal toggle and difficulty scaling to remote interop  
 
 0.15.6 -  
-- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daylight Extender mod.  
+- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daynight Extender mod.  
 
 0.15.5 -  
 - Tweak: Increased ai refund from 2 to 3  
