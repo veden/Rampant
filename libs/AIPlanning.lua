@@ -38,7 +38,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	maxPoints = maxPoints * 0.85
     end
     if (natives.points < maxPoints) then
-	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)))
+	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
     end
     
     if (natives.temperamentTick == tick) then
