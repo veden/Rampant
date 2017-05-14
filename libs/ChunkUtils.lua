@@ -142,7 +142,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
-    chunk[ENEMY_BUILDING_COUNT] = 0
+    --chunk[ENEMY_BUILDING_COUNT] = 0
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
