@@ -109,7 +109,8 @@ end
 
 local function onConfigChanged()
     if (upgrade.attempt(natives, regionMap)) then
-	
+
+	game.surfaces[1].print("Indexing chunks, please wait")
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old

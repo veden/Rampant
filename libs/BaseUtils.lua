@@ -121,7 +121,7 @@ function baseUtils.createBase(natives, chunk, tick, surface)
     if (surface.can_place_entity(basePlacement)) then
 	print("created base")
 	local nest = surface.create_entity(basePlacement)
-	addRemoveEnemyEntity
+	--addRemoveEnemyEntity
     end
     return base
 end
