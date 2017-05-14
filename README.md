@@ -56,7 +56,7 @@ Configure Options not in game menu:
 - Improvement: Exposed nocturnal toggle and difficulty scaling to remote interop  
 
 0.15.6 -  
-- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daynight Extender mod.  
+- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daynight extender mod.  
 
 0.15.5 -  
 - Tweak: Increased ai refund from 2 to 3  
