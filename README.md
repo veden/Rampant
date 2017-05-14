@@ -21,7 +21,7 @@ Configure Options not in game menu:
 
 # Features
 
-- Nocturnal Mode - a mod option to force biters to only attack at night.  
+- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks.  
 - Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
 - Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
@@ -50,7 +50,7 @@ Configure Options not in game menu:
 # Version History
 
 0.15.6 -  
-- Feature: Nocturnal Mode - causes Rampant attacks waves to only spawn at night. Best use with daylight Extender mod.  
+- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daylight Extender mod.  
 
 0.15.5 -  
 - Tweak: Increased ai refund from 2 to 3  
