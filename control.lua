@@ -108,6 +108,7 @@ local function onModSettingsChange(event)
     natives.attackWaveMaxSize = settings.global["rampant-attackWaveMaxSize"].value
     natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
     natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
+    natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
 end
 
 local function onConfigChanged()

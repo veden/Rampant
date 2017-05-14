@@ -8,6 +8,22 @@ function interop.getAIPoints()
     return global.natives.points
 end
 
+function interop.setNocturnalMode(flag)
+    global.natives.aiNocturnalMode = flag
+end
+
+function interop.getNocturnalMode()
+    return global.natives.aiNocturnalMode
+end
+
+function interop.setPointsPerCycleScaling(scale)
+    global.natives.aiPointsScaler = scale
+end
+
+function interop.getPointsPerCycleScaling()
+    return global.natives.aiPointsScaler
+end
+
 function interop.changeState(aiState)
     global.natives.state = aiState
 end
