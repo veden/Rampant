@@ -116,7 +116,7 @@ local function onConfigChanged()
     if upgrade.attempt(natives, regionMap) then
 	onModSettingsChange(nil)
 
-	game.surfaces[1].print("Reindexing chunks, please wait")
+	game.surfaces[1].print("Rampant - Reindexing chunks, please wait")
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old
