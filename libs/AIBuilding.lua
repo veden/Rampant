@@ -6,6 +6,7 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local neighborUtils = require("NeighborUtils")
+local nocturnalUtils = require("NocturnalUtils")
 package.path = "../?.lua;" .. package.path
 local config = require("config")
 
@@ -19,6 +20,8 @@ local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+
+local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -36,6 +39,8 @@ local getChunkByIndex = mapUtils.getChunkByIndex
 local scoreNeighbors = neighborUtils.scoreNeighbors
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
+
+local canAttackNocturnal = nocturnalUtils.canAttack
 
 local mMax = math.max
 

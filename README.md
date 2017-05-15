@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles.
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles. Difficulty setting in mod options menu.
 
 # Forum Post
 
@@ -21,21 +21,23 @@ Configure Options not in game menu:
 
 # Features
 
+- Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
+- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
 - Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
 - Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
-- Tactical Retreats - these will take place when a unit group is in a chunk that has reached a death threshold  
-- Unit Group Merging - if multiple unit groups retreat at the same time there is a chance the groups will merge  
-- Unit Group Forming - any chunks with spawners in it that is covered by a pollution or player clouds will form groups based on the evolution factor  
+- Tactical Retreats - These will take place when a unit group is in a chunk that has reached a death threshold  
+- Unit Group Merging - If multiple unit groups retreat at the same time there is a chance the groups will merge  
+- Unit Group Forming - Any chunks with spawners in it that is covered by a pollution or player clouds will form groups based on the evolution factor  
 - Probing Behavior Against Defenses - unit groups will attempt to avoid chunks that are soaked in death  
-- Player Hunting - unit groups will track the player based on there emitted pheromone cloud  
-- Rallying Death Cry - when a unit is killed on a chunk that is past the retreat threshold, the unit will attempt to summon reinforcements to help them  
-- Counterattacks - when the player is in combat near nests they will send reinforcements to unit groups  
-- Reinforcements - nests will send assistance to nearby nests under attack by the player  
-- No Homing Projectiles - all projectiles are fired at locations and no longer track the player  
-- Pathfinding - unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
-- Peace mode - if something sets peace mode, Rampant will respect it  
+- Player Hunting - Unit groups will track the player based on there emitted pheromone cloud  
+- Rallying Death Cry - When a unit is killed on a chunk that is past the retreat threshold, the unit will attempt to summon reinforcements to help them  
+- Counterattacks - When the player is in combat near nests they will send reinforcements to unit groups  
+- Reinforcements - Nests will send assistance to nearby nests under attack by the player  
+- No Homing Projectiles - All projectiles are fired at locations and no longer track the player  
+- Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
+- Peace mode - If something sets peace mode, Rampant will respect it  
 
 # Planned Features
 
@@ -47,6 +49,17 @@ Configure Options not in game menu:
 - Base Expansion  
 
 # Version History
+
+0.15.8 -  
+- Fixed: aiPointsScaler being nil  
+
+0.15.7 -  
+- Feature: Difficulty Scaling - A mod options to control how quickly the ai performs actions  
+- Fixed: Spelling on mod option  
+- Improvement: Exposed nocturnal toggle and difficulty scaling to remote interop  
+
+0.15.6 -  
+- Feature: Nocturnal Mode - Causes Rampant attacks waves to only spawn at night. Best use with daynight extender mod.  
 
 0.15.5 -  
 - Tweak: Increased ai refund from 2 to 3  

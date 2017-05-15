@@ -14,6 +14,8 @@ constants.VERSION_16 = 16
 constants.VERSION_17 = 17
 constants.VERSION_18 = 18
 constants.VERSION_19 = 19
+constants.VERSION_20 = 20
+constants.VERSION_21 = 21
 
 -- misc
 
@@ -49,6 +51,7 @@ constants.AI_MAX_BITER_GROUP_SIZE = 450
 
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
+constants.AI_STATE_NOCTURNAL = 3
 
 constants.AI_MIN_STATE_DURATION = 1
 constants.AI_MAX_STATE_DURATION = 4

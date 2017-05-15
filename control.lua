@@ -1,5 +1,6 @@
 -- imports
 
+local upgrade = require("Upgrade")
 local entityUtils = require("libs/EntityUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
@@ -105,12 +106,15 @@ local function onModSettingsChange(event)
     natives.attackThresholdRange = natives.attackThresholdMax - natives.attackThresholdMin
     natives.attackWaveMaxSize = settings.global["rampant-attackWaveMaxSize"].value
     natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
+    natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
+    natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
 end
 
 local function onConfigChanged()
-    if (upgrade.attempt(natives, regionMap)) then
+    if upgrade.attempt(natives, regionMap) then
+	onModSettingsChange(nil)
 
-	game.surfaces[1].print("Indexing chunks, please wait")
+	game.surfaces[1].print("Reindexing chunks, please wait")
 	-- clear old regionMap processing Queue
 	-- prevents queue adding duplicate chunks
 	-- chunks are by key, so should overwrite old
@@ -128,9 +132,7 @@ local function onConfigChanged()
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
-    end
-    
-    onModSettingsChange(nil)
+    end    
 end
 
 local function onTick(event)

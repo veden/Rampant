@@ -9,7 +9,7 @@ local playerUtils = require("PlayerUtils")
 local neighborUtils = require("NeighborUtils")
 
 -- constants
-          
+
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -125,7 +125,7 @@ function aiAttack.squadBeginAttack(natives, players, evolution_factor)
 		squad.frenzyPosition.x = squad.group.position.x
 		squad.frenzyPosition.y = squad.group.position.y
 	    end
-	               
+	    
 	    if (math.random() < 0.70) then
 		if (math.random() < kamikazeThreshold) then
 		    squad.kamikaze = true
