@@ -50,6 +50,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.8 -  
+- Fixed: aiPointsScaler being nil  
+
 0.15.7 -  
 - Feature: Difficulty Scaling - A mod options to control how quickly the ai performs actions  
 - Fixed: Spelling on mod option  
