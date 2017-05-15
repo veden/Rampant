@@ -6,6 +6,7 @@ local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
+local nocturnalUtils = require("NocturnalUtils")
 
 -- constants
 
@@ -19,6 +20,7 @@ local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
@@ -44,6 +46,8 @@ local getChunkByIndex = mapUtils.getChunkByIndex
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local playerScent = pheromoneUtils.playerScent
+
+local canAttackNocturnal = nocturnalUtils.canAttack
 
 local mMin = math.min
 
@@ -79,8 +83,8 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
         roll = math.random()
         regionMap.processRoll = roll
     end
-   
-    if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.35) then
+    
+    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.35) then
 	squads = true
     end
     
@@ -120,7 +124,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
     local roll = math.random() 
 
-    if (natives.state == AI_STATE_AGGRESSIVE) and (0.11 <= roll) and (roll <= 0.20) then
+    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.20) then
 	squads = true
     end
     
@@ -143,7 +147,8 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 	    
 	    if (playerChunk ~= nil) then
 		local vengence = false
-		if (playerChunk[CHUNK_BASE] ~= nil) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold) then
+		if ((playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold)) and
+		(natives.state == AI_STATE_AGGRESSIVE or canAttackNocturnal(natives, surface)) then
 		    vengence = true
 		end
 		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
@@ -205,7 +210,7 @@ function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
 	if (unitCount > 550) then
 	    local weight = AI_UNIT_REFUND * evolution_factor
 	    local units = surface.find_enemy_units({chunk.pX, chunk.pY},
-						    CHUNK_SIZE * 3)
+		CHUNK_SIZE * 3)
 
 	    for i=1,#units do
 		units[i].destroy()

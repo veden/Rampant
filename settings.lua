@@ -43,7 +43,7 @@ data:extend({
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 7,
-	    order = "c[modifier]-b[threshold]",
+	    order = "c[modifier]-c[threshold]",
 	    per_user = false
 	},
 	
@@ -139,6 +139,28 @@ data:extend({
 	    setting_type = "runtime-global",
 	    default_value = false,
 	    order = "e[modifier]-g[safe]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-permanentNocturnal",
+	    description = "rampant-permanentNocturnal",
+	    setting_type = "runtime-global",
+	    default_value = false,
+	    order = "f[modifier]-a[ai]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-aiPointsScaler",
+	    description = "rampant-aiPointsScaler",
+	    setting_type = "runtime-global",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 5.0,
+	    order = "f[modifier]-b[ai]",
 	    per_user = false
 	}
 	
