@@ -50,7 +50,7 @@ function tests.test3()
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     local entities = game.surfaces[1].find_entities_filtered({area={{chunkX, chunkY},
-                                                                    {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
+								  {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
                                                               force="player"})
     for i=1, #entities do
         print(entities[i].name)
@@ -80,10 +80,10 @@ function tests.test6()
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     game.surfaces[1].set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
-                                {name="fillableDirt", position={chunkX, chunkY-1}},
-                                {name="fillableDirt", position={chunkX-1, chunkY}},
-                                {name="fillableDirt", position={chunkX, chunkY}}}, 
-                               false)
+	    {name="fillableDirt", position={chunkX, chunkY-1}},
+	    {name="fillableDirt", position={chunkX-1, chunkY}},
+	    {name="fillableDirt", position={chunkX, chunkY}}}, 
+	false)
 end
 
 function tests.test7()
@@ -130,7 +130,5 @@ function tests.test11()
     	print(x, result[x])
     end
 end
-
-
 
 return tests
