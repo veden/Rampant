@@ -30,8 +30,6 @@ local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-
 -- imported functions
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -57,6 +55,7 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
+local regenerateEntity = entityUtils.regenerateEntity
 local addRemoveEntity = entityUtils.addRemoveEntity
 --local makeImmortalEntity = entityUtils.makeImmortalEntity
 
@@ -97,9 +96,13 @@ local function onModSettingsChange(event)
     natives.safeEntities["rail-signal"] = settings.global["rampant-safeBuildings-railSignals"].value
     natives.safeEntities["rail-chain-signal"] = settings.global["rampant-safeBuildings-railChainSignals"].value
     natives.safeEntities["train-stop"] = settings.global["rampant-safeBuildings-trainStops"].value
-    
-    natives.safeEntityName["big-electric-pole"] = settings.global["rampant-safeBuildings-bigElectricPole"].value
-    
+
+    local poles = settings.global["rampant-safeBuildings-bigElectricPole"].value
+    natives.safeEntityName["big-electric-pole"] = poles
+    natives.safeEntityName["big-electric-pole-2"] = poles
+    natives.safeEntityName["big-electric-pole-3"] = poles
+    natives.safeEntityName["big-electric-pole-4"] = poles
+        
     natives.attackUsePlayer = settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value
     natives.attackUsePollution = settings.global["rampant-attackWaveGenerationUsePollution"].value
     
@@ -226,22 +229,8 @@ local function onDeath(event)
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		-- makeImmortalEntity(surface, entity)
 
-		-- patch (Needs to be removed)
-		local repairPosition = entityPosition
-		local repairName = entity.name
-		local repairForce = entity.force
-		local repairDirection = entity.direction
-		entity.destroy()
-		surface.create_entity({position=repairPosition,
-				       name=repairName,
-				       direction=repairDirection,
-				       force=repairForce})
-		-- forces enemy to disperse 
-		local enemies = surface.find_enemy_units({repairPosition.x, repairPosition.y}, CHUNK_SIZE)
-		for i=1, #enemies do
-		    enemies[i].set_command({type=defines.command.wander,
-					    distraction=defines.distraction.by_enemy})
-		end
+		-- hack version
+		regenerateEntity(entity, entityPosition, surface)
 	    else
 		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
 	    end

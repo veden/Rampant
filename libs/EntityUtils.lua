@@ -14,6 +14,8 @@ local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
 
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
 -- imported functions
 
 local getChunkByIndex = mapUtils.getChunkByIndex
@@ -115,6 +117,46 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, cred
     end
 end
 
+
+function entityUtils.regenerateEntity(entity, entityPosition, surface)
+    local repairPosition = entityPosition
+    local repairName = entity.name
+    local repairForce = entity.force
+    local repairDirection = entity.direction
+
+    local wires
+    if (entity.type == "electric-pole") then
+	wires = entity.neighbours
+    end
+    entity.destroy()
+    local newEntity = surface.create_entity({position=repairPosition,
+					     name=repairName,
+					     direction=repairDirection,
+					     force=repairForce})
+    if wires then
+	for connectType,neighbourGroup in pairs(wires) do
+	    if connectType == "copper" then
+		for _,v in pairs(neighbourGroup) do
+		    newEntity.connect_neighbour(v);
+		end
+	    elseif connectType == "red" then
+		for _,v in pairs(neighbourGroup) do
+		    newEntity.connect_neighbour({wire = defines.wire_type.red, target_entity = v});
+		end
+	    elseif connectType == "green" then
+		for _,v in pairs(neighbourGroup) do
+		    newEntity.connect_neighbour({wire = defines.wire_type.green, target_entity = v});
+		end
+	    end
+	end
+    end
+    -- forces enemy to disperse 
+    local enemies = surface.find_enemy_units({repairPosition.x, repairPosition.y}, CHUNK_SIZE)
+    for i=1, #enemies do
+	enemies[i].set_command({type=defines.command.wander,
+				distraction=defines.distraction.by_enemy})
+    end
+end
 
 function entityUtils.makeImmortalEntity(surface, entity)
     local repairPosition = entity.position
