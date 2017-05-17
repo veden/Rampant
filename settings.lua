@@ -162,5 +162,15 @@ data:extend({
 	    maximum_value = 5.0,
 	    order = "f[modifier]-b[ai]",
 	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-addWallResistanceAcid",
+	    description = "rampant-addWallResistanceAcid",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "g[modifier]-a[damage]",
+	    per_user = false
 	}
 })

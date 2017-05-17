@@ -50,6 +50,11 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.9 -  
+- Improvement: Added bobs higher tier big electric poles to be included with make safe toggle for big electric poles  
+- Improvement: Added logic to reconnect wires when big electric poles are made safe and get destroyed (Thanks Jeroen D Stout, https://forums.factorio.com/viewtopic.php?f=94&t=31445&sid=c6853c4f035c77bc499627e030dfdb84&start=140#p275663)  
+- Improvement: Added a mod option to add acid resistance to walls to make damage levels with dumb projectiles to be equal to vanilla levels. (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=120#p274792)  
+
 0.15.8 -  
 - Fixed: aiPointsScaler being nil  
 
