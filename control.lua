@@ -289,7 +289,7 @@ remote.add_interface("rampantTests", {
 			 test8 = tests.test8,
 			 test9 = tests.test9,
 			 test10 = tests.test10,
-			 test11 = tests.test11			 
+			 test11 = tests.test11
 })
 
 remote.add_interface("rampant", interop)
