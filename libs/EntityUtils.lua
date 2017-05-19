@@ -4,7 +4,6 @@ local entityUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
-local baseUtils = require("BaseUtils")
 
 -- constants
 
@@ -12,12 +11,12 @@ local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
+local NEST_BASE = constants.NEST_BASE
+local WORM_BASE = constants.WORM_BASE
+
 -- imported functions
 
 local getChunkByIndex = mapUtils.getChunkByIndex
-
-local addBaseToChunk = baseUtils.addBaseToChunk
-local removeBaseFromChunk = baseUtils.removeBaseFromChunk
 
 local mFloor = math.floor
 
@@ -107,29 +106,79 @@ function entityUtils.addRemovePlayerEntity(regionMap, entity, natives, addObject
     end
 end
 
-function entityUtils.addRemoveEnemyEntity(regionMap, entity, base, addObject)
-    local leftTop, rightTop, leftBottom, rightBottom
-    local entityType = entity.type
-    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+local function addBaseToChunk(chunk, entity, base)
+    local indexChunk
+    local indexBase
+    if (entity.type == "unit-spawner") then
+	indexChunk = chunk[NEST_BASE]
+	indexBase = base.nests
+    elseif (entity.type == "turret") then
+	indexChunk = chunk[WORM_BASE]
+	indexBase = base.worms
+    end
+    indexChunk[entity.unit_number] = base
+    indexBase[entity.unit_number] = entity
+end
 
-	local op = (addObject and addBaseToChunk) or removeBaseFromChunk
-	
-    	if (leftTop ~= nil) then
-    	    op(leftTop, base)
-    	end
-    	if (rightTop ~= nil) then
-	    op(rightTop, base)
-    	end
-    	if (leftBottom ~= nil) then
-	    op(leftBottom, base)
-    	end
-    	if (rightBottom ~= nil) then
-	    op(rightBottom, base)
-    	end
+local function removeBaseFromChunk(chunk, entity)
+    local indexChunk
+    if (entity.type == "unit-spawner") then
+	indexChunk = chunk[NEST_BASE]
+    elseif (entity.type == "turret") then
+	indexChunk = chunk[WORM_BASE]
+    end
+    local base = indexChunk[entity.unit_number]
+    local indexBase
+    if base then
+	if (entity.type == "unit-spawner") then
+	    indexBase = base.nests
+	elseif (entity.type == "turret") then
+	    indexBase = base.worms
+	end
+	indexBase[entity.unit_number] = nil
     end
 end
 
+
+function entityUtils.addEnemyBase(regionMap, entity, base)
+    local entityType = entity.type
+    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
+        local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+	
+	if (leftTop ~= nil) then
+	    addBaseToChunk(leftTop, entity, base)
+	end
+	if (rightTop ~= nil) then
+	    addBaseToChunk(rightTop, entity, base)
+	end
+	if (leftBottom ~= nil) then
+	    addBaseToChunk(leftBottom, entity, base)
+	end
+	if (rightBottom ~= nil) then
+	    addBaseToChunk(rightBottom, entity, base)
+	end	
+    end
+end
+
+function entityUtils.removeEnemyBase(regionMap, entity)
+    local entityType = entity.type
+    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
+	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+
+	if (leftTop ~= nil) then
+	    removeBaseFromChunk(leftTop, entity)
+	end
+	if (rightTop ~= nil) then
+	    removeBaseFromChunk(rightTop, entity)
+	end
+	if (leftBottom ~= nil) then
+	    removeBaseFromChunk(leftBottom, entity)
+	end
+	if (rightBottom ~= nil) then
+	    removeBaseFromChunk(rightBottom, entity)
+	end
+    end
+end
 
 function entityUtils.makeImmortalEntity(surface, entity)
     local repairPosition = entity.position
@@ -137,10 +186,12 @@ function entityUtils.makeImmortalEntity(surface, entity)
     local repairForce = entity.force
     local repairDirection = entity.direction
     entity.destroy()
-    local entityRepaired = surface.create_entity({position=repairPosition,
-						  name=repairName,
-						  direction=repairDirection,
-						  force=repairForce})
+    local entityRepaired = surface.create_entity({
+	    position = repairPosition,
+	    name = repairName,
+	    direction = repairDirection,
+	    force = repairForce
+    })
     entityRepaired.destructible = false
 end
 

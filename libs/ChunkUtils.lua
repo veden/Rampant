@@ -4,8 +4,6 @@ local chunkUtils = {}
 
 local constants = require("Constants")
 
-local entityUtils = require("EntityUtils")
-
 local baseUtils = require("BaseUtils")
 
 -- constants
@@ -14,7 +12,8 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
-local ENEMY_BUILDING_COUNT = constants.ENEMY_BUILDING_COUNT
+local NEST_BASE = constants.NEST_BASE
+local WORM_BASE = constants.WORM_BASE
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
@@ -28,17 +27,14 @@ local CHUNK_TICK = constants.CHUNK_TICK
 
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 
-local CHUNK_BASE = constants.CHUNK_BASE
-
 -- imported functions
 
-local addRemoveEntity = entityUtils.addRemoveEntity
-local annexChunk = baseUtils.annexChunk
+local annexNest = baseUtils.annexNest
 local createBase = baseUtils.createBase
 
 -- module code
 
-function chunkUtils.checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
+local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
     local get_tile = surface.get_tile
     
     for x=iteratingCoordinate, iteratingCoordinate + 31 do
@@ -62,13 +58,13 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     local passableNorthSouth = false
     local passableEastWest = false
     for xi=x, x + 31 do
-        if (not chunkUtils.checkForDeadendTiles(xi, y, NORTH_SOUTH, surface)) then
+        if (not checkForDeadendTiles(xi, y, NORTH_SOUTH, surface)) then
             passableNorthSouth = true
             break
         end
     end
     for yi=y, y + 31 do
-        if (not chunkUtils.checkForDeadendTiles(yi, x, EAST_WEST, surface)) then
+        if (not checkForDeadendTiles(yi, x, EAST_WEST, surface)) then
             passableEastWest = true
             break
         end
@@ -78,12 +74,13 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
-function chunkUtils.scoreChunk(chunk, surface, regionMap, natives, tick)
+function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick)
     local x = chunk.pX
     local y = chunk.pY
-    
+
+    local chunkPosition = {x=x, y=y}
     local areaBoundingBox = {
-	{x, y},
+	chunkPosition,
 	{x + 32, y + 32}
     }
     local enemyChunkQuery = {area=areaBoundingBox,
@@ -108,21 +105,21 @@ function chunkUtils.scoreChunk(chunk, surface, regionMap, natives, tick)
 	end
     end
 
-    if ((nestsRemoved > 0) or (wormsRemoved > 0) or (bitersRemoved > 0)) and (chunk[CHUNK_BASE] == nil) then
+    if (nestsRemoved > 0) or (wormsRemoved > 0) or (bitersRemoved > 0) then
 	for i=1, #enemies do
 	    enemies[i].destroy()
 	end
-	local foundBase = annexChunk(natives, chunk, tick, surface) or createBase(natives, chunk, tick, surface)
-	foundBase.upgradePoints = foundBase.upgradePoints + nestsRemoved + wormsRemoved + bitersRemoved
+	local foundBase = annexNest(natives, chunkPosition) or createBase(regionMap, natives, chunkPosition, surface, tick)
+	if foundBase then
+	    foundBase.upgradePoints = foundBase.upgradePoints + nestsRemoved + wormsRemoved + bitersRemoved
+	end
     end
     
     local playerObjects = 0
     local entities = surface.find_entities_filtered(playerChunkQuery)
     
     for i=1, #entities do
-        local entityType = entities[i].type
-        
-        local entityScore = BUILDING_PHEROMONES[entityType]
+        local entityScore = BUILDING_PHEROMONES[entities[i].type]
         if (entityScore ~= nil) then
             playerObjects = playerObjects + entityScore
         end
@@ -142,12 +139,12 @@ function chunkUtils.createChunk(topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
-    --chunk[ENEMY_BUILDING_COUNT] = 0
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
     chunk[RETREAT_TRIGGERED] = 0
-    chunk[CHUNK_BASE] = {}
+    chunk[NEST_BASE] = {}
+    chunk[WORM_BASE] = {}
     return chunk
 end
 

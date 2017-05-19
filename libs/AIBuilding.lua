@@ -6,7 +6,6 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local neighborUtils = require("NeighborUtils")
-local nocturnalUtils = require("NocturnalUtils")
 package.path = "../?.lua;" .. package.path
 local config = require("config")
 
@@ -20,8 +19,6 @@ local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
-
-local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -39,8 +36,6 @@ local getChunkByIndex = mapUtils.getChunkByIndex
 local scoreNeighbors = neighborUtils.scoreNeighbors
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
-
-local canAttackNocturnal = nocturnalUtils.canAttack
 
 local mMax = math.max
 
@@ -62,11 +57,7 @@ local function attackWaveValidCandidate(chunk, natives, surface, evolutionFactor
     local threshold = natives.attackThresholdRange
     local delta = threshold * evolutionFactor
     
-    if (total > ((threshold - delta) + natives.attackThresholdMin)) then
-	return true
-    else 
-	return false
-    end
+    return total > ((threshold - delta) + natives.attackThresholdMin)
 end
 
 local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
@@ -92,14 +83,10 @@ end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)
     if (natives.points > cost) and (chunk[CHUNK_BASE] ~= nil) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
-	local valid = false
-	if not surface.peaceful_mode then
-	    if (cost == AI_VENGENCE_SQUAD_COST) then
-		valid = true
-	    elseif (cost == AI_SQUAD_COST) then
-		valid = attackWaveValidCandidate(chunk, natives, surface, evolution_factor)
-	    end
-	end 
+	local valid = not surface.peaceful_mode and
+	    ((cost == AI_VENGENCE_SQUAD_COST) or
+		    ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface, evolution_factor)))
+
 	if valid and (math.random() < mMax((0.25 * evolution_factor), 0.10)) then
 	    local squadPosition = {x=0, y=0}
 	    local squadPath, _ = scoreNeighbors(chunk,
@@ -116,9 +103,7 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 		
 		local squad = createSquad(squadPosition, surface, natives)
 		
-		if (math.random() < 0.03) then
-		    squad.rabid = true
-		end
+		squad.rabid = math.random() < 0.03
 
 		local scaledWaveSize = attackWaveScaling(evolution_factor, natives)
 		local foundUnits = surface.set_multi_command({ command = { type = defines.command.group,

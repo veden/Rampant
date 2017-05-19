@@ -86,9 +86,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 				squad.cycles = 4
 			    end
 
-			    if not squad.rabid and squad.frenzy and (euclideanDistanceNamed(squad.group.position, squad.frenzyPosition) > 100) then
-				squad.frenzy = false
-			    end
+			    squad.frenzy = not (not squad.rabid and squad.frenzy and (euclideanDistanceNamed(squad.group.position, squad.frenzyPosition) > 100))
 			    
 			    if squad.rabid or squad.frenzy then
 				attackCmd.distraction = defines.distraction.by_anything
