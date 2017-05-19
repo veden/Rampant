@@ -68,13 +68,13 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local totalBase = 0
     local totalPlayer = 0
     local neighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
-    for i=1,#neighbors do
-	local neighborChunk = neighbors[i]
-	if (neighborChunk ~= nil) then
-	    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunk[MOVEMENT_PHEROMONE])
-	    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunk[BASE_PHEROMONE])
-	    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunk[PLAYER_PHEROMONE])
-	end
+    for i=1,4 do
+    	local neighborChunk = neighbors[i]
+    	if neighborChunk and (neighborChunk ~= 0) then
+    	    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunk[MOVEMENT_PHEROMONE])
+    	    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunk[BASE_PHEROMONE])
+    	    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunk[PLAYER_PHEROMONE])
+    	end
     end
     chunk[MOVEMENT_PHEROMONE] = (chunk[MOVEMENT_PHEROMONE] + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE
     chunk[BASE_PHEROMONE] = (chunk[BASE_PHEROMONE] + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE
