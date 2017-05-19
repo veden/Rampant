@@ -144,28 +144,21 @@ function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)
 end
 
 function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)   
-    local neighbors = {1,2,3,4}
+    local neighbors = {0,0,0,0}
     local xChunks = regionMap[chunkX]
     if (xChunks ~= nil) then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]
-    else
-	neighbors[1] = nil
-	neighbors[4] = nil
     end
     
     xChunks = regionMap[chunkX-1]
     if (xChunks ~= nil) then
 	neighbors[2] = xChunks[chunkY]
-    else
-	neighbors[2] = nil
     end
     
     xChunks = regionMap[chunkX+1]
     if (xChunks ~= nil) then
 	neighbors[3] = xChunks[chunkY]
-    else
-	neighbors[3] = nil
     end
     return neighbors
 end
