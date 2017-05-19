@@ -25,7 +25,7 @@ local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 
-local CHUNK_BASE = constants.CHUNK_BASE
+local NEST_BASE = constants.NEST_BASE
 
 -- imported functions
 
@@ -50,22 +50,18 @@ local function scoreRetreatLocation(position, squad, neighborChunk, surface)
 end
 
 function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
-    if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[CHUNK_BASE] == nil) then
+    if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (#chunk[NEST_BASE] == 0) then
 	local performRetreat = false
 	local enemiesToSquad
-    
+	
 	if (squad == nil) then
 	    enemiesToSquad = surface.find_enemy_units({x=chunk.pX,
 						       y=chunk.pY}, RETREAT_GRAB_RADIUS)
-	    if (#enemiesToSquad > 0) then
-		performRetreat = true
-	    end
+	    performRetreat = #enemiesToSquad > 0
 	elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-	    if (#squad.group.members > 1) then
-		performRetreat = true
-	    end
+	    performRetreat = #squad.group.members > 1
 	end
-                
+	
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
 	    local retreatPosition = {x=0, y=0}

@@ -16,10 +16,12 @@ constants.VERSION_18 = 18
 constants.VERSION_19 = 19
 constants.VERSION_20 = 20
 constants.VERSION_21 = 21
+constants.VERSION_22 = 22
 
 -- misc
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
+constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
@@ -33,11 +35,21 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 constants.INTERVAL_PROCESS = 20
 constants.INTERVAL_LOGIC = 40
 
+-- chunk properties
+
+constants.CHUNK_SIZE = 32
+constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
+constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
+constants.NORTH_SOUTH = 1
+constants.EAST_WEST = 2
+
 -- ai
 
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 175
+constants.AI_NEST_COST = 10
+constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
@@ -60,7 +72,7 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
-constants.BASE_DISTANCE_THRESHOLD = 15
+constants.BASE_DISTANCE_THRESHOLD = 15 * constants.CHUNK_SIZE
 
 constants.BASE_ALIGNMENT_NEUTRAL = 1
 constants.BASE_ALIGNMENT_FIRE = 2
@@ -75,13 +87,6 @@ constants.NO_RETREAT_BASE_PERCENT = 0.10
 constants.NO_RETREAT_EVOLUTION_BONUS_MAX = 0.25
 constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 
--- chunk properties
-
-constants.CHUNK_SIZE = 32
-constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
-constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
-constants.NORTH_SOUTH = 1
-constants.EAST_WEST = 2
 
 -- pheromone amounts
 
@@ -112,7 +117,8 @@ constants.EAST_WEST_PASSABLE = 7
 
 constants.CHUNK_TICK = 8
 constants.RETREAT_TRIGGERED = 9
-constants.CHUNK_BASE = 10
+constants.NEST_BASE = 10
+constants.WORM_BASE = 11
 
 -- Squad status
 

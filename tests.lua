@@ -139,10 +139,22 @@ end
 
 function tests.baseStats()
     local natives = global.natives
-    print ("cX", "cY", "pX", "pY", "created", "alignment", "strength", "numberOfChunks", "upgradePoints")
+    print ("cX", "cY", "pX", "pY", "created", "align", "str", "upgradePoints", "#nest", "#worms", "#eggs", "hive")
     for i=1, #natives.bases do
 	local base = natives.bases[i]
-	print(base.cX, base.cY, base.cX * 32, base.cY * 32, base.created, base.alignment, base.strength, #base.chunks, base.upgradePoints)
+	local nestCount = 0
+	local wormCount = 0
+	local eggCount = 0
+	for _,_ in pairs(base.nests) do
+	    nestCount = nestCount + 1
+	end
+	for _,_ in pairs(base.worms) do
+	    wormCount = wormCount + 1
+	end
+	for _,_ in pairs(base.eggs) do
+	    eggCount = eggCount + 1
+	end
+	print(base.x, base.y, base.x * 32, base.y * 32, base.created, base.alignment, base.strength, base.upgradePoints, nestCount, wormCount, eggCount, base.hive)
     end
 end
 
@@ -150,17 +162,17 @@ function tests.baseTiles()
     local natives = global.natives
     for i=1, #natives.bases do
 	local base = natives.bases[i]
-	local color = "concrete"
-	if (i % 3 == 0) then
-	    color = "deepwater"
-	elseif (i % 2 == 0) then
-	    color = "water"
-	end
-	for x=1,#base.chunks do
-	    local chunk = base.chunks[x]
-	    chunkUtils.colorChunk(chunk.pX, chunk.pY, color, game.surfaces[1])
-	end
-	chunkUtils.colorChunk(base.cX * 32, base.cY * 32, "deepwater-green", game.surfaces[1])
+	-- local color = "concrete"
+	-- if (i % 3 == 0) then
+	--     color = "deepwater"
+	-- elseif (i % 2 == 0) then
+	--     color = "water"
+	-- end
+	-- for x=1,#base.chunks do
+	--     local chunk = base.chunks[x]
+	--     chunkUtils.colorChunk(chunk.pX, chunk.pY, color, game.surfaces[1])
+	-- end
+	chunkUtils.colorChunk(base.x, base.y, "deepwater-green", game.surfaces[1])
     end
 end
 

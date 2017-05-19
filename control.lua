@@ -1,10 +1,10 @@
 -- imports
 
-local upgrade = require("Upgrade")
 local entityUtils = require("libs/EntityUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
+local baseProcessor = require("libs/BaseProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
@@ -14,7 +14,7 @@ local aiBuilding = require("libs/AIBuilding")
 local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
-local upgrade = require("upgrade")
+local upgrade = require("Upgrade")
 
 -- constants
 
@@ -57,8 +57,11 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
-local addRemoveEntity = entityUtils.addRemoveEntity
+local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
+local removeEnemyBase = entityUtils.removeEnemyBase
 --local makeImmortalEntity = entityUtils.makeImmortalEntity
+
+local processBases = baseProcessor.processBases
 
 -- local references to global
 
@@ -156,6 +159,8 @@ local function onTick(event)
 	    regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
+
+	    processBases(regionMap, surface, natives, tick)
 	    
 	    squadBeginAttack(natives, players, evolutionFactor)
 	    squadAttack(regionMap, surface, natives)
@@ -166,11 +171,11 @@ local function onTick(event)
 end
 
 local function onBuild(event)
-    addRemoveEntity(regionMap, event.created_entity, natives, true, false)
+    addRemovePlayerEntity(regionMap, event.created_entity, natives, true, false)
 end
 
 local function onPickUp(event)
-    addRemoveEntity(regionMap, event.entity, natives, false, false)
+    addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
 end
 
 local function onDeath(event)
@@ -179,7 +184,7 @@ local function onDeath(event)
     if (surface.index == 1) then
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
-                local entityPosition = entity.position
+		local entityPosition = entity.position
 		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
 
 		if (deathChunk ~= nil) then
@@ -209,10 +214,8 @@ local function onDeath(event)
 			end
 		    end
                 end
-                
-                -- removeScout(entity, natives)
             elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
-                addRemoveEntity(regionMap, entity, natives, false, false)
+                removeEnemyBase(regionMap, entity)
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false
@@ -242,7 +245,7 @@ local function onDeath(event)
 					    distraction=defines.distraction.by_enemy})
 		end
 	    else
-		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
+		addRemovePlayerEntity(regionMap, entity, natives, false, creditNatives)
 	    end
         end
     end

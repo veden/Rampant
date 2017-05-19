@@ -29,7 +29,7 @@ function chunkProcessor.processPendingChunks(regionMap, surface, pendingStack, n
         regionMap[chunkX][chunk.cY] = chunk
         
         checkChunkPassability(chunk, surface)
-        scoreChunk(chunk, surface, regionMap, natives, tick)
+        scoreChunk(regionMap, chunk, surface, natives, tick)
         processQueue[#processQueue+1] = chunk
     end
 end
