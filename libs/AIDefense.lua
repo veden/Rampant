@@ -53,19 +53,15 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
     if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[ENEMY_BASE_GENERATOR] == 0) then
 	local performRetreat = false
 	local enemiesToSquad
-    
+	
 	if (squad == nil) then
 	    enemiesToSquad = surface.find_enemy_units({x=chunk.pX,
 						       y=chunk.pY}, RETREAT_GRAB_RADIUS)
-	    if (#enemiesToSquad > 0) then
-		performRetreat = true
-	    end
+	    performRetreat = #enemiesToSquad > 0
 	elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-	    if (#squad.group.members > 1) then
-		performRetreat = true
-	    end
+	    performRetreat = #squad.group.members > 1
 	end
-                
+	
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
 	    local retreatPosition = {x=0, y=0}
@@ -77,7 +73,7 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
 							    surface,
 							    retreatPosition,
 							    false)
-	    if (exitPath ~= nil) then
+	    if exitPath then
 		retreatPosition.x = exitPath.pX + HALF_CHUNK_SIZE
 		retreatPosition.y = exitPath.pY + HALF_CHUNK_SIZE
                 

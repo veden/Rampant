@@ -12,7 +12,6 @@ local aiDefense = require("libs/AIDefense")
 local aiAttack = require("libs/AIAttack")
 local aiBuilding = require("libs/AIBuilding")
 local aiPlanning = require("libs/AIPlanning")
-local mathUtils = require("libs/MathUtils")
 local interop = require("libs/Interop")
 local tests = require("tests")
 
@@ -20,8 +19,6 @@ local tests = require("tests")
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
-
-local MAX_RALLY_CRIES = constants.MAX_RALLY_CRIES
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -47,6 +44,7 @@ local rallyUnits = aiBuilding.rallyUnits
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
+local cleanSquads = unitGroupUtils.cleanSquads
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
@@ -55,11 +53,9 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
-local regenerateEntity = entityUtils.regenerateEntity
+-- local regenerateEntity = entityUtils.regenerateEntity
 local addRemoveEntity = entityUtils.addRemoveEntity
---local makeImmortalEntity = entityUtils.makeImmortalEntity
-
-local roundToNearest = mathUtils.roundToNearest
+local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 -- local references to global
 
@@ -102,7 +98,7 @@ local function onModSettingsChange(event)
     natives.safeEntityName["big-electric-pole-2"] = poles
     natives.safeEntityName["big-electric-pole-3"] = poles
     natives.safeEntityName["big-electric-pole-4"] = poles
-        
+    
     natives.attackUsePlayer = settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value
     natives.attackUsePollution = settings.global["rampant-attackWaveGenerationUsePollution"].value
     
@@ -147,17 +143,16 @@ local function onTick(event)
 	local evolutionFactor = game.forces.enemy.evolution_factor
 	local players = game.players
 	
-	processPendingChunks(regionMap, surface, pendingChunks)
+	processPendingChunks(natives, regionMap, surface, pendingChunks)
 	scanMap(regionMap, surface, natives, evolutionFactor)
 
 	if (tick == regionMap.logicTick) then
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
-	    natives.rallyCries = MAX_RALLY_CRIES
-
 	    planning(natives, evolutionFactor, tick, surface)
-	    
-	    regroupSquads(natives, evolutionFactor)
+
+	    cleanSquads(natives, evolutionFactor)
+	    -- regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
 	    
@@ -170,7 +165,13 @@ local function onTick(event)
 end
 
 local function onBuild(event)
-    addRemoveEntity(regionMap, event.created_entity, natives, true, false)
+    local entity = event.created_entity
+    addRemoveEntity(regionMap, entity, natives, true, false)
+    if natives.safeBuildings then
+	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
+	    entity.destructible = false
+	end
+    end
 end
 
 local function onPickUp(event)
@@ -185,13 +186,14 @@ local function onDeath(event)
             if (entity.type == "unit") then
                 local entityPosition = entity.position
 		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
-
+		
 		if (deathChunk ~= nil) then
 		    -- drop death pheromone where unit died
 		    deathScent(deathChunk)
 		    
 		    if ((event.force ~= nil) and (event.force.name == "player")) then
 			local evolutionFactor = game.forces.enemy.evolution_factor
+			local tick = event.tick
 
 			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
 			    retreatUnits(deathChunk, 
@@ -200,15 +202,15 @@ local function onDeath(event)
 					 regionMap, 
 					 surface, 
 					 natives,
-					 event.tick)
+					 tick)
 			    local rallyThreshold = BASE_RALLY_CHANCE + (evolutionFactor * BONUS_RALLY_CHANCE)
-			    if (natives.rallyCries >= 0) and (math.random() < rallyThreshold) then
-				natives.rallyCries = natives.rallyCries - 1
+			    if (math.random() < rallyThreshold) then
 				rallyUnits(deathChunk,
 					   regionMap,
 					   surface,
 					   natives,
-					   evolutionFactor)
+					   evolutionFactor,
+					   tick)
 			    end
 			end
 		    end
@@ -227,10 +229,7 @@ local function onDeath(event)
 		victoryScent(victoryChunk, entity.type)
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
-		-- makeImmortalEntity(surface, entity)
-
-		-- hack version
-		regenerateEntity(entity, entityPosition, surface)
+		makeImmortalEntity(surface, entity)
 	    else
 		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
 	    end

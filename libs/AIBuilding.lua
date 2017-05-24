@@ -23,7 +23,8 @@ local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
-local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
+local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
+local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -123,14 +124,17 @@ end
 --     --]]
 -- end
 
-function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor)
-    local cX = chunk.cX
-    local cY = chunk.cY
-    for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
-	for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
-	    local rallyChunk = getChunkByIndex(regionMap, x, y)
-	    if (rallyChunk ~= nil) and (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
-		aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
+function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor, tick)
+    if (tick - chunk[RALLY_TRIGGERED] > INTERVAL_LOGIC) then
+	chunk[RALLY_TRIGGERED] = tick
+	local cX = chunk.cX
+	local cY = chunk.cY
+	for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
+	    for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
+		local rallyChunk = getChunkByIndex(regionMap, x, y)
+		if (rallyChunk ~= nil) and (x ~= cX) and (y ~= cY) and (rallyChunk[ENEMY_BASE_GENERATOR] ~= 0) then
+		    aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, evolutionFactor, AI_VENGENCE_SQUAD_COST)
+		end
 	    end
 	end
     end

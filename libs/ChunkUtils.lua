@@ -25,6 +25,7 @@ local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GEN
 local CHUNK_TICK = constants.CHUNK_TICK
 
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
+local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
 
 -- module code
 
@@ -68,7 +69,7 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
-function chunkUtils.scoreChunk(chunk, surface)   
+function chunkUtils.scoreChunk(natives, chunk, surface)   
     local x = chunk.pX
     local y = chunk.pY
     
@@ -92,10 +93,18 @@ function chunkUtils.scoreChunk(chunk, surface)
     chunk[ENEMY_BASE_GENERATOR] = (entities * ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT) + worms
 
     entities = surface.find_entities_filtered(playerChunkQuery)
-    
+
+    local safeBuildings = natives.safeBuildings    
     for i=1, #entities do
-        local entityType = entities[i].type
-        
+	local entity = entities[i]
+        local entityType = entity.type
+
+	if safeBuildings then
+	    if natives.safeEntities[entityType] or natives.safeEntityName[entity.name] then
+		entity.destructible = false
+	    end
+	end
+	
         local entityScore = BUILDING_PHEROMONES[entityType]
         if (entityScore ~= nil) then
             playerObjects = playerObjects + entityScore
@@ -121,6 +130,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[EAST_WEST_PASSABLE] = false
     chunk[CHUNK_TICK] = 0
     chunk[RETREAT_TRIGGERED] = 0
+    chunk[RALLY_TRIGGERED] = 0
     return chunk
 end
 

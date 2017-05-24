@@ -62,8 +62,9 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
-        if group.valid and (squad.status == SQUAD_RAIDING) then 
-	    if (group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering) or ((group.state == defines.group_state.moving) and (squad.cycles == 0)) then
+        if group.valid and (squad.status == SQUAD_RAIDING) then
+	    local groupState = group.state
+	    if (groupState == defines.group_state.finished) or (groupState == defines.group_state.gathering) or ((groupState == defines.group_state.moving) and (squad.cycles == 0)) then
 		local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
 		if (chunk ~= nil) then
 		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
@@ -75,9 +76,9 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 										     attackPosition,
 										     true)
 		    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
-		    if (attackChunk ~= nil) then
+		    if attackChunk then
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
-			((group.state == defines.group_state.finished) or (group.state == defines.group_state.gathering)) then
+			((groupState == defines.group_state.finished) or (groupState == defines.group_state.gathering)) then
                             
 			    positionFromDirectionAndChunk(attackDirection, squad.group.position, attackPosition)
 
@@ -100,7 +101,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 			    group.set_command(attackCmd)
 			    group.start_moving()
 			elseif not squad.frenzy and not squad.rabid and
-			    ((group.state == defines.group_state.attacking_distraction) or (group.state == defines.group_state.attacking_target) or
+			    ((groupState == defines.group_state.attacking_distraction) or (groupState == defines.group_state.attacking_target) or
 				(attackChunk[PLAYER_BASE_GENERATOR] ~= 0)) then
 				squad.frenzy = true
 				squad.frenzyPosition.x = squad.group.position.x

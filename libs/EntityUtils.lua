@@ -117,9 +117,8 @@ function entityUtils.addRemoveEntity(regionMap, entity, natives, addObject, cred
     end
 end
 
-
-function entityUtils.regenerateEntity(entity, entityPosition, surface)
-    local repairPosition = entityPosition
+function entityUtils.makeImmortalEntity(surface, entity)
+    local repairPosition = entity.position
     local repairName = entity.name
     local repairForce = entity.force
     local repairDirection = entity.direction
@@ -150,25 +149,8 @@ function entityUtils.regenerateEntity(entity, entityPosition, surface)
 	    end
 	end
     end
-    -- forces enemy to disperse 
-    local enemies = surface.find_enemy_units({repairPosition.x, repairPosition.y}, CHUNK_SIZE)
-    for i=1, #enemies do
-	enemies[i].set_command({type=defines.command.wander,
-				distraction=defines.distraction.by_enemy})
-    end
-end
 
-function entityUtils.makeImmortalEntity(surface, entity)
-    local repairPosition = entity.position
-    local repairName = entity.name
-    local repairForce = entity.force
-    local repairDirection = entity.direction
-    entity.destroy()
-    local entityRepaired = surface.create_entity({position=repairPosition,
-						  name=repairName,
-						  direction=repairDirection,
-						  force=repairForce})
-    entityRepaired.destructible = false
+    newEntity.destructible = false
 end
 
 return entityUtils
