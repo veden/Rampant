@@ -56,9 +56,6 @@ function upgrade.attempt(natives, regionMap)
     if (global.version < constants.VERSION_11) then
 	natives.state = constants.AI_STATE_AGGRESSIVE
 	natives.temperament = 0
-	-- needs to be on inner logic tick loop interval
-	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
 	
 	global.version = constants.VERSION_11
     end
@@ -74,9 +71,6 @@ function upgrade.attempt(natives, regionMap)
 	global.version = constants.VERSION_12
     end
     if (global.version < constants.VERSION_13) then
-	-- switched over to tick event
-	regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-	regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
 
 	-- used to rate limit the number of rally cries during a period of time
 	natives.rallyCries = MAX_RALLY_CRIES
@@ -123,6 +117,28 @@ function upgrade.attempt(natives, regionMap)
 
 	game.surfaces[1].print("Rampant - Version 0.15.9")
 	global.version = constants.VERSION_21
+    end
+    if (global.version < constants.VERSION_22) then
+
+	-- been made redundant
+	natives.rallyCries = nil
+	
+	-- switched over to tick event
+	regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+	-- needs to be on inner logic tick loop interval
+	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+	
+	game.map_settings.path_finder.short_request_ratio = 0.8
+	game.map_settings.path_finder.short_cache_size = 25
+	game.map_settings.path_finder.long_cache_size = 5
+	game.map_settings.path_finder.min_steps_to_check_path_find_termination = 300
+
+	game.map_settings.max_failed_behavior_count = 6
+	
+	game.surfaces[1].print("Rampant - Version 0.15.10")
+	global.version = constants.VERSION_22
     end
     return starting ~= global.version
 end

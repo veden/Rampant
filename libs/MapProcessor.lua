@@ -46,6 +46,8 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local playerScent = pheromoneUtils.playerScent
 
+local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+
 local canAttackNocturnal = nocturnalUtils.canAttack
 
 local mMin = math.min
@@ -182,34 +184,54 @@ end
 function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
     local index = regionMap.scanPointer
     
+    local chunkPosition = {x=0,y=0}
+    local chunkBox = {chunkPosition,
+		      {x=chunkPosition.x + CHUNK_SIZE, y=chunkPosition.y + CHUNK_SIZE}}
+    local playerQuery = {area = chunkBox,
+			 force = "player"}
+    local spawnerQuery = {area = chunkBox,
+			  type = "unit-spawner",
+			  force = "enemy"}
+    local wormsQuery = {area = chunkBox,
+			type = "turret",
+			force = "enemy"}
+    local unitCountQuery = {area = chunkBox,
+			    type = "unit",
+			    force = "enemy"}
+
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
+
     for x=index,endIndex do
 	local chunk = processQueue[x]
 
-	local entities = surface.find_entities_filtered({area = {{chunk.pX, chunk.pY},
-							     {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-							 force = "player"})
-	
-	local spawners = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
-							      {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-							  type = "unit-spawner",
-							  force = "enemy"})
+	chunkPosition.x = chunk.pX
+	chunkPosition.y = chunk.pY
 
-	local worms = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
-							   {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-						       type = "turret",
-						       force = "enemy"})
+	chunkBox[2].x = chunkPosition.x + CHUNK_SIZE
+	chunkBox[2].y = chunkPosition.y + CHUNK_SIZE
 	
-	local unitCount = surface.count_entities_filtered({area = {{chunk.pX, chunk.pY},
-							       {chunk.pX + CHUNK_SIZE, chunk.pY + CHUNK_SIZE}},
-							   type = "unit",
-							   force = "enemy"})
+	local entities = surface.find_entities_filtered(playerQuery)
+	
+	local spawners = surface.count_entities_filtered(spawnerQuery)
 
-	if (unitCount > 550) then
+	local worms = surface.count_entities_filtered(wormsQuery)
+	
+	local unitCount = surface.count_entities_filtered(unitCountQuery)
+
+	local closeBy = false
+	if (unitCount > 300) then
+	    for i=1,#natives.squads do
+		local squadGroup = natives.squads[i].group
+		if (euclideanDistanceNamed(squadGroup.position, chunkPosition) < CHUNK_SIZE * 2) then
+		    closeBy = true
+		end
+	    end
+	end
+	
+	if (unitCount > 300) and not closeBy then
 	    local weight = AI_UNIT_REFUND * evolution_factor
-	    local units = surface.find_enemy_units({chunk.pX, chunk.pY},
-		CHUNK_SIZE * 3)
+	    local units = surface.find_enemy_units(chunkPosition, CHUNK_SIZE * 3)
 
 	    for i=1,#units do
 		units[i].destroy()
@@ -222,9 +244,15 @@ function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
 	end
 
 	local playerBaseGenerator = 0
+	local safeBuildings = natives.safeBuildings
 	for i=1,#entities do
 	    local entity = entities[i]
 	    local value = BUILDING_PHEROMONES[entity.type]
+	    if safeBuildings then
+		if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
+		    entity.destructible = false
+		end
+	    end
 	    if (value ~= nil) then
 		playerBaseGenerator = playerBaseGenerator + value
 	    end

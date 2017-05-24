@@ -10,21 +10,25 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 -- module code
 
+
+--[[
+    Expects all neighbors adjacent to a chunk
+--]]
 function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection    
-    for x=1,#neighborDirectionChunks do
-        local neighborDirectionChunk = neighborDirectionChunks[x]
-        local neighborChunk = neighborDirectionChunk.c
-        if (neighborChunk ~= nil) and validFunction(x, chunk, neighborChunk) then
+    for x=1,8 do
+        local neighborChunk = neighborDirectionChunks[x]
+
+        if neighborChunk and validFunction(x, chunk, neighborChunk) then
             position.x = neighborChunk.pX
             position.y = neighborChunk.pY
             local score = scoreFunction(position, squad, neighborChunk, surface)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
-                highestDirection = neighborDirectionChunk.d
+                highestDirection = x
             end
         end
     end
@@ -36,12 +40,16 @@ function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunk
     return highestChunk, highestDirection
 end
 
+
+--[[
+    Expects all neighbors adjacent to a chunk
+--]]
 function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    for x=1,#neighborChunks do
+    for x=1,8 do
         local neighborChunk = neighborChunks[x]
-        if (neighborChunk ~= nil) and validFunction(x, chunk, neighborChunk) then
+        if neighborChunk and validFunction(x, chunk, neighborChunk) then
             position.x = neighborChunk.pX
             position.y = neighborChunk.pY
             local score = scoreFunction(position, squad, neighborChunk, surface)

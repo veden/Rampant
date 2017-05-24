@@ -16,6 +16,7 @@ constants.VERSION_18 = 18
 constants.VERSION_19 = 19
 constants.VERSION_20 = 20
 constants.VERSION_21 = 21
+constants.VERSION_22 = 22
 
 -- misc
 
@@ -29,8 +30,8 @@ constants.PROCESS_PLAYER_BOUND = 4
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
-constants.INTERVAL_PROCESS = 20
-constants.INTERVAL_LOGIC = 40
+constants.INTERVAL_PROCESS = 19
+constants.INTERVAL_LOGIC = 38
 
 -- ai
 
@@ -100,6 +101,7 @@ constants.EAST_WEST_PASSABLE = 7
 
 constants.CHUNK_TICK = 8
 constants.RETREAT_TRIGGERED = 9
+constants.RALLY_TRIGGERED = 10
 
 -- Squad status
 
