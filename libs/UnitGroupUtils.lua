@@ -9,9 +9,9 @@ local constants = require("Constants")
 
 local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 
-local GROUP_STATE_FINISHED = defines.group_state.finished
-local GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
-local GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
+local DEFINES_GROUP_STATE_FINISHED = defines.group_state.finished
+local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
+local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
@@ -142,7 +142,7 @@ end
 
 local function isAttacking(group)
     local state = group.state
-    return (state == GROUP_STATE_ATTACKING_TARGET) or (state == GROUP_STATE_ATTACKING_DISTRACTION)
+    return (state == DEFINES_GROUP_STATE_ATTACKING_TARGET) or (state == DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
 end
 
 function unitGroupUtils.cleanSquads(natives, evolution_factor)
@@ -180,7 +180,7 @@ function unitGroupUtils.cleanSquads(natives, evolution_factor)
 		    squad.frenzy = true
 		    squad.frenzyPosition.x = squadPosition.x
 		    squad.frenzyPosition.y = squadPosition.y
-		elseif (group.state == GROUP_STATE_FINISHED) then
+		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) then
 		    squad.status = SQUAD_GUARDING
 		elseif (cycles > 0) then
 		    squad.cycles = cycles - 1

@@ -20,6 +20,14 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
+local DEFINES_GROUP_FINISHED = defines.group_state.finished
+local DEFINES_GROUP_GATHERING = defines.group_state.gathering
+local DEFINES_GROUP_MOVING = defines.group_state.moving
+local DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
+local DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
+local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
+local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
+
 -- imported functions
 
 local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
@@ -52,21 +60,43 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     local squads = natives.squads
     local attackPosition
     local attackCmd
+
+    --[[
+	Constants populated by the factorio runtime
+    --]]
+    -- local DEFINES_GROUP_FINISHED
+    -- local DEFINES_GROUP_GATHERING
+    -- local DEFINES_GROUP_MOVING
+    -- local DEFINES_GROUP_ATTACKING_DISTRACTION
+    -- local DEFINES_GROUP_ATTACKING_TARGET
+
+    -- local DEFINES_DISTRACTION_BY_ENEMY
+    -- local DEFINES_DISTRACTION_BY_ANYTHING
+    
     if (#squads > 0) then
+	-- DEFINES_GROUP_FINISHED = defines.group_state.finished
+	-- DEFINES_GROUP_GATHERING = defines.group_state.gathering
+	-- DEFINES_GROUP_MOVING = defines.group_state.moving
+	-- DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
+	-- DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
+	-- DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
+	-- DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
+	
 	attackPosition = {x=0, y=0}
 	attackCmd = { type = defines.command.attack_area,
 		      destination = attackPosition,
 		      radius = 28,
-		      distraction = defines.distraction.by_enemy }
+		      distraction = DEFINES_DISTRACTION_BY_ENEMY }
     end
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
         if group.valid and (squad.status == SQUAD_RAIDING) then
 	    local groupState = group.state
-	    if (groupState == defines.group_state.finished) or (groupState == defines.group_state.gathering) or ((groupState == defines.group_state.moving) and (squad.cycles == 0)) then
-		local chunk = getChunkByPosition(regionMap, group.position.x, group.position.y)
-		if (chunk ~= nil) then
+	    if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
+		local groupPosition = group.position
+		local chunk = getChunkByPosition(regionMap, groupPosition.x, groupPosition.y)
+		if chunk then
 		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
 										     getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
 										     validLocation,
@@ -78,9 +108,9 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
 		    if attackChunk then
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
-			((groupState == defines.group_state.finished) or (groupState == defines.group_state.gathering)) then
+			((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
                             
-			    positionFromDirectionAndChunk(attackDirection, squad.group.position, attackPosition)
+			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition)
 
 			    if (#squad.group.members > 80) then
 				squad.cycles = 6
@@ -88,24 +118,24 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 				squad.cycles = 4
 			    end
 
-			    if not squad.rabid and squad.frenzy and (euclideanDistanceNamed(squad.group.position, squad.frenzyPosition) > 100) then
+			    if not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) > 100) then
 				squad.frenzy = false
 			    end
 			    
 			    if squad.rabid or squad.frenzy then
-				attackCmd.distraction = defines.distraction.by_anything
+				attackCmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
 			    else
-				attackCmd.distraction = defines.distraction.by_enemy
+				attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
 			    end
 			    
 			    group.set_command(attackCmd)
 			    group.start_moving()
 			elseif not squad.frenzy and not squad.rabid and
-			    ((groupState == defines.group_state.attacking_distraction) or (groupState == defines.group_state.attacking_target) or
+			    ((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or
 				(attackChunk[PLAYER_BASE_GENERATOR] ~= 0)) then
 				squad.frenzy = true
-				squad.frenzyPosition.x = squad.group.position.x
-				squad.frenzyPosition.y = squad.group.position.y
+				squad.frenzyPosition.x = groupPosition.x
+				squad.frenzyPosition.y = groupPosition.y
 			end
 		    end
 		end

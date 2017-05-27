@@ -53,7 +53,6 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
--- local regenerateEntity = entityUtils.regenerateEntity
 local addRemoveEntity = entityUtils.addRemoveEntity
 local makeImmortalEntity = entityUtils.makeImmortalEntity
 
@@ -80,7 +79,7 @@ local function onChunkGenerated(event)
 end
 
 local function onModSettingsChange(event)
-
+    
     if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
 	return
     end
@@ -112,6 +111,7 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
+
     if upgrade.attempt(natives, regionMap) then
 	onModSettingsChange(nil)
 
@@ -132,7 +132,7 @@ local function onConfigChanged()
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
-    end    
+    end
 end
 
 local function onTick(event)
@@ -142,7 +142,7 @@ local function onTick(event)
 	local surface = game.surfaces[1]
 	local evolutionFactor = game.forces.enemy.evolution_factor
 	local players = game.players
-	
+
 	processPendingChunks(natives, regionMap, surface, pendingChunks)
 	scanMap(regionMap, surface, natives, evolutionFactor)
 
@@ -150,17 +150,16 @@ local function onTick(event)
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
 	    planning(natives, evolutionFactor, tick, surface)
-
+	    
 	    cleanSquads(natives, evolutionFactor)
-	    -- regroupSquads(natives, evolutionFactor)
+	    regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
-	    
 	    squadBeginAttack(natives, players, evolutionFactor)
 	    squadAttack(regionMap, surface, natives)
 	end
 
-	processMap(regionMap, surface, natives, evolutionFactor) 
+	processMap(regionMap, surface, natives, evolutionFactor)
     end
 end
 
@@ -187,12 +186,12 @@ local function onDeath(event)
                 local entityPosition = entity.position
 		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
 		
-		if (deathChunk ~= nil) then
+		if deathChunk then
 		    -- drop death pheromone where unit died
 		    deathScent(deathChunk)
 		    
 		    if ((event.force ~= nil) and (event.force.name == "player")) then
-			local evolutionFactor = game.forces.enemy.evolution_factor
+			local evolutionFactor = entity.force.evolution_factor
 			local tick = event.tick
 
 			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
@@ -216,7 +215,6 @@ local function onDeath(event)
 		    end
                 end
                 
-                -- removeScout(entity, natives)
             elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
                 addRemoveEntity(regionMap, entity, natives, false, false)
             end
@@ -226,7 +224,9 @@ local function onDeath(event)
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
 		local victoryChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
-		victoryScent(victoryChunk, entity.type)
+		if victoryChunk then
+		    victoryScent(victoryChunk, entity.type)
+		end
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)

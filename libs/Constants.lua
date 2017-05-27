@@ -154,6 +154,23 @@ constants.BUILDING_PHEROMONES["turret"] = 2.5
 constants.retreatFilter = {}
 constants.retreatFilter[constants.SQUAD_RETREATING] = true
 
+-- map settings tweaks
+
+constants.PATH_FINDER_SHORT_REQUEST_RATIO = 0.8
+constants.PATH_FINDER_SHORT_CACHE_SIZE = 25
+constants.PATH_FINDER_LONG_REQUEST_RATIO = 5
+constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH = 300
+
+constants.MAX_FAILED_BEHAVIORS = 6
+
+constants.UNIT_GROUP_DISOWN_DISTANCE = 5
+constants.UNIT_GROUP_TICK_TOLERANCE = 80
+
+constants.UNIT_GROUP_MAX_RADIUS = 20
+constants.UNIT_GROUP_MAX_SPEED_UP = 1.1
+constants.UNIT_GROUP_MAX_SLOWDOWN = 1.0
+constants.UNIT_GROUP_SLOWDOWN_FACTOR = 0.9
+
 return constants
 
 --[[

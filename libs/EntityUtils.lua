@@ -14,7 +14,9 @@ local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
 local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+local DEFINES_DIRECTION_EAST = defines.direction.east
+local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
+local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
 -- imported functions
 
@@ -40,7 +42,7 @@ local function getEntityOverlapChunks(regionMap, entity)
         local bottomXOffset
         local bottomYOffset
         
-        if (entity.direction == defines.direction.east) then
+        if (entity.direction == DEFINES_DIRECTION_EAST) then
             topXOffset = boundingBox.left_top.y
             topYOffset = boundingBox.left_top.x
             bottomXOffset = boundingBox.right_bottom.y
@@ -140,11 +142,11 @@ function entityUtils.makeImmortalEntity(surface, entity)
 		end
 	    elseif connectType == "red" then
 		for _,v in pairs(neighbourGroup) do
-		    newEntity.connect_neighbour({wire = defines.wire_type.red, target_entity = v});
+		    newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
 		end
 	    elseif connectType == "green" then
 		for _,v in pairs(neighbourGroup) do
-		    newEntity.connect_neighbour({wire = defines.wire_type.green, target_entity = v});
+		    newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
 		end
 	    end
 	end
