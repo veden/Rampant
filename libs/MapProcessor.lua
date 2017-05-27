@@ -21,7 +21,6 @@ local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
-local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
@@ -78,16 +77,13 @@ end
 function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
     local roll = regionMap.processRoll
     local index = regionMap.processPointer
-    local squads = false
     
     if (index == 1) then
         roll = math.random()
         regionMap.processRoll = roll
     end
     
-    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.35) then
-	squads = true
-    end
+    local squads = ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.35)
     
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -121,13 +117,10 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(players)
 
-    local squads = false
     local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
     local roll = math.random() 
 
-    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.20) then
-	squads = true
-    end
+    local squads = ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.20)
     
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
@@ -135,7 +128,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 	    local playerPosition = player.character.position
 	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
 	    
-	    if (playerChunk ~= nil) then
+	    if playerChunk then
 		playerScent(playerChunk)
 	    end
 	end
@@ -146,17 +139,14 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
 	    local playerPosition = player.character.position
 	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
 	    
-	    if (playerChunk ~= nil) then
-		local vengence = false
-		if ((playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold)) and
-		(natives.state == AI_STATE_AGGRESSIVE or canAttackNocturnal(natives, surface)) then
-		    vengence = true
-		end
+	    if playerChunk then
+		local vengence = ((playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold)) and
+		    (natives.state == AI_STATE_AGGRESSIVE or canAttackNocturnal(natives, surface))
 		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
 		    for y=playerChunk.cY - PROCESS_PLAYER_BOUND, playerChunk.cY + PROCESS_PLAYER_BOUND do
 			local chunk = getChunkByIndex(regionMap, x, y)
 			
-			if (chunk ~= nil) and (chunk[CHUNK_TICK] ~= tick) then
+			if chunk and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 
 			    processPheromone(regionMap, chunk)
@@ -223,7 +213,7 @@ function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
 	if (unitCount > 300) then
 	    for i=1,#natives.squads do
 		local squadGroup = natives.squads[i].group
-		if (euclideanDistanceNamed(squadGroup.position, chunkPosition) < CHUNK_SIZE * 2) then
+		if squadGroup.valid and (euclideanDistanceNamed(squadGroup.position, chunkPosition) < CHUNK_SIZE * 2) then
 		    closeBy = true
 		end
 	    end

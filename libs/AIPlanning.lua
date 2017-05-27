@@ -20,6 +20,8 @@ local AI_MIN_TEMPERAMENT_DURATION = constants.AI_MIN_TEMPERAMENT_DURATION
 local AI_MAX_STATE_DURATION = constants.AI_MAX_STATE_DURATION
 local AI_MAX_TEMPERAMENT_DURATION = constants.AI_MAX_TEMPERAMENT_DURATION
 
+local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
+
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
 -- imported functions
@@ -38,12 +40,6 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	maxPoints = maxPoints * 0.85
     end
     if (natives.points < maxPoints) then
-	--[[ check for ai points scaler being nil, potential race condition with mod config being run
-	    discovered 0.15.8
-	--]]
-	-- if not natives.aiPointsScaler then
-	--     natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
-	-- end
 	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
     end
     
@@ -64,7 +60,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
-    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and (natives.points > AI_MAX_POINTS) then
+    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and ((evolution_factor > 0.7) and (natives.points > maxPoints * 0.85) and (#natives.squads > AI_MAX_SQUAD_COUNT * 0.35)) then
 	natives.lastShakeMessage = tick
 	surface.print("Rampant: The ground begins to shake")
     end

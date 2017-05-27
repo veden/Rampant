@@ -14,6 +14,11 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
 
 MP should be working  
+If experiencing desyncs, after an update, please due the following:  
+	1) let me know  
+	2) Load save with Rampant enabled  
+	3) Save the map after Rampant has been updated  
+	4) Load save in step 3  
 
 Configure Options not in game menu:  
 - Ramp up to max biter wave size  
@@ -49,6 +54,20 @@ Configure Options not in game menu:
 - Base Expansion  
 
 # Version History
+
+0.15.10 -  
+- Fix: nil chunk in pheromone utils(https://mods.factorio.com/mods/Veden/Rampant/discussion/13806)  
+- Tweak: Increased failed behaviors before dispanding from 3 to 6  
+- Improvement: Switched to untargetable indestructible safe buildings  
+- Improvement: Changed the "ground shake" message to be displayed at a more appropriate time  
+- Improvement: Recycling biter groups now has a lower threshold and checks for active nearby squads before purging the clusters  
+- Optimization: Adjusted factorio pathfinder parameters to favor short paths for performance  
+- Optimization: Moved invariants out of inner loop in pheromone dispersion  
+- Optimization: Reduced garbage generated when doing passive map scan  
+- Optimization: Switched rally cries to a once per logic cycle per chunk  
+- Optimization: Locallized global defines in files that use them  
+- Optimization: Preallocating tables of falses for chunk neighbors  
+- Framework: Split squad regrouping and squad cleanup  
 
 0.15.9 -  
 - Improvement: Added bobs higher tier big electric poles to be included with make safe toggle for big electric poles  
