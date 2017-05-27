@@ -173,4 +173,5 @@ data:extend({
 	    order = "g[modifier]-a[damage]",
 	    per_user = false
 	}
+	
 })

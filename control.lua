@@ -1,10 +1,10 @@
 -- imports
 
-local upgrade = require("Upgrade")
 local entityUtils = require("libs/EntityUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
+local baseProcessor = require("libs/BaseProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
@@ -14,6 +14,7 @@ local aiBuilding = require("libs/AIBuilding")
 local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
+local upgrade = require("Upgrade")
 
 -- constants
 
@@ -53,8 +54,11 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 
 local retreatUnits = aiDefense.retreatUnits
 
-local addRemoveEntity = entityUtils.addRemoveEntity
-local makeImmortalEntity = entityUtils.makeImmortalEntity
+local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
+local removeEnemyBase = entityUtils.removeEnemyBase
+--local makeImmortalEntity = entityUtils.makeImmortalEntity
+
+local processBases = baseProcessor.processBases
 
 -- local references to global
 
@@ -128,7 +132,8 @@ local function onConfigChanged()
 	-- queue all current chunks that wont be generated during play
 	local surface = game.surfaces[1]
 	for chunk in surface.get_chunks() do
-	    onChunkGenerated({ surface = surface, 
+	    onChunkGenerated({ tick = game.tick,
+			       surface = surface, 
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
@@ -143,7 +148,7 @@ local function onTick(event)
 	local evolutionFactor = game.forces.enemy.evolution_factor
 	local players = game.players
 
-	processPendingChunks(natives, regionMap, surface, pendingChunks)
+	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 	scanMap(regionMap, surface, natives, evolutionFactor)
 
 	if (tick == regionMap.logicTick) then
@@ -155,6 +160,9 @@ local function onTick(event)
 	    regroupSquads(natives, evolutionFactor)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
+
+	    processBases(regionMap, surface, natives, tick)
+	    
 	    squadBeginAttack(natives, players, evolutionFactor)
 	    squadAttack(regionMap, surface, natives)
 	end
@@ -174,7 +182,7 @@ local function onBuild(event)
 end
 
 local function onPickUp(event)
-    addRemoveEntity(regionMap, event.entity, natives, false, false)
+    addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
 end
 
 local function onDeath(event)
@@ -183,7 +191,7 @@ local function onDeath(event)
     if (surface.index == 1) then
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
-                local entityPosition = entity.position
+		local entityPosition = entity.position
 		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
 		
 		if deathChunk then
@@ -216,7 +224,7 @@ local function onDeath(event)
                 end
                 
             elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
-                addRemoveEntity(regionMap, entity, natives, false, false)
+                removeEnemyBase(regionMap, entity)
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false
@@ -231,17 +239,17 @@ local function onDeath(event)
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
 	    else
-		addRemoveEntity(regionMap, entity, natives, false, creditNatives)
+		addRemovePlayerEntity(regionMap, entity, natives, false, creditNatives)
 	    end
         end
     end
 end
 
 local function onSurfaceTileChange(event)
-    -- local player = game.players[event.player_index]
-    -- if (player.surface.index==1) then
-    -- aiBuilding.fillTunnel(global.regionMap, player.surface, global.natives, event.positions)
-    -- end
+    local player = game.players[event.player_index]
+    if (player.surface.index==1) then
+	aiBuilding.fillTunnel(regionMap, player.surface, natives, event.positions)
+    end
 end
 
 local function onInit()
@@ -277,18 +285,26 @@ script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
-remote.add_interface("rampantTests", {
-			 test1 = tests.test1,
-			 test2 = tests.test2,
-			 test3 = tests.test3,
-			 test4 = tests.test4,
-			 test5 = tests.test5,
-			 test6 = tests.test6,
-			 test7 = tests.test7,
-			 test8 = tests.test8,
-			 test9 = tests.test9,
-			 test10 = tests.test10,
-			 test11 = tests.test11
-})
+remote.add_interface("rampantTests",
+		     {
+			 pheromoneLevels = tests.pheromoneLevels,
+			 activeSquads = tests.activeSquads,
+			 entitiesOnPlayerChunk = tests.entitiesOnPlayerChunk,
+			 findNearestPlayerEnemy = tests.findNearestPlayerEnemy,
+			 aiStats = tests.aiStats,
+			 fillableDirtTest = tests.fillableDirtTest,
+			 tunnelTest = tests.tunnelTest,
+			 createEnemy = tests.createEnemy,
+			 attackOrigin = tests.attackOrigin,
+			 cheatMode = tests.cheatMode,
+			 gaussianRandomTest = tests.gaussianRandomTest,
+			 reveal = tests.reveal,
+			 showMovementGrid = tests.showMovementGrid,
+			 baseStats = tests.baseStats,
+			 baseTiles = tests.baseTiles,
+			 mergeBases = tests.mergeBases,
+			 clearBases = tests.clearBases
+		     }
+)
 
 remote.add_interface("rampant", interop)

@@ -163,6 +163,12 @@ function mapUtils.euclideanDistanceNamed(p1, p2)
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
+function mapUtils.euclideanDistancePoints(x1, y1, x2, y2)
+    local xs = x1 - x2
+    local ys = y1 - y2
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
 function mapUtils.euclideanDistanceArray(p1, p2)
     local xs = p1[1] - p2[1]
     local ys = p1[2] - p2[2]

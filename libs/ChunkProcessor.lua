@@ -12,7 +12,7 @@ local scoreChunk = chunkUtils.scoreChunk
 
 -- module code
 
-function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack)
+function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack, tick)
     local processQueue = regionMap.processQueue
     
     for _=#pendingStack, 1, -1 do
@@ -29,7 +29,7 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         regionMap[chunkX][chunk.cY] = chunk
         
         checkChunkPassability(chunk, surface)
-        scoreChunk(natives, chunk, surface)
+        scoreChunk(regionMap, chunk, surface, natives, tick)
         processQueue[#processQueue+1] = chunk
     end
 end

@@ -132,6 +132,21 @@ function upgrade.attempt(natives, regionMap)
 	game.surfaces[1].print("Rampant - Version 0.15.10")
 	global.version = constants.VERSION_22
     end
+    if (global.version < constants.VERSION_22) then
+
+	natives.bases = {}
+
+	natives.baseDistanceMin = 0
+
+	natives.baseIndex = 1
+
+	natives.randomGenerator = game.create_random_generator()
+
+	game.forces.enemy.ai_controllable = false
+
+	game.surfaces[1].print("Rampant - Version 0.15.10")
+	global.version = constants.VERSION_22
+    end
     return starting ~= global.version
 end
 

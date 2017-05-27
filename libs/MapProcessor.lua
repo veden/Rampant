@@ -4,14 +4,14 @@ local mapProcessor = {}
 
 local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
+local aiPredicates = require("AIPredicates")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local nocturnalUtils = require("NocturnalUtils")
+local playerUtils = require("PlayerUtils")
 
 -- constants
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
-local ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
 
@@ -19,11 +19,11 @@ local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 local CHUNK_SIZE = constants.CHUNK_SIZE
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
-local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
+
+local NEST_BASE = constants.NEST_BASE
 
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
@@ -45,11 +45,11 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local playerScent = pheromoneUtils.playerScent
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
-
-local canAttackNocturnal = nocturnalUtils.canAttack
+local canAttack = aiPredicates.canAttack
 
 local mMin = math.min
+
+local validPlayer = playerUtils.validPlayer
 
 -- module code
 
@@ -83,7 +83,7 @@ function mapProcessor.processMap(regionMap, surface, natives, evolution_factor)
         regionMap.processRoll = roll
     end
     
-    local squads = ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.35)
+    local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35)
     
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -120,11 +120,11 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     local vengenceThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
     local roll = math.random() 
 
-    local squads = ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (0.11 <= roll) and (roll <= 0.20)
+    local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.20)
     
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
-	if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then 
+	if validPlayer(player) then 
 	    local playerPosition = player.character.position
 	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
 	    
@@ -135,13 +135,13 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, evolu
     end
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
-	if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == 1) then 
+	if validPlayer(player) then 
 	    local playerPosition = player.character.position
 	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
 	    
 	    if playerChunk then
-		local vengence = ((playerChunk[ENEMY_BASE_GENERATOR] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold)) and
-		    (natives.state == AI_STATE_AGGRESSIVE or canAttackNocturnal(natives, surface))
+		local vengence = canAttack(natives, surface) and ((#playerChunk[NEST_BASE] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < vengenceThreshold))
+	
 		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
 		    for y=playerChunk.cY - PROCESS_PLAYER_BOUND, playerChunk.cY + PROCESS_PLAYER_BOUND do
 			local chunk = getChunkByIndex(regionMap, x, y)
@@ -172,7 +172,7 @@ end
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
 function mapProcessor.scanMap(regionMap, surface, natives, evolution_factor)
-    local index = regionMap.scanPointer
+    -- local index = regionMap.scanPointer
     
     local chunkPosition = {x=0,y=0}
     local chunkBox = {chunkPosition,
