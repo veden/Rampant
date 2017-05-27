@@ -15,8 +15,6 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
-
 local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
@@ -26,6 +24,8 @@ local RETREAT_FILTER = constants.RETREAT_FILTER
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+
+local NEST_BASE = constants.NEST_BASE
 
 -- imported functions
 
@@ -45,12 +45,12 @@ end
 
 local function scoreRetreatLocation(position, squad, neighborChunk, surface)
     local safeScore = -neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE]
-    local dangerScore = surface.get_pollution(position) + (neighborChunk[PLAYER_PHEROMONE] * 100) + (neighborChunk[ENEMY_BASE_GENERATOR] * 50)
+    local dangerScore = surface.get_pollution(position) + (neighborChunk[PLAYER_PHEROMONE] * 100) --+ (neighborChunk[ENEMY_BASE_GENERATOR] * 50)
     return safeScore - dangerScore
 end
 
 function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
-    if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[ENEMY_BASE_GENERATOR] == 0) then
+    if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (#chunk[NEST_BASE] == 0) then
 	local performRetreat = false
 	local enemiesToSquad
 	

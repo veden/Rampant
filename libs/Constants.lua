@@ -21,10 +21,12 @@ constants.VERSION_22 = 22
 -- misc
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
+constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 500
 constants.SCAN_QUEUE_SIZE = 6
+constants.BASE_QUEUE_SIZE = 10
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60
@@ -33,11 +35,21 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 constants.INTERVAL_PROCESS = 19
 constants.INTERVAL_LOGIC = 38
 
+-- chunk properties
+
+constants.CHUNK_SIZE = 32
+constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
+constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
+constants.NORTH_SOUTH = 1
+constants.EAST_WEST = 2
+
 -- ai
 
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 175
+constants.AI_NEST_COST = 10
+constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
@@ -58,19 +70,23 @@ constants.AI_MAX_STATE_DURATION = 4
 constants.AI_MIN_TEMPERAMENT_DURATION = 5
 constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
+-- ai base
+
+constants.BASE_DISTANCE_THRESHOLD = 15 * constants.CHUNK_SIZE
+
+constants.BASE_ALIGNMENT_NEUTRAL = 1
+constants.BASE_ALIGNMENT_FIRE = 2
+constants.BASE_ALIGNMENT_BURROW = 3
+constants.BASE_ALIGNMENT_SUICIDE = 4
+constants.BASE_ALIGNMENT_INFEST = 5
+
+
 -- ai retreat
 
 constants.NO_RETREAT_BASE_PERCENT = 0.10
 constants.NO_RETREAT_EVOLUTION_BONUS_MAX = 0.25
 constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 
--- chunk properties
-
-constants.CHUNK_SIZE = 32
-constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
-constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
-constants.NORTH_SOUTH = 1
-constants.EAST_WEST = 2
 
 -- pheromone amounts
 
@@ -92,8 +108,8 @@ constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.MOVEMENT_PHEROMONE = 1
 constants.BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
+constants.RESOURCE_PHEROMONE = 4
 
-constants.ENEMY_BASE_GENERATOR = 4
 constants.PLAYER_BASE_GENERATOR = 5
 
 constants.NORTH_SOUTH_PASSABLE = 6
@@ -102,6 +118,8 @@ constants.EAST_WEST_PASSABLE = 7
 constants.CHUNK_TICK = 8
 constants.RETREAT_TRIGGERED = 9
 constants.RALLY_TRIGGERED = 10
+constants.NEST_BASE = 11
+constants.WORM_BASE = 12
 
 -- Squad status
 

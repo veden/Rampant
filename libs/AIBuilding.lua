@@ -15,8 +15,6 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
-
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
@@ -34,6 +32,8 @@ local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
 
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE  = defines.distraction.none
+
+local CHUNK_BASE = constants.CHUNK_BASE
 
 -- imported functions
 
@@ -63,11 +63,7 @@ local function attackWaveValidCandidate(chunk, natives, surface, evolutionFactor
     local threshold = natives.attackThresholdRange
     local delta = threshold * evolutionFactor
     
-    if (total > ((threshold - delta) + natives.attackThresholdMin)) then
-	return true
-    else 
-	return false
-    end
+    return total > ((threshold - delta) + natives.attackThresholdMin)
 end
 
 local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
@@ -75,7 +71,7 @@ local function scoreUnitGroupLocation(position, squad, neighborChunk, surface)
 end
 
 local function validUnitGroupLocation(x, chunk, neighborChunk)
-    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[ENEMY_BASE_GENERATOR] == 0
+    return neighborChunk[NORTH_SOUTH_PASSABLE] and neighborChunk[EAST_WEST_PASSABLE] and neighborChunk[CHUNK_BASE] ~= nil
 end
 
 function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFactor, tick)
@@ -95,15 +91,11 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, evolutionFact
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_factor, cost)
-    if (natives.points > cost) and (chunk[ENEMY_BASE_GENERATOR] ~= 0) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
-	local valid = false
-	if not surface.peaceful_mode then
-	    if (cost == AI_VENGENCE_SQUAD_COST) then
-		valid = true
-	    elseif (cost == AI_SQUAD_COST) then
-		valid = attackWaveValidCandidate(chunk, natives, surface, evolution_factor)
-	    end
-	end 
+    if (natives.points > cost) and (chunk[CHUNK_BASE] ~= nil) and (#natives.squads < (AI_MAX_SQUAD_COUNT * evolution_factor)) then
+	local valid = not surface.peaceful_mode and
+	    ((cost == AI_VENGENCE_SQUAD_COST) or
+		    ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface, evolution_factor)))
+
 	if valid and (math.random() < mMax((0.25 * evolution_factor), 0.10)) then
 	    local squadPosition = {x=0, y=0}
 	    local squadPath, _ = scoreNeighbors(chunk,
@@ -120,9 +112,7 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, evolution_fac
 		
 		local squad = createSquad(squadPosition, surface, natives)
 		
-		if (math.random() < 0.03) then
-		    squad.rabid = true
-		end
+		squad.rabid = math.random() < 0.03
 
 		local scaledWaveSize = attackWaveScaling(evolution_factor, natives)
 		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,

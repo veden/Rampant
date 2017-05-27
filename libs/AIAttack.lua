@@ -18,7 +18,6 @@ local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
-local ENEMY_BASE_GENERATOR = constants.ENEMY_BASE_GENERATOR
 
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_GATHERING = defines.group_state.gathering
@@ -52,7 +51,7 @@ end
 
 local function scoreAttackLocation(position, squad, neighborChunk, surface)
     local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25) - neighborChunk[ENEMY_BASE_GENERATOR]
+    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25) --- neighborChunk[ENEMY_BASE_GENERATOR]
     return r - squadMovementPenalty
 end
 
@@ -118,9 +117,8 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 				squad.cycles = 4
 			    end
 
-			    if not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) > 100) then
-				squad.frenzy = false
-			    end
+			    local outsideFrenzyRadius = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) > 100)
+			    squad.frenzy = not outsideFrenzyRadius
 			    
 			    if squad.rabid or squad.frenzy then
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
