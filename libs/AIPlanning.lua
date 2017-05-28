@@ -4,8 +4,8 @@ local aiPlanning = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
-local nocturnalUtils = require("NocturnalUtils")
-
+local aiPredicates = require("AIPredicates")
+    
 -- constants
 
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
@@ -26,7 +26,7 @@ local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
 -- imported functions
 
-local canAttackNocturnal = nocturnalUtils.canAttack
+local canAttack = aiPredicates.canAttack
 
 local randomTickEvent = mathUtils.randomTickEvent
 
@@ -34,13 +34,22 @@ local mMax = math.max
 
 -- module code
 
+local function isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints)
+    return canAttack(natives, surface) and
+	(tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and
+	((evolution_factor > 0.7) and
+		(natives.points > maxPoints * 0.85) and
+		(#natives.squads > AI_MAX_SQUAD_COUNT * 0.35))
+end
+
 function aiPlanning.planning(natives, evolution_factor, tick, surface)
     local maxPoints = AI_MAX_POINTS * evolution_factor
     if natives.aiNocturnalMode then
 	maxPoints = maxPoints * 0.85
     end
     if (natives.points < maxPoints) then
-	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
+	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) +
+		((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
     end
     
     if (natives.temperamentTick == tick) then
@@ -60,7 +69,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
-    if ((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface)) and (tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and ((evolution_factor > 0.7) and (natives.points > maxPoints * 0.85) and (#natives.squads > AI_MAX_SQUAD_COUNT * 0.35)) then
+    if isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints) then
 	natives.lastShakeMessage = tick
 	surface.print("Rampant: The ground begins to shake")
     end

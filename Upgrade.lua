@@ -10,8 +10,6 @@ local mathUtils = require("libs/MathUtils")
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
-local MAX_RALLY_CRIES = constants.MAX_RALLY_CRIES
-
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -80,7 +78,6 @@ function upgrade.attempt(natives, regionMap)
     	global.version = constants.VERSION_16
     end
     if (global.version < constants.VERSION_18) then
-	print(global.version)
 	
 	natives.safeEntities = {}
 	natives.safeEntityName = {}
@@ -132,20 +129,18 @@ function upgrade.attempt(natives, regionMap)
 	game.surfaces[1].print("Rampant - Version 0.15.10")
 	global.version = constants.VERSION_22
     end
-    if (global.version < constants.VERSION_22) then
-
-	natives.bases = {}
-
-	natives.baseDistanceMin = 0
-
-	natives.baseIndex = 1
-
-	natives.randomGenerator = game.create_random_generator()
+    if (global.version < constants.VERSION_23) then
 
 	game.forces.enemy.ai_controllable = false
 
-	game.surfaces[1].print("Rampant - Version 0.15.10")
-	global.version = constants.VERSION_22
+	natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
+	natives.bases = {}
+	natives.baseDistanceMin = 0
+	natives.baseIndex = 1
+	natives.randomGenerator = game.create_random_generator()
+
+	game.surfaces[1].print("Rampant - Version 0.15.11")
+	global.version = constants.VERSION_23
     end
     return starting ~= global.version
 end

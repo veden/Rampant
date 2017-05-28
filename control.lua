@@ -15,6 +15,7 @@ local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
 local upgrade = require("Upgrade")
+local baseUtils = require("libs/BaseUtils")
 
 -- constants
 
@@ -55,8 +56,8 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 local retreatUnits = aiDefense.retreatUnits
 
 local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
-local removeEnemyBase = entityUtils.removeEnemyBase
---local makeImmortalEntity = entityUtils.makeImmortalEntity
+local unregisterEnemyBaseStructure = baseUtils.unregisterEnemyBaseStructure
+local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local processBases = baseProcessor.processBases
 
@@ -82,10 +83,31 @@ local function onChunkGenerated(event)
     end
 end
 
+local function reprocessChunks()
+    game.surfaces[1].print("Rampant - Reindexing chunks, please wait")
+    -- clear old regionMap processing Queue
+    -- prevents queue adding duplicate chunks
+    -- chunks are by key, so should overwrite old
+    regionMap.processQueue = {}
+    regionMap.processPointer = 1
+    regionMap.scanPointer = 1
+    -- clear pending chunks, will be added when loop runs below
+    pendingChunks = {}
+
+    -- queue all current chunks that wont be generated during play
+    local surface = game.surfaces[1]
+    for chunk in surface.get_chunks() do
+	onChunkGenerated({ tick = game.tick,
+			   surface = surface, 
+			   area = { left_top = { x = chunk.x * 32,
+						 y = chunk.y * 32 }}})
+    end    
+end
+
 local function onModSettingsChange(event)
     
     if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
-	return
+	return false
     end
     
     natives.safeBuildings = settings.global["rampant-safeBuildings"].value   
@@ -112,31 +134,21 @@ local function onModSettingsChange(event)
     natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
     natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
     natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
+
+    local useCustomAI = natives.useCustomAI
+    natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
+    if not useCustomAI and natives.useCustomAI then
+	reprocessChunks()
+	return false
+    end
+    return true
 end
 
+
+
 local function onConfigChanged()
-
-    if upgrade.attempt(natives, regionMap) then
-	onModSettingsChange(nil)
-
-	game.surfaces[1].print("Rampant - Reindexing chunks, please wait")
-	-- clear old regionMap processing Queue
-	-- prevents queue adding duplicate chunks
-	-- chunks are by key, so should overwrite old
-	regionMap.processQueue = {}
-	regionMap.processPointer = 1
-	regionMap.scanPointer = 1
-	-- clear pending chunks, will be added when loop runs below
-	pendingChunks = {}
-
-	-- queue all current chunks that wont be generated during play
-	local surface = game.surfaces[1]
-	for chunk in surface.get_chunks() do
-	    onChunkGenerated({ tick = game.tick,
-			       surface = surface, 
-			       area = { left_top = { x = chunk.x * 32,
-						     y = chunk.y * 32 }}})
-	end
+    if upgrade.attempt(natives, regionMap) and onModSettingsChange(nil) then
+	reprocessChunks()
     end
 end
 
@@ -161,7 +173,9 @@ local function onTick(event)
 	    
 	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
 
-	    processBases(regionMap, surface, natives, tick)
+	    if (natives.useCustomAI) then
+		processBases(regionMap, surface, natives, tick)
+	    end
 	    
 	    squadBeginAttack(natives, players, evolutionFactor)
 	    squadAttack(regionMap, surface, natives)
@@ -173,7 +187,7 @@ end
 
 local function onBuild(event)
     local entity = event.created_entity
-    addRemoveEntity(regionMap, entity, natives, true, false)
+    addRemovePlayerEntity(regionMap, entity, natives, true, false)
     if natives.safeBuildings then
 	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
 	    entity.destructible = false
@@ -198,7 +212,7 @@ local function onDeath(event)
 		    -- drop death pheromone where unit died
 		    deathScent(deathChunk)
 		    
-		    if ((event.force ~= nil) and (event.force.name == "player")) then
+		    if event.force and (event.force.name == "player") then
 			local evolutionFactor = entity.force.evolution_factor
 			local tick = event.tick
 
@@ -224,7 +238,7 @@ local function onDeath(event)
                 end
                 
             elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
-                removeEnemyBase(regionMap, entity)
+                unregisterEnemyBaseStructure(regionMap, entity)
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false
@@ -247,7 +261,7 @@ end
 
 local function onSurfaceTileChange(event)
     local player = game.players[event.player_index]
-    if (player.surface.index==1) then
+    if (player.surface.index == 1) then
 	aiBuilding.fillTunnel(regionMap, player.surface, natives, event.positions)
     end
 end
@@ -303,7 +317,9 @@ remote.add_interface("rampantTests",
 			 baseStats = tests.baseStats,
 			 baseTiles = tests.baseTiles,
 			 mergeBases = tests.mergeBases,
-			 clearBases = tests.clearBases
+			 clearBases = tests.clearBases,
+			 getOffsetChunk = tests.getOffsetChunk,
+			 registeredNest = tests.registeredNest
 		     }
 )
 

@@ -95,14 +95,14 @@ function spawner_die_animation(variation, tint)
 end
 
 
-local biter_spawner_powered_tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+local biter_spawner_powered_tint = {r=1.0, g=0, b=0, a=1.0}
 
 data:extend({
 
 
 	{
 	    type = "unit-spawner",
-	    name = "biter-spawner-powered",
+	    name = "biter-spawner-hive",
 	    icon = "__base__/graphics/icons/biter-spawner.png",
 	    flags = {"placeable-player", "placeable-enemy", "not-repairable"},
 	    max_health = 350,
@@ -148,8 +148,8 @@ data:extend({
 		    }
 		},
 	    healing_per_tick = 0.02,
-	    collision_box = {{-3.2, -2.2}, {2.2, 2.2}},
-	    selection_box = {{-3.5, -2.5}, {2.5, 2.5}},
+	    collision_box = {{-6, -6}, {6, 6}},
+	    selection_box = {{-6, -6}, {6, 6}},
 	    -- in ticks per 1 pu
 	    pollution_absorbtion_absolute = 20,
 	    pollution_absorbtion_proportional = 0.01,

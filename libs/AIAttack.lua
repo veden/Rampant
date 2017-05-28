@@ -19,6 +19,9 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
+local NEST_COUNT = constants.NEST_COUNT
+
+local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_GATHERING = defines.group_state.gathering
 local DEFINES_GROUP_MOVING = defines.group_state.moving
@@ -49,40 +52,20 @@ local function validLocation(x, chunk, neighborChunk)
     return canMoveChunkDirection(x, chunk, neighborChunk)
 end
 
-local function scoreAttackLocation(position, squad, neighborChunk, surface)
+local function scoreAttackLocation(squad, neighborChunk, surface)
     local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = surface.get_pollution(position) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 25) --- neighborChunk[ENEMY_BASE_GENERATOR]
-    return r - squadMovementPenalty
+    local r = surface.get_pollution(neighborChunk) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 50) 
+    return r - squadMovementPenalty - (neighborChunk[NEST_COUNT] * 30)
 end
 
 function aiAttack.squadAttack(regionMap, surface, natives)
     local squads = natives.squads
     local attackPosition
     local attackCmd
-
-    --[[
-	Constants populated by the factorio runtime
-    --]]
-    -- local DEFINES_GROUP_FINISHED
-    -- local DEFINES_GROUP_GATHERING
-    -- local DEFINES_GROUP_MOVING
-    -- local DEFINES_GROUP_ATTACKING_DISTRACTION
-    -- local DEFINES_GROUP_ATTACKING_TARGET
-
-    -- local DEFINES_DISTRACTION_BY_ENEMY
-    -- local DEFINES_DISTRACTION_BY_ANYTHING
     
     if (#squads > 0) then
-	-- DEFINES_GROUP_FINISHED = defines.group_state.finished
-	-- DEFINES_GROUP_GATHERING = defines.group_state.gathering
-	-- DEFINES_GROUP_MOVING = defines.group_state.moving
-	-- DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
-	-- DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
-	-- DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
-	-- DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
-	
 	attackPosition = {x=0, y=0}
-	attackCmd = { type = defines.command.attack_area,
+	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
 		      radius = 28,
 		      distraction = DEFINES_DISTRACTION_BY_ENEMY }
@@ -102,7 +85,6 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 										     scoreAttackLocation,
 										     squad,
 										     surface,
-										     attackPosition,
 										     true)
 		    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
 		    if attackChunk then
@@ -117,8 +99,8 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 				squad.cycles = 4
 			    end
 
-			    local outsideFrenzyRadius = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) > 100)
-			    squad.frenzy = not outsideFrenzyRadius
+			    local moreFrenzy = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100)
+			    squad.frenzy = moreFrenzy
 			    
 			    if squad.rabid or squad.frenzy then
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING

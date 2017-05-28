@@ -49,21 +49,21 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
     local chunkYRow1 = chunkY - 1
     local chunkYRow3 = chunkY + 1
     local xChunks = regionMap[chunkX-1]
-    if (xChunks ~= nil) then
+    if xChunks then
         neighbors[1] = xChunks[chunkYRow1]
         neighbors[4] = xChunks[chunkY]
         neighbors[6] = xChunks[chunkYRow3]
     end
     
     xChunks = regionMap[chunkX+1]
-    if (xChunks ~= nil) then
+    if xChunks then
         neighbors[3] = xChunks[chunkYRow1]
         neighbors[5] = xChunks[chunkY]
         neighbors[8] = xChunks[chunkYRow3]
     end
     
     xChunks = regionMap[chunkX]
-    if (xChunks ~= nil) then
+    if xChunks then
         neighbors[2] = xChunks[chunkYRow1]
         neighbors[7] = xChunks[chunkYRow3]
     end
@@ -89,21 +89,21 @@ function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY)
     local chunkYRow3 = chunkY + 1
 
     local xChunks = regionMap[chunkX-1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[1] = xChunks[chunkYRow1]
 	neighbors[4] = xChunks[chunkY]
 	neighbors[6] = xChunks[chunkYRow3]
     end
     
     xChunks = regionMap[chunkX+1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[3] = xChunks[chunkYRow1]
 	neighbors[5] = xChunks[chunkY]
 	neighbors[8] = xChunks[chunkYRow3]
     end
     
     xChunks = regionMap[chunkX]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[2] = xChunks[chunkYRow1]
 	neighbors[7] = xChunks[chunkYRow3]
     end
@@ -120,18 +120,18 @@ end
 function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)   
     local neighbors = {false, false, false, false}
     local xChunks = regionMap[chunkX]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]
     end
     
     xChunks = regionMap[chunkX-1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[2] = xChunks[chunkY]
     end
     
     xChunks = regionMap[chunkX+1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[3] = xChunks[chunkY]
     end
     return neighbors
@@ -140,18 +140,18 @@ end
 function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)   
     local neighbors = {false,false,false,false}
     local xChunks = regionMap[chunkX]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]
     end
     
     xChunks = regionMap[chunkX-1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[2] = xChunks[chunkY]
     end
     
     xChunks = regionMap[chunkX+1]
-    if (xChunks ~= nil) then
+    if xChunks then
 	neighbors[3] = xChunks[chunkY]
     end
     return neighbors

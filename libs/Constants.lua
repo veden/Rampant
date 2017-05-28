@@ -17,6 +17,7 @@ constants.VERSION_19 = 19
 constants.VERSION_20 = 20
 constants.VERSION_21 = 21
 constants.VERSION_22 = 22
+constants.VERSION_23 = 23
 
 -- misc
 
@@ -91,7 +92,7 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 30
+--constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 30
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 150
 
@@ -120,6 +121,8 @@ constants.RETREAT_TRIGGERED = 9
 constants.RALLY_TRIGGERED = 10
 constants.NEST_BASE = 11
 constants.WORM_BASE = 12
+constants.NEST_COUNT = 13
+constants.WORM_COUNT = 14
 
 -- Squad status
 
@@ -132,8 +135,8 @@ constants.SQUAD_RAIDING = 4 -- used when player stuff is close
 
 constants.RETREAT_GRAB_RADIUS = 24
 
-constants.BASE_RALLY_CHANCE = 0.01
-constants.BONUS_RALLY_CHANCE = 0.01
+constants.BASE_RALLY_CHANCE = 0.02
+constants.BONUS_RALLY_CHANCE = 0.06
 
 constants.MAX_RALLY_CRIES = 2
 constants.RALLY_CRY_DISTANCE = 3
