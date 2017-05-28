@@ -12,6 +12,8 @@ local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERAT
 local DEFINES_GROUP_STATE_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
+local DEFINES_COMMAND_GROUP = defines.command.group
+local DEFINES_DISTRACTION_NONE = defines.distraction.none
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
@@ -42,7 +44,7 @@ function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     for i=1,#squads do
         local squad = squads[i]
         local unitGroup = squad.group
-        if unitGroup.valid and ((filter == nil) or (filter ~= nil and filter[squad.status])) then
+        if unitGroup.valid and (not filter or (filter and filter[squad.status])) then
             if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
                 return squad
             end
@@ -68,12 +70,12 @@ end
 
 function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
     if (members ~= nil) then
-	local cmd = { type = defines.command.group,
+	local cmd = { type = DEFINES_COMMAND_GROUP,
 		      group = squad.group,
-		      distraction = defines.distraction.none }
+		      distraction = DEFINES_DISTRACTION_NONE }
 	for i=1,#members do
             local member = members[i]
-            if member.valid and (overwriteGroup or (not overwriteGroup and (member.unit_group == nil))) then
+            if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
 		member.set_command(cmd)
             end
         end

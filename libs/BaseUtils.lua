@@ -5,6 +5,7 @@ local baseUtils = {}
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
+
 local entityUtils = require("EntityUtils")
 
 -- constants
@@ -12,6 +13,12 @@ local entityUtils = require("EntityUtils")
 local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
+
+local NEST_COUNT = constants.NEST_COUNT
+local WORM_COUNT = constants.WORM_COUNT
+
+local NEST_BASE = constants.NEST_BASE
+local WORM_BASE = constants.WORM_BASE
 
 local AI_NEST_COST = constants.AI_NEST_COST
 local AI_WORM_COST = constants.AI_WORM_COST
@@ -25,34 +32,34 @@ local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
 local euclideanDistancePoints = mapUtils.euclideanDistancePoints
 
-local gaussianRandomRange = mathUtils.gaussianRandomRange
+local getEntityOverlapChunks = entityUtils.getEntityOverlapChunks
 
-local addEnemyBase = entityUtils.addEnemyBase
+local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 -- module code
 
-function baseUtils.annexNest(natives, position)
+function baseUtils.findNearbyBase(natives, position)
     local bases = natives.bases
-    local annex = nil
+    local foundBase
     local closest = MAGIC_MAXIMUM_NUMBER
     for i=1,#bases do
 	local base = bases[i]
 	local distance = euclideanDistancePoints(base.x, base.y, position.x, position.y)
 	if (distance <= BASE_DISTANCE_THRESHOLD) and (distance < closest) then
 	    closest = distance
-	    annex = base
+	    foundBase = base
 	end
     end
-    return annex
+    return foundBase
 end
 
 function baseUtils.buildHive(regionMap, base, surface)
     local valid = false
-    local position = surface.find_non_colliding_position("biter-spawner", {x=base.x, y=base.y}, 2*CHUNK_SIZE, 10)
+    local position = surface.find_non_colliding_position("biter-spawner-hive", {x=base.x, y=base.y}, 2*CHUNK_SIZE, 2)
     if position then
-	local biterSpawner = {name="biter-spawner", position=position}
-	base.hive = surface.create_entity(biterSpawner)
-	addEnemyBase(regionMap, base.hive, base)
+	local biterSpawner = {name="biter-spawner-hive", position=position}
+	base.hives[#base.hives+1] = surface.create_entity(biterSpawner)
+	baseUtils.registerEnemyBaseStructure(regionMap, base.hive, base)
 	valid = true
     end
     return valid
@@ -67,7 +74,7 @@ function baseUtils.buildTendril(natives, base, surface, tick, startPosition, end
 end
 
 function baseUtils.buildOrder(regionMap, natives, base, surface, tick)
-    if not base.hive or (base.upgradePoints < 10) then
+    if (#base.hives == 0) or (base.upgradePoints < 10) then
 	return
     end
     
@@ -100,7 +107,7 @@ function baseUtils.buildOrder(regionMap, natives, base, surface, tick)
 				  y = base.y + (distortion * math.sin(pos))}
 	    local biterSpawner = {name=thing, position=nestPosition}
 	    if surface.can_place_entity(biterSpawner) then
-		addEnemyBase(regionMap, surface.create_entity(biterSpawner), base)
+		baseUtils.registerEnemyBaseStructure(regionMap, surface.create_entity(biterSpawner), base)
 		base.upgradePoints = base.upgradePoints - cost
 	    end
 	    pos = pos + slice 
@@ -115,7 +122,7 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
 	y = position.y,
 	created = tick,
 	alignment = { BASE_ALIGNMENT_NEUTRAL },
-	hive = nil,
+	hives = {},
 	nests = {},
 	worms = {},
 	eggs = {},
@@ -130,6 +137,94 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
     bases[#bases+1] = base
     return base
 end
+
+function baseUtils.addEnemyStructureToChunk(chunk, entity, base)
+    local indexChunk
+    local indexBase
+    local countChunk
+    if (entity.type == "unit-spawner") then
+	indexChunk = chunk[NEST_BASE]
+	if base then
+	    indexBase = base.nests
+	end
+	countChunk = NEST_COUNT
+    elseif (entity.type == "turret") then
+	indexChunk = chunk[WORM_BASE]
+	if base then
+	    indexBase = base.worms
+	end
+	countChunk = WORM_COUNT
+    end
+    chunk[countChunk] = chunk[countChunk] + 1
+    if indexBase then
+	indexChunk[entity.unit_number] = base
+	indexBase[entity.unit_number] = entity
+    end
+end
+
+function baseUtils.removeEnemyStructureFromChunk(chunk, entity)
+    local indexChunk
+    local countChunk
+    if (entity.type == "unit-spawner") then
+	indexChunk = chunk[NEST_BASE]
+	countChunk = NEST_COUNT
+    elseif (entity.type == "turret") then
+	indexChunk = chunk[WORM_BASE]
+	countChunk = WORM_COUNT
+    end
+    local base = indexChunk[entity.unit_number]
+    local indexBase
+    if base then
+	if (entity.type == "unit-spawner") then
+	    indexBase = base.nests
+	elseif (entity.type == "turret") then
+	    indexBase = base.worms
+	end
+	indexBase[entity.unit_number] = nil
+    end
+    chunk[countChunk] = chunk[countChunk] - 1
+end
+
+function baseUtils.registerEnemyBaseStructure(regionMap, entity, base)
+    local entityType = entity.type
+    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
+        local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+	
+	if leftTop then
+	    baseUtils.addEnemyStructureToChunk(leftTop, entity, base)
+	end
+	if rightTop then
+	    baseUtils.addEnemyStructureToChunk(rightTop, entity, base)
+	end
+	if leftBottom then
+	    baseUtils.addEnemyStructureToChunk(leftBottom, entity, base)
+	end
+	if rightBottom then
+	    baseUtils.addEnemyStructureToChunk(rightBottom, entity, base)
+	end	
+    end
+end
+
+function baseUtils.unregisterEnemyBaseStructure(regionMap, entity)
+    local entityType = entity.type
+    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
+	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+	
+	if leftTop then
+	    baseUtils.removeEnemyStructureFromChunk(leftTop, entity)
+	end
+	if rightTop then
+	    baseUtils.removeEnemyStructureFromChunk(rightTop, entity)
+	end
+	if leftBottom then
+	    baseUtils.removeEnemyStructureFromChunk(leftBottom, entity)
+	end
+	if rightBottom then
+	    baseUtils.removeEnemyStructureFromChunk(rightBottom, entity)
+	end
+    end
+end
+
 
 return baseUtils
 

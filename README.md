@@ -55,6 +55,11 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.11 -  
+- Tweak: Increased rally cry chance from 0.02(@100 evo) to 0.08(@100 evo) compensate for the once per logic cycle per chunk  
+- Improvement: Added negative score contribution to nest causing biters to move around nests instead of through  
+- Improvement: Increased player pheromone for weight multipler from 25 to 50 for hunting parties  
+
 0.15.10 -  
 - Fix: nil chunk in pheromone utils(https://mods.factorio.com/mods/Veden/Rampant/discussion/13806)  
 - Tweak: Increased failed behaviors before dispanding from 3 to 6  

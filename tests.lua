@@ -3,6 +3,7 @@ local tests = {}
 local constants = require("libs/Constants")
 local mathUtils = require("libs/MathUtils")
 local chunkUtils = require("libs/ChunkUtils")
+local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
 
 function tests.pheromoneLevels() 
@@ -22,7 +23,7 @@ function tests.pheromoneLevels()
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution({x=chunk.pX, y=chunk.pY})
+		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk)
 		    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
 			print("*", chunk.cX, chunk.cY, str)
 		    else
@@ -73,6 +74,14 @@ function tests.findNearestPlayerEnemy()
     print("--")
 end
 
+function tests.getOffsetChunk(x, y)
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125)
+    local chunkY = math.floor(playerPosition.y * 0.03125)
+    local chunk = mapUtils.getChunkByIndex(global.regionMap, chunkX + x, chunkY + y)
+    print(serpent.dump(chunk))
+end
+
 function tests.aiStats()
     print(global.natives.points, game.tick, global.natives.state, global.natives.temperament, global.natives.stateTick, global.natives.temperamentTick)
 end
@@ -99,7 +108,14 @@ function tests.createEnemy(x)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[1].create_entity({name=x, position={chunkX, chunkY}})
+    return game.surfaces[1].create_entity({name=x, position={chunkX, chunkY}})
+end
+
+function tests.registeredNest(x)
+    local entity = tests.createEnemy(x)
+    baseUtils.registerEnemyBaseStructure(global.regionMap,
+					 entity,
+					 nil)
 end
 
 function tests.attackOrigin()

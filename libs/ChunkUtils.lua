@@ -14,6 +14,8 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 local NEST_BASE = constants.NEST_BASE
 local WORM_BASE = constants.WORM_BASE
+local NEST_COUNT = constants.NEST_COUNT
+local WORM_COUNT = constants.WORM_COUNT
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
@@ -30,13 +32,13 @@ local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
 
 -- imported functions
 
-local annexNest = baseUtils.annexNest
+local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
+local addEnemyStructureToChunk = baseUtils.addEnemyStructureToChunk
 
 -- module code
 
-local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, surface)
-    local get_tile = surface.get_tile
+local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, get_tile)
     
     for x=iteratingCoordinate, iteratingCoordinate + 31 do
         local tile
@@ -53,19 +55,20 @@ local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, dir
 end
 
 function chunkUtils.checkChunkPassability(chunk, surface)   
-    local x = chunk.pX
-    local y = chunk.pY
+    local x = chunk.x
+    local y = chunk.y
+    local get_tile = surface.get_tile
     
     local passableNorthSouth = false
     local passableEastWest = false
     for xi=x, x + 31 do
-        if (not checkForDeadendTiles(xi, y, NORTH_SOUTH, surface)) then
+        if (not checkForDeadendTiles(xi, y, NORTH_SOUTH, get_tile)) then
             passableNorthSouth = true
             break
         end
     end
     for yi=y, y + 31 do
-        if (not checkForDeadendTiles(yi, x, EAST_WEST, surface)) then
+        if (not checkForDeadendTiles(yi, x, EAST_WEST, get_tile)) then
             passableEastWest = true
             break
         end
@@ -76,77 +79,83 @@ function chunkUtils.checkChunkPassability(chunk, surface)
 end
 
 function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick)
-    local x = chunk.pX
-    local y = chunk.pY
+    local x = chunk.x
+    local y = chunk.y
 
-    local chunkPosition = {x=x, y=y}
     local areaBoundingBox = {
-	chunkPosition,
+	chunk,
 	{x + 32, y + 32}
     }
     local enemyChunkQuery = {area=areaBoundingBox,
                              force="enemy"}
     local playerChunkQuery = {area=areaBoundingBox,
                               force="player"}
-    
+
+    local useCustomAI = natives.useCustomAI
     local enemies = surface.find_entities_filtered(enemyChunkQuery)
 
-    local nestsRemoved = 0
-    local wormsRemoved = 0
-    local bitersRemoved = 0
-    
+    local nests = 0
+    local worms = 0
+    local biters = 0
+
     for i=1, #enemies do
-        local entityType = enemies[i].type
+	local entityType = enemies[i].type
 	if (entityType == "unit-spawner") then
-	    nestsRemoved = nestsRemoved + 3
+	    nests = nests + 1
 	elseif (entityType == "turret") then
-	    wormsRemoved = wormsRemoved + 2
-	elseif (entityType == "unit") then
-	    bitersRemoved = bitersRemoved + 1
+	    worms = worms + 1
+	elseif useCustomAI and (entityType == "unit") then
+	    biters = biters + 1
 	end
     end
 
-    entities = surface.find_entities_filtered(playerChunkQuery)
+    if useCustomAI then
+	if (nests > 0) or (worms > 0) or (biters > 0) then
+	    for f=1, #enemies do
+		enemies[f].destroy()
+	    end
+	    local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
+	    if foundBase then
+		foundBase.upgradePoints = foundBase.upgradePoints + (nests*3) + (worms*2) + biters
+	    end
+	end
+    else
+	for i=1, #enemies do
+	    local enemy = enemies[i]
+	    local enemyType = enemy.type
+	    if (enemyType == "unit-spawner") or (enemyType == "turret") then
+		addEnemyStructureToChunk(chunk, enemy, nil)
+	    end
+	end
+    end
 
-    local safeBuildings = natives.safeBuildings    
+    local entities = surface.find_entities_filtered(playerChunkQuery)
+
+    local playerObjects = 0
+    local safeBuildings = natives.safeBuildings
     for i=1, #entities do
 	local entity = entities[i]
-        local entityType = entity.type
+	local entityType = entity.type
 
 	if safeBuildings then
 	    if natives.safeEntities[entityType] or natives.safeEntityName[entity.name] then
 		entity.destructible = false
 	    end
 	end
-	
-	if (nestsRemoved > 0) or (wormsRemoved > 0) or (bitersRemoved > 0) then
-	    for i=1, #enemies do
-		enemies[i].destroy()
-	    end
-	    local foundBase = annexNest(natives, chunkPosition) or createBase(regionMap, natives, chunkPosition, surface, tick)
-	    if foundBase then
-		foundBase.upgradePoints = foundBase.upgradePoints + nestsRemoved + wormsRemoved + bitersRemoved
-	    end
-	end
-    end
-    
-    local playerObjects = 0
-    local entities = surface.find_entities_filtered(playerChunkQuery)
-    
-    for i=1, #entities do
-	local entityScore = BUILDING_PHEROMONES[entities[i].type]
+
+	local entityScore = BUILDING_PHEROMONES[entityType]
 	if (entityScore ~= nil) then
 	    playerObjects = playerObjects + entityScore
 	end
     end
-    
+
     chunk[PLAYER_BASE_GENERATOR] = playerObjects
 end
 
 function chunkUtils.createChunk(topX, topY)
     local chunk = {
-	pX = topX,
-	pY = topY,
+	x = topX,
+	y = topY,
 	cX = topX * 0.03125,
 	cY = topY * 0.03125
     }
@@ -161,6 +170,8 @@ function chunkUtils.createChunk(topX, topY)
     chunk[RALLY_TRIGGERED] = 0
     chunk[NEST_BASE] = {}
     chunk[WORM_BASE] = {}
+    chunk[NEST_COUNT] = 0
+    chunk[WORM_COUNT] = 0
     return chunk
 end
 

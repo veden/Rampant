@@ -14,17 +14,14 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
+function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunks, validFunction, scoreFunction, squad, surface, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection    
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-
         if neighborChunk and validFunction(x, chunk, neighborChunk) then
-            position.x = neighborChunk.pX
-            position.y = neighborChunk.pY
-            local score = scoreFunction(position, squad, neighborChunk, surface)
+            local score = scoreFunction(squad, neighborChunk, surface)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -33,7 +30,7 @@ function neighborUtils.scoreNeighborsWithDirection(chunk, neighborDirectionChunk
         end
     end
 
-    if scoreSelf and scoreFunction(position, squad, chunk, surface) > highestScore then
+    if scoreSelf and scoreFunction(squad, chunk, surface) > highestScore then
 	return nil, -1
     end
     
@@ -44,15 +41,13 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scoreFunction, squad, surface, position, scoreSelf) 
+function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scoreFunction, squad, surface, scoreSelf) 
     local highestChunk
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     for x=1,8 do
         local neighborChunk = neighborChunks[x]
         if neighborChunk and validFunction(x, chunk, neighborChunk) then
-            position.x = neighborChunk.pX
-            position.y = neighborChunk.pY
-            local score = scoreFunction(position, squad, neighborChunk, surface)
+            local score = scoreFunction(squad, neighborChunk, surface)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -60,7 +55,7 @@ function neighborUtils.scoreNeighbors(chunk, neighborChunks, validFunction, scor
         end
     end
 
-    if scoreSelf and scoreFunction(position, squad, chunk, surface) > highestScore then
+    if scoreSelf and scoreFunction(squad, chunk, surface) > highestScore then
 	return nil, -1
     end
     
