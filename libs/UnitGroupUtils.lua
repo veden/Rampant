@@ -9,6 +9,8 @@ local constants = require("Constants")
 
 local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 
+local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
+
 local DEFINES_GROUP_STATE_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
@@ -28,6 +30,8 @@ local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 -- imported functions
 
 local mLog = math.log10
+
+local mMin = math.min
 
 local tableRemove = table.remove
 local tableInsert = table.insert
@@ -169,11 +173,11 @@ function unitGroupUtils.cleanSquads(natives)
 		group.destroy()
 	    else
 		local status = squad.status
-		local squadPosition = group.position
 		local cycles = squad.cycles
 		if (status == SQUAD_RETREATING) and (cycles == 0) then
 		    squad.status = SQUAD_GUARDING
 		    squad.frenzy = true
+		    local squadPosition = group.position
 		    squad.frenzyPosition.x = squadPosition.x
 		    squad.frenzyPosition.y = squadPosition.y
 		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) then
@@ -196,20 +200,23 @@ function unitGroupUtils.regroupSquads(natives)
 
     local squads = natives.squads
     local squadCount = #squads
+
+    local startIndex = natives.regroupIndex
     
-    for i=1,squadCount do
+    local maxSquadIndex = mMin(startIndex + SQUAD_QUEUE_SIZE, squadCount)
+    for i=startIndex,maxSquadIndex do
 	local squad = squads[i]
 	local group = squad.group
 	if group.valid and not isAttacking(group) then
 	    local status = squad.status
-	    local memberCount = #group.members	    
+	    local memberCount = #group.members
 	    if (memberCount < groupThreshold) then
 		local squadPosition = group.position
 	        local mergedSquads = false
 	        for x=i+1,squadCount do
 	    	    local mergeSquad = squads[x]
 	    	    local mergeGroup = mergeSquad.group
-	    	    if mergeGroup.valid and (mergeSquad.status == status) and not isAttacking(mergeGroup) and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) then
+	    	    if mergeGroup.valid and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
 	    		local mergeMembers = mergeGroup.members
 	    		local mergeCount = #mergeMembers
 	    		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
@@ -236,7 +243,13 @@ function unitGroupUtils.regroupSquads(natives)
 	        end
 	    end
 	end
-    end    
+    end
+    
+    if (maxSquadIndex == squadCount) then
+	natives.regroupIndex = 1
+    else
+	natives.regroupIndex = maxSquadIndex
+    end
 end
 
 return unitGroupUtils
