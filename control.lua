@@ -188,7 +188,7 @@ local function onTick(event)
 		     surface)
 	    
 	    cleanSquads(natives)
-	    --	    regroupSquads(natives)
+	    regroupSquads(natives)
 	    
 	    processPlayers(players, regionMap, surface, natives, tick)
 

@@ -123,6 +123,8 @@ function upgrade.attempt(natives, regionMap)
 	natives.attackWaveUpperBound = 0
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
+
+	natives.regroupIndex = 1
 	
 	natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
 	if natives.useCustomAI then
