@@ -55,11 +55,12 @@ constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000
 constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
 
-
 constants.AI_UNIT_REFUND = 3
 
 constants.AI_MAX_SQUAD_COUNT = 40
 constants.AI_MAX_BITER_GROUP_SIZE = 450
+
+constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
 
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2

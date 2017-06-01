@@ -9,6 +9,11 @@ local mathUtils = require("libs/MathUtils")
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 local mCeil = math.ceil
 
+
+-- automatic mod detection
+
+config.ionCannonPresent = settings.startup["ion-cannon-radius"] ~= nil
+
 -- configurations
 
 --[[

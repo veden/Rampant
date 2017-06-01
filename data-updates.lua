@@ -4,11 +4,11 @@ local NEUpdates = require("prototypes/enemies/UpdatesNE")
 local constants = require("libs/Constants")
 
 local function bobsDetected()
-    return data.raw["turret"]["bob-big-explosive-worm-turret"] ~= nil
+    return settings.startup["bobmods-enemies-aliensdropartifacts"] ~= nil
 end
 
 local function NEDetected()
-    return data.raw["unit"]["medium-spitter-Mk3"] ~= nil
+    return settings.startup["NE_Difficulty"] ~= nil
 end
 
 if settings.startup["rampant-useDumbProjectiles"].value then

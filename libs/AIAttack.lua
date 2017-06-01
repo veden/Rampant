@@ -72,6 +72,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		      radius = 28,
 		      distraction = DEFINES_DISTRACTION_BY_ENEMY }
     end
+    
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group

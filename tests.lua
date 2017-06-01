@@ -42,7 +42,7 @@ function tests.activeSquads()
     for i=1, #global.natives.squads do
         local squad = global.natives.squads[i]
         if squad.group.valid then
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state)
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members)
             print(serpent.dump(squad))
         end
     end
