@@ -44,8 +44,8 @@ end
      /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)   
-    local neighbors = {false,false,false,false,false,false,false,false}
+function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
+    --local neighbors = {false,false,false,false,false,false,false,false}
     local chunkYRow1 = chunkY - 1
     local chunkYRow3 = chunkY + 1
     local xChunks = regionMap[chunkX-1]
@@ -83,8 +83,8 @@ function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     return canMove
 end
 
-function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY)   
-    local neighbors = {false,false,false,false,false,false,false,false}
+function mapUtils.getNeighborChunksWithDirection(regionMap, chunkX, chunkY, neighbors)   
+    --local neighbors = {false,false,false,false,false,false,false,false}
     local chunkYRow1 = chunkY - 1
     local chunkYRow3 = chunkY + 1
 
@@ -137,8 +137,8 @@ function mapUtils.getCardinalChunksWithDirection(regionMap, chunkX, chunkY)
     return neighbors
 end
 
-function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)   
-    local neighbors = {false,false,false,false}
+function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY, neighbors)
+    --local neighbors = {false,false,false,false}
     local xChunks = regionMap[chunkX]
     if xChunks then
 	neighbors[1] = xChunks[chunkY-1]

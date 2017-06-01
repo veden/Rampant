@@ -39,9 +39,9 @@ local addEnemyStructureToChunk = baseUtils.addEnemyStructureToChunk
 -- module code
 
 local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, get_tile)
+    local tile
     
     for x=iteratingCoordinate, iteratingCoordinate + 31 do
-        local tile
         if (direction == NORTH_SOUTH) then
             tile = get_tile(constantCoordinate, x)
         else
@@ -62,13 +62,13 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     local passableNorthSouth = false
     local passableEastWest = false
     for xi=x, x + 31 do
-        if (not checkForDeadendTiles(xi, y, NORTH_SOUTH, get_tile)) then
+        if not checkForDeadendTiles(xi, y, NORTH_SOUTH, get_tile) then
             passableNorthSouth = true
             break
         end
     end
     for yi=y, y + 31 do
-        if (not checkForDeadendTiles(yi, x, EAST_WEST, get_tile)) then
+        if not checkForDeadendTiles(yi, x, EAST_WEST, get_tile) then
             passableEastWest = true
             break
         end
@@ -78,21 +78,11 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
-function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick)
-    local x = chunk.x
-    local y = chunk.y
-
-    local areaBoundingBox = {
-	chunk,
-	{x + 32, y + 32}
-    }
-    local enemyChunkQuery = {area=areaBoundingBox,
-                             force="enemy"}
-    local playerChunkQuery = {area=areaBoundingBox,
-                              force="player"}
-
+function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQuery)
     local useCustomAI = natives.useCustomAI
-    local enemies = surface.find_entities_filtered(enemyChunkQuery)
+    
+    tempQuery.force = "enemy"
+    local enemies = surface.find_entities_filtered(tempQuery)
 
     local nests = 0
     local worms = 0
@@ -112,7 +102,12 @@ function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick)
     if useCustomAI then
 	if (nests > 0) or (worms > 0) or (biters > 0) then
 	    for f=1, #enemies do
-		enemies[f].destroy()
+		local enemy = enemies[f]
+		if (enemy.name ~= "biter-spawner-hive") then
+		    enemy.destroy()
+		else
+		    nests = nests - 1
+		end
 	    end
 	    local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
 	    if foundBase then
@@ -129,7 +124,8 @@ function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick)
 	end
     end
 
-    local entities = surface.find_entities_filtered(playerChunkQuery)
+    tempQuery.force = "player"
+    local entities = surface.find_entities_filtered(tempQuery)
 
     local playerObjects = 0
     local safeBuildings = natives.safeBuildings

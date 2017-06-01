@@ -58,13 +58,14 @@ function pheromoneUtils.playerScent(playerChunk)
     playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
 end
 
-function pheromoneUtils.processPheromone(regionMap, chunk)
+function pheromoneUtils.processPheromone(regionMap, chunk, tempNeighbors)
 
     if not chunk[NORTH_SOUTH_PASSABLE] and not chunk[EAST_WEST_PASSABLE] then
 	return
     end
+
+    getCardinalChunks(regionMap, chunk.cX, chunk.cY, tempNeighbors)
     
-    local neighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
@@ -74,7 +75,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local totalPlayer = 0
 
     for i=1,4 do
-	local neighborChunk = neighbors[i]
+	local neighborChunk = tempNeighbors[i]
 	if neighborChunk then
 	    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
 	    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)

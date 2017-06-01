@@ -16,6 +16,7 @@ local interop = require("libs/Interop")
 local tests = require("tests")
 local upgrade = require("Upgrade")
 local baseUtils = require("libs/BaseUtils")
+local mathUtils = require("libs/MathUtils")
 
 -- constants
 
@@ -24,10 +25,9 @@ local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
-local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
-local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
+-- imported functions
 
-local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
+local roundToNearest = mathUtils.roundToNearest
 
 -- imported functions
 
@@ -57,6 +57,7 @@ local retreatUnits = aiDefense.retreatUnits
 
 local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = baseUtils.unregisterEnemyBaseStructure
+local registerEnemyBaseStructure = baseUtils.registerEnemyBaseStructure
 local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local processBases = baseProcessor.processBases
@@ -83,25 +84,34 @@ local function onChunkGenerated(event)
     end
 end
 
-local function reprocessChunks()
-    game.surfaces[1].print("Rampant - Reindexing chunks, please wait")
+local function rebuildRegionMap()
+    game.surfaces[1].print("Rampant - Reindexing chunks, please wait.")
     -- clear old regionMap processing Queue
     -- prevents queue adding duplicate chunks
     -- chunks are by key, so should overwrite old
+
+    global.regionMap = {}
+    regionMap = global.regionMap
     regionMap.processQueue = {}
     regionMap.processPointer = 1
     regionMap.scanPointer = 1
+
+    -- switched over to tick event
+    regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+    regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+    
     -- clear pending chunks, will be added when loop runs below
     pendingChunks = {}
 
     -- queue all current chunks that wont be generated during play
     local surface = game.surfaces[1]
+    local tick = game.tick
     for chunk in surface.get_chunks() do
-	onChunkGenerated({ tick = game.tick,
+	onChunkGenerated({ tick = tick,
 			   surface = surface, 
 			   area = { left_top = { x = chunk.x * 32,
 						 y = chunk.y * 32 }}})
-    end    
+    end
 end
 
 local function onModSettingsChange(event)
@@ -110,45 +120,51 @@ local function onModSettingsChange(event)
 	return false
     end
     
-    natives.safeBuildings = settings.global["rampant-safeBuildings"].value   
+    upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)   
     
-    natives.safeEntities["curved-rail"] = settings.global["rampant-safeBuildings-curvedRail"].value
-    natives.safeEntities["straight-rail"] = settings.global["rampant-safeBuildings-straightRail"].value    
-    natives.safeEntities["rail-signal"] = settings.global["rampant-safeBuildings-railSignals"].value
-    natives.safeEntities["rail-chain-signal"] = settings.global["rampant-safeBuildings-railChainSignals"].value
-    natives.safeEntities["train-stop"] = settings.global["rampant-safeBuildings-trainStops"].value
+    upgrade.compareTable(natives.safeEntities, "curved-rail", settings.global["rampant-safeBuildings-curvedRail"].value)
+    upgrade.compareTable(natives.safeEntities, "straight-rail", settings.global["rampant-safeBuildings-straightRail"].value)
+    upgrade.compareTable(natives.safeEntities, "rail-signal", settings.global["rampant-safeBuildings-railSignals"].value)
+    upgrade.compareTable(natives.safeEntities, "rail-chain-signal", settings.global["rampant-safeBuildings-railChainSignals"].value)
+    upgrade.compareTable(natives.safeEntities, "train-stop", settings.global["rampant-safeBuildings-trainStops"].value)
 
-    local poles = settings.global["rampant-safeBuildings-bigElectricPole"].value
-    natives.safeEntityName["big-electric-pole"] = poles
-    natives.safeEntityName["big-electric-pole-2"] = poles
-    natives.safeEntityName["big-electric-pole-3"] = poles
-    natives.safeEntityName["big-electric-pole-4"] = poles
+    local changed, newValue = upgrade.compareTable(natives.safeEntityName,
+						   "big-electric-pole",
+						   settings.global["rampant-safeBuildings-bigElectricPole"].value)
+    if changed then
+	natives.safeEntityName["big-electric-pole"] = newValue
+	natives.safeEntityName["big-electric-pole-2"] = newValue
+	natives.safeEntityName["big-electric-pole-3"] = newValue
+	natives.safeEntityName["big-electric-pole-4"] = newValue
+    end
     
-    natives.attackUsePlayer = settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value
-    natives.attackUsePollution = settings.global["rampant-attackWaveGenerationUsePollution"].value
+    upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
+    upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
     
-    natives.attackThresholdMin = settings.global["rampant-attackWaveGenerationThresholdMin"].value
-    natives.attackThresholdMax = settings.global["rampant-attackWaveGenerationThresholdMax"].value
-    natives.attackThresholdRange = natives.attackThresholdMax - natives.attackThresholdMin
-    natives.attackWaveMaxSize = settings.global["rampant-attackWaveMaxSize"].value
-    natives.attackPlayerThreshold = settings.global["rampant-attackPlayerThreshold"].value
-    natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
-    natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
+    upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
+    upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
+    upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
+    upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
+    upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
+    upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
+    upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
-    local useCustomAI = natives.useCustomAI
-    natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
-    if not useCustomAI and natives.useCustomAI then
-	reprocessChunks()
+    changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+    if natives.useCustomAI then
+	game.forces.enemy.ai_controllable = false
+    else
+	game.forces.enemy.ai_controllable = true
+    end
+    if changed and newValue then
+	rebuildRegionMap()
 	return false
     end
     return true
 end
 
-
-
 local function onConfigChanged()
     if upgrade.attempt(natives, regionMap) and onModSettingsChange(nil) then
-	reprocessChunks()
+	rebuildRegionMap()
     end
 end
 
@@ -157,31 +173,34 @@ local function onTick(event)
     if (tick == regionMap.processTick) then
 	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
 	local surface = game.surfaces[1]
-	local evolutionFactor = game.forces.enemy.evolution_factor
-	local players = game.players
 
 	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
-	scanMap(regionMap, surface, natives, evolutionFactor)
+	scanMap(regionMap, surface, natives)
 
 	if (tick == regionMap.logicTick) then
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
-	    planning(natives, evolutionFactor, tick, surface)
-	    
-	    cleanSquads(natives, evolutionFactor)
-	    regroupSquads(natives, evolutionFactor)
-	    
-	    processPlayers(players, regionMap, surface, natives, evolutionFactor, tick)
+	    local players = game.players
 
-	    if (natives.useCustomAI) then
-		processBases(regionMap, surface, natives, tick)
-	    end
+	    planning(natives,
+		     game.forces.enemy.evolution_factor,
+		     tick,
+		     surface)
 	    
-	    squadBeginAttack(natives, players, evolutionFactor)
+	    cleanSquads(natives)
+	    --	    regroupSquads(natives)
+	    
+	    processPlayers(players, regionMap, surface, natives, tick)
+
+	    -- if (natives.useCustomAI) then
+	    -- 	processBases(regionMap, surface, natives, tick)
+	    -- end
+	    
+	    squadBeginAttack(natives, players)
 	    squadAttack(regionMap, surface, natives)
 	end
 
-	processMap(regionMap, surface, natives, evolutionFactor)
+	processMap(regionMap, surface, natives, tick)
     end
 end
 
@@ -212,27 +231,24 @@ local function onDeath(event)
 		    -- drop death pheromone where unit died
 		    deathScent(deathChunk)
 		    
-		    if event.force and (event.force.name == "player") then
-			local evolutionFactor = entity.force.evolution_factor
+		    if event.force and (event.force.name == "player") and (deathChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
-
-			if (deathChunk[MOVEMENT_PHEROMONE] < -(evolutionFactor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)) then
-			    retreatUnits(deathChunk, 
-					 convertUnitGroupToSquad(natives, 
-								 entity.unit_group),
-					 regionMap, 
-					 surface, 
-					 natives,
-					 tick)
-			    local rallyThreshold = BASE_RALLY_CHANCE + (evolutionFactor * BONUS_RALLY_CHANCE)
-			    if (math.random() < rallyThreshold) then
-				rallyUnits(deathChunk,
-					   regionMap,
-					   surface,
-					   natives,
-					   evolutionFactor,
-					   tick)
-			    end
+			
+			retreatUnits(deathChunk, 
+				     convertUnitGroupToSquad(natives, 
+							     entity.unit_group),
+				     regionMap, 
+				     surface, 
+				     natives,
+				     tick)
+			if (math.random() < natives.rallyThreshold) and not surface.peaceful_mode then
+			    local tempNeighbors = {false, false, false, false, false, false, false, false}
+			    rallyUnits(deathChunk,
+				       regionMap,
+				       surface,
+				       natives,
+				       tick,
+				       tempNeighbors)
 			end
 		    end
                 end
@@ -257,6 +273,11 @@ local function onDeath(event)
 	    end
         end
     end
+end
+
+local function onEnemyBaseBuild(event)
+    local entity = event.entity
+    registerEnemyBaseStructure(regionMap, entity, nil)
 end
 
 local function onSurfaceTileChange(event)
@@ -288,6 +309,8 @@ script.on_configuration_changed(onConfigChanged)
 
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 
+script.on_event(defines.events.on_biter_base_built,
+		onEnemyBaseBuild)
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
     onPickUp)

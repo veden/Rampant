@@ -19,28 +19,12 @@ local roundToNearest = mathUtils.roundToNearest
 function upgrade.attempt(natives, regionMap)
     local starting = global.version
     if (global.version == nil) then
-
-        -- removed in version 9
-        -- regionMap.pQ = {{}} -- processing queue
-        -- regionMap.pI = 1 -- insertion location for chunk processing
-        -- regionMap.pP = 1 -- index for the chunk set to process
-        -- regionMap.pR = -1 -- current processing roll
         natives.squads = {}
         natives.scouts = {}
         natives.tunnels = {}
         natives.points = 0
 
         global.version = constants.VERSION_5
-    end
-    if (global.version < constants.VERSION_9) then
-	
-        -- remove version 5 references
-        regionMap.pQ = nil
-        regionMap.pI = nil
-        regionMap.pP = nil
-        regionMap.pR = nil
-
-    	global.version = constants.VERSION_9
     end
     if (global.version < constants.VERSION_10) then
     	for _,squad in pairs(natives.squads) do
@@ -98,9 +82,6 @@ function upgrade.attempt(natives, regionMap)
 	-- been made redundant
 	natives.rallyCries = nil
 
-	-- switched over to tick event
-	regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-	regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
 	-- needs to be on inner logic tick loop interval
 	natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
 	natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
@@ -131,9 +112,24 @@ function upgrade.attempt(natives, regionMap)
     end
     if (global.version < constants.VERSION_23) then
 
-	game.forces.enemy.ai_controllable = false
-
+	-- used to precompute some values per logic cycle
+	natives.retreatThreshold = 0
+	natives.maxSquads = 0
+	natives.rallyThreshold = 0
+	natives.formSquadThreshold = 0
+	natives.attackWaveSize = 0
+	natives.attackWaveDeviation = 0
+	natives.attackWaveLowerBound = 0
+	natives.attackWaveUpperBound = 0
+	natives.unitRefundAmount = 0
+	natives.attackWaveThreshold = 0
+	
 	natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
+	if natives.useCustomAI then
+	    game.forces.enemy.ai_controllable = false
+	else
+	    game.forces.enemy.ai_controllable = true
+	end
 	natives.bases = {}
 	natives.baseDistanceMin = 0
 	natives.baseIndex = 1
@@ -143,6 +139,15 @@ function upgrade.attempt(natives, regionMap)
 	global.version = constants.VERSION_23
     end
     return starting ~= global.version
+end
+
+function upgrade.compareTable(entities, option, new)
+    local changed = false
+    if (entities[option] ~= new) then
+	entities[option] = new
+	changed = true
+    end
+    return changed, new
 end
 
 return upgrade

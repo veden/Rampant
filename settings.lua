@@ -179,7 +179,7 @@ data:extend({
 	    name = "rampant-useCustomAI",
 	    description = "rampant-useCustomAI",
 	    setting_type = 'startup',
-	    default_value = false,
+	    default_value = true,
 	    order = "h[total]-a[ai]",
 	    per_user = false
 	}
