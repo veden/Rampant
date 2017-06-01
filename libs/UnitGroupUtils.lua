@@ -26,6 +26,7 @@ local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MA
 local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
+local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
 
 -- imported functions
 
@@ -152,8 +153,8 @@ function unitGroupUtils.cleanSquads(natives)
     local weight = natives.unitRefundAmount
 
     local cleanSquads = {}
-    
-    for i=1,squadCount do
+
+    for i=1, squadCount do
 	local squad = squads[i]
 	local group = squad.group
 	if group.valid then
@@ -196,7 +197,7 @@ end
 
 
 function unitGroupUtils.regroupSquads(natives)
-    local groupThreshold = AI_MAX_BITER_GROUP_SIZE * 0.75
+    local groupThreshold = AI_SQUAD_MERGE_THRESHOLD
 
     local squads = natives.squads
     local squadCount = #squads

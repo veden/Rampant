@@ -88,7 +88,7 @@ function upgrade.attempt(natives, regionMap)
 
 	--[[
 	    For making changes to maps that haven't had Rampant loaded and aren't starting from a brand new map
-	    Was causing desyncs when client connected before having the below settings saved into the map
+	    Was causing desyncs when client connected before having the below settings saved into the map 0.15.15 factorio
 	--]]
 	local mapSettings = game.map_settings
 	
@@ -124,6 +124,7 @@ function upgrade.attempt(natives, regionMap)
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
 
+	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 	
 	natives.useCustomAI = settings.startup["rampant-useCustomAI"].value

@@ -43,6 +43,7 @@ Configure Options not in game menu:
 - No Homing Projectiles - All projectiles are fired at locations and no longer track the player  
 - Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 - Peace mode - If something sets peace mode, Rampant will respect it  
+- Ion Cannon Reaction - When using the Ion Cannon Mod, biters will   
 
 # Planned Features
 
@@ -56,6 +57,7 @@ Configure Options not in game menu:
 # Version History
 
 0.15.11 -  
+- Feature: Ion cannon mod integration  
 - Fixed: Player region scan can no longer overlap passive map scan causing double processing  
 - Tweak: Increased rally cry chance from 0.02(@100 evo) to 0.08(@100 evo) compensate for the once per logic cycle per chunk  
 - Improvement: Changed biter base detection from slow map scan to event  

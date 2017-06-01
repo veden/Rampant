@@ -17,6 +17,7 @@ local tests = require("tests")
 local upgrade = require("Upgrade")
 local baseUtils = require("libs/BaseUtils")
 local mathUtils = require("libs/MathUtils")
+local config = require("config")
 
 -- constants
 
@@ -24,6 +25,8 @@ local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+
+local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
 -- imported functions
 
@@ -192,9 +195,9 @@ local function onTick(event)
 	    
 	    processPlayers(players, regionMap, surface, natives, tick)
 
-	    -- if (natives.useCustomAI) then
-	    -- 	processBases(regionMap, surface, natives, tick)
-	    -- end
+	    if natives.useCustomAI then
+	    	processBases(regionMap, surface, natives, tick)
+	    end
 	    
 	    squadBeginAttack(natives, players)
 	    squadAttack(regionMap, surface, natives)
@@ -217,6 +220,33 @@ end
 local function onPickUp(event)
     addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
 end
+
+local function onIonCannonFired(event)
+    --[[
+	event.force, event.surface, event.player_index, event.position, event.radius
+    --]]
+    local surface = event.surface
+    if (surface.index == 1) then
+	natives.points = natives.points + 3000
+	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+	    natives.points = AI_MAX_OVERFLOW_POINTS
+	end
+	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
+	if chunk then
+	    local tempNeighbors = {false, false, false, false, false, false, false, false}
+	    rallyUnits(chunk,
+		       regionMap,
+		       surface,
+		       natives,
+		       event.tick,
+		       tempNeighbors)
+	end
+    end    
+end
+
+-- local function onIonCannonTargeted(event)
+
+-- end
 
 local function onDeath(event)
     local entity = event.entity
@@ -306,6 +336,13 @@ script.on_load(onLoad)
 script.on_event(defines.events.on_runtime_mod_setting_changed,
 		onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
+
+if config.ionCannonPresent then
+    script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
+    		    onIonCannonFired)
+    -- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
+    -- 		    onIonCannonTargeted)
+end
 
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 
