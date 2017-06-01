@@ -23,7 +23,7 @@ local WORM_BASE = constants.WORM_BASE
 local AI_NEST_COST = constants.AI_NEST_COST
 local AI_WORM_COST = constants.AI_WORM_COST
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
@@ -36,6 +36,10 @@ local getEntityOverlapChunks = entityUtils.getEntityOverlapChunks
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
+local mFloor = math.floor
+
+
+
 -- module code
 
 function baseUtils.findNearbyBase(natives, position)
@@ -45,7 +49,7 @@ function baseUtils.findNearbyBase(natives, position)
     for i=1,#bases do
 	local base = bases[i]
 	local distance = euclideanDistancePoints(base.x, base.y, position.x, position.y)
-	if (distance <= BASE_DISTANCE_THRESHOLD) and (distance < closest) then
+	if (distance <= (BASE_DISTANCE_THRESHOLD + (base.level * 100))) and (distance < closest) then
 	    closest = distance
 	    foundBase = base
 	end
@@ -55,11 +59,16 @@ end
 
 function baseUtils.buildHive(regionMap, base, surface)
     local valid = false
-    local position = surface.find_non_colliding_position("biter-spawner-hive", {x=base.x, y=base.y}, 2*CHUNK_SIZE, 2)
+    local position = surface.find_non_colliding_position("biter-spawner-hive", base, DOUBLE_CHUNK_SIZE, 2)
     if position then
 	local biterSpawner = {name="biter-spawner-hive", position=position}
-	base.hives[#base.hives+1] = surface.create_entity(biterSpawner)
-	baseUtils.registerEnemyBaseStructure(regionMap, base.hive, base)
+	local hive = surface.create_entity(biterSpawner)
+	if (#base.hives == 0) then
+	    base.x = hive.position.x
+	    base.y = hive.position.y
+	end
+	base.hives[#base.hives+1] = hive
+	baseUtils.registerEnemyBaseStructure(regionMap, hive, base)
 	valid = true
     end
     return valid
@@ -74,7 +83,12 @@ function baseUtils.buildTendril(natives, base, surface, tick, startPosition, end
 end
 
 function baseUtils.buildOrder(regionMap, natives, base, surface, tick)
-    if (#base.hives == 0) or (base.upgradePoints < 10) then
+    local foundHive = false
+    for _,_ in pairs(base.hives) do
+	foundHive = true
+	break
+    end
+    if not foundHive or (base.upgradePoints < 10) then
 	return
     end
     
@@ -83,6 +97,7 @@ function baseUtils.buildOrder(regionMap, natives, base, surface, tick)
 
     for level=0,base.level do
 	local slices = (level * 3)
+	slices = gaussianRandomRange(slices, slices * 0.1, slices * 0.6, slices * 1.4, generator)
 	local slice = (2 * math.pi) / slices
 	local pos = 0
 	local thing
@@ -106,7 +121,7 @@ function baseUtils.buildOrder(regionMap, natives, base, surface, tick)
 	    local nestPosition = {x = base.x + (distortion * math.cos(pos)),
 				  y = base.y + (distortion * math.sin(pos))}
 	    local biterSpawner = {name=thing, position=nestPosition}
-	    if surface.can_place_entity(biterSpawner) then
+	    if surface.can_place_entity(biterSpawner)  then
 		baseUtils.registerEnemyBaseStructure(regionMap, surface.create_entity(biterSpawner), base)
 		base.upgradePoints = base.upgradePoints - cost
 	    end
@@ -117,6 +132,7 @@ end
 
 function baseUtils.createBase(regionMap, natives, position, surface, tick)
     local bases = natives.bases
+    local distance = euclideanDistancePoints(position.x, position.y, 0, 0)
     local base = {
 	x = position.x,
 	y = position.y,
@@ -129,7 +145,7 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
 	upgradePoints = 0,
 	growth = tick,
 	pattern = math.random(MAGIC_MAXIMUM_BASE_NUMBER),
-	level = 3
+	level = mFloor(distance / 200)
     }
     if not baseUtils.buildHive(regionMap, base, surface) then
 	return nil
@@ -145,7 +161,11 @@ function baseUtils.addEnemyStructureToChunk(chunk, entity, base)
     if (entity.type == "unit-spawner") then
 	indexChunk = chunk[NEST_BASE]
 	if base then
-	    indexBase = base.nests
+	    if base.hives[entity.unit_number] then
+		indexBase = base.hives
+	    else
+		indexBase = base.nests
+	    end
 	end
 	countChunk = NEST_COUNT
     elseif (entity.type == "turret") then
@@ -176,7 +196,11 @@ function baseUtils.removeEnemyStructureFromChunk(chunk, entity)
     local indexBase
     if base then
 	if (entity.type == "unit-spawner") then
-	    indexBase = base.nests
+	    if base.hives[entity.unit_number] then
+		indexBase = base.hives
+	    else
+		indexBase = base.nests
+	    end
 	elseif (entity.type == "turret") then
 	    indexBase = base.worms
 	end

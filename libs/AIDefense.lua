@@ -54,6 +54,7 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
     if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[NEST_COUNT] == 0) and (chunk[WORM_COUNT] == 0) then
 	local performRetreat = false
 	local enemiesToSquad = nil
+	local tempNeighbors = {false, false, false, false, false, false, false, false}
 	
 	if not squad then
 	    enemiesToSquad = surface.find_enemy_units(chunk, RETREAT_GRAB_RADIUS)
@@ -65,7 +66,7 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
 	    local exitPath,_  = scoreNeighborsWithDirection(chunk,
-							    getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
+							    getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY, tempNeighbors),
 							    validRetreatLocation,
 							    scoreRetreatLocation,
 							    nil,

@@ -19,19 +19,15 @@ local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
 
-local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
-local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
-local AI_MAX_POINTS = constants.AI_MAX_POINTS
-local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
+local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 
 -- imported functions
 
 local mLog = math.log10
-
 
 local tableRemove = table.remove
 local tableInsert = table.insert
@@ -41,6 +37,7 @@ local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
 
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local squads = natives.squads
+
     for i=1,#squads do
         local squad = squads[i]
         local unitGroup = squad.group
@@ -83,27 +80,26 @@ function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
 end
 
 function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
-    local returnSquad
-    if (unitGroup ~= nil) then
-        local squads = natives.squads
-        for i=1,#squads do
-            local squad = squads[i]
-            if (squad.group == unitGroup) then  
-                return squad
-            end
-        end
-        returnSquad = { group = unitGroup,
-                        status = SQUAD_GUARDING,
-                        penalties = {},
-			rabid = false,
-			frenzy = false,
-			kamikaze = false,
-			frenzyPosition = {x = 0,
-					  y = 0},
-                        cycles = 0 }
-        squads[#squads+1] = returnSquad
+    if not unitGroup then
+	return nil
     end
-    
+    local squads = natives.squads
+    for i=1,#squads do
+	local squad = squads[i]
+	if (squad.group == unitGroup) then  
+	    return squad
+	end
+    end
+    local returnSquad = { group = unitGroup,
+			  status = SQUAD_GUARDING,
+			  penalties = {},
+			  rabid = false,
+			  frenzy = false,
+			  kamikaze = false,
+			  frenzyPosition = {x = 0,
+					    y = 0},
+			  cycles = 0 }
+    squads[#squads+1] = returnSquad
     return returnSquad
 end
 
@@ -135,11 +131,9 @@ function unitGroupUtils.lookupSquadMovementPenalty(squad, chunkX, chunkY)
     return 0
 end
 
-function unitGroupUtils.calculateKamikazeThreshold(squad, natives, evolution_factor)
-    local maxSize = natives.attackWaveMaxSize
-    local kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-    local squadSizeBonus = mLog((#squad.group.members / maxSize) + 0.1) + 1
-    return kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
+function unitGroupUtils.calculateKamikazeThreshold(squad, natives)
+    local squadSizeBonus = mLog((#squad.group.members / natives.attackWaveMaxSize) + 0.1) + 1
+    return natives.kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
 end
 
 local function isAttacking(group)
@@ -147,11 +141,11 @@ local function isAttacking(group)
     return (state == DEFINES_GROUP_STATE_ATTACKING_TARGET) or (state == DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
 end
 
-function unitGroupUtils.cleanSquads(natives, evolution_factor)
+function unitGroupUtils.cleanSquads(natives)
     local squads = natives.squads
     local squadCount = #squads
 
-    local weight = AI_UNIT_REFUND * evolution_factor
+    local weight = natives.unitRefundAmount
 
     local cleanSquads = {}
     
@@ -166,11 +160,11 @@ function unitGroupUtils.cleanSquads(natives, evolution_factor)
 		local members = group.members
 		for x=1,memberCount do
 		    members[x].destroy()
-		    natives.points = natives.points + weight
 		end
+		natives.points = natives.points + (memberCount * weight)
 
-		if (natives.points > (AI_MAX_POINTS * 3)) then
-		    natives.points = (AI_MAX_POINTS * 3)
+		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+		    natives.points = AI_MAX_OVERFLOW_POINTS
 		end
 		group.destroy()
 	    else
@@ -197,7 +191,7 @@ function unitGroupUtils.cleanSquads(natives, evolution_factor)
 end
 
 
-function unitGroupUtils.regroupSquads(natives, evolution_factor)
+function unitGroupUtils.regroupSquads(natives)
     local groupThreshold = AI_MAX_BITER_GROUP_SIZE * 0.75
 
     local squads = natives.squads
@@ -235,7 +229,7 @@ function unitGroupUtils.regroupSquads(natives, evolution_factor)
 	    	    end
 	        end
 	        if mergedSquads and not squad.kamikaze then
-	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives, evolution_factor)
+	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives)
 	    	    if (math.random() < kamikazeThreshold) then
 	    		squad.kamikaze = true
 	    	    end

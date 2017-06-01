@@ -3,19 +3,12 @@ local constants = {}
 -- versions
 
 constants.VERSION_5 = 5
-constants.VERSION_9 = 9
 constants.VERSION_10 = 10
 constants.VERSION_11 = 11
 constants.VERSION_12 = 12
-constants.VERSION_13 = 13
-constants.VERSION_14 = 14
-constants.VERSION_15 = 15
 constants.VERSION_16 = 16
-constants.VERSION_17 = 17
 constants.VERSION_18 = 18
-constants.VERSION_19 = 19
 constants.VERSION_20 = 20
-constants.VERSION_21 = 21
 constants.VERSION_22 = 22
 constants.VERSION_23 = 23
 
@@ -25,9 +18,9 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
-constants.PROCESS_QUEUE_SIZE = 500
+constants.PROCESS_QUEUE_SIZE = 450
 constants.SCAN_QUEUE_SIZE = 6
-constants.BASE_QUEUE_SIZE = 10
+constants.BASE_QUEUE_SIZE = 1
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.TICKS_A_SECOND = 60
@@ -39,8 +32,11 @@ constants.INTERVAL_LOGIC = 38
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
+constants.DOUBLE_CHUNK_SIZE = constants.CHUNK_SIZE * 2
+constants.TRIPLE_CHUNK_SIZE = constants.CHUNK_SIZE * 3
 constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
 constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
+
 constants.NORTH_SOUTH = 1
 constants.EAST_WEST = 2
 
@@ -56,6 +52,8 @@ constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000
+constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
+
 
 constants.AI_UNIT_REFUND = 3
 

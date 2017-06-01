@@ -62,8 +62,10 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     local squads = natives.squads
     local attackPosition
     local attackCmd
+    local tempNeighbors
     
     if (#squads > 0) then
+	tempNeighbors = {false, false, false, false, false, false, false, false}
 	attackPosition = {x=0, y=0}
 	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
@@ -80,7 +82,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		local chunk = getChunkByPosition(regionMap, groupPosition.x, groupPosition.y)
 		if chunk then
 		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-										     getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY),
+										     getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY, tempNeighbors),
 										     validLocation,
 										     scoreAttackLocation,
 										     squad,
@@ -124,24 +126,24 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     end
 end
 
-function aiAttack.squadBeginAttack(natives, players, evolution_factor)
+function aiAttack.squadBeginAttack(natives, players)
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]
-        if (squad.status == SQUAD_GUARDING) and squad.group.valid then
-	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives, evolution_factor)
+	local group = squad.group
+        if (squad.status == SQUAD_GUARDING) and group.valid then
+	    local groupPosition = group.position
+	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives)
 	    
-	    local playerNearby = playersWithinProximityToPosition(players, squad.group.position, 100)
+	    local playerNearby = playersWithinProximityToPosition(players, groupPosition, 100)
 	    if playerNearby then
 		squad.frenzy = true
-		squad.frenzyPosition.x = squad.group.position.x
-		squad.frenzyPosition.y = squad.group.position.y
+		squad.frenzyPosition.x = groupPosition.x
+		squad.frenzyPosition.y = groupPosition.y
 	    end
 	    
 	    if (math.random() < 0.70) then
-		if (math.random() < kamikazeThreshold) then
-		    squad.kamikaze = true
-		end
+		squad.kamikaze = math.random() < kamikazeThreshold
 		squad.status = SQUAD_RAIDING
 	    end
 	end
