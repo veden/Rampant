@@ -56,6 +56,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.12 -  
+- Fixed: Nil fillTunnel invocation(https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284719)  
+
 0.15.11 -  
 - Feature: Ion cannon mod integration  
 - Fixed: Player region scan can no longer overlap passive map scan causing double processing  
