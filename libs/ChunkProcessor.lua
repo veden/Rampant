@@ -55,7 +55,7 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	end
     end
     if (count >= 3500) and (start > 0) then
-	surface.print("Rampant " .. (start - count) .. " Remaining chunks to process")
+	surface.print("Rampant - " .. (start - count) .. " Remaining chunks to process")
     end
 end
 

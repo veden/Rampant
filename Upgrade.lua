@@ -99,9 +99,6 @@ function upgrade.attempt(natives, regionMap)
 
 	mapSettings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
 
-	mapSettings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
-	mapSettings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
-
 	mapSettings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
 	mapSettings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
 	mapSettings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
@@ -124,6 +121,10 @@ function upgrade.attempt(natives, regionMap)
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
 
+	local mapSettings = game.map_settings
+	mapSettings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
+	mapSettings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
+	
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 	

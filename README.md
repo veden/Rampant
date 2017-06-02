@@ -33,7 +33,7 @@ Configure Options not in game menu:
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
 - Tactical Retreats - These will take place when a unit group is in a chunk that has reached a death threshold  
-- Unit Group Merging - If multiple unit groups retreat at the same time there is a chance the groups will merge  
+- Unit Group Merging - If two squads occupy roughly the same area and are doing the same task then they will merge  
 - Unit Group Forming - Any chunks with spawners in it that is covered by a pollution or player clouds will form groups based on the evolution factor  
 - Probing Behavior Against Defenses - unit groups will attempt to avoid chunks that are soaked in death  
 - Player Hunting - Unit groups will track the player based on there emitted pheromone cloud  
@@ -43,7 +43,7 @@ Configure Options not in game menu:
 - No Homing Projectiles - All projectiles are fired at locations and no longer track the player  
 - Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 - Peace mode - If something sets peace mode, Rampant will respect it  
-- Ion Cannon Reaction - When using the Ion Cannon Mod, biters will   
+- Ion Cannon Reaction - Firing the Ion Cannon will cause nests around the blast site to form into an attack wave and agitate all biters  
 
 # Planned Features
 
@@ -59,10 +59,13 @@ Configure Options not in game menu:
 0.15.11 -  
 - Feature: Ion cannon mod integration  
 - Fixed: Player region scan can no longer overlap passive map scan causing double processing  
+- Tweak: Setting group disown distance back to the default of 10 from 5  
+- Tweak: Increased group late unit threshold from 80 to 360 ticks  
 - Tweak: Increased rally cry chance from 0.02(@100 evo) to 0.08(@100 evo) compensate for the once per logic cycle per chunk  
 - Improvement: Changed biter base detection from slow map scan to event  
 - Improvement: Added negative score contribution to nest causing biters to move around nests instead of through  
 - Improvement: Increased player pheromone for weight multipler from 25 to 50 for hunting parties  
+- Optimization: Reduced max number of active squads from 40 to 30, reducing large lag spikes  
 - Optimization: Player region scan can no longer overlap passive map scan causing double processing  
 - Optimization: Short circuit rally cry search if not enough points to make a squad  
 - Optimization: Short circuit vengence squad search if not enough points to make a squad  
