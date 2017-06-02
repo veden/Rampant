@@ -311,10 +311,10 @@ local function onEnemyBaseBuild(event)
 end
 
 local function onSurfaceTileChange(event)
-    local player = game.players[event.player_index]
-    if (player.surface.index == 1) then
-	aiBuilding.fillTunnel(regionMap, player.surface, natives, event.positions)
-    end
+    -- local player = game.players[event.player_index]
+    -- if (player.surface.index == 1) then
+    -- 	aiBuilding.fillTunnel(regionMap, player.surface, natives, event.positions)
+    -- end
 end
 
 local function onInit()
