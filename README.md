@@ -56,8 +56,11 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.13 -  
+- Improvement: Added lamps to make safe options (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284736)  
+
 0.15.12 -  
-- Fixed: Nil fillTunnel invocation(https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284719)  
+- Fixed: Nil fillTunnel invocation (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284719)  
 
 0.15.11 -  
 - Feature: Ion cannon mod integration  

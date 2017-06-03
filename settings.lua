@@ -144,6 +144,15 @@ data:extend({
 
 	{
 	    type = "bool-setting",
+	    name = "rampant-safeBuildings-lamps",
+	    setting_type = "runtime-global",
+	    default_value = false,
+	    order = "e[modifier]-h[safe]",
+	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
 	    name = "rampant-permanentNocturnal",
 	    description = "rampant-permanentNocturnal",
 	    setting_type = "runtime-global",
