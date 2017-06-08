@@ -228,6 +228,22 @@ function tests.clearBases()
     end
 end
 
+function tests.colorResourcePoints()
+    local chunks = global.regionMap.processQueue
+    for i=1,#chunks do
+	local chunk = chunks[i]
+	local color = "deepwater-green"
+	if (chunk[constants.RESOURCE_GENERATOR] ~= 0) and (chunk[constants.NEST_COUNT] ~= 0) then
+	    color = "water"
+	elseif (chunk[constants.RESOURCE_GENERATOR] ~= 0) then
+	    color = "deepwater"
+	elseif (chunk[constants.NEST_COUNT] ~= 0) then
+	    color = "water-green"
+	end
+	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+    end    
+end
+
 function tests.mergeBases()
     local natives = global.natives
     baseUtils.mergeBases(natives)

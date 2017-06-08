@@ -56,6 +56,10 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.14 -  
+- Improvement: Made form squads aware of orientation changes when building squads  
+- Improvement: Made retreats aware of orientation changes with retreating squads  
+
 0.15.13 -  
 - Improvement: Added lamps to make safe options (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284736)  
 
@@ -63,14 +67,14 @@ Configure Options not in game menu:
 - Fixed: Nil fillTunnel invocation (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284719)  
 
 0.15.11 -  
-- Feature: Ion cannon mod integration  
+- Integration: Ion cannon mod  
 - Fixed: Player region scan can no longer overlap passive map scan causing double processing  
 - Tweak: Setting group disown distance back to the default of 10 from 5  
 - Tweak: Increased group late unit threshold from 80 to 360 ticks  
 - Tweak: Increased rally cry chance from 0.02(@100 evo) to 0.08(@100 evo) compensate for the once per logic cycle per chunk  
+- Tweak: Increased player pheromone for weight multipler from 25 to 50 for hunting parties  
 - Improvement: Changed biter base detection from slow map scan to event  
 - Improvement: Added negative score contribution to nest causing biters to move around nests instead of through  
-- Improvement: Increased player pheromone for weight multipler from 25 to 50 for hunting parties  
 - Optimization: Reduced max number of active squads from 40 to 30, reducing large lag spikes  
 - Optimization: Player region scan can no longer overlap passive map scan causing double processing  
 - Optimization: Short circuit rally cry search if not enough points to make a squad  

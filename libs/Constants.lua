@@ -11,6 +11,7 @@ constants.VERSION_18 = 18
 constants.VERSION_20 = 20
 constants.VERSION_22 = 22
 constants.VERSION_23 = 23
+constants.VERSION_24 = 24
 
 -- misc
 
@@ -103,6 +104,7 @@ constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -30
 constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.98
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
+constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.98
 
 -- chunk attributes
 
@@ -112,17 +114,18 @@ constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 
 constants.PLAYER_BASE_GENERATOR = 5
+constants.RESOURCE_GENERATOR = 6
 
-constants.NORTH_SOUTH_PASSABLE = 6
-constants.EAST_WEST_PASSABLE = 7
+constants.NORTH_SOUTH_PASSABLE = 7
+constants.EAST_WEST_PASSABLE = 8
 
-constants.CHUNK_TICK = 8
-constants.RETREAT_TRIGGERED = 9
-constants.RALLY_TRIGGERED = 10
-constants.NEST_BASE = 11
-constants.WORM_BASE = 12
-constants.NEST_COUNT = 13
-constants.WORM_COUNT = 14
+constants.CHUNK_TICK = 9
+constants.RETREAT_TRIGGERED = 10
+constants.RALLY_TRIGGERED = 11
+constants.NEST_BASE = 12
+constants.WORM_BASE = 13
+constants.NEST_COUNT = 14
+constants.WORM_COUNT = 15
 
 -- Squad status
 

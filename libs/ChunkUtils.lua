@@ -6,11 +6,14 @@ local constants = require("Constants")
 
 local baseUtils = require("BaseUtils")
 
+local baseRegisterUtils = require("BaseRegisterUtils")
+
 -- constants
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 local NEST_BASE = constants.NEST_BASE
 local WORM_BASE = constants.WORM_BASE
@@ -18,6 +21,7 @@ local NEST_COUNT = constants.NEST_COUNT
 local WORM_COUNT = constants.WORM_COUNT
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
 
 local NORTH_SOUTH = constants.NORTH_SOUTH
 local EAST_WEST = constants.EAST_WEST
@@ -34,7 +38,7 @@ local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
 
 local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
-local addEnemyStructureToChunk = baseUtils.addEnemyStructureToChunk
+local addEnemyStructureToChunk = baseRegisterUtils.addEnemyStructureToChunk
 
 -- module code
 
@@ -124,6 +128,12 @@ function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQue
 	end
     end
 
+    tempQuery.force = nil
+    tempQuery.type = "resource"
+
+    chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(tempQuery)
+    
+    tempQuery.type = nil
     tempQuery.force = "player"
     local entities = surface.find_entities_filtered(tempQuery)
 
@@ -158,6 +168,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[MOVEMENT_PHEROMONE] = 0
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
+    chunk[RESOURCE_PHEROMONE] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
     chunk[NORTH_SOUTH_PASSABLE] = false
     chunk[EAST_WEST_PASSABLE] = false
