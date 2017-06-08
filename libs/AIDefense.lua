@@ -30,7 +30,8 @@ local WORM_COUNT = constants.WORM_COUNT
 
 -- imported functions
 
-local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
+local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
+local getNeighborChunks = mapUtils.getNeighborChunks
 local findNearBySquad = unitGroupUtils.findNearBySquad
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
@@ -54,7 +55,6 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
     if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[NEST_COUNT] == 0) and (chunk[WORM_COUNT] == 0) then
 	local performRetreat = false
 	local enemiesToSquad = nil
-	local tempNeighbors = {false, false, false, false, false, false, false, false}
 	
 	if not squad then
 	    enemiesToSquad = surface.find_enemy_units(chunk, RETREAT_GRAB_RADIUS)
@@ -65,16 +65,19 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
 	
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
-	    local exitPath,_  = scoreNeighborsWithDirection(chunk,
-							    getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY, tempNeighbors),
-							    validRetreatLocation,
-							    scoreRetreatLocation,
-							    nil,
-							    surface,
-							    false)
+	    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
+	    local exitPath,exitDirection  = scoreNeighborsWithDirection(chunk,
+									getNeighborChunks(regionMap,
+											  chunk.cX,
+											  chunk.cY,
+											  tempNeighbors),
+									validRetreatLocation,
+									scoreRetreatLocation,
+									nil,
+									surface,
+									false)
 	    if exitPath then
-		local retreatPosition = { x = exitPath.x + HALF_CHUNK_SIZE,
-					  y = exitPath.y + HALF_CHUNK_SIZE }
+		local retreatPosition = positionFromDirectionAndChunk(exitDirection, chunk, {x=0,y=0}, 1.25)
                 
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4

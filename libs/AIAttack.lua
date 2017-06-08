@@ -32,7 +32,7 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
-local getNeighborChunksWithDirection = mapUtils.getNeighborChunksWithDirection
+local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByPosition = mapUtils.getChunkByPosition
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
@@ -65,7 +65,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     local tempNeighbors
     
     if (#squads > 0) then
-	tempNeighbors = {false, false, false, false, false, false, false, false}
+	tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 	attackPosition = {x=0, y=0}
 	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
@@ -83,7 +83,10 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		local chunk = getChunkByPosition(regionMap, groupPosition.x, groupPosition.y)
 		if chunk then
 		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-										     getNeighborChunksWithDirection(regionMap, chunk.cX, chunk.cY, tempNeighbors),
+										     getNeighborChunks(regionMap,
+												       chunk.cX,
+												       chunk.cY,
+												       tempNeighbors),
 										     validLocation,
 										     scoreAttackLocation,
 										     squad,
@@ -94,7 +97,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
 			((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
                             
-			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition)
+			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.25)
 
 			    if (#squad.group.members > 80) then
 				squad.cycles = 6

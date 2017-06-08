@@ -21,7 +21,6 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 
-local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
@@ -35,9 +34,11 @@ local NEST_COUNT = constants.NEST_COUNT
 
 -- imported functions
 
+local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
+
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByIndex = mapUtils.getChunkByIndex
-local scoreNeighbors = neighborUtils.scoreNeighbors
+local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
 
@@ -92,16 +93,15 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, cost, tempNei
 
     if valid and (math.random() < natives.formSquadThreshold) then
 	
-	local squadPath, _ = scoreNeighbors(chunk,
-					    getNeighborChunks(regionMap, chunk.cX, chunk.cY, tempNeighbors),
-					    validUnitGroupLocation,
-					    scoreUnitGroupLocation,
-					    nil,
-					    surface,
-					    false)
+	local squadPath, squadDirection = scoreNeighborsWithDirection(chunk,
+								      getNeighborChunks(regionMap, chunk.cX, chunk.cY, tempNeighbors),
+								      validUnitGroupLocation,
+								      scoreUnitGroupLocation,
+								      nil,
+								      surface,
+								      false)
 	if squadPath then
-	    local squadPosition = { x = squadPath.x + HALF_CHUNK_SIZE,
-				    y = squadPath.y + HALF_CHUNK_SIZE }
+	    local squadPosition = positionFromDirectionAndChunk(squadDirection, chunk, {x=0,y=0}, 0.95)
 	    
 	    local squad = createSquad(squadPosition, surface, natives)
 	    

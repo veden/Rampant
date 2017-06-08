@@ -15,7 +15,7 @@ local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
 local upgrade = require("Upgrade")
-local baseUtils = require("libs/BaseUtils")
+local baseRegisterUtils = require("libs/BaseRegisterUtils")
 local mathUtils = require("libs/MathUtils")
 local config = require("config")
 
@@ -59,8 +59,8 @@ local squadBeginAttack = aiAttack.squadBeginAttack
 local retreatUnits = aiDefense.retreatUnits
 
 local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
-local unregisterEnemyBaseStructure = baseUtils.unregisterEnemyBaseStructure
-local registerEnemyBaseStructure = baseUtils.registerEnemyBaseStructure
+local unregisterEnemyBaseStructure = baseRegisterUtils.unregisterEnemyBaseStructure
+local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
 local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local processBases = baseProcessor.processBases
@@ -187,9 +187,9 @@ local function onTick(event)
 	    local players = game.players
 
 	    planning(natives,
-		     game.forces.enemy.evolution_factor,
-		     tick,
-		     surface)
+	    	     game.forces.enemy.evolution_factor,
+	    	     tick,
+	    	     surface)
 	    
 	    cleanSquads(natives)
 	    regroupSquads(natives)
@@ -234,7 +234,7 @@ local function onIonCannonFired(event)
 	end
 	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
 	if chunk then
-	    local tempNeighbors = {false, false, false, false, false, false, false, false}
+	    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 	    rallyUnits(chunk,
 		       regionMap,
 		       surface,
@@ -244,10 +244,6 @@ local function onIonCannonFired(event)
 	end
     end    
 end
-
--- local function onIonCannonTargeted(event)
-
--- end
 
 local function onDeath(event)
     local entity = event.entity
@@ -273,7 +269,7 @@ local function onDeath(event)
 				     natives,
 				     tick)
 			if (math.random() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    local tempNeighbors = {false, false, false, false, false, false, false, false}
+			    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 			    rallyUnits(deathChunk,
 				       regionMap,
 				       surface,
@@ -380,7 +376,8 @@ remote.add_interface("rampantTests",
 			 mergeBases = tests.mergeBases,
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
-			 registeredNest = tests.registeredNest
+			 registeredNest = tests.registeredNest,
+			 colorResourcePoints = tests.colorResourcePoints
 		     }
 )
 

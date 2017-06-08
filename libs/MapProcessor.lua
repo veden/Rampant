@@ -31,6 +31,7 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 -- imported functions
@@ -85,8 +86,8 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
         regionMap.processRoll = roll
     end
 
-    local tempNeighbors = {false, false, false, false}
-    local tempNeighborsAll = {false, false, false, false, false, false, false, false}
+    local tempNeighbors = {nil, nil, nil, nil}
+    local tempNeighborsAll = {nil, nil, nil, nil, nil, nil, nil, nil}
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     
@@ -133,8 +134,8 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 
     local squads = allowingAttacks and (0.11 <= roll) and (roll <= 0.20) and (natives.points >= AI_SQUAD_COST)
     
-    local tempNeighbors = {false, false, false, false}
-    local tempNeighborsAll = {false, false, false, false, false, false, false, false}
+    local tempNeighbors = {nil, nil, nil, nil}
+    local tempNeighborsAll = {nil, nil, nil, nil, nil, nil, nil, nil}
     
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
@@ -193,6 +194,8 @@ function mapProcessor.scanMap(regionMap, surface, natives)
     local chunkBox = {false, offset}
     local playerQuery = {area = chunkBox,
 			 force = "player"}
+    local resourceQuery = {area = chunkBox,
+			   type = "resource"}
     local unitCountQuery = { area = chunkBox,
 			     type = "unit",
 			     force = "enemy",
@@ -239,6 +242,8 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
+	chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(resourceQuery)
+	
 	local entities = surface.find_entities_filtered(playerQuery)
 	local playerBaseGenerator = 0
 	local safeBuildings = natives.safeBuildings
