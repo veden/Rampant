@@ -54,8 +54,9 @@ end
 
 local function scoreAttackLocation(squad, neighborChunk, surface)
     local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = surface.get_pollution(neighborChunk) + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 50) 
-    return r - squadMovementPenalty - (neighborChunk[NEST_COUNT] * 30)
+    local r = -- (surface.get_pollution(neighborChunk) * 0.01) +
+	neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 50) 
+    return r - squadMovementPenalty -- - (neighborChunk[NEST_COUNT] * 30)
 end
 
 function aiAttack.squadAttack(regionMap, surface, natives)

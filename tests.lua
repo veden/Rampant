@@ -5,17 +5,22 @@ local mathUtils = require("libs/MathUtils")
 local chunkUtils = require("libs/ChunkUtils")
 local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
+local baseRegisterUtils = require("libs/BaseRegisterUtils")
+local tendrilUtils = require("libs/TendrilUtils")
 
-function tests.pheromoneLevels() 
+function tests.pheromoneLevels(size) 
     local player = game.player.character
     local playerChunkX = math.floor(player.position.x / 32)
     local playerChunkY = math.floor(player.position.y / 32)
+    if not size then
+	size = 3
+    end
     print("------")
     print(#global.regionMap.processQueue)
     print(playerChunkX .. ", " .. playerChunkY)
     print("--")
-    for x=playerChunkX-9, playerChunkX+9 do
-        for y=playerChunkY-9, playerChunkY+9 do
+    for y=playerChunkY-size, playerChunkY+size do
+	for x=playerChunkX-size, playerChunkX+size do
             if (global.regionMap[x] ~= nil) then
                 local chunk = global.regionMap[x][y]
                 if (chunk ~= nil) then
@@ -25,15 +30,18 @@ function tests.pheromoneLevels()
                     end
 		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk)
 		    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
-			print("*", chunk.cX, chunk.cY, str)
+			print("=============")
+			print(chunk.cX, chunk.cY, str)
+			print("=============")
 		    else
 			print(chunk.cX, chunk.cY, str)
 		    end
 		    -- print(str)
-		    print("-")
+		    print("----")
                 end
             end
         end
+	print("------------------")
     end
 end
 
@@ -113,9 +121,9 @@ end
 
 function tests.registeredNest(x)
     local entity = tests.createEnemy(x)
-    baseUtils.registerEnemyBaseStructure(global.regionMap,
-					 entity,
-					 nil)
+    baseRegisterUtils.registerEnemyBaseStructure(global.regionMap,
+						 entity,
+						 nil)
 end
 
 function tests.attackOrigin()
@@ -140,7 +148,7 @@ function tests.gaussianRandomTest()
     	result[x] = 0
     end
     for _=1,10000 do
-	local s = mathUtils.roundToNearest(mathUtils.gaussianRandomRange(10, 17, 0, 100), 1)
+	local s = mathUtils.roundToNearest(mathUtils.gaussianRandomRange(50, 25, 0, 100), 1)
 	result[s] = result[s] + 1
     end
     for x=0,100,1 do
@@ -161,6 +169,7 @@ function tests.baseStats()
 	local nestCount = 0
 	local wormCount = 0
 	local eggCount = 0
+	local hiveCount = 0
 	for _,_ in pairs(base.nests) do
 	    nestCount = nestCount + 1
 	end
@@ -170,7 +179,12 @@ function tests.baseStats()
 	for _,_ in pairs(base.eggs) do
 	    eggCount = eggCount + 1
 	end
-	print(base.x, base.y, base.x * 32, base.y * 32, base.created, base.alignment, base.strength, base.upgradePoints, nestCount, wormCount, eggCount, base.hive)
+	for _,_ in pairs(base.hives) do
+	    hiveCount = hiveCount + 1
+	end
+	print(base.x, base.y, base.created, base.alignment, base.strength, base.upgradePoints, nestCount, wormCount, eggCount, hiveCount)
+	print(serpent.dump(base.tendrils))
+	print("---")
     end
 end
 
@@ -232,9 +246,9 @@ function tests.colorResourcePoints()
     local chunks = global.regionMap.processQueue
     for i=1,#chunks do
 	local chunk = chunks[i]
-	local color = "deepwater-green"
+	local color = "concrete"
 	if (chunk[constants.RESOURCE_GENERATOR] ~= 0) and (chunk[constants.NEST_COUNT] ~= 0) then
-	    color = "water"
+	    color = "hazard-concrete-left"
 	elseif (chunk[constants.RESOURCE_GENERATOR] ~= 0) then
 	    color = "deepwater"
 	elseif (chunk[constants.NEST_COUNT] ~= 0) then
@@ -253,15 +267,21 @@ function tests.showMovementGrid()
     local chunks = global.regionMap.processQueue
     for i=1,#chunks do
 	local chunk = chunks[i]
-	local color = "deepwater-green"
+	local color = "concrete"
 	if (chunk[constants.NORTH_SOUTH_PASSABLE] and chunk[constants.EAST_WEST_PASSABLE]) then
-	    color = "water"
+	    color = "hazard-concrete-left"
 	elseif chunk[constants.NORTH_SOUTH_PASSABLE] then
 	    color = "deepwater"
 	elseif chunk[constants.EAST_WEST_PASSABLE] then
 	    color = "water-green"
 	end
-	chunkUtils.colorChunk(chunk.pX, chunk.pY, color, game.surfaces[1])
+	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+    end
+end
+
+function tests.stepAdvanceTendrils()
+    for _, base in pairs(global.natives.bases) do
+	tendrilUtils.advanceTendrils(global.regionMap, base, game.surfaces[1], {nil,nil,nil,nil,nil,nil,nil,nil})
     end
 end
 

@@ -31,6 +31,8 @@ local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local PATH_RATING = constants.PATH_RATING
+
 local RETREAT_TRIGGERED = constants.RETREAT_TRIGGERED
 local RALLY_TRIGGERED = constants.RALLY_TRIGGERED
 
@@ -58,6 +60,18 @@ local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, dir
     return false
 end
 
+local function checkForValidTiles(x, y, get_tile)
+    local count = 0
+    for xi=x,x+31 do
+	for yi=y,y+31 do
+	    if not get_tile(xi, yi).collides_with("player-layer") then
+		count = count + 1
+	    end
+	end
+    end
+    return count / 1024
+end
+
 function chunkUtils.checkChunkPassability(chunk, surface)   
     local x = chunk.x
     local y = chunk.y
@@ -77,9 +91,26 @@ function chunkUtils.checkChunkPassability(chunk, surface)
             break
         end
     end
-    
-    chunk[EAST_WEST_PASSABLE] = passableEastWest
-    chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
+    if passableEastWest or passableNorthSouth then
+	if (checkForValidTiles(x, y, get_tile) < 0.6) then
+	    passableEastWest = false
+	    passableNorthSouth = false
+	end
+    end
+
+    -- if passableEastWest or passableNorthSouth then
+    -- 	chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
+    -- end
+    chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
+    if (chunk[PATH_RATING] < 0.99) then
+	chunk[EAST_WEST_PASSABLE] = false
+	chunk[NORTH_SOUTH_PASSABLE] = false
+    else
+	chunk[EAST_WEST_PASSABLE] = true
+	chunk[NORTH_SOUTH_PASSABLE] = true
+    end
+    -- chunk[EAST_WEST_PASSABLE] = passableEastWest
+    -- chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
 end
 
 function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQuery)
@@ -179,6 +210,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[WORM_BASE] = {}
     chunk[NEST_COUNT] = 0
     chunk[WORM_COUNT] = 0
+    chunk[PATH_RATING] = 0
     return chunk
 end
 
