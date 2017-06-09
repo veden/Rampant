@@ -29,7 +29,7 @@ function baseProcessor.processBases(regionMap, surface, natives, tick)
     for index = baseIndex, endIndex do
         local base = bases[index]
 
-	-- buildOrder(regionMap, natives, base, surface, tick)
+	buildOrder(regionMap, natives, base, surface, tick)
 	advanceTendrils(regionMap, base, surface, tempNeighbors)
     end
 

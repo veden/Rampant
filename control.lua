@@ -261,7 +261,8 @@ local function onDeath(event)
 		    if event.force and (event.force.name == "player") and (deathChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
 			
-			retreatUnits(deathChunk, 
+			retreatUnits(deathChunk,
+				     entityPosition,
 				     convertUnitGroupToSquad(natives, 
 							     entity.unit_group),
 				     regionMap, 
@@ -377,7 +378,8 @@ remote.add_interface("rampantTests",
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
 			 registeredNest = tests.registeredNest,
-			 colorResourcePoints = tests.colorResourcePoints
+			 colorResourcePoints = tests.colorResourcePoints,
+			 stepAdvanceTendrils = tests.stepAdvanceTendrils
 		     }
 )
 

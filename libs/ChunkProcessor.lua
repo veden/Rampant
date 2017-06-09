@@ -50,11 +50,11 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         checkChunkPassability(chunk, surface)
         scoreChunk(regionMap, chunk, surface, natives, tick, query)
         processQueue[#processQueue+1] = chunk
-	if (count >= 3500) then
+	if (count >= 1000) then
 	    break
 	end
     end
-    if (count >= 3500) and (start > 0) then
+    if (count >= 1000) and (start > 0) then
 	surface.print("Rampant - " .. (start - count) .. " Remaining chunks to process")
     end
 end

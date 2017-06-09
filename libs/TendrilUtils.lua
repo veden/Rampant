@@ -27,6 +27,8 @@ local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
 
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 
+local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+
 -- module code
 
 local function scoreTendrilChunk(squad, chunk, surface)
@@ -35,6 +37,25 @@ end
 
 local function validTendrilChunk(x, chunk, neighborChunk)
     return canMoveChunkDirection(x, chunk, neighborChunk)
+end
+
+-- local function colorChunk(x, y, tileType, surface)
+--     local tiles = {}
+--     for xi=x+5, x + 27 do
+-- 	for yi=y+5, y + 27 do
+-- 	    tiles[#tiles+1] = {name=tileType, position={xi, yi}}
+-- 	end
+--     end
+--     surface.set_tiles(tiles, false)
+-- end
+
+local function removeTendril(base, tendril)
+    for i=1,#base.tendrils do
+	if (base.tendrils[i] == tendril) then
+	    table.remove(base.tendrils,i)
+	    break
+	end
+    end    
 end
 
 local function buildTendrilPath(regionMap, tendril, surface, base, tempNeighbors)
@@ -51,25 +72,29 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tempNeighbors
 									 surface,
 									 true)
 	if (tendrilDirection == -1) then
-	    tendril.path[#tendril.path] = chunk
-	    local biterSpawner = {name="spitter-spawner", position={x=chunk.x,y=chunk.y}}
-	    local hive = surface.create_entity(biterSpawner)
-	    registerEnemyBaseStructure(regionMap, hive, base)
-	    for i=1,#base.tendrils do
-		if (base.tendrils[i] == tendril) then
-		    table.remove(base.tendrils,i)
-		    break
-		end
-	    end
+	    removeTendril(base, tendril)
 	    tendrilUtils.buildTendril(regionMap, nil, base, surface, tick)
+	    -- colorChunk(chunk.x, chunk.y, "hazard-concrete-left", surface)
 	    return
 	elseif tendrilPath then
-  	    positionFromDirectionAndChunk(tendrilDirection, chunk, tendril, 0.95)
+  	    positionFromDirectionAndChunk(tendrilDirection, tendril, tendril, 0.5)
+	    mapUtils.distortPosition(tendril)
 	    tendril.path[#tendril.path] = chunk
-	    local biterSpawner = {name="spitter-spawner", position={x=tendril.x,y=tendril.y}}
-	    local hive = surface.create_entity(biterSpawner)
-	    registerEnemyBaseStructure(regionMap, hive, base)
+	    local position = surface.find_non_colliding_position("spitter-spawner",
+								 {x=tendril.x,y=tendril.y},
+								 32,
+								 4)
+	    if position and (tendrilPath[NEST_COUNT] <= 3)then
+		tendril.x = position.x
+		tendril.y = position.y
+		local biterSpawner = {name="spitter-spawner", position=position}
+		local hive = surface.create_entity(biterSpawner)
+		registerEnemyBaseStructure(regionMap, hive, base)
+	    elseif not position then
+		removeTendril(base, tendril)
+	    end
 	end
+	-- colorChunk(chunk.x, chunk.y, "concrete", surface)
     end
 end
 

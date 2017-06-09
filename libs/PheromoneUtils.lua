@@ -30,6 +30,8 @@ local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 
 local NEST_COUNT = constants.NEST_COUNT
 
+local PATH_RATING = constants.PATH_RATING
+
 local IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 
 -- imported functions
@@ -44,7 +46,7 @@ function pheromoneUtils.scents(chunk)
 	chunk[BASE_PHEROMONE] = IMPASSABLE_TERRAIN_GENERATOR_AMOUNT;
     else
 	chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR]
-	if (chunk[NEST_COUNT] ~= 0) then
+	if (chunk[NEST_COUNT] == 0) then
 	    chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + chunk[RESOURCE_GENERATOR]
 	end
     end
@@ -78,6 +80,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk, tempNeighbors)
     local chunkBase = chunk[BASE_PHEROMONE]
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkResource = chunk[RESOURCE_PHEROMONE]
+    local chunkPathRating = chunk[PATH_RATING]
     
     local totalMovement = 0
     local totalBase = 0
@@ -93,10 +96,10 @@ function pheromoneUtils.processPheromone(regionMap, chunk, tempNeighbors)
 	    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
 	end
     end
-    chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE
-    chunk[BASE_PHEROMONE] = (chunkBase + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE
-    chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * totalPlayer)) * PLAYER_PHEROMONE_PERSISTANCE
-    chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.25 * totalResource)) * RESOURCE_PHEROMONE_PERSISTANCE
+    chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunk[BASE_PHEROMONE] = (chunkBase + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * totalPlayer)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.25 * totalResource)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
 end
 
 return pheromoneUtils

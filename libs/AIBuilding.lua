@@ -101,20 +101,26 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, cost, tempNei
 								      surface,
 								      false)
 	if squadPath then
-	    local squadPosition = positionFromDirectionAndChunk(squadDirection, chunk, {x=0,y=0}, 0.95)
-	    
-	    local squad = createSquad(squadPosition, surface, natives)
-	    
-	    squad.rabid = math.random() < 0.03
+	    local squadPosition = positionFromDirectionAndChunk(squadDirection, chunk, {x=0,y=0}, 0.98)
 
-	    local scaledWaveSize = attackWaveScaling(natives)
-	    local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
-								       group = squad.group,
-								       distraction = DEFINES_DISTRACTION_NONE },
-							   unit_count = scaledWaveSize,
-							   unit_search_distance = TRIPLE_CHUNK_SIZE })
-	    if (foundUnits > 0) then
-		natives.points = natives.points - cost
+	    squadPosition = surface.find_non_colliding_position("biter-spawner",
+								squadPosition,
+								32,
+								4)
+	    if squadPosition then
+		local squad = createSquad(squadPosition, surface, natives)
+		
+		squad.rabid = math.random() < 0.03
+
+		local scaledWaveSize = attackWaveScaling(natives)
+		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
+									   group = squad.group,
+									   distraction = DEFINES_DISTRACTION_NONE },
+							       unit_count = scaledWaveSize,
+							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+		if (foundUnits > 0) then
+		    natives.points = natives.points - cost
+		end
 	    end
 	end
     end

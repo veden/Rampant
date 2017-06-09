@@ -51,7 +51,7 @@ local function scoreRetreatLocation(squad, neighborChunk, surface)
     return safeScore - dangerScore
 end
 
-function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
+function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, natives, tick)
     if (tick - chunk[RETREAT_TRIGGERED] > INTERVAL_LOGIC) and (chunk[NEST_COUNT] == 0) and (chunk[WORM_COUNT] == 0) then
 	local performRetreat = false
 	local enemiesToSquad = nil
@@ -77,7 +77,7 @@ function aiDefense.retreatUnits(chunk, squad, regionMap, surface, natives, tick)
 									surface,
 									false)
 	    if exitPath then
-		local retreatPosition = positionFromDirectionAndChunk(exitDirection, chunk, {x=0,y=0}, 1.25)
+		local retreatPosition = positionFromDirectionAndChunk(exitDirection, position, {x=0,y=0}, 0.98)
                 
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4

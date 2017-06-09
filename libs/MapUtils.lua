@@ -4,6 +4,8 @@ local mapUtils = {}
 
 local constants = require("Constants")
 
+local mathUtils = require("MathUtils")
+
 -- constants
 
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
@@ -12,6 +14,8 @@ local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
+
+local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 local mFloor = math.floor
 
@@ -39,9 +43,9 @@ end
 
 --[[
     1 2 3
-     \|/
+    \|/
     4- -5
-     /|\
+    /|\
     6 7 8
 ]]--
 function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
@@ -122,7 +126,7 @@ end
 --[[
     1
     |
-  2- -3
+    2- -3
     |
     4 
 ]]--
@@ -152,6 +156,13 @@ function mapUtils.positionFromDirectionAndChunkCardinal(direction, startPosition
 	position.y = startPosition.y + CHUNK_SIZE
     end
     -- return position
+end
+
+function mapUtils.distortPosition(position)
+    local xDistort = gaussianRandomRange(1, 0.5, 0, 2) - 1
+    local yDistort = gaussianRandomRange(1, 0.5, 0, 2) - 1
+    position.x = position.x + (xDistort * 48)
+    position.y = position.y + (yDistort * 48)
 end
 
 function mapUtils.positionFromDirectionAndChunk(direction, startPosition, position, scaling)
