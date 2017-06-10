@@ -11,7 +11,7 @@ constants.VERSION_18 = 18
 constants.VERSION_20 = 20
 constants.VERSION_22 = 22
 constants.VERSION_23 = 23
-constants.VERSION_24 = 24
+constants.VERSION_25 = 25
 
 -- misc
 
