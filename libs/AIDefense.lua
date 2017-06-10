@@ -65,12 +65,10 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 	
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
-	    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 	    local exitPath,exitDirection  = scoreNeighborsWithDirection(chunk,
 									getNeighborChunks(regionMap,
 											  chunk.cX,
-											  chunk.cY,
-											  tempNeighbors),
+											  chunk.cY),
 									validRetreatLocation,
 									scoreRetreatLocation,
 									nil,
@@ -78,7 +76,17 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 									false)
 	    if exitPath then
 		local retreatPosition = positionFromDirectionAndChunk(exitDirection, position, {x=0,y=0}, 0.98)
-                
+
+		if not surface.can_place_entity({name="behemoth-biter", position=retreatPosition}) then
+		    local newRetreatPosition = surface.find_non_colliding_position("behemoth-biter", retreatPosition, 5, 2)
+		    if newRetreatPosition then
+			retreatPosition.x = newRetreatPosition.x
+			retreatPosition.y = newRetreatPosition.y
+		    else
+			return
+		    end
+		end
+		
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
                 
@@ -99,7 +107,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 			newSquad.rabid = true
 		    end
 		end
-		addSquadMovementPenalty(newSquad, chunk.cX, chunk.cY)
+		addSquadMovementPenalty(natives, newSquad, chunk.cX, chunk.cY)
 	    end
 	end
     end

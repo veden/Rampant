@@ -85,9 +85,6 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
         roll = math.random()
         regionMap.processRoll = roll
     end
-
-    local tempNeighbors = {nil, nil, nil, nil}
-    local tempNeighborsAll = {nil, nil, nil, nil, nil, nil, nil, nil}
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     
@@ -99,10 +96,10 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
 	if (chunk[CHUNK_TICK] ~= tick) then
 	    chunk[CHUNK_TICK] = tick
 	    
-	    processPheromone(regionMap, chunk, tempNeighbors)
+	    processPheromone(regionMap, chunk)
 
 	    if squads and (chunk[NEST_COUNT] ~= 0) then
-		formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST, tempNeighborsAll)
+		formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
 		squads = natives.points >= AI_SQUAD_COST
 	    end
 	    
@@ -134,9 +131,6 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 
     local squads = allowingAttacks and (0.11 <= roll) and (roll <= 0.20) and (natives.points >= AI_SQUAD_COST)
     
-    local tempNeighbors = {nil, nil, nil, nil}
-    local tempNeighborsAll = {nil, nil, nil, nil, nil, nil, nil, nil}
-    
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
@@ -163,14 +157,14 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 			if chunk and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 
-			    processPheromone(regionMap, chunk, tempNeighbors)
+			    processPheromone(regionMap, chunk)
 			    
 			    if squads then
-				formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST, tempNeighborsAll)
+				formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
 				squads = natives.points >= AI_SQUAD_COST
 			    end
 			    if vengence then
-				formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST, tempNeighborsAll)
+				formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
 				vengence = natives.points >= AI_VENGENCE_SQUAD_COST
 			    end
 

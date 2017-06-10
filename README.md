@@ -57,8 +57,29 @@ Configure Options not in game menu:
 # Version History
 
 0.15.14 -  
-- Improvement: Made form squads aware of orientation changes when building squads  
+- Tweak: Increased pheromone output of:
+	- ammo-turret 2.5 -> 10
+	- wall 0.25 -> 0.5
+	- electric-turret 7 -> 20
+	- fluid-turret 9 -> 28
+	- turret 2.5 -> 10
+	- mining-drill 15 -> 35
+- Tweak: Increased attack radius of squads from 28 to 32 tiles  
+- Tweak: Decreased movement(death) pheromone persistance from 0.98 to 0.9  
+- Tweak: Increased impassable terrain generator pheromone amount from -30 to -0.1  
+- Tweak: Reduced number of remembered past chunks for a squad from 10 to 7  
+- Tweak: Increased unit group count for "ground shake" message from 11 to 14  
+- Fixed: Pheromone is no longer placed on impassable chunks  
+- Improvement: Removed pollution from ai attack chunk scoring, pollution travels over water and creates weird pockets groups get stuck in  
+- Improvement: Made create squads aware of orientation changes when building squads  
+- Improvement: Recycling unit groups that are stuck  
+- Improvement: Allow movement from an impassable chunk to a all cardinals passable chunk  
+- Improvement: When creating squads base pheromone or player pheromone must be present. Prevents squad spawns when they can't reach the player(s) or player(s) structures.  
 - Improvement: Made retreats aware of orientation changes with retreating squads  
+- Improvement: Path finding check for invalid destination before making command  
+- Improvement: Added path rating to each chunk to reduce the scores on chunks that may be passable but are easy to invalidate the unit group by making a command to an invalid location(water, entity)  
+- Optimization: Collapsed chunk attributes *_PASSABLE into single attribute PASSABLE  
+- Optimization: Preallocated neighbors and cardinal neighbors array  
 
 0.15.13 -  
 - Improvement: Added lamps to make safe options (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=160#p284736)  

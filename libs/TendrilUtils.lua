@@ -58,14 +58,13 @@ local function removeTendril(base, tendril)
     end    
 end
 
-local function buildTendrilPath(regionMap, tendril, surface, base, tempNeighbors)
+local function buildTendrilPath(regionMap, tendril, surface, base, tick)
     local chunk = getChunkByPosition(regionMap, tendril.x, tendril.y)
     if chunk then
 	local tendrilPath,tendrilDirection = scoreNeighborsWithDirection(chunk,
 									 getNeighborChunks(regionMap,
 											   chunk.cX,
-											   chunk.cY,
-											   tempNeighbors),
+											   chunk.cY),
 									 validTendrilChunk,
 									 scoreTendrilChunk,
 									 nil,
@@ -98,9 +97,9 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tempNeighbors
     end
 end
 
-function tendrilUtils.advanceTendrils(regionMap, base, surface, tempNeighbors)
+function tendrilUtils.advanceTendrils(regionMap, base, surface, tick)
     for i=1, #base.tendrils do
-	buildTendrilPath(regionMap, base.tendrils[i], surface, base, tempNeighbors)
+	buildTendrilPath(regionMap, base.tendrils[i], surface, base, tick)
     end
 end
 

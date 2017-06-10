@@ -27,6 +27,10 @@ local RESOURCE_PHEROMONE_PERSISTANCE = constants.RESOURCE_PHEROMONE_PERSISTANCE
 
 local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
 local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
+local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+
+local PASSABLE = constants.PASSABLE
 
 local NEST_COUNT = constants.NEST_COUNT
 
@@ -42,7 +46,7 @@ local getCardinalChunks = mapUtils.getCardinalChunks
 
 function pheromoneUtils.scents(chunk)
 
-    if not chunk[NORTH_SOUTH_PASSABLE] and not chunk[EAST_WEST_PASSABLE] then
+    if (chunk[PASSABLE] == CHUNK_IMPASSABLE) then
 	chunk[BASE_PHEROMONE] = IMPASSABLE_TERRAIN_GENERATOR_AMOUNT;
     else
 	chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR]
@@ -55,26 +59,30 @@ end
 
 function pheromoneUtils.victoryScent(chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
-    if (value ~= nil) then
+    if (value ~= nil) and (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
 	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 10000)
     end
 end
 
 function pheromoneUtils.deathScent(chunk)
-    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
+    if (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
+	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
+    end
 end
 
 function pheromoneUtils.playerScent(playerChunk)
-    playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    if (playerChunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
+	playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    end
 end
 
-function pheromoneUtils.processPheromone(regionMap, chunk, tempNeighbors)
+function pheromoneUtils.processPheromone(regionMap, chunk)
 
-    if not chunk[NORTH_SOUTH_PASSABLE] and not chunk[EAST_WEST_PASSABLE] then
+    if (chunk[PASSABLE] == CHUNK_IMPASSABLE) then
 	return
     end
 
-    getCardinalChunks(regionMap, chunk.cX, chunk.cY, tempNeighbors)
+    local tempNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
     
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]

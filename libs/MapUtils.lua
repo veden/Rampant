@@ -8,8 +8,14 @@ local mathUtils = require("MathUtils")
 
 -- constants
 
-local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
-local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
+local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
+local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
+
+local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+
+local PASSABLE = constants.PASSABLE
+
+local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -48,9 +54,10 @@ end
     /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY, neighbors)   
+function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
     local chunkYRow1 = chunkY - 1
     local chunkYRow3 = chunkY + 1
+    local neighbors = regionMap.neighbors
     local xChunks = regionMap[chunkX-1]
     if xChunks then
         neighbors[1] = xChunks[chunkYRow1]
@@ -75,19 +82,23 @@ end
 
 function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     local canMove = false
-    if ((direction == 2) or (direction == 7)) and startChunk[NORTH_SOUTH_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] then
+    local startPassable = startChunk[PASSABLE]
+    local endPassable = endChunk[PASSABLE]
+    if ((direction == 2) or (direction == 7)) and (startPassable == CHUNK_NORTH_SOUTH) and (endPassable == CHUNK_NORTH_SOUTH) then
         canMove = true
-    elseif ((direction == 4) or (direction == 5)) and startChunk[EAST_WEST_PASSABLE] and endChunk[EAST_WEST_PASSABLE] then
+    elseif ((direction == 4) or (direction == 5)) and (startPassable == CHUNK_EAST_WEST) and (endPassable == CHUNK_EAST_WEST) then
         canMove = true
-    elseif (startChunk[NORTH_SOUTH_PASSABLE] and startChunk[EAST_WEST_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] and
-	    endChunk[EAST_WEST_PASSABLE]) then
+    elseif (startPassable == CHUNK_ALL_DIRECTIONS) and (endPassable == CHUNK_ALL_DIRECTIONS) then
+	canMove = true
+    elseif (startPassable ~= CHUNK_IMPASSABLE) and (endPassable == CHUNK_ALL_DIRECTIONS) then
 	canMove = true
     end
     return canMove
 end
 
-function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY, neighbors)
+function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
     local xChunks = regionMap[chunkX]
+    local neighbors = regionMap.cardinalNeighbors
     if xChunks then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]
@@ -121,41 +132,6 @@ function mapUtils.euclideanDistanceArray(p1, p2)
     local xs = p1[1] - p2[1]
     local ys = p1[2] - p2[2]
     return ((xs * xs) + (ys * ys)) ^ 0.5
-end
-
---[[
-    1
-    |
-    2- -3
-    |
-    4 
-]]--
-function mapUtils.canMoveChunkDirectionCardinal(direction, startChunk, endChunk)
-    local canMove = false
-    if ((direction == 1) or (direction == 4)) and startChunk[NORTH_SOUTH_PASSABLE] and endChunk[NORTH_SOUTH_PASSABLE] then
-	canMove = true
-    elseif ((direction == 2) or (direction == 3)) and startChunk[EAST_WEST_PASSABLE] and endChunk[EAST_WEST_PASSABLE] then
-	canMove = true
-    end
-    return canMove
-end
-
-function mapUtils.positionFromDirectionAndChunkCardinal(direction, startPosition, position)
-    -- local position = {x=0,y=0}
-    if (direction == 1) then
-	position.x = startPosition.x 
-	position.y = startPosition.y - CHUNK_SIZE
-    elseif (direction == 2) then
-	position.x = startPosition.x - CHUNK_SIZE
-	position.y = startPosition.y 
-    elseif (direction == 3) then
-	position.x = startPosition.x + CHUNK_SIZE
-	position.y = startPosition.y 
-    elseif (direction == 4) then
-	position.x = startPosition.x 
-	position.y = startPosition.y + CHUNK_SIZE
-    end
-    -- return position
 end
 
 function mapUtils.distortPosition(position)

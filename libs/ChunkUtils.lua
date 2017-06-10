@@ -23,11 +23,13 @@ local WORM_COUNT = constants.WORM_COUNT
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
 
-local NORTH_SOUTH = constants.NORTH_SOUTH
-local EAST_WEST = constants.EAST_WEST
+local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
+local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 
-local EAST_WEST_PASSABLE = constants.EAST_WEST_PASSABLE
-local NORTH_SOUTH_PASSABLE = constants.NORTH_SOUTH_PASSABLE
+local PASSABLE = constants.PASSABLE
+
+local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
@@ -48,7 +50,7 @@ local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, dir
     local tile
     
     for x=iteratingCoordinate, iteratingCoordinate + 31 do
-        if (direction == NORTH_SOUTH) then
+        if (direction == CHUNK_NORTH_SOUTH) then
             tile = get_tile(constantCoordinate, x)
         else
             tile = get_tile(x, constantCoordinate)
@@ -80,37 +82,33 @@ function chunkUtils.checkChunkPassability(chunk, surface)
     local passableNorthSouth = false
     local passableEastWest = false
     for xi=x, x + 31 do
-        if not checkForDeadendTiles(xi, y, NORTH_SOUTH, get_tile) then
+        if not checkForDeadendTiles(xi, y, CHUNK_NORTH_SOUTH, get_tile) then
             passableNorthSouth = true
             break
         end
     end
     for yi=y, y + 31 do
-        if not checkForDeadendTiles(yi, x, EAST_WEST, get_tile) then
+        if not checkForDeadendTiles(yi, x, CHUNK_EAST_WEST, get_tile) then
             passableEastWest = true
             break
         end
     end
-    if passableEastWest or passableNorthSouth then
-	if (checkForValidTiles(x, y, get_tile) < 0.6) then
-	    passableEastWest = false
-	    passableNorthSouth = false
+
+    local pass = CHUNK_IMPASSABLE
+    if passableEastWest and passableNorthSouth then
+	pass = CHUNK_ALL_DIRECTIONS
+    elseif passableEastWest then
+	pass = CHUNK_EAST_WEST
+    elseif passableNorthSouth then
+	pass = CHUNK_NORTH_SOUTH
+    end
+    if (pass ~= CHUNK_IMPASSABLE) then
+	chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
+	if (chunk[PATH_RATING] < 0.6) then
+	    pass = CHUNK_IMPASSABLE
 	end
     end
-
-    -- if passableEastWest or passableNorthSouth then
-    -- 	chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
-    -- end
-    chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
-    if (chunk[PATH_RATING] < 0.99) then
-	chunk[EAST_WEST_PASSABLE] = false
-	chunk[NORTH_SOUTH_PASSABLE] = false
-    else
-	chunk[EAST_WEST_PASSABLE] = true
-	chunk[NORTH_SOUTH_PASSABLE] = true
-    end
-    -- chunk[EAST_WEST_PASSABLE] = passableEastWest
-    -- chunk[NORTH_SOUTH_PASSABLE] = passableNorthSouth
+    chunk[PASSABLE] = pass
 end
 
 function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQuery)
@@ -201,8 +199,8 @@ function chunkUtils.createChunk(topX, topY)
     chunk[PLAYER_PHEROMONE] = 0
     chunk[RESOURCE_PHEROMONE] = 0
     chunk[PLAYER_BASE_GENERATOR] = 0
-    chunk[NORTH_SOUTH_PASSABLE] = false
-    chunk[EAST_WEST_PASSABLE] = false
+    chunk[RESOURCE_GENERATOR] = 0
+    chunk[PASSABLE] = 0
     chunk[CHUNK_TICK] = 0
     chunk[RETREAT_TRIGGERED] = 0
     chunk[RALLY_TRIGGERED] = 0
