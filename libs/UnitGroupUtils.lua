@@ -17,6 +17,8 @@ local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 
+local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
+
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
@@ -108,17 +110,31 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
     return returnSquad
 end
 
-function unitGroupUtils.addSquadMovementPenalty(squad, chunkX, chunkY)   
+function unitGroupUtils.addSquadMovementPenalty(natives, squad, chunkX, chunkY)   
     local penalties = squad.penalties
     for i=1,#penalties do
         local penalty = penalties[i]
         if (penalty.x == chunkX) and (penalty.y == chunkY) then
             penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
+	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
+		local group = squad.group
+		local members = group.members
+		for x=1,#members do
+		    members[x].destroy()
+		end
+		natives.points = natives.points + (#members * natives.unitRefundAmount)
+
+		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+		    natives.points = AI_MAX_OVERFLOW_POINTS
+		end
+
+		group.destroy()
+	    end
             return
         end
     end
-    if (#penalties == 10) then
-        tableRemove(penalties, 10)
+    if (#penalties == 7) then
+        tableRemove(penalties, 7)
     end
     tableInsert(penalties, 1, { v = MOVEMENT_PHEROMONE_GENERATOR_AMOUNT,
                                 x = chunkX,

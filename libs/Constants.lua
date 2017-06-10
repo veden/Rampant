@@ -39,8 +39,10 @@ constants.TRIPLE_CHUNK_SIZE = constants.CHUNK_SIZE * 3
 constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
 constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
 
-constants.NORTH_SOUTH = 1
-constants.EAST_WEST = 2
+constants.CHUNK_IMPASSABLE = 0
+constants.CHUNK_NORTH_SOUTH = 1
+constants.CHUNK_EAST_WEST = 2
+constants.CHUNK_ALL_DIRECTIONS = 3
 
 -- ai
 
@@ -93,15 +95,14 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
---constants.ENEMY_BASE_PHEROMONE_GENERATOR_AMOUNT = 30
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 500
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 150
 
-constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -1
+constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
 
 -- pheromone diffusion amounts
 
-constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.98
+constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.9
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.85
@@ -116,17 +117,16 @@ constants.RESOURCE_PHEROMONE = 4
 constants.PLAYER_BASE_GENERATOR = 5
 constants.RESOURCE_GENERATOR = 6
 
-constants.NORTH_SOUTH_PASSABLE = 7
-constants.EAST_WEST_PASSABLE = 8
+constants.PASSABLE = 7
 
-constants.CHUNK_TICK = 9
-constants.RETREAT_TRIGGERED = 10
-constants.RALLY_TRIGGERED = 11
-constants.NEST_BASE = 12
-constants.WORM_BASE = 13
-constants.NEST_COUNT = 14
-constants.WORM_COUNT = 15
-constants.PATH_RATING = 16
+constants.CHUNK_TICK = 8
+constants.RETREAT_TRIGGERED = 9
+constants.RALLY_TRIGGERED = 10
+constants.NEST_BASE = 11
+constants.WORM_BASE = 12
+constants.NEST_COUNT = 13
+constants.WORM_COUNT = 14
+constants.PATH_RATING = 15
 
 -- Squad status
 
@@ -142,10 +142,11 @@ constants.RETREAT_GRAB_RADIUS = 24
 constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
 
-constants.MAX_RALLY_CRIES = 2
 constants.RALLY_CRY_DISTANCE = 3
 
 constants.GROUP_MERGE_DISTANCE = 28
+
+constants.MAX_PENALTY_BEFORE_PURGE = 8000
 
 -- player building pheromones
 
@@ -163,18 +164,18 @@ constants.BUILDING_PHEROMONES["roboport"] = 10
 constants.BUILDING_PHEROMONES["beacon"] = 10
 constants.BUILDING_PHEROMONES["furnace"] = 12
 constants.BUILDING_PHEROMONES["programmable-speaker"] = 8
-constants.BUILDING_PHEROMONES["mining-drill"] = 15
+constants.BUILDING_PHEROMONES["mining-drill"] = 35
 constants.BUILDING_PHEROMONES["rocket-silo"] = 18
 constants.BUILDING_PHEROMONES["lamp"] = 4
-constants.BUILDING_PHEROMONES["radar"] = 10
+constants.BUILDING_PHEROMONES["radar"] = 20
 
 -- player defense pheromones
 
-constants.BUILDING_PHEROMONES["ammo-turret"] = 2.5
-constants.BUILDING_PHEROMONES["wall"] = 0.25
-constants.BUILDING_PHEROMONES["electric-turret"] = 7
-constants.BUILDING_PHEROMONES["fluid-turret"] = 9
-constants.BUILDING_PHEROMONES["turret"] = 2.5
+constants.BUILDING_PHEROMONES["ammo-turret"] = 10
+constants.BUILDING_PHEROMONES["wall"] = 0.5
+constants.BUILDING_PHEROMONES["electric-turret"] = 20
+constants.BUILDING_PHEROMONES["fluid-turret"] = 28
+constants.BUILDING_PHEROMONES["turret"] = 10
 
 constants.retreatFilter = {}
 constants.retreatFilter[constants.SQUAD_RETREATING] = true
@@ -184,14 +185,14 @@ constants.retreatFilter[constants.SQUAD_RETREATING] = true
 constants.PATH_FINDER_SHORT_REQUEST_RATIO = 0.8
 constants.PATH_FINDER_SHORT_CACHE_SIZE = 25
 constants.PATH_FINDER_LONG_REQUEST_RATIO = 5
-constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH = 500
+constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH = 100
 
-constants.MAX_FAILED_BEHAVIORS = 100
+constants.MAX_FAILED_BEHAVIORS = 6
 
 constants.UNIT_GROUP_DISOWN_DISTANCE = 10
 constants.UNIT_GROUP_TICK_TOLERANCE = 360
 
-constants.UNIT_GROUP_MAX_RADIUS = 12
+constants.UNIT_GROUP_MAX_RADIUS = 20
 constants.UNIT_GROUP_MAX_SPEED_UP = 1.1
 constants.UNIT_GROUP_MAX_SLOWDOWN = 1.0
 constants.UNIT_GROUP_SLOWDOWN_FACTOR = 0.9

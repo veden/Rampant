@@ -19,8 +19,6 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
-local NEST_COUNT = constants.NEST_COUNT
-
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_GATHERING = defines.group_state.gathering
@@ -63,14 +61,12 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     local squads = natives.squads
     local attackPosition
     local attackCmd
-    local tempNeighbors
     
     if (#squads > 0) then
-	tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 	attackPosition = {x=0, y=0}
 	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
-		      radius = 28,
+		      radius = 32,
 		      distraction = DEFINES_DISTRACTION_BY_ENEMY }
     end
     
@@ -86,19 +82,18 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
 										     getNeighborChunks(regionMap,
 												       chunk.cX,
-												       chunk.cY,
-												       tempNeighbors),
+												       chunk.cY),
 										     validLocation,
 										     scoreAttackLocation,
 										     squad,
 										     surface,
 										     true)
-		    addSquadMovementPenalty(squad, chunk.cX, chunk.cY)
-		    if attackChunk then
+		    addSquadMovementPenalty(natives, squad, chunk.cX, chunk.cY)
+		    if group.valid and attackChunk then
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
 			((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
-                            
-			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.25)
+			    
+			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35)
 
 			    if (#squad.group.members > 80) then
 				squad.cycles = 6
@@ -114,9 +109,21 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 			    else
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
 			    end
-			    
-			    group.set_command(attackCmd)
-			    group.start_moving()
+
+			    if surface.can_place_entity({name="behemoth-biter", position=attackPosition}) then
+				group.set_command(attackCmd)
+				group.start_moving()
+			    else
+				local newAttackPosition = surface.find_non_colliding_position("behemoth-biter", attackPosition, 5, 2)
+				if newAttackPosition then
+				    attackPosition.x = newAttackPosition.x
+				    attackPosition.y = newAttackPosition.y
+				    group.set_command(attackCmd)
+				    group.start_moving()
+				else
+				    addSquadMovementPenalty(natives, squad, attackChunk.cX, attackChunk.cY)
+				end
+			    end
 			elseif not squad.frenzy and not squad.rabid and
 			    ((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or
 				(attackChunk[PLAYER_BASE_GENERATOR] ~= 0)) then

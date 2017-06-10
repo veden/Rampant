@@ -23,14 +23,12 @@ function baseProcessor.processBases(regionMap, surface, natives, tick)
     local baseIndex = natives.baseIndex
     local bases = natives.bases
 
-    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
-
     local endIndex = mMin(baseIndex+BASE_QUEUE_SIZE, #bases)
     for index = baseIndex, endIndex do
         local base = bases[index]
 
 	buildOrder(regionMap, natives, base, surface, tick)
-	advanceTendrils(regionMap, base, surface, tempNeighbors)
+	advanceTendrils(regionMap, base, surface, tick)
     end
 
     if (endIndex == #bases) then

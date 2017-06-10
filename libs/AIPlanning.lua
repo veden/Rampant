@@ -49,7 +49,7 @@ local function isShockwaveReady(evolution_factor, natives, surface, tick, maxPoi
 	(tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and
 	((evolution_factor > 0.7) and
 		(natives.points > maxPoints * 0.85) and
-		(#natives.squads > AI_MAX_SQUAD_COUNT * 0.35))
+		(#natives.squads > AI_MAX_SQUAD_COUNT * 0.45))
 end
 
 function aiPlanning.planning(natives, evolution_factor, tick, surface)

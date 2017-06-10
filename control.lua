@@ -98,6 +98,8 @@ local function rebuildRegionMap()
     regionMap.processQueue = {}
     regionMap.processPointer = 1
     regionMap.scanPointer = 1
+    regionMap.neighbors = { nil, nil, nil, nil, nil, nil, nil, nil }
+    regionMap.cardinalNeighbors = { nil, nil, nil, nil }
 
     -- switched over to tick event
     regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
@@ -234,13 +236,11 @@ local function onIonCannonFired(event)
 	end
 	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
 	if chunk then
-	    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 	    rallyUnits(chunk,
 		       regionMap,
 		       surface,
 		       natives,
-		       event.tick,
-		       tempNeighbors)
+		       event.tick)
 	end
     end    
 end
@@ -270,13 +270,11 @@ local function onDeath(event)
 				     natives,
 				     tick)
 			if (math.random() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
 			    rallyUnits(deathChunk,
 				       regionMap,
 				       surface,
 				       natives,
-				       tick,
-				       tempNeighbors)
+				       tick)
 			end
 		    end
                 end
