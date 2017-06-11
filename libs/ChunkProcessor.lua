@@ -26,6 +26,9 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 		   force=false}
     
     local count = 0
+
+    local chunkTiles = regionMap.chunkTiles
+    
     local start = #pendingStack
     for i=start, 1, -1 do
         local event = pendingStack[i]
@@ -47,14 +50,14 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         end
         regionMap[chunkX][chunk.cY] = chunk
         
-        checkChunkPassability(chunk, surface)
+        checkChunkPassability(chunkTiles, chunk, surface)
         scoreChunk(regionMap, chunk, surface, natives, tick, query)
         processQueue[#processQueue+1] = chunk
-	if (count >= 1000) then
+	if (count >= 200) then
 	    break
 	end
     end
-    if (count >= 1000) and (start > 0) then
+    if (count >= 200) and (start > 0) then
 	surface.print("Rampant - " .. (start - count) .. " Remaining chunks to process")
     end
 end

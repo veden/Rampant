@@ -118,16 +118,7 @@ function unitGroupUtils.addSquadMovementPenalty(natives, squad, chunkX, chunkY)
             penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
 		local group = squad.group
-		local members = group.members
-		for x=1,#members do
-		    members[x].destroy()
-		end
-		natives.points = natives.points + (#members * natives.unitRefundAmount)
-
-		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-		    natives.points = AI_MAX_OVERFLOW_POINTS
-		end
-
+		unitGroupUtils.recycleBiters(natives, group.members)
 		group.destroy()
 	    end
             return
@@ -166,8 +157,6 @@ function unitGroupUtils.cleanSquads(natives)
     local squads = natives.squads
     local squadCount = #squads
 
-    local weight = natives.unitRefundAmount
-
     local cleanSquads = {}
 
     for i=1, squadCount do
@@ -179,14 +168,7 @@ function unitGroupUtils.cleanSquads(natives)
 		group.destroy()
 	    elseif (memberCount > AI_MAX_BITER_GROUP_SIZE) then
 		local members = group.members
-		for x=1,memberCount do
-		    members[x].destroy()
-		end
-		natives.points = natives.points + (memberCount * weight)
-
-		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-		    natives.points = AI_MAX_OVERFLOW_POINTS
-		end
+		unitGroupUtils.recycleBiters(natives, members)
 		group.destroy()
 	    else
 		local status = squad.status
@@ -211,6 +193,17 @@ function unitGroupUtils.cleanSquads(natives)
     natives.squads = cleanSquads
 end
 
+function unitGroupUtils.recycleBiters(natives, biters)
+    local unitCount = #biters
+    for i=1,unitCount do
+	biters[i].destroy()
+    end
+    natives.points = natives.points + (unitCount * natives.unitRefundAmount)
+
+    if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+	natives.points = AI_MAX_OVERFLOW_POINTS
+    end
+end
 
 function unitGroupUtils.regroupSquads(natives)
     local groupThreshold = AI_SQUAD_MERGE_THRESHOLD

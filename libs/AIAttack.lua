@@ -19,6 +19,8 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 
+local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
+
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_GATHERING = defines.group_state.gathering
@@ -32,7 +34,6 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByPosition = mapUtils.getChunkByPosition
-local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
@@ -42,19 +43,13 @@ local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
 
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
 
-local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
+local scoreNeighborsForAttack = neighborUtils.scoreNeighborsForAttack
 
 -- module code
 
-local function validLocation(x, chunk, neighborChunk)
-    return canMoveChunkDirection(x, chunk, neighborChunk)
-end
-
-local function scoreAttackLocation(squad, neighborChunk, surface)
-    local squadMovementPenalty = lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
-    local r = -- (surface.get_pollution(neighborChunk) * 0.01) +
-	neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 50) 
-    return r - squadMovementPenalty -- - (neighborChunk[NEST_COUNT] * 30)
+local function scoreAttackLocation(squad, neighborChunk)
+    local damage = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    return damage - lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
 end
 
 function aiAttack.squadAttack(regionMap, surface, natives)
@@ -79,15 +74,12 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 		local groupPosition = group.position
 		local chunk = getChunkByPosition(regionMap, groupPosition.x, groupPosition.y)
 		if chunk then
-		    local attackChunk, attackDirection = scoreNeighborsWithDirection(chunk,
-										     getNeighborChunks(regionMap,
-												       chunk.cX,
-												       chunk.cY),
-										     validLocation,
-										     scoreAttackLocation,
-										     squad,
-										     surface,
-										     true)
+		    local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
+										 getNeighborChunks(regionMap,
+												   chunk.cX,
+												   chunk.cY),
+										 scoreAttackLocation,
+										 squad)
 		    addSquadMovementPenalty(natives, squad, chunk.cX, chunk.cY)
 		    if group.valid and attackChunk then
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or

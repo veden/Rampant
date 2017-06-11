@@ -38,7 +38,7 @@ local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByIndex = mapUtils.getChunkByIndex
-local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
+local scoreNeighborsForFormation = neighborUtils.scoreNeighborsForFormation
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
 
@@ -65,15 +65,15 @@ local function attackWaveValidCandidate(chunk, natives, surface)
 	total = total + surface.get_pollution(chunk)
     end
     
-    return (total > natives.attackWaveThreshold) and hasBasePheromone and hasPlayerPheromone
+    return (total > natives.attackWaveThreshold) and (hasBasePheromone or hasPlayerPheromone)
 end
 
-local function scoreUnitGroupLocation(squad, neighborChunk, surface)
-    return surface.get_pollution(neighborChunk) + neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
+local function scoreUnitGroupLocation(neighborChunk)
+    return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
 
-local function validUnitGroupLocation(x, chunk, neighborChunk)
-    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (neighborChunk[NEST_COUNT] ~= 0)
+local function validUnitGroupLocation(neighborChunk)
+    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (neighborChunk[NEST_COUNT] == 0)
 end
 
 function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
@@ -83,11 +83,13 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
 	local cY = chunk.cY
 	for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE do
 	    for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE do
-		local rallyChunk = getChunkByIndex(regionMap, x, y)
-		if rallyChunk and (rallyChunk[NEST_COUNT] ~= 0) and (x ~= cX) and (y ~= cY) then
-		    aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
-		    if (natives.points < AI_VENGENCE_SQUAD_COST) then
-			return
+		if (x ~= cX) and (y ~= cY) then
+		    local rallyChunk = getChunkByIndex(regionMap, x, y)
+		    if rallyChunk and (rallyChunk[NEST_COUNT] ~= 0) then
+			aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
+			if (natives.points < AI_VENGENCE_SQUAD_COST) then
+			    return
+			end
 		    end
 		end
 	    end
@@ -96,18 +98,13 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
 end
 
 function aiBuilding.formSquads(regionMap, surface, natives, chunk, cost)
-    local valid = ((cost == AI_VENGENCE_SQUAD_COST) or
-	    ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface)))
+    local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
 
     if valid and (math.random() < natives.formSquadThreshold) then
 	
-	local squadPath, squadDirection = scoreNeighborsWithDirection(chunk,
-								      getNeighborChunks(regionMap, chunk.cX, chunk.cY),
-								      validUnitGroupLocation,
-								      scoreUnitGroupLocation,
-								      nil,
-								      surface,
-								      false)
+	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(regionMap, chunk.cX, chunk.cY),
+								     validUnitGroupLocation,
+								     scoreUnitGroupLocation)
 	if squadPath then
 	    local squadPosition = positionFromDirectionAndChunk(squadDirection, chunk, {x=0,y=0}, 0.98)
 

@@ -14,7 +14,7 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
 
 MP should be working  
-If experiencing desyncs, after an update, please due the following:  
+If experiencing desyncs, after an update, please do the following:  
 	1) let me know  
 	2) Load save with Rampant enabled  
 	3) Save the map after Rampant has been updated  
@@ -55,6 +55,18 @@ Configure Options not in game menu:
 - Base Expansion  
 
 # Version History
+
+0.15.15 -  
+- Fixed: Desync when reindexing chunks (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=180#p287941)  
+- Fixed: Switched from "and" to "or" for player pheromone and base pheromone to form squads  
+- Fixed: Inverted logic comparison for unit group formation  
+- Fixed: Added checks for if a nest exists on player scan before creating squads  
+- Tweak: Reduced map setting for path finding min steps to check for path from 350 to 100  
+- Optimization: Reduced max number of chunks to processes at anyone time from 1000 to 200  
+- Optimization: Specialized neighbor search function  
+- Optimization: Chunk scoring for determining chunk path rating and passable status changed to two pass  
+- Framework: Refactored recycle biters into separate function  
+- Framework: Removed custom ai option until it is complete  
 
 0.15.14 -  
 - Tweak: Increased pheromone output of:

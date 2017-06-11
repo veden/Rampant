@@ -2,6 +2,8 @@ local mapProcessor = {}
 
 -- imports
 
+local unitGroupUtils = require("UnitGroupUtils")
+
 local pheromoneUtils = require("PheromoneUtils")
 local aiBuilding = require("AIBuilding")
 local aiPredicates = require("AIPredicates")
@@ -25,7 +27,6 @@ local CHUNK_TICK = constants.CHUNK_TICK
 local NEST_COUNT = constants.NEST_COUNT
 local WORM_COUNT = constants.WORM_COUNT
 
-local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
@@ -43,6 +44,8 @@ local formSquads = aiBuilding.formSquads
 
 local getChunkByIndex = mapUtils.getChunkByIndex
 local getChunkByPosition = mapUtils.getChunkByPosition
+
+local recycleBiters = unitGroupUtils.recycleBiters
 
 local playerScent = pheromoneUtils.playerScent
 
@@ -158,18 +161,19 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 			    chunk[CHUNK_TICK] = tick
 
 			    processPheromone(regionMap, chunk)
+
+			    if (chunk[NEST_COUNT] ~= 0) then
+				if squads then
+				    formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
+				    squads = natives.points >= AI_SQUAD_COST
+				end
+				if vengence then
+				    formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
+				    vengence = natives.points >= AI_VENGENCE_SQUAD_COST
+				end
+			    end
 			    
-			    if squads then
-				formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
-				squads = natives.points >= AI_SQUAD_COST
-			    end
-			    if vengence then
-				formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				vengence = natives.points >= AI_VENGENCE_SQUAD_COST
-			    end
-
 			    scents(chunk)
-
 			end
 		    end
 		end
@@ -197,8 +201,6 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
-
-    local unitRefundAmount = natives.unitRefundAmount
     
     for x=index,endIndex do
 	local chunk = processQueue[x]
@@ -222,17 +224,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	    
 	    if not closeBy then
-		local units = surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE)
-
-		unitCount = #units
-		for i=1,unitCount do
-		    units[i].destroy()
-		end
-		natives.points = natives.points + (unitCount * unitRefundAmount)
-
-		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-		    natives.points = AI_MAX_OVERFLOW_POINTS
-		end
+		recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
 	    end
 	end
 
@@ -249,7 +241,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 		    entity.destructible = false
 		end
 	    end
-	    if (value ~= nil) then
+	    if value then
 		playerBaseGenerator = playerBaseGenerator + value
 	    end
 	end

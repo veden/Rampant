@@ -46,52 +46,45 @@ local addEnemyStructureToChunk = baseRegisterUtils.addEnemyStructureToChunk
 
 -- module code
 
-local function checkForDeadendTiles(constantCoordinate, iteratingCoordinate, direction, get_tile)
-    local tile
-    
-    for x=iteratingCoordinate, iteratingCoordinate + 31 do
-        if (direction == CHUNK_NORTH_SOUTH) then
-            tile = get_tile(constantCoordinate, x)
-        else
-            tile = get_tile(x, constantCoordinate)
-        end
-        if tile.collides_with("player-layer") then
-            return true
-        end
-    end
-    return false
-end
-
-local function checkForValidTiles(x, y, get_tile)
-    local count = 0
-    for xi=x,x+31 do
-	for yi=y,y+31 do
-	    if not get_tile(xi, yi).collides_with("player-layer") then
-		count = count + 1
-	    end
-	end
-    end
-    return count / 1024
-end
-
-function chunkUtils.checkChunkPassability(chunk, surface)   
+function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)   
     local x = chunk.x
     local y = chunk.y
+    local endY = y + 31
     local get_tile = surface.get_tile
+    local i = 0
+    local validTiles = 0
     
     local passableNorthSouth = false
     local passableEastWest = false
     for xi=x, x + 31 do
-        if not checkForDeadendTiles(xi, y, CHUNK_NORTH_SOUTH, get_tile) then
-            passableNorthSouth = true
-            break
-        end
+	local northSouth = true
+	for yi=y, endY do
+	    local tile = get_tile(xi, yi)
+	    i = i + 1
+	    if not tile.collides_with("player-layer") then
+		validTiles = validTiles + 1
+		chunkTiles[i] = tile
+	    else
+		northSouth = false
+		chunkTiles[i] = nil
+	    end
+	end
+	if northSouth then
+	    passableNorthSouth = true
+	end
     end
-    for yi=y, y + 31 do
-        if not checkForDeadendTiles(yi, x, CHUNK_EAST_WEST, get_tile) then
-            passableEastWest = true
-            break
-        end
+    for yi=1, 32 do
+	local westEast = true
+	for xi=0, 992, 32 do
+	    local tile = chunkTiles[yi + xi]
+	    if not tile then
+		westEast = false
+		break
+	    end
+	end
+	if westEast then
+	    passableEastWest = true
+	end
     end
 
     local pass = CHUNK_IMPASSABLE
@@ -103,8 +96,9 @@ function chunkUtils.checkChunkPassability(chunk, surface)
 	pass = CHUNK_NORTH_SOUTH
     end
     if (pass ~= CHUNK_IMPASSABLE) then
-	chunk[PATH_RATING] = checkForValidTiles(x, y, get_tile)
-	if (chunk[PATH_RATING] < 0.6) then
+	local rating = validTiles / 1024
+	chunk[PATH_RATING] = rating
+	if (rating < 0.6) then
 	    pass = CHUNK_IMPASSABLE
 	end
     end
