@@ -100,13 +100,18 @@ local function rebuildRegionMap()
     regionMap.scanPointer = 1
     regionMap.neighbors = { nil, nil, nil, nil, nil, nil, nil, nil }
     regionMap.cardinalNeighbors = { nil, nil, nil, nil }
+    regionMap.chunkTiles = {}
+    for i=1,1024 do
+	regionMap.chunkTiles[i] = nil
+    end
 
     -- switched over to tick event
     regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
     regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
     
     -- clear pending chunks, will be added when loop runs below
-    pendingChunks = {}
+    global.pendingChunks = {}
+    pendingChunks = global.pendingChunks
 
     -- queue all current chunks that wont be generated during play
     local surface = game.surfaces[1]
@@ -155,16 +160,18 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
-    changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
-    if natives.useCustomAI then
-	game.forces.enemy.ai_controllable = false
-    else
-	game.forces.enemy.ai_controllable = true
-    end
-    if changed and newValue then
-	rebuildRegionMap()
-	return false
-    end
+    -- RE-ENABLE WHEN COMPLETE
+    natives.useCustomAI = constants.DEV_CUSTOM_AI
+    -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+    -- if natives.useCustomAI then
+    -- 	game.forces.enemy.ai_controllable = false
+    -- else
+    -- 	game.forces.enemy.ai_controllable = true
+    -- end
+    -- if changed and newValue then
+    -- 	rebuildRegionMap()
+    -- 	return false
+    -- end
     return true
 end
 

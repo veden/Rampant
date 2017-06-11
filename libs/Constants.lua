@@ -31,6 +31,10 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 constants.INTERVAL_PROCESS = 19
 constants.INTERVAL_LOGIC = 38
 
+constants.PLAYER_PHEROMONE_MULTIPLER = 100
+
+constants.DEV_CUSTOM_AI = false
+
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
@@ -84,13 +88,11 @@ constants.BASE_ALIGNMENT_BURROW = 3
 constants.BASE_ALIGNMENT_SUICIDE = 4
 constants.BASE_ALIGNMENT_INFEST = 5
 
-
 -- ai retreat
 
 constants.NO_RETREAT_BASE_PERCENT = 0.10
 constants.NO_RETREAT_EVOLUTION_BONUS_MAX = 0.25
 constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
-
 
 -- pheromone amounts
 

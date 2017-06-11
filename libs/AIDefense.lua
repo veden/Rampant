@@ -36,19 +36,13 @@ local findNearBySquad = unitGroupUtils.findNearBySquad
 local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
-local scoreNeighborsWithDirection = neighborUtils.scoreNeighborsWithDirection
-local canMoveChunkDirection = mapUtils.canMoveChunkDirection
+local scoreNeighborsForRetreat = neighborUtils.scoreNeighborsForRetreat
 
 -- module code
 
-local function validRetreatLocation(x, chunk, neighborChunk)
-    return canMoveChunkDirection(x, chunk, neighborChunk)
-end
-
-local function scoreRetreatLocation(squad, neighborChunk, surface)
-    local safeScore = -neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE]
-    local dangerScore = surface.get_pollution(neighborChunk) + (neighborChunk[PLAYER_PHEROMONE] * 100) --+ (neighborChunk[ENEMY_BASE_GENERATOR] * 50)
-    return safeScore - dangerScore
+local function scoreRetreatLocation(neighborChunk)
+    local danger = neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100)
+    return -danger
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, natives, tick)
@@ -65,15 +59,11 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 	
 	if performRetreat then
 	    chunk[RETREAT_TRIGGERED] = tick
-	    local exitPath,exitDirection  = scoreNeighborsWithDirection(chunk,
-									getNeighborChunks(regionMap,
-											  chunk.cX,
-											  chunk.cY),
-									validRetreatLocation,
-									scoreRetreatLocation,
-									nil,
-									surface,
-									false)
+	    local exitPath,exitDirection  = scoreNeighborsForRetreat(chunk,
+								     getNeighborChunks(regionMap,
+										       chunk.cX,
+										       chunk.cY),
+								     scoreRetreatLocation)
 	    if exitPath then
 		local retreatPosition = positionFromDirectionAndChunk(exitDirection, position, {x=0,y=0}, 0.98)
 

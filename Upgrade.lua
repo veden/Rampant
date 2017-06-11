@@ -16,7 +16,7 @@ local roundToNearest = mathUtils.roundToNearest
 
 -- module code
 
-function upgrade.attempt(natives, regionMap)
+function upgrade.attempt(natives)
     local starting = global.version
     if (global.version == nil) then
         natives.squads = {}
@@ -90,19 +90,16 @@ function upgrade.attempt(natives, regionMap)
 	    For making changes to maps that haven't had Rampant loaded and aren't starting from a brand new map
 	    Was causing desyncs when client connected before having the below settings saved into the map 0.15.15 factorio
 	--]]
-	local mapSettings = game.map_settings
-	
-	mapSettings.path_finder.short_request_ratio = constants.PATH_FINDER_SHORT_REQUEST_RATIO
-	mapSettings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
-	mapSettings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
-	mapSettings.path_finder.min_steps_to_check_path_find_termination = constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
+	game.map_settings.path_finder.short_request_ratio = constants.PATH_FINDER_SHORT_REQUEST_RATIO
+	game.map_settings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
+	game.map_settings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
 
-	mapSettings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
+	game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
 
-	mapSettings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
-	mapSettings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
-	mapSettings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
-	mapSettings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
+	game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
+	game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
+	game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
+	game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
 	game.surfaces[1].print("Rampant - Version 0.15.10")
 	global.version = constants.VERSION_22
@@ -121,19 +118,20 @@ function upgrade.attempt(natives, regionMap)
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
 
-	local mapSettings = game.map_settings
-	mapSettings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
-	mapSettings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
+	game.map_settings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
+	game.map_settings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
 	
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
-	
-	natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
-	if natives.useCustomAI then
-	    game.forces.enemy.ai_controllable = false
-	else
-	    game.forces.enemy.ai_controllable = true
-	end
+
+	-- RE-ENABLE WHEN COMPLETE
+	natives.useCustomAI = constants.DEV_CUSTOM_AI
+	-- natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
+	-- if natives.useCustomAI then
+	--     game.forces.enemy.ai_controllable = false
+	-- else
+	--     game.forces.enemy.ai_controllable = true
+	-- end
 	natives.bases = {}
 	natives.baseDistanceMin = 0
 	natives.baseIndex = 1
@@ -143,6 +141,8 @@ function upgrade.attempt(natives, regionMap)
 	global.version = constants.VERSION_23
     end
     if (global.version < constants.VERSION_25) then
+
+	game.map_settings.path_finder.min_steps_to_check_path_find_termination = constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 	
 	game.surfaces[1].print("Rampant - Version 0.15.15")
 	global.version = constants.VERSION_25

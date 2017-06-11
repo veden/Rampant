@@ -268,11 +268,11 @@ function tests.showMovementGrid()
     for i=1,#chunks do
 	local chunk = chunks[i]
 	local color = "concrete"
-	if (chunk[constants.NORTH_SOUTH_PASSABLE] and chunk[constants.EAST_WEST_PASSABLE]) then
+	if (chunk[constants.PASSABLE] == constants.CHUNK_ALL_DIRECTIONS) then
 	    color = "hazard-concrete-left"
-	elseif chunk[constants.NORTH_SOUTH_PASSABLE] then
+	elseif (chunk[constants.PASSABLE] == constants.CHUNK_NORTH_SOUTH) then
 	    color = "deepwater"
-	elseif chunk[constants.EAST_WEST_PASSABLE] then
+	elseif (chunk[constants.PASSABLE] == constants.CHUNK_EAST_WEST) then
 	    color = "water-green"
 	end
 	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
