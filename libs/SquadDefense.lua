@@ -67,6 +67,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 	    if exitPath then
 		local retreatPosition = positionFromDirectionAndChunk(exitDirection, position, {x=0,y=0}, 0.98)
 
+		
 		if not surface.can_place_entity({name="behemoth-biter", position=retreatPosition}) then
 		    local newRetreatPosition = surface.find_non_colliding_position("behemoth-biter", retreatPosition, 5, 2)
 		    if newRetreatPosition then

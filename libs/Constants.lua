@@ -12,6 +12,7 @@ constants.VERSION_20 = 20
 constants.VERSION_22 = 22
 constants.VERSION_23 = 23
 constants.VERSION_25 = 25
+constants.VERSION_26 = 26
 
 -- misc
 
@@ -33,7 +34,7 @@ constants.INTERVAL_LOGIC = 38
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
-constants.DEV_CUSTOM_AI = false
+constants.DEV_CUSTOM_AI = true
 
 -- chunk properties
 

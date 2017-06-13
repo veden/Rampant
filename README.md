@@ -56,6 +56,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.16 -  
+
+
 0.15.15 -  
 - Fixed: Desync when reindexing chunks (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=180#p287941)  
 - Fixed: Switched from "and" to "or" for player pheromone and base pheromone to form squads  
