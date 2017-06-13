@@ -16,6 +16,10 @@ local mMax = math.max
 local mSqrt = math.sqrt
 local mLog10 = math.log10
 
+local mFloor = math.floor
+
+-- module code
+
 function mathUtils.roundToNearest(number, multiple)
     local num = number + (multiple * 0.5)
     return num - (num % multiple)
@@ -58,6 +62,35 @@ function mathUtils.gaussianRandomRange(mean, std_dev, min, max, rg)
 	q = mathUtils.gaussianRandom(mean, std_dev, rg)
     until (q >= min) and (q <= max)
     return q
+end
+
+function mathUtils.positionToChunkOffset(position)
+    return mFloor(position.x * 0.03125), mFloor(position.y * 0.03125)
+end
+
+function mathUtils.euclideanDistanceNamed(p1, p2)
+    local xs = p1.x - p2.x
+    local ys = p1.y - p2.y
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+function mathUtils.euclideanDistancePoints(x1, y1, x2, y2)
+    local xs = x1 - x2
+    local ys = y1 - y2
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+function mathUtils.euclideanDistanceArray(p1, p2)
+    local xs = p1[1] - p2[1]
+    local ys = p1[2] - p2[2]
+    return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+function mathUtils.distortPosition(position)
+    local xDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
+    local yDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
+    position.x = position.x + (xDistort * 48)
+    position.y = position.y + (yDistort * 48)
 end
 
 return mathUtils

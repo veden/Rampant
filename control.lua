@@ -8,9 +8,9 @@ local baseProcessor = require("libs/BaseProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
-local aiDefense = require("libs/AIDefense")
-local aiAttack = require("libs/AIAttack")
-local aiBuilding = require("libs/AIBuilding")
+local squadDefense = require("libs/SquadDefense")
+local squadAttack = require("libs/SquadAttack")
+local aiAttackWave = require("libs/AIAttackWave")
 local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
@@ -44,7 +44,7 @@ local scanMap = mapProcessor.scanMap
 
 local planning = aiPlanning.planning
 
-local rallyUnits = aiBuilding.rallyUnits
+local rallyUnits = aiAttackWave.rallyUnits
 
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
@@ -53,10 +53,10 @@ local cleanSquads = unitGroupUtils.cleanSquads
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
-local squadAttack = aiAttack.squadAttack
-local squadBeginAttack = aiAttack.squadBeginAttack
+local squadsAttack = squadAttack.squadsAttack
+local squadsBeginAttack = squadAttack.squadsBeginAttack
 
-local retreatUnits = aiDefense.retreatUnits
+local retreatUnits = squadDefense.retreatUnits
 
 local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = baseRegisterUtils.unregisterEnemyBaseStructure
@@ -209,8 +209,8 @@ local function onTick(event)
 	    	processBases(regionMap, surface, natives, tick)
 	    end
 	    
-	    squadBeginAttack(natives, players)
-	    squadAttack(regionMap, surface, natives)
+	    squadsBeginAttack(natives, players)
+	    squadsAttack(regionMap, surface, natives)
 	end
 
 	processMap(regionMap, surface, natives, tick)
@@ -316,7 +316,7 @@ end
 local function onSurfaceTileChange(event)
     -- local player = game.players[event.player_index]
     -- if (player.surface.index == 1) then
-    -- 	aiBuilding.fillTunnel(regionMap, player.surface, natives, event.positions)
+    -- 	aiAttackWave.fillTunnel(regionMap, player.surface, natives, event.positions)
     -- end
 end
 

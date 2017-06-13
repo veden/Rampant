@@ -5,7 +5,7 @@ local mapProcessor = {}
 local unitGroupUtils = require("UnitGroupUtils")
 
 local pheromoneUtils = require("PheromoneUtils")
-local aiBuilding = require("AIBuilding")
+local aiAttackWave = require("AIAttackWave")
 local aiPredicates = require("AIPredicates")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
@@ -40,7 +40,7 @@ local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 local scents = pheromoneUtils.scents
 local processPheromone = pheromoneUtils.processPheromone
 
-local formSquads = aiBuilding.formSquads
+local formSquads = aiAttackWave.formSquads
 
 local getChunkByIndex = mapUtils.getChunkByIndex
 local getChunkByPosition = mapUtils.getChunkByPosition

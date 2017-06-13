@@ -1,4 +1,4 @@
-local aiAttack = {}
+local squadAttack = {}
 
 -- imports
 
@@ -7,6 +7,7 @@ local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local playerUtils = require("PlayerUtils")
 local neighborUtils = require("NeighborUtils")
+local movementUtils = require("MovementUtils")
 
 -- constants
 
@@ -32,9 +33,11 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
+local findMovementPoint = movementUtils.findMovementPoint
+
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByPosition = mapUtils.getChunkByPosition
-local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
+local addMovementPenalty = unitGroupUtils.addMovementPenalty
 local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
@@ -52,7 +55,7 @@ local function scoreAttackLocation(squad, neighborChunk)
     return damage - lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
 end
 
-function aiAttack.squadAttack(regionMap, surface, natives)
+function squadAttack.squadsAttack(regionMap, surface, natives)
     local squads = natives.squads
     local attackPosition
     local attackCmd
@@ -80,18 +83,12 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 												   chunk.cY),
 										 scoreAttackLocation,
 										 squad)
-		    addSquadMovementPenalty(natives, squad, chunk.cX, chunk.cY)
+		    addMovementPenalty(natives, squad, chunk.cX, chunk.cY)
 		    if group.valid and attackChunk then
 			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
 			((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
 			    
-			    positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35)
-
-			    if (#squad.group.members > 80) then
-				squad.cycles = 6
-			    else
-				squad.cycles = 4
-			    end
+			    squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
 			    local moreFrenzy = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100)
 			    squad.frenzy = moreFrenzy
@@ -102,19 +99,18 @@ function aiAttack.squadAttack(regionMap, surface, natives)
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
 			    end
 
-			    if surface.can_place_entity({name="behemoth-biter", position=attackPosition}) then
+			    local position = findMovementPoint(surface,
+							       positionFromDirectionAndChunk(attackDirection,
+											     groupPosition,
+											     attackPosition,
+											     1.35))
+			    if position then
+				attackPosition.x = position.x
+				attackPosition.y = position.y
 				group.set_command(attackCmd)
 				group.start_moving()
 			    else
-				local newAttackPosition = surface.find_non_colliding_position("behemoth-biter", attackPosition, 5, 2)
-				if newAttackPosition then
-				    attackPosition.x = newAttackPosition.x
-				    attackPosition.y = newAttackPosition.y
-				    group.set_command(attackCmd)
-				    group.start_moving()
-				else
-				    addSquadMovementPenalty(natives, squad, attackChunk.cX, attackChunk.cY)
-				end
+				addMovementPenalty(natives, squad, attackChunk.cX, attackChunk.cY)
 			    end
 			elseif not squad.frenzy and not squad.rabid and
 			    ((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or
@@ -130,7 +126,7 @@ function aiAttack.squadAttack(regionMap, surface, natives)
     end
 end
 
-function aiAttack.squadBeginAttack(natives, players)
+function squadAttack.squadsBeginAttack(natives, players)
     local squads = natives.squads
     for i=1,#squads do
         local squad = squads[i]
@@ -154,4 +150,4 @@ function aiAttack.squadBeginAttack(natives, players)
     end
 end
 
-return aiAttack
+return squadAttack

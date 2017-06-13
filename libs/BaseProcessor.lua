@@ -2,7 +2,7 @@ local baseProcessor = {}
 
 -- imports
 
-local baseUtils = require("BaseUtils")
+local buildUtils = require("BuildUtils")
 local tendrilUtils = require("TendrilUtils")
 local constants = require("Constants")
 
@@ -14,7 +14,7 @@ local BASE_QUEUE_SIZE = constants.BASE_QUEUE_SIZE
 
 local mMin = math.min
 
-local buildOrder = baseUtils.buildOrder
+local buildOrder = buildUtils.buildOrder
 local advanceTendrils = tendrilUtils.advanceTendrils
 
 -- module code
@@ -28,7 +28,7 @@ function baseProcessor.processBases(regionMap, surface, natives, tick)
         local base = bases[index]
 
 	buildOrder(regionMap, natives, base, surface, tick)
-	advanceTendrils(regionMap, base, surface, tick)
+	advanceTendrils(regionMap, base, surface, tick, natives)
     end
 
     if (endIndex == #bases) then

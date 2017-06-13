@@ -4,8 +4,6 @@ local mapUtils = {}
 
 local constants = require("Constants")
 
-local mathUtils = require("MathUtils")
-
 -- constants
 
 local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
@@ -20,8 +18,6 @@ local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
-
-local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 local mFloor = math.floor
 
@@ -41,10 +37,6 @@ function mapUtils.getChunkByIndex(regionMap, x, y)
         return chunkX[y]
     end
     return nil
-end
-
-function mapUtils.positionToChunkOffset(position)
-    return mFloor(position.x * 0.03125), mFloor(position.y * 0.03125)
 end
 
 --[[
@@ -116,33 +108,7 @@ function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
     return neighbors
 end
 
-function mapUtils.euclideanDistanceNamed(p1, p2)
-    local xs = p1.x - p2.x
-    local ys = p1.y - p2.y
-    return ((xs * xs) + (ys * ys)) ^ 0.5
-end
-
-function mapUtils.euclideanDistancePoints(x1, y1, x2, y2)
-    local xs = x1 - x2
-    local ys = y1 - y2
-    return ((xs * xs) + (ys * ys)) ^ 0.5
-end
-
-function mapUtils.euclideanDistanceArray(p1, p2)
-    local xs = p1[1] - p2[1]
-    local ys = p1[2] - p2[2]
-    return ((xs * xs) + (ys * ys)) ^ 0.5
-end
-
-function mapUtils.distortPosition(position)
-    local xDistort = gaussianRandomRange(1, 0.5, 0, 2) - 1
-    local yDistort = gaussianRandomRange(1, 0.5, 0, 2) - 1
-    position.x = position.x + (xDistort * 48)
-    position.y = position.y + (yDistort * 48)
-end
-
 function mapUtils.positionFromDirectionAndChunk(direction, startPosition, position, scaling)
-    --    local position = {x=0, y=0}
     if (direction == 1) then
 	position.x = startPosition.x - CHUNK_SIZE * scaling
 	position.y = startPosition.y - CHUNK_SIZE * scaling

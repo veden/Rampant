@@ -130,10 +130,12 @@ function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQue
 	if (nests > 0) or (worms > 0) or (biters > 0) then
 	    for f=1, #enemies do
 		local enemy = enemies[f]
-		if (enemy.name ~= "biter-spawner-hive") then
-		    enemy.destroy()
-		else
+		if (enemy.name == "small-tendril-biter-rampant") then
+		    biters = biters - 1
+		elseif (enemy.name == "biter-spawner-hive") then
 		    nests = nests - 1
+		else 
+		    enemy.destroy()
 		end
 	    end
 	    local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)

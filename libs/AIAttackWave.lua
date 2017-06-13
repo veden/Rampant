@@ -1,4 +1,4 @@
-local aiBuilding = {}
+local aiAttackWave = {}
 
 -- imports
 
@@ -76,7 +76,7 @@ local function validUnitGroupLocation(neighborChunk)
     return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (neighborChunk[NEST_COUNT] == 0)
 end
 
-function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
+function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
     if (tick - chunk[RALLY_TRIGGERED] > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST) then
 	chunk[RALLY_TRIGGERED] = tick
 	local cX = chunk.cX
@@ -86,7 +86,7 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
 		if (x ~= cX) and (y ~= cY) then
 		    local rallyChunk = getChunkByIndex(regionMap, x, y)
 		    if rallyChunk and (rallyChunk[NEST_COUNT] ~= 0) then
-			aiBuilding.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
+			aiAttackWave.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
 			if (natives.points < AI_VENGENCE_SQUAD_COST) then
 			    return
 			end
@@ -97,7 +97,7 @@ function aiBuilding.rallyUnits(chunk, regionMap, surface, natives, tick)
     end
 end
 
-function aiBuilding.formSquads(regionMap, surface, natives, chunk, cost)
+function aiAttackWave.formSquads(regionMap, surface, natives, chunk, cost)
     local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
 
     if valid and (math.random() < natives.formSquadThreshold) then
@@ -131,4 +131,4 @@ function aiBuilding.formSquads(regionMap, surface, natives, chunk, cost)
     end
 end
 
-return aiBuilding
+return aiAttackWave
