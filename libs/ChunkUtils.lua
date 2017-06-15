@@ -46,21 +46,24 @@ local addEnemyStructureToChunk = baseRegisterUtils.addEnemyStructureToChunk
 
 -- module code
 
-function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)   
-    local x = chunk.x
-    local y = chunk.y
+local function fullScan(chunkTiles, x, y, get_tile)
     local endY = y + 31
-    local get_tile = surface.get_tile
     local i = 0
     local validTiles = 0
     
     local passableNorthSouth = false
     local passableEastWest = false
+    -- local skip = true
     for xi=x, x + 31 do
 	local northSouth = true
+	-- skip = not skip
 	for yi=y, endY do
-	    local tile = get_tile(xi, yi)
 	    i = i + 1
+	    -- if skip then
+	    -- 	skip = false
+	    -- else
+	    -- 	skip = true
+	    local tile = get_tile(xi, yi)
 	    if not tile.collides_with("player-layer") then
 		validTiles = validTiles + 1
 		chunkTiles[i] = tile
@@ -68,94 +71,127 @@ function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)
 		northSouth = false
 		chunkTiles[i] = nil
 	    end
+	    -- end
 	end
 	if northSouth then
 	    passableNorthSouth = true
 	end
     end
+    -- skip = true
     for yi=1, 32 do
 	local westEast = true
+	-- skip = not skip
 	for xi=0, 992, 32 do
-	    local tile = chunkTiles[yi + xi]
-	    if not tile then
+	    -- if skip then
+	    -- 	skip = false
+	    -- else
+	    -- 	skip = true
+	    if not chunkTiles[yi + xi] then
 		westEast = false
 		break
 	    end
+	    -- end
 	end
 	if westEast then
 	    passableEastWest = true
+	    break
 	end
     end
+    return validTiles / 1024, passableNorthSouth, passableEastWest
+end
 
-    local pass = CHUNK_IMPASSABLE
-    if passableEastWest and passableNorthSouth then
-	pass = CHUNK_ALL_DIRECTIONS
-    elseif passableEastWest then
-	pass = CHUNK_EAST_WEST
-    elseif passableNorthSouth then
-	pass = CHUNK_NORTH_SOUTH
+local function spotCheck(x, y, get_tile)
+    local valid = 0
+    for offsetX = 0, 31, 5 do
+	for offsetY = 0, 31, 5 do
+	    local tile = get_tile(x + offsetX,
+				  y + offsetY)
+	    if not tile.collides_with("player-layer") then
+		valid = valid + 1
+	    end
+	end
     end
-    if (pass ~= CHUNK_IMPASSABLE) then
-	local rating = validTiles / 1024
+    
+    return valid
+end
+
+function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)   
+    local x = chunk.x
+    local y = chunk.y
+    
+    local get_tile = surface.get_tile
+
+    --[[
+	0 represents water chunk
+	1-48 chunk requires full scan
+	49 assume chunk is passable in all directions
+    --]]
+    local cleanSpotCheck = spotCheck(x, y, get_tile)
+
+    local pass = CHUNK_ALL_DIRECTIONS
+    if (cleanSpotCheck > 0) and (cleanSpotCheck < 49) then
+	pass = CHUNK_IMPASSABLE
+	local rating, passableNorthSouth, passableEastWest = fullScan(chunkTiles, x, y, get_tile, surface)
+
+	if passableEastWest and passableNorthSouth then
+	    pass = CHUNK_ALL_DIRECTIONS
+	elseif passableEastWest then
+	    pass = CHUNK_EAST_WEST
+	elseif passableNorthSouth then
+	    pass = CHUNK_NORTH_SOUTH
+	end
+	
 	chunk[PATH_RATING] = rating
 	if (rating < 0.6) then
 	    pass = CHUNK_IMPASSABLE
 	end
+    elseif (cleanSpotCheck == 0) then    
+	pass = CHUNK_IMPASSABLE
     end
     chunk[PASSABLE] = pass
 end
 
-function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tick, tempQuery)
-    local useCustomAI = natives.useCustomAI
-    
+function chunkUtils.remakeChunk(regionMap, chunk, surface, natives, tick, tempQuery)
     tempQuery.force = "enemy"
     local enemies = surface.find_entities_filtered(tempQuery)
 
-    local nests = 0
-    local worms = 0
-    local biters = 0
+    local points = 0
+    for f=1, #enemies do
+	local enemy = enemies[f]
+	local entityType = enemies[f].type
+	if not ((enemy.name == "small-tendril-biter-rampant") or (enemy.name == "biter-spawner-hive")) then
+	    if (entityType == "unit-spawner") then
+		points = points + 3
+	    elseif (entityType == "turret") then
+		points = points + 2
+	    elseif (entityType == "unit") then
+		points = points + 1
+	    end
+	    enemy.destroy()
+	end
+    end
+    local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
+    if foundBase then
+	foundBase.upgradePoints = foundBase.upgradePoints + points
+    end    
+end
+
+function chunkUtils.registerChunkEnemies(chunk, surface, tempQuery)
+    tempQuery.force = "enemy"
+    local enemies = surface.find_entities_filtered(tempQuery)
 
     for i=1, #enemies do
-	local entityType = enemies[i].type
-	if (entityType == "unit-spawner") then
-	    nests = nests + 1
-	elseif (entityType == "turret") then
-	    worms = worms + 1
-	elseif useCustomAI and (entityType == "unit") then
-	    biters = biters + 1
+	local enemy = enemies[i]
+	local enemyType = enemy.type
+	if (enemyType == "unit-spawner") or (enemyType == "turret") then
+	    addEnemyStructureToChunk(chunk, enemy, nil)
 	end
     end
+end
 
-    if useCustomAI then
-	if (nests > 0) or (worms > 0) or (biters > 0) then
-	    for f=1, #enemies do
-		local enemy = enemies[f]
-		if (enemy.name == "small-tendril-biter-rampant") then
-		    biters = biters - 1
-		elseif (enemy.name == "biter-spawner-hive") then
-		    nests = nests - 1
-		else 
-		    enemy.destroy()
-		end
-	    end
-	    local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
-	    if foundBase then
-		foundBase.upgradePoints = foundBase.upgradePoints + (nests*3) + (worms*2) + biters
-	    end
-	end
-    else
-	for i=1, #enemies do
-	    local enemy = enemies[i]
-	    local enemyType = enemy.type
-	    if (enemyType == "unit-spawner") or (enemyType == "turret") then
-		addEnemyStructureToChunk(chunk, enemy, nil)
-	    end
-	end
-    end
-
+function chunkUtils.scoreChunk(chunk, surface, natives, tempQuery)   
     tempQuery.force = nil
     tempQuery.type = "resource"
-
     chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(tempQuery)
     
     tempQuery.type = nil

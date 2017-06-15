@@ -20,6 +20,7 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
+constants.CHUNK_QUEUE_SIZE = 1500
 constants.PROCESS_QUEUE_SIZE = 450
 constants.SCAN_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
@@ -34,7 +35,7 @@ constants.INTERVAL_LOGIC = 38
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
-constants.DEV_CUSTOM_AI = true
+constants.DEV_CUSTOM_AI = false
 
 -- chunk properties
 
