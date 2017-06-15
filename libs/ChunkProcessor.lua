@@ -7,6 +7,8 @@ local constants = require("Constants")
 
 -- constants
 
+local CHUNK_QUEUE_SIZE = constants.CHUNK_QUEUE_SIZE
+
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
@@ -14,6 +16,10 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local createChunk = chunkUtils.createChunk
 local checkChunkPassability = chunkUtils.checkChunkPassability
 local scoreChunk = chunkUtils.scoreChunk
+
+local remakeChunk = chunkUtils.remakeChunk
+
+local registerChunkEnemies = chunkUtils.registerChunkEnemies
 
 -- module code
 
@@ -27,6 +33,8 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
     
     local count = 0
 
+    local useCustomAI = natives.useCustomAI
+    
     local chunkTiles = regionMap.chunkTiles
     
     local start = #pendingStack
@@ -51,13 +59,16 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         regionMap[chunkX][chunk.cY] = chunk
         
         checkChunkPassability(chunkTiles, chunk, surface)
-        scoreChunk(regionMap, chunk, surface, natives, tick, query)
+	if not useCustomAI then
+	    registerChunkEnemies(chunk, surface, query)
+	end
+	scoreChunk(chunk, surface, natives, query)
         processQueue[#processQueue+1] = chunk
-	if (count >= 200) then
+	if (count >= CHUNK_QUEUE_SIZE) then
 	    break
 	end
     end
-    if (count >= 200) and (start > 0) then
+    if (count >= CHUNK_QUEUE_SIZE) and (start > 0) then
 	surface.print("Rampant - " .. (start - count) .. " Remaining chunks to process")
     end
 end

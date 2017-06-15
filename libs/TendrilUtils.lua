@@ -6,6 +6,7 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local baseRegisterUtils = require("BaseRegisterUtils")
 local neighborsUtils = require("NeighborUtils")
+local mathUtils = require("MathUtils")
 
 local buildUtils = require("BuildUtils")
 
@@ -82,7 +83,7 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 	    return
 	elseif tendrilPath then
   	    positionFromDirectionAndChunk(tendrilDirection, tendrilPosition, tendrilPosition, 0.5)
-	    mapUtils.distortPosition(tendrilPosition)
+	    mathUtils.distortPosition(tendrilPosition)
 	    -- tendril.path[#tendril.path] = chunk
 	    local position = surface.find_non_colliding_position("spitter-spawner",
 								 tendrilPosition,
