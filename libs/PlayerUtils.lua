@@ -2,11 +2,11 @@ local playerUtils = {}
 
 -- imports
 
-local mapUtils = require("MapUtils")
+local mathUtils = require("MathUtils")
 
 -- imported functions
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 -- module code
 

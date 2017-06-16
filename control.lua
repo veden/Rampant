@@ -98,9 +98,12 @@ local function rebuildRegionMap()
     regionMap.processQueue = {}
     regionMap.processPointer = 1
     regionMap.scanPointer = 1
+    -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     regionMap.neighbors = { nil, nil, nil, nil, nil, nil, nil, nil }
     regionMap.cardinalNeighbors = { nil, nil, nil, nil }
     regionMap.chunkTiles = {}
+    regionMap.position = {x=0,
+			  y=0}
     for i=1,1024 do
 	regionMap.chunkTiles[i] = nil
     end

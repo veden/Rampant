@@ -6,11 +6,13 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local neighborUtils = require("NeighborUtils")
+local movementUtils = require("MovementUtils")
 
 -- constants
 
 local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
+local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -33,16 +35,16 @@ local WORM_COUNT = constants.WORM_COUNT
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local getNeighborChunks = mapUtils.getNeighborChunks
 local findNearBySquad = unitGroupUtils.findNearBySquad
-local addSquadMovementPenalty = unitGroupUtils.addSquadMovementPenalty
+local addMovementPenalty = movementUtils.addMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsForRetreat = neighborUtils.scoreNeighborsForRetreat
+local findMovementPosition = movementUtils.findMovementPosition
 
 -- module code
 
 local function scoreRetreatLocation(neighborChunk)
-    local danger = neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100)
-    return -danger
+    return -(neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100) + (neighborChunk[PLAYER_BASE_GENERATOR] * 20))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, natives, tick)
@@ -65,17 +67,16 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 										       chunk.cY),
 								     scoreRetreatLocation)
 	    if exitPath then
-		local retreatPosition = positionFromDirectionAndChunk(exitDirection, position, {x=0,y=0}, 0.98)
+		local retreatPosition = findMovementPosition(surface,
+							     positionFromDirectionAndChunk(exitDirection,
+											   position,
+											   regionMap.position,
+											   0.98),
+							     false)
 
 		
-		if not surface.can_place_entity({name="behemoth-biter", position=retreatPosition}) then
-		    local newRetreatPosition = surface.find_non_colliding_position("behemoth-biter", retreatPosition, 5, 2)
-		    if newRetreatPosition then
-			retreatPosition.x = newRetreatPosition.x
-			retreatPosition.y = newRetreatPosition.y
-		    else
-			return
-		    end
+		if not retreatPosition then
+		    return
 		end
 		
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
@@ -98,7 +99,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 			newSquad.rabid = true
 		    end
 		end
-		addSquadMovementPenalty(natives, newSquad, chunk.cX, chunk.cY)
+		addMovementPenalty(natives, newSquad, chunk.cX, chunk.cY)
 	    end
 	end
     end

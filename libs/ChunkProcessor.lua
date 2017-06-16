@@ -16,9 +16,6 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local createChunk = chunkUtils.createChunk
 local checkChunkPassability = chunkUtils.checkChunkPassability
 local scoreChunk = chunkUtils.scoreChunk
-
-local remakeChunk = chunkUtils.remakeChunk
-
 local registerChunkEnemies = chunkUtils.registerChunkEnemies
 
 -- module code
@@ -33,7 +30,7 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
     
     local count = 0
 
-    local useCustomAI = natives.useCustomAI
+    local vanillaAI = not natives.useCustomAI
     
     local chunkTiles = regionMap.chunkTiles
     
@@ -59,7 +56,7 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         regionMap[chunkX][chunk.cY] = chunk
         
         checkChunkPassability(chunkTiles, chunk, surface)
-	if not useCustomAI then
+	if vanillaAI then
 	    registerChunkEnemies(chunk, surface, query)
 	end
 	scoreChunk(chunk, surface, natives, query)

@@ -40,6 +40,8 @@ local canAttack = aiPredicates.canAttack
 
 local randomTickEvent = mathUtils.randomTickEvent
 
+local mFloor = math.floor
+
 local mMax = math.max
 
 -- module code
@@ -74,7 +76,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
     natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
     
     if (natives.points < maxPoints) then
-	natives.points = natives.points + math.floor((AI_POINT_GENERATOR_AMOUNT * math.random()) +
+	natives.points = natives.points + mFloor((AI_POINT_GENERATOR_AMOUNT * math.random()) +
 		((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
     end
     

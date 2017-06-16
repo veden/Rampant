@@ -2,7 +2,7 @@ local baseUtils = {}
 
 -- imports
 
-local mapUtils = require("MapUtils")
+local mathUtils = require("MathUtils")
 local constants = require("Constants")
 
 local tendrilUtils = require("TendrilUtils")
@@ -20,7 +20,7 @@ local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
 -- imported functions
 
-local euclideanDistancePoints = mapUtils.euclideanDistancePoints
+local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local buildHive = buildUtils.buildHive
 

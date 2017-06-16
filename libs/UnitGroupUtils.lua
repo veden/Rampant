@@ -2,7 +2,7 @@ local unitGroupUtils = {}
 
 -- imports
 
-local mapUtils = require("MapUtils")
+local mathUtils = require("MathUtils")
 local constants = require("Constants")
 
 -- constants
@@ -32,7 +32,7 @@ local mLog = math.log10
 
 local mMin = math.min
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 -- module code
 
