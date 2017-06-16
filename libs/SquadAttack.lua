@@ -8,6 +8,7 @@ local unitGroupUtils = require("UnitGroupUtils")
 local playerUtils = require("PlayerUtils")
 local neighborUtils = require("NeighborUtils")
 local movementUtils = require("MovementUtils")
+local mathUtils = require("MathUtils")
 
 -- constants
 
@@ -33,16 +34,16 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
-local findMovementPoint = movementUtils.findMovementPoint
+local findMovementPosition = movementUtils.findMovementPosition
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByPosition = mapUtils.getChunkByPosition
-local addMovementPenalty = unitGroupUtils.addMovementPenalty
-local lookupSquadMovementPenalty = unitGroupUtils.lookupSquadMovementPenalty
+local addMovementPenalty = movementUtils.addMovementPenalty
+local lookupMovementPenalty = movementUtils.lookupMovementPenalty
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
 
@@ -52,7 +53,7 @@ local scoreNeighborsForAttack = neighborUtils.scoreNeighborsForAttack
 
 local function scoreAttackLocation(squad, neighborChunk)
     local damage = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage - lookupSquadMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
+    return damage - lookupMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
 end
 
 function squadAttack.squadsAttack(regionMap, surface, natives)
@@ -61,7 +62,7 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
     local attackCmd
     
     if (#squads > 0) then
-	attackPosition = {x=0, y=0}
+	attackPosition = regionMap.position
 	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
 		      radius = 32,
@@ -99,11 +100,11 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
 			    end
 
-			    local position = findMovementPoint(surface,
-							       positionFromDirectionAndChunk(attackDirection,
-											     groupPosition,
-											     attackPosition,
-											     1.35))
+			    local position = findMovementPosition(surface,
+								  positionFromDirectionAndChunk(attackDirection,
+												groupPosition,
+												attackPosition,
+												1.35))
 			    if position then
 				attackPosition.x = position.x
 				attackPosition.y = position.y

@@ -53,16 +53,10 @@ local function fullScan(chunkTiles, x, y, get_tile)
     
     local passableNorthSouth = false
     local passableEastWest = false
-    -- local skip = true
     for xi=x, x + 31 do
 	local northSouth = true
-	-- skip = not skip
 	for yi=y, endY do
 	    i = i + 1
-	    -- if skip then
-	    -- 	skip = false
-	    -- else
-	    -- 	skip = true
 	    local tile = get_tile(xi, yi)
 	    if not tile.collides_with("player-layer") then
 		validTiles = validTiles + 1
@@ -71,26 +65,18 @@ local function fullScan(chunkTiles, x, y, get_tile)
 		northSouth = false
 		chunkTiles[i] = nil
 	    end
-	    -- end
 	end
 	if northSouth then
 	    passableNorthSouth = true
 	end
     end
-    -- skip = true
     for yi=1, 32 do
 	local westEast = true
-	-- skip = not skip
 	for xi=0, 992, 32 do
-	    -- if skip then
-	    -- 	skip = false
-	    -- else
-	    -- 	skip = true
 	    if not chunkTiles[yi + xi] then
 		westEast = false
 		break
 	    end
-	    -- end
 	end
 	if westEast then
 	    passableEastWest = true
@@ -122,16 +108,16 @@ function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)
     local get_tile = surface.get_tile
 
     --[[
-	0 represents water chunk
-	1-48 chunk requires full scan
-	49 assume chunk is passable in all directions
+	0-4 represents water chunk
+	5-46 chunk requires full scan
+	47-49 assume chunk is passable in all directions
     --]]
     local cleanSpotCheck = spotCheck(x, y, get_tile)
 
     local pass = CHUNK_ALL_DIRECTIONS
-    if (cleanSpotCheck > 0) and (cleanSpotCheck < 49) then
+    if (cleanSpotCheck > 5) and (cleanSpotCheck < 47) then
 	pass = CHUNK_IMPASSABLE
-	local rating, passableNorthSouth, passableEastWest = fullScan(chunkTiles, x, y, get_tile, surface)
+	local rating, passableNorthSouth, passableEastWest = fullScan(chunkTiles, x, y, get_tile)
 
 	if passableEastWest and passableNorthSouth then
 	    pass = CHUNK_ALL_DIRECTIONS
@@ -145,8 +131,10 @@ function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)
 	if (rating < 0.6) then
 	    pass = CHUNK_IMPASSABLE
 	end
-    elseif (cleanSpotCheck == 0) then    
+    elseif (cleanSpotCheck <= 4) then    
 	pass = CHUNK_IMPASSABLE
+    else
+	chunk[PATH_RATING] = 1
     end
     chunk[PASSABLE] = pass
 end

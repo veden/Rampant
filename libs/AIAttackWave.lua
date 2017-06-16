@@ -106,12 +106,13 @@ function aiAttackWave.formSquads(regionMap, surface, natives, chunk, cost)
 								     validUnitGroupLocation,
 								     scoreUnitGroupLocation)
 	if squadPath then
-	    local squadPosition = positionFromDirectionAndChunk(squadDirection, chunk, {x=0,y=0}, 0.98)
-
-	    squadPosition = surface.find_non_colliding_position("biter-spawner-hive",
-								squadPosition,
-								32,
-								4)
+	    local squadPosition = surface.find_non_colliding_position("biter-spawner-hive",
+								      positionFromDirectionAndChunk(squadDirection,
+												    chunk,
+												    regionMap.position,
+												    0.98),
+								      32,
+								      4)
 	    if squadPosition then
 		local squad = createSquad(squadPosition, surface, natives)
 		

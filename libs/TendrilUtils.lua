@@ -9,6 +9,7 @@ local neighborsUtils = require("NeighborUtils")
 local mathUtils = require("MathUtils")
 
 local buildUtils = require("BuildUtils")
+local mathUtils = require("MathUtils")
 
 -- constants
 
@@ -30,7 +31,7 @@ local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
 
 local buildOutpost = buildUtils.buildOutpost
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 -- module code
 

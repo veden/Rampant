@@ -57,7 +57,12 @@ Configure Options not in game menu:
 # Version History
 
 0.15.16 -  
-- Optimization: Greatly reduced reindexing time  
+- Tweak: Increased chunks processed at a time from 200 to 3000  
+- Tweak: Increased failed unit behaviors from 6 to 10  
+- Optimization: Preallocated a position for use in squad movement  
+- Optimization: Greatly reduced reindexing time and chunk scoring  
+- Framework: Split chunk scoring and custom ai chunk purging  
+- Framework: Refactored code into more appropriate modules  
 
 0.15.15 -  
 - Fixed: Desync when reindexing chunks (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=180#p287941)  

@@ -11,6 +11,8 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local playerUtils = require("PlayerUtils")
 
+local mathUtils = require("MathUtils")
+
 -- constants
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
@@ -51,7 +53,7 @@ local playerScent = pheromoneUtils.playerScent
 
 local canAttack = aiPredicates.canAttack
 
-local euclideanDistanceNamed = mapUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local mMin = math.min
 

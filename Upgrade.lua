@@ -94,8 +94,6 @@ function upgrade.attempt(natives)
 	game.map_settings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
 	game.map_settings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
 
-	game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
-
 	game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
 	game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
 	game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
@@ -149,6 +147,8 @@ function upgrade.attempt(natives)
     end
     if (global.version < constants.VERSION_26) then
 
+	game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
+	
 	game.surfaces[1].print("Rampant - Version 0.15.16")
 	global.version = constants.VERSION_26
     end
