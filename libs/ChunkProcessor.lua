@@ -28,8 +28,6 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
     local query = {area=areaBoundingBox,
 		   force=false}
     
-    local count = 0
-
     local vanillaAI = not natives.useCustomAI
     
     local chunkTiles = regionMap.chunkTiles
@@ -37,7 +35,6 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
     local start = #pendingStack
     for i=start, 1, -1 do
         local event = pendingStack[i]
-	count = count + 1
         pendingStack[i] = nil
 
 	local x = event.area.left_top.x
@@ -61,12 +58,6 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	end
 	scoreChunk(chunk, surface, natives, query)
         processQueue[#processQueue+1] = chunk
-	if (count >= CHUNK_QUEUE_SIZE) then
-	    break
-	end
-    end
-    if (count >= CHUNK_QUEUE_SIZE) and (start > 0) then
-	surface.print("Rampant - " .. (start - count) .. " Remaining chunks to process")
     end
 end
 

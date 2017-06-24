@@ -11,7 +11,8 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 0.14.10 factorio version fixed more pathing issues  
 0.14.4 factorio version fixed some issues with unit groups commands  
 
-There will be a slight pause the first time this is started up due to indexing all the chunks that have been generated.  
+There will be a pause the first time and on every upgrade that Rampant loads.  
+This is due to indexing all the chunks that have been generated.  
 
 MP should be working  
 If experiencing desyncs, after an update, please do the following:  
@@ -57,10 +58,13 @@ Configure Options not in game menu:
 # Version History
 
 0.15.16 -  
-- Tweak: Increased chunks processed at a time from 200 to 3000  
+- Tweak: Increased death pheromone weight for squad attack from 1 to 2  
 - Tweak: Increased failed unit behaviors from 6 to 10  
+- Improvement: Added labs to list of targets  
+- Improvement: Removed chunks processed at a time limit  
+- Optimization: Moved chunk reindexing to mod load as opposed to ingame  
 - Optimization: Preallocated a position for use in squad movement  
-- Optimization: Greatly reduced reindexing time and chunk scoring  
+- Optimization: Greatly reduced reindexing and chunk scoring time  
 - Framework: Split chunk scoring and custom ai chunk purging  
 - Framework: Refactored code into more appropriate modules  
 

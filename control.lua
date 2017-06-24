@@ -125,6 +125,8 @@ local function rebuildRegionMap()
 			   area = { left_top = { x = chunk.x * 32,
 						 y = chunk.y * 32 }}})
     end
+
+    processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 end
 
 local function onModSettingsChange(event)

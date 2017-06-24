@@ -52,7 +52,7 @@ local scoreNeighborsForAttack = neighborUtils.scoreNeighborsForAttack
 -- module code
 
 local function scoreAttackLocation(squad, neighborChunk)
-    local damage = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local damage = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage - lookupMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
 end
 
