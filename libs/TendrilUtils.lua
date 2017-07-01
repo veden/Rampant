@@ -52,6 +52,9 @@ end
 local function removeTendril(base, tendril)
     for i=1,#base.tendrils do
 	if (base.tendrils[i] == tendril) then
+	    if tendril.unit.valid then
+		tendril.unit.destroy()
+	    end
 	    table.remove(base.tendrils,i)
 	    break
 	end
@@ -94,7 +97,7 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 		tendril.target = position
 		tendrilUnit.set_command({ type = defines.command.go_to_location,
 					  destination = position,
-					  distraction = defines.distraction.by_damage })
+					  distraction = defines.distraction.by_none })
 		
 		-- needs to check to make sure unit still exists as well.
 		--tendril.cycles = 2
@@ -103,7 +106,7 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 		-- local biterSpawner = {name="spitter-spawner", position=position}
 		-- local hive = surface.create_entity(biterSpawner)
 		-- registerEnemyBaseStructure(regionMap, hive, base)
-	    -- elseif not position then
+		-- elseif not position then
 		-- 	removeTendril(base, tendril)
 	    end
 	end

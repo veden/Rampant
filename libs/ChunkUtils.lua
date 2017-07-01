@@ -108,14 +108,14 @@ function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)
     local get_tile = surface.get_tile
 
     --[[
-	0-4 represents water chunk
-	5-46 chunk requires full scan
+	0-10 represents water chunk
+	11-46 chunk requires full scan
 	47-49 assume chunk is passable in all directions
     --]]
     local cleanSpotCheck = spotCheck(x, y, get_tile)
 
     local pass = CHUNK_ALL_DIRECTIONS
-    if (cleanSpotCheck > 5) and (cleanSpotCheck < 47) then
+    if (cleanSpotCheck > 10) and (cleanSpotCheck < 47) then
 	pass = CHUNK_IMPASSABLE
 	local rating, passableNorthSouth, passableEastWest = fullScan(chunkTiles, x, y, get_tile)
 
@@ -131,7 +131,7 @@ function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)
 	if (rating < 0.6) then
 	    pass = CHUNK_IMPASSABLE
 	end
-    elseif (cleanSpotCheck <= 4) then    
+    elseif (cleanSpotCheck <= 10) then
 	pass = CHUNK_IMPASSABLE
     else
 	chunk[PATH_RATING] = 1

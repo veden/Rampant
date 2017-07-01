@@ -58,6 +58,7 @@ Configure Options not in game menu:
 # Version History
 
 0.15.17 -  
+- Tweak: Increased sampling threshold for water tiles from 5 to 10 tiles  
 - Tweak: Increased small worm turret range from 17 to 18  
 - Improvement: added ground effect to worm turret for attacking drones  
 - Improvement: Added option to remove blood particles on biter deaths, which should help reduce lag spikes (default is to remove them)  
