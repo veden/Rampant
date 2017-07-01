@@ -34,6 +34,8 @@ local NEST_COUNT = constants.NEST_COUNT
 
 -- imported functions
 
+local mRandom = math.random
+
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -100,7 +102,7 @@ end
 function aiAttackWave.formSquads(regionMap, surface, natives, chunk, cost)
     local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
 
-    if valid and (math.random() < natives.formSquadThreshold) then
+    if valid and (mRandom() < natives.formSquadThreshold) then
 	
 	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(regionMap, chunk.cX, chunk.cY),
 								     validUnitGroupLocation,
@@ -116,7 +118,7 @@ function aiAttackWave.formSquads(regionMap, surface, natives, chunk, cost)
 	    if squadPosition then
 		local squad = createSquad(squadPosition, surface, natives)
 		
-		squad.rabid = math.random() < 0.03
+		squad.rabid = mRandom() < 0.03
 
 		local scaledWaveSize = attackWaveScaling(natives)
 		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,

@@ -28,6 +28,8 @@ local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
 
 -- imported functions
 
+local mRandom = math.random
+
 local mLog = math.log10
 
 local mMin = math.min
@@ -208,7 +210,7 @@ function unitGroupUtils.regroupSquads(natives)
 	        end
 	        if mergedSquads and not squad.kamikaze then
 	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives)
-	    	    if (math.random() < kamikazeThreshold) then
+	    	    if (mRandom() < kamikazeThreshold) then
 	    		squad.kamikaze = true
 	    	    end
 	        end

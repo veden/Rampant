@@ -18,6 +18,8 @@ local mLog10 = math.log10
 
 local mFloor = math.floor
 
+local mRandom = math.random
+
 -- module code
 
 function mathUtils.roundToNearest(number, multiple)
@@ -26,7 +28,7 @@ function mathUtils.roundToNearest(number, multiple)
 end
 
 function mathUtils.randomTickEvent(tick, low, high)
-    local minutesToTick = mMax(high * math.random(), low)
+    local minutesToTick = mMax(high * mRandom(), low)
     local nextTick = mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, INTERVAL_LOGIC)
     return tick + nextTick
 end
@@ -43,8 +45,8 @@ local function marsagliaPolarMethod(rg)
 	    iid1 = 2 * rg() + -1
 	    iid2 = 2 * rg() + -1
 	else
-	    iid1 = 2 * math.random() + -1
-	    iid2 = 2 * math.random() + -1
+	    iid1 = 2 * mRandom() + -1
+	    iid2 = 2 * mRandom() + -1
 	end
 	q = (iid1 * iid1) + (iid2 * iid2)
     until (q ~= 0) and (q < 1)

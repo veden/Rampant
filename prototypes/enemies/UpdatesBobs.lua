@@ -173,21 +173,6 @@ function bobsUpdates.useDumbProjectiles()
 	    tint2 = biterUtils.findTint(unit)
     	},
     	"bob-poison-ball-stream-rampant")
-
-    unit = units["bob-giant-poison-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
-    	{
-    	    cooldown = 80,
-    	    range = 15,
-    	    min_range = 3,
-    	    turn_range = 1,
-	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
-    	},
-    	"bob-poison-ball-stream-rampant")
     
     unit = units["bob-titan-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(

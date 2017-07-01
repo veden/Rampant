@@ -122,14 +122,6 @@ function upgrade.attempt(natives)
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 
-	-- RE-ENABLE WHEN COMPLETE
-	natives.useCustomAI = constants.DEV_CUSTOM_AI
-	-- natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
-	-- if natives.useCustomAI then
-	--     game.forces.enemy.ai_controllable = false
-	-- else
-	--     game.forces.enemy.ai_controllable = true
-	-- end
 	natives.bases = {}
 	natives.baseDistanceMin = 0
 	natives.baseIndex = 1
@@ -151,6 +143,18 @@ function upgrade.attempt(natives)
 	
 	game.surfaces[1].print("Rampant - Version 0.15.16")
 	global.version = constants.VERSION_26
+    end
+    if (global.version < constants.VERSION_27) then
+
+	natives.useCustomAI = constants.DEV_CUSTOM_AI
+	-- natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
+	if natives.useCustomAI then
+	    game.forces.enemy.ai_controllable = false
+	else
+	    game.forces.enemy.ai_controllable = true
+	end	
+	
+	game.surfaces[1].print("Rampant - Version 0.15.17")
     end
     return starting ~= global.version
 end
