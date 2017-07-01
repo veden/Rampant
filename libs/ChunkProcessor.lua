@@ -7,12 +7,11 @@ local constants = require("Constants")
 
 -- constants
 
-local CHUNK_QUEUE_SIZE = constants.CHUNK_QUEUE_SIZE
-
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
 
+local remakeChunk = chunkUtils.remakeChunk
 local createChunk = chunkUtils.createChunk
 local checkChunkPassability = chunkUtils.checkChunkPassability
 local scoreChunk = chunkUtils.scoreChunk
@@ -55,6 +54,8 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
         checkChunkPassability(chunkTiles, chunk, surface)
 	if vanillaAI then
 	    registerChunkEnemies(chunk, surface, query)
+	else
+	    remakeChunk(regionMap, chunk, surface, natives, tick, query)
 	end
 	scoreChunk(chunk, surface, natives, query)
         processQueue[#processQueue+1] = chunk

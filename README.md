@@ -57,6 +57,13 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.17 -  
+- Tweak: Increased small worm turret range from 17 to 18  
+- Improvement: added ground effect to worm turret for attacking drones  
+- Improvement: Added option to remove blood particles on biter deaths, which should help reduce lag spikes (default is to remove them)  
+- Optimization: Moved math.random to local level instead of global  
+- Refactored: Unit and attack prototypes  
+
 0.15.16 -  
 - Tweak: Increased death pheromone weight for squad attack from 1 to 2  
 - Tweak: Increased failed unit behaviors from 6 to 10  

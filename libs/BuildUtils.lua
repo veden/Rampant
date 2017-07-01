@@ -21,6 +21,8 @@ local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
 local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
+local mRandom = math.random
+
 -- module code
 
 function buildUtils.buildHive(regionMap, base, surface)
@@ -40,7 +42,7 @@ function buildUtils.buildHive(regionMap, base, surface)
     return valid
 end
 
-function buildUtils.buildOutpost(regionMap, natives, base, surface, position)
+function buildUtils.buildOutpost(regionMap, natives, base, surface, tendril)
     local foundHive = false
     for _,_ in pairs(base.hives) do
 	foundHive = true
@@ -49,9 +51,13 @@ function buildUtils.buildOutpost(regionMap, natives, base, surface, position)
     if not foundHive or (base.upgradePoints < 10) then
 	return
     end
-    
+
+    if not tendril.unit.valid then
+	return
+    end
+    local position = tendril.unit.position
     local generator = natives.randomGenerator
-    generator.re_seed(math.random(MAGIC_MAXIMUM_BASE_NUMBER))
+    generator.re_seed(mRandom(MAGIC_MAXIMUM_BASE_NUMBER))
 
     for level=0,(base.level * 0.5) do
 	local slices = (level * 3)

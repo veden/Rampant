@@ -34,6 +34,8 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
+local mRandom = math.random
+
 local findMovementPosition = movementUtils.findMovementPosition
 
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -143,8 +145,8 @@ function squadAttack.squadsBeginAttack(natives, players)
 		squad.frenzyPosition.y = groupPosition.y
 	    end
 	    
-	    if (math.random() < 0.70) then
-		squad.kamikaze = math.random() < kamikazeThreshold
+	    if (mRandom() < 0.70) then
+		squad.kamikaze = mRandom() < kamikazeThreshold
 		squad.status = SQUAD_RAIDING
 	    end
 	end

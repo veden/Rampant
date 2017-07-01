@@ -59,6 +59,8 @@ local mMin = math.min
 
 local validPlayer = playerUtils.validPlayer
 
+local mRandom = math.random
+
 -- module code
 
 local function nonRepeatingRandom(players)
@@ -67,7 +69,7 @@ local function nonRepeatingRandom(players)
 	ordering[#ordering+1] = player.index
     end
     for i=#ordering,1,-1 do
-	local s = math.random(i)
+	local s = mRandom(i)
 	local t = ordering[i]
 	ordering[i] = ordering[s]
 	ordering[s] = t
@@ -87,7 +89,7 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
     local index = regionMap.processPointer
     
     if (index == 1) then
-        roll = math.random()
+        roll = mRandom()
         regionMap.processRoll = roll
     end
     
@@ -130,7 +132,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(players)
 
-    local roll = math.random()
+    local roll = mRandom()
 
     local allowingAttacks = canAttack(natives, surface)
 

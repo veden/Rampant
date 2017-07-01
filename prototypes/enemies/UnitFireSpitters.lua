@@ -23,8 +23,8 @@ local behemothFireBiterTint2 = {r=0.7, g=0.0, b=0.30, a=0.4}
 data:extend({
 	makeSpitter({name = "small-fire-spitter-rampant",
 		     health = 15,
-		     movement = 0.0,
-		     distancePerFrame = 0.00,
+		     movement = 0.21,
+		     distancePerFrame = 0.1,
 		     healing = 0.01,
 		     scale = smallFireBiterScale,
 		     tint1 = smallFireBiterTint1,
@@ -38,7 +38,7 @@ data:extend({
 			       minRange = 5,
 			       cooldown = 55,
 			       turnRange = 1,
-			       firePenalty = 15}, "acid-flame-fire-stream-rampant"),
+			       firePenalty = 15}, "acid-flame-stream-rampant"),
 	    {
 		makeResistance("fire", 0, 15)
 	}),
@@ -59,7 +59,7 @@ data:extend({
 			       minRange = 5,
 			       cooldown = 40,
 			       turnRange = 1,
-			       firePenalty = 15}, "acid-flame-1-fire-stream-rampant"),
+			       firePenalty = 15}, "acid-flame-1-stream-rampant"),
 	    {
 		makeResistance("fire", 2, 35)
 	}),
@@ -80,7 +80,7 @@ data:extend({
 			       minRange = 5,
 			       cooldown = 25,
 			       turnRange = 1,
-			       firePenalty = 15}, "acid-flame-1-fire-stream-rampant"),
+			       firePenalty = 15}, "acid-flame-1-stream-rampant"),
 	    {
 		makeResistance("fire", 4, 55)
 	}),
@@ -101,7 +101,7 @@ data:extend({
 			       minRange = 5,
 			       cooldown = 15,
 			       turnRange = 1,
-			       firePenalty = 15}, "acid-flame-2-fire-stream-rampant"),
+			       firePenalty = 15}, "acid-flame-2-stream-rampant"),
 	    {
 		makeResistance("fire", 6, 75)
 	})

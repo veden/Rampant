@@ -28,6 +28,8 @@ local mFloor = math.floor
 
 local buildTendril = tendrilUtils.buildTendril
 
+local mRandom = math.random
+
 -- module code
 
 function baseUtils.findNearbyBase(natives, position)
@@ -60,7 +62,7 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
 	eggs = {},
 	upgradePoints = 0,
 	growth = tick,
-	pattern = math.random(MAGIC_MAXIMUM_BASE_NUMBER),
+	pattern = mRandom(MAGIC_MAXIMUM_BASE_NUMBER),
 	level = mFloor(distance / 200)
     }
     if not buildHive(regionMap, base, surface) then

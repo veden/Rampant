@@ -11,6 +11,14 @@ local function NEDetected()
     return settings.startup["NE_Difficulty"] ~= nil
 end
 
+if settings.startup["rampant-removeBloodParticles"].value then
+    local explosions = data.raw["explosion"]
+    
+    explosions["blood-explosion-small"]["created_effect"] = nil
+    explosions["blood-explosion-big"]["created_effect"] = nil
+    explosions["blood-explosion-huge"]["created_effect"] = nil
+end
+
 if settings.startup["rampant-useDumbProjectiles"].value then
     vanillaUpdates.useDumbProjectiles()
     if bobsDetected() then

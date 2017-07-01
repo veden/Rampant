@@ -1,17 +1,27 @@
-local biterStreamUtils = require("BiterStreamUtils")
-
 -- bobs replacement attacks
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-explosive-ball-stream-rampant",
-	firePictureTint = {r=0.35,g=0.90,b=0,a=1},
-	smallTreeFlameTint = {r=0.35,g=0.8,b=0,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+-- import
+
+local streamUtils = require("StreamUtils")
+local colorUtils = require("ColorUtils")
+local fireUtils = require("FireUtils")
+local stickerUtils = require("StickerUtils")
+
+-- imported functions
+
+local makeStream = streamUtils.makeStream
+local makeColor = colorUtils.makeColor
+local makeSpreadEffect = fireUtils.makeSpreadEffect
+local makeFire = fireUtils.makeFire
+local makeSticker = stickerUtils.makeSticker
+
+-- module code
+
+makeStream({
+	name = "bob-explosive-ball",
 	particleTint = {r=1, g=0.97, b=0.34, a=0.5},
+	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},
+	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -52,37 +62,16 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},	
-	fireFlameName = "bob-explosive-ball-flame-rampant",
-	fireFlameTint = {r=0, g=0.9, b=0, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-explosive-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.3, 0.75, 0.3, 0.1),
-	smokeName = "bob-explosive-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.8, b=0.2, a=0.25},
-	stickerName = "bob-explosive-ball-sticker-rampant",
-	stickerTint = { r = 0.25, g = 0.5, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-explosive-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.25,0.75,0.1, 0.25),
-	spawnEntityName = "bob-explosive-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-explosive-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
+--
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-explosive-ball-1-stream-rampant",
-	firePictureTint = {r=0.35,g=0.90,b=0,a=1},
-	smallTreeFlameTint = {r=0.35,g=0.8,b=0,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+makeStream({
+	name = "bob-explosive-ball-1",
 	particleTint = {r=1, g=0.97, b=0.34, a=0.5},
+	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},
+	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -123,38 +112,31 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},	
-	fireFlameName = "bob-explosive-ball-1-flame-rampant",
-	fireFlameTint = {r=0, g=0.9, b=0, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-explosive-ball-1-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.3, 0.75, 0.3, 0.1),
-	smokeName = "bob-explosive-ball-1-smoke-rampant",
-	smokeTint = {r=0.2, g=0.8, b=0.2, a=0.25},
-	stickerName = "bob-explosive-ball-1-sticker-rampant",
-	stickerTint = { r = 0.25, g = 0.5, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-explosive-ball-1-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.25,0.75,0.1, 0.25),
-	spawnEntityName = "bob-explosive-ball-1-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-explosive-ball-1-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
--- fire
+--
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-fire-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+local name = "bob-fire-ball"
+local spawnEntityName = makeSpreadEffect({
+	name = name,
+	smokeWithoutGlowTint = makeColor(0.45,0.25,0.1, 0.25),
+})
+local fireName = makeFire({
+	name = name,
+	fireTint = {r=0, g=0.9, b=0, a=0.5},
+	smokeWithGlowTint = {r=0.2, g=0.8, b=0.2, a=0.25},
+	spawnEntityName = spawnEntityName
+})
+local stickerName = makeSticker({
+	name = name,
+	spawnEntityName = spawnEntityName
+})
+makeStream({
+	name = name,
 	particleTint = {r=1, g=0.17, b=0.17, a=0.5},
+	spineAnimationTint = {r=1, g=0.43, b=0.17, a=0.5},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -165,7 +147,7 @@ biterStreamUtils.createBiterStreamAttack(
 			    {
 				{
 				    type = "create-fire",
-				    entity_name = "bob-fire-ball-flame-rampant"
+				    entity_name = fireName
 				}
 			    }
 		    }
@@ -180,7 +162,7 @@ biterStreamUtils.createBiterStreamAttack(
 			    {
 				{
 				    type = "create-sticker",
-				    sticker = "bob-fire-ball-sticker-rampant",
+				    sticker = stickerName,
 				},
 				{
 				    type = "damage",
@@ -189,38 +171,16 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=1, g=0.43, b=0.17, a=0.5},	
-	fireFlameName = "bob-fire-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-fire-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-fire-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-fire-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-fire-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-fire-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-fire-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
--- poison
+--
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-poison-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+makeStream({
+	name = "bob-poison-ball",
 	particleTint = {r=0.1, g=0.5, b=1, a=0.5},
+	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -251,36 +211,17 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
-	fireFlameName = "bob-poison-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-poison-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-poison-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-poison-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-poison-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-poison-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-poison-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-poison-ball-1-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+--
+
+
+makeStream({
+	name = "bob-poison-ball-1",
 	particleTint = {r=0.1, g=0.5, b=1, a=0.5},
+	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -311,27 +252,11 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
-	fireFlameName = "bob-poison-ball-1-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-poison-ball-1-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-poison-ball-1-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-poison-ball-1-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-poison-ball-1-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-poison-ball-1-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-poison-ball-1-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
 -- piercing
+
 data:extend({
 	{
 	    type = "projectile",
@@ -363,16 +288,11 @@ data:extend({
 	}
 })
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-piercing-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+makeStream({
+	name = "bob-piercing-ball",
 	particleTint = {r=0.1, g=0.1, b=0.1, a=0.8},
+	spineAnimationTint = {r=0.1, g=0.1, b=0.1, a=0.8},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "cluster",
@@ -403,27 +323,10 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0.1, g=0.1, b=0.1, a=0.8},
-	fireFlameName = "bob-piercing-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-piercing-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-piercing-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-piercing-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-piercing-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-piercing-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-piercing-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
--- electric
+--
 
 data:extend({
 	{	
@@ -466,16 +369,12 @@ data:extend({
 	}
 })
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-electric-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+
+makeStream({
+	name = "bob-electric-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
+	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "cluster",
@@ -506,36 +405,16 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	fireFlameName = "bob-electric-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-electric-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-electric-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-electric-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-electric-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-electric-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-electric-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-electric-ball-1-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+--
+
+makeStream({
+	name = "bob-electric-ball-1",
 	particleTint = {r=0, g=0.1, b=1, a=1},
+	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "cluster",
@@ -566,112 +445,16 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	fireFlameName = "bob-electric-ball-1-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-electric-ball-1-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-electric-ball-1-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-electric-ball-1-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-electric-ball-1-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-electric-ball-1-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-electric-ball-1-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
--- titan
+--
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-titan-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+makeStream({
+	name = "bob-titan-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-fire-cloud"
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "big-explosion"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		perimeter = 3,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "electric" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "fire" }
-				}
-			    }
-		    }
-	    }
-	},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	fireFlameName = "bob-titan-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-titan-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-titan-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-titan-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-titan-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-titan-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-titan-ball-smoke-on-adding-fuel-rampant"
-    }
-)
-
--- behemoth
-
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-behemoth-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
-	particleTint = {r=0, g=0.1, b=1, a=1},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "direct",
@@ -718,38 +501,72 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	fireFlameName = "bob-behemoth-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-behemoth-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-behemoth-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-behemoth-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-behemoth-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-behemoth-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-behemoth-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})
 
--- leviathan
+--
 
-biterStreamUtils.createBiterStreamAttack(
-    {
-	fireFlameStreamName = "bob-leviathan-ball-stream-rampant",
-	firePictureTint = {r=1,g=1,b=1,a=1},
-	smallTreeFlameTint = {r=1,g=1,b=1,a=1},
-	particleTimeout = 1,
-	particleVertialAcceleration = 0.005 * 0.60,
-	particleHoizontalSpeed = 0.2* 0.75 * 1.5,
-	particleHoizontalSpeedDeviation = 0.005 * 0.70,
+makeStream({
+	name = "bob-behemoth-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
+	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	actions = {
+	    {
+		type = "direct",
+		action_delivery =
+		    {
+			type = "instant",
+			target_effects =
+			    {
+				{
+				    type = "create-entity",
+				    entity_name = "small-poison-cloud"
+				},
+				{
+				    type = "create-entity",
+				    entity_name = "big-explosion"
+				}
+			    }
+		    }
+	    },
+	    {
+		type = "area",
+		perimeter = 3,
+		action_delivery =
+		    {
+			type = "instant",
+			target_effects =
+			    {
+				{
+				    type = "damage",
+				    damage = { amount = 15, type = "electric" }
+				},
+				{
+				    type = "damage",
+				    damage = { amount = 15, type = "explosion" }
+				},
+				{
+				    type = "damage",
+				    damage = { amount = 15, type = "fire" }
+				},
+				{
+				    type = "damage",
+				    damage = { amount = 15, type = "poison" }
+				}
+			    }
+		    }
+	    }
+	}
+})
+
+--
+
+makeStream({
+	name = "bob-leviathan-ball",
+	particleTint = {r=0, g=0.1, b=1, a=1},
+	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
 	actions = {
 	    {
 		type = "cluster",
@@ -819,22 +636,5 @@ biterStreamUtils.createBiterStreamAttack(
 			    }
 		    }
 	    }
-	},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	fireFlameName = "bob-leviathan-ball-flame-rampant",
-	fireFlameTint = {r=1, g=0.64, b=0.05, a=0.5},
-	fireFlameDamagePerTick = { amount = 45/60, type = "fire" },
-	softSmokeName = "soft-bob-leviathan-ball-smoke-rampant",
-	softSmokeTint = biterStreamUtils.make_color(0.7, 0.4, 0.2, 0.1),
-	smokeName = "bob-leviathan-ball-smoke-rampant",
-	smokeTint = {r=0.2, g=0.2, b=0.2, a=0.25},
-	stickerName = "bob-leviathan-ball-sticker-rampant",
-	stickerTint = { r = 0.45, g = 0.25, b = 0.25, a = 0.18 },
-	stickerDamagePerTick = { amount = 120 / 60, type = "fire" },
-	smokeWithoutGlowName = "bob-leviathan-ball-smoke-without-glow-rampant",
-	smokeWithoutGlowTint = biterStreamUtils.make_color(0.45,0.25,0.1, 0.25),
-	spawnEntityName = "bob-leviathan-ball-flame-on-tree",
-	spawnEntityDamagePerTick = { amount = 45/60, type = "fire" },
-	smokeOnAddingFuel = "bob-leviathan-ball-smoke-on-adding-fuel-rampant"
-    }
-)
+	}
+})

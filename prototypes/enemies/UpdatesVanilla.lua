@@ -8,7 +8,7 @@ function vanillaUpdates.useDumbProjectiles()
     turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
 	    cooldown = 50,
-	    range = 17,
+	    range = 18,
 	    min_range = 5,
 	    turn_range = 1,
 	    fire_penalty = 0,

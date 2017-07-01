@@ -181,7 +181,32 @@ data:extend({
 	    default_value = false,
 	    order = "g[modifier]-a[damage]",
 	    per_user = false
-	}-- ,
+	},
+
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-removeBloodParticles",
+	    description = "rampant-reduceBloodParticles",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "h[modifier]-a[optimize]",
+	    per_user = false
+	},
+
+		
+	{
+	    type = "bool-setting",
+	    name = "rampant-reduceAnimations",
+	    description = "rampant-reduceAnimations",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "h[modifier]-b[optimize]",
+	    per_user = false
+	}
+
+
+	-- ,
 
 	-- {
 	--     type = "bool-setting",

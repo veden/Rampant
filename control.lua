@@ -65,6 +65,8 @@ local makeImmortalEntity = entityUtils.makeImmortalEntity
 
 local processBases = baseProcessor.processBases
 
+local mRandom = math.random
+
 -- local references to global
 
 local regionMap
@@ -281,7 +283,7 @@ local function onDeath(event)
 				     surface, 
 				     natives,
 				     tick)
-			if (math.random() < natives.rallyThreshold) and not surface.peaceful_mode then
+			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
 			    rallyUnits(deathChunk,
 				       regionMap,
 				       surface,

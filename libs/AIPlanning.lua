@@ -42,6 +42,8 @@ local randomTickEvent = mathUtils.randomTickEvent
 
 local mFloor = math.floor
 
+local mRandom = math.random
+
 local mMax = math.max
 
 -- module code
@@ -76,17 +78,17 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
     natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
     
     if (natives.points < maxPoints) then
-	natives.points = natives.points + mFloor((AI_POINT_GENERATOR_AMOUNT * math.random()) +
+	natives.points = natives.points + mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) +
 		((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
     end
     
     if (natives.temperamentTick == tick) then
-	natives.temperament = math.random()
+	natives.temperament = mRandom()
 	natives.temperamentTick = randomTickEvent(tick, AI_MIN_TEMPERAMENT_DURATION, AI_MAX_TEMPERAMENT_DURATION)
     end
 
     if (natives.stateTick == tick) then
-	local roll = math.random() * mMax(1 - evolution_factor, 0.15)
+	local roll = mRandom() * mMax(1 - evolution_factor, 0.15)
 	if (roll > natives.temperament) then
 	    natives.state = AI_STATE_PEACEFUL
 	elseif natives.aiNocturnalMode then

@@ -77,9 +77,9 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 								     scoreTendrilChunk,
 								     nil)
 	if (tendrilDirection == -1) then
-	    -- removeTendril(base, tendril)
-	    -- buildOutpost(regionMap, natives, base, surface, tendril)
-	    -- tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
+	    removeTendril(base, tendril)
+	    buildOutpost(regionMap, natives, base, surface, tendril)
+	    tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
 	    colorChunk(chunk.x, chunk.y, "hazard-concrete-left", surface)
 	    return
 	elseif tendrilPath then
