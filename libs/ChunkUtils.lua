@@ -180,7 +180,7 @@ end
 function chunkUtils.scoreChunk(chunk, surface, natives, tempQuery)   
     tempQuery.force = nil
     tempQuery.type = "resource"
-    chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(tempQuery)
+    chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(tempQuery) * 0.001
     
     tempQuery.type = nil
     tempQuery.force = "player"
