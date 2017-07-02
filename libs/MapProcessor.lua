@@ -232,7 +232,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
-	chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(resourceQuery)
+	chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(resourceQuery) * 0.001
 	
 	local entities = surface.find_entities_filtered(playerQuery)
 	local playerBaseGenerator = 0

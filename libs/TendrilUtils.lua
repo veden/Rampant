@@ -15,11 +15,13 @@ local mathUtils = require("MathUtils")
 
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
+local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
+
 local NEST_COUNT = constants.NEST_COUNT
 
 -- imported functions
 
-local scoreNeighborsForAttack = neighborsUtils.scoreNeighborsForAttack
+local scoreNeighborsForResource = neighborsUtils.scoreNeighborsForResource
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 
@@ -27,11 +29,9 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
+local buildNest = buildUtils.buildNest
 
 local buildOutpost = buildUtils.buildOutpost
-
-local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 -- module code
 
@@ -64,6 +64,8 @@ end
 local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives)
     local tendrilUnit = tendril.unit
     if not tendrilUnit.valid then
+	removeTendril(base, tendril)
+	tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
 	return
     end
     if (tendril.cycles > 0) then
@@ -73,41 +75,34 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
     local tendrilPosition = tendrilUnit.position
     local chunk = getChunkByPosition(regionMap, tendrilPosition.x, tendrilPosition.y)
     if chunk then
-	local tendrilPath,tendrilDirection = scoreNeighborsForAttack(chunk,
-								     getNeighborChunks(regionMap,
-										       chunk.cX,
-										       chunk.cY),
-								     scoreTendrilChunk,
-								     nil)
+	local tendrilPath,tendrilDirection = scoreNeighborsForResource(chunk,
+								       getNeighborChunks(regionMap,
+											 chunk.cX,
+											 chunk.cY),
+								       scoreTendrilChunk,
+								       nil)
 	if (tendrilDirection == -1) then
-	    removeTendril(base, tendril)
-	    buildOutpost(regionMap, natives, base, surface, tendril)
-	    tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
-	    colorChunk(chunk.x, chunk.y, "hazard-concrete-left", surface)
+	    if (chunk[RESOURCE_GENERATOR] ~= 0) then
+		buildOutpost(regionMap, natives, base, surface, tendril)
+		removeTendril(base, tendril)
+		tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
+		colorChunk(chunk.x, chunk.y, "hazard-concrete-left", surface)
+	    end
 	    return
 	elseif tendrilPath then
   	    positionFromDirectionAndChunk(tendrilDirection, tendrilPosition, tendrilPosition, 0.5)
-	    mathUtils.distortPosition(tendrilPosition)
+	    -- mathUtils.distortPosition(tendrilPosition)
 	    -- tendril.path[#tendril.path] = chunk
 	    local position = surface.find_non_colliding_position("spitter-spawner",
 								 tendrilPosition,
 								 32,
 								 2)
 	    if position then
-		tendril.target = position
+		buildNest(regionMap, base, surface, tendril.unit.position, "spitter-spawner")
+		-- tendril.cycles = 3
 		tendrilUnit.set_command({ type = defines.command.go_to_location,
 					  destination = position,
-					  distraction = defines.distraction.by_none })
-		
-		-- needs to check to make sure unit still exists as well.
-		--tendril.cycles = 2
-		-- tendril.x = position.x
-		-- tendril.y = position.y
-		-- local biterSpawner = {name="spitter-spawner", position=position}
-		-- local hive = surface.create_entity(biterSpawner)
-		-- registerEnemyBaseStructure(regionMap, hive, base)
-		-- elseif not position then
-		-- 	removeTendril(base, tendril)
+					  distraction = defines.distraction.by_none })		
 	    end
 	end
 	colorChunk(chunk.x, chunk.y, "concrete", surface)
@@ -134,7 +129,6 @@ function tendrilUtils.createTendril(base, surface)
     local tendril = {
 	unit = entity,
 	penalties = {},
-	target = entity.position,
 	cycles = 0,
 	path = {}
     }

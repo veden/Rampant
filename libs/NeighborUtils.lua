@@ -10,6 +10,10 @@ local constants = require("Constants")
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
+local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
+
+-- imported functions
+
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 
 -- module code
@@ -41,6 +45,31 @@ function neighborUtils.scoreNeighborsForAttack(chunk, neighborDirectionChunks, s
     return highestChunk, highestDirection
 end
 
+--[[
+    Expects all neighbors adjacent to a chunk
+--]]
+function neighborUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, scoreFunction, squad, threshold) 
+    local highestChunk
+    local highestScore = -MAGIC_MAXIMUM_NUMBER
+    local highestDirection    
+    for x=1,8 do
+        local neighborChunk = neighborDirectionChunks[x]
+        if neighborChunk and canMoveChunkDirection(x, chunk, neighborChunk) and (neighborChunk[RESOURCE_PHEROMONE] > threshold) then
+            local score = scoreFunction(squad, neighborChunk)
+            if (score > highestScore) then
+                highestScore = score
+                highestChunk = neighborChunk
+                highestDirection = x
+            end
+        end
+    end
+
+    if scoreFunction(squad, chunk) > highestScore then
+	return nil, -1
+    end
+    
+    return highestChunk, highestDirection
+end
 
 --[[
     Expects all neighbors adjacent to a chunk

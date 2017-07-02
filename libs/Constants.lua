@@ -35,7 +35,7 @@ constants.INTERVAL_LOGIC = 38
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
-constants.DEV_CUSTOM_AI = false
+constants.DEV_CUSTOM_AI = true
 
 -- chunk properties
 
@@ -109,7 +109,7 @@ constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
 constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.9
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
-constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.85
+constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.9
 
 -- chunk attributes
 

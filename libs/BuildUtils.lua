@@ -7,36 +7,51 @@ local mathUtils = require("MathUtils")
 
 local baseRegisterUtils = require("BaseRegisterUtils")
 
+local mapUtils = require("MapUtils")
+
 -- constants
 
 local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
--- imported functions
-
 local AI_NEST_COST = constants.AI_NEST_COST
 local AI_WORM_COST = constants.AI_WORM_COST
 
+local NEST_COUNT = constants.NEST_COUNT
+
 local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
+
+-- imported functions
 
 local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 local mRandom = math.random
 
+local getChunkByPosition = mapUtils.getChunkByPosition
+
 -- module code
+
+function buildUtils.buildNest(regionMap, base, surface, targetPosition, name)
+    local position = surface.find_non_colliding_position(name, targetPosition, DOUBLE_CHUNK_SIZE, 2)
+    local chunk = getChunkByPosition(regionMap, position.x, position.y)
+    local nest = nil
+    if position and chunk and (chunk[NEST_COUNT] < 3) then
+	local biterSpawner = {name=name, position=position}
+	nest = surface.create_entity(biterSpawner)
+	registerEnemyBaseStructure(regionMap, nest, base)
+    end
+    return nest
+end
 
 function buildUtils.buildHive(regionMap, base, surface)
     local valid = false
-    local position = surface.find_non_colliding_position("biter-spawner-hive", base, DOUBLE_CHUNK_SIZE, 2)
-    if position then
-	local biterSpawner = {name="biter-spawner-hive", position=position}
-	local hive = surface.create_entity(biterSpawner)
+    local hive = buildUtils.buildNest(regionMap, base, surface, base, "biter-spawner-hive")
+    if hive then
 	if (#base.hives == 0) then
 	    base.x = hive.position.x
 	    base.y = hive.position.y
 	end
 	base.hives[#base.hives+1] = hive
-	registerEnemyBaseStructure(regionMap, hive, base)
 	valid = true
     end
     return valid

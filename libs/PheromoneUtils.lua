@@ -47,8 +47,8 @@ function pheromoneUtils.scents(chunk)
 	chunk[BASE_PHEROMONE] = IMPASSABLE_TERRAIN_GENERATOR_AMOUNT;
     else
 	chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR]
-	if (chunk[NEST_COUNT] == 0) then
-	    chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + chunk[RESOURCE_GENERATOR]
+	if (chunk[NEST_COUNT] == 0) and (chunk[RESOURCE_GENERATOR] > 0) then
+	    chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + math.max((chunk[RESOURCE_GENERATOR] * 100), 90)
 	end
     end
     
