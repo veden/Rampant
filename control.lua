@@ -75,10 +75,42 @@ local pendingChunks
 
 -- hook functions
 
+local function onIonCannonFired(event)
+    --[[
+	event.force, event.surface, event.player_index, event.position, event.radius
+    --]]
+    local surface = event.surface
+    if (surface.index == 1) then
+	natives.points = natives.points + 3000
+	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+	    natives.points = AI_MAX_OVERFLOW_POINTS
+	end
+	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
+	if chunk then
+	    rallyUnits(chunk,
+		       regionMap,
+		       surface,
+		       natives,
+		       event.tick)
+	end
+    end    
+end
+
+local function hookEvents()
+    if config.ionCannonPresent then
+	script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
+			onIonCannonFired)
+	-- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
+	-- 		    onIonCannonTargeted)
+    end    
+end
+
 local function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
+
+    hookEvents()
 end
 
 local function onChunkGenerated(event)
@@ -238,27 +270,6 @@ local function onPickUp(event)
     addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
 end
 
-local function onIonCannonFired(event)
-    --[[
-	event.force, event.surface, event.player_index, event.position, event.radius
-    --]]
-    local surface = event.surface
-    if (surface.index == 1) then
-	natives.points = natives.points + 3000
-	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-	    natives.points = AI_MAX_OVERFLOW_POINTS
-	end
-	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
-	if chunk then
-	    rallyUnits(chunk,
-		       regionMap,
-		       surface,
-		       natives,
-		       event.tick)
-	end
-    end    
-end
-
 local function onDeath(event)
     local entity = event.entity
     local surface = entity.surface
@@ -337,6 +348,7 @@ local function onInit()
     pendingChunks = global.pendingChunks
     
     onConfigChanged()
+    hookEvents()
 end
 
 -- hooks
@@ -346,13 +358,6 @@ script.on_load(onLoad)
 script.on_event(defines.events.on_runtime_mod_setting_changed,
 		onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
-
-if config.ionCannonPresent then
-    script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
-    		    onIonCannonFired)
-    -- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
-    -- 		    onIonCannonTargeted)
-end
 
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 

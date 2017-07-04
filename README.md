@@ -58,12 +58,12 @@ Configure Options not in game menu:
 # Version History
 
 0.15.17 -  
+- Fixed: Remote call load issue. (https://github.com/veden/Rampant/issues/5)  
 - Tweak: Increased sampling threshold for water tiles from 5 to 10 tiles  
 - Tweak: Increased small worm turret range from 17 to 18  
-- Improvement: added ground effect to worm turret for attacking drones  
-- Improvement: Added option to remove blood particles on biter deaths, which should help reduce lag spikes (default is to remove them)  
+- Improvement: Added option to remove blood particles on biter deaths, which should help reduce lag spikes (Default is to remove)  
 - Optimization: Moved math.random to local level instead of global  
-- Refactored: Unit and attack prototypes  
+- Framework: Refactored unit and attack prototypes  
 
 0.15.16 -  
 - Tweak: Increased death pheromone weight for squad attack from 1 to 2  

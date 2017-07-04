@@ -5,7 +5,7 @@
   (require json)
   
   (define modFolder "/home/veden/.factorio/mods/")
-  (define zipModFolder "/data/games/factorio15.19/mods/")
+  (define zipModFolder "/data/games/factorio/mods/")
   (define configuration (call-with-input-file "info.json"
                           (lambda (port)
                             (string->jsexpr (port->string port)))))
@@ -77,8 +77,8 @@
       (copyDirectory "prototypes" modFolder)))
   
   (define (run)
-    (copyFiles modFolder)
+    ;; (copyFiles modFolder)
     ;; (copyFiles zipModFolder)
-    ;;(makeZip modFolder)
+    (makeZip modFolder)
     )
   )
