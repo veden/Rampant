@@ -35,7 +35,7 @@ constants.INTERVAL_LOGIC = 38
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
-constants.DEV_CUSTOM_AI = true
+constants.DEV_CUSTOM_AI = false
 
 -- chunk properties
 

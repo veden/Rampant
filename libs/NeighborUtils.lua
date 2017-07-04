@@ -54,7 +54,7 @@ function neighborUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks,
     local highestDirection    
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-        if neighborChunk and canMoveChunkDirection(x, chunk, neighborChunk) and (neighborChunk[RESOURCE_PHEROMONE] > threshold) then
+        if neighborChunk and canMoveChunkDirection(x, chunk, neighborChunk) and (neighborChunk[RESOURCE_PHEROMONE] > (threshold or 1)) then
             local score = scoreFunction(squad, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
