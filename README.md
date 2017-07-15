@@ -57,6 +57,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.18 -  
+- Fixed: Current version wasn't be set causing the upgrade code to run repeatedly  
+
 0.15.17 -  
 - Fixed: Remote call load issue. (https://github.com/veden/Rampant/issues/5)  
 - Tweak: Increased sampling threshold for water tiles from 5 to 10 tiles  
