@@ -18,6 +18,7 @@ local upgrade = require("Upgrade")
 local baseRegisterUtils = require("libs/BaseRegisterUtils")
 local mathUtils = require("libs/MathUtils")
 local config = require("config")
+local worldProcessor = require("libs/WorldProcessor")
 
 -- constants
 
@@ -37,6 +38,8 @@ local roundToNearest = mathUtils.roundToNearest
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local processPendingChunks = chunkProcessor.processPendingChunks
+
+local processWorld = worldProcessor.processWorld
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -69,9 +72,10 @@ local mRandom = math.random
 
 -- local references to global
 
-local regionMap
-local natives
-local pendingChunks
+local regionMap -- manages the chunks that make up the game world
+local natives -- manages the enemy units, structures, and ai
+local pendingChunks -- chunks that have yet to be processed by the mod
+local world -- manages the player built structures and any other events in the world
 
 -- hook functions
 
@@ -109,6 +113,7 @@ local function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
+    world = global.world
 
     hookEvents()
 end
@@ -130,8 +135,8 @@ local function rebuildRegionMap()
     global.regionMap = {}
     regionMap = global.regionMap
     regionMap.processQueue = {}
-    regionMap.processPointer = 1
-    regionMap.scanPointer = 1
+    regionMap.processIndex = 1
+    regionMap.scanIndex = 1
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     regionMap.neighbors = { nil, nil, nil, nil, nil, nil, nil, nil }
     regionMap.cardinalNeighbors = { nil, nil, nil, nil }
@@ -215,7 +220,9 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if upgrade.attempt(natives, regionMap) and onModSettingsChange(nil) then
+    local upgraded
+    upgraded, natives, world = upgrade.attempt(natives, world)
+    if upgraded and onModSettingsChange(nil) then
 	rebuildRegionMap()
     end
 end
@@ -241,6 +248,11 @@ local function onTick(event)
 	    
 	    cleanSquads(natives)
 	    regroupSquads(natives)
+	    if (world == nil) then
+		print("fucl")
+	    end
+	    
+	    processWorld(surface, world, tick)
 	    
 	    processPlayers(players, regionMap, surface, natives, tick)
 
@@ -258,6 +270,17 @@ end
 
 local function onBuild(event)
     local entity = event.created_entity
+    print (entity.unit_number .. " " .. entity.name)
+    if (entity.name == "steel-collector-overlay-rampant") then
+	local position = entity.position
+	local force = entity.force.name
+	local surface = entity.surface
+	entity.destroy()
+	entity = surface.create_entity({position=position,
+					force=force,
+					name="steel-collector-rampant"})
+	world.itemCollectors[#world.itemCollectors+1] = entity
+    end
     addRemovePlayerEntity(regionMap, entity, natives, true, false)
     if natives.safeBuildings then
 	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
@@ -342,13 +365,19 @@ local function onInit()
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
+    global.world = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
+    world = global.world
     
     onConfigChanged()
     hookEvents()
+end
+
+local function onConfirmedBlueprint(event)
+    print ("blueprint")
 end
 
 -- hooks
@@ -366,6 +395,8 @@ script.on_event(defines.events.on_biter_base_built,
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
     onPickUp)
+script.on_event(defines.events.on_player_configured_blueprint,
+		onConfirmedBlueprint)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 
     onBuild)

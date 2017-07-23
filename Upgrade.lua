@@ -16,7 +16,7 @@ local roundToNearest = mathUtils.roundToNearest
 
 -- module code
 
-function upgrade.attempt(natives)
+function upgrade.attempt(natives, world)
     local starting = global.version
     if (global.version == nil) then
         natives.squads = {}
@@ -158,11 +158,19 @@ function upgrade.attempt(natives)
 	global.version = constants.VERSION_27
     end
     if (global.version < constants.VERSION_28) then
+
+	if (world == nil) then
+	    global.world = {}
+	    world = global.world
+	end
+	
+	world.itemCollectors = {}
+	world.itemCollectorIndex = 1
 	
 	game.surfaces[1].print("Rampant - Version 0.15.18")
 	global.version = constants.VERSION_28
     end
-    return starting ~= global.version
+    return starting ~= global.version, natives, world
 end
 
 function upgrade.compareTable(entities, option, new)
