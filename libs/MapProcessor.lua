@@ -86,7 +86,7 @@ end
 --]]
 function mapProcessor.processMap(regionMap, surface, natives, tick)
     local roll = regionMap.processRoll
-    local index = regionMap.processPointer
+    local index = regionMap.processIndex
     
     if (index == 1) then
         roll = mRandom()
@@ -115,9 +115,9 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
     end
     
     if (endIndex == #processQueue) then
-        regionMap.processPointer = 1
+        regionMap.processIndex = 1
     else
-        regionMap.processPointer = endIndex + 1
+        regionMap.processIndex = endIndex + 1
     end
 end
 
@@ -190,7 +190,7 @@ end
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
 function mapProcessor.scanMap(regionMap, surface, natives)
-    local index = regionMap.scanPointer
+    local index = regionMap.scanIndex
 
     local offset = {0, 0}
     local chunkBox = {false, offset}
@@ -254,9 +254,9 @@ function mapProcessor.scanMap(regionMap, surface, natives)
     end
 
     if (endIndex == #processQueue) then
-	regionMap.scanPointer = 1
+	regionMap.scanIndex = 1
     else
-	regionMap.scanPointer = endIndex + 1
+	regionMap.scanIndex = endIndex + 1
     end
 end
 

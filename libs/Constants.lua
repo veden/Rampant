@@ -24,6 +24,7 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 450
 constants.SCAN_QUEUE_SIZE = 6
+constants.ITEM_COLLECTOR_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 5
 constants.PROCESS_PLAYER_BOUND = 4
@@ -37,6 +38,10 @@ constants.INTERVAL_LOGIC = 38
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
 constants.DEV_CUSTOM_AI = false
+
+-- item collector
+
+constants.ITEM_COLLECTOR_DISTANCE = 48
 
 -- chunk properties
 
