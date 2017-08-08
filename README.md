@@ -59,6 +59,7 @@ Configure Options not in game menu:
 
 0.15.18 -  
 - Fixed: Current version wasn't be set causing the upgrade code to run repeatedly  
+- Fixed: Neighbors function not correctly clearing its state between calls  
 
 0.15.17 -  
 - Fixed: Remote call load issue. (https://github.com/veden/Rampant/issues/5)  

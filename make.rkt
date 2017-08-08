@@ -40,7 +40,6 @@
          (string->path "graphics")
          (string->path "prototypes")))
   
-  
   (define (copyFile fileName modFolder)
     (copy-file (string->path fileName)
                (string->path (string-append modFolder

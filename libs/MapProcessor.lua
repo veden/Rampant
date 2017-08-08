@@ -107,7 +107,7 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
 
 	    if squads and (chunk[NEST_COUNT] ~= 0) then
 		formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
-		squads = natives.points >= AI_SQUAD_COST
+		squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
 	    end
 	    
 	    scents(chunk)
@@ -169,11 +169,11 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 			    if (chunk[NEST_COUNT] ~= 0) then
 				if squads then
 				    formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
-				    squads = natives.points >= AI_SQUAD_COST
+				    squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
 				end
 				if vengence then
 				    formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				    vengence = natives.points >= AI_VENGENCE_SQUAD_COST
+				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST) and (#natives.squads < natives.maxSquads)
 				end
 			    end
 			    

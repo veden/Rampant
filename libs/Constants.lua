@@ -22,12 +22,14 @@ constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
-constants.PROCESS_QUEUE_SIZE = 450
-constants.SCAN_QUEUE_SIZE = 6
+constants.PROCESS_QUEUE_SIZE = 400
+constants.SCAN_QUEUE_SIZE = 5
 constants.ITEM_COLLECTOR_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 5
 constants.PROCESS_PLAYER_BOUND = 4
+
+constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE = 20
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
@@ -41,7 +43,7 @@ constants.DEV_CUSTOM_AI = false
 
 -- item collector
 
-constants.ITEM_COLLECTOR_DISTANCE = 48
+constants.ITEM_COLLECTOR_DISTANCE = 44
 
 -- chunk properties
 

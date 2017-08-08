@@ -8,7 +8,7 @@ local baseRegisterUtils = require("BaseRegisterUtils")
 local neighborsUtils = require("NeighborUtils")
 local mathUtils = require("MathUtils")
 
-local buildUtils = require("BuildUtils")
+local nestUtils = require("NestUtils")
 local mathUtils = require("MathUtils")
 
 -- constants
@@ -29,9 +29,9 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local buildNest = buildUtils.buildNest
+local buildNest = nestUtils.buildNest
 
-local buildOutpost = buildUtils.buildOutpost
+local buildOutpost = nestUtils.buildOutpost
 
 -- module code
 

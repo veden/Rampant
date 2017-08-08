@@ -41,14 +41,26 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     local squads = natives.squads
 
-    for i=1,#squads do
-        local squad = squads[i]
-        local unitGroup = squad.group
-        if unitGroup.valid and (not filter or (filter and filter[squad.status])) then
-            if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
-                return squad
-            end
-        end
+    if filter then
+	for i=1,#squads do
+	    local squad = squads[i]
+	    local unitGroup = squad.group
+	    if unitGroup.valid and filter[squad.status] then
+		if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
+		    return squad
+		end
+	    end
+	end
+    else
+	for i=1,#squads do
+	    local squad = squads[i]
+	    local unitGroup = squad.group
+	    if unitGroup.valid then
+		if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
+		    return squad
+		end
+	    end
+	end
     end
 end
 
@@ -221,7 +233,7 @@ function unitGroupUtils.regroupSquads(natives)
     if (maxSquadIndex == squadCount) then
 	natives.regroupIndex = 1
     else
-	natives.regroupIndex = maxSquadIndex
+	natives.regroupIndex = maxSquadIndex + 1
     end
 end
 

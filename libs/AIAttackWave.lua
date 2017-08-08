@@ -79,7 +79,8 @@ local function validUnitGroupLocation(neighborChunk)
 end
 
 function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
-    if (tick - chunk[RALLY_TRIGGERED] > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST) then
+    if ((tick - chunk[RALLY_TRIGGERED] > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST) and
+	(#natives.squads < natives.maxSquads)) then
 	chunk[RALLY_TRIGGERED] = tick
 	local cX = chunk.cX
 	local cY = chunk.cY
@@ -89,7 +90,7 @@ function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
 		    local rallyChunk = getChunkByIndex(regionMap, x, y)
 		    if rallyChunk and (rallyChunk[NEST_COUNT] ~= 0) then
 			aiAttackWave.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
-			if (natives.points < AI_VENGENCE_SQUAD_COST) then
+			if (natives.points < AI_VENGENCE_SQUAD_COST) and (#natives.squads < natives.maxSquads) then
 			    return
 			end
 		    end

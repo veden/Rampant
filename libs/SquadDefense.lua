@@ -83,23 +83,25 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
                 
 		local newSquad = findNearBySquad(natives, retreatPosition, HALF_CHUNK_SIZE, RETREAT_FILTER)
-                
-		if not newSquad then
+
+		if not newSquad and (#natives.squads < natives.maxSquads) then
 		    newSquad = createSquad(retreatPosition, surface, natives)
 		    newSquad.status = SQUAD_RETREATING
 		    newSquad.cycles = 4
 		end
-		
-		if enemiesToSquad then
-		    membersToSquad(newSquad, enemiesToSquad, false)
-		else
-		    membersToSquad(newSquad, squad.group.members, true)
-		    newSquad.penalties = squad.penalties
-		    if squad.rabid then
-			newSquad.rabid = true
+
+		if newSquad then
+		    if enemiesToSquad then
+			membersToSquad(newSquad, enemiesToSquad, false)
+		    else
+			membersToSquad(newSquad, squad.group.members, true)
+			newSquad.penalties = squad.penalties
+			if squad.rabid then
+			    newSquad.rabid = true
+			end
 		    end
+		    addMovementPenalty(natives, newSquad, chunk.cX, chunk.cY)
 		end
-		addMovementPenalty(natives, newSquad, chunk.cX, chunk.cY)
 	    end
 	end
     end

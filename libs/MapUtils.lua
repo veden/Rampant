@@ -25,7 +25,7 @@ local mFloor = math.floor
 
 function mapUtils.getChunkByPosition(regionMap, x, y)
     local chunkX = regionMap[mFloor(x * 0.03125)]
-    if (chunkX ~= nil) then
+    if chunkX then
         return chunkX[mFloor(y * 0.03125)]
     end
     return nil
@@ -33,7 +33,7 @@ end
 
 function mapUtils.getChunkByIndex(regionMap, x, y)
     local chunkX = regionMap[x]
-    if (chunkX ~= nil) then
+    if chunkX then
         return chunkX[y]
     end
     return nil
@@ -55,6 +55,10 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
         neighbors[1] = xChunks[chunkYRow1]
         neighbors[4] = xChunks[chunkY]
         neighbors[6] = xChunks[chunkYRow3]
+    else
+	neighbors[1] = nil
+	neighbors[4] = nil
+	neighbors[6] = nil
     end
     
     xChunks = regionMap[chunkX+1]
@@ -62,12 +66,19 @@ function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
         neighbors[3] = xChunks[chunkYRow1]
         neighbors[5] = xChunks[chunkY]
         neighbors[8] = xChunks[chunkYRow3]
+    else
+	neighbors[3] = nil
+	neighbors[5] = nil
+	neighbors[8] = nil
     end
     
     xChunks = regionMap[chunkX]
     if xChunks then
         neighbors[2] = xChunks[chunkYRow1]
         neighbors[7] = xChunks[chunkYRow3]
+    else
+	neighbors[2] = nil
+	neighbors[7] = nil
     end
     return neighbors
 end
@@ -94,16 +105,23 @@ function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
     if xChunks then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]
+    else
+	neighbors[1] = nil
+	neighbors[4] = nil
     end
     
     xChunks = regionMap[chunkX-1]
     if xChunks then
 	neighbors[2] = xChunks[chunkY]
+    else
+	neighbors[2] = nil
     end
     
     xChunks = regionMap[chunkX+1]
     if xChunks then
 	neighbors[3] = xChunks[chunkY]
+    else
+	neighbors[3] = nil
     end
     return neighbors
 end

@@ -16,9 +16,8 @@ local canAttackNocturnal = nocturnalUtils.canAttack
 -- module code
 
 function aiPredicates.canAttack(natives, surface)
-    return ((natives.state == AI_STATE_AGGRESSIVE) or
-	    canAttackNocturnal(natives, surface)) and not surface.peaceful_mode and
-	(#natives.squads < natives.maxSquads)
+    return (((natives.state == AI_STATE_AGGRESSIVE) or canAttackNocturnal(natives, surface))
+	    and not surface.peaceful_mode and (#natives.squads < natives.maxSquads))
 end
 
 return aiPredicates

@@ -105,6 +105,7 @@ function entityUtils.addRemovePlayerEntity(regionMap, entity, natives, addObject
     	    rightBottom[PLAYER_BASE_GENERATOR] = rightBottom[PLAYER_BASE_GENERATOR] + entityValue
     	end
     end
+    return entity
 end
 
 function entityUtils.makeImmortalEntity(surface, entity)
