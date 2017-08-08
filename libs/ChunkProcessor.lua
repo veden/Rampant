@@ -31,13 +31,13 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
     
     local chunkTiles = regionMap.chunkTiles
     
-    local start = #pendingStack
-    for i=start, 1, -1 do
+    for i=#pendingStack, 1, -1 do
         local event = pendingStack[i]
         pendingStack[i] = nil
 
-	local x = event.area.left_top.x
-	local y = event.area.left_top.y
+	local topLeft = event.area.left_top
+	local x = topLeft.x
+	local y = topLeft.y
         local chunk = createChunk(x, y)
 
 	areaBoundingBox[1] = chunk

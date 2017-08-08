@@ -12,29 +12,28 @@ local ITEM_COLLECTOR_QUEUE_SIZE = constants.ITEM_COLLECTOR_QUEUE_SIZE
 
 -- imported functions
 
-local mMin = math.min
-
 -- module code
 
 function worldProcessor.processWorld(surface, world, tick)
-    local collectorIndex = world.itemCollectorIndex
-    local collectors = world.itemCollectors
+    local collectorLookup = world.itemCollectorLookup
+    local collectors = world.itemCollectorEvents
 
     local topLeftPosition = {x = 0, y = 0}
     local bottomRightPosition = {x = 0, y = 0}
     local boundingArea = {topLeftPosition,
 			  bottomRightPosition}
 
-    print ("here")
-    
-    local endIndex = mMin(collectorIndex+ITEM_COLLECTOR_QUEUE_SIZE, #collectors)
-    for index = collectorIndex, endIndex do
-        local itemCollector = collectors[index]
-
-	print ("Found Collector")
+    local count = 0
+    for index = #collectors, 1, -1 do
+	count = count + 1
+        local itemCollectorPair = collectorLookup[collectors[index]]
+	collectors[index] = nil
+	local chest = itemCollectorPair[1]
+	local dish = itemCollectorPair[2]
 	
-	if itemCollector.valid then
-	    local collectorPosition = itemCollector.position
+	if chest.valid and dish.valid then
+
+	    local collectorPosition = dish.position
 	    
 	    topLeftPosition.x = collectorPosition.x - ITEM_COLLECTOR_DISTANCE
 	    topLeftPosition.y = collectorPosition.y - ITEM_COLLECTOR_DISTANCE
@@ -45,19 +44,27 @@ function worldProcessor.processWorld(surface, world, tick)
 	    local items = surface.find_entities_filtered({area = boundingArea,
 							  name = "item-on-ground"})
 	    
+	    local counts = {}
 	    if (#items > 0) then
 		for x=1,#items do
 		    local item = items[x]
+		    if not counts[item.stack.name] then
+			counts[item.stack.name] = 1
+		    else
+			counts[item.stack.name] = counts[item.stack.name] + 1
+		    end
 		    item.destroy()
 		end
+		for k,c in pairs(counts) do
+		    chest.insert({name=k, count=c})
+		end
+		-- dish.surface.create_entity({name="item-collector-base-particle-rampant",
+		-- 			    position=dish.position})
 	    end
 	end
-    end
-
-    if (endIndex == #collectors) then
-	world.itemCollectorIndex = 1
-    else
-	world.itemCollectorIndex = endIndex + 1
+	if (count >= ITEM_COLLECTOR_QUEUE_SIZE) then
+	    return
+	end
     end
 end
 

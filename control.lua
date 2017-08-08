@@ -19,6 +19,9 @@ local baseRegisterUtils = require("libs/BaseRegisterUtils")
 local mathUtils = require("libs/MathUtils")
 local config = require("config")
 local worldProcessor = require("libs/WorldProcessor")
+local inventoryUtils = require("libs/InventoryUtils")
+local playerUtils = require("libs/PlayerUtils")
+local buildUtils = require("libs/BuildUtils")
 
 -- constants
 
@@ -26,6 +29,13 @@ local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+
+local DEFINES_INVENTORY_PLAYER_MAIN = defines.inventory.player_main
+local DEFINES_INVENTORY_GOD_MAIN = defines.inventory.god_main
+local DEFINES_INVENTORY_PLAYER_QUICKBAR = defines.inventory.player_quickbar
+local DEFINES_INVENTORY_GOD_QUICKBAR = defines.inventory.god_quickbar
+
+local ITEM_COLLECTOR_MAX_QUEUE_SIZE = constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE
 
 local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
@@ -38,6 +48,14 @@ local roundToNearest = mathUtils.roundToNearest
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local processPendingChunks = chunkProcessor.processPendingChunks
+
+local buildComplexEntity = buildUtils.buildComplexEntity
+local mineComplexEntity = buildUtils.mineComplexEntity
+
+local getPlayerCursorStack = playerUtils.getPlayerCursorStack
+
+local swapItemStack = inventoryUtils.swapItemStack
+local swapItemInventory = inventoryUtils.swapItemInventory
 
 local processWorld = worldProcessor.processWorld
 
@@ -69,6 +87,8 @@ local makeImmortalEntity = entityUtils.makeImmortalEntity
 local processBases = baseProcessor.processBases
 
 local mRandom = math.random
+
+local getPlayerInventory = playerUtils.getPlayerInventory
 
 -- local references to global
 
@@ -248,9 +268,6 @@ local function onTick(event)
 	    
 	    cleanSquads(natives)
 	    regroupSquads(natives)
-	    if (world == nil) then
-		print("fucl")
-	    end
 	    
 	    processWorld(surface, world, tick)
 	    
@@ -269,18 +286,7 @@ local function onTick(event)
 end
 
 local function onBuild(event)
-    local entity = event.created_entity
-    print (entity.unit_number .. " " .. entity.name)
-    if (entity.name == "steel-collector-overlay-rampant") then
-	local position = entity.position
-	local force = entity.force.name
-	local surface = entity.surface
-	entity.destroy()
-	entity = surface.create_entity({position=position,
-					force=force,
-					name="steel-collector-rampant"})
-	world.itemCollectors[#world.itemCollectors+1] = entity
-    end
+    local entity = buildComplexEntity(event.created_entity, world)
     addRemovePlayerEntity(regionMap, entity, natives, true, false)
     if natives.safeBuildings then
 	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
@@ -289,8 +295,12 @@ local function onBuild(event)
     end
 end
 
-local function onPickUp(event)
-    addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
+local function onMine(event)
+    addRemovePlayerEntity(regionMap,
+			  mineComplexEntity(event.entity, world),
+			  natives,
+			  false,
+			  false)
 end
 
 local function onDeath(event)
@@ -343,7 +353,13 @@ local function onDeath(event)
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
 	    else
-		addRemovePlayerEntity(regionMap, entity, natives, false, creditNatives)
+		mineComplexEntity(addRemovePlayerEntity(regionMap,
+							entity,
+							natives,
+							false,
+							creditNatives),
+				  world,
+				  true)
 	    end
         end
     end
@@ -376,8 +392,51 @@ local function onInit()
     hookEvents()
 end
 
-local function onConfirmedBlueprint(event)
-    print ("blueprint")
+-- local function onBuildingRotated(event)
+
+-- end
+
+local function onCursorChange(event)
+    local player = game.players[event.player_index]
+    swapItemStack(getPlayerCursorStack(player),
+		  "item-collector-base-rampant",
+		  "item-collector-base-overlay-rampant")
+end
+
+local function onPlayerDropped(event)
+    local item = event.entity
+    if item.valid then
+	swapItemStack(item.stack,
+		      "item-collector-base-overlay-rampant",
+		      "item-collector-base-rampant")
+    end
+end
+
+local function onMainInventoryChanged(event)
+    swapItemInventory(getPlayerInventory(game.players[event.player_index],
+					 DEFINES_INVENTORY_PLAYER_MAIN,
+					 DEFINES_INVENTORY_GOD_MAIN),
+		      "item-collector-base-overlay-rampant",
+		      "item-collector-base-rampant")
+end
+
+local function onQuickInventoryChanged(event)
+    swapItemInventory(getPlayerInventory(game.players[event.player_index],
+					 DEFINES_INVENTORY_PLAYER_QUICKBAR,
+					 DEFINES_INVENTORY_GOD_QUICKBAR),
+		      "item-collector-base-overlay-rampant",
+		      "item-collector-base-rampant")
+end
+
+
+local function onScannedSector(event)
+    local radar = event.radar
+    if (radar.name == "item-collector-base-rampant") then
+	local count = #world.itemCollectorEvents
+	if (count <= ITEM_COLLECTOR_MAX_QUEUE_SIZE) then	    
+	    world.itemCollectorEvents[count+1] = radar.unit_number
+	end
+    end
 end
 
 -- hooks
@@ -388,19 +447,32 @@ script.on_event(defines.events.on_runtime_mod_setting_changed,
 		onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
 
+-- script.on_event(defines.events.on_player_rotated_entity,
+-- 		onBuildingRotated)
+
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
+
+script.on_event(defines.events.on_player_cursor_stack_changed,
+		onCursorChange)
+
+script.on_event(defines.events.on_player_main_inventory_changed,
+		onMainInventoryChanged)
+script.on_event(defines.events.on_player_quickbar_inventory_changed,
+		onQuickInventoryChanged)
 
 script.on_event(defines.events.on_biter_base_built,
 		onEnemyBaseBuild)
 script.on_event({defines.events.on_preplayer_mined_item,
                  defines.events.on_robot_pre_mined}, 
-    onPickUp)
-script.on_event(defines.events.on_player_configured_blueprint,
-		onConfirmedBlueprint)
+    onMine)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 
     onBuild)
+script.on_event(defines.events.on_player_dropped_item,
+		onPlayerDropped)
 
+script.on_event(defines.events.on_sector_scanned,
+		onScannedSector)
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)

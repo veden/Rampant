@@ -163,9 +163,9 @@ function upgrade.attempt(natives, world)
 	    global.world = {}
 	    world = global.world
 	end
-	
-	world.itemCollectors = {}
-	world.itemCollectorIndex = 1
+
+	world.itemCollectorLookup = {}
+	world.itemCollectorEvents = {}
 	
 	game.surfaces[1].print("Rampant - Version 0.15.18")
 	global.version = constants.VERSION_28

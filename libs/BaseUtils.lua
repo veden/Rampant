@@ -7,7 +7,7 @@ local constants = require("Constants")
 
 local tendrilUtils = require("TendrilUtils")
 
-local buildUtils = require("BuildUtils")
+local nestUtils = require("NestUtils")
 
 -- constants
 
@@ -22,7 +22,7 @@ local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
-local buildHive = buildUtils.buildHive
+local buildHive = nestUtils.buildHive
 
 local mFloor = math.floor
 
