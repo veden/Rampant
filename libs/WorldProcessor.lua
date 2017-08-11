@@ -54,7 +54,7 @@ function worldProcessor.processWorld(surface, world, tick)
 			if not counts[itemName] then
 			    counts[itemName] = {item}
 			else
-			    counts[#counts[itemName]+1] = item
+			    counts[itemName][#counts[itemName]+1] = item
 			end
 		    end
 		    for k,a in pairs(counts) do

@@ -58,6 +58,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.19 -  
+- Fixed: Error when processing item collectors  
+
 0.15.18 -  
 - Feature: Adds an item collector for things like alien artifacts  
 - Improvement: Added checks for how many squads have been created to enfore global limit over all squad creation methods  
