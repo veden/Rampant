@@ -26,7 +26,7 @@ constants.PROCESS_QUEUE_SIZE = 400
 constants.SCAN_QUEUE_SIZE = 5
 constants.ITEM_COLLECTOR_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
-constants.SQUAD_QUEUE_SIZE = 5
+constants.SQUAD_QUEUE_SIZE = 2
 constants.PROCESS_PLAYER_BOUND = 4
 
 constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE = 20
@@ -43,7 +43,7 @@ constants.DEV_CUSTOM_AI = false
 
 -- item collector
 
-constants.ITEM_COLLECTOR_DISTANCE = 44
+constants.ITEM_COLLECTOR_DISTANCE = 50
 
 -- chunk properties
 
@@ -198,7 +198,7 @@ constants.retreatFilter[constants.SQUAD_RETREATING] = true
 constants.PATH_FINDER_SHORT_REQUEST_RATIO = 0.8
 constants.PATH_FINDER_SHORT_CACHE_SIZE = 25
 constants.PATH_FINDER_LONG_REQUEST_RATIO = 5
-constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH = 100
+constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH = 1000
 
 constants.MAX_FAILED_BEHAVIORS = 10
 

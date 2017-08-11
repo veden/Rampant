@@ -56,6 +56,7 @@ local getPlayerCursorStack = playerUtils.getPlayerCursorStack
 
 local swapItemStack = inventoryUtils.swapItemStack
 local swapItemInventory = inventoryUtils.swapItemInventory
+local topOffHand = inventoryUtils.topOffHand
 
 local processWorld = worldProcessor.processWorld
 
@@ -250,8 +251,9 @@ end
 local function onTick(event)
     local tick = event.tick
     if (tick == regionMap.processTick) then
+	local gameRef = game
 	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
-	local surface = game.surfaces[1]
+	local surface = gameRef.surfaces[1]
 
 	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 	scanMap(regionMap, surface, natives)
@@ -259,10 +261,10 @@ local function onTick(event)
 	if (tick == regionMap.logicTick) then
 	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
-	    local players = game.players
+	    local players = gameRef.players
 
 	    planning(natives,
-	    	     game.forces.enemy.evolution_factor,
+	    	     gameRef.forces.enemy.evolution_factor,
 	    	     tick,
 	    	     surface)
 	    
@@ -296,11 +298,12 @@ local function onBuild(event)
 end
 
 local function onMine(event)
-    addRemovePlayerEntity(regionMap,
-			  mineComplexEntity(event.entity, world),
-			  natives,
-			  false,
-			  false)
+    mineComplexEntity(addRemovePlayerEntity(regionMap,
+					    event.entity,
+					    natives,
+					    false,
+					    false),
+		      world)
 end
 
 local function onDeath(event)
@@ -397,35 +400,65 @@ end
 -- end
 
 local function onCursorChange(event)
-    local player = game.players[event.player_index]
-    swapItemStack(getPlayerCursorStack(player),
-		  "item-collector-base-rampant",
-		  "item-collector-base-overlay-rampant")
+    if settings.startup["rampant-enableBuildings"].value then
+	local player = game.players[event.player_index]
+	swapItemStack(getPlayerCursorStack(player),
+		      "item-collector-base-rampant",
+		      "item-collector-base-overlay-rampant")
+	local inventory = getPlayerInventory(player,
+					     DEFINES_INVENTORY_PLAYER_QUICKBAR,
+					     DEFINES_INVENTORY_GOD_QUICKBAR)
+	topOffHand(inventory,
+		   player.cursor_stack,
+		   "item-collector-base-rampant",
+		   "item-collector-base-overlay-rampant")
+	inventory = getPlayerInventory(player,
+				       DEFINES_INVENTORY_PLAYER_MAIN,
+				       DEFINES_INVENTORY_GOD_MAIN)
+	topOffHand(inventory,
+		   player.cursor_stack,
+		   "item-collector-base-rampant",
+		   "item-collector-base-overlay-rampant")
+    end
 end
 
 local function onPlayerDropped(event)
-    local item = event.entity
-    if item.valid then
-	swapItemStack(item.stack,
-		      "item-collector-base-overlay-rampant",
-		      "item-collector-base-rampant")
+    if settings.startup["rampant-enableBuildings"].value then
+	local item = event.entity
+	if item.valid then
+	    swapItemStack(item.stack,
+			  "item-collector-base-overlay-rampant",
+			  "item-collector-base-rampant")
+	end
     end
 end
 
 local function onMainInventoryChanged(event)
-    swapItemInventory(getPlayerInventory(game.players[event.player_index],
-					 DEFINES_INVENTORY_PLAYER_MAIN,
-					 DEFINES_INVENTORY_GOD_MAIN),
-		      "item-collector-base-overlay-rampant",
-		      "item-collector-base-rampant")
+    if settings.startup["rampant-enableBuildings"].value then
+	local player = game.players[event.player_index]
+	local inventory = getPlayerInventory(player,
+					     DEFINES_INVENTORY_PLAYER_MAIN,
+					     DEFINES_INVENTORY_GOD_MAIN)
+	swapItemInventory(inventory,
+			  "item-collector-base-overlay-rampant",
+			  "item-collector-base-rampant")
+    end
 end
 
 local function onQuickInventoryChanged(event)
-    swapItemInventory(getPlayerInventory(game.players[event.player_index],
-					 DEFINES_INVENTORY_PLAYER_QUICKBAR,
-					 DEFINES_INVENTORY_GOD_QUICKBAR),
-		      "item-collector-base-overlay-rampant",
-		      "item-collector-base-rampant")
+    if settings.startup["rampant-enableBuildings"].value then
+	local player = game.players[event.player_index]
+	local inventory = getPlayerInventory(player,
+					     DEFINES_INVENTORY_PLAYER_QUICKBAR,
+					     DEFINES_INVENTORY_GOD_QUICKBAR)
+	swapItemInventory(inventory,
+			  "item-collector-base-overlay-rampant",
+			  "item-collector-base-rampant")
+	topOffHand(inventory,
+		   player.cursor_stack,
+		   "item-collector-base-rampant",
+		   "item-collector-base-overlay-rampant")
+    end
 end
 
 

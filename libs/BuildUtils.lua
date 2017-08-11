@@ -8,9 +8,9 @@ function buildUtils.buildComplexEntity(entity, world)
 	local x = entity.position.x
 	local y = entity.position.y
 	local chest
+	local position = entity.position
+	local force = entity.force
 	if (entity.name == "item-collector-base-overlay-rampant") then
-	    local position = entity.position
-	    local force = entity.force
 	    entity.destroy()
 	    chest = surface.create_entity({name = "item-collector-chest-rampant",
 					   position = position,
@@ -31,6 +31,10 @@ function buildUtils.buildComplexEntity(entity, world)
 		    local conflicts
 		    conflicts, chest = ghost.revive()
 		end
+	    else
+		chest = surface.create_entity({name = "item-collector-chest-rampant",
+					       position = position,
+					       force = force})
 	    end
 	end
 	if chest and chest.valid then
@@ -53,7 +57,7 @@ function buildUtils.mineComplexEntity(entity, world, destroyed)
 	    if chest and chest.valid then
 		world.itemCollectorLookup[chest.unit_number] = nil
 		if destroyed and (entity == chest) then
-		    chest.destroy()
+		    chest.die()
 		elseif (entity ~= chest) then
 		    chest.destroy()
 		end
