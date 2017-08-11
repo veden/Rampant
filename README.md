@@ -45,6 +45,7 @@ Configure Options not in game menu:
 - Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 - Peace mode - If something sets peace mode, Rampant will respect it  
 - Ion Cannon Reaction - Firing the Ion Cannon will cause nests around the blast site to form into an attack wave and agitate all biters  
+- Item Collector + Technology to unlock it - An entity that collects the items on the ground around itself  
 
 # Planned Features
 
