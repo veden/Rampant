@@ -58,8 +58,15 @@ Configure Options not in game menu:
 # Version History
 
 0.15.18 -  
+- Feature: Adds an item collector for things like alien artifacts  
+- Improvement: Added checks for how many squads have been created to enfore global limit over all squad creation methods  
+- Tweak: Increased breach multiplier from 10000 to 100000  
 - Fixed: Current version wasn't be set causing the upgrade code to run repeatedly  
 - Fixed: Neighbors function not correctly clearing its state between calls  
+- Optimization: Reduced number of chunks processed per cycle from 500 to 400  
+- Optimization: Reduced number of squads to regroup per cycle from 5 to 2  
+- Optimization: Reduced number of chunks to scan per cycle from 6 to 5  
+- Optimization: Added additional short circuits for chunk scoring  
 
 0.15.17 -  
 - Fixed: Remote call load issue. (https://github.com/veden/Rampant/issues/5)  

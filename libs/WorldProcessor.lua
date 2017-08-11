@@ -15,55 +15,63 @@ local ITEM_COLLECTOR_QUEUE_SIZE = constants.ITEM_COLLECTOR_QUEUE_SIZE
 -- module code
 
 function worldProcessor.processWorld(surface, world, tick)
-    local collectorLookup = world.itemCollectorLookup
     local collectors = world.itemCollectorEvents
+    if (#collectors > 0) then
+	local collectorLookup = world.itemCollectorLookup
 
-    local topLeftPosition = {x = 0, y = 0}
-    local bottomRightPosition = {x = 0, y = 0}
-    local boundingArea = {topLeftPosition,
-			  bottomRightPosition}
+	local inserter = {name="", count=0}
+	local topLeftPosition = {x = 0, y = 0}
+	local bottomRightPosition = {x = 0, y = 0}
+	local boundingArea = {topLeftPosition,
+			      bottomRightPosition}
 
-    local count = 0
-    for index = #collectors, 1, -1 do
-	count = count + 1
-        local itemCollectorPair = collectorLookup[collectors[index]]
-	collectors[index] = nil
-	local chest = itemCollectorPair[1]
-	local dish = itemCollectorPair[2]
-	
-	if chest.valid and dish.valid then
-
-	    local collectorPosition = dish.position
+	local count = 0
+	for index = #collectors, 1, -1 do
+	    count = count + 1
+	    local itemCollectorPair = collectorLookup[collectors[index]]
+	    collectors[index] = nil
+	    local chest = itemCollectorPair[1]
+	    local dish = itemCollectorPair[2]
 	    
-	    topLeftPosition.x = collectorPosition.x - ITEM_COLLECTOR_DISTANCE
-	    topLeftPosition.y = collectorPosition.y - ITEM_COLLECTOR_DISTANCE
+	    if chest.valid and dish.valid then
 
-	    bottomRightPosition.x = collectorPosition.x + ITEM_COLLECTOR_DISTANCE
-	    bottomRightPosition.y = collectorPosition.y + ITEM_COLLECTOR_DISTANCE
-	    
-	    local items = surface.find_entities_filtered({area = boundingArea,
-							  name = "item-on-ground"})
-	    
-	    local counts = {}
-	    if (#items > 0) then
-		for x=1,#items do
-		    local item = items[x]
-		    if not counts[item.stack.name] then
-			counts[item.stack.name] = 1
-		    else
-			counts[item.stack.name] = counts[item.stack.name] + 1
+		local collectorPosition = dish.position
+		
+		topLeftPosition.x = collectorPosition.x - ITEM_COLLECTOR_DISTANCE
+		topLeftPosition.y = collectorPosition.y - ITEM_COLLECTOR_DISTANCE
+
+		bottomRightPosition.x = collectorPosition.x + ITEM_COLLECTOR_DISTANCE
+		bottomRightPosition.y = collectorPosition.y + ITEM_COLLECTOR_DISTANCE
+		
+		local items = surface.find_entities_filtered({area = boundingArea,
+							      name = "item-on-ground"})
+		
+		local counts = {}
+		if (#items > 0) then
+		    for x=1,#items do
+			local item = items[x]
+			local itemName = item.stack.name
+			if not counts[itemName] then
+			    counts[itemName] = {item}
+			else
+			    counts[#counts[itemName]+1] = item
+			end
 		    end
-		    item.destroy()
+		    for k,a in pairs(counts) do
+			inserter.name = k
+			inserter.count = #a
+			local stored = chest.insert(inserter)
+			for i=1,stored do
+			    a[i].destroy()
+			end
+		    end
+		    -- dish.surface.create_entity({name="item-collector-base-particle-rampant",
+		    -- 			    position=dish.position})
 		end
-		for k,c in pairs(counts) do
-		    chest.insert({name=k, count=c})
-		end
-		-- dish.surface.create_entity({name="item-collector-base-particle-rampant",
-		-- 			    position=dish.position})
 	    end
-	end
-	if (count >= ITEM_COLLECTOR_QUEUE_SIZE) then
-	    return
+	    if (count >= ITEM_COLLECTOR_QUEUE_SIZE) then
+		return
+	    end
 	end
     end
 end

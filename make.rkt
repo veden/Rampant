@@ -76,8 +76,8 @@
       (copyDirectory "prototypes" modFolder)))
   
   (define (run)
-    (copyFiles modFolder)
-    ;; (copyFiles zipModFolder)
-    ;(makeZip modFolder)
+    ;;(copyFiles modFolder)
+    ;;(copyFiles zipModFolder)
+    (makeZip modFolder)
     )
   )

@@ -18,7 +18,7 @@ radar.pictures = {
     apply_projection = false,
     direction_count = 64,
     line_length = 8,
-    shift = {0.1875, -0.2}
+    shift = {0.1875, -0.24}
 }
 radar.minable = { result = "item-collector-base-rampant",
 		  mining_time = 1 }
@@ -62,9 +62,9 @@ radar.minable = { result = "item-collector-base-rampant",
 
 local radarOverlay = util.table.deepcopy(radar)
 radarOverlay.name = "item-collector-base-overlay-rampant"
-radarOverlay.pictures.filename = "__Rampant__/graphics/entities/chest/itemCollectorOverlay2.png"
-radarOverlay.pictures.width = 2800
-radarOverlay.pictures.height = 2800
+radarOverlay.pictures.filename = "__Rampant__/graphics/entities/chest/itemCollectorOverlay2.5.png"
+radarOverlay.pictures.width = 3200
+radarOverlay.pictures.height = 3200
 radarOverlay.pictures.direction_count = 1
 radarOverlay.pictures.line_length = 1
 radarOverlay.pictures.shift[2] = 0.07

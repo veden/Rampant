@@ -47,9 +47,9 @@ end
     6 7 8
 ]]--
 function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
+    local neighbors = regionMap.neighbors
     local chunkYRow1 = chunkY - 1
     local chunkYRow3 = chunkY + 1
-    local neighbors = regionMap.neighbors
     local xChunks = regionMap[chunkX-1]
     if xChunks then
         neighbors[1] = xChunks[chunkYRow1]
@@ -100,8 +100,8 @@ function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
 end
 
 function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
-    local xChunks = regionMap[chunkX]
     local neighbors = regionMap.cardinalNeighbors
+    local xChunks = regionMap[chunkX]
     if xChunks then
 	neighbors[1] = xChunks[chunkY-1]
 	neighbors[4] = xChunks[chunkY+1]

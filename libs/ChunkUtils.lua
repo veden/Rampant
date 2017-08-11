@@ -86,7 +86,7 @@ local function fullScan(chunkTiles, x, y, get_tile)
 	    break
 	end
     end
-    return validTiles * 0.009765625, passableNorthSouth, passableEastWest
+    return validTiles * 0.0009765625, passableNorthSouth, passableEastWest
 end
 
 local function spotCheck(x, y, get_tile)

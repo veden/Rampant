@@ -59,7 +59,7 @@ end
 
 function pheromoneUtils.victoryScent(chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
-    if (value ~= nil) and (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
+    if value and (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
 	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 100000)
     end
 end
@@ -81,8 +81,6 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     if (chunk[PASSABLE] == CHUNK_IMPASSABLE) then
 	return
     end
-
-    local tempNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
     
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
@@ -94,6 +92,8 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local totalBase = 0
     local totalPlayer = 0
     local totalResource = 0
+    
+    local tempNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
 
     for i=1,4 do
     	local neighborChunk = tempNeighbors[i]
