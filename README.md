@@ -7,6 +7,9 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
+When playing on low sprite resolution, item collector range will appear to be less than it is. (By roughly a half chunk on all sides)
+This is due to the max sprite size being 2048px on low and 4096px on high resolution.
+
 0.14.14 factorio version fixed save corruption  
 0.14.10 factorio version fixed more pathing issues  
 0.14.4 factorio version fixed some issues with unit groups commands  
@@ -58,12 +61,17 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.20 -  
+- Fixed: Added Low Resolution version of overlay, ISSUE: range of collector extends past visual display because of 2048px limit on sprites  
+- Tweak: Increased item collector build time from 0.5 seconds to 10 seconds  
+- Improvement: Added an expensive recipe variant that doubles the cost of the item collector  
+
 0.15.19 -  
 - Fixed: Error when processing item collectors  
 
 0.15.18 -  
 - Feature: Adds an item collector for things like alien artifacts  
-- Improvement: Added checks for how many squads have been created to enfore global limit over all squad creation methods  
+- Improvement: Added checks for how many squads have been created to enforce global limit over all squad creation methods  
 - Tweak: Increased breach multiplier from 10000 to 100000  
 - Fixed: Current version wasn't be set causing the upgrade code to run repeatedly  
 - Fixed: Neighbors function not correctly clearing its state between calls  

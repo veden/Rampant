@@ -6,7 +6,7 @@ radar.icon = "__Rampant__/graphics/icon/itemCollectorIcon.png"
 radar.collision_box = {{-0.35, -0.35}, {0.35, 0.35}}
 radar.selection_box = {{-0.485, -0.7}, {0.465, -0.1}}
 radar.energy_per_sector = "27MJ"
-radar.max_distance_of_nearby_sector_revealed = 0
+radar.max_distance_of_nearby_sector_revealed = 1
 radar.max_distance_of_sector_revealed = 0
 radar.energy_per_nearby_scan = "27MJ"
 radar.energy_usage = "450KW"
@@ -62,12 +62,22 @@ radar.minable = { result = "item-collector-base-rampant",
 
 local radarOverlay = util.table.deepcopy(radar)
 radarOverlay.name = "item-collector-base-overlay-rampant"
-radarOverlay.pictures.filename = "__Rampant__/graphics/entities/chest/itemCollectorOverlay2.5.png"
-radarOverlay.pictures.width = 3200
-radarOverlay.pictures.height = 3200
+radarOverlay.pictures.filename = "__Rampant__/graphics/entities/chest/itemCollectorOverlay2.png"
+radarOverlay.pictures.width = 2048
+radarOverlay.pictures.height = 2048
 radarOverlay.pictures.direction_count = 1
 radarOverlay.pictures.line_length = 1
 radarOverlay.pictures.shift[2] = 0.07
+radarOverlay.pictures.hr_version = {
+    filename = "__Rampant__/graphics/entities/chest/itemCollectorOverlay2.5.png",
+    priority = "low",
+    width = 3200,
+    height = 3200,
+    apply_projection = false,
+    direction_count = 1,
+    line_length = 1,
+    shift = {0.1875, -0.24}
+}
 
 local chest = util.table.deepcopy(data.raw["container"]["steel-chest"])
 chest.name = "item-collector-chest-rampant"
@@ -97,13 +107,24 @@ data:extend({
 	{
 	    type = "recipe",
 	    name = "item-collector-base-rampant",
-	    energy_required = 6,
 	    normal = {
 		enabled = false,
+		energy_required = 10,
 		ingredients = {
 		    {"steel-chest", 1},
 		    {"accumulator", 1},
 		    {"radar", 1}
+		},
+		result = "item-collector-base-rampant",
+		requester_paste_multiplier = 4
+	    },
+	    expensive = {
+		enabled = false,
+		energy_required = 10,
+		ingredients = {
+		    {"steel-chest", 2},
+		    {"accumulator", 2},
+		    {"radar", 2}
 		},
 		result = "item-collector-base-rampant",
 		requester_paste_multiplier = 4
