@@ -495,8 +495,8 @@ script.on_event(defines.events.on_player_quickbar_inventory_changed,
 
 script.on_event(defines.events.on_biter_base_built,
 		onEnemyBaseBuild)
-script.on_event({defines.events.on_preplayer_mined_item,
-                 defines.events.on_robot_pre_mined}, 
+script.on_event({defines.events.on_player_mined_entity,
+                 defines.events.on_robot_mined_entity}, 
     onMine)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, 

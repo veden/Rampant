@@ -61,10 +61,17 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.21 -  
+- Fixed: Added check for nil'ed itemCollection event (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=200#p302631)  
+- Fixed: Item Collector deconstruction not pulling items before destroying chest  
+- Fixed: Force Item Collector chest to be only minable and deconstructable piece to force contents to be moved to player  
+- Improvement: Switched over to on_player_mined_entity and on_robot_mined_entity instead of the pre variants  
+
 0.15.20 -  
-- Fixed: Added Low Resolution version of overlay, ISSUE: range of collector extends past visual display because of 2048px limit on sprites  
+- Fixed: Added Low Resolution version of overlay, ISSUE: range of collector extends past visual display because of 2048px limit on sprites (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=180#p302128)  
 - Tweak: Increased item collector build time from 0.5 seconds to 10 seconds  
-- Improvement: Added an expensive recipe variant that doubles the cost of the item collector  
+- Improvement: Added an expensive recipe variant that doubles the cost of the item collector (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=180#p302123)  
+- Optimization: Tuned chunk scoring heuristic  
 
 0.15.19 -  
 - Fixed: Error when processing item collectors  
