@@ -30,43 +30,46 @@ function worldProcessor.processWorld(surface, world, tick)
 	    count = count + 1
 	    local itemCollectorPair = collectorLookup[collectors[index]]
 	    collectors[index] = nil
-	    local chest = itemCollectorPair[1]
-	    local dish = itemCollectorPair[2]
-	    
-	    if chest.valid and dish.valid then
 
-		local collectorPosition = dish.position
+	    if itemCollectorPair then
+		local chest = itemCollectorPair[1]
+		local dish = itemCollectorPair[2]
 		
-		topLeftPosition.x = collectorPosition.x - ITEM_COLLECTOR_DISTANCE
-		topLeftPosition.y = collectorPosition.y - ITEM_COLLECTOR_DISTANCE
+		if chest.valid and dish.valid then
 
-		bottomRightPosition.x = collectorPosition.x + ITEM_COLLECTOR_DISTANCE
-		bottomRightPosition.y = collectorPosition.y + ITEM_COLLECTOR_DISTANCE
-		
-		local items = surface.find_entities_filtered({area = boundingArea,
-							      name = "item-on-ground"})
-		
-		local counts = {}
-		if (#items > 0) then
-		    for x=1,#items do
-			local item = items[x]
-			local itemName = item.stack.name
-			if not counts[itemName] then
-			    counts[itemName] = {item}
-			else
-			    counts[itemName][#counts[itemName]+1] = item
+		    local collectorPosition = dish.position
+		    
+		    topLeftPosition.x = collectorPosition.x - ITEM_COLLECTOR_DISTANCE
+		    topLeftPosition.y = collectorPosition.y - ITEM_COLLECTOR_DISTANCE
+
+		    bottomRightPosition.x = collectorPosition.x + ITEM_COLLECTOR_DISTANCE
+		    bottomRightPosition.y = collectorPosition.y + ITEM_COLLECTOR_DISTANCE
+		    
+		    local items = surface.find_entities_filtered({area = boundingArea,
+								  name = "item-on-ground"})
+		    
+		    local counts = {}
+		    if (#items > 0) then
+			for x=1,#items do
+			    local item = items[x]
+			    local itemName = item.stack.name
+			    if not counts[itemName] then
+				counts[itemName] = {item}
+			    else
+				counts[itemName][#counts[itemName]+1] = item
+			    end
 			end
-		    end
-		    for k,a in pairs(counts) do
-			inserter.name = k
-			inserter.count = #a
-			local stored = chest.insert(inserter)
-			for i=1,stored do
-			    a[i].destroy()
+			for k,a in pairs(counts) do
+			    inserter.name = k
+			    inserter.count = #a
+			    local stored = chest.insert(inserter)
+			    for i=1,stored do
+				a[i].destroy()
+			    end
 			end
+			-- dish.surface.create_entity({name="item-collector-base-particle-rampant",
+			-- 			    position=dish.position})
 		    end
-		    -- dish.surface.create_entity({name="item-collector-base-particle-rampant",
-		    -- 			    position=dish.position})
 		end
 	    end
 	    if (count >= ITEM_COLLECTOR_QUEUE_SIZE) then

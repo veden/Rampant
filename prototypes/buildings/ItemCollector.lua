@@ -10,6 +10,7 @@ radar.max_distance_of_nearby_sector_revealed = 1
 radar.max_distance_of_sector_revealed = 0
 radar.energy_per_nearby_scan = "27MJ"
 radar.energy_usage = "450KW"
+radar.flags[#radar.flags+1] = "not-deconstructable"
 radar.pictures = {
     filename = "__Rampant__/graphics/entities/chest/itemCollector.png",
     priority = "low",
@@ -20,8 +21,7 @@ radar.pictures = {
     line_length = 8,
     shift = {0.1875, -0.24}
 }
-radar.minable = { result = "item-collector-base-rampant",
-		  mining_time = 1 }
+radar.minable = nil
 
 -- local particle = {
 --     type = "explosion",
@@ -91,7 +91,6 @@ chest.picture = {
 }
 chest.selection_box = {{-0.485, -0.1}, {0.465, 0.6}}
 chest.collision_mask = {}
-chest.flags[#chest.flags+1] = "not-deconstructable"
 chest.minable.result = "item-collector-base-rampant"
 
 
