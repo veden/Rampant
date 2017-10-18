@@ -203,6 +203,16 @@ data:extend({
 	    default_value = true,
 	    order = "i[modifier]-a[buildings]",
 	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-attack-warning",
+	    description = "rampant-attack-warning",
+	    setting_type = "runtime-per-user",
+	    default_value = true,
+	    order = "a",
+	    per_user = true
 	}
 		
 	-- {
