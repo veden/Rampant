@@ -103,7 +103,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 	natives.lastShakeMessage = tick
 	for i, player in pairs(game.connected_players) do
 		if player.mod_settings["rampant-attack-warning"].value then
-			surface.print("Rampant: The ground begins to shake")
+			player.print("Rampant: The ground begins to shake")
 		end
 	end
     end
