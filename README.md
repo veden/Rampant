@@ -61,6 +61,9 @@ Configure Options not in game menu:
 
 # Version History
 
+0.15.22 -  
+- Contribution - Martok88, Improvement: Added optional attack wave message per player  
+
 0.15.21 -  
 - Fixed: Added check for nil'ed itemCollection event (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=200#p302631)  
 - Fixed: Item Collector deconstruction not pulling items before destroying chest  
