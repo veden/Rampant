@@ -4,10 +4,8 @@ local nestUtils = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
-
-local baseRegisterUtils = require("BaseRegisterUtils")
-
 local mapUtils = require("MapUtils")
+local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -20,9 +18,11 @@ local NEST_COUNT = constants.NEST_COUNT
 
 local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
 
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
+
 -- imported functions
 
-local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
+local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
 local mRandom = math.random
@@ -35,7 +35,7 @@ function nestUtils.buildNest(regionMap, base, surface, targetPosition, name)
     local position = surface.find_non_colliding_position(name, targetPosition, DOUBLE_CHUNK_SIZE, 2)
     local chunk = getChunkByPosition(regionMap, position.x, position.y)
     local nest = nil
-    if position and chunk and (chunk[NEST_COUNT] < 3) then
+    if position and (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[NEST_COUNT] < 3) then
 	local biterSpawner = {name=name, position=position}
 	nest = surface.create_entity(biterSpawner)
 	registerEnemyBaseStructure(regionMap, nest, base)
@@ -45,7 +45,7 @@ end
 
 function nestUtils.buildHive(regionMap, base, surface)
     local valid = false
-    local hive = nestUtils.buildNest(regionMap, base, surface, base, "biter-spawner-hive")
+    local hive = nestUtils.buildNest(regionMap, base, surface, base, "biter-spawner-hive-rampant")
     if hive then
 	if (#base.hives == 0) then
 	    base.x = hive.position.x
@@ -101,7 +101,7 @@ function nestUtils.buildOutpost(regionMap, natives, base, surface, tendril)
 				  y = position.y + (distortion * math.sin(pos))}
 	    local biterSpawner = {name=thing, position=nestPosition}
 	    if surface.can_place_entity(biterSpawner)  then
-		registerEnemyBaseStructure(regionMap, surface.create_entity(biterSpawner), base)
+		registerEnemyBaseStructure(natives, regionMap, surface.create_entity(biterSpawner), base)
 		base.upgradePoints = base.upgradePoints - cost
 	    end
 	    pos = pos + slice 
@@ -149,7 +149,7 @@ function nestUtils.buildOrder(regionMap, natives, base, surface)
 				  y = base.y + (distortion * math.sin(pos))}
 	    local biterSpawner = {name=thing, position=nestPosition}
 	    if surface.can_place_entity(biterSpawner)  then
-		registerEnemyBaseStructure(regionMap, surface.create_entity(biterSpawner), base)
+		registerEnemyBaseStructure(natives, regionMap, surface.create_entity(biterSpawner), base)
 		base.upgradePoints = base.upgradePoints - cost
 	    end
 	    pos = pos + slice 

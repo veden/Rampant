@@ -5,7 +5,7 @@ local baseUtils = {}
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
 
-local tendrilUtils = require("TendrilUtils")
+-- local tendrilUtils = require("TendrilUtils")
 
 local nestUtils = require("NestUtils")
 
@@ -26,7 +26,7 @@ local buildHive = nestUtils.buildHive
 
 local mFloor = math.floor
 
-local buildTendril = tendrilUtils.buildTendril
+-- local buildTendril = tendrilUtils.buildTendril
 
 local mRandom = math.random
 
@@ -68,7 +68,7 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
     if not buildHive(regionMap, base, surface) then
 	return nil
     end
-    buildTendril(regionMap, natives, base, surface, tick)
+    -- buildTendril(regionMap, natives, base, surface, tick)
     bases[#bases+1] = base
     return base
 end

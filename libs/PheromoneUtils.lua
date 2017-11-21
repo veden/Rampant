@@ -4,6 +4,7 @@ local pheromoneUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
+local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -14,9 +15,6 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
-local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
-local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
-
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
 
@@ -25,63 +23,45 @@ local BASE_PHEROMONE_PERSISTANCE = constants.BASE_PHEROMONE_PERSISTANCE
 local PLAYER_PHEROMONE_PERSISTANCE = constants.PLAYER_PHEROMONE_PERSISTANCE
 local RESOURCE_PHEROMONE_PERSISTANCE = constants.RESOURCE_PHEROMONE_PERSISTANCE
 
-local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
-
-local PASSABLE = constants.PASSABLE
-
-local NEST_COUNT = constants.NEST_COUNT
-
 local PATH_RATING = constants.PATH_RATING
-
-local IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 
 -- imported functions
 
 local getCardinalChunks = mapUtils.getCardinalChunks
 
 local mMax = math.max
+local getNestCount = chunkUtils.getNestCount
+local getWormCount = chunkUtils.getWormCount
+local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
+local getResourceGenerator = chunkUtils.getResourceGenerator
 
 -- module code
 
-function pheromoneUtils.scents(chunk)
-
-    if (chunk[PASSABLE] == CHUNK_IMPASSABLE) then
-	chunk[BASE_PHEROMONE] = IMPASSABLE_TERRAIN_GENERATOR_AMOUNT;
-    else
-	chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + chunk[PLAYER_BASE_GENERATOR]
-	local resourceGenerator = chunk[RESOURCE_GENERATOR]
-	if (resourceGenerator > 0) and (chunk[NEST_COUNT] == 0) then
-	    chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 100, 90)
-	end
+function pheromoneUtils.scents(regionMap, chunk)
+    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + getPlayerBaseGenerator(regionMap, chunk)
+    local resourceGenerator = getResourceGenerator(regionMap, chunk)
+    if (resourceGenerator > 0) and (getNestCount(regionMap, chunk) == 0) and (getWormCount(regionMap, chunk) == 0) then
+	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 100, 90)
     end
-    
 end
 
 function pheromoneUtils.victoryScent(chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
-    if value and (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
+    if value then
 	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 100000)
     end
 end
 
 function pheromoneUtils.deathScent(chunk)
-    if (chunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
-	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
-    end
+    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
 end
 
 function pheromoneUtils.playerScent(playerChunk)
-    if (playerChunk[PASSABLE] ~= CHUNK_IMPASSABLE) then
-	playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
-    end
+    playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
 end
 
 function pheromoneUtils.processPheromone(regionMap, chunk)
 
-    if (chunk[PASSABLE] == CHUNK_IMPASSABLE) then
-	return
-    end
-    
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
@@ -93,17 +73,31 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local totalPlayer = 0
     local totalResource = 0
     
-    local tempNeighbors = getCardinalChunks(regionMap, chunk.cX, chunk.cY)
+    local tempNeighbors = getCardinalChunks(regionMap, chunk.x, chunk.y)
 
-    for i=1,4 do
-    	local neighborChunk = tempNeighbors[i]
-    	if neighborChunk then
-    	    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
-    	    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
-    	    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
-    	    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
-    	end
-    end
+    local neighborChunk = tempNeighbors[1]
+    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
+    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
+    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
+    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
+
+    neighborChunk = tempNeighbors[2]
+    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
+    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
+    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
+    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
+
+    neighborChunk = tempNeighbors[3]
+    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
+    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
+    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
+    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
+
+    neighborChunk = tempNeighbors[4]
+    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
+    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
+    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
+    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
     
     chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[BASE_PHEROMONE] = (chunkBase + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating

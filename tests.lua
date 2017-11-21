@@ -5,22 +5,23 @@ local mathUtils = require("libs/MathUtils")
 local chunkUtils = require("libs/ChunkUtils")
 local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
-local baseRegisterUtils = require("libs/BaseRegisterUtils")
-local tendrilUtils = require("libs/TendrilUtils")
+-- local tendrilUtils = require("libs/TendrilUtils")
 
 function tests.pheromoneLevels(size) 
     local player = game.player.character
-    local playerChunkX = math.floor(player.position.x / 32)
-    local playerChunkY = math.floor(player.position.y / 32)
+    local playerChunkX = math.floor(player.position.x / 32) * constants.CHUNK_SIZE
+    local playerChunkY = math.floor(player.position.y / 32) * constants.CHUNK_SIZE
     if not size then
-	size = 3
+	size = 3 * constants.CHUNK_SIZE
+    else
+	size = size * constants.CHUNK_SIZE
     end
     print("------")
     print(#global.regionMap.processQueue)
     print(playerChunkX .. ", " .. playerChunkY)
     print("--")
-    for y=playerChunkY-size, playerChunkY+size do
-	for x=playerChunkX-size, playerChunkX+size do
+    for y=playerChunkY-size, playerChunkY+size,32 do
+	for x=playerChunkX-size, playerChunkX+size,32 do
             if (global.regionMap[x] ~= nil) then
                 local chunk = global.regionMap[x][y]
                 if (chunk ~= nil) then
@@ -29,12 +30,12 @@ function tests.pheromoneLevels(size)
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
 		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk)
-		    if (chunk.cX == playerChunkX) and (chunk.cY == playerChunkY) then
+		    if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
 			print("=============")
-			print(chunk.cX, chunk.cY, str)
+			print(chunk.x, chunk.y, str)
 			print("=============")
 		    else
-			print(chunk.cX, chunk.cY, str)
+			print(chunk.x, chunk.y, str)
 		    end
 		    -- print(str)
 		    print("----")
@@ -109,7 +110,7 @@ function tests.tunnelTest()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[1].create_entity({name="tunnel-entrance", position={chunkX, chunkY}})
+    game.surfaces[1].create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
 end
 
 function tests.createEnemy(x)
@@ -121,7 +122,7 @@ end
 
 function tests.registeredNest(x)
     local entity = tests.createEnemy(x)
-    baseRegisterUtils.registerEnemyBaseStructure(global.regionMap,
+    chunk.registerEnemyBaseStructure(global.regionMap,
 						 entity,
 						 nil)
 end
@@ -280,9 +281,9 @@ function tests.showMovementGrid()
 end
 
 function tests.stepAdvanceTendrils()
-    for _, base in pairs(global.natives.bases) do
-	tendrilUtils.advanceTendrils(global.regionMap, base, game.surfaces[1], {nil,nil,nil,nil,nil,nil,nil,nil})
-    end
+    -- for _, base in pairs(global.natives.bases) do
+    -- 	tendrilUtils.advanceTendrils(global.regionMap, base, game.surfaces[1], {nil,nil,nil,nil,nil,nil,nil,nil})
+    -- end
 end
 
 return tests

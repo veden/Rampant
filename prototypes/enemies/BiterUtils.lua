@@ -218,22 +218,50 @@ function biterFunctions.createFireAttack(attributes, fireAttack)
                 begin_sound =
 		    {
 			{
-			    filename = "__base__/sound/fight/flamethrower-start.ogg",
+			    filename = "__base__/sound/creatures/spitter-1.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-2.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-3.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-4.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-5.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-6.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-7.ogg",
+			    volume = 0.7
+			},
+			{
+			    filename = "__base__/sound/creatures/spitter-8.ogg",
 			    volume = 0.7
 			}
 		    },
                 middle_sound =
 		    {
 			{
-			    filename = "__base__/sound/fight/flamethrower-mid.ogg",
-			    volume = 0.7
+			    filename = attributes.midSound or "__Rampant__/sounds/attacks/acid-mid.ogg",
+			    volume = 0.5
 			}
 		    },
                 end_sound =
 		    {
 			{
-			    filename = "__base__/sound/fight/flamethrower-end.ogg",
-			    volume = 0.7
+			    filename = attributes.endSound or "__Rampant__/sounds/attacks/acid-end.ogg",
+			    volume = 0.5
 			}
 		    }
 	    }

@@ -7,44 +7,46 @@ function vanillaUpdates.useDumbProjectiles()
 
     turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 50,
-	    range = 18,
+	    cooldown = 60,
+	    range = 21,
 	    min_range = 5,
 	    turn_range = 1,
 	    fire_penalty = 0,
+	    damageModifier = 0.9,
 	    scale = 0.8
 	},
-	"acid-ball-stream-rampant")
+	"acid-ball-2-stream-rampant")
 
     turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
-	    range = 20,
+	    cooldown = 60,
+	    range = 25,
 	    min_range = 3,
 	    turn_range = 1,
 	    fire_penalty = 0,
+	    damageModifier = 0.87,
 	    scale = 1
 	},
-	"acid-ball-1-stream-rampant")
+	"acid-ball-3-stream-rampant")
 
 
     turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
-	    range = 25,
+	    cooldown = 60,
+	    range = 26,
 	    min_range = 3,
 	    turn_range = 1,
 	    fire_penalty = 0,
 	    scale = 1.2
 	},
-	"acid-ball-2-stream-rampant")
+	"acid-ball-4-stream-rampant")
 
     local units = data.raw["unit"];
 
     local unit = units["small-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
+	    cooldown = 100,
 	    range = 13,
 	    warmup = 30,
 	    min_range = 3,
@@ -59,7 +61,7 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["medium-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
+	    cooldown = 95,
 	    range = 14,
 	    min_range = 3,
 	    warmup = 30,
@@ -74,7 +76,7 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["big-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
+	    cooldown = 90,
 	    range = 15,
 	    min_range = 3,
 	    warmup = 30,
@@ -89,8 +91,8 @@ function vanillaUpdates.useDumbProjectiles()
     unit = units["behemoth-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
 	{
-	    cooldown = 80,
-	    range = 15,
+	    cooldown = 90,
+	    range = 16,
 	    min_range = 3,
 	    warmup = 30,
 	    turn_range = 1,

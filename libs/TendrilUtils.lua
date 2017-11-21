@@ -4,24 +4,18 @@ local tendrilUtils = {}
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local baseRegisterUtils = require("BaseRegisterUtils")
-local neighborsUtils = require("NeighborUtils")
-local mathUtils = require("MathUtils")
-
 local nestUtils = require("NestUtils")
-local mathUtils = require("MathUtils")
+local movementUtils = require("MovementUtils")
 
 -- constants
 
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
-local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
-
-local NEST_COUNT = constants.NEST_COUNT
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
-local scoreNeighborsForResource = neighborsUtils.scoreNeighborsForResource
+local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 
@@ -74,11 +68,9 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
     end
     local tendrilPosition = tendrilUnit.position
     local chunk = getChunkByPosition(regionMap, tendrilPosition.x, tendrilPosition.y)
-    if chunk then
+    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	local tendrilPath,tendrilDirection = scoreNeighborsForResource(chunk,
-								       getNeighborChunks(regionMap,
-											 chunk.cX,
-											 chunk.cY),
+								       getNeighborChunks(regionMap, chunk.x, chunk.y),
 								       scoreTendrilChunk,
 								       nil)
 	if (tendrilDirection == -1) then

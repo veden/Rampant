@@ -6,9 +6,9 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local playerUtils = require("PlayerUtils")
-local neighborUtils = require("NeighborUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
+local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -19,7 +19,7 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
-local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -31,6 +31,8 @@ local DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distra
 local DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
+
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
@@ -48,14 +50,17 @@ local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
+local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
 
-local scoreNeighborsForAttack = neighborUtils.scoreNeighborsForAttack
+local positionToChunkXY = mapUtils.positionToChunkXY
+
+local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
 
 -- module code
 
 local function scoreAttackLocation(squad, neighborChunk)
     local damage = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage - lookupMovementPenalty(squad, neighborChunk.cX, neighborChunk.cY)
+    return damage - lookupMovementPenalty(squad, neighborChunk.x, neighborChunk.y)
 end
 
 function squadAttack.squadsAttack(regionMap, surface, natives)
@@ -67,7 +72,7 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 	attackPosition = regionMap.position
 	attackCmd = { type = DEFINES_COMMAND_ATTACK_AREA,
 		      destination = attackPosition,
-		      radius = 32,
+		      radius = CHUNK_SIZE,
 		      distraction = DEFINES_DISTRACTION_BY_ENEMY }
     end
     
@@ -78,18 +83,17 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 	    local groupState = group.state
 	    if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
 		local groupPosition = group.position
-		local chunk = getChunkByPosition(regionMap, groupPosition.x, groupPosition.y)
-		if chunk then
+		local chunkX, chunkY = positionToChunkXY(groupPosition)
+		local chunk = getChunkByPosition(regionMap, chunkX, chunkY)
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
-										 getNeighborChunks(regionMap,
-												   chunk.cX,
-												   chunk.cY),
+										 getNeighborChunks(regionMap, chunkX, chunkY),
 										 scoreAttackLocation,
 										 squad)
-		    addMovementPenalty(natives, squad, chunk.cX, chunk.cY)
-		    if group.valid and attackChunk then
-			if (attackChunk[PLAYER_BASE_GENERATOR] == 0) or
-			((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
+		    addMovementPenalty(natives, squad, chunkX, chunkY)
+		    if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+			local playerBaseGenerator = getPlayerBaseGenerator(regionMap, attackChunk)
+			if (playerBaseGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
 			    
 			    squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
@@ -102,22 +106,18 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 				attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
 			    end
 
-			    local position = findMovementPosition(surface,
-								  positionFromDirectionAndChunk(attackDirection,
-												groupPosition,
-												attackPosition,
-												1.35))
+			    local position = findMovementPosition(surface, positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35))
 			    if position then
 				attackPosition.x = position.x
 				attackPosition.y = position.y
 				group.set_command(attackCmd)
 				group.start_moving()
 			    else
-				addMovementPenalty(natives, squad, attackChunk.cX, attackChunk.cY)
+				addMovementPenalty(natives, squad, attackChunk.x, attackChunk.y)
 			    end
 			elseif not squad.frenzy and not squad.rabid and
 			    ((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or
-				(attackChunk[PLAYER_BASE_GENERATOR] ~= 0)) then
+				(playerBaseGenerator ~= 0)) then
 				squad.frenzy = true
 				squad.frenzyPosition.x = groupPosition.x
 				squad.frenzyPosition.y = groupPosition.y

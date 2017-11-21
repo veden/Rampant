@@ -8,7 +8,6 @@ local mathUtils = require("libs/MathUtils")
 -- constants
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
-local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 -- imported functions
 
@@ -16,7 +15,7 @@ local roundToNearest = mathUtils.roundToNearest
 
 -- module code
 
-function upgrade.attempt(natives, world)
+function upgrade.attempt(natives)
     local starting = global.version
     if (global.version == nil) then
         natives.squads = {}
@@ -157,25 +156,14 @@ function upgrade.attempt(natives, world)
 	game.surfaces[1].print("Rampant - Version 0.15.17")
 	global.version = constants.VERSION_27
     end
-    if (global.version < constants.VERSION_28) then
+    if (global.version < constants.VERSION_33) then
 
-	if (world == nil) then
-	    global.world = {}
-	    world = global.world
-	end
-
-	world.itemCollectorLookup = {}
-	world.itemCollectorEvents = {}
+	global.world = nil
 	
-	game.surfaces[1].print("Rampant - Version 0.15.18")
-	global.version = constants.VERSION_28
+	game.surfaces[1].print("Rampant - Version 0.15.23")
+	global.version = constants.VERSION_33
     end
-    if (global.version < constants.VERSION_32) then
-
-	game.surfaces[1].print("Rampant - Version 0.15.22")
-	global.version = constants.VERSION_32
-    end
-    return starting ~= global.version, natives, world
+    return starting ~= global.version, natives
 end
 
 function upgrade.compareTable(entities, option, new)

@@ -1,7 +1,7 @@
 data:extend({
 {
     type = "simple-entity",
-    name = "tunnel-entrance",
+    name = "tunnel-entrance-rampant",
     flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
     icon = "__base__/graphics/icons/small-scorchmark.png",
     subgroup = "grass",

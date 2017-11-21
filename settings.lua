@@ -193,17 +193,6 @@ data:extend({
 	    order = "h[modifier]-a[optimize]",
 	    per_user = false
 	},
-
-		
-	{
-	    type = "bool-setting",
-	    name = "rampant-enableBuildings",
-	    description = "rampant-enableBuildings",
-	    setting_type = "startup",
-	    default_value = true,
-	    order = "i[modifier]-a[buildings]",
-	    per_user = false
-	},
 	
 	{
 	    type = "bool-setting",

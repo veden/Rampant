@@ -48,7 +48,6 @@ Configure Options not in game menu:
 - Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 - Peace mode - If something sets peace mode, Rampant will respect it  
 - Ion Cannon Reaction - Firing the Ion Cannon will cause nests around the blast site to form into an attack wave and agitate all biters  
-- Item Collector + Technology to unlock it - An entity that collects the items on the ground around itself  
 
 # Planned Features
 
@@ -60,6 +59,14 @@ Configure Options not in game menu:
 - Base Expansion  
 
 # Version History
+
+0.15.23 -  
+- Fixed: Retreat radius being centered on chunk corner instead of on the unit dying  
+- Fixed: Spitter flamethrower sound fx  
+- Moved: Item Collector into separate mod  
+- Balance: Adjusted spitter and worms damages, ranges, and cooldowns to be more inline with vanilla  
+- Optimization: Reduced memory footprint for faster saving and loading  
+- Framework: Reorganization of files  
 
 0.15.22 -  
 - Contribution - Martok88, Improvement: Added optional attack wave message per player  

@@ -15,10 +15,11 @@ constants.VERSION_25 = 25
 constants.VERSION_26 = 26
 constants.VERSION_27 = 27
 constants.VERSION_28 = 28
-constants.VERSION_32 = 32
+constants.VERSION_33 = 33
 
 -- misc
 
+constants.CHUNK_SIZE_DIVIDER = 0.03125
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
@@ -28,7 +29,7 @@ constants.SCAN_QUEUE_SIZE = 5
 constants.ITEM_COLLECTOR_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
-constants.PROCESS_PLAYER_BOUND = 4
+constants.PROCESS_PLAYER_BOUND = 128
 
 constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE = 20
 
@@ -41,6 +42,18 @@ constants.INTERVAL_LOGIC = 38
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
 constants.DEV_CUSTOM_AI = false
+
+-- mask
+
+constants.MASK_PASSABLE = 3
+constants.MASK_PASSABLE_SIZE = 2
+constants.MASK_NEST_COUNT = 511
+constants.MASK_NEST_COUNT_SIZE = 9
+constants.MASK_WORM_COUNT = 511
+constants.MASK_WORM_COUNT_SIZE = 9
+constants.MASK_PASSABLE_AND_NEST_COUNT = 2047
+constants.MASK_PASSABLE_AND_NEST_COUNT_SIZE = 11
+
 
 -- item collector
 
@@ -127,19 +140,11 @@ constants.BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 
-constants.PLAYER_BASE_GENERATOR = 5
-constants.RESOURCE_GENERATOR = 6
+constants.PASSABLE = 5
 
-constants.PASSABLE = 7
+constants.CHUNK_TICK = 6
 
-constants.CHUNK_TICK = 8
-constants.RETREAT_TRIGGERED = 9
-constants.RALLY_TRIGGERED = 10
-constants.NEST_BASE = 11
-constants.WORM_BASE = 12
-constants.NEST_COUNT = 13
-constants.WORM_COUNT = 14
-constants.PATH_RATING = 15
+constants.PATH_RATING = 7
 
 -- Squad status
 
@@ -155,7 +160,7 @@ constants.RETREAT_GRAB_RADIUS = 24
 constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
 
-constants.RALLY_CRY_DISTANCE = 3
+constants.RALLY_CRY_DISTANCE = 96
 
 constants.GROUP_MERGE_DISTANCE = 28
 
@@ -210,6 +215,20 @@ constants.UNIT_GROUP_MAX_RADIUS = 20
 constants.UNIT_GROUP_MAX_SPEED_UP = 1.1
 constants.UNIT_GROUP_MAX_SLOWDOWN = 1.0
 constants.UNIT_GROUP_SLOWDOWN_FACTOR = 0.9
+
+-- sentinels
+
+constants.SENTINEL_IMPASSABLE_CHUNK = {}
+
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.MOVEMENT_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.BASE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.PLAYER_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.RESOURCE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.PASSABLE] = constants.CHUNK_IMPASSABLE
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.CHUNK_TICK] = 0
+constants.SENTINEL_IMPASSABLE_CHUNK[constants.PATH_RATING] = 0
+constants.SENTINEL_IMPASSABLE_CHUNK.x = 0
+constants.SENTINEL_IMPASSABLE_CHUNK.y = 0
 
 return constants
 

@@ -7,19 +7,19 @@ function bobsUpdates.useDumbProjectiles()
 
     turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 25,
+    	    cooldown = 60,
+    	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
     	    scale = 1.2
     	},
-    	"bob-explosive-ball-1-stream-rampant")
+    	"bob-explosive-ball-stream-rampant")
 
     turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 25,
+    	    cooldown = 60,
+    	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
@@ -29,19 +29,19 @@ function bobsUpdates.useDumbProjectiles()
 
     turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 25,
+    	    cooldown = 60,
+    	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
     	    scale = 1.2
     	},
-    	"bob-poison-ball-1-stream-rampant")
+    	"bob-poison-ball-stream-rampant")
 
     turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 25,
+    	    cooldown = 60,
+    	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
@@ -51,44 +51,44 @@ function bobsUpdates.useDumbProjectiles()
     
     turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 25,
+    	    cooldown = 60,
+    	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
     	    scale = 1.2
     	},
-    	"bob-electric-ball-1-stream-rampant")
+    	"bob-electric-ball-stream-rampant")
 
     turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
+    	    cooldown = 60,
     	    range = 28,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
     	    scale = 1.6
     	},
-    	"acid-ball-4-stream-rampant")
+    	"acid-ball-5-stream-rampant")
 
     turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
+    	    cooldown = 60,
     	    range = 30,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
     	    scale = 2
     	},
-    	"acid-ball-5-stream-rampant")
+    	"acid-ball-6-stream-rampant")
 
     local units = data.raw["unit"]
 
     local unit = units["behemoth-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -102,10 +102,11 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-big-electric-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
+    	    cooldown = 90,
     	    range = 15,
     	    min_range = 3,
     	    turn_range = 1,
+	    damageModifier = 0.6,
 	    warmup = 30,
     	    fire_penalty = 0,
 	    scale = biterUtils.findRunScale(unit),
@@ -117,11 +118,12 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-huge-explosive-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
 	    warmup = 30,
     	    turn_range = 1,
+	    damageModifier = 0.8,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
 	    tint1 = biterUtils.findTint(unit),
@@ -132,8 +134,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-huge-acid-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -147,8 +149,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-giant-fire-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -162,8 +164,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-giant-poison-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -177,8 +179,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-titan-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -192,8 +194,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-behemoth-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
@@ -208,8 +210,8 @@ function bobsUpdates.useDumbProjectiles()
     unit = units["bob-leviathan-spitter"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 15,
+    	    cooldown = 90,
+    	    range = 17,
     	    min_range = 3,
 	    warmup = 30,
     	    turn_range = 1,
