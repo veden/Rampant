@@ -11,8 +11,3 @@ require("prototypes/enemies/UnitFireSpitters")
 require("prototypes/enemies/UnitTendril")
 
 
-if settings.startup["rampant-enableBuildings"].value then
-    require("prototypes/buildings/ItemCollector")
-end
-
-

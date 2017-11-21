@@ -57,57 +57,7 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 35, type = "explosion" }
-				}
-			    }
-		    }
-	    }
-	}
-})
-
---
-
-makeStream({
-	name = "bob-explosive-ball-1",
-	particleTint = {r=1, g=0.97, b=0.34, a=0.5},
-	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},
-	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-scorchmark",
-				    check_buildability = true
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "big-explosion",
-				    check_buildability = true
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "small-fire-cloud"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		perimeter = 3,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 55, type = "explosion" }
+				    damage = { amount = 25, type = "explosion" }
 				}
 			    }
 		    }
@@ -166,7 +116,7 @@ makeStream({
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 43, type = "fire" }
+				    damage = { amount = 20, type = "fire" }
 				}
 			    }
 		    }
@@ -207,47 +157,6 @@ makeStream({
 				{
 				    type = "damage",
 				    damage = { amount = 20, type = "poison" }
-				}
-			    }
-		    }
-	    }
-	}
-})
-
---
-
-
-makeStream({
-	name = "bob-poison-ball-1",
-	particleTint = {r=0.1, g=0.5, b=1, a=0.5},
-	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-poison-cloud"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		perimeter = 2,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 43, type = "poison" }
 				}
 			    }
 		    }
@@ -318,7 +227,7 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 43, type = "bob-pierce" }
+				    damage = { amount = 30, type = "bob-pierce" }
 				}
 			    }
 		    }
@@ -400,47 +309,7 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 10, type = "electric" }
-				}
-			    }
-		    }
-	    }
-	}
-})
-
---
-
-makeStream({
-	name = "bob-electric-ball-1",
-	particleTint = {r=0, g=0.1, b=1, a=1},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
-	actions = {
-	    {
-		type = "cluster",
-		cluster_count = 10,
-		distance = 4,
-		distance_deviation = 3,
-		action_delivery =
-		    {
-			type = "projectile",
-			projectile = "electric-spike-rampant",
-			direction_deviation = 0.6,
-			starting_speed = 0.65,
-			starting_speed_deviation = 0.0
-		    }
-	    },
-	    {
-		type = "area",
-		perimeter = 3,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 55, type = "electric" }
+				    damage = { amount = 25, type = "electric" }
 				}
 			    }
 		    }
@@ -465,7 +334,7 @@ makeStream({
 			    {
 				{
 				    type = "create-entity",
-				    entity_name = "small-poison-cloud"
+				    entity_name = "small-fire-cloud"
 				},
 				{
 				    type = "create-entity",
@@ -484,19 +353,15 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 15, type = "electric" }
+				    damage = { amount = 10, type = "electric" }
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 15, type = "explosion" }
+				    damage = { amount = 10, type = "explosion" }
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 15, type = "fire" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "poison" }
+				    damage = { amount = 10, type = "fire" }
 				}
 			    }
 		    }
@@ -615,7 +480,7 @@ makeStream({
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 20, type = "explosion" }
+				    damage = { amount = 15, type = "explosion" }
 				},
 				{
 				    type = "damage",
@@ -631,7 +496,7 @@ makeStream({
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 20, type = "acid" }
+				    damage = { amount = 15, type = "acid" }
 				}
 			    }
 		    }

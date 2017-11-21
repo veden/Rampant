@@ -13,9 +13,11 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 local PASSABLE = constants.PASSABLE
 
-local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
-
 local CHUNK_SIZE = constants.CHUNK_SIZE
+
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
+
+local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 
 -- imported functions
 
@@ -24,19 +26,17 @@ local mFloor = math.floor
 -- module code
 
 function mapUtils.getChunkByPosition(regionMap, x, y)
-    local chunkX = regionMap[mFloor(x * 0.03125)]
-    if chunkX then
-        return chunkX[mFloor(y * 0.03125)]
-    end
-    return nil
-end
-
-function mapUtils.getChunkByIndex(regionMap, x, y)
     local chunkX = regionMap[x]
     if chunkX then
-        return chunkX[y]
+        return chunkX[y] or SENTINEL_IMPASSABLE_CHUNK
     end
-    return nil
+    return SENTINEL_IMPASSABLE_CHUNK
+end
+
+function mapUtils.positionToChunkXY(position)
+    local chunkX = mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    return chunkX, chunkY
 end
 
 --[[
@@ -46,39 +46,39 @@ end
     /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(regionMap, chunkX, chunkY)
+function mapUtils.getNeighborChunks(regionMap, x, y)
     local neighbors = regionMap.neighbors
-    local chunkYRow1 = chunkY - 1
-    local chunkYRow3 = chunkY + 1
-    local xChunks = regionMap[chunkX-1]
+    local chunkYRow1 = y - CHUNK_SIZE
+    local chunkYRow3 = y + CHUNK_SIZE
+    local xChunks = regionMap[x-CHUNK_SIZE]
     if xChunks then
-        neighbors[1] = xChunks[chunkYRow1]
-        neighbors[4] = xChunks[chunkY]
-        neighbors[6] = xChunks[chunkYRow3]
+        neighbors[1] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[4] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[6] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[1] = nil
-	neighbors[4] = nil
-	neighbors[6] = nil
+	neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
+	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
+	neighbors[6] = SENTINEL_IMPASSABLE_CHUNK
+    end
+
+    xChunks = regionMap[x+CHUNK_SIZE]
+    if xChunks then
+        neighbors[3] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[5] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[8] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
+    else
+	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK 
+	neighbors[5] = SENTINEL_IMPASSABLE_CHUNK
+	neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[chunkX+1]
+    xChunks = regionMap[x]
     if xChunks then
-        neighbors[3] = xChunks[chunkYRow1]
-        neighbors[5] = xChunks[chunkY]
-        neighbors[8] = xChunks[chunkYRow3]
+        neighbors[2] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[7] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[3] = nil
-	neighbors[5] = nil
-	neighbors[8] = nil
-    end
-    
-    xChunks = regionMap[chunkX]
-    if xChunks then
-        neighbors[2] = xChunks[chunkYRow1]
-        neighbors[7] = xChunks[chunkYRow3]
-    else
-	neighbors[2] = nil
-	neighbors[7] = nil
+	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
+	neighbors[7] = SENTINEL_IMPASSABLE_CHUNK
     end
     return neighbors
 end
@@ -87,41 +87,41 @@ function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     local canMove = false
     local startPassable = startChunk[PASSABLE]
     local endPassable = endChunk[PASSABLE]
-    if ((direction == 2) or (direction == 7)) and (startPassable == CHUNK_NORTH_SOUTH) and (endPassable == CHUNK_NORTH_SOUTH) then
-        canMove = true
-    elseif ((direction == 4) or (direction == 5)) and (startPassable == CHUNK_EAST_WEST) and (endPassable == CHUNK_EAST_WEST) then
-        canMove = true
-    elseif (startPassable == CHUNK_ALL_DIRECTIONS) and (endPassable == CHUNK_ALL_DIRECTIONS) then
+    if (startPassable == CHUNK_ALL_DIRECTIONS) and (endPassable == CHUNK_ALL_DIRECTIONS) then
 	canMove = true
-    elseif (startPassable ~= CHUNK_IMPASSABLE) and (endPassable == CHUNK_ALL_DIRECTIONS) then
+    elseif ((direction == 2) or (direction == 7)) and (startPassable == CHUNK_NORTH_SOUTH) and (endPassable == CHUNK_NORTH_SOUTH) then
+	canMove = true
+    elseif ((direction == 4) or (direction == 5)) and (startPassable == CHUNK_EAST_WEST) and (endPassable == CHUNK_EAST_WEST) then
+	canMove = true
+    elseif (startChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (endPassable == CHUNK_ALL_DIRECTIONS) then
 	canMove = true
     end
     return canMove
 end
 
-function mapUtils.getCardinalChunks(regionMap, chunkX, chunkY)
+function mapUtils.getCardinalChunks(regionMap, x, y)
     local neighbors = regionMap.cardinalNeighbors
-    local xChunks = regionMap[chunkX]
+    local xChunks = regionMap[x]
     if xChunks then
-	neighbors[1] = xChunks[chunkY-1]
-	neighbors[4] = xChunks[chunkY+1]
+	neighbors[1] = xChunks[y-CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
+	neighbors[4] = xChunks[y+CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[1] = nil
-	neighbors[4] = nil
+	neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
+	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[chunkX-1]
+    xChunks = regionMap[x-CHUNK_SIZE]
     if xChunks then
-	neighbors[2] = xChunks[chunkY]
+	neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[2] = nil
+	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[chunkX+1]
+    xChunks = regionMap[x+CHUNK_SIZE]
     if xChunks then
-	neighbors[3] = xChunks[chunkY]
+	neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[3] = nil
+	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
     end
     return neighbors
 end

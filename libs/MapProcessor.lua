@@ -3,14 +3,13 @@ local mapProcessor = {}
 -- imports
 
 local unitGroupUtils = require("UnitGroupUtils")
-
 local pheromoneUtils = require("PheromoneUtils")
 local aiAttackWave = require("AIAttackWave")
 local aiPredicates = require("AIPredicates")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local playerUtils = require("PlayerUtils")
-
+local chunkUtils = require("ChunkUtils")
 local mathUtils = require("MathUtils")
 
 -- constants
@@ -26,38 +25,39 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
 
-local NEST_COUNT = constants.NEST_COUNT
-local WORM_COUNT = constants.WORM_COUNT
+local SENTINEL_IMPASSABLE_CHUNK  = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
-local PLAYER_BASE_GENERATOR = constants.PLAYER_BASE_GENERATOR
-local RESOURCE_GENERATOR = constants.RESOURCE_GENERATOR
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 -- imported functions
 
 local scents = pheromoneUtils.scents
 local processPheromone = pheromoneUtils.processPheromone
+local playerScent = pheromoneUtils.playerScent
 
 local formSquads = aiAttackWave.formSquads
 
-local getChunkByIndex = mapUtils.getChunkByIndex
 local getChunkByPosition = mapUtils.getChunkByPosition
+local positionToChunkXY = mapUtils.positionToChunkXY
 
 local recycleBiters = unitGroupUtils.recycleBiters
 
-local playerScent = pheromoneUtils.playerScent
+local validPlayer = playerUtils.validPlayer
+
+local setResourceGenerator = chunkUtils.setResourceGenerator
+local setPlayerBaseGenerator = chunkUtils.setPlayerBaseGenerator
+local getNestCount = chunkUtils.getNestCount
+local getWormCount = chunkUtils.getWormCount
 
 local canAttack = aiPredicates.canAttack
 
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local mMin = math.min
-
-local validPlayer = playerUtils.validPlayer
 
 local mRandom = math.random
 
@@ -105,12 +105,12 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
 	    
 	    processPheromone(regionMap, chunk)
 
-	    if squads and (chunk[NEST_COUNT] ~= 0) then
+	    if squads and (getNestCount(regionMap, chunk) > 0) then
 		formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
 		squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
 	    end
 	    
-	    scents(chunk)
+	    scents(regionMap, chunk)
 	end
     end
     
@@ -141,10 +141,10 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local playerPosition = player.character.position
-	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+	    local chunkX, chunkY = positionToChunkXY(player.character.position)
+	    local playerChunk = getChunkByPosition(regionMap, chunkX, chunkY)
 	    
-	    if playerChunk then
+	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		playerScent(playerChunk)
 	    end
 	end
@@ -152,21 +152,24 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local playerPosition = player.character.position
-	    local playerChunk = getChunkByPosition(regionMap, playerPosition.x, playerPosition.y)
+	    local chunkX, chunkY = positionToChunkXY(player.character.position)
+	    local playerChunk = getChunkByPosition(regionMap, chunkX, chunkY)
 	    
-	    if playerChunk then
-		local vengence = allowingAttacks and ((playerChunk[NEST_COUNT] ~= 0) or (playerChunk[WORM_COUNT] ~= 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)) and (natives.points >= AI_VENGENCE_SQUAD_COST)
+	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+		local vengence = (allowingAttacks and
+				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
+				      ((getWormCount(regionMap, playerChunk) > 0) or (getNestCount(regionMap, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
 		
-		for x=playerChunk.cX - PROCESS_PLAYER_BOUND, playerChunk.cX + PROCESS_PLAYER_BOUND do
-		    for y=playerChunk.cY - PROCESS_PLAYER_BOUND, playerChunk.cY + PROCESS_PLAYER_BOUND do
-			local chunk = getChunkByIndex(regionMap, x, y)
-			if chunk and (chunk[CHUNK_TICK] ~= tick) then
+		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
+		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
+			local chunk = getChunkByPosition(regionMap, x, y)
+			
+			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 
 			    processPheromone(regionMap, chunk)
 
-			    if (chunk[NEST_COUNT] ~= 0) then
+			    if (getNestCount(regionMap, chunk) > 0) then
 				if squads then
 				    formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
 				    squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
@@ -177,7 +180,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
 				end
 			    end
 			    
-			    scents(chunk)
+			    scents(regionMap, chunk)
 			end
 		    end
 		end
@@ -232,7 +235,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
-	chunk[RESOURCE_GENERATOR] = surface.count_entities_filtered(resourceQuery) * 0.001
+	setResourceGenerator(regionMap, chunk, surface.count_entities_filtered(resourceQuery) * 0.001)
 	
 	local entities = surface.find_entities_filtered(playerQuery)
 	local playerBaseGenerator = 0
@@ -250,7 +253,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
-	chunk[PLAYER_BASE_GENERATOR] = playerBaseGenerator
+	setPlayerBaseGenerator(regionMap, chunk, playerBaseGenerator)
     end
 
     if (endIndex == #processQueue) then

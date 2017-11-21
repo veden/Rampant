@@ -42,7 +42,7 @@ makeStream({
 				},
 				{
 				    type = "damage",
-				    damage = {amount = 25, type = "poison"}
+				    damage = {amount = 24, type = "poison"}
 				}
 			    }
 		    }
@@ -91,11 +91,11 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 5, type = "explosion" }
+				    damage = { amount = 8, type = "explosion" }
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 15, type = "acid" }
+				    damage = { amount = 18, type = "acid" }
 				}
 			    }
 		    }
@@ -135,11 +135,11 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 3, type = "explosion" }
+				    damage = { amount = 5, type = "explosion" }
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 7, type = "poison" }
+				    damage = { amount = 12, type = "poison" }
 				}
 			    }
 		    }
@@ -183,11 +183,11 @@ makeStream({
 			    {
 				{
 				    type = "damage",
-				    damage = { amount = 7, type = "explosion" }
+				    damage = { amount = 5, type = "explosion" }
 				},
 				{
 				    type = "damage",
-				    damage = { amount = 14, type = "acid" }
+				    damage = { amount = 12, type = "acid" }
 				}
 			    }
 		    }

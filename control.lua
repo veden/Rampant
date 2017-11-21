@@ -1,6 +1,5 @@
 -- imports
 
-local entityUtils = require("libs/EntityUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -14,14 +13,10 @@ local aiAttackWave = require("libs/AIAttackWave")
 local aiPlanning = require("libs/AIPlanning")
 local interop = require("libs/Interop")
 local tests = require("tests")
+local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
-local baseRegisterUtils = require("libs/BaseRegisterUtils")
 local mathUtils = require("libs/MathUtils")
 local config = require("config")
-local worldProcessor = require("libs/WorldProcessor")
-local inventoryUtils = require("libs/InventoryUtils")
-local playerUtils = require("libs/PlayerUtils")
-local buildUtils = require("libs/BuildUtils")
 
 -- constants
 
@@ -30,12 +25,7 @@ local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
-local DEFINES_INVENTORY_PLAYER_MAIN = defines.inventory.player_main
-local DEFINES_INVENTORY_GOD_MAIN = defines.inventory.god_main
-local DEFINES_INVENTORY_PLAYER_QUICKBAR = defines.inventory.player_quickbar
-local DEFINES_INVENTORY_GOD_QUICKBAR = defines.inventory.god_quickbar
-
-local ITEM_COLLECTOR_MAX_QUEUE_SIZE = constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
@@ -48,17 +38,6 @@ local roundToNearest = mathUtils.roundToNearest
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local processPendingChunks = chunkProcessor.processPendingChunks
-
-local buildComplexEntity = buildUtils.buildComplexEntity
-local mineComplexEntity = buildUtils.mineComplexEntity
-
-local getPlayerCursorStack = playerUtils.getPlayerCursorStack
-
-local swapItemStack = inventoryUtils.swapItemStack
-local swapItemInventory = inventoryUtils.swapItemInventory
-local topOffHand = inventoryUtils.topOffHand
-
-local processWorld = worldProcessor.processWorld
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -80,23 +59,22 @@ local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
 
-local addRemovePlayerEntity = entityUtils.addRemovePlayerEntity
-local unregisterEnemyBaseStructure = baseRegisterUtils.unregisterEnemyBaseStructure
-local registerEnemyBaseStructure = baseRegisterUtils.registerEnemyBaseStructure
-local makeImmortalEntity = entityUtils.makeImmortalEntity
+local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
+local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
+local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
+local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
 local processBases = baseProcessor.processBases
 
 local mRandom = math.random
 
-local getPlayerInventory = playerUtils.getPlayerInventory
+local positionToChunkXY = mapUtils.positionToChunkXY
 
 -- local references to global
 
 local regionMap -- manages the chunks that make up the game world
 local natives -- manages the enemy units, structures, and ai
 local pendingChunks -- chunks that have yet to be processed by the mod
-local world -- manages the player built structures and any other events in the world
 
 -- hook functions
 
@@ -110,13 +88,10 @@ local function onIonCannonFired(event)
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
 	end
-	local chunk = getChunkByPosition(regionMap, event.position.x, event.position.y)
-	if chunk then
-	    rallyUnits(chunk,
-		       regionMap,
-		       surface,
-		       natives,
-		       event.tick)
+	local chunkX, chunkY = positionToChunkXY(event.position)
+	local chunk = getChunkByPosition(regionMap, chunkX, chunkY)
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	    rallyUnits(chunk, regionMap, surface, natives, event.tick)
 	end
     end    
 end
@@ -134,7 +109,6 @@ local function onLoad()
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    world = global.world
 
     hookEvents()
 end
@@ -158,9 +132,28 @@ local function rebuildRegionMap()
     regionMap.processQueue = {}
     regionMap.processIndex = 1
     regionMap.scanIndex = 1
+
+    regionMap.chunkToHives = {}
+    regionMap.chunkToNests = {}
+    regionMap.chunkToWorms = {}
+    regionMap.chunkToRetreats = {}
+    regionMap.chunkToRallys = {}
+    regionMap.chunkToPlayerBase = {}
+    regionMap.chunkToResource = {}
+
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
-    regionMap.neighbors = { nil, nil, nil, nil, nil, nil, nil, nil }
-    regionMap.cardinalNeighbors = { nil, nil, nil, nil }
+    regionMap.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK,
+			    SENTINEL_IMPASSABLE_CHUNK }
+    regionMap.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
+				    SENTINEL_IMPASSABLE_CHUNK,
+				    SENTINEL_IMPASSABLE_CHUNK,
+				    SENTINEL_IMPASSABLE_CHUNK }
     regionMap.chunkTiles = {}
     regionMap.position = {x=0,
 			  y=0}
@@ -242,7 +235,7 @@ end
 
 local function onConfigChanged()
     local upgraded
-    upgraded, natives, world = upgrade.attempt(natives, world)
+    upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
 	rebuildRegionMap()
     end
@@ -271,8 +264,6 @@ local function onTick(event)
 	    cleanSquads(natives)
 	    regroupSquads(natives)
 	    
-	    processWorld(surface, world, tick)
-	    
 	    processPlayers(players, regionMap, surface, natives, tick)
 
 	    if natives.useCustomAI then
@@ -288,7 +279,7 @@ local function onTick(event)
 end
 
 local function onBuild(event)
-    local entity = buildComplexEntity(event.created_entity, world)
+    local entity = event.created_entity
     addRemovePlayerEntity(regionMap, entity, natives, true, false)
     if natives.safeBuildings then
 	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
@@ -298,24 +289,20 @@ local function onBuild(event)
 end
 
 local function onMine(event)
-    mineComplexEntity(addRemovePlayerEntity(regionMap,
-					    event.entity,
-					    natives,
-					    false,
-					    false),
-		      world)
+    addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
 end
 
 local function onDeath(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
+	local entityPosition = entity.position
+	local chunkX, chunkY = positionToChunkXY(entityPosition)
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
-		local entityPosition = entity.position
-		local deathChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
+		local deathChunk = getChunkByPosition(regionMap, chunkX, chunkY)
 		
-		if deathChunk then
+		if (deathChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
 		    deathScent(deathChunk)
 		    
@@ -324,18 +311,14 @@ local function onDeath(event)
 			
 			retreatUnits(deathChunk,
 				     entityPosition,
-				     convertUnitGroupToSquad(natives, 
-							     entity.unit_group),
+				     convertUnitGroupToSquad(natives, entity.unit_group),
 				     regionMap, 
 				     surface, 
 				     natives,
 				     tick)
+			
 			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    rallyUnits(deathChunk,
-				       regionMap,
-				       surface,
-				       natives,
-				       tick)
+			    rallyUnits(deathChunk, regionMap, surface, natives, tick)
 			end
 		    end
                 end
@@ -345,32 +328,24 @@ local function onDeath(event)
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false
-	    local entityPosition = entity.position
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
-		local victoryChunk = getChunkByPosition(regionMap, entityPosition.x, entityPosition.y)
-		if victoryChunk then
+		local victoryChunk = getChunkByPosition(regionMap, chunkX, chunkY)
+		if (victoryChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    victoryScent(victoryChunk, entity.type)
 		end
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
 	    else
-		mineComplexEntity(addRemovePlayerEntity(regionMap,
-							entity,
-							natives,
-							false,
-							creditNatives),
-				  world,
-				  true)
+		addRemovePlayerEntity(regionMap, entity, natives, false, creditNatives)
 	    end
         end
     end
 end
 
 local function onEnemyBaseBuild(event)
-    local entity = event.entity
-    registerEnemyBaseStructure(regionMap, entity, nil)
+    registerEnemyBaseStructure(regionMap, event.entity, nil)
 end
 
 local function onSurfaceTileChange(event)
@@ -384,128 +359,30 @@ local function onInit()
     global.regionMap = {}
     global.pendingChunks = {}
     global.natives = {}
-    global.world = {}
     
     regionMap = global.regionMap
     natives = global.natives
     pendingChunks = global.pendingChunks
-    world = global.world
     
     onConfigChanged()
     hookEvents()
-end
-
--- local function onBuildingRotated(event)
-
--- end
-
-local function onCursorChange(event)
-    if settings.startup["rampant-enableBuildings"].value then
-	local player = game.players[event.player_index]
-	swapItemStack(getPlayerCursorStack(player),
-		      "item-collector-base-rampant",
-		      "item-collector-base-overlay-rampant")
-	local inventory = getPlayerInventory(player,
-					     DEFINES_INVENTORY_PLAYER_QUICKBAR,
-					     DEFINES_INVENTORY_GOD_QUICKBAR)
-	topOffHand(inventory,
-		   player.cursor_stack,
-		   "item-collector-base-rampant",
-		   "item-collector-base-overlay-rampant")
-	inventory = getPlayerInventory(player,
-				       DEFINES_INVENTORY_PLAYER_MAIN,
-				       DEFINES_INVENTORY_GOD_MAIN)
-	topOffHand(inventory,
-		   player.cursor_stack,
-		   "item-collector-base-rampant",
-		   "item-collector-base-overlay-rampant")
-    end
-end
-
-local function onPlayerDropped(event)
-    if settings.startup["rampant-enableBuildings"].value then
-	local item = event.entity
-	if item.valid then
-	    swapItemStack(item.stack,
-			  "item-collector-base-overlay-rampant",
-			  "item-collector-base-rampant")
-	end
-    end
-end
-
-local function onMainInventoryChanged(event)
-    if settings.startup["rampant-enableBuildings"].value then
-	local player = game.players[event.player_index]
-	local inventory = getPlayerInventory(player,
-					     DEFINES_INVENTORY_PLAYER_MAIN,
-					     DEFINES_INVENTORY_GOD_MAIN)
-	swapItemInventory(inventory,
-			  "item-collector-base-overlay-rampant",
-			  "item-collector-base-rampant")
-    end
-end
-
-local function onQuickInventoryChanged(event)
-    if settings.startup["rampant-enableBuildings"].value then
-	local player = game.players[event.player_index]
-	local inventory = getPlayerInventory(player,
-					     DEFINES_INVENTORY_PLAYER_QUICKBAR,
-					     DEFINES_INVENTORY_GOD_QUICKBAR)
-	swapItemInventory(inventory,
-			  "item-collector-base-overlay-rampant",
-			  "item-collector-base-rampant")
-	topOffHand(inventory,
-		   player.cursor_stack,
-		   "item-collector-base-rampant",
-		   "item-collector-base-overlay-rampant")
-    end
-end
-
-
-local function onScannedSector(event)
-    local radar = event.radar
-    if (radar.name == "item-collector-base-rampant") then
-	local count = #world.itemCollectorEvents
-	if (count <= ITEM_COLLECTOR_MAX_QUEUE_SIZE) then	    
-	    world.itemCollectorEvents[count+1] = radar.unit_number
-	end
-    end
 end
 
 -- hooks
 
 script.on_init(onInit)
 script.on_load(onLoad)
-script.on_event(defines.events.on_runtime_mod_setting_changed,
-		onModSettingsChange)
+script.on_event(defines.events.on_runtime_mod_setting_changed, onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
-
--- script.on_event(defines.events.on_player_rotated_entity,
--- 		onBuildingRotated)
 
 script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
 
-script.on_event(defines.events.on_player_cursor_stack_changed,
-		onCursorChange)
-
-script.on_event(defines.events.on_player_main_inventory_changed,
-		onMainInventoryChanged)
-script.on_event(defines.events.on_player_quickbar_inventory_changed,
-		onQuickInventoryChanged)
-
-script.on_event(defines.events.on_biter_base_built,
-		onEnemyBaseBuild)
+script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
-                 defines.events.on_robot_mined_entity}, 
-    onMine)
+                 defines.events.on_robot_mined_entity}, onMine)
 script.on_event({defines.events.on_built_entity,
-                 defines.events.on_robot_built_entity}, 
-    onBuild)
-script.on_event(defines.events.on_player_dropped_item,
-		onPlayerDropped)
+                 defines.events.on_robot_built_entity}, onBuild)
 
-script.on_event(defines.events.on_sector_scanned,
-		onScannedSector)
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)

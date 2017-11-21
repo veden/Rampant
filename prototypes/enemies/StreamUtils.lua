@@ -10,7 +10,8 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 
 -- module code
 
-function streamUtils.makeStream(attributes)
+function streamUtils.makeStream(info)
+    local attributes = util.table.deepcopy(info)
     local softSmokeName = attributes.softSmokeName or makeSmokeSoft(attributes)
     data:extend(
 	{
@@ -79,7 +80,7 @@ function streamUtils.makeStream(attributes)
 			height = 64,
 			frame_count = 32,
 			line_length = 8
-		    },
+		    }
 	    }
 	}
     )

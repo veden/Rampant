@@ -7,8 +7,8 @@ function NEUpdates.useNEUnitLaunchers ()
     
     turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 22,
+    	    cooldown = 60,
+    	    range = 25,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
@@ -19,8 +19,8 @@ function NEUpdates.useNEUnitLaunchers ()
 
     turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 27,
+    	    cooldown = 60,
+    	    range = 30,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
@@ -40,13 +40,13 @@ function NEUpdates.useDumbProjectiles()
     turret["attack_parameters"].range = 22
     turret["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 22,
+    	    cooldown = 60,
+    	    range = 25,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
 	    damageModifier = 4.5,
-	    scale = 1.0
+	    scale = 1.2
     	},
     	"ne-infected-ball-stream-rampant")
 
@@ -54,13 +54,13 @@ function NEUpdates.useDumbProjectiles()
     turret["attack_parameters"].range = 27
     turret["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 80,
-    	    range = 27,
+    	    cooldown = 60,
+    	    range = 30,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
 	    damageModifier = 5.5,
-	    scale = 1.2
+	    scale = 1.6
     	},
     	"ne-mutated-ball-stream-rampant")
     
@@ -69,7 +69,7 @@ function NEUpdates.useDumbProjectiles()
     local unit = units["small-spitter-Mk2"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 13,
     	    min_range = 3,
     	    turn_range = 1,
@@ -85,7 +85,7 @@ function NEUpdates.useDumbProjectiles()
     unit = units["small-spitter-Mk3"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 13,
     	    min_range = 3,
     	    turn_range = 1,
@@ -102,7 +102,7 @@ function NEUpdates.useDumbProjectiles()
     unit = units["medium-spitter-Mk2"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 14,
     	    min_range = 3,
     	    turn_range = 1,
@@ -118,7 +118,7 @@ function NEUpdates.useDumbProjectiles()
     unit = units["medium-spitter-Mk3"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 14,
     	    min_range = 3,
     	    turn_range = 1,
@@ -134,7 +134,7 @@ function NEUpdates.useDumbProjectiles()
     unit = units["big-spitter-Mk2"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 15,
     	    min_range = 3,
     	    turn_range = 1,
@@ -151,7 +151,7 @@ function NEUpdates.useDumbProjectiles()
     unit = units["big-spitter-Mk3"]
     unit["attack_parameters"] = biterUtils.createFireAttack(
     	{
-    	    cooldown = 150,
+    	    cooldown = 100,
     	    range = 15,
     	    min_range = 3,
     	    turn_range = 1,
