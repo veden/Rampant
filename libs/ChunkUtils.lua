@@ -114,10 +114,9 @@ local function addEnemyStructureToChunk(regionMap, chunk, entity, base)
     
     local entityCollection = lookup[chunk]
     if not entityCollection then
-	entityCollection = {}
-	lookup[chunk] = entityCollection
+	lookup[chunk] = 0
     end
-    entityCollection[#entityCollection+1] = entity
+    lookup[chunk] = lookup[chunk] + 1
 
     -- if base then
     -- 	local baseCollection = regionMap.chunkToBases[chunk]
@@ -127,6 +126,7 @@ local function addEnemyStructureToChunk(regionMap, chunk, entity, base)
     -- 	end
     -- 	baseCollection[base.id] = chunk
     -- end
+    
 end
 
 local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
@@ -138,6 +138,7 @@ local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
     else
 	return
     end
+
     -- local base = indexChunk[entity.unit_number]
     -- local indexBase
     -- if base then
@@ -152,15 +153,9 @@ local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
     -- 	end
     -- 	indexBase[entity.unit_number] = nil
     -- end
-    local collection = lookup[chunk]
-    if collection then
-	for i=1,#collection do
-	    local e = collection[i]
-	    if e.valid and (e == entity) then
-		table.remove(collection, i)
-		break
-	    end
-	end
+    
+    if lookup[chunk] then
+	lookup[chunk] = lookup[chunk] - 1
     end
 end
 
@@ -304,13 +299,11 @@ function chunkUtils.registerChunkEnemies(regionMap, chunk, surface, tempQuery)
 end
 
 function chunkUtils.getNestCount(regionMap, chunk)
-    local nests = regionMap.chunkToNests[chunk]
-    return (nests and #nests) or 0
+    return regionMap.chunkToNests[chunk] or 0
 end
 
 function chunkUtils.getWormCount(regionMap, chunk)
-    local worms = regionMap.chunkToWorms[chunk]
-    return (worms and #worms) or 0
+    return regionMap.chunkToWorms[chunk] or 0
 end
 
 function chunkUtils.getRetreatTick(regionMap, chunk)
