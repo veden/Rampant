@@ -26,6 +26,7 @@ Configure Options not in game menu:
 
 # Features
 
+- Swarming - Units will smoothly slide by one another allowing for streamlined attacking  
 - Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
 - Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
 - Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
@@ -55,6 +56,10 @@ Configure Options not in game menu:
 - Base Expansion  
 
 # Version History
+
+0.15.24 -  
+- Feature: Swarming - by reducing the unit collision_mask to 40% of its original size the units no longer have the pathing issues that plagued large groups attacking  
+- Optimization: further reduced memory footprint for faster saving and loading  
 
 0.15.23 -  
 - Fixed: Retreat radius being centered on chunk corner instead of on the unit dying  
