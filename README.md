@@ -7,9 +7,6 @@ https://forums.factorio.com/viewtopic.php?f=94&t=31445
 
 # Notes
 
-When playing on low sprite resolution, item collector range will appear to be less than it is. (By roughly a half chunk on all sides)
-This is due to the max sprite size being 2048px on low and 4096px on high resolution.
-
 0.14.14 factorio version fixed save corruption  
 0.14.10 factorio version fixed more pathing issues  
 0.14.4 factorio version fixed some issues with unit groups commands  
@@ -26,7 +23,6 @@ If experiencing desyncs, after an update, please do the following:
 
 Configure Options not in game menu:  
 - Ramp up to max biter wave size  
-
 
 # Features
 

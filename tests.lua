@@ -49,9 +49,46 @@ end
 function tests.activeSquads()
     print("--")
     for i=1, #global.natives.squads do
+	print("-")
         local squad = global.natives.squads[i]
+	local squadHealth = 0
+	local squadMakeup = {}
+	local squadResistances = {}
         if squad.group.valid then
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members)
+	    for x=1,#squad.group.members do
+		local member = squad.group.members[x].prototype
+		if not squadMakeup[member.name] then
+		    squadMakeup[member.name] = 0
+		end
+		local resistances = member.resistances
+		if resistances then
+		    for key,resistance in pairs(resistances) do
+			local pack = squadResistances[key]
+			if not pack then
+			    pack = {}
+			    squadResistances[key] = pack
+			end
+			if resistance.percent then
+			    if (pack.percent == nil) then
+				pack.percent = 0
+			    end
+			    pack.percent = pack.percent + resistance.percent
+			end
+			if resistance.decrease then
+			    if (pack.decrease == nil) then
+				pack.decrease = 0
+			    end
+			    pack.decrease = pack.decrease + resistance.decrease
+			end
+		    end
+		end
+
+		squadHealth = squadHealth + member.max_health
+		squadMakeup[member.name] = squadMakeup[member.name] + 1
+	    end
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squadHealth)
+	    print(serpent.dump(squadResistances))
+	    print(serpent.dump(squadMakeup))
             print(serpent.dump(squad))
         end
     end
@@ -123,8 +160,8 @@ end
 function tests.registeredNest(x)
     local entity = tests.createEnemy(x)
     chunk.registerEnemyBaseStructure(global.regionMap,
-						 entity,
-						 nil)
+				     entity,
+				     nil)
 end
 
 function tests.attackOrigin()

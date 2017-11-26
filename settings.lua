@@ -200,8 +200,18 @@ data:extend({
 	    description = "rampant-attack-warning",
 	    setting_type = "runtime-per-user",
 	    default_value = true,
-	    order = "a",
+	    order = "j[modifer]-a[message]",
 	    per_user = true
+	},
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-enableSwarm",
+	    description = "rampant-enableSwarm",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "k[modifier]-a[unit]",
+	    per_user = false
 	}
 		
 	-- {
