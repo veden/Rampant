@@ -104,6 +104,7 @@ data:extend({
 	    type = "unit-spawner",
 	    name = "biter-spawner-hive-rampant",
 	    icon = "__base__/graphics/icons/biter-spawner.png",
+	    icon_size = 32,
 	    flags = {"placeable-player", "placeable-enemy", "not-repairable"},
 	    max_health = 350,
 	    order="b-b-g",
