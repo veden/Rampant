@@ -130,7 +130,7 @@ end
 
 function smokeUtils.makeSmokeBasic(attributes)
     return {
-	type = "smoke",
+	type = "trivial-smoke",
 	name = attributes.name,
 	flags = {"not-on-map"},
 	duration = attributes.duration or 600,

@@ -4,6 +4,7 @@ data:extend({
     name = "tunnel-entrance-rampant",
     flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
     icon = "__base__/graphics/icons/small-scorchmark.png",
+    icon_size = 32,
     subgroup = "grass",
     order = "b[decorative]-k[tunnel-entrance]-a[big]",
     collision_box = {{-1.3, -1.3}, {1.3, 1.3}},

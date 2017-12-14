@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.16.0
+Date: 13. 12. 2017
+  Changes:
+	- Updated info.json
+  Fixes:
+	- Fixed broken icon size prototypes
+	- Fixed create-smoke calls
+	- Fixed perimeter to radius
+	- Fixed smoke
+	- Fixed missing fire tile properties

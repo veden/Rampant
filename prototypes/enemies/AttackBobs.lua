@@ -49,7 +49,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",
@@ -104,7 +104,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 2,
+		radius = 2,
 		action_delivery =
 		    {
 			type = "instant",
@@ -148,7 +148,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 2,
+		radius = 2,
 		action_delivery =
 		    {
 			type = "instant",
@@ -219,7 +219,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",
@@ -301,7 +301,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",
@@ -345,7 +345,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",
@@ -397,7 +397,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",
@@ -468,7 +468,7 @@ makeStream({
 	    },
 	    {
 		type = "area",
-		perimeter = 3,
+		radius = 3,
 		action_delivery =
 		    {
 			type = "instant",

@@ -8,6 +8,7 @@ function biterFunctions.makeBiter(biterAttributes, biterAttack, biterResistances
 	type = "unit",
 	name = biterAttributes.name,
 	icon = "__base__/graphics/icons/small-biter.png",
+	icon_size = 32,
 	flags = {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
 	max_health = biterAttributes.health,
 	order = "b-b-a",
@@ -42,6 +43,7 @@ function biterFunctions.makeSpitter(biterAttributes, biterAttack, biterResistanc
 	type = "unit",
 	name = biterAttributes.name,
 	icon = "__base__/graphics/icons/small-spitter.png",
+	icon_size = 32,
 	flags = {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
 	max_health = biterAttributes.health,
 	order = "b-b-a",
@@ -91,7 +93,7 @@ function biterFunctions.createSuicideAttack(attributes)
 					 type = "nested-result",
 					 action = {
 					     type = "area",
-					     perimeter = attributes.area,
+					     radius = attributes.area,
 					     action_delivery = {
 						 type = "instant",
 						 target_effects = {
@@ -138,7 +140,7 @@ function biterFunctions.createSuicideAttack(attributes)
 					 type = "nested-result",
 					 action = {
 					     type = "area",
-					     perimeter = attributes.area,
+					     radius = attributes.area,
 					     action_delivery = {
 						 type = "instant",
 						 target_effects = {

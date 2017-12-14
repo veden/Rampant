@@ -38,7 +38,7 @@ makeStream({
 	actions = {
  	    {
 		type = "area",
-		perimeter = 2.5,
+		radius = 2.5,
 		action_delivery =
 		    {
 			type = "instant",
@@ -97,7 +97,7 @@ makeStream({
 	actions = {
  	    {
 		type = "area",
-		perimeter = 2.5,
+		radius = 2.5,
 		action_delivery =
 		    {
 			type = "instant",
@@ -157,7 +157,7 @@ makeStream({
 	actions = {
  	    {
 		type = "area",
-		perimeter = 2.5,
+		radius = 2.5,
 		action_delivery =
 		    {
 			type = "instant",

@@ -82,7 +82,7 @@ function fireUtils.makeSpreadEffect(attributes)
 			},
 		    },
 		
-		smoke =
+		trivial_smoke =
 		    {
 			{
 			    name = smokeName,
@@ -155,8 +155,8 @@ function fireUtils.makeFire(attributes)
 				target_effects =
 				    {
 					{
-					    type = "create-smoke",
-					    entity_name = smokeAddingFuelName,
+					    type = "create-trivial-smoke",
+					    smoke_name = smokeAddingFuelName,
 					    -- speed = {-0.03, 0},
 					    -- speed_multiplier = 0.99,
 					    -- speed_multiplier_deviation = 1.1,
@@ -200,11 +200,11 @@ function fireUtils.makeFire(attributes)
 		burnt_patch_alpha_variations = {
 		    -- { tile = "grass", alpha = 0.4 },
 		    -- { tile = "grass-medium", alpha = 0.4 },
-		    { tile = "grass-dry", alpha = 0.45 },
-		    { tile = "dirt", alpha = 0.3 },
-		    { tile = "dirt-dark", alpha = 0.35 },
-		    { tile = "sand", alpha = 0.24 },
-		    { tile = "sand-dark", alpha = 0.28 },
+		    -- { tile = "grass-dry", alpha = 0.45 },
+		    -- { tile = "dirt", alpha = 0.3 },
+		    -- { tile = "dirt-dark", alpha = 0.35 },
+		    -- { tile = "sand", alpha = 0.24 },
+		    -- { tile = "sand-dark", alpha = 0.28 },
 		    { tile = "stone-path", alpha = 0.26 },
 		    { tile = "concrete", alpha = 0.24 },
 		},
