@@ -13,7 +13,6 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
-local remakeChunk = chunkUtils.remakeChunk
 local createChunk = chunkUtils.createChunk
 local checkChunkPassability = chunkUtils.checkChunkPassability
 local scoreChunk = chunkUtils.scoreChunk
@@ -21,17 +20,16 @@ local registerChunkEnemies = chunkUtils.registerChunkEnemies
 
 -- module code
 
-function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack, tick)
+function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack)
     local processQueue = regionMap.processQueue
 
-    local offset = {0, 0}
-    local areaBoundingBox = {false, offset}
-    local query = {area=areaBoundingBox,
-		   force=false}
+    local filteredEntitiesQuery = regionMap.filteredEntitiesQuery
     
-    local vanillaAI = not natives.useCustomAI
+    local topOffset = filteredEntitiesQuery.area[1]
+    local bottomOffset = filteredEntitiesQuery.area[2]
     
-    local chunkTiles = regionMap.chunkTiles
+    local filteredTilesQuery = regionMap.filteredTilesQuery
+    local cliffQuery = regionMap.cliffQuery
     
     for i=#pendingStack, 1, -1 do
         local event = pendingStack[i]
@@ -41,21 +39,17 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	local x = topLeft.x
 	local y = topLeft.y
         local chunk = createChunk(x, y)
-	
-        chunk = checkChunkPassability(chunkTiles, chunk, surface)
 
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	topOffset[1] = x
+	topOffset[2] = y
+	bottomOffset[1] = x + CHUNK_SIZE
+	bottomOffset[2] = y + CHUNK_SIZE
 
-	    areaBoundingBox[1] = chunk
-	    offset[1] = x + CHUNK_SIZE
-	    offset[2] = y + CHUNK_SIZE	    
-	    
-	    if vanillaAI then
-		registerChunkEnemies(regionMap, chunk, surface, query)
-	    else
-		remakeChunk(regionMap, chunk, surface, natives, tick, query)
-	    end
-	    scoreChunk(regionMap, chunk, surface, natives, query)
+        chunk = checkChunkPassability(chunk, surface, filteredTilesQuery, cliffQuery)
+
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then	    
+	    registerChunkEnemies(regionMap, chunk, surface, filteredEntitiesQuery)
+	    scoreChunk(regionMap, chunk, surface, natives, filteredEntitiesQuery)
 	    
 	    local chunkX = chunk.x
 	    

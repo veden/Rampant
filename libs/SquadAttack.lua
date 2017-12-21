@@ -60,7 +60,7 @@ local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
 
 local function scoreAttackLocation(squad, neighborChunk)
     local damage = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage - lookupMovementPenalty(squad, neighborChunk.x, neighborChunk.y)
+    return damage - lookupMovementPenalty(squad, neighborChunk)
 end
 
 function squadAttack.squadsAttack(regionMap, surface, natives)
@@ -90,7 +90,7 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 										 getNeighborChunks(regionMap, chunkX, chunkY),
 										 scoreAttackLocation,
 										 squad)
-		    addMovementPenalty(natives, squad, chunkX, chunkY)
+		    addMovementPenalty(natives, squad, chunk)
 		    if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 			local playerBaseGenerator = getPlayerBaseGenerator(regionMap, attackChunk)
 			if (playerBaseGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
@@ -110,6 +110,7 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 			    if position then
 				attackPosition.x = position.x
 				attackPosition.y = position.y
+
 				group.set_command(attackCmd)
 				group.start_moving()
 			    else
@@ -138,17 +139,14 @@ function squadAttack.squadsBeginAttack(natives, players)
 	    local groupPosition = group.position
 	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives)
 	    
-	    local playerNearby = playersWithinProximityToPosition(players, groupPosition, 100)
-	    if playerNearby then
+	    if playersWithinProximityToPosition(players, groupPosition, 100) then
 		squad.frenzy = true
 		squad.frenzyPosition.x = groupPosition.x
 		squad.frenzyPosition.y = groupPosition.y
 	    end
 	    
-	    if (mRandom() < 0.70) then
-		squad.kamikaze = mRandom() < kamikazeThreshold
-		squad.status = SQUAD_RAIDING
-	    end
+	    squad.kamikaze = mRandom() < kamikazeThreshold
+	    squad.status = SQUAD_RAIDING
 	end
     end
 end

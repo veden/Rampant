@@ -7,6 +7,8 @@ local mapUtils = require("MapUtils")
 
 -- constants
 
+local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
+
 local DEFINES_DIRECTION_EAST = defines.direction.east
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -26,6 +28,7 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 
 local CHUNK_TICK = constants.CHUNK_TICK
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local PATH_RATING = constants.PATH_RATING
 
@@ -39,67 +42,37 @@ local mFloor = math.floor
 
 -- module code
 
-local function fullScan(chunkTiles, x, y, get_tile)
-    local endY = y + 31
-    local i = 0
-    local validTiles = 0
-    
+local function fullScan(x, y, count_entities_filtered, cliffQuery)
     local passableNorthSouth = false
     local passableEastWest = false
+
+    local area = cliffQuery.area
+    local top = area[1]
+    local bottom = area[2]
+    top[2] = y
+    bottom[2] = y + CHUNK_SIZE
+    
     for xi=x, x + 31 do
-	local northSouth = true
-	for yi=y, endY do
-	    i = i + 1
-	    local tile = get_tile(xi, yi)
-	    if not tile.collides_with("player-layer") then
-		validTiles = validTiles + 1
-		chunkTiles[i] = tile
-	    else
-		northSouth = false
-		chunkTiles[i] = nil
-	    end
-	end
-	if ((validTiles + (1024 - i)) < 615) then
-	    return 0, false, false
-	end
-	if northSouth then
+	top[1] = xi
+	bottom[1] = xi + 1
+	if (count_entities_filtered(cliffQuery) == 0) then
 	    passableNorthSouth = true
+	    break
 	end
     end
-    for yi=1, 32 do
-	local westEast = true
-	for xi=0, 992, 32 do
-	    if not chunkTiles[yi + xi] then
-		westEast = false
-		break
-	    end
-	end
-	if westEast then
+
+    top[1] = x
+    bottom[1] = x + CHUNK_SIZE    
+    for yi=y, y + 31 do
+	top[2] = yi
+	bottom[2] = yi + 1
+	if (count_entities_filtered(cliffQuery) == 0) then
 	    passableEastWest = true
 	    break
 	end
     end
-    return validTiles * 0.0009765625, passableNorthSouth, passableEastWest
-end
-
-local function spotCheck(x, y, get_tile)
-    local valid = 0
-    local i = 0
-    for offsetX = 0, 31, 5 do
-	for offsetY = 0, 31, 5 do
-	    i = i + 1
-	    local tile = get_tile(x + offsetX,
-				  y + offsetY)
-	    if not tile.collides_with("player-layer") then
-		valid = valid + 1
-	    end
-	end
-	if ((valid + (49 - i)) < 12) then
-	    return 0
-	end
-    end
     
-    return valid
+    return passableNorthSouth, passableEastWest
 end
 
 local function addEnemyStructureToChunk(regionMap, chunk, entity, base)
@@ -217,77 +190,66 @@ end
 
 -- external functions
 
-function chunkUtils.checkChunkPassability(chunkTiles, chunk, surface)   
-    local x = chunk.x
-    local y = chunk.y
+function chunkUtils.checkChunkPassability(chunk, surface, filteredTilesQuery, cliffQuery)
+    local count_tiles_filtered = surface.count_tiles_filtered
+    local count_entities_filtered = surface.count_entities_filtered
     
-    local get_tile = surface.get_tile
+    local passScore = 0
+    for i=1,#WATER_TILE_NAMES do
+	filteredTilesQuery.name = WATER_TILE_NAMES[i]
+	passScore = passScore + count_tiles_filtered(filteredTilesQuery)
+    end
 
-    --[[
-	0-12 represents water chunk
-	13-44 chunk requires full scan
-	45-49 assume chunk is passable in all directions
-    --]]
-    local cleanSpotCheck = spotCheck(x, y, get_tile)
-
-    local pass = CHUNK_ALL_DIRECTIONS
-    if (cleanSpotCheck < 13) then
-	pass = CHUNK_IMPASSABLE
-    elseif (cleanSpotCheck < 45) then
-	local rating, passableNorthSouth, passableEastWest = fullScan(chunkTiles, x, y, get_tile)
-	chunk[PATH_RATING] = rating
-	if (rating < 0.6) then
-	    pass = CHUNK_IMPASSABLE
-	else
-	    if passableEastWest and passableNorthSouth then
-		pass = CHUNK_ALL_DIRECTIONS
-	    elseif passableEastWest then
-		pass = CHUNK_EAST_WEST
-	    elseif passableNorthSouth then
-		pass = CHUNK_NORTH_SOUTH
-	    else
-		pass = CHUNK_IMPASSABLE
-	    end
+    passScore = 1 - (passScore * 0.0009765625)
+    
+    local pass = CHUNK_IMPASSABLE
+    if (passScore >= 0.60) then
+	local passableNorthSouth, passableEastWest = fullScan(chunk.x, chunk.y, count_entities_filtered, cliffQuery)
+	if passableEastWest and passableNorthSouth then
+	    pass = CHUNK_ALL_DIRECTIONS
+	elseif passableEastWest then
+	    pass = CHUNK_EAST_WEST
+	elseif passableNorthSouth then
+	    pass = CHUNK_NORTH_SOUTH
 	end
-    else
-	chunk[PATH_RATING] = 1
     end
     if (pass == CHUNK_IMPASSABLE) then
 	return SENTINEL_IMPASSABLE_CHUNK
     else
 	chunk[PASSABLE] = pass
+	chunk[PATH_RATING] = passScore
 	return chunk
     end
 end
 
-function chunkUtils.remakeChunk(regionMap, chunk, surface, natives, tick, tempQuery)
-    tempQuery.force = "enemy"
-    local enemies = surface.find_entities_filtered(tempQuery)
+-- function chunkUtils.remakeChunk(regionMap, chunk, surface, natives, tick, tempQuery)
+--     tempQuery.force = "enemy"
+--     local enemies = surface.find_entities_filtered(tempQuery)
 
-    local points = 0
-    for f=1, #enemies do
-	local enemy = enemies[f]
-	local entityType = enemies[f].type
-	if not ((enemy.name == "small-tendril-biter-rampant") or (enemy.name == "biter-spawner-hive-rampant")) then
-	    if (entityType == "unit-spawner") then
-		points = points + 3
-	    elseif (entityType == "turret") then
-		points = points + 2
-	    elseif (entityType == "unit") then
-		points = points + 1
-	    end
-	    enemy.destroy()
-	end
-    end
-    -- local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
-    -- if foundBase then
-    -- 	foundBase.upgradePoints = foundBase.upgradePoints + points
-    -- end    
-end
+--     local points = 0
+--     for f=1, #enemies do
+-- 	local enemy = enemies[f]
+-- 	local entityType = enemies[f].type
+-- 	if not ((enemy.name == "small-tendril-biter-rampant") or (enemy.name == "biter-spawner-hive-rampant")) then
+-- 	    if (entityType == "unit-spawner") then
+-- 		points = points + 3
+-- 	    elseif (entityType == "turret") then
+-- 		points = points + 2
+-- 	    elseif (entityType == "unit") then
+-- 		points = points + 1
+-- 	    end
+-- 	    enemy.destroy()
+-- 	end
+--     end
+--     -- local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
+--     -- if foundBase then
+--     -- 	foundBase.upgradePoints = foundBase.upgradePoints + points
+--     -- end    
+-- end
 
-function chunkUtils.registerChunkEnemies(regionMap, chunk, surface, tempQuery)
-    tempQuery.force = "enemy"
-    local enemies = surface.find_entities_filtered(tempQuery)
+function chunkUtils.registerChunkEnemies(regionMap, chunk, surface, filteredEntitiesQuery)
+    filteredEntitiesQuery.force = "enemy"
+    local enemies = surface.find_entities_filtered(filteredEntitiesQuery)
 
     for i=1, #enemies do
 	local enemy = enemies[i]
@@ -304,6 +266,10 @@ end
 
 function chunkUtils.getWormCount(regionMap, chunk)
     return regionMap.chunkToWorms[chunk] or 0
+end
+
+function chunkUtils.getEnemyStructureCount(regionMap, chunk)
+    return (regionMap.chunkToNests[chunk] or 0) + (regionMap.chunkToWorms[chunk] or 0)
 end
 
 function chunkUtils.getRetreatTick(regionMap, chunk)
@@ -342,14 +308,14 @@ function chunkUtils.addPlayerBaseGenerator(regionMap, chunk, playerGenerator)
     regionMap.chunkToPlayerBase[chunk] = regionMap.chunkToPlayerBase[chunk] + playerGenerator
 end
 
-function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, tempQuery)
-    tempQuery.force = nil
-    tempQuery.type = "resource"
-    chunkUtils.setResourceGenerator(regionMap, chunk, surface.count_entities_filtered(tempQuery) * 0.001)
+function chunkUtils.scoreChunk(regionMap, chunk, surface, natives, filteredEntitiesQuery)
+    filteredEntitiesQuery.force = nil
+    filteredEntitiesQuery.type = "resource"
+    chunkUtils.setResourceGenerator(regionMap, chunk, surface.count_entities_filtered(filteredEntitiesQuery) * 0.001)
     
-    tempQuery.type = nil
-    tempQuery.force = "player"
-    local entities = surface.find_entities_filtered(tempQuery)
+    filteredEntitiesQuery.type = nil
+    filteredEntitiesQuery.force = "player"
+    local entities = surface.find_entities_filtered(filteredEntitiesQuery)
 
     local playerObjects = 0
     local safeBuildings = natives.safeBuildings

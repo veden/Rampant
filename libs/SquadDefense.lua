@@ -40,8 +40,7 @@ local findMovementPosition = movementUtils.findMovementPosition
 local getRetreatTick = chunkUtils.getRetreatTick
 local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
 local setRetreatTick = chunkUtils.setRetreatTick
-local getNestCount = chunkUtils.getNestCount
-local getWormCount = chunkUtils.getWormCount
+local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
 
 -- module code
 
@@ -50,7 +49,7 @@ local function scoreRetreatLocation(regionMap, neighborChunk)
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, natives, tick)
-    if (tick - getRetreatTick(regionMap, chunk) > INTERVAL_LOGIC) and (getNestCount(regionMap, chunk) == 0) and (getWormCount(regionMap, chunk) == 0) then
+    if (tick - getRetreatTick(regionMap, chunk) > INTERVAL_LOGIC) and (getEnemyStructureCount(regionMap, chunk) == 0) then
 	local performRetreat = false
 	local enemiesToSquad = nil
 	
@@ -97,7 +96,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 			    newSquad.rabid = true
 			end
 		    end
-		    addMovementPenalty(natives, newSquad, chunk.x, chunk.y)
+		    addMovementPenalty(natives, newSquad, chunk)
 		end
 	    end
 	end

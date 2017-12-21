@@ -150,11 +150,15 @@ function tests.tunnelTest()
     game.surfaces[1].create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
 end
 
-function tests.createEnemy(x)
+function tests.createEnemy(x,d)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    return game.surfaces[1].create_entity({name=x, position={chunkX, chunkY}})
+    local a = {name=x, position={chunkX, chunkY}}
+    if d then
+	a['direction'] = d
+    end
+    return game.surfaces[1].create_entity(a)
 end
 
 function tests.registeredNest(x)
