@@ -16,10 +16,12 @@ constants.VERSION_26 = 26
 constants.VERSION_27 = 27
 constants.VERSION_28 = 28
 constants.VERSION_33 = 33
-constants.VERSION_35 = 35
+constants.VERSION_36 = 36
 
 
 -- misc
+
+constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-green" }
 
 constants.CHUNK_SIZE_DIVIDER = 0.03125
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score

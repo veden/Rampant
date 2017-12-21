@@ -39,11 +39,11 @@ function movementUtils.findMovementPosition(surface, position, distort)
     return (distort and distortPosition(pos)) or pos
 end
 
-function movementUtils.addMovementPenalty(natives, units, x, y)
+function movementUtils.addMovementPenalty(natives, units, chunk)
     local penalties = units.penalties
     for i=1,#penalties do
         local penalty = penalties[i]
-        if (penalty.x == x) and (penalty.y == y) then
+        if (penalty.c == chunk) then
             penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
 	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
 		local group = units.group
@@ -60,9 +60,10 @@ function movementUtils.addMovementPenalty(natives, units, x, y)
     if (#penalties == 7) then
         tableRemove(penalties, 7)
     end
-    tableInsert(penalties, 1, { v = MOVEMENT_PHEROMONE_GENERATOR_AMOUNT,
-                                x = x,
-                                y = y })
+    tableInsert(penalties,
+		1,
+		{ v = MOVEMENT_PHEROMONE_GENERATOR_AMOUNT,
+		  c = chunk })
 end
 
 function movementUtils.lookupMovementPenalty(squad, x, y)

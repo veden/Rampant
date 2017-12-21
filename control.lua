@@ -154,12 +154,14 @@ local function rebuildRegionMap()
 				    SENTINEL_IMPASSABLE_CHUNK,
 				    SENTINEL_IMPASSABLE_CHUNK,
 				    SENTINEL_IMPASSABLE_CHUNK }
-    regionMap.chunkTiles = {}
     regionMap.position = {x=0,
 			  y=0}
-    for i=1,1024 do
-	regionMap.chunkTiles[i] = nil
-    end
+
+    --this is shared between two different queries
+    local sharedFilterArea = {{0, 0}, {0, 0}}
+    regionMap.filteredEntitiesQuery = { area=sharedFilterArea, force=false }
+    regionMap.cliffQuery = { type="cliff", area={{0, 0}, {0, 0}} }
+    regionMap.filteredTilesQuery = { name="", area=sharedFilterArea }
 
     -- switched over to tick event
     regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
