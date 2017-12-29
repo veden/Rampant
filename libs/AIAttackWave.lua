@@ -46,7 +46,7 @@ local getRallyTick = chunkUtils.getRallyTick
 local setRallyTick = chunkUtils.setRallyTick
 
 local getNeighborChunks = mapUtils.getNeighborChunks
-local getChunkByPosition = mapUtils.getChunkByPosition
+local getChunkByXY = mapUtils.getChunkByXY
 local scoreNeighborsForFormation = movementUtils.scoreNeighborsForFormation
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
@@ -94,7 +94,7 @@ function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
 	for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do
 	    for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
 		if (x ~= cX) and (y ~= cY) then
-		    local rallyChunk = getChunkByPosition(regionMap, x, y)
+		    local rallyChunk = getChunkByXY(regionMap, x, y)
 		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(regionMap, rallyChunk) > 0) then
 			aiAttackWave.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
 			if (natives.points < AI_VENGENCE_SQUAD_COST) and (#natives.squads < natives.maxSquads) then

@@ -42,16 +42,16 @@ local playerScent = pheromoneUtils.playerScent
 local formSquads = aiAttackWave.formSquads
 
 local getChunkByPosition = mapUtils.getChunkByPosition
-local positionToChunkXY = mapUtils.positionToChunkXY
+local getChunkByXY = mapUtils.getChunkByXY
 
 local recycleBiters = unitGroupUtils.recycleBiters
 
 local validPlayer = playerUtils.validPlayer
 
-local setResourceGenerator = chunkUtils.setResourceGenerator
-local setPlayerBaseGenerator = chunkUtils.setPlayerBaseGenerator
+local analyzeChunk = chunkUtils.analyzeChunk
+
 local getNestCount = chunkUtils.getNestCount
-local getWormCount = chunkUtils.getWormCount
+local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
 
@@ -141,8 +141,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local chunkX, chunkY = positionToChunkXY(player.character.position)
-	    local playerChunk = getChunkByPosition(regionMap, chunkX, chunkY)
+	    local playerChunk = getChunkByPosition(regionMap, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		playerScent(playerChunk)
@@ -152,17 +151,16 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local chunkX, chunkY = positionToChunkXY(player.character.position)
-	    local playerChunk = getChunkByPosition(regionMap, chunkX, chunkY)
+	    local playerChunk = getChunkByPosition(regionMap, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local vengence = (allowingAttacks and
 				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
-				      ((getWormCount(regionMap, playerChunk) > 0) or (getNestCount(regionMap, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
+				      ((getEnemyStructureCount(regionMap, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
 		
 		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
-			local chunk = getChunkByPosition(regionMap, x, y)
+			local chunk = getChunkByXY(regionMap, x, y)
 			
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
@@ -197,10 +195,6 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 
     local offset = {0, 0}
     local chunkBox = {false, offset}
-    local playerQuery = {area = chunkBox,
-			 force = "player"}
-    local resourceQuery = {area = chunkBox,
-			   type = "resource"}
     local unitCountQuery = { area = chunkBox,
 			     type = "unit",
 			     force = "enemy",
@@ -235,25 +229,7 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
-	setResourceGenerator(regionMap, chunk, surface.count_entities_filtered(resourceQuery) * 0.001)
-	
-	local entities = surface.find_entities_filtered(playerQuery)
-	local playerBaseGenerator = 0
-	local safeBuildings = natives.safeBuildings
-	for i=1,#entities do
-	    local entity = entities[i]
-	    local value = BUILDING_PHEROMONES[entity.type]
-	    if safeBuildings then
-		if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
-		    entity.destructible = false
-		end
-	    end
-	    if value then
-		playerBaseGenerator = playerBaseGenerator + value
-	    end
-	end
-
-	setPlayerBaseGenerator(regionMap, chunk, playerBaseGenerator)
+	analyzeChunk(chunk, natives, surface, regionMap)
     end
 
     if (endIndex == #processQueue) then

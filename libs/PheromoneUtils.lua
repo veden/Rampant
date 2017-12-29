@@ -30,8 +30,7 @@ local PATH_RATING = constants.PATH_RATING
 local getCardinalChunks = mapUtils.getCardinalChunks
 
 local mMax = math.max
-local getNestCount = chunkUtils.getNestCount
-local getWormCount = chunkUtils.getWormCount
+local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
 local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkUtils.getResourceGenerator
 
@@ -40,7 +39,7 @@ local getResourceGenerator = chunkUtils.getResourceGenerator
 function pheromoneUtils.scents(regionMap, chunk)
     chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + getPlayerBaseGenerator(regionMap, chunk)
     local resourceGenerator = getResourceGenerator(regionMap, chunk)
-    if (resourceGenerator > 0) and (getNestCount(regionMap, chunk) == 0) and (getWormCount(regionMap, chunk) == 0) then
+    if (resourceGenerator > 0) and (getEnemyStructureCount(regionMap, chunk) == 0) then
 	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 100, 90)
     end
 end

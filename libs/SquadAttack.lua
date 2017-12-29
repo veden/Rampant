@@ -83,11 +83,10 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 	    local groupState = group.state
 	    if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
 		local groupPosition = group.position
-		local chunkX, chunkY = positionToChunkXY(groupPosition)
-		local chunk = getChunkByPosition(regionMap, chunkX, chunkY)
+		local chunk = getChunkByPosition(regionMap, groupPosition)
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
-										 getNeighborChunks(regionMap, chunkX, chunkY),
+										 getNeighborChunks(regionMap, chunk.x, chunk.y),
 										 scoreAttackLocation,
 										 squad)
 		    addMovementPenalty(natives, squad, chunk)
@@ -136,9 +135,9 @@ function squadAttack.squadsBeginAttack(natives, players)
         local squad = squads[i]
 	local group = squad.group
         if (squad.status == SQUAD_GUARDING) and group.valid then
-	    local groupPosition = group.position
 	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives)
-	    
+
+	    local groupPosition = group.position	    
 	    if playersWithinProximityToPosition(players, groupPosition, 100) then
 		squad.frenzy = true
 		squad.frenzyPosition.x = groupPosition.x

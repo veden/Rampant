@@ -25,10 +25,19 @@ local mFloor = math.floor
 
 -- module code
 
-function mapUtils.getChunkByPosition(regionMap, x, y)
+function mapUtils.getChunkByXY(regionMap, x, y)
     local chunkX = regionMap[x]
     if chunkX then
         return chunkX[y] or SENTINEL_IMPASSABLE_CHUNK
+    end
+    return SENTINEL_IMPASSABLE_CHUNK
+end
+
+function mapUtils.getChunkByPosition(regionMap, position)
+    local chunkX = regionMap[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
+    if chunkX then
+	local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+        return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
     end
     return SENTINEL_IMPASSABLE_CHUNK
 end
@@ -126,33 +135,32 @@ function mapUtils.getCardinalChunks(regionMap, x, y)
     return neighbors
 end
 
-function mapUtils.positionFromDirectionAndChunk(direction, startPosition, position, scaling)
+function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPosition, scaling)
     if (direction == 1) then
-	position.x = startPosition.x - CHUNK_SIZE * scaling
-	position.y = startPosition.y - CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x - CHUNK_SIZE * scaling
+	endPosition.y = startPosition.y - CHUNK_SIZE * scaling
     elseif (direction == 2) then
-	position.x = startPosition.x
-	position.y = startPosition.y - CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x
+	endPosition.y = startPosition.y - CHUNK_SIZE * scaling
     elseif (direction == 3) then
-	position.x = startPosition.x + CHUNK_SIZE * scaling
-	position.y = startPosition.y - CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
+	endPosition.y = startPosition.y - CHUNK_SIZE * scaling
     elseif (direction == 4) then
-	position.x = startPosition.x - CHUNK_SIZE * scaling
-	position.y = startPosition.y
+	endPosition.x = startPosition.x - CHUNK_SIZE * scaling
+	endPosition.y = startPosition.y
     elseif (direction == 5) then
-	position.x = startPosition.x + CHUNK_SIZE * scaling
-	position.y = startPosition.y
+	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
+	endPosition.y = startPosition.y
     elseif (direction == 6) then
-	position.x = startPosition.x - CHUNK_SIZE * scaling 
-	position.y = startPosition.y + CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x - CHUNK_SIZE * scaling 
+	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
     elseif (direction == 7) then
-	position.x = startPosition.x
-	position.y = startPosition.y + CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x
+	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
     elseif (direction == 8) then
-	position.x = startPosition.x + CHUNK_SIZE * scaling
-	position.y = startPosition.y + CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
+	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
     end
-    return position
 end
 
 return mapUtils

@@ -81,7 +81,5 @@
   
   (define (run)
     (copyFiles modFolder)
-    ;;(copyFiles zipModFolder)
     ;;(makeZip modFolder)
-    )
-  )
+    (system*/exit-code "/data/games/factorio/bin/x64/factorio")))

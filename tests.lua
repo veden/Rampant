@@ -230,25 +230,6 @@ function tests.baseStats()
     end
 end
 
-function tests.baseTiles()
-    local natives = global.natives
-    for i=1, #natives.bases do
-	local base = natives.bases[i]
-	-- local color = "concrete"
-	-- if (i % 3 == 0) then
-	--     color = "deepwater"
-	-- elseif (i % 2 == 0) then
-	--     color = "water"
-	-- end
-	-- for x=1,#base.chunks do
-	--     local chunk = base.chunks[x]
-	--     chunkUtils.colorChunk(chunk.pX, chunk.pY, color, game.surfaces[1])
-	-- end
-	chunkUtils.colorChunk(base.x, base.y, "deepwater-green", game.surfaces[1])
-    end
-end
-
-
 function tests.clearBases()
 
     local surface = game.surfaces[1]
@@ -284,40 +265,17 @@ function tests.clearBases()
     end
 end
 
-function tests.colorResourcePoints()
-    local chunks = global.regionMap.processQueue
-    for i=1,#chunks do
-	local chunk = chunks[i]
-	local color = "concrete"
-	if (chunk[constants.RESOURCE_GENERATOR] ~= 0) and (chunk[constants.NEST_COUNT] ~= 0) then
-	    color = "hazard-concrete-left"
-	elseif (chunk[constants.RESOURCE_GENERATOR] ~= 0) then
-	    color = "deepwater"
-	elseif (chunk[constants.NEST_COUNT] ~= 0) then
-	    color = "water-green"
-	end
-	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
-    end    
-end
-
 function tests.mergeBases()
     local natives = global.natives
     baseUtils.mergeBases(natives)
 end
 
-function tests.showMovementGrid()
+function tests.exportAiState()
+    game.write_file("rampantState.txt", "", false)
     local chunks = global.regionMap.processQueue
     for i=1,#chunks do
 	local chunk = chunks[i]
-	local color = "concrete"
-	if (chunk[constants.PASSABLE] == constants.CHUNK_ALL_DIRECTIONS) then
-	    color = "hazard-concrete-left"
-	elseif (chunk[constants.PASSABLE] == constants.CHUNK_NORTH_SOUTH) then
-	    color = "deepwater"
-	elseif (chunk[constants.PASSABLE] == constants.CHUNK_EAST_WEST) then
-	    color = "water-green"
-	end
-	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+	game.write_file("rampantState.txt", serpent.dump(chunk) .. "\n", true)
     end
 end
 

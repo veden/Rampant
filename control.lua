@@ -88,8 +88,7 @@ local function onIonCannonFired(event)
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
 	end
-	local chunkX, chunkY = positionToChunkXY(event.position)
-	local chunk = getChunkByPosition(regionMap, chunkX, chunkY)
+	local chunk = getChunkByPosition(regionMap, event.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    rallyUnits(chunk, regionMap, surface, natives, event.tick)
 	end
@@ -158,10 +157,13 @@ local function rebuildRegionMap()
 			  y=0}
 
     --this is shared between two different queries
-    local sharedFilterArea = {{0, 0}, {0, 0}}
-    regionMap.filteredEntitiesQuery = { area=sharedFilterArea, force=false }
-    regionMap.cliffQuery = { type="cliff", area={{0, 0}, {0, 0}} }
-    regionMap.filteredTilesQuery = { name="", area=sharedFilterArea }
+    regionMap.area = {{0, 0}, {0, 0}}
+    regionMap.countResourcesQuery = { area=regionMap.area, type="resource" }
+    regionMap.filteredEntitiesEnemyQuery = { area=regionMap.area, force="enemy" }
+    regionMap.filteredEntitiesEnemyTypeQuery = { area=regionMap.area, force="enemy", type="unit-spawner" }
+    regionMap.filteredEntitiesPlayerQuery = { area=regionMap.area, force="player" }
+    regionMap.canPlaceQuery = { name="", position={0,0} }
+    regionMap.filteredTilesQuery = { name="", area=regionMap.area }
 
     -- switched over to tick event
     regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
@@ -253,28 +255,28 @@ local function onTick(event)
 	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 	scanMap(regionMap, surface, natives)
 
-	if (tick == regionMap.logicTick) then
-	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
+	-- if (tick == regionMap.logicTick) then
+	--     regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
-	    local players = gameRef.players
+	--     local players = gameRef.players
 
-	    planning(natives,
-	    	     gameRef.forces.enemy.evolution_factor,
-	    	     tick,
-	    	     surface)
+	--     planning(natives,
+	--     	     gameRef.forces.enemy.evolution_factor,
+	--     	     tick,
+	--     	     surface)
 	    
-	    cleanSquads(natives)
-	    regroupSquads(natives)
+	--     cleanSquads(natives)
+	--     regroupSquads(natives)
 	    
-	    processPlayers(players, regionMap, surface, natives, tick)
+	--     processPlayers(players, regionMap, surface, natives, tick)
 
-	    if natives.useCustomAI then
-	    	processBases(regionMap, surface, natives, tick)
-	    end
+	--     if natives.useCustomAI then
+	--     	processBases(regionMap, surface, natives, tick)
+	--     end
 	    
-	    squadsBeginAttack(natives, players)
-	    squadsAttack(regionMap, surface, natives)
-	end
+	--     squadsBeginAttack(natives, players)
+	--     squadsAttack(regionMap, surface, natives)
+	-- end
 
 	processMap(regionMap, surface, natives, tick)
     end
@@ -299,19 +301,18 @@ local function onDeath(event)
     local surface = entity.surface
     if (surface.index == 1) then
 	local entityPosition = entity.position
-	local chunkX, chunkY = positionToChunkXY(entityPosition)
+	local chunk = getChunkByPosition(regionMap, entityPosition)
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
-		local deathChunk = getChunkByPosition(regionMap, chunkX, chunkY)
 		
-		if (deathChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
-		    deathScent(deathChunk)
+		    deathScent(chunk)
 		    
-		    if event.force and (event.force.name == "player") and (deathChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
+		    if event.force and (event.force.name == "player") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
 			
-			retreatUnits(deathChunk,
+			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
 				     regionMap, 
@@ -320,7 +321,7 @@ local function onDeath(event)
 				     tick)
 			
 			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    rallyUnits(deathChunk, regionMap, surface, natives, tick)
+			    rallyUnits(chunk, regionMap, surface, natives, tick)
 			end
 		    end
                 end
@@ -332,9 +333,8 @@ local function onDeath(event)
 	    local creditNatives = false
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
-		local victoryChunk = getChunkByPosition(regionMap, chunkX, chunkY)
-		if (victoryChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    victoryScent(victoryChunk, entity.type)
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+		    victoryScent(chunk, entity.type)
 		end
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
@@ -403,15 +403,13 @@ remote.add_interface("rampantTests",
 			 cheatMode = tests.cheatMode,
 			 gaussianRandomTest = tests.gaussianRandomTest,
 			 reveal = tests.reveal,
-			 showMovementGrid = tests.showMovementGrid,
 			 baseStats = tests.baseStats,
-			 baseTiles = tests.baseTiles,
 			 mergeBases = tests.mergeBases,
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
 			 registeredNest = tests.registeredNest,
-			 colorResourcePoints = tests.colorResourcePoints,
-			 stepAdvanceTendrils = tests.stepAdvanceTendrils
+			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
+			 exportAiState = tests.exportAiState
 		     }
 )
 
