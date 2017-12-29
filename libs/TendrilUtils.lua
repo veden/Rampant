@@ -67,7 +67,7 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 	return
     end
     local tendrilPosition = tendrilUnit.position
-    local chunk = getChunkByPosition(regionMap, tendrilPosition.x, tendrilPosition.y)
+    local chunk = getChunkByPosition(regionMap, tendrilPosition)
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	local tendrilPath,tendrilDirection = scoreNeighborsForResource(chunk,
 								       getNeighborChunks(regionMap, chunk.x, chunk.y),

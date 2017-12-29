@@ -18,7 +18,6 @@ constants.VERSION_28 = 28
 constants.VERSION_33 = 33
 constants.VERSION_36 = 36
 
-
 -- misc
 
 constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-green" }
@@ -30,12 +29,9 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
 
 constants.PROCESS_QUEUE_SIZE = 400
 constants.SCAN_QUEUE_SIZE = 5
-constants.ITEM_COLLECTOR_QUEUE_SIZE = 6
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
 constants.PROCESS_PLAYER_BOUND = 128
-
-constants.ITEM_COLLECTOR_MAX_QUEUE_SIZE = 20
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
@@ -46,22 +42,6 @@ constants.INTERVAL_LOGIC = 38
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
 constants.DEV_CUSTOM_AI = false
-
--- mask
-
-constants.MASK_PASSABLE = 3
-constants.MASK_PASSABLE_SIZE = 2
-constants.MASK_NEST_COUNT = 511
-constants.MASK_NEST_COUNT_SIZE = 9
-constants.MASK_WORM_COUNT = 511
-constants.MASK_WORM_COUNT_SIZE = 9
-constants.MASK_PASSABLE_AND_NEST_COUNT = 2047
-constants.MASK_PASSABLE_AND_NEST_COUNT_SIZE = 11
-
-
--- item collector
-
-constants.ITEM_COLLECTOR_DISTANCE = 50
 
 -- chunk properties
 
@@ -75,6 +55,8 @@ constants.CHUNK_IMPASSABLE = 0
 constants.CHUNK_NORTH_SOUTH = 1
 constants.CHUNK_EAST_WEST = 2
 constants.CHUNK_ALL_DIRECTIONS = 3
+constants.CHUNK_PLAYER_BORDER = 4
+constants.CHUNK_PLAYER_INTERIOR = 5
 
 -- ai
 

@@ -14,22 +14,17 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- imported functions
 
 local createChunk = chunkUtils.createChunk
-local checkChunkPassability = chunkUtils.checkChunkPassability
-local scoreChunk = chunkUtils.scoreChunk
-local registerChunkEnemies = chunkUtils.registerChunkEnemies
+local analyzeChunk = chunkUtils.analyzeChunk
 
 -- module code
 
 function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack)
     local processQueue = regionMap.processQueue
 
-    local filteredEntitiesQuery = regionMap.filteredEntitiesQuery
+    local area = regionMap.area
     
-    local topOffset = filteredEntitiesQuery.area[1]
-    local bottomOffset = filteredEntitiesQuery.area[2]
-    
-    local filteredTilesQuery = regionMap.filteredTilesQuery
-    local cliffQuery = regionMap.cliffQuery
+    local topOffset = area[1]
+    local bottomOffset = area[2]
     
     for i=#pendingStack, 1, -1 do
         local event = pendingStack[i]
@@ -45,12 +40,9 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = checkChunkPassability(chunk, surface, filteredTilesQuery, cliffQuery)
+        chunk = analyzeChunk(chunk, natives, surface, regionMap)
 
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then	    
-	    registerChunkEnemies(regionMap, chunk, surface, filteredEntitiesQuery)
-	    scoreChunk(regionMap, chunk, surface, natives, filteredEntitiesQuery)
-	    
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then	    	    
 	    local chunkX = chunk.x
 	    
 	    if regionMap[chunkX] == nil then

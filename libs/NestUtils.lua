@@ -33,7 +33,7 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 function nestUtils.buildNest(regionMap, base, surface, targetPosition, name)
     local position = surface.find_non_colliding_position(name, targetPosition, DOUBLE_CHUNK_SIZE, 2)
-    local chunk = getChunkByPosition(regionMap, position.x, position.y)
+    local chunk = getChunkByPosition(regionMap, position)
     local nest = nil
     if position and (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[NEST_COUNT] < 3) then
 	local biterSpawner = {name=name, position=position}
