@@ -255,28 +255,28 @@ local function onTick(event)
 	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 	scanMap(regionMap, surface, natives)
 
-	-- if (tick == regionMap.logicTick) then
-	--     regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
+	if (tick == regionMap.logicTick) then
+	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
-	--     local players = gameRef.players
+	    local players = gameRef.players
 
-	--     planning(natives,
-	--     	     gameRef.forces.enemy.evolution_factor,
-	--     	     tick,
-	--     	     surface)
+	    planning(natives,
+	    	     gameRef.forces.enemy.evolution_factor,
+	    	     tick,
+	    	     surface)
 	    
-	--     cleanSquads(natives)
-	--     regroupSquads(natives)
+	    cleanSquads(natives)
+	    regroupSquads(natives)
 	    
-	--     processPlayers(players, regionMap, surface, natives, tick)
+	    processPlayers(players, regionMap, surface, natives, tick)
 
-	--     if natives.useCustomAI then
-	--     	processBases(regionMap, surface, natives, tick)
-	--     end
+	    if natives.useCustomAI then
+	    	processBases(regionMap, surface, natives, tick)
+	    end
 	    
-	--     squadsBeginAttack(natives, players)
-	--     squadsAttack(regionMap, surface, natives)
-	-- end
+	    squadsBeginAttack(natives, players)
+	    squadsAttack(regionMap, surface, natives)
+	end
 
 	processMap(regionMap, surface, natives, tick)
     end
