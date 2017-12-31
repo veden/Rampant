@@ -270,6 +270,39 @@ function tests.mergeBases()
     baseUtils.mergeBases(natives)
 end
 
+
+function tests.showMovementGrid()
+    local chunks = global.regionMap.processQueue
+    for i=1,#chunks do
+	local chunk = chunks[i]
+	local color = "concrete"
+	if (chunk[constants.PASSABLE] == constants.CHUNK_ALL_DIRECTIONS) then
+	    color = "hazard-concrete-left"
+	elseif (chunk[constants.PASSABLE] == constants.CHUNK_NORTH_SOUTH) then
+	    color = "deepwater"
+	elseif (chunk[constants.PASSABLE] == constants.CHUNK_EAST_WEST) then
+	    color = "water-green"
+	end
+	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+    end
+end
+
+function tests.colorResourcePoints()
+    local chunks = global.regionMap.processQueue
+    for i=1,#chunks do
+	local chunk = chunks[i]
+	local color = "concrete"
+	if (chunk[constants.RESOURCE_GENERATOR] ~= 0) and (chunk[constants.NEST_COUNT] ~= 0) then
+	    color = "hazard-concrete-left"
+	elseif (chunk[constants.RESOURCE_GENERATOR] ~= 0) then
+	    color = "deepwater"
+	elseif (chunk[constants.NEST_COUNT] ~= 0) then
+	    color = "water-green"
+	end
+	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+    end    
+end
+
 function tests.exportAiState()
     game.write_file("rampantState.txt", "", false)
     local chunks = global.regionMap.processQueue
