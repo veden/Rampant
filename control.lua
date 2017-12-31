@@ -403,11 +403,13 @@ remote.add_interface("rampantTests",
 			 cheatMode = tests.cheatMode,
 			 gaussianRandomTest = tests.gaussianRandomTest,
 			 reveal = tests.reveal,
+			 showMovementGrid = tests.showMovementGrid,
 			 baseStats = tests.baseStats,
 			 mergeBases = tests.mergeBases,
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
 			 registeredNest = tests.registeredNest,
+			 colorResourcePoints = tests.colorResourcePoints,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 exportAiState = tests.exportAiState
 		     }

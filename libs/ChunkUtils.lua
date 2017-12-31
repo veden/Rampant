@@ -392,6 +392,17 @@ function chunkUtils.createChunk(topX, topY)
     return chunk
 end
 
+
+function chunkUtils.colorChunk(x, y, tileType, surface)
+    local tiles = {}
+    for xi=x+5, x + 27 do
+	for yi=y+5, y + 27 do
+	    tiles[#tiles+1] = {name=tileType, position={xi, yi}}
+	end
+    end
+    surface.set_tiles(tiles, false)
+end
+
 function chunkUtils.registerEnemyBaseStructure(regionMap, entity, base)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
