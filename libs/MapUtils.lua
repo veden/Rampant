@@ -161,6 +161,7 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
 	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
 	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
     end
+    return endPosition
 end
 
 return mapUtils

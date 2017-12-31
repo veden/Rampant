@@ -6,10 +6,15 @@
 
   (define CHUNK_SIZE 32)
 
+  (define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0))
+
+  (define windowX 500)
+  (define windowY 0)
   (define windowWidth 1024)
   (define windowHeight 1024)
 
-  (define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0))
+  (define activeHighlight null)
+  (define activeLayer "movement")
 
   (define (normalize v low high)
     (/ (- v low)
@@ -17,79 +22,9 @@
 
   (define (roundTo x digits)
     (* (floor (/ x digits))
-       digits))
-
+       digits))    
   
-  (define (refresh dc)
-    (drawFrame dc))
-  
-  (define frameWithEvents% (class frame%
-                             (define/override (on-subwindow-char r event)
-                               (when (eq? (send event get-key-code) #\c)
-                                 (exit))
-                               (super on-subwindow-char r event))
-                             (super-new)))
-
-  (define (findChunk chunkLookups x y)
-    (hash-ref chunkLookups (list x y) INVALID_CHUNK))
-
-
-  (define (chunkX->screenX x minX maxX tileWidth)
-    (roundTo (* (normalize x minX maxX)
-                windowWidth)
-             tileWidth))
-
-  (define (chunkY->screenY y minY maxY tileHeight)
-    (roundTo (+ (- windowHeight
-                   (* (normalize y minY maxY)
-                      windowHeight)))
-             tileHeight))
-
-  (define (screenX->chunkX x minX tileWidth)
-    (+ (* (ceiling (/ x tileWidth))
-          CHUNK_SIZE)
-       minX))
-  
-  (define (screenY->chunkY y maxY tileHeight)
-    (- maxY
-       (* (floor (/ y tileHeight))
-          CHUNK_SIZE)))
-  
-  (define (displayHighlight dc x y)
-    ;; (print (list x y))
-    ;; (display "\n")
-    ;; (print (list (screenX->chunkX x) (screenY->chunkY y)))
-    ;; (display "\n---\n")
-    (let ((chunk (findChunk (screenX->chunkX x)
-                            (screenY->chunkY y))))
-      (set! activeHighlight chunk))
-    (refresh dc))
-  
-  (define canvasWithEvents% (class canvas%
-                              (define/override (on-event event)
-                                (match (send event get-event-type)
-                                  ((== 'motion) (displayChunk (send event get-x) (send event get-y)))
-                                  ((== 'left-down) (displayHighlight (send event get-x) (send event get-y)))
-                                  ((== 'right-down) (begin (set! activeHighlight null)
-                                                           (refresh )
-                                                           ))
-                                  (_ #t)))
-                              (super-new)))
-  
-  (define (newFrame width height x y [label ""])
-    (new frameWithEvents%
-         [label label]
-         [width width]
-         [height height]
-         [x x]
-         [y y]))
-
-
-  (define activeHighlight null)
-  (define activeLayer "movement")
-
-  
-  (define (showVisual aiState windowX windowY windowWidth windowHeight)
+  (define (showVisual aiState)
     (match-let* (((AiState chunks chunkLookups chunkMinMaxes) aiState)
                  ((ChunkRange (MinMax minX maxX)
                               (MinMax minY maxY)
@@ -103,6 +38,31 @@
 
       ;; (pretty-display aiState)
       ;; (display "\n")
+
+      (define frameWithEvents% (class frame%
+                                 (define/override (on-subwindow-char r event)
+                                   (when (eq? (send event get-key-code) #\c)
+                                     (exit))
+                                   (super on-subwindow-char r event))
+                                 (super-new)))
+      
+      (define canvasWithEvents% (class canvas%
+                                  (define/override (on-event event)
+                                    (match (send event get-event-type)
+                                      ((== 'motion) (displayChunk (send event get-x) (send event get-y)))
+                                      ((== 'left-down) (displayHighlight (send event get-x) (send event get-y)))
+                                      ((== 'right-down) (begin (set! activeHighlight null)
+                                                               (refresh)))
+                                      (_ #t)))
+                                  (super-new)))
+      
+      (define (newFrame width height x y [label ""])
+        (new frameWithEvents%
+             [label label]
+             [width width]
+             [height height]
+             [x x]
+             [y y]))
 
       (define templates (list '(250 500 0 0 "controls")
                               (list windowWidth windowHeight windowX windowY "map")))
@@ -135,7 +95,26 @@
       ;;              (exact->inexact tileHeight)))
       ;; (display "\n")
       
+      (define (chunkX->screenX x)
+        (roundTo (* (normalize x minX maxX)
+                    windowWidth)
+                 tileWidth))
+
+      (define (chunkY->screenY y)
+        (roundTo (+ (- windowHeight
+                    (* (normalize y minY maxY)
+                       windowHeight)))
+                 tileHeight))
+
+      (define (screenX->chunkX x)
+        (+ (* (ceiling (/ x tileWidth))
+              CHUNK_SIZE)
+           minX))
       
+      (define (screenY->chunkY y)
+        (- maxY
+           (* (floor (/ y tileHeight))
+              CHUNK_SIZE)))
       
       (define (drawFrame context)
         (send context suspend-flush)
@@ -156,14 +135,26 @@
                chunks))
         (send context resume-flush))
 
+      (define (refresh)
+        (drawFrame dcMap))
 
+      (define (findChunk x y)
+        (hash-ref chunkLookups (list x y) INVALID_CHUNK))
       
       (define (displayChunk x y)
         (send siteBox set-label
               (chunk->string (findChunk (screenX->chunkX x)
                                         (screenY->chunkY y)))))
 
-      
+      (define (displayHighlight x y)
+        ;; (print (list x y))
+        ;; (display "\n")
+        ;; (print (list (screenX->chunkX x) (screenY->chunkY y)))
+        ;; (display "\n---\n")
+        (let ((chunk (findChunk (screenX->chunkX x)
+                                (screenY->chunkY y))))
+          (set! activeHighlight chunk))
+        (refresh))
 
       (define (scaleColor dc value low high)
         (define v (/ (- value low)
@@ -218,8 +209,4 @@
       'showing))
 
   (define (test)
-    (showVisual (readState "/data/games/factorio/script-output/rampantState.txt")
-                500
-                0
-                1024
-                1024)))
+    (showVisual (readState "/data/games/factorio/script-output/rampantState.txt"))))
