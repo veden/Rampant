@@ -303,12 +303,55 @@ function tests.colorResourcePoints()
     end    
 end
 
-function tests.exportAiState()
-    game.write_file("rampantState.txt", "", false)
-    local chunks = global.regionMap.processQueue
-    for i=1,#chunks do
-	local chunk = chunks[i]
-	game.write_file("rampantState.txt", serpent.dump(chunk) .. "\n", true)
+
+function tests.exportAiState(onTick)
+
+    local printState = function ()
+	local chunks = global.regionMap.processQueue
+	local s = ""
+	for i=1,#chunks do
+	    local chunk = chunks[i]
+	    
+	    s = s .. table.concat({chunk[constants.MOVEMENT_PHEROMONE],
+				   chunk[constants.BASE_PHEROMONE],
+				   chunk[constants.PLAYER_PHEROMONE],
+				   chunk[constants.RESOURCE_PHEROMONE],
+				   chunk[constants.PASSABLE],
+				   chunk[constants.CHUNK_TICK],
+				   chunk[constants.PATH_RATING],
+				   chunk.x,
+				   chunk.y,
+				   chunkUtils.getNestCount(global.regionMap, chunk),
+				   chunkUtils.getWormCount(global.regionMap, chunk),
+				   chunkUtils.getRallyTick(global.regionMap, chunk),
+				   chunkUtils.getRetreatTick(global.regionMap, chunk),
+				   chunkUtils.getResourceGenerator(global.regionMap, chunk),
+				   chunkUtils.getPlayerBaseGenerator(global.regionMap, chunk)}, ",") .. "\n"
+	end
+	game.write_file("rampantState.txt", s, false)
+    end
+    
+    return function(interval)
+	if not interval then
+	    interval = 0
+	else
+	    interval = tonumber(interval)
+	end
+
+	local wrappedTick = function (event)
+	    if (event.tick % interval == 0) then
+		printState()
+	    end
+	    onTick(event)
+	end
+
+	printState()
+	
+	if (interval > 0) then
+	    script.on_event(defines.events.on_tick, wrappedTick)
+	elseif (interval == 0) then
+	    script.on_event(defines.events.on_tick, onTick)
+	end
     end
 end
 

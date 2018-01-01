@@ -230,13 +230,11 @@ function chunkUtils.analyzeChunk(chunk, natives, surface, regionMap)
 		    entity.destructible = false
 		end
 
-		local entityScore = BUILDING_PHEROMONES[entityType] or 0
-		playerObjects = playerObjects + entityScore
+		playerObjects = playerObjects + (BUILDING_PHEROMONES[entityType] or 0)
 	    end
 	else
 	    for i=1, #entities do
-		local entityScore = BUILDING_PHEROMONES[entities[i].type] or 0
-		playerObjects = playerObjects + entityScore
+		playerObjects = playerObjects + (BUILDING_PHEROMONES[entities[i].type] or 0)
 	    end
 	end
 
@@ -251,11 +249,9 @@ function chunkUtils.analyzeChunk(chunk, natives, surface, regionMap)
 	chunkUtils.setWormCount(regionMap, chunk, worms)
 
 	local resources = surface.count_entities_filtered(regionMap.countResourcesQuery) * 0.001
-
-	local total = nests + worms + resources
-
-	if (playerObjects > 0) then
-	    pass = CHUNK_PLAYER_BORDER
+	
+	if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
+	    pass = CHUNK_ALL_DIRECTIONS
 	end
 	
 	chunkUtils.setPlayerBaseGenerator(regionMap, chunk, playerObjects)
@@ -391,7 +387,6 @@ function chunkUtils.createChunk(topX, topY)
     
     return chunk
 end
-
 
 function chunkUtils.colorChunk(x, y, tileType, surface)
     local tiles = {}

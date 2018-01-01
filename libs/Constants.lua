@@ -37,7 +37,11 @@ constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
 constants.INTERVAL_PROCESS = 19
-constants.INTERVAL_LOGIC = 38
+constants.INTERVAL_SCAN = 21
+constants.INTERVAL_CHUNK = 17
+constants.INTERVAL_LOGIC = 61
+constants.INTERVAL_SQUAD = 41
+
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
@@ -55,8 +59,8 @@ constants.CHUNK_IMPASSABLE = 0
 constants.CHUNK_NORTH_SOUTH = 1
 constants.CHUNK_EAST_WEST = 2
 constants.CHUNK_ALL_DIRECTIONS = 3
-constants.CHUNK_PLAYER_BORDER = 4
-constants.CHUNK_PLAYER_INTERIOR = 5
+-- constants.CHUNK_PLAYER_BORDER = 4
+-- constants.CHUNK_PLAYER_INTERIOR = 5
 
 -- ai
 

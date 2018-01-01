@@ -193,12 +193,9 @@ end
 function mapProcessor.scanMap(regionMap, surface, natives)
     local index = regionMap.scanIndex
 
-    local offset = {0, 0}
-    local chunkBox = {false, offset}
-    local unitCountQuery = { area = chunkBox,
-			     type = "unit",
-			     force = "enemy",
-			     limit = 301 }
+    local unitCountQuery = regionMap.filteredEntitiesEnemyUnitQuery
+    local offset = unitCountQuery.area[2]
+    local chunkBox = unitCountQuery.area[1]
 
     local processQueue = regionMap.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
@@ -206,7 +203,8 @@ function mapProcessor.scanMap(regionMap, surface, natives)
     for x=index,endIndex do
 	local chunk = processQueue[x]
 
-	chunkBox[1] = chunk
+	chunkBox[1] = chunk.x
+	chunkBox[2] = chunk.y
 	
 	offset[1] = chunk.x + CHUNK_SIZE
 	offset[2] = chunk.y + CHUNK_SIZE
