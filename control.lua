@@ -32,6 +32,10 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
+local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
+
+local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
+
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -318,6 +322,7 @@ local function onDeath(event)
     if (surface.index == 1) then
 	local entityPosition = entity.position
 	local chunk = getChunkByPosition(regionMap, entityPosition)
+	local cause = event.cause
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
 		
@@ -328,13 +333,17 @@ local function onDeath(event)
 		    if event.force and (event.force.name == "player") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
 			
+			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+			
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
-				     regionMap, 
+				     regionMap,
 				     surface, 
 				     natives,
-				     tick)
+				     tick,
+				     (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS,
+				     artilleryBlast)
 			
 			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
 			    rallyUnits(chunk, regionMap, surface, natives, tick)
@@ -343,7 +352,23 @@ local function onDeath(event)
                 end
                 
             elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
-                unregisterEnemyBaseStructure(regionMap, entity)
+		local tick = event.tick
+
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then		    
+		    unregisterEnemyBaseStructure(regionMap, entity)
+		    
+		    rallyUnits(chunk, regionMap, surface, natives, tick)
+
+		    retreatUnits(chunk,
+				 entityPosition,
+				 nil,
+				 regionMap,
+				 surface,
+				 natives,
+				 tick,
+				 RETREAT_SPAWNER_GRAB_RADIUS,
+				 (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
+		end
             end
         elseif (entity.force.name == "player") then
 	    local creditNatives = false

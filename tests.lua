@@ -29,7 +29,7 @@ function tests.pheromoneLevels(size)
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk)
+		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk) .. " " .. "n/" .. chunkUtils.getNestCount(global.regionMap, chunk) .. " " .. "w/" .. chunkUtils.getWormCount(global.regionMap, chunk)
 		    if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
 			print("=============")
 			print(chunk.x, chunk.y, str)

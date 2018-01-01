@@ -35,7 +35,7 @@ local PASSABLE = constants.PASSABLE
 
 -- imported functions
 
-local getChunkByXY = mapUtils.getChunkByXY
+local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
 
 local mFloor = math.floor
 
@@ -127,12 +127,16 @@ local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
     -- end
     
     if lookup[chunk] then
-	lookup[chunk] = lookup[chunk] - 1
+	if ((lookup[chunk] - 1) <= 0) then
+	    lookup[chunk] = nil
+	else
+	    lookup[chunk] = lookup[chunk] - 1
+	end
     end
 end
 
 local function getEntityOverlapChunks(regionMap, entity)
-    local boundingBox = entity.prototype.selection_box or entity.prototype.collision_box;
+    local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
     
     local leftTopChunk = SENTINEL_IMPASSABLE_CHUNK
     local rightTopChunk = SENTINEL_IMPASSABLE_CHUNK
@@ -172,16 +176,16 @@ local function getEntityOverlapChunks(regionMap, entity)
 	
         local rightBottomChunkX = rightTopChunkX 
         local rightBottomChunkY = leftBottomChunkY
-        
-        leftTopChunk = getChunkByXY(regionMap, leftTopChunkX, leftTopChunkY)
+	
+        leftTopChunk = getChunkByUnalignedXY(regionMap, leftTopChunkX, leftTopChunkY)
         if (leftTopChunkX ~= rightTopChunkX) then
-            rightTopChunk = getChunkByXY(regionMap, rightTopChunkX, rightTopChunkY)
+            rightTopChunk = getChunkByUnalignedXY(regionMap, rightTopChunkX, rightTopChunkY)
         end
         if (leftTopChunkY ~= leftBottomChunkY) then
-            leftBottomChunk = getChunkByXY(regionMap, leftBottomChunkX, leftBottomChunkY)
+            leftBottomChunk = getChunkByUnalignedXY(regionMap, leftBottomChunkX, leftBottomChunkY)
         end
         if (leftTopChunkX ~= rightBottomChunkX) and (leftTopChunkY ~= rightBottomChunkY) then
-            rightBottomChunk = getChunkByXY(regionMap, rightBottomChunkX, rightBottomChunkY)
+            rightBottomChunk = getChunkByUnalignedXY(regionMap, rightBottomChunkX, rightBottomChunkY)
         end
     end
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk

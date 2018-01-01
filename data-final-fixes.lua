@@ -11,14 +11,6 @@ if settings.startup["rampant-enableSwarm"] then
     end
 end
 
-for k, cliff in pairs(data.raw["cliff"]) do
-    if not cliff.collision_mask then
-	cliff.collision_mask = {}
-    end
-    cliff.collision_mask[#cliff.collision_mask+1] = "water-tile" 
-
-end
-
 if settings.startup["rampant-addWallResistanceAcid"].value then
     vanillaBuildings.addWallAcidResistance()
 end

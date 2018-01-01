@@ -4,6 +4,7 @@ local chunkProcessor = {}
 
 local chunkUtils = require("ChunkUtils")
 local constants = require("Constants")
+local squadDefense = require("SquadDefense")
 
 -- constants
 

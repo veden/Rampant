@@ -146,6 +146,7 @@ constants.SQUAD_RAIDING = 4 -- used when player stuff is close
 -- Squad Related
 
 constants.RETREAT_GRAB_RADIUS = 24
+constants.RETREAT_SPAWNER_GRAB_RADIUS = 75
 
 constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
