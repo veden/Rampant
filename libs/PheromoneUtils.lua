@@ -67,36 +67,24 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
     local chunkPathRating = chunk[PATH_RATING]
     
-    local totalMovement = 0
-    local totalBase = 0
-    local totalPlayer = 0
-    local totalResource = 0
-    
     local tempNeighbors = getCardinalChunks(regionMap, chunk.x, chunk.y)
 
-    local neighborChunk = tempNeighbors[1]
-    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
-    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
-    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
-    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
-
-    neighborChunk = tempNeighbors[2]
-    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
-    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
-    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
-    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
-
-    neighborChunk = tempNeighbors[3]
-    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
-    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
-    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
-    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
-
-    neighborChunk = tempNeighbors[4]
-    totalMovement = totalMovement + (neighborChunk[MOVEMENT_PHEROMONE] - chunkMovement)
-    totalBase = totalBase + (neighborChunk[BASE_PHEROMONE] - chunkBase)
-    totalPlayer = totalPlayer + (neighborChunk[PLAYER_PHEROMONE] - chunkPlayer)
-    totalResource = totalResource + (neighborChunk[RESOURCE_PHEROMONE] - chunkResource)
+    local totalMovement = ((tempNeighbors[1][MOVEMENT_PHEROMONE] - chunkMovement) +
+	    (tempNeighbors[2][MOVEMENT_PHEROMONE] - chunkMovement) +
+	    (tempNeighbors[3][MOVEMENT_PHEROMONE] - chunkMovement) +
+	    (tempNeighbors[4][MOVEMENT_PHEROMONE] - chunkMovement))
+    local totalBase = ((tempNeighbors[1][BASE_PHEROMONE] - chunkBase) +
+	    (tempNeighbors[2][BASE_PHEROMONE] - chunkBase) +
+	    (tempNeighbors[3][BASE_PHEROMONE] - chunkBase) +
+	    (tempNeighbors[4][BASE_PHEROMONE] - chunkBase))
+    local totalPlayer = ((tempNeighbors[1][PLAYER_PHEROMONE] - chunkPlayer) +
+	    (tempNeighbors[2][PLAYER_PHEROMONE] - chunkPlayer) +
+	    (tempNeighbors[3][PLAYER_PHEROMONE] - chunkPlayer) +
+	    (tempNeighbors[4][PLAYER_PHEROMONE] - chunkPlayer))
+    local totalResource = ((tempNeighbors[1][RESOURCE_PHEROMONE] - chunkResource) +
+	    (tempNeighbors[2][RESOURCE_PHEROMONE] - chunkResource) +
+	    (tempNeighbors[3][RESOURCE_PHEROMONE] - chunkResource) +
+	    (tempNeighbors[4][RESOURCE_PHEROMONE] - chunkResource))
     
     chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[BASE_PHEROMONE] = (chunkBase + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating

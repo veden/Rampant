@@ -102,7 +102,7 @@ function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
 	canMove = true
     elseif ((direction == 4) or (direction == 5)) and (startPassable == CHUNK_EAST_WEST) and (endPassable == CHUNK_EAST_WEST) then
 	canMove = true
-    elseif (startChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (endPassable == CHUNK_ALL_DIRECTIONS) then
+    elseif (startChunk == SENTINEL_IMPASSABLE_CHUNK) and (endPassable == CHUNK_ALL_DIRECTIONS) then
 	canMove = true
     end
     return canMove

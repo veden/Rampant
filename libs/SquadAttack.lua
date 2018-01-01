@@ -113,7 +113,7 @@ function squadAttack.squadsAttack(regionMap, surface, natives)
 				group.set_command(attackCmd)
 				group.start_moving()
 			    else
-				addMovementPenalty(natives, squad, attackChunk.x, attackChunk.y)
+				addMovementPenalty(natives, squad, attackChunk)
 			    end
 			elseif not squad.frenzy and not squad.rabid and
 			    ((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or

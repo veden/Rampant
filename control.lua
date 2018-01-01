@@ -22,6 +22,9 @@ local config = require("config")
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
+local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
+local INTERVAL_SCAN = constants.INTERVAL_SCAN
+local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -67,8 +70,6 @@ local makeImmortalEntity = chunkUtils.makeImmortalEntity
 local processBases = baseProcessor.processBases
 
 local mRandom = math.random
-
-local positionToChunkXY = mapUtils.positionToChunkXY
 
 -- local references to global
 
@@ -160,6 +161,7 @@ local function rebuildRegionMap()
     regionMap.area = {{0, 0}, {0, 0}}
     regionMap.countResourcesQuery = { area=regionMap.area, type="resource" }
     regionMap.filteredEntitiesEnemyQuery = { area=regionMap.area, force="enemy" }
+    regionMap.filteredEntitiesEnemyUnitQuery = { area=regionMap.area, force="enemy", type="unit", limit=301 }
     regionMap.filteredEntitiesEnemyTypeQuery = { area=regionMap.area, force="enemy", type="unit-spawner" }
     regionMap.filteredEntitiesPlayerQuery = { area=regionMap.area, force="player" }
     regionMap.canPlaceQuery = { name="", position={0,0} }
@@ -167,7 +169,10 @@ local function rebuildRegionMap()
 
     -- switched over to tick event
     regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+    regionMap.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
     regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+    regionMap.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
+    regionMap.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
     
     -- clear pending chunks, will be added when loop runs below
     global.pendingChunks = {}
@@ -248,37 +253,48 @@ end
 local function onTick(event)
     local tick = event.tick
     if (tick == regionMap.processTick) then
-	local gameRef = game
 	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
+
+	local gameRef = game
 	local surface = gameRef.surfaces[1]
-
-	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
-	scanMap(regionMap, surface, natives)
-
-	if (tick == regionMap.logicTick) then
-	    regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
-
-	    local players = gameRef.players
-
-	    planning(natives,
-	    	     gameRef.forces.enemy.evolution_factor,
-	    	     tick,
-	    	     surface)
-	    
-	    cleanSquads(natives)
-	    regroupSquads(natives)
-	    
-	    processPlayers(players, regionMap, surface, natives, tick)
-
-	    if natives.useCustomAI then
-	    	processBases(regionMap, surface, natives, tick)
-	    end
-	    
-	    squadsBeginAttack(natives, players)
-	    squadsAttack(regionMap, surface, natives)
-	end
+	
+	processPlayers(gameRef.players, regionMap, surface, natives, tick)
 
 	processMap(regionMap, surface, natives, tick)
+    end
+    if (tick == regionMap.scanTick) then
+	regionMap.scanTick = regionMap.scanTick + INTERVAL_SCAN
+	local surface = game.surfaces[1]
+
+	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
+
+	scanMap(regionMap, surface, natives)
+    end
+    if (tick == regionMap.logicTick) then
+	regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
+
+	local gameRef = game
+	local surface = gameRef.surfaces[1]
+	    
+	planning(natives,
+		 gameRef.forces.enemy.evolution_factor,
+		 tick,
+		 surface)
+
+	if natives.useCustomAI then
+	    processBases(regionMap, surface, natives, tick)
+	end
+    end
+    if (tick == regionMap.squadTick) then
+	regionMap.squadTick = regionMap.squadTick + INTERVAL_SQUAD
+
+	local gameRef = game
+	
+	cleanSquads(natives)
+	regroupSquads(natives)
+	
+	squadsBeginAttack(natives, gameRef.players)
+	squadsAttack(regionMap, gameRef.surfaces[1], natives)
     end
 end
 
@@ -411,7 +427,7 @@ remote.add_interface("rampantTests",
 			 registeredNest = tests.registeredNest,
 			 colorResourcePoints = tests.colorResourcePoints,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
-			 exportAiState = tests.exportAiState
+			 exportAiState = tests.exportAiState(onTick)
 		     }
 )
 
