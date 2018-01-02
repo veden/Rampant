@@ -44,6 +44,8 @@ local roundToNearest = mathUtils.roundToNearest
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
+local entityForPassScan = chunkUtils.entityForPassScan
+
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
 
@@ -453,7 +455,7 @@ local function onUsedCapsule(event)
 							   {event.position.x+0.75,event.position.y+0.75}},
 						       type="cliff"})
 	for i=1,#cliffs do
-	    chunkUtils.queueChunkForPassScan(regionMap, cliffs[i])
+	    entityForPassScan(regionMap, cliffs[i])
 	end
     end
 end
