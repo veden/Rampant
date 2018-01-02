@@ -105,17 +105,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
 	    return squad
 	end
     end
-    local returnSquad = { group = unitGroup,
-			  status = SQUAD_GUARDING,
-			  penalties = {},
-			  rabid = false,
-			  frenzy = false,
-			  kamikaze = false,
-			  frenzyPosition = {x = 0,
-					    y = 0},
-			  cycles = 0 }
-    squads[#squads+1] = returnSquad
-    return returnSquad
+    return nil
 end
 
 function unitGroupUtils.calculateKamikazeThreshold(squad, natives)

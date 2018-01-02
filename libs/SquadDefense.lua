@@ -87,7 +87,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 
 		if newSquad then
 		    if enemiesToSquad then
-			membersToSquad(newSquad, enemiesToSquad, (radius == RETREAT_SPAWNER_GRAB_RADIUS))
+			membersToSquad(newSquad, enemiesToSquad, force)
 		    else
 			membersToSquad(newSquad, squad.group.members, true)
 			newSquad.penalties = squad.penalties

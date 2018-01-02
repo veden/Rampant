@@ -31,7 +31,6 @@ local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
-local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 -- imported functions
 

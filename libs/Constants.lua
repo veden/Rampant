@@ -42,6 +42,7 @@ constants.INTERVAL_CHUNK = 17
 constants.INTERVAL_LOGIC = 61
 constants.INTERVAL_SQUAD = 41
 
+constants.RESOURCE_GENERATOR_INCREMENT = 0.001
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
@@ -174,7 +175,7 @@ constants.BUILDING_PHEROMONES["beacon"] = 10
 constants.BUILDING_PHEROMONES["furnace"] = 12
 constants.BUILDING_PHEROMONES["programmable-speaker"] = 8
 constants.BUILDING_PHEROMONES["mining-drill"] = 35
-constants.BUILDING_PHEROMONES["rocket-silo"] = 18
+constants.BUILDING_PHEROMONES["rocket-silo"] = 120
 constants.BUILDING_PHEROMONES["lamp"] = 4
 constants.BUILDING_PHEROMONES["radar"] = 20
 constants.BUILDING_PHEROMONES["lab"] = 15
@@ -186,6 +187,7 @@ constants.BUILDING_PHEROMONES["wall"] = 0.5
 constants.BUILDING_PHEROMONES["electric-turret"] = 20
 constants.BUILDING_PHEROMONES["fluid-turret"] = 28
 constants.BUILDING_PHEROMONES["turret"] = 10
+constants.BUILDING_PHEROMONES["artillery-turret"] = 100
 
 constants.retreatFilter = {}
 constants.retreatFilter[constants.SQUAD_RETREATING] = true
@@ -211,6 +213,7 @@ constants.UNIT_GROUP_SLOWDOWN_FACTOR = 0.9
 
 constants.SENTINEL_IMPASSABLE_CHUNK = {}
 
+constants.SENTINEL_IMPASSABLE_CHUNK.name = "ImpassableChunk"
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.MOVEMENT_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.BASE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.PLAYER_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
