@@ -4,7 +4,6 @@ local chunkProcessor = {}
 
 local chunkUtils = require("ChunkUtils")
 local constants = require("Constants")
-local squadDefense = require("SquadDefense")
 
 -- constants
 
@@ -15,7 +14,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- imported functions
 
 local createChunk = chunkUtils.createChunk
-local analyzeChunk = chunkUtils.analyzeChunk
+local initialScan = chunkUtils.initialScan
+local chunkPassScan = chunkUtils.chunkPassScan
 
 -- module code
 
@@ -41,9 +41,9 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = analyzeChunk(chunk, natives, surface, regionMap)
+        chunk = initialScan(chunk, natives, surface, regionMap)
 
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then	    	    
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local chunkX = chunk.x
 	    
 	    if regionMap[chunkX] == nil then
@@ -54,6 +54,39 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	    processQueue[#processQueue+1] = chunk
 	end
     end
+end
+
+function chunkProcessor.processScanChunks(regionMap, surface)
+    local area = regionMap.area
+    
+    local topOffset = area[1]
+    local bottomOffset = area[2]
+
+    local removals = {}
+
+    for chunk,_ in pairs(regionMap.chunkToPassScan) do
+	local x = chunk.x
+	local y = chunk.y
+	
+	topOffset[1] = x
+	topOffset[2] = y
+	bottomOffset[1] = x + CHUNK_SIZE
+	bottomOffset[2] = y + CHUNK_SIZE
+
+        chunk = chunkPassScan(chunk, surface, regionMap)
+
+	if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
+	    regionMap[x][y] = nil
+
+	    removals[#removals+1] = chunk
+	end
+    end
+
+    for i=#removals,1,-1 do
+	table.remove(regionMap.processQueue, i)
+    end
+   
+    return {}
 end
 
 return chunkProcessor

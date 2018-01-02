@@ -45,6 +45,7 @@ local roundToNearest = mathUtils.roundToNearest
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local processPendingChunks = chunkProcessor.processPendingChunks
+local processScanChunks = chunkProcessor.processScanChunks
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -144,6 +145,7 @@ local function rebuildRegionMap()
     regionMap.chunkToRallys = {}
     regionMap.chunkToPlayerBase = {}
     regionMap.chunkToResource = {}
+    regionMap.chunkToPassScan = {}
 
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     regionMap.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
@@ -273,13 +275,15 @@ local function onTick(event)
 	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
 
 	scanMap(regionMap, surface, natives)
+	
+	regionMap.chunkToPassScan = processScanChunks(regionMap, surface)
     end
     if (tick == regionMap.logicTick) then
 	regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
 
 	local gameRef = game
 	local surface = gameRef.surfaces[1]
-	    
+	
 	planning(natives,
 		 gameRef.forces.enemy.evolution_factor,
 		 tick,
@@ -304,16 +308,22 @@ end
 
 local function onBuild(event)
     local entity = event.created_entity
-    addRemovePlayerEntity(regionMap, entity, natives, true, false)
-    if natives.safeBuildings then
-	if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
-	    entity.destructible = false
+    if (entity.surface.index == 1) then
+	addRemovePlayerEntity(regionMap, entity, natives, true, false)
+	if natives.safeBuildings then
+	    if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
+		entity.destructible = false
+	    end
 	end
     end
 end
 
 local function onMine(event)
-    addRemovePlayerEntity(regionMap, event.entity, natives, false, false)
+    local entity = event.entity
+    local surface = entity.surface
+    if (surface.index == 1) then	
+	addRemovePlayerEntity(regionMap, entity, natives, false, false)
+    end
 end
 
 local function onDeath(event)
@@ -351,10 +361,10 @@ local function onDeath(event)
 		    end
                 end
                 
-            elseif (entity.type == "unit-spawner") or (entity.type == "turret") then
+            elseif event.force and (event.force.name == "player") and (entity.type == "unit-spawner") or (entity.type == "turret") then
 		local tick = event.tick
 
-		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then		    
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    unregisterEnemyBaseStructure(regionMap, entity)
 		    
 		    rallyUnits(chunk, regionMap, surface, natives, tick)
@@ -388,14 +398,64 @@ local function onDeath(event)
 end
 
 local function onEnemyBaseBuild(event)
-    registerEnemyBaseStructure(regionMap, event.entity, nil)
+    local entity = event.entity
+    local surface = entity.surface
+    if (surface.index == 1) then
+	registerEnemyBaseStructure(regionMap, entity, nil)
+    end
 end
 
 local function onSurfaceTileChange(event)
-    -- local player = game.players[event.player_index]
-    -- if (player.surface.index == 1) then
-    -- 	aiAttackWave.fillTunnel(regionMap, player.surface, natives, event.positions)
-    -- end
+    local surfaceIndex = event.surface_index or event.robot.surface.index
+    if (event.item.name == "landfill") and (surfaceIndex == 1) then
+	local chunks = {}
+	local positions = event.positions
+	for i=1,#positions do
+	    local position = positions[i]	    
+	    local chunk = mapUtils.getChunkByPosition(regionMap, position, true)
+
+	    -- weird bug with table pointer equality using name instead pointer comparison
+	    if not chunk.name then
+		regionMap.chunkToPassScan[chunk] = true
+	    else
+		local x,y = mapUtils.positionToChunkXY(position)
+		local addMe = true
+		for ci=1,#chunks do
+		    local c = chunks[ci]
+		    if (c.x == x) and (c.y == y) then
+			addMe = false
+			break
+		    end
+		end
+		if addMe then
+		    chunks[#chunks+1] = {x=x,y=y}
+		end
+	    end
+	end
+	for i=1,#chunks do
+	    onChunkGenerated({area = { left_top = chunks[i] },
+			      surface = game.surfaces[surfaceIndex]})
+	end
+    end
+end
+
+local function onResourceDepleted(event)
+    local entity = event.entity
+    if (entity.surface.index == 1) then
+	chunkUtils.unregisterResource(entity, regionMap)
+    end
+end
+
+local function onUsedCapsule(event)
+    local surface = game.players[event.player_index].surface
+    if (event.item.name == "cliff-explosives") and (surface.index == 1) then
+	local cliffs = surface.find_entities_filtered({area={{event.position.x-0.75,event.position.y-0.75},
+							   {event.position.x+0.75,event.position.y+0.75}},
+						       type="cliff"})
+	for i=1,#cliffs do
+	    chunkUtils.queueChunkForPassScan(regionMap, cliffs[i])
+	end
+    end
 end
 
 local function onInit()
@@ -418,7 +478,11 @@ script.on_load(onLoad)
 script.on_event(defines.events.on_runtime_mod_setting_changed, onModSettingsChange)
 script.on_configuration_changed(onConfigChanged)
 
-script.on_event(defines.events.on_player_built_tile, onSurfaceTileChange)
+script.on_event(defines.events.on_resource_depleted, onResourceDepleted)
+script.on_event({defines.events.on_player_built_tile,
+		 defines.events.on_robot_built_tile}, onSurfaceTileChange)
+
+script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 
 script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
