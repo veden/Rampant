@@ -80,6 +80,6 @@
       (copyDirectory "prototypes" modFolder)))
   
   (define (run)
-    (copyFiles modFolder)
-    ;;(makeZip modFolder)
+    ;;(copyFiles modFolder)
+    (makeZip modFolder)
     (system*/exit-code "/data/games/factorio/bin/x64/factorio")))
