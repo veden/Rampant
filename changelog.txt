@@ -1,11 +1,32 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.1
+Date: 1. 1. 2018
+  Features:
+    - Artillery shell impacts cause biter squads to form and prevents the single file line of retaliation
+    - Unit spawners now rally troops when they die
+  Improvements:
+    - Cliffs and impassable areas due to object density have been added to the pathfinder
+    - Terrain that is dynamically altered (landfilled, cleared of trees, cleared of cliffs) will be accounted for now
+    - Added artillery turret to buildings that emit pheromones
+  Optimizations:
+    - Switch scanning for cliffs, resources, and tiles to event based instead of polling
+    - Reduced number of table allocations when working with squads
+  Bugfixes:
+    - fixed changelog so it shows up in-game interface
+    - Added checks for correct surface before processing build events
+  Balance:
+    - Increased kamikaze frequency by increasing the chance to roll for Kamikaze from 70% to 100%
+  Framework:
+    - Created visualler for viewing internal Rampant ai game state
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.0
 Date: 13. 12. 2017
   Changes:
-	- Updated info.json
-  Fixes:
-	- Fixed broken icon size prototypes
-	- Fixed create-smoke calls
-	- Fixed perimeter to radius
-	- Fixed smoke
-	- Fixed missing fire tile properties
+    - Updated info.json
+  Bugfixes:
+    - Fixed broken icon size prototypes
+    - Fixed create-smoke calls
+    - Fixed perimeter to radius
+    - Fixed smoke
+    - Fixed missing fire tile properties
