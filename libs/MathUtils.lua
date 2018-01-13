@@ -66,10 +66,6 @@ function mathUtils.gaussianRandomRange(mean, std_dev, min, max, rg)
     return q
 end
 
-function mathUtils.positionToChunkOffset(position)
-    return mFloor(position.x * 0.03125), mFloor(position.y * 0.03125)
-end
-
 function mathUtils.euclideanDistanceNamed(p1, p2)
     local xs = p1.x - p2.x
     local ys = p1.y - p2.y

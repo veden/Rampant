@@ -1,15 +1,12 @@
 local biterFunctions = {}
 
-function biterFunctions.makeBiter(biterAttributes, biterAttack, biterResistances)
-    biterAttack.scale = biterAttributes.scale;
-    biterAttack.tint1 = biterAttributes.tint1;
-    biterAttack.tint2 = biterAttributes.tint2;
+function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResistances)
     return {
 	type = "unit",
-	name = biterAttributes.name,
+	name = name,
 	icon = "__base__/graphics/icons/small-biter.png",
 	icon_size = 32,
-	flags = {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+	flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
 	max_health = biterAttributes.health,
 	order = "b-b-a",
 	subgroup="enemies",
@@ -22,11 +19,11 @@ function biterFunctions.makeBiter(biterAttributes, biterAttack, biterResistances
 	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale}, 
 	    {0.6 * biterAttributes.scale, 0}},
 	attack_parameters = biterAttack,
-	vision_distance = 30,
+	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
-	distance_per_frame = 0.1,
-	pollution_to_join_attack = 200,
-	distraction_cooldown = 300,
+	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
+	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
+	distraction_cooldown = biterAttributes.distractionCooldown or 300,
 	corpse = biterAttributes.corpse,
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_biter_dying_sounds(1.0),
@@ -35,16 +32,13 @@ function biterFunctions.makeBiter(biterAttributes, biterAttack, biterResistances
     }
 end
 
-function biterFunctions.makeSpitter(biterAttributes, biterAttack, biterResistances)
-    -- biterAttack.scale = biterAttributes.scale;
-    -- biterAttack.tint1 = biterAttributes.tint1;
-    -- biterAttack.tint2 = biterAttributes.tint2;
+function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterResistances)
     return {
 	type = "unit",
-	name = biterAttributes.name,
+	name = name,
 	icon = "__base__/graphics/icons/small-spitter.png",
 	icon_size = 32,
-	flags = {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+	flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
 	max_health = biterAttributes.health,
 	order = "b-b-a",
 	subgroup="enemies",
@@ -57,17 +51,81 @@ function biterFunctions.makeSpitter(biterAttributes, biterAttack, biterResistanc
 	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale}, 
 	    {0.6 * biterAttributes.scale, 0}},
 	attack_parameters = biterAttack,
-	vision_distance = 30,
+	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
-	distance_per_frame = biterAttributes.distancePerFrame,
-	pollution_to_join_attack = 200,
-	distraction_cooldown = 300,
+	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
+	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
+	distraction_cooldown = biterAttributes.distractionCooldown or 300,
 	corpse = biterAttributes.corpse,
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_biter_dying_sounds(1.0),
 	working_sound =  make_biter_calls(0.7),
 	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint1, biterAttributes.tint2)
     }
+end
+
+function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances, unitSet)
+    local o = {
+    type = "unit-spawner",
+    name = name,
+    icon = "__base__/graphics/icons/biter-spawner.png",
+    icon_size = 32,
+    flags = {"placeable-player", "placeable-enemy", "not-repairable"},
+    max_health = biterAttributes.health,
+    order="b-b-g",
+    subgroup="enemies",
+    resistances = biterResistances,
+    working_sound = {
+      sound =
+      {
+        {
+          filename = "__base__/sound/creatures/spawner.ogg",
+          volume = 1.0
+        }
+      },
+      apparent_volume = 2
+    },
+    dying_sound =
+    {
+      {
+        filename = "__base__/sound/creatures/spawner-death-1.ogg",
+        volume = 1.0
+      },
+      {
+        filename = "__base__/sound/creatures/spawner-death-2.ogg",
+        volume = 1.0
+      }
+    },
+    healing_per_tick = biterAttributes.healing or 0.02,
+    collision_box = {{-3.2 * biterAttributes.scale, -2.2 * biterAttributes.scale}, {2.2 * biterAttributes.scale, 2.2 * biterAttributes.scale}},
+    selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
+    -- in ticks per 1 pu
+    pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
+    pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,
+    corpse = "biter-spawner-corpse",
+    dying_explosion = "blood-explosion-huge",
+    max_count_of_owned_units = biterAttributes.unitsOwned or 7,
+    max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
+    animations =
+    {
+      spawner_idle_animation(0, biterAttributes.tint),
+      spawner_idle_animation(1, biterAttributes.tint),
+      spawner_idle_animation(2, biterAttributes.tint),
+      spawner_idle_animation(3, biterAttributes.tint)
+    },
+    result_units = unitSet,
+    -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
+    spawning_cooldown = biterAttributes.spawningCooldown or {360, 150},
+    spawning_radius = biterAttributes.spawningRadius or 10,
+    spawning_spacing = biterAttributes.spawningSpacing or 3,
+    max_spawn_shift = 0,
+    max_richness_for_spawn_shift = 100,    
+    call_for_help_radius = 50
+    }
+    if biterAttributes.autoplace then
+	o["autoplace"] = enemy_spawner_autoplace(biterAttributes.autoplace)
+    end
+    return o
 end
 
 function biterFunctions.createSuicideAttack(attributes)
