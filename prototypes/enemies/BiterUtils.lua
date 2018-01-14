@@ -1,6 +1,12 @@
 local biterFunctions = {}
 
 function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResistances)
+    local resistances = {}
+    for k,v in pairs(biterResistances) do
+	v.type = k
+	resistances[#resistances+1] = v
+    end
+    
     return {
 	type = "unit",
 	name = name,
@@ -11,7 +17,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	order = "b-b-a",
 	subgroup="enemies",
 	healing_per_tick = biterAttributes.healing,
-	resistances = biterResistances,
+	resistances = resistances,
 	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale}, 
 	    {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
 	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale}, 
@@ -33,6 +39,12 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 end
 
 function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterResistances)
+    local resistances = {}
+    for k,v in pairs(biterResistances) do
+	v.type = k
+	resistances[#resistances+1] = v
+    end
+
     return {
 	type = "unit",
 	name = name,
@@ -43,7 +55,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	order = "b-b-a",
 	subgroup="enemies",
 	healing_per_tick = biterAttributes.healing,
-	resistances = biterResistances,
+	resistances = resistances,
 	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale}, 
 	    {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
 	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale}, 
@@ -65,67 +77,125 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 end
 
 function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances, unitSet)
+    local resistances = {}
+    for k,v in pairs(biterResistances) do
+	v.type = k
+	resistances[#resistances+1] = v
+    end
+
     local o = {
-    type = "unit-spawner",
-    name = name,
-    icon = "__base__/graphics/icons/biter-spawner.png",
-    icon_size = 32,
-    flags = {"placeable-player", "placeable-enemy", "not-repairable"},
-    max_health = biterAttributes.health,
-    order="b-b-g",
-    subgroup="enemies",
-    resistances = biterResistances,
-    working_sound = {
-      sound =
-      {
-        {
-          filename = "__base__/sound/creatures/spawner.ogg",
-          volume = 1.0
-        }
-      },
-      apparent_volume = 2
-    },
-    dying_sound =
-    {
-      {
-        filename = "__base__/sound/creatures/spawner-death-1.ogg",
-        volume = 1.0
-      },
-      {
-        filename = "__base__/sound/creatures/spawner-death-2.ogg",
-        volume = 1.0
-      }
-    },
-    healing_per_tick = biterAttributes.healing or 0.02,
-    collision_box = {{-3.2 * biterAttributes.scale, -2.2 * biterAttributes.scale}, {2.2 * biterAttributes.scale, 2.2 * biterAttributes.scale}},
-    selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
-    -- in ticks per 1 pu
-    pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
-    pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,
-    corpse = "biter-spawner-corpse",
-    dying_explosion = "blood-explosion-huge",
-    max_count_of_owned_units = biterAttributes.unitsOwned or 7,
-    max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
-    animations =
-    {
-      spawner_idle_animation(0, biterAttributes.tint),
-      spawner_idle_animation(1, biterAttributes.tint),
-      spawner_idle_animation(2, biterAttributes.tint),
-      spawner_idle_animation(3, biterAttributes.tint)
-    },
-    result_units = unitSet,
-    -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-    spawning_cooldown = biterAttributes.spawningCooldown or {360, 150},
-    spawning_radius = biterAttributes.spawningRadius or 10,
-    spawning_spacing = biterAttributes.spawningSpacing or 3,
-    max_spawn_shift = 0,
-    max_richness_for_spawn_shift = 100,    
-    call_for_help_radius = 50
+	type = "unit-spawner",
+	name = name,
+	icon = "__base__/graphics/icons/biter-spawner.png",
+	icon_size = 32,
+	flags = {"placeable-player", "placeable-enemy", "not-repairable"},
+	max_health = biterAttributes.health,
+	order="b-b-g",
+	subgroup="enemies",
+	resistances = resistances,
+	working_sound = {
+	    sound =
+		{
+		    {
+			filename = "__base__/sound/creatures/spawner.ogg",
+			volume = 1.0
+		    }
+		},
+	    apparent_volume = 2
+	},
+	dying_sound =
+	    {
+		{
+		    filename = "__base__/sound/creatures/spawner-death-1.ogg",
+		    volume = 1.0
+		},
+		{
+		    filename = "__base__/sound/creatures/spawner-death-2.ogg",
+		    volume = 1.0
+		}
+	    },
+	healing_per_tick = biterAttributes.healing or 0.02,
+	collision_box = {{-3.2 * biterAttributes.scale, -2.2 * biterAttributes.scale}, {2.2 * biterAttributes.scale, 2.2 * biterAttributes.scale}},
+	selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
+	-- in ticks per 1 pu
+	pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
+	pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,
+	corpse = "biter-spawner-corpse",
+	dying_explosion = "blood-explosion-huge",
+	max_count_of_owned_units = biterAttributes.unitsOwned or 7,
+	max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
+	animations =
+	    {
+		spawner_idle_animation(0, biterAttributes.tint),
+		spawner_idle_animation(1, biterAttributes.tint),
+		spawner_idle_animation(2, biterAttributes.tint),
+		spawner_idle_animation(3, biterAttributes.tint)
+	    },
+	result_units = unitSet,
+	-- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
+	spawning_cooldown = biterAttributes.spawningCooldown or {360, 150},
+	spawning_radius = biterAttributes.spawningRadius or 10,
+	spawning_spacing = biterAttributes.spawningSpacing or 3,
+	max_spawn_shift = 0,
+	max_richness_for_spawn_shift = 100,
+	build_base_evolution_requirement = biterAttributes.evolutionRequirement or 0.0,
+	call_for_help_radius = 50
     }
     if biterAttributes.autoplace then
 	o["autoplace"] = enemy_spawner_autoplace(biterAttributes.autoplace)
     end
     return o
+end
+
+function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
+    local resistances = {}
+    for k,v in pairs(wormResistances) do
+	v.type = k
+	resistances[#resistances+1] = v
+    end
+    
+    local o = {
+	type = "turret",
+	name = name,
+	icon = "__base__/graphics/icons/medium-worm.png",
+	icon_size = 32,
+	flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "breaths-air"},
+	order="b-b-e",
+	subgroup="enemies",
+	max_health = attributes.health,
+	resistances = resistances,
+	healing_per_tick = attributes.healing or 0.01,
+	collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
+	selection_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
+	shooting_cursor_size = attributes.cursorSize or 3,
+	rotation_speed = attributes.rotationSpeed or 1,
+	corpse = "medium-worm-corpse",
+	dying_explosion = "blood-explosion-big",
+	dying_sound = make_worm_dying_sounds(0.9),
+	folded_speed = attributes.foldedSpeed or 0.01,
+	folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
+	preparing_speed = attributes.preparingSpeed or 0.025,
+	preparing_animation = worm_preparing_animation(attributes.scale, attributes.tint, "forward"),
+	prepared_speed = attributes.preparedSpeed or 0.015,
+	prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
+	starting_attack_speed = attributes.attackSpeed or 0.03,
+	starting_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "forward"),
+	starting_attack_sound = make_worm_roars(0.8),
+	ending_attack_speed = attributes.endingAttackSpeed or 0.03,
+	ending_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "backward"),
+	folding_speed = attributes.foldingSpeed or 0.015,
+	folding_animation =  worm_preparing_animation(attributes.scale, attributes.tint, "backward"),
+	prepare_range = attributes.prepareRange or 30,
+	attack_parameters = attack,
+	build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
+	call_for_help_radius = 40
+    }
+
+    if attributes.autoplace then
+	o["autoplace"] = enemy_worm_autoplace(attributes.autoplace)
+    end
+    return o
+
 end
 
 function biterFunctions.createSuicideAttack(attributes)

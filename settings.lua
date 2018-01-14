@@ -212,7 +212,29 @@ data:extend({
 	    default_value = true,
 	    order = "k[modifier]-a[unit]",
 	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-enemySeed",
+	    description = "rampant-enemySeed",
+	    setting_type = "startup",
+	    minimum_value = 0,
+	    default_value = 0,
+	    order = "l[modifer]-a[seed]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-newEnemies",
+	    description = "rampant-newEnemies",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-b[unit]",
+	    per_user = false
 	}
+	
 		
 	-- {
 	--     type = "bool-setting",
