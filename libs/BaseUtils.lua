@@ -2,12 +2,9 @@ local baseUtils = {}
 
 -- imports
 
+local stringUtils = require("StringUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
-
--- local tendrilUtils = require("TendrilUtils")
-
-local nestUtils = require("NestUtils")
 
 -- constants
 
@@ -22,7 +19,7 @@ local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
-local buildHive = nestUtils.buildHive
+local isRampant = stringUtils.isRampant
 
 local mFloor = math.floor
 
@@ -45,6 +42,17 @@ function baseUtils.findNearbyBase(natives, position)
 	end
     end
     return foundBase
+end
+
+function baseUtils.upgradeEntity(map, entity, surface, natives)
+    if not isRampant(entity.name) then
+	local position = entity.position
+	entity.die()
+	entity = surface.create_entity({name = "rampant-suicide-nest-v" .. mRandom(5) .. "-t1",
+					position = position})
+    end
+
+    return entity
 end
 
 function baseUtils.createBase(map, natives, position, surface, tick)

@@ -9,7 +9,7 @@ require("prototypes/tile/fillableDirt")
 
 
 if settings.startup["rampant-newEnemies"].value then
-    require("BuildSwarm")
+    require("UnitClasses")
 end
 
 -- require("prototypes/enemies/UnitSuicideBiters")
