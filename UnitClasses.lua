@@ -1,7 +1,7 @@
 -- imports
 
 local biterUtils = require("prototypes/enemies/BiterUtils")
-local swarmUtils = require("Swarmutils")
+local swarmUtils = require("SwarmUtils")
 
 -- imported functions
 

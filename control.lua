@@ -423,7 +423,7 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
-	registerEnemyBaseStructure(map, entity, nil)
+	event.entity = registerEnemyBaseStructure(map, entity, surface, natives)
     end
 end
 
@@ -436,7 +436,7 @@ local function onSurfaceTileChange(event)
 	    local position = positions[i]	    
 	    local chunk = mapUtils.getChunkByPosition(map, position, true)
 
-	    -- weird bug with table pointer equality using name instead pointer comparison
+	    -- weird bug with table pointer equality using name instead of pointer comparison
 	    if not chunk.name then
 		map.chunkToPassScan[chunk] = true
 	    else

@@ -2,6 +2,7 @@ local chunkUtils = {}
 
 -- imports
 
+local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 
@@ -38,6 +39,8 @@ local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
 -- imported functions
 
 local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
+
+local upgradeEntity = baseUtils.upgradeEntity
 
 local tRemove = table.remove
 
@@ -78,7 +81,7 @@ local function fullScan(chunk, can_place_entity, canPlaceQuery)
     return passableNorthSouth, passableEastWest
 end
 
-local function addEnemyStructureToChunk(map, chunk, entity, base)
+local function addEnemyStructureToChunk(map, chunk, entity)
     local lookup
     if (entity.type == "unit-spawner") then
 	lookup = map.chunkToNests
@@ -323,31 +326,6 @@ function chunkUtils.analyzeChunk(chunk, natives, surface, map)
     chunkUtils.setPlayerBaseGenerator(map, chunk, playerObjects)
 end
 
--- function chunkUtils.remakeChunk(map, chunk, surface, natives, tick, tempQuery)
---     tempQuery.force = "enemy"
---     local enemies = surface.find_entities_filtered(tempQuery)
-
---     local points = 0
---     for f=1, #enemies do
--- 	local enemy = enemies[f]
--- 	local entityType = enemies[f].type
--- 	if not ((enemy.name == "small-tendril-biter-rampant") or (enemy.name == "biter-spawner-hive-rampant")) then
--- 	    if (entityType == "unit-spawner") then
--- 		points = points + 3
--- 	    elseif (entityType == "turret") then
--- 		points = points + 2
--- 	    elseif (entityType == "unit") then
--- 		points = points + 1
--- 	    end
--- 	    enemy.destroy()
--- 	end
---     end
---     -- local foundBase = findNearbyBase(natives, chunk) or createBase(map, natives, chunk, surface, tick)
---     -- if foundBase then
---     -- 	foundBase.upgradePoints = foundBase.upgradePoints + points
---     -- end    
--- end
-
 function chunkUtils.getNestCount(map, chunk)
     return map.chunkToNests[chunk] or 0
 end
@@ -510,24 +488,28 @@ function chunkUtils.entityForPassScan(map, entity)
     end
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, base)
+function chunkUtils.registerEnemyBaseStructure(map, entity, surface, natives)
+    entity = upgradeEntity(map, entity, surface, natives)
+    
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
 	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
 	
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, leftTop, entity, base)
+	    addEnemyStructureToChunk(map, leftTop, entity)
 	end
 	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, rightTop, entity, base)
+	    addEnemyStructureToChunk(map, rightTop, entity)
 	end
 	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, leftBottom, entity, base)
+	    addEnemyStructureToChunk(map, leftBottom, entity)
 	end
 	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, rightBottom, entity, base)
+	    addEnemyStructureToChunk(map, rightBottom, entity)
 	end	
     end
+    
+    return entity
 end
 
 function chunkUtils.unregisterEnemyBaseStructure(map, entity)
