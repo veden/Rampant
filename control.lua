@@ -36,6 +36,14 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
+local DEFINES_COMMAND_GROUP = defines.command.group
+local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
+
+local DEFINES_DISTRACTION_NONE = defines.distraction.none
+local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
+
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -80,7 +88,7 @@ local mRandom = math.random
 
 -- local references to global
 
-local regionMap -- manages the chunks that make up the game world
+local map -- manages the chunks that make up the game world
 local natives -- manages the enemy units, structures, and ai
 local pendingChunks -- chunks that have yet to be processed by the mod
 
@@ -96,9 +104,9 @@ local function onIonCannonFired(event)
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
 	end
-	local chunk = getChunkByPosition(regionMap, event.position)
+	local chunk = getChunkByPosition(map, event.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    rallyUnits(chunk, regionMap, surface, natives, event.tick)
+	    rallyUnits(chunk, map, surface, natives, event.tick)
 	end
     end    
 end
@@ -113,7 +121,7 @@ local function hookEvents()
 end
 
 local function onLoad()
-    regionMap = global.regionMap
+    map = global.map
     natives = global.natives
     pendingChunks = global.pendingChunks
 
@@ -130,27 +138,28 @@ end
 
 local function rebuildRegionMap()
     game.surfaces[1].print("Rampant - Reindexing chunks, please wait.")
-    -- clear old regionMap processing Queue
+    -- clear old map processing Queue
     -- prevents queue adding duplicate chunks
     -- chunks are by key, so should overwrite old
 
-    global.regionMap = {}
-    regionMap = global.regionMap
-    regionMap.processQueue = {}
-    regionMap.processIndex = 1
-    regionMap.scanIndex = 1
+    global.map = {}
+    map = global.map
+    map.processQueue = {}
+    map.processIndex = 1
+    map.scanIndex = 1
 
-    regionMap.chunkToHives = {}
-    regionMap.chunkToNests = {}
-    regionMap.chunkToWorms = {}
-    regionMap.chunkToRetreats = {}
-    regionMap.chunkToRallys = {}
-    regionMap.chunkToPlayerBase = {}
-    regionMap.chunkToResource = {}
-    regionMap.chunkToPassScan = {}
-
+    map.chunkToHives = {}
+    map.chunkToNests = {}
+    map.chunkToWorms = {}
+    map.chunkToRetreats = {}
+    map.chunkToRallys = {}
+    map.chunkToPlayerBase = {}
+    map.chunkToResource = {}
+    map.chunkToPassScan = {}
+    map.chunkToSquad = {}
+     
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
-    regionMap.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
+    map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
 			    SENTINEL_IMPASSABLE_CHUNK,
 			    SENTINEL_IMPASSABLE_CHUNK,
 			    SENTINEL_IMPASSABLE_CHUNK,
@@ -158,29 +167,40 @@ local function rebuildRegionMap()
 			    SENTINEL_IMPASSABLE_CHUNK,
 			    SENTINEL_IMPASSABLE_CHUNK,
 			    SENTINEL_IMPASSABLE_CHUNK }
-    regionMap.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
+    map.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
 				    SENTINEL_IMPASSABLE_CHUNK,
 				    SENTINEL_IMPASSABLE_CHUNK,
 				    SENTINEL_IMPASSABLE_CHUNK }
-    regionMap.position = {x=0,
+    map.position = {x=0,
 			  y=0}
 
     --this is shared between two different queries
-    regionMap.area = {{0, 0}, {0, 0}}
-    regionMap.countResourcesQuery = { area=regionMap.area, type="resource" }
-    regionMap.filteredEntitiesEnemyQuery = { area=regionMap.area, force="enemy" }
-    regionMap.filteredEntitiesEnemyUnitQuery = { area=regionMap.area, force="enemy", type="unit", limit=301 }
-    regionMap.filteredEntitiesEnemyTypeQuery = { area=regionMap.area, force="enemy", type="unit-spawner" }
-    regionMap.filteredEntitiesPlayerQuery = { area=regionMap.area, force="player" }
-    regionMap.canPlaceQuery = { name="", position={0,0} }
-    regionMap.filteredTilesQuery = { name="", area=regionMap.area }
+    map.area = {{0, 0}, {0, 0}}
+    map.countResourcesQuery = { area=map.area, type="resource" }
+    map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
+    map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
+    map.filteredEntitiesEnemyTypeQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
+    map.canPlaceQuery = { name="", position={0,0} }
+    map.filteredTilesQuery = { name="", area=map.area }
 
+    map.attackAreaCommand = {
+	type = DEFINES_COMMAND_ATTACK_AREA,
+	destination = map.position,
+	radius = CHUNK_SIZE,
+	distraction = DEFINES_DISTRACTION_BY_ENEMY
+    }
+
+    map.retreatCommand = { type = DEFINES_COMMAND_GROUP,
+			   group = nil,
+			   distraction = DEFINES_DISTRACTION_NONE }
+    
     -- switched over to tick event
-    regionMap.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-    regionMap.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
-    regionMap.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
-    regionMap.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
-    regionMap.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
+    map.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+    map.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
+    map.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+    map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
+    map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
     
     -- clear pending chunks, will be added when loop runs below
     global.pendingChunks = {}
@@ -196,7 +216,7 @@ local function rebuildRegionMap()
 						 y = chunk.y * 32 }}})
     end
 
-    processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
+    processPendingChunks(natives, map, surface, pendingChunks, tick)
 end
 
 local function onModSettingsChange(event)
@@ -260,28 +280,28 @@ end
 
 local function onTick(event)
     local tick = event.tick
-    if (tick == regionMap.processTick) then
-	regionMap.processTick = regionMap.processTick + INTERVAL_PROCESS
+    if (tick == map.processTick) then
+	map.processTick = map.processTick + INTERVAL_PROCESS
 
 	local gameRef = game
 	local surface = gameRef.surfaces[1]
 	
-	processPlayers(gameRef.players, regionMap, surface, natives, tick)
+	processPlayers(gameRef.players, map, surface, natives, tick)
 
-	processMap(regionMap, surface, natives, tick)
+	processMap(map, surface, natives, tick)
     end
-    if (tick == regionMap.scanTick) then
-	regionMap.scanTick = regionMap.scanTick + INTERVAL_SCAN
+    if (tick == map.scanTick) then
+	map.scanTick = map.scanTick + INTERVAL_SCAN
 	local surface = game.surfaces[1]
 
-	processPendingChunks(natives, regionMap, surface, pendingChunks, tick)
+	processPendingChunks(natives, map, surface, pendingChunks, tick)
 
-	scanMap(regionMap, surface, natives)
+	scanMap(map, surface, natives)
 	
-	regionMap.chunkToPassScan = processScanChunks(regionMap, surface)
+	map.chunkToPassScan = processScanChunks(map, surface)
     end
-    if (tick == regionMap.logicTick) then
-	regionMap.logicTick = regionMap.logicTick + INTERVAL_LOGIC
+    if (tick == map.logicTick) then
+	map.logicTick = map.logicTick + INTERVAL_LOGIC
 
 	local gameRef = game
 	local surface = gameRef.surfaces[1]
@@ -292,26 +312,26 @@ local function onTick(event)
 		 surface)
 
 	if natives.useCustomAI then
-	    processBases(regionMap, surface, natives, tick)
+	    processBases(map, surface, natives, tick)
 	end
     end
-    if (tick == regionMap.squadTick) then
-	regionMap.squadTick = regionMap.squadTick + INTERVAL_SQUAD
+    if (tick == map.squadTick) then
+	map.squadTick = map.squadTick + INTERVAL_SQUAD
 
 	local gameRef = game
 	
-	cleanSquads(natives)
-	regroupSquads(natives)
+	cleanSquads(natives, map)
+	regroupSquads(natives, map)
 	
 	squadsBeginAttack(natives, gameRef.players)
-	squadsAttack(regionMap, gameRef.surfaces[1], natives)
+	squadsAttack(map, gameRef.surfaces[1], natives)
     end
 end
 
 local function onBuild(event)
     local entity = event.created_entity
     if (entity.surface.index == 1) then
-	addRemovePlayerEntity(regionMap, entity, natives, true, false)
+	addRemovePlayerEntity(map, entity, natives, true, false)
 	if natives.safeBuildings then
 	    if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
 		entity.destructible = false
@@ -324,7 +344,7 @@ local function onMine(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then	
-	addRemovePlayerEntity(regionMap, entity, natives, false, false)
+	addRemovePlayerEntity(map, entity, natives, false, false)
     end
 end
 
@@ -333,7 +353,7 @@ local function onDeath(event)
     local surface = entity.surface
     if (surface.index == 1) then
 	local entityPosition = entity.position
-	local chunk = getChunkByPosition(regionMap, entityPosition)
+	local chunk = getChunkByPosition(map, entityPosition)
 	local cause = event.cause
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
@@ -350,7 +370,7 @@ local function onDeath(event)
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
-				     regionMap,
+				     map,
 				     surface, 
 				     natives,
 				     tick,
@@ -358,7 +378,7 @@ local function onDeath(event)
 				     artilleryBlast)
 			
 			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    rallyUnits(chunk, regionMap, surface, natives, tick)
+			    rallyUnits(chunk, map, surface, natives, tick)
 			end
 		    end
                 end
@@ -367,14 +387,14 @@ local function onDeath(event)
 		local tick = event.tick
 
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    unregisterEnemyBaseStructure(regionMap, entity)
+		    unregisterEnemyBaseStructure(map, entity)
 		    
-		    rallyUnits(chunk, regionMap, surface, natives, tick)
+		    rallyUnits(chunk, map, surface, natives, tick)
 
 		    retreatUnits(chunk,
 				 entityPosition,
 				 nil,
-				 regionMap,
+				 map,
 				 surface,
 				 natives,
 				 tick,
@@ -393,7 +413,7 @@ local function onDeath(event)
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
 	    else
-		addRemovePlayerEntity(regionMap, entity, natives, false, creditNatives)
+		addRemovePlayerEntity(map, entity, natives, false, creditNatives)
 	    end
         end
     end
@@ -403,7 +423,7 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
-	registerEnemyBaseStructure(regionMap, entity, nil)
+	registerEnemyBaseStructure(map, entity, nil)
     end
 end
 
@@ -414,11 +434,11 @@ local function onSurfaceTileChange(event)
 	local positions = event.positions
 	for i=1,#positions do
 	    local position = positions[i]	    
-	    local chunk = mapUtils.getChunkByPosition(regionMap, position, true)
+	    local chunk = mapUtils.getChunkByPosition(map, position, true)
 
 	    -- weird bug with table pointer equality using name instead pointer comparison
 	    if not chunk.name then
-		regionMap.chunkToPassScan[chunk] = true
+		map.chunkToPassScan[chunk] = true
 	    else
 		local x,y = mapUtils.positionToChunkXY(position)
 		local addMe = true
@@ -444,7 +464,7 @@ end
 local function onResourceDepleted(event)
     local entity = event.entity
     if (entity.surface.index == 1) then
-	chunkUtils.unregisterResource(entity, regionMap)
+	chunkUtils.unregisterResource(entity, map)
     end
 end
 
@@ -455,17 +475,17 @@ local function onUsedCapsule(event)
 							   {event.position.x+0.75,event.position.y+0.75}},
 						       type="cliff"})
 	for i=1,#cliffs do
-	    entityForPassScan(regionMap, cliffs[i])
+	    entityForPassScan(map, cliffs[i])
 	end
     end
 end
 
 local function onInit()
-    global.regionMap = {}
+    global.map = {}
     global.pendingChunks = {}
     global.natives = {}
     
-    regionMap = global.regionMap
+    map = global.map
     natives = global.natives
     pendingChunks = global.pendingChunks
     

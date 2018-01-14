@@ -36,10 +36,10 @@ local getResourceGenerator = chunkUtils.getResourceGenerator
 
 -- module code
 
-function pheromoneUtils.scents(regionMap, chunk)
-    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + getPlayerBaseGenerator(regionMap, chunk)
-    local resourceGenerator = getResourceGenerator(regionMap, chunk)
-    if (resourceGenerator > 0) and (getEnemyStructureCount(regionMap, chunk) == 0) then
+function pheromoneUtils.scents(map, chunk)
+    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + getPlayerBaseGenerator(map, chunk)
+    local resourceGenerator = getResourceGenerator(map, chunk)
+    if (resourceGenerator > 0) and (getEnemyStructureCount(map, chunk) == 0) then
 	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 100, 90)
     end
 end
@@ -59,7 +59,7 @@ function pheromoneUtils.playerScent(playerChunk)
     playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
 end
 
-function pheromoneUtils.processPheromone(regionMap, chunk)
+function pheromoneUtils.processPheromone(map, chunk)
 
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
@@ -67,7 +67,7 @@ function pheromoneUtils.processPheromone(regionMap, chunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
     local chunkPathRating = chunk[PATH_RATING]
     
-    local tempNeighbors = getCardinalChunks(regionMap, chunk.x, chunk.y)
+    local tempNeighbors = getCardinalChunks(map, chunk.x, chunk.y)
 
     local totalMovement = ((tempNeighbors[1][MOVEMENT_PHEROMONE] - chunkMovement) +
 	    (tempNeighbors[2][MOVEMENT_PHEROMONE] - chunkMovement) +

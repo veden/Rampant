@@ -2,22 +2,26 @@ local unitGroupUtils = {}
 
 -- imports
 
+local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
+local chunkUtils = require("ChunkUtils")
 
 -- constants
+
+local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 
 local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
 
 local DEFINES_GROUP_STATE_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
-local DEFINES_COMMAND_GROUP = defines.command.group
-local DEFINES_DISTRACTION_NONE = defines.distraction.none
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
+
+local RETREAT_FILTER = constants.RETREAT_FILTER
 
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
@@ -34,29 +38,37 @@ local mLog = math.log10
 
 local mMin = math.min
 
+local getSquadsOnChunk = chunkUtils.getSquadsOnChunk
+local removeSquadFromChunk = chunkUtils.removeSquadFromChunk
+
+local getNeighborChunks = mapUtils.getNeighborChunks
+
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 -- module code
 
-function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
-    local squads = natives.squads
+function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
 
-    if filter then
-	for i=1,#squads do
-	    local squad = squads[i]
-	    local unitGroup = squad.group
-	    if unitGroup.valid and filter[squad.status] then
-		if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
-		    return squad
-		end
+    local squads = getSquadsOnChunk(map, chunk)
+    for s=1,#squads do
+	local squad = squads[s]
+	local unitGroup = squad.group
+	if unitGroup.valid and RETREAT_FILTER[squad.status] then
+	    if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
+		return squad
 	    end
 	end
-    else
-	for i=1,#squads do
-	    local squad = squads[i]
+    end
+
+    local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
+
+    for i=1,#neighbors do
+	squads = getSquadsOnChunk(map, neighbors[i])
+	for s=1,#squads do
+	    local squad = squads[s]
 	    local unitGroup = squad.group
-	    if unitGroup.valid then
-		if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
+	    if unitGroup.valid and RETREAT_FILTER[squad.status] then
+		if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
 		    return squad
 		end
 	    end
@@ -64,27 +76,41 @@ function unitGroupUtils.findNearBySquad(natives, position, distance, filter)
     end
 end
 
+-- function unitGroupUtils.findNearbySquad(natives, position, distance)
+--     local squads = natives.squads
+
+--     for i=1,#squads do
+-- 	local squad = squads[i]
+-- 	local unitGroup = squad.group
+-- 	if unitGroup.valid then
+-- 	    if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
+-- 		return squad
+-- 	    end
+-- 	end
+--     end
+-- end
+
 function unitGroupUtils.createSquad(position, surface, natives)
     local unitGroup = surface.create_unit_group({position=position})
     
-    local squad = { group = unitGroup, 
-                    status = SQUAD_GUARDING,
-                    penalties = {},
-		    rabid = false,
-		    frenzy = false,
-		    kamikaze = false,
-		    frenzyPosition = {x = 0,
-				      y = 0},
-                    cycles = 0 }
+    local squad = {
+	group = unitGroup, 
+	status = SQUAD_GUARDING,
+	penalties = {},
+	rabid = false,
+	frenzy = false,
+	kamikaze = false,
+	frenzyPosition = {x = 0,
+			  y = 0},
+	cycles = 0,
+	chunk = nil
+    }
     natives.squads[#natives.squads+1] = squad
     return squad
 end
 
-function unitGroupUtils.membersToSquad(squad, members, overwriteGroup)
+function unitGroupUtils.membersToSquad(cmd, members, overwriteGroup)
     if (members ~= nil) then
-	local cmd = { type = DEFINES_COMMAND_GROUP,
-		      group = squad.group,
-		      distraction = DEFINES_DISTRACTION_NONE }
 	for i=1,#members do
             local member = members[i]
             if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
@@ -118,7 +144,7 @@ local function isAttacking(group)
     return (state == DEFINES_GROUP_STATE_ATTACKING_TARGET) or (state == DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
 end
 
-function unitGroupUtils.cleanSquads(natives)
+function unitGroupUtils.cleanSquads(natives, map)
     local squads = natives.squads
     local squadCount = #squads
 
@@ -130,10 +156,12 @@ function unitGroupUtils.cleanSquads(natives)
 	if group.valid then
 	    local memberCount = #group.members
 	    if (memberCount == 0) then
+		removeSquadFromChunk(map, squad)
 		group.destroy()
 	    elseif (memberCount > AI_MAX_BITER_GROUP_SIZE) then
 		local members = group.members
 		unitGroupUtils.recycleBiters(natives, members)
+		removeSquadFromChunk(map, squad)
 		group.destroy()
 	    else
 		local status = squad.status
@@ -170,46 +198,82 @@ function unitGroupUtils.recycleBiters(natives, biters)
     end
 end
 
-function unitGroupUtils.regroupSquads(natives)
-    local groupThreshold = AI_SQUAD_MERGE_THRESHOLD
+local function mergeGroups(squads, squad, group, status, position, memberCount)
+    local merge = false
+    local maxed = false
+    for x=1, #squads do
+	local mergeSquad = squads[x]
+	if mergeSquad ~= squad then
+	    
+	    local mergeGroup = mergeSquad.group
+	    if mergeGroup.valid and (euclideanDistanceNamed(position, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
+		local mergeMembers = mergeGroup.members
+		local mergeCount = #mergeMembers
+		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
+		    for memberIndex=1, mergeCount do
+			group.add_member(mergeMembers[memberIndex])
+		    end
+		    if mergeSquad.kamikaze then
+			squad.kamikaze = true
+		    end
+		    merge = true
+		    mergeGroup.destroy()
+		end
+		memberCount = memberCount + mergeCount
+		if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
+		    maxed = true
+		    break
+		end
+	    end
+	end
+    end
+    return merge, memberCount, maxed
+end
 
+function unitGroupUtils.regroupSquads(natives, map)
     local squads = natives.squads
     local squadCount = #squads
 
     local startIndex = natives.regroupIndex
-    
+
     local maxSquadIndex = mMin(startIndex + SQUAD_QUEUE_SIZE, squadCount)
     for i=startIndex,maxSquadIndex do
 	local squad = squads[i]
 	local group = squad.group
 	if group.valid and not isAttacking(group) then
-	    local status = squad.status
 	    local memberCount = #group.members
-	    if (memberCount < groupThreshold) then
+	    if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
+		local status = squad.status
 		local squadPosition = group.position
-	        local mergedSquads = false
-	        for x=i+1,squadCount do
-	    	    local mergeSquad = squads[x]
-	    	    local mergeGroup = mergeSquad.group
-	    	    if mergeGroup.valid and (euclideanDistanceNamed(squadPosition, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
-	    		local mergeMembers = mergeGroup.members
-	    		local mergeCount = #mergeMembers
-	    		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
-	    		    for memberIndex=1, mergeCount do
-	    			group.add_member(mergeMembers[memberIndex])
-	    		    end
-	    		    if mergeSquad.kamikaze then
-	    			squad.kamikaze = true
-	    		    end
-	    		    mergedSquads = true
-	    		    mergeGroup.destroy()
-	    		end
-	    		memberCount = memberCount + mergeCount
-	    		if (memberCount > groupThreshold) then
-	    		    break
-	    		end
-	    	    end
-	        end
+	        local mergedSquads
+		local maxed
+		local chunk = squad.chunk
+
+		if chunk then
+		    mergedSquads, memberCount, maxed = mergeGroups(getSquadsOnChunk(map, chunk),
+								   squad,
+								   group,
+								   status,
+								   squadPosition,
+								   memberCount)
+		    
+		    if not maxed then
+			local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
+
+			for x=1,#neighbors do
+			    mergedSquads, memberCount, maxed = mergeGroups(getSquadsOnChunk(map, neighbors[x]),
+									   squad,
+									   group,
+									   status,
+									   squadPosition,
+									   memberCount)
+			    if maxed then
+				break
+			    end
+			end
+		    end
+		end
+		
 	        if mergedSquads and not squad.kamikaze then
 	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives)
 	    	    if (mRandom() < kamikazeThreshold) then

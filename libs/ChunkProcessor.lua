@@ -19,10 +19,10 @@ local chunkPassScan = chunkUtils.chunkPassScan
 
 -- module code
 
-function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendingStack)
-    local processQueue = regionMap.processQueue
+function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack)
+    local processQueue = map.processQueue
 
-    local area = regionMap.area
+    local area = map.area
     
     local topOffset = area[1]
     local bottomOffset = area[2]
@@ -41,30 +41,30 @@ function chunkProcessor.processPendingChunks(natives, regionMap, surface, pendin
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = initialScan(chunk, natives, surface, regionMap)
+        chunk = initialScan(chunk, natives, surface, map)
 
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local chunkX = chunk.x
 	    
-	    if regionMap[chunkX] == nil then
-		regionMap[chunkX] = {}
+	    if map[chunkX] == nil then
+		map[chunkX] = {}
 	    end
-	    regionMap[chunkX][chunk.y] = chunk
+	    map[chunkX][chunk.y] = chunk
 
 	    processQueue[#processQueue+1] = chunk
 	end
     end
 end
 
-function chunkProcessor.processScanChunks(regionMap, surface)
-    local area = regionMap.area
+function chunkProcessor.processScanChunks(map, surface)
+    local area = map.area
     
     local topOffset = area[1]
     local bottomOffset = area[2]
 
     local removals = {}
 
-    for chunk,_ in pairs(regionMap.chunkToPassScan) do
+    for chunk,_ in pairs(map.chunkToPassScan) do
 	local x = chunk.x
 	local y = chunk.y
 	
@@ -73,17 +73,17 @@ function chunkProcessor.processScanChunks(regionMap, surface)
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = chunkPassScan(chunk, surface, regionMap)
+        chunk = chunkPassScan(chunk, surface, map)
 
 	if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
-	    regionMap[x][y] = nil
+	    map[x][y] = nil
 
 	    removals[#removals+1] = chunk
 	end
     end
 
     for i=#removals,1,-1 do
-	table.remove(regionMap.processQueue, i)
+	table.remove(map.processQueue, i)
     end
    
     return {}
