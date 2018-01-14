@@ -47,6 +47,7 @@ end
 function baseUtils.upgradeEntity(map, entity, surface, natives)
     if not isRampant(entity.name) then
 	local position = entity.position
+	-- build_base_evolution_requirement
 	entity.die()
 	entity = surface.create_entity({name = "rampant-suicide-nest-v" .. mRandom(5) .. "-t1",
 					position = position})

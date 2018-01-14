@@ -1,5 +1,6 @@
 -- imports
 
+local baseUtils = require("BaseUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -82,6 +83,8 @@ local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
+local upgradeEntity = baseUtils.upgradeEntity
+
 local processBases = baseProcessor.processBases
 
 local mRandom = math.random
@@ -136,7 +139,7 @@ local function onChunkGenerated(event)
     end
 end
 
-local function rebuildRegionMap()
+local function rebuildMap()
     game.surfaces[1].print("Rampant - Reindexing chunks, please wait.")
     -- clear old map processing Queue
     -- prevents queue adding duplicate chunks
@@ -157,22 +160,22 @@ local function rebuildRegionMap()
     map.chunkToResource = {}
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
-     
+    
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK }
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK }
     map.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK }
+			      SENTINEL_IMPASSABLE_CHUNK,
+			      SENTINEL_IMPASSABLE_CHUNK,
+			      SENTINEL_IMPASSABLE_CHUNK }
     map.position = {x=0,
-			  y=0}
+		    y=0}
 
     --this is shared between two different queries
     map.area = {{0, 0}, {0, 0}}
@@ -217,6 +220,8 @@ local function rebuildRegionMap()
     end
 
     processPendingChunks(natives, map, surface, pendingChunks, tick)
+
+    
 end
 
 local function onModSettingsChange(event)
@@ -264,17 +269,27 @@ local function onModSettingsChange(event)
     -- 	game.forces.enemy.ai_controllable = true
     -- end
     -- if changed and newValue then
-    -- 	rebuildRegionMap()
+    -- 	rebuildMap()
     -- 	return false
     -- end
     return true
+end
+
+local function rebuildNativeTables()
+    for v=1,SUICIDE_NEST_VARIATIONS do
+	local entity = surface.create_entity()
+	natives.
+	entity.die()
+    end
+    for v=1,ACID_NEST_VARIATIONS do
 end
 
 local function onConfigChanged()
     local upgraded
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
-	rebuildRegionMap()
+	rebuildMap()
+	rebuildNativeTables()
     end
 end
 
@@ -423,7 +438,8 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
-	event.entity = registerEnemyBaseStructure(map, entity, surface, natives)
+	entity = upgradeEntity(map, entity, surface, natives)
+	event.entity = registerEnemyBaseStructure(map, entity)
     end
 end
 

@@ -2,7 +2,6 @@ local chunkUtils = {}
 
 -- imports
 
-local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 
@@ -39,8 +38,6 @@ local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
 -- imported functions
 
 local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
-
-local upgradeEntity = baseUtils.upgradeEntity
 
 local tRemove = table.remove
 
@@ -488,9 +485,7 @@ function chunkUtils.entityForPassScan(map, entity)
     end
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, surface, natives)
-    entity = upgradeEntity(map, entity, surface, natives)
-    
+function chunkUtils.registerEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
 	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
