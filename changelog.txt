@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.3
+Date: 1. 13. 2018
+  Improvements:
+    - Removed squad limit
+  Optimizations:
+    - Reworked squad regrouping to be surrounding chunks instead comparing against master list
+  Framework:
+    - Add squads to chunk map for faster location sensitive lookups
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.2
 Date: 1. 2. 2018
   Bugfixes:

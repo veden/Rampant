@@ -16,7 +16,7 @@ constants.VERSION_26 = 26
 constants.VERSION_27 = 27
 constants.VERSION_28 = 28
 constants.VERSION_33 = 33
-constants.VERSION_37 = 37
+constants.VERSION_38 = 38
 
 -- misc
 
@@ -79,7 +79,7 @@ constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
 
 constants.AI_UNIT_REFUND = 3
 
-constants.AI_MAX_SQUAD_COUNT = 30
+-- constants.AI_MAX_SQUAD_COUNT = 30
 constants.AI_MAX_BITER_GROUP_SIZE = 450
 
 constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
@@ -189,8 +189,8 @@ constants.BUILDING_PHEROMONES["fluid-turret"] = 28
 constants.BUILDING_PHEROMONES["turret"] = 10
 constants.BUILDING_PHEROMONES["artillery-turret"] = 100
 
-constants.retreatFilter = {}
-constants.retreatFilter[constants.SQUAD_RETREATING] = true
+constants.RETREAT_FILTER = {}
+constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
 
 -- map settings tweaks
 
@@ -221,8 +221,8 @@ constants.SENTINEL_IMPASSABLE_CHUNK[constants.RESOURCE_PHEROMONE] = constants.IM
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.PASSABLE] = constants.CHUNK_IMPASSABLE
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.CHUNK_TICK] = 0
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.PATH_RATING] = 0
-constants.SENTINEL_IMPASSABLE_CHUNK.x = 0
-constants.SENTINEL_IMPASSABLE_CHUNK.y = 0
+constants.SENTINEL_IMPASSABLE_CHUNK.x = -1
+constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 return constants
 

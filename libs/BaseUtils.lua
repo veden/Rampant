@@ -47,7 +47,7 @@ function baseUtils.findNearbyBase(natives, position)
     return foundBase
 end
 
-function baseUtils.createBase(regionMap, natives, position, surface, tick)
+function baseUtils.createBase(map, natives, position, surface, tick)
     local bases = natives.bases
     local distance = euclideanDistancePoints(position.x, position.y, 0, 0)
     local base = {
@@ -65,10 +65,10 @@ function baseUtils.createBase(regionMap, natives, position, surface, tick)
 	pattern = mRandom(MAGIC_MAXIMUM_BASE_NUMBER),
 	level = mFloor(distance / 200)
     }
-    if not buildHive(regionMap, base, surface) then
+    if not buildHive(map, base, surface) then
 	return nil
     end
-    -- buildTendril(regionMap, natives, base, surface, tick)
+    -- buildTendril(map, natives, base, surface, tick)
     bases[#bases+1] = base
     return base
 end

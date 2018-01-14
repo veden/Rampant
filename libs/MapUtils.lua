@@ -25,16 +25,16 @@ local mFloor = math.floor
 
 -- module code
 
-function mapUtils.getChunkByXY(regionMap, x, y)
-    local chunkX = regionMap[x]
+function mapUtils.getChunkByXY(map, x, y)
+    local chunkX = map[x]
     if chunkX then
         return chunkX[y] or SENTINEL_IMPASSABLE_CHUNK
     end
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function mapUtils.getChunkByPosition(regionMap, position)
-    local chunkX = regionMap[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
+function mapUtils.getChunkByPosition(map, position)
+    local chunkX = map[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
 	local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
@@ -42,8 +42,8 @@ function mapUtils.getChunkByPosition(regionMap, position)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function mapUtils.getChunkByUnalignedXY(regionMap, x, y)
-    local chunkX = regionMap[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
+function mapUtils.getChunkByUnalignedXY(map, x, y)
+     local chunkX = map[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
 	local chunkY = mFloor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
@@ -64,11 +64,11 @@ end
     /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(regionMap, x, y)
-    local neighbors = regionMap.neighbors
+function mapUtils.getNeighborChunks(map, x, y)
+    local neighbors = map.neighbors
     local chunkYRow1 = y - CHUNK_SIZE
     local chunkYRow3 = y + CHUNK_SIZE
-    local xChunks = regionMap[x-CHUNK_SIZE]
+    local xChunks = map[x-CHUNK_SIZE]
     if xChunks then
         neighbors[1] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[4] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
@@ -79,7 +79,7 @@ function mapUtils.getNeighborChunks(regionMap, x, y)
 	neighbors[6] = SENTINEL_IMPASSABLE_CHUNK
     end
 
-    xChunks = regionMap[x+CHUNK_SIZE]
+    xChunks = map[x+CHUNK_SIZE]
     if xChunks then
         neighbors[3] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[5] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
@@ -90,7 +90,7 @@ function mapUtils.getNeighborChunks(regionMap, x, y)
 	neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[x]
+    xChunks = map[x]
     if xChunks then
         neighbors[2] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[7] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
@@ -117,9 +117,9 @@ function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     return canMove
 end
 
-function mapUtils.getCardinalChunks(regionMap, x, y)
-    local neighbors = regionMap.cardinalNeighbors
-    local xChunks = regionMap[x]
+function mapUtils.getCardinalChunks(map, x, y)
+    local neighbors = map.cardinalNeighbors
+    local xChunks = map[x]
     if xChunks then
 	neighbors[1] = xChunks[y-CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
 	neighbors[4] = xChunks[y+CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
@@ -128,14 +128,14 @@ function mapUtils.getCardinalChunks(regionMap, x, y)
 	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[x-CHUNK_SIZE]
+    xChunks = map[x-CHUNK_SIZE]
     if xChunks then
 	neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
 	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
     end
     
-    xChunks = regionMap[x+CHUNK_SIZE]
+    xChunks = map[x+CHUNK_SIZE]
     if xChunks then
 	neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
