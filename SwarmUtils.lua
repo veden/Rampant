@@ -238,15 +238,25 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
     return unitSet
 end
 
-local function buildUnitSpawner(startingPoints, template, upgradeTable, unitTable, variations, tiers)
+function swarmUtils.buildUnitSpawner(points, templates, upgradeTable, attackGenerator, variations, tiers)
+    local unitSet = buildUnits(points.unit,
+			       templates.unit,
+			       attackGenerator,
+			       upgradeTable.unit,
+			       variations.unit,
+			       tiers.unit)
+    
     for t=1, tiers do
-	local allottedPoints = startingPoints * t
+	local allottedPoints = points.unitSpawner * t
 	
-	for i=1,variations do
-	    local unitSpawner = deepcopy(template)
+	for i=1,variations.unitSpawner do
+	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
+	    local unitTable = unitSetToProbabilityTable(points.probabilityTable,
+							upgradeTable.probabilityTable,
+							unitSet)
 	    generateApperance(unitSpawner, t)
-	    upgradeEntity(allottedPoints, unitSpawner, upgradeTable)
+	    upgradeEntity(allottedPoints, unitSpawner, upgradeTable.unitSpawner)
 
 	    data:extend({
 		    makeUnitSpawner(unitSpawner.name,
@@ -277,22 +287,6 @@ function swarmUtils.buildWorm(startingPoints, template, attackGenerator, upgrade
 	    })
 	end
     end
-end
-
-function swarmUtils.createUnitClass(points, templates, upgradeTable, attackGenerator, variations, tiers)
-    buildUnitSpawner(points.unitSpawner,
-		     templates.unitSpawner,
-		     upgradeTable.unitSpawner,
-		     unitSetToProbabilityTable(points.probabilityTable,
-					       upgradeTable.probabilityTable,
-					       buildUnits(points.unit,
-							  templates.unit,
-							  attackGenerator,
-							  upgradeTable.unit,
-							  variations.unit,
-							  tiers.unit)),
-		     variations.unitSpawner,
-		     tiers.unitSpawner)
 end
 
 return swarmUtils

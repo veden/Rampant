@@ -7,14 +7,14 @@ local swarmUtils = require("SwarmUtils")
 
 
 
-local createUnitClass = swarmUtils.createUnitClass
+local buildUnitSpawner = swarmUtils.buildUnitSpawner
 
 local createSuicideAttack = biterUtils.createSuicideAttack
 
 
 -- module code
 
-createUnitClass(
+buildUnitSpawner(
     {
 	unit = 10,
 	unitSpawner = 5,
@@ -177,12 +177,12 @@ createUnitClass(
 
     {
 	unit = 5,
-	unitSpawner = 5
+	unitSpawner = SUICIDE_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = 7
+	unitSpawner = SUICIDE_NEST_TIERS
     }
 )
 
