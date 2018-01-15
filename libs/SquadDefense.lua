@@ -23,7 +23,11 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
+local mRandom = math.random
+
 local addSquadToChunk = chunkUtils.addSquadToChunk
+
+local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -53,6 +57,10 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 	if not squad then
 	    enemiesToSquad = surface.find_enemy_units(position, radius)
 	    performRetreat = #enemiesToSquad > 0
+	    if (mRandom() < calculateKamikazeThreshold(#enemiesToSquad, natives)) then
+		setRetreatTick(map, chunk, tick + (INTERVAL_LOGIC * 10))
+		performRetreat = false
+	    end
 	elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
 	    performRetreat = #squad.group.members > 1
 	end
