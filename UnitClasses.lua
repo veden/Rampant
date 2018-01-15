@@ -63,7 +63,7 @@ buildUnitSpawner(
 	},
 
 	unitSpawner = {
-	    name = "rampant-suicide-nest",
+	    name = "rampant-suicide-biter-nest",
 	    attributes = {
 		health = 30,
 		healing = 0.01,
@@ -73,6 +73,7 @@ buildUnitSpawner(
 		spawingCooldownStop = 150,
 		
 	    },
+	    
 	    resistances = {
 		explosion = {
 		    decrease = 0,

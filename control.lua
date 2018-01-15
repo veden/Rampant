@@ -276,12 +276,78 @@ local function onModSettingsChange(event)
 end
 
 local function rebuildNativeTables()
+    local position = { x=0, y=0 }
     for v=1,SUICIDE_NEST_VARIATIONS do
-	local entity = surface.create_entity()
-	natives.
-	entity.die()
+	for t=1,SUICIDE_NEST_TIERS do
+	    local entity = surface.create_entity({
+		    name="rampant-suicide-biter-nest-v" .. v .. "-t" .. t,
+		    position=position
+	    })
+	    local evoRequirement = entity.prototype.build_base_evolution_requirement
+	    natives.evolutionTable[#natives.evolutionTable[evoRequirement]+1] = entity.name
+	    entity.die()
+	end
     end
-    for v=1,ACID_NEST_VARIATIONS do
+    -- for v=1,ACID_NEST_VARIATIONS do
+    -- 	for t=1,ACID_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,FIRE_NEST_VARIATIONS do
+    -- 	for t=1,FIRE_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,PHYSICAL_NEST_VARIATIONS do
+    -- 	for t=1,PHYSICAL_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,LASER_NEST_VARIATIONS do
+    -- 	for t=1,LASER_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,INFERNO_NEST_VARIATIONS do
+    -- 	for t=1,INFERNO_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,POSION_NEST_VARIATIONS do
+    -- 	for t=1,POSION_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,INFESTER_NEST_VARIATIONS do
+    -- 	for t=1,INFESTER_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,TROLL_NEST_VARIATIONS do
+    -- 	for t=1,TROLL_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,FAST_NEST_VARIATIONS do
+    -- 	for t=1,FAST_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,WEB_NEST_VARIATIONS do
+    -- 	for t=1,WEB_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,DECAYING_NEST_VARIATIONS do
+    -- 	for t=1,DECAYING_NEST_TIERS do
+	    
+    -- 	end
+    -- end
+    -- for v=1,UNDYING_NEST_VARIATIONS do
+    -- 	for t=1,UNDYING_NEST_TIERS do
+	    
+    -- 	end
+    -- end
 end
 
 local function onConfigChanged()

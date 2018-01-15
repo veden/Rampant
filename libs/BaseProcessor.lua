@@ -2,8 +2,8 @@ local baseProcessor = {}
 
 -- imports
 
-local nestUtils = require("NestUtils")
-local tendrilUtils = require("TendrilUtils")
+-- local nestUtils = require("NestUtils")
+-- local tendrilUtils = require("TendrilUtils")
 local constants = require("Constants")
 
 -- constants
@@ -14,8 +14,8 @@ local BASE_QUEUE_SIZE = constants.BASE_QUEUE_SIZE
 
 local mMin = math.min
 
-local buildOrder = nestUtils.buildOrder
-local advanceTendrils = tendrilUtils.advanceTendrils
+-- local buildOrder = nestUtils.buildOrder
+-- local advanceTendrils = tendrilUtils.advanceTendrils
 
 -- module code
 

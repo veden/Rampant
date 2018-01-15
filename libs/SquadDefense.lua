@@ -6,7 +6,7 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
-local chunkUtils = require("ChunkUtils")
+local chunkPropetyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -25,7 +25,7 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local mRandom = math.random
 
-local addSquadToChunk = chunkUtils.addSquadToChunk
+local addSquadToChunk = chunkPropetyUtils.addSquadToChunk
 
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
@@ -38,10 +38,10 @@ local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsForRetreat = movementUtils.scoreNeighborsForRetreat
 local findMovementPosition = movementUtils.findMovementPosition
 
-local getRetreatTick = chunkUtils.getRetreatTick
-local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
-local setRetreatTick = chunkUtils.setRetreatTick
-local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
+local getRetreatTick = chunkPropetyUtils.getRetreatTick
+local getPlayerBaseGenerator = chunkPropetyUtils.getPlayerBaseGenerator
+local setRetreatTick = chunkPropetyUtils.setRetreatTick
+local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
 
 -- module code
 

@@ -10,6 +10,7 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local playerUtils = require("PlayerUtils")
 local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mathUtils = require("MathUtils")
 
 -- constants
@@ -49,8 +50,8 @@ local validPlayer = playerUtils.validPlayer
 
 local analyzeChunk = chunkUtils.analyzeChunk
 
-local getNestCount = chunkUtils.getNestCount
-local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
+local getNestCount = chunkPropertyUtils.getNestCount
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
 

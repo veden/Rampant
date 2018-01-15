@@ -4,7 +4,7 @@ local aiAttackWave = {}
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local chunkUtils = require("ChunkUtils")
+local chunkPropetyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 package.path = "../?.lua;" .. package.path
@@ -41,9 +41,9 @@ local mRandom = math.random
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local getNestCount = chunkUtils.getNestCount
-local getRallyTick = chunkUtils.getRallyTick
-local setRallyTick = chunkUtils.setRallyTick
+local getNestCount = chunkPropetyUtils.getNestCount
+local getRallyTick = chunkPropetyUtils.getRallyTick
+local setRallyTick = chunkPropetyUtils.setRallyTick
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByXY = mapUtils.getChunkByXY

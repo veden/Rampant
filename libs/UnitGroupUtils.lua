@@ -5,7 +5,7 @@ local unitGroupUtils = {}
 local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
-local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -38,8 +38,8 @@ local mLog = math.log10
 
 local mMin = math.min
 
-local getSquadsOnChunk = chunkUtils.getSquadsOnChunk
-local removeSquadFromChunk = chunkUtils.removeSquadFromChunk
+local getSquadsOnChunk = chunkPropertyUtils.getSquadsOnChunk
+local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 
