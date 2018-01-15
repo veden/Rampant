@@ -4,7 +4,7 @@ local pheromoneUtils = {}
 
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
-local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -30,9 +30,9 @@ local PATH_RATING = constants.PATH_RATING
 local getCardinalChunks = mapUtils.getCardinalChunks
 
 local mMax = math.max
-local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
-local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
-local getResourceGenerator = chunkUtils.getResourceGenerator
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
+local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
 -- module code
 

@@ -8,7 +8,7 @@ local unitGroupUtils = require("UnitGroupUtils")
 local playerUtils = require("PlayerUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
-local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -38,7 +38,7 @@ local mRandom = math.random
 local findMovementPosition = movementUtils.findMovementPosition
 
 local getNeighborChunks = mapUtils.getNeighborChunks
-local addSquadToChunk = chunkUtils.addSquadToChunk
+local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 local getChunkByXY = mapUtils.getChunkByXY
 local positionToChunkXY = mapUtils.positionToChunkXY
 local addMovementPenalty = movementUtils.addMovementPenalty
@@ -49,7 +49,7 @@ local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
-local getPlayerBaseGenerator = chunkUtils.getPlayerBaseGenerator
+local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 
 local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
 

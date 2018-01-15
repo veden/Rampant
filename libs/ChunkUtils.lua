@@ -2,8 +2,10 @@ local chunkUtils = {}
 
 -- imports
 
+local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -29,6 +31,8 @@ local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local BASE_SEARCH_RADIUS = constants.BASE_SEARCH_RADIUS
+
 local PATH_RATING = constants.PATH_RATING
 
 local PASSABLE = constants.PASSABLE
@@ -37,9 +41,12 @@ local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
 
 -- imported functions
 
-local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
+local findNearbyBase = baseUtils.findNearbyBase
+local createBase = baseUtils.createBase
 
-local tRemove = table.remove
+local setChunkBase = chunkPropertyUtils.setChunkBase
+
+local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
 
 local mFloor = math.floor
 
@@ -265,7 +272,7 @@ function chunkUtils.scoreEnemyBuildings(surface, map)
     return nests, worms
 end
 
-function chunkUtils.initialScan(chunk, natives, surface, map)
+function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
     if (passScore >= 0.40) then
@@ -281,6 +288,15 @@ function chunkUtils.initialScan(chunk, natives, surface, map)
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
+	if (nests > 0) or (worms > 0) then
+	    local base = findNearbyBase(map, chunk, BASE_SEARCH_RADIUS)
+	    if base then
+		setChunkBase(map, chunk, base)
+	    else
+		createBase(map, natives, evolutionFactor, chunk, surface, tick)
+	    end
+	end
+	
 	chunkUtils.setNestCount(map, chunk, nests)
 	chunkUtils.setPlayerBaseGenerator(map, chunk, playerObjects)
 	chunkUtils.setResourceGenerator(map, chunk, resources)
@@ -321,125 +337,6 @@ end
 function chunkUtils.analyzeChunk(chunk, natives, surface, map)    
     local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
     chunkUtils.setPlayerBaseGenerator(map, chunk, playerObjects)
-end
-
-function chunkUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk] or 0
-end
-
-function chunkUtils.getWormCount(map, chunk)
-    return map.chunkToWorms[chunk] or 0
-end
-
-function chunkUtils.setWormCount(map, chunk, count)
-    if (count == 0) then
-	map.chunkToWorms[chunk] = nil
-    else
-	map.chunkToWorms[chunk] = count
-    end
-end
-
-function chunkUtils.setNestCount(map, chunk, count)
-    if (count == 0) then
-	map.chunkToNests[chunk] = nil
-    else
-	map.chunkToNests[chunk] = count
-    end
-end
-
-function chunkUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk] or 0
-end
-
-function chunkUtils.getWormCount(map, chunk)
-    return map.chunkToWorms[chunk] or 0
-end
-
-function chunkUtils.getEnemyStructureCount(map, chunk)
-    return (map.chunkToNests[chunk] or 0) + (map.chunkToWorms[chunk] or 0)
-end
-
-function chunkUtils.getRetreatTick(map, chunk)
-    return map.chunkToRetreats[chunk] or 0
-end
-
-function chunkUtils.getRallyTick(map, chunk)
-    return map.chunkToRallys[chunk] or 0
-end
-
-function chunkUtils.setRallyTick(map, chunk, tick)
-    map.chunkToRallys[chunk] = tick 
-end
-
-function chunkUtils.setRetreatTick(map, chunk, tick)
-    map.chunkToRetreats[chunk] = tick
-end
-
-function chunkUtils.setResourceGenerator(map, chunk, resourceGenerator)
-    if (resourceGenerator == 0) then
-	map.chunkToResource[chunk] = nil
-    else
-	map.chunkToResource[chunk] = resourceGenerator
-    end
-end
-
-function chunkUtils.getResourceGenerator(map, chunk)
-    return map.chunkToResource[chunk] or 0
-end
-
-function chunkUtils.addResourceGenerator(map, chunk, delta)
-    map.chunkToResource[chunk] = (map.chunkToResource[chunk] or 0) + delta
-end
-
-function chunkUtils.getPlayerBaseGenerator(map, chunk)
-    return map.chunkToPlayerBase[chunk] or 0
-end
-
-function chunkUtils.addSquadToChunk(map, chunk, squad)
-    if (chunk ~= squad.chunk) then
-	local chunkToSquad = map.chunkToSquad
-	chunkUtils.removeSquadFromChunk(map, squad)
-	if not chunkToSquad[chunk] then
-	    chunkToSquad[chunk] = {}
-	end
-	chunkToSquad[chunk][#chunkToSquad[chunk]+1] = squad
-
-	squad.chunk = chunk
-    end
-end
-
-function chunkUtils.removeSquadFromChunk(map, squad)
-    local chunkToSquad = map.chunkToSquad
-    if squad.chunk then
-	local squads = chunkToSquad[squad.chunk]
-	if squads then
-	    for i=#squads, 1, -1 do    
-		if (squads[i] == squad) then
-		    tRemove(squads, i)
-		    break
-		end
-	    end
-	    if (#squads == 0) then
-		chunkToSquad[squad.chunk] = nil
-	    end
-	end
-    end
-end
-
-function chunkUtils.getSquadsOnChunk(map, chunk)
-    return map.chunkToSquad[chunk] or {}
-end
-
-function chunkUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
-    if (playerGenerator == 0) then
-	map.chunkToPlayerBase[chunk] = nil
-    else
-	map.chunkToPlayerBase[chunk] = playerGenerator
-    end
-end
-
-function chunkUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
-    map.chunkToPlayerBase[chunk] = (map.chunkToPlayerBase[chunk] or 0) + playerGenerator
 end
 
 function chunkUtils.createChunk(topX, topY)
@@ -514,15 +411,27 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
 	
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    removeEnemyStructureFromChunk(map, leftTop, entity)
+	    if getEnemyStructureCount(map, leftTop) == 0 then
+		setChunkBase(map, leftTop, nil)
+	    end
 	end
 	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    removeEnemyStructureFromChunk(map, rightTop, entity)
+	    if getEnemyStructureCount(map, rightTop) == 0 then
+		setChunkBase(map, rightTop, nil)
+	    end
 	end
 	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    removeEnemyStructureFromChunk(map, leftBottom, entity)
+	    if getEnemyStructureCount(map, leftBottom) == 0 then
+		setChunkBase(map, leftBottom, nil)
+	    end
 	end
 	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    removeEnemyStructureFromChunk(map, rightBottom, entity)
+	    if getEnemyStructureCount(map, rightBottom) == 0 then
+		setChunkBase(map, rightBottom, nil)
+	    end
 	end
     end
 end

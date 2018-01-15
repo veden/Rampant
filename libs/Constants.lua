@@ -63,6 +63,8 @@ constants.CHUNK_ALL_DIRECTIONS = 3
 -- constants.CHUNK_PLAYER_BORDER = 4
 -- constants.CHUNK_PLAYER_INTERIOR = 5
 
+constants.BASE_SEARCH_RADIUS = 4 * constants.CHUNK_SIZE
+
 -- ai
 
 constants.AI_POINT_GENERATOR_AMOUNT = 6

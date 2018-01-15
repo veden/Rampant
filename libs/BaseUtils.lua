@@ -5,12 +5,16 @@ local baseUtils = {}
 local stringUtils = require("StringUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
+local mapUtils = require("MapUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
 local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
@@ -23,62 +27,82 @@ local isRampant = stringUtils.isRampant
 
 local mFloor = math.floor
 
--- local buildTendril = tendrilUtils.buildTendril
+local positionToChunkXY = mapUtils.positionToChunkXY
+local getChunkBase = chunkPropertyUtils.getChunkBase
+local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local mRandom = math.random
 
 -- module code
 
-function baseUtils.findNearbyBase(natives, position)
-    local bases = natives.bases
-    local foundBase
+function baseUtils.findNearbyBase(map, chunk, chunkRadius)
+    local x = chunk.x
+    local y = chunk.y
+
+    local foundBase = getChunkBase(map, chunk)
+    if foundBase then
+	return foundBase
+    end
+    
     local closest = MAGIC_MAXIMUM_NUMBER
-    for i=1,#bases do
-	local base = bases[i]
-	local distance = euclideanDistancePoints(base.x, base.y, position.x, position.y)
-	if (distance <= (BASE_DISTANCE_THRESHOLD + (base.level * 100))) and (distance < closest) then
-	    closest = distance
-	    foundBase = base
+    for xi = x-chunkRadius, x+chunkRadius, CHUNK_SIZE do
+	for yi = y-chunkRadius, y+chunkRadius, CHUNK_SIZE do
+	    if (xi ~= x) and (yi ~= y)  then
+		local base = getChunkBase(map, positionToChunkXY(map, xi, yi))
+		if base then
+		    local distance = euclideanDistancePoints(base.x, base.y, x, y)
+		    if (distance <= (BASE_DISTANCE_THRESHOLD + (base.level * 100))) and (distance < closest) then
+			closest = distance
+			foundBase = base
+		    end
+		end
+	    end
 	end
     end
+    
     return foundBase
 end
 
-function baseUtils.upgradeEntity(map, entity, surface, natives)
+function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor, tick)
     if not isRampant(entity.name) then
 	local position = entity.position
-	-- build_base_evolution_requirement
 	entity.die()
-	entity = surface.create_entity({name = "rampant-suicide-nest-v" .. mRandom(5) .. "-t1",
-					position = position})
+	local chunk = positionToChunkXY(map, position)
+	local base = getChunkBase(map, chunk)
+
+	if not base then
+	    baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+	end
+
+	entity = surface.creaate_entity({name = "rampant-suicide-nest-v" .. mRandom(5) .. "-t1",
+					 position = position})
+	
     end
 
     return entity
 end
 
-function baseUtils.createBase(map, natives, position, surface, tick)
-    local bases = natives.bases
-    local distance = euclideanDistancePoints(position.x, position.y, 0, 0)
+function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+    local x = chunk.x
+    local y = chunk.y
+    local distance = euclideanDistancePoints(x, y, 0, 0)
     local base = {
-	x = position.x,
-	y = position.y,
+	x = x,
+	y = y,
 	created = tick,
 	alignment = { BASE_ALIGNMENT_NEUTRAL },
-	hives = {},
-	tendrils = {},
-	nests = {},
-	worms = {},
-	eggs = {},
-	upgradePoints = 0,
-	growth = tick,
 	pattern = mRandom(MAGIC_MAXIMUM_BASE_NUMBER),
 	level = mFloor(distance / 200)
     }
-    if not buildHive(map, base, surface) then
-	return nil
-    end
-    -- buildTendril(map, natives, base, surface, tick)
-    bases[#bases+1] = base
+
+    setChunkBase(map, chunk, base)
+    
+    -- if not buildHive(map, base, surface) then
+    -- 	return nil
+    -- end
+
+    natives.bases[natives.bases+1] = base
+    
     return base
 end
 
