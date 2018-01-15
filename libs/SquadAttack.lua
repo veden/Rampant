@@ -129,7 +129,7 @@ function squadAttack.squadsBeginAttack(natives, players)
         local squad = squads[i]
 	local group = squad.group
         if (squad.status == SQUAD_GUARDING) and group.valid then
-	    local kamikazeThreshold = calculateKamikazeThreshold(squad, natives)
+	    local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
 
 	    local groupPosition = group.position	    
 	    if playersWithinProximityToPosition(players, groupPosition, 100) then

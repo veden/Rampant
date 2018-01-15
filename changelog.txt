@@ -3,6 +3,8 @@ Version: 0.16.3
 Date: 1. 13. 2018
   Improvements:
     - Removed squad limit
+    - Squads converted from vanilla control receive immediate kamikaze roll
+    - Units not under a unit group, now get a kamikaze roll before being put into a retreating squad
   Optimizations:
     - Reworked squad regrouping to be surrounding chunks instead comparing against master list
   Framework:
