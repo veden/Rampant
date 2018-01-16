@@ -1,6 +1,6 @@
 -- imports
 
-local baseUtils = require("BaseUtils")
+local baseUtils = require("libs/BaseUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -20,6 +20,14 @@ local mathUtils = require("libs/MathUtils")
 local config = require("config")
 
 -- constants
+
+local SUICIDE_BITER_NEST_TIERS = constants.SUICIDE_BITER_NEST_TIERS
+local SUICIDE_BITER_NEST_VARIATIONS = constants.SUICIDE_BITER_NEST_VARIATIONS
+local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
+local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
+
+local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
+local BASE_ALIGNMENT_SUICIDE = constants.BASE_ALIGNMENT_SUICIDE
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
@@ -41,6 +49,8 @@ local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
+
+local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
@@ -87,6 +97,7 @@ local upgradeEntity = baseUtils.upgradeEntity
 
 local processBases = baseProcessor.processBases
 
+local mFloor = math.floor
 local mRandom = math.random
 
 -- local references to global
@@ -151,6 +162,7 @@ local function rebuildMap()
     map.processIndex = 1
     map.scanIndex = 1
 
+    map.chunkToBase = {}
     map.chunkToHives = {}
     map.chunkToNests = {}
     map.chunkToWorms = {}
@@ -160,6 +172,8 @@ local function rebuildMap()
     map.chunkToResource = {}
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
+
+    natives.bases = {}
     
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
@@ -219,74 +233,50 @@ local function rebuildMap()
 						 y = chunk.y * 32 }}})
     end
 
-    processPendingChunks(natives, map, surface, pendingChunks, tick)
-
-    
-end
-
-local function onModSettingsChange(event)
-    
-    if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
-	return false
-    end
-    
-    upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)   
-    
-    upgrade.compareTable(natives.safeEntities, "curved-rail", settings.global["rampant-safeBuildings-curvedRail"].value)
-    upgrade.compareTable(natives.safeEntities, "straight-rail", settings.global["rampant-safeBuildings-straightRail"].value)
-    upgrade.compareTable(natives.safeEntities, "rail-signal", settings.global["rampant-safeBuildings-railSignals"].value)
-    upgrade.compareTable(natives.safeEntities, "rail-chain-signal", settings.global["rampant-safeBuildings-railChainSignals"].value)
-    upgrade.compareTable(natives.safeEntities, "train-stop", settings.global["rampant-safeBuildings-trainStops"].value)
-    upgrade.compareTable(natives.safeEntities, "lamp", settings.global["rampant-safeBuildings-lamps"].value)
-
-    local changed, newValue = upgrade.compareTable(natives.safeEntityName,
-						   "big-electric-pole",
-						   settings.global["rampant-safeBuildings-bigElectricPole"].value)
-    if changed then
-	natives.safeEntityName["big-electric-pole"] = newValue
-	natives.safeEntityName["big-electric-pole-2"] = newValue
-	natives.safeEntityName["big-electric-pole-3"] = newValue
-	natives.safeEntityName["big-electric-pole-4"] = newValue
-    end
-    
-    upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
-    upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
-    
-    upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
-    upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
-    upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
-    upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
-    upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
-    upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
-    upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
-
-    -- RE-ENABLE WHEN COMPLETE
-    natives.useCustomAI = constants.DEV_CUSTOM_AI
-    -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
-    -- if natives.useCustomAI then
-    -- 	game.forces.enemy.ai_controllable = false
-    -- else
-    -- 	game.forces.enemy.ai_controllable = true
-    -- end
-    -- if changed and newValue then
-    -- 	rebuildMap()
-    -- 	return false
-    -- end
-    return true
+    processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
 end
 
 local function rebuildNativeTables()
-    local position = { x=0, y=0 }
-    for v=1,SUICIDE_NEST_VARIATIONS do
-	for t=1,SUICIDE_NEST_TIERS do
-	    local entity = surface.create_entity({
-		    name="rampant-suicide-biter-nest-v" .. v .. "-t" .. t,
-		    position=position
-	    })
-	    local evoRequirement = entity.prototype.build_base_evolution_requirement
-	    natives.evolutionTable[#natives.evolutionTable[evoRequirement]+1] = entity.name
-	    entity.die()
+    natives.evolutionTable = {}
+
+    local fileEntity = function(baseAlignment, entity)
+	local evoRequirement = mFloor(entity.prototype.build_base_evolution_requirement/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
+	local eTable = natives.evolutionTable[baseAlignment]
+	if not eTable then
+	    eTable = {}
+	    natives.evolutionTable[baseAlignment] = eTable
 	end
+	local aTable = eTable[evoRequirement]
+	if not aTable then
+	    aTable = {}
+	    eTable[evoRequirement] = aTable
+	end
+	aTable[#aTable+1] = entity.name
+    end
+    
+    local surface = game.surfaces[1]
+    
+    local position = { x = 0, y = 0 }
+    
+    for v = 1, SUICIDE_BITER_NEST_VARIATIONS do
+	for t = 1, SUICIDE_BITER_NEST_TIERS do
+	    local entity = surface.create_entity({
+		    name="suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
+		    position = position
+	    })
+	    fileEntity(BASE_ALIGNMENT_SUICIDE, entity)
+	    entity.destroy()
+	end
+    end
+    for v=1,NEUTRAL_NEST_VARIATIONS do
+    	for t=1,NEUTRAL_NEST_TIERS do
+	    local entity = surface.create_entity({
+		    name="neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
+		    position = position
+	    })
+	    fileEntity(BASE_ALIGNMENT_NEUTRAL, entity)
+	    entity.destroy()
+    	end
     end
     -- for v=1,ACID_NEST_VARIATIONS do
     -- 	for t=1,ACID_NEST_TIERS do
@@ -350,6 +340,60 @@ local function rebuildNativeTables()
     -- end
 end
 
+local function onModSettingsChange(event)
+    
+    if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
+	return false
+    end
+    
+    upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)   
+    
+    upgrade.compareTable(natives.safeEntities, "curved-rail", settings.global["rampant-safeBuildings-curvedRail"].value)
+    upgrade.compareTable(natives.safeEntities, "straight-rail", settings.global["rampant-safeBuildings-straightRail"].value)
+    upgrade.compareTable(natives.safeEntities, "rail-signal", settings.global["rampant-safeBuildings-railSignals"].value)
+    upgrade.compareTable(natives.safeEntities, "rail-chain-signal", settings.global["rampant-safeBuildings-railChainSignals"].value)
+    upgrade.compareTable(natives.safeEntities, "train-stop", settings.global["rampant-safeBuildings-trainStops"].value)
+    upgrade.compareTable(natives.safeEntities, "lamp", settings.global["rampant-safeBuildings-lamps"].value)
+
+    local changed, newValue = upgrade.compareTable(natives.safeEntityName,
+						   "big-electric-pole",
+						   settings.global["rampant-safeBuildings-bigElectricPole"].value)
+    if changed then
+	natives.safeEntityName["big-electric-pole"] = newValue
+	natives.safeEntityName["big-electric-pole-2"] = newValue
+	natives.safeEntityName["big-electric-pole-3"] = newValue
+	natives.safeEntityName["big-electric-pole-4"] = newValue
+    end
+    
+    upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
+    upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
+    
+    upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
+    upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
+    upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
+    upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
+    upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
+    upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
+    upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
+
+    if upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value) then
+	rebuildNativeTables()
+    end
+    -- RE-ENABLE WHEN COMPLETE
+    natives.useCustomAI = constants.DEV_CUSTOM_AI
+    -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+    -- if natives.useCustomAI then
+    -- 	game.forces.enemy.ai_controllable = false
+    -- else
+    -- 	game.forces.enemy.ai_controllable = true
+    -- end
+    -- if changed and newValue then
+    -- 	rebuildMap()
+    -- 	return false
+    -- end
+    return true
+end
+
 local function onConfigChanged()
     local upgraded
     upgraded, natives = upgrade.attempt(natives)
@@ -375,7 +419,7 @@ local function onTick(event)
 	map.scanTick = map.scanTick + INTERVAL_SCAN
 	local surface = game.surfaces[1]
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick)
+	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
 
 	scanMap(map, surface, natives)
 	
@@ -505,7 +549,7 @@ local function onEnemyBaseBuild(event)
     local surface = entity.surface
     if (surface.index == 1) then
 	entity = upgradeEntity(map, entity, surface, natives)
-	event.entity = registerEnemyBaseStructure(map, entity)
+	event.entity = registerEnemyBaseStructure(map, entity, natives, game.forces.enemy.evolution_factor, surface, event.tick)
     end
 end
 
@@ -613,12 +657,14 @@ remote.add_interface("rampantTests",
 			 gaussianRandomTest = tests.gaussianRandomTest,
 			 reveal = tests.reveal,
 			 showMovementGrid = tests.showMovementGrid,
+			 showBaseGrid = tests.showBaseGrid,
 			 baseStats = tests.baseStats,
 			 mergeBases = tests.mergeBases,
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
 			 registeredNest = tests.registeredNest,
 			 colorResourcePoints = tests.colorResourcePoints,
+			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 exportAiState = tests.exportAiState(onTick)
 		     }

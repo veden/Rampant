@@ -115,7 +115,7 @@ local function unitSetToProbabilityTable(points, upgradeTable, unitSet)
     return result
 end
 
-local function upgradeEntity(points, entity, upgradeTable)
+local function upgradeEntity(points, entity, upgradeTable, tierMultipler)
     local remainingPoints = points
     if upgradeTable then
 	while (remainingPoints > 0) do
@@ -129,28 +129,40 @@ local function upgradeEntity(points, entity, upgradeTable)
 		    if bonus.mapping then
 			entity.attributes[bonus.name] = bonus.mapping[entity.attributes[bonus.name] or "default"]
 		    else
-			entity.attributes[bonus.name] = (entity.attributes[bonus.name] or 0) + bonus.adjustment
+			local adj = bonus.adjustment * tierMultipler
+			if adj < 0 then
+			    adj = -adj
+			    adj = -gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
+			else
+			    adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
+			end
+			entity.attributes[bonus.name] = (entity.attributes[bonus.name] or 0) + adj
 		    end
 		end
 		if (bonus.type == "resistance") then
-		    local field = bonus.resistance.name
+		    local field = bonus.name
 		    if not entity.resistances[field] then
 			entity.resistances[field] = {}
 		    end
-		    if bonus.resistance.decrease then
-			entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + bonus.resistance.decrease
+		    if bonus.decrease then
+			entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + bonus.decrease
 		    end
-		    if bonus.resistance.percentage then
-			entity.resistances[field].percentage = (entity.resistances[field].percentage or 0) + bonus.resistance.percentage
+		    if bonus.percent then
+			entity.resistances[field].percent = mMin((entity.resistances[field].percent or 0) + bonus.percent, 100)
 		    end
 		end
 		if (bonus.type == "attack") then
-		    local attack = bonus.attack
-		    entity.attack[attack.name] = (entity.attack[attack.name] or 0) + attack.adjustment
-		    if attack.mapping then
-			entity.attributes[attack.name] = attack.mapping[entity.attributes[attack.name] or "default"]
+		    if bonus.mapping then
+			entity.attack[bonus.name] = bonus.mapping[entity.attack[bonus.name] or "default"]
 		    else
-			entity.attributes[attack.name] = (entity.attributes[attack.name] or 0) + attack.adjustment
+			local adj = bonus.adjustment * tierMultipler
+			if adj < 0 then
+			    adj = -adj
+			    adj = -gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
+			else
+			    adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
+			end
+			entity.attack[bonus.name] = (entity.attack[bonus.name] or 0) + adj
 		    end
 		end
 	    end
@@ -205,14 +217,12 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
     
     for t=1, tiers do
 	local result = {}
-
-	local allottedPoints = startingPoints * t
 	
 	for i=1,variations do
 	    local unit = deepcopy(template)
-	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
+	    unit.name = unit.name .. "-v" .. i .. "-t" .. t .. "-rampant"
 	    generateApperance(unit, t)
-	    upgradeEntity(allottedPoints, unit, upgradeTable)
+	    upgradeEntity(startingPoints, unit, upgradeTable, tiers)
 	    
 	    local entity
 	    if (unit.type == "spitter") then
@@ -246,17 +256,17 @@ function swarmUtils.buildUnitSpawner(points, templates, upgradeTable, attackGene
 			       variations.unit,
 			       tiers.unit)
     
-    for t=1, tiers do
+    for t=1, tiers.unitSpawner do
 	local allottedPoints = points.unitSpawner * t
 	
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
-	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
+	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t .. "-rampant"
 	    local unitTable = unitSetToProbabilityTable(points.probabilityTable,
 							upgradeTable.probabilityTable,
 							unitSet)
 	    generateApperance(unitSpawner, t)
-	    upgradeEntity(allottedPoints, unitSpawner, upgradeTable.unitSpawner)
+	    upgradeEntity(allottedPoints, unitSpawner, upgradeTable.unitSpawner, t / tiers)
 
 	    data:extend({
 		    makeUnitSpawner(unitSpawner.name,
@@ -275,9 +285,9 @@ function swarmUtils.buildWorm(startingPoints, template, attackGenerator, upgrade
 	
 	for i=1,variations do
 	    local worm = deepcopy(template)
-	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
+	    worm.name = worm.name .. "-v" .. i .. "-t" .. t .. "-rampant"
 	    generateApperance(worm, t)
-	    upgradeEntity(allottedPoints, worm, upgradeTable)
+	    upgradeEntity(allottedPoints, worm, upgradeTable, t / tiers)
 	    	    
 	    data:extend({
 		    makeWorm(worm.name,

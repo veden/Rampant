@@ -117,7 +117,7 @@ function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
 	repeat
 	    iid1 = 2 * rg() + -1
 	    iid2 = 2 * rg() + -1
-	    q = (iid1 * iid1) + (iid2 * iid2)
+	    q = (iid1 * iid1) + (iid2 * iid2)	    
 	until (q ~= 0) and (q < 1)
 	local s = mSqrt((-2 * mLog10(q)) / q)
 	local v = iid1 * s

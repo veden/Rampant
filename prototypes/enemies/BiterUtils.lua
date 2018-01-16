@@ -27,6 +27,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	attack_parameters = biterAttack,
 	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
+	spawning_time_modifier = biterAttributes.spawningTimeModifer or 0,
 	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
 	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
 	distraction_cooldown = biterAttributes.distractionCooldown or 300,
@@ -65,6 +66,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	attack_parameters = biterAttack,
 	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
+	spawning_time_modifier = biterAttributes.spawningTimeModifer or 0,
 	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
 	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
 	distraction_cooldown = biterAttributes.distractionCooldown or 300,
@@ -304,6 +306,35 @@ end
 
 function biterFunctions.findTint(entity)
     return entity.run_animation.layers[2].tint
+end
+
+function biterFunctions.createMeleeAttack(attributes)
+    return
+	{
+	    type = "projectile",
+	    range = attributes.range or 0.5,
+	    cooldown = attributes.cooldown or 30,
+	    ammo_category = "melee",
+	    ammo_type = {
+		category = "melee",
+		target_type = "entity",
+		action =
+		    {
+			type = "direct",
+			action_delivery =
+			    {
+				type = "instant",
+				target_effects =
+				    {
+					type = "damage",
+					damage = { amount = attributes.damage, type = "physical"}
+				    }
+			    }
+		    }
+	    },
+	    sound = make_biter_roars(0.4),
+	    animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	}
 end
 
 function biterFunctions.createFireAttack(attributes, fireAttack)

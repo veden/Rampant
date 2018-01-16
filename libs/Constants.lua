@@ -64,6 +64,7 @@ constants.CHUNK_ALL_DIRECTIONS = 3
 -- constants.CHUNK_PLAYER_INTERIOR = 5
 
 constants.BASE_SEARCH_RADIUS = 4 * constants.CHUNK_SIZE
+constants.EVOLUTION_INCREMENTS = 0.05
 
 -- ai
 
@@ -97,13 +98,37 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
-constants.BASE_DISTANCE_THRESHOLD = 15 * constants.CHUNK_SIZE
+constants.BASE_DISTANCE_THRESHOLD = 40 * constants.CHUNK_SIZE
+constants.BASE_DISTANCE_LEVEL_BONUS = 300
 
 constants.BASE_ALIGNMENT_NEUTRAL = 1
 constants.BASE_ALIGNMENT_FIRE = 2
 constants.BASE_ALIGNMENT_BURROW = 3
 constants.BASE_ALIGNMENT_SUICIDE = 4
 constants.BASE_ALIGNMENT_INFEST = 5
+constants.BASE_ALIGNMENT_ACID = 6
+constants.BASE_ALIGNMENT_FIRE = 7
+constants.BASE_ALIGNMENT_PHYSICAL = 8
+constants.BASE_ALIGNMENT_LASER = 9
+constants.BASE_ALIGNMENT_INFERNO = 10
+constants.BASE_ALIGNMENT_POSION = 11
+constants.BASE_ALIGNMENT_TROLL = 12
+constants.BASE_ALIGNMENT_FAST = 13
+constants.BASE_ALIGNMENT_WEB = 14
+constants.BASE_ALIGNMENT_DECAYING = 15
+constants.BASE_ALIGNMENT_UNDYING = 16
+constants.BASE_ALIGNMENT_NEUTRAL_ADVANCED = 17
+constants.BASE_ALIGNMENT_ENERGY_THIEF = 18
+constants.BASE_ALIGNMENT_ELECTRIC = 19
+
+local neutralPath = {}
+neutralPath[constants.BASE_ALIGNMENT_ACID] = true
+neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
+neutralPath[constants.BASE_ALIGNMENT_PHYSICAL] = true
+neutralPath[constants.BASE_ALIGNMENT_LASER] = true
+
+constants.BASE_ALIGNMENT_PATHS = {}
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
 
 -- ai retreat
 
@@ -228,7 +253,13 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 -- unit spawners
 
-constants.SUICIDE_NEST_TIERS = 7
-constants.SUICIDE_NEST_VARIATIONS = 5
+constants.SUICIDE_BITER_NEST_TIERS = 7
+constants.SUICIDE_BITER_NEST_VARIATIONS = 5
+
+constants.NEUTRAL_NEST_TIERS = 7
+constants.NEUTRAL_NEST_VARIATIONS = 20
+
+constants.ACID_NEST_TIERS = 7
+constants.ACID_NEST_VARIATIONS = 5
 
 return constants
