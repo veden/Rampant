@@ -168,6 +168,9 @@ function upgrade.attempt(natives)
 	for _,squad in pairs(natives.squads) do
     	    squad.chunk = nil
     	end
+
+	natives.bases = {}
+	natives.baseIndex = 1
 	
 	global.regionMap = nil
 	

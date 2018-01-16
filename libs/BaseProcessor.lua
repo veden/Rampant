@@ -27,6 +27,8 @@ function baseProcessor.processBases(map, surface, natives, tick)
     for index = baseIndex, endIndex do
         local base = bases[index]
 
+	if base.created then
+	end
 	
 	-- buildOrder(map, natives, base, surface, tick)
 	-- advanceTendrils(map, base, surface, tick, natives)

@@ -270,6 +270,29 @@ function tests.mergeBases()
     baseUtils.mergeBases(natives)
 end
 
+function tests.showBaseGrid()
+    local n = {}
+
+    for k,v in pairs(global.natives.bases) do
+	n[v] = k % 5
+    end
+
+    local chunks = global.map.chunkToBase
+    for chunk,base in pairs(chunks) do
+	local pick = n[base]
+	local color = "concrete"
+	if (pick == 1) then
+	    color = "hazard-concrete-left"
+	elseif (pick == 2) then
+	    color = "deepwater"
+	elseif (pick == 3) then
+	    color = "water-green"
+	elseif (pick == 4) then
+	    color = "water"
+	end
+	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
+    end
+end
 
 function tests.showMovementGrid()
     local chunks = global.map.processQueue
@@ -303,6 +326,17 @@ function tests.colorResourcePoints()
     end    
 end
 
+function tests.entityStats(name, d)
+    local playerPosition = game.players[1].position
+    local chunkX = math.floor(playerPosition.x * 0.03125) * 32
+    local chunkY = math.floor(playerPosition.y * 0.03125) * 32
+    local a = game.surfaces[1].create_entity({name=name, position={chunkX, chunkY}})
+    if d then
+	a['direction'] = d
+    end
+    print(serpent.dump(a))
+    a.destroy()
+end
 
 function tests.exportAiState(onTick)
 
