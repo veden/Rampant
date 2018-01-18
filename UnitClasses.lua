@@ -27,211 +27,190 @@ local createMeleeAttack = biterUtils.createMeleeAttack
 
 
 -- suicide
-buildUnitSpawner(
-    {
-	unit = 10,
-	unitSpawner = 5,
-	probabilityTable = 5
-    },
-    {
-	unit = {
-	    name = "suicide-biter",
+-- buildUnitSpawner(
+--     {
+-- 	unit = 10,
+-- 	unitSpawner = 5,
+-- 	probabilityTable = 5
+--     },
+--     {
+-- 	unit = {
+-- 	    name = "suicide-biter",
 
-	    attributes = {
-		health = 30,
-		movement = 0.21,
-		distancePerFrame = 0.1,
-		healing = 0.01,
-		explosion = "blood-explosion-small",
-	    },
+-- 	    attributes = {
+-- 		health = 30,
+-- 		movement = 0.21,
+-- 		distancePerFrame = 0.1,
+-- 		healing = 0.01,
+-- 		explosion = "blood-explosion-small",
+-- 	    },
 
-	    attack = {
-		area = 3.5,
-		damage = 20,
-		explosion = "explosion",
-		scorchmark = "small-scorchmark",
-		explosionCount = 2,
-		explosionDistance = 2,
-	    },
+-- 	    attack = {
+-- 		area = 3.5,
+-- 		damage = 20,
+-- 		explosion = "explosion",
+-- 		scorchmark = "small-scorchmark",
+-- 		explosionCount = 2,
+-- 		explosionDistance = 2,
+-- 	    },
 
-	    resistances = {
-		explosion = {
-		    decrease = 0,
-		    percent = -50
-		},
-		laser = {
-		    decrease = 1,
-		    percent = 0
-		},
-		fire = {
-		    decrease = 0,
-		    percent = -60
-		}
-	    },
+-- 	    resistances = {
+-- 		explosion = {
+-- 		    decrease = 0,
+-- 		    percent = -50
+-- 		},
+-- 		laser = {
+-- 		    decrease = 1,
+-- 		    percent = 0
+-- 		},
+-- 		fire = {
+-- 		    decrease = 0,
+-- 		    percent = -60
+-- 		}
+-- 	    },
 
-	    type = "biter",
-	    scale = 0.55,
-	    tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
-	    tint2 = {r=0.7, g=0.0, b=0.72, a=0.4}
-	},
+-- 	    type = "biter",
+-- 	    scale = 0.55,
+-- 	    tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
+-- 	    tint2 = {r=0.7, g=0.0, b=0.72, a=0.4}
+-- 	},
 
-	unitSpawner = {
-	    name = "suicide-biter-nest",
-	    attributes = {
-		health = 30,
-		healing = 0.01,
-		unitsOwned = 7,
-		unitsToSpawn = 5,
-		spawingCooldownStart = 360,
-		spawingCooldownStop = 150,
-		
-	    },
-	    
-	    resistances = {
-		explosion = {
-		    decrease = 0,
-		    percent = -50
-		},
-		laser = {
-		    decrease = 1,
-		    percent = 0
-		},
-		fire = {
-		    decrease = 0,
-		    percent = -60
-		}
-	    },
-	    scale = 0.95,
-	    tint = {r=0.7, g=0.0, b=0.72, a=0.4}
-	}
-    },
+-- 	unitSpawner = {
+-- 	    name = "suicide-biter-nest",
+-- 	    attributes = {
+-- 		health = 30,
+-- 		healing = 0.01,
+-- 		unitsOwned = 7,
+-- 		unitsToSpawn = 5,
+-- 		spawingCooldownStart = 360,
+-- 		spawingCooldownStop = 150,
 
-    {
-	unit = {
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "health",
-			adjustment = 50
-		    }
-		}
-	    }
-	},
+-- 	    },
 
-	unitSpawner = {
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "health",
-			adjustment = 50
-		    }
-		}
-	    }
-	},
+-- 	    resistances = {
+-- 		explosion = {
+-- 		    decrease = 0,
+-- 		    percent = -50
+-- 		},
+-- 		laser = {
+-- 		    decrease = 1,
+-- 		    percent = 0
+-- 		},
+-- 		fire = {
+-- 		    decrease = 0,
+-- 		    percent = -60
+-- 		}
+-- 	    },
+-- 	    scale = 0.95,
+-- 	    tint = {r=0.7, g=0.0, b=0.72, a=0.4}
+-- 	}
+--     },
 
-	probabilityTable = {
-	    {
-		cost = 1,
-		index = 1,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 2,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 3,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 4,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 5,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 6,
-		adjustment = 1.5
-	    },
-	    {
-		cost = 1,
-		index = 7,
-		adjustment = 2
-	    },
-	    {
-		cost = 1,
-		index = 8,
-		adjustment = 2
-	    },
-	    {
-		cost = 1,
-		index = 9,
-		adjustment = 1.5
-	    },
-	    {
-		cost = 1,
-		index = 10,
-		adjustment = 1
-	    }
-	}
-    },
+--     {
+-- 	unit = {
+-- 	    {
+-- 		cost = 1,
+-- 		bonus = {
+-- 		    {
+-- 			type = "attribute",
+-- 			name = "health",
+-- 			adjustment = 50
+-- 		    }
+-- 		}
+-- 	    }
+-- 	},
 
-    createSuicideAttack,
+-- 	unitSpawner = {
+-- 	    {
+-- 		cost = 1,
+-- 		bonus = {
+-- 		    {
+-- 			type = "attribute",
+-- 			name = "health",
+-- 			adjustment = 50
+-- 		    }
+-- 		}
+-- 	    }
+-- 	},
 
-    {
-	unit = 5,
-	unitSpawner = SUICIDE_BITER_NEST_VARIATIONS
-    },
+-- 	probabilityTable = {
+-- 	    {
+-- 		cost = 1,
+-- 		index = 1,
+-- 		adjustment = 1
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 2,
+-- 		adjustment = 1
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 3,
+-- 		adjustment = 1
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 4,
+-- 		adjustment = 1
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 5,
+-- 		adjustment = 1
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 6,
+-- 		adjustment = 1.5
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 7,
+-- 		adjustment = 2
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 8,
+-- 		adjustment = 2
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 9,
+-- 		adjustment = 1.5
+-- 	    },
+-- 	    {
+-- 		cost = 1,
+-- 		index = 10,
+-- 		adjustment = 1
+-- 	    }
+-- 	}
+--     },
 
-    {
-	unit = 10,
-	unitSpawner = SUICIDE_BITER_NEST_TIERS
-    }
-)
+--     createSuicideAttack,
 
+--     {
+-- 	unit = 5,
+-- 	unitSpawner = SUICIDE_BITER_NEST_VARIATIONS
+--     },
+
+--     {
+-- 	unit = 10,
+-- 	unitSpawner = SUICIDE_BITER_NEST_TIERS
+--     }
+-- )
 
 -- neutral
 buildUnitSpawner(
-    {
-	unit = 50,
-	unitSpawner = 3,
-	probabilityTable = 3
-    },
     {
 	unit = {
 	    name = "neutral-biter",
 
 	    attributes = {
-		-- health = 10,
-		-- movement = 0.19,
-		-- distancePerFrame = 0.08,
-		-- healing = 0.01,
 		explosion = "blood-explosion-small"
 	    },
-
-	    attack = {
-		-- damage = 3,
-		-- range = 0.5,
-		cooldown = 30
-	    },
-
-	    resistances = {
-		-- acid = {
-		--     decrease = 3,
-		--     percent = 20
-		-- },
-	    },
+	    attack = {},
+	    resistances = {},
 
 	    type = "biter",
 	    scale = 0.5,
@@ -248,7 +227,6 @@ buildUnitSpawner(
 		unitsToSpawn = 5,
 		spawingCooldownStart = 360,
 		spawingCooldownStop = 150,
-		
 	    },
 	    
 	    resistances = {
@@ -273,263 +251,231 @@ buildUnitSpawner(
     {
 	unit = {
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "health",
-			low = 2,
-			high = 500
+		{
+		    type = "attribute",
+		    name = "health",
+		    [1] = 15,
+		    [2] = 75,
+		    [3] = 150,
+		    [4] = 250,
+		    [5] = 400,
+		    [6] = 750,
+		    [7] = 1500,
+		    [8] = 3000,
+		    [9] = 5000,
+		    [10] = 10000
+		}
+	    },
+
+	    {
+		{
+		    type = "attack",
+		    name = "damage",
+		    [1] = 7,
+		    [2] = 15,
+		    [3] = 22.5,
+		    [4] = 35,
+		    [5] = 45,
+		    [6] = 60,
+		    [7] = 75,
+		    [8] = 90,
+		    [9] = 150,
+		    [10] = 200
+		}
+	    },
+
+	    {
+		{
+		    type = "attribute",
+		    name = "healing",
+		    [1] = 0.01,
+		    [2] = 0.01,
+		    [3] = 0.012,
+		    [4] = 0.013,
+		    [5] = 0.014,
+		    [6] = 0.016,
+		    [7] = 0.017,
+		    [8] = 0.02,
+		    [9] = 0.022,
+		    [10] = 0.028
+		}
+	    },
+
+	    {
+		{
+		    type = "attribute",
+		    name = "movement",
+		    [1] = 0.2,
+		    [2] = 0.19,
+		    [3] = 0.185,
+		    [4] = 0.18,
+		    [5] = 0.175,
+		    [6] = 0.17,
+		    [7] = 0.17,
+		    [8] = 0.17,
+		    [9] = 0.17,
+		    [10] = 0.17
+		},
+		{
+		    type = "attribute",
+		    name = "distancePerFrame",
+		    [1] = 0.1,
+		    [2] = 0.125,
+		    [3] = 0.15,
+		    [4] = 0.19,
+		    [5] = 0.195,
+		    [6] = 0.2,
+		    [7] = 0.2,
+		    [8] = 0.2,
+		    [9] = 0.2,
+		    [10] = 0.2
+		}
+	    },
+
+	    {
+		{
+		    type = "resistance",
+		    name = "physical",
+		    decrease = {
+			[1] = 0,
+			[2] = 0,
+			[3] = 4,
+			[4] = 5,
+			[5] = 6,
+			[6] = 8,
+			[7] = 10,
+			[8] = 12,
+			[9] = 14,
+			[10] = 15
 		    },
-		    {
-			type = "attribute",
-			name = "movement",
-			adjustment = -0.001
-		    },
-		    {
-			type = "attribute",
-			name = "distancePerFrame",
-			adjustment = 0.001
-		    },
-		    {
-			type = "attribute",
-			name = "pollutionToAttack",
-			adjustment = 50
+		    percent = {
+			[1] = 0,
+			[2] = 0,
+			[3] = 0,
+			[4] = 10,
+			[5] = 10,
+			[6] = 10,
+			[7] = 10,
+			[8] = 10,
+			[9] = 10,
+			[10] = 10
 		    }
 		}
 	    },
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attack",
-			name = "damage",
-			adjustment = 5
-		    },
-		    {
-			type = "attribute",
-			name = "pollutionToAttack",
-			adjustment = 20
-		    }
+		
+		{
+		    type = "attack",
+		    name = "range",
+		    [1] = 0.5,
+		    [2] = 0.5,
+		    [3] = 0.75,
+		    [4] = 0.75,
+		    [5] = 1.0,
+		    [6] = 1.0,
+		    [7] = 1.25,
+		    [8] = 1.50,
+		    [9] = 1.75,
+		    [10] = 2.0
 		}
-	    },
-
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "healing",
-			adjustment = 0.005
-		    }
-		}
-	    },
-
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "movement",
-			adjustment = 0.02
-		    },
-		    {
-			type = "attribute",
-			name = "distancePerFrame",
-			adjustment = 0.02
-		    }
-		}
-	    },
-
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "resistance",
-			name = "physical",
-			decrease = 0.5,
-			percent = 3
-		    },
-		    {
-			type = "resistance",
-			name = "explosion",
-			decrease = 0.25,
-			percent = 3
-		    },
-		    {
-			type = "attribute",
-			name = "pollutionToAttack",
-			adjustment = 50
-		    }
-		}
-	    },
-
-	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attack",
-			name = "damage",
-			adjustment = 2
-		    },
-		    {
-			type = "attack",
-			name = "range",
-			adjustment = 0.15
-		    },
-		    {
-			type = "attribute",
-			name = "pollutionToAttack",
-			adjustment = 20
-		    }
-		}
-	    },
+	    }
 	},
-
+	
 	unitSpawner = {
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "health",
-			adjustment = 50
-		    }
+		{
+		    type = "attribute",
+		    name = "health",
+		    adjustment = 50
 		}
 	    },
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "healing",
-			adjustment = 0.02
-		    }
+		{
+		    type = "attribute",
+		    name = "healing",
+		    adjustment = 0.02
 		}
 	    },
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "spawingCooldownStart",
-			adjustment = -10
-		    },
-		    {
-			type = "attribute",
-			name = "spawingCooldownEnd",
-			adjustment = -10
-		    },
-		    {
-			type = "attribute",
-			name = "evolutionRequirement",
-			adjustment = 0.01
-		    }
+		
+		{
+		    type = "attribute",
+		    name = "spawingCooldownStart",
+		    adjustment = -10
+		},
+		{
+		    type = "attribute",
+		    name = "spawingCooldownEnd",
+		    adjustment = -10
+		},
+		{
+		    type = "attribute",
+		    name = "evolutionRequirement",
+		    adjustment = 0.01
 		}
+		
 	    },
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "attribute",
-			name = "unitsOwned",
-			adjustment = 2
-		    },
-		    {
-			type = "attribute",
-			name = "unitsToSpawn",
-			adjustment = 1
-		    },
-		    {
-			type = "attribute",
-			name = "evolutionRequirement",
-			adjustment = 0.01
-		    }
+		
+		{
+		    type = "attribute",
+		    name = "unitsOwned",
+		    adjustment = 2
+		},
+		{
+		    type = "attribute",
+		    name = "unitsToSpawn",
+		    adjustment = 1
+		},
+		{
+		    type = "attribute",
+		    name = "evolutionRequirement",
+		    adjustment = 0.01
 		}
+		
 	    },
 
 	    {
-		cost = 1,
-		bonus = {
-		    {
-			type = "resistance",
-			name = "physical",
-			decrease = 0.5,
-			percent = 2
-		    },
-		    {
-			type = "resistance",
-			name = "explosion",
-			decrease = 1,
-			percent = 2
-		    },
-		    {
-			type = "resistance",
-			name = "fire",
-			decrease = 0.7,
-			percent = 5
-		    }
+		
+		{
+		    type = "resistance",
+		    name = "physical",
+		    decrease = 0.5,
+		    percent = 2
+		},
+		{
+		    type = "resistance",
+		    name = "explosion",
+		    decrease = 1,
+		    percent = 2
+		},
+		{
+		    type = "resistance",
+		    name = "fire",
+		    decrease = 0.7,
+		    percent = 5
 		}
+		
 	    }
 	    
 	},
 
 	probabilityTable = {
-	    {
-		cost = 1,
-		index = 1,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 2,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 3,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 4,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 5,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 6,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 7,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 8,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 9,
-		adjustment = 1
-	    },
-	    {
-		cost = 1,
-		index = 10,
-		adjustment = 1
-	    }
+	    [1] = 1,
+	    [2] = 1,
+	    [3] = 1,
+	    [4] = 1,
+	    [5] = 1,
+	    [6] = 1,
+	    [7] = 1,
+	    [8] = 1,
+	    [9] = 1,
+	    [10] = 1,
 	}
     },
 
