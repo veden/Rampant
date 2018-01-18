@@ -554,7 +554,7 @@ local function onEnemyBaseBuild(event)
 end
 
 local function onSurfaceTileChange(event)
-    local surfaceIndex = event.surface_index or event.robot.surface.index
+    local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
     if (event.item.name == "landfill") and (surfaceIndex == 1) then
 	local chunks = {}
 	local positions = event.positions
