@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.3
 Date: 1. 13. 2018
+  Bugfixes:
+    - Fixed creative mode tile wand robot error (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=220&hilit=rampant#p335574)
   Improvements:
     - Removed squad limit
   Optimizations:
