@@ -5,6 +5,7 @@ Date: 1. 13. 2018
     - Seeded unit, unit spawner, and worm generation for the swarm
   Bugfixes:
     - Fixed a cause where squads could get stuck on hard to pass terrain
+    - Fixed creative mode tile wand robot error (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=220&hilit=rampant#p335574)
   Improvements:
     - Removed squad limit
     - Squads converted from vanilla control receive immediate kamikaze roll
