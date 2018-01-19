@@ -258,16 +258,16 @@ local function rebuildNativeTables()
     
     local position = { x = 0, y = 0 }
     
-    for v = 1, SUICIDE_BITER_NEST_VARIATIONS do
-	for t = 1, SUICIDE_BITER_NEST_TIERS do
-	    local entity = surface.create_entity({
-		    name="suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(BASE_ALIGNMENT_SUICIDE, entity)
-	    entity.destroy()
-	end
-    end
+    -- for v = 1, SUICIDE_BITER_NEST_VARIATIONS do
+    -- 	for t = 1, SUICIDE_BITER_NEST_TIERS do
+    -- 	    local entity = surface.create_entity({
+    -- 		    name="suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
+    -- 		    position = position
+    -- 	    })
+    -- 	    fileEntity(BASE_ALIGNMENT_SUICIDE, entity)
+    -- 	    entity.destroy()
+    -- 	end
+    -- end
     for v=1,NEUTRAL_NEST_VARIATIONS do
     	for t=1,NEUTRAL_NEST_TIERS do
 	    local entity = surface.create_entity({

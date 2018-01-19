@@ -113,6 +113,38 @@ local function unitSetToProbabilityTable(points, upgradeTable, unitSet)
     return result
 end
 
+local function processUpgradeTable(upgradeTable)
+    
+    for i=1,#upgradeTable do
+	local bonuses = upgradeTable[i]
+	for ii=1,#bonuses do
+	    local bonus = bonuses[ii]
+	    
+	    if (bonus.type == "attribute") or (bonus.type == "attack") then
+		if not bonus.mapping then
+		    for x = 1, #bonus do
+			
+			bonus[x] = bonus[x] * 0.10
+		    end
+		end
+	    elseif (bonus.type == "resistance") then
+		if bonus.decrease then
+		    for x = 1, #bonus.decrease do
+			bonus.decrease[x] = bonus.decrease[x] * 0.10
+		    end
+		end
+		if bonus.percent then
+		    for x = 1, #bonus.percent do
+			bonus.percent[x] = bonus.percent[x] * 0.10
+		    end
+		end
+	    end
+	end
+    end
+    
+    return upgradeTable
+end
+
 local function upgradeEntity(points, entity, upgradeTable, tier)
     local remainingPoints = points
     if upgradeTable then
@@ -127,7 +159,7 @@ local function upgradeEntity(points, entity, upgradeTable, tier)
 			entity.attributes[bonus.name] = bonus.mapping[entity.attributes[bonus.name] or "default"]
 		    else
 			local adj = bonus[tier]
-			adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
+			adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.875, adj * 1.25, xorRandom)
 			entity.attributes[bonus.name] = (entity.attributes[bonus.name] or 0) + adj
 		    end
 		end
@@ -155,8 +187,8 @@ local function upgradeEntity(points, entity, upgradeTable, tier)
 			--     adj = -adj
 			--     adj = -gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
 			-- else
-			    adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
-			    --end
+			adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.875, adj * 1.25, xorRandom)
+			--end
 			entity.attack[bonus.name] = (entity.attack[bonus.name] or 0) + adj
 		    end
 		end
@@ -167,36 +199,26 @@ local function upgradeEntity(points, entity, upgradeTable, tier)
     end
 end
 
-local function generateApperance(unit, tier)
-    local scale = gaussianRandomRangeRG(unit.scale, unit.scale * 0.12, unit.scale * 0.60, unit.scale * 1.40, xorRandom) + (0.05 * tier)
-
-    local r,g,b,a
+local function calculateRGBa(tint, tier)
+    local r = gaussianRandomRangeRG(tint.r, tint.r * 0.10 + (0.005 * tier), mMax(tint.r * 0.85 - (0.005 * tier), 0), mMin(tint.r * 1.15, 1), xorRandom)
+    local g = gaussianRandomRangeRG(tint.g, tint.g * 0.10 + (0.005 * tier), mMax(tint.g * 0.85 - (0.005 * tier), 0), mMin(tint.g * 1.15, 1), xorRandom)
+    local b = gaussianRandomRangeRG(tint.b, tint.b * 0.10 + (0.005 * tier), mMax(tint.b * 0.85 - (0.005 * tier), 0), mMin(tint.b * 1.15, 1), xorRandom)
+    local a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
     
-    if unit.tint then
-	r = gaussianRandomRangeRG(unit.tint.r, unit.tint.r * 0.10 + (0.005 * tier), mMax(unit.tint.r * 0.85 - (0.005 * tier), 0), mMin(unit.tint.r * 1.15, 1), xorRandom)
-	g = gaussianRandomRangeRG(unit.tint.g, unit.tint.g * 0.10 + (0.005 * tier), mMax(unit.tint.g * 0.85 - (0.005 * tier), 0), mMin(unit.tint.g * 1.15, 1), xorRandom)
-	b = gaussianRandomRangeRG(unit.tint.b, unit.tint.b * 0.10 + (0.005 * tier), mMax(unit.tint.b * 0.85 - (0.005 * tier), 0), mMin(unit.tint.b * 1.15, 1), xorRandom)
-	a = gaussianRandomRangeRG(unit.tint.a, unit.tint.a * 0.10 + (0.005 * tier), mMax(unit.tint.a * 0.85 - (0.005 * tier), 0), mMin(unit.tint.a * 1.15, 1), xorRandom)
-	    
-	local tint = { r=r, g=g, b=b, a=a }
-	
+    return { r=r, g=g, b=b, a=a }
+end
+
+local function generateApperance(unit, tier)
+    local scaleValue = unit.scale[tier]
+    local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom) + (0.05 * tier)
+
+    if unit.tint then	
 	unit.attributes.scale = scale
-	unit.attributes.tint = tint
-    else	
-	r = gaussianRandomRangeRG(unit.tint1.r, unit.tint1.r * 0.10 + (0.005 * tier), mMax(unit.tint1.r * 0.85 - (0.005 * tier), 0), mMin(unit.tint1.r * 1.15, 1), xorRandom)
-	g = gaussianRandomRangeRG(unit.tint1.g, unit.tint1.g * 0.10 + (0.005 * tier), mMax(unit.tint1.g * 0.85 - (0.005 * tier), 0), mMin(unit.tint1.g * 1.15, 1), xorRandom)
-	b = gaussianRandomRangeRG(unit.tint1.b, unit.tint1.b * 0.10 + (0.005 * tier), mMax(unit.tint1.b * 0.85 - (0.005 * tier), 0), mMin(unit.tint1.b * 1.15, 1), xorRandom)
-	a = gaussianRandomRangeRG(unit.tint1.a, unit.tint1.a * 0.10 + (0.005 * tier), mMax(unit.tint1.a * 0.85 - (0.005 * tier), 0), mMin(unit.tint1.a * 1.15, 1), xorRandom)
+	unit.attributes.tint = calculateRGBa(unit.tint, tier)
+    else
+	local tint1 = calculateRGBa(unit.tint1, tier)
+	local tint2 = calculateRGBa(unit.tint2, tier)
 	
-	local tint1 = { r=r, g=g, b=b, a=a }
-
-	r = gaussianRandomRangeRG(unit.tint2.r, unit.tint2.r * 0.10 + (0.005 * tier), mMax(unit.tint2.r * 0.85 - (0.005 * tier), 0), mMin(unit.tint2.r * 1.15, 1), xorRandom)
-	g = gaussianRandomRangeRG(unit.tint2.g, unit.tint2.g * 0.10 + (0.005 * tier), mMax(unit.tint2.g * 0.85 - (0.005 * tier), 0), mMin(unit.tint2.g * 1.15, 1), xorRandom)
-	b = gaussianRandomRangeRG(unit.tint2.b, unit.tint2.b * 0.10 + (0.005 * tier), mMax(unit.tint2.b * 0.85 - (0.005 * tier), 0), mMin(unit.tint2.b * 1.15, 1), xorRandom)
-	a = gaussianRandomRangeRG(unit.tint2.a, unit.tint2.a * 0.10 + (0.005 * tier), mMax(unit.tint2.a * 0.85 - (0.005 * tier), 0), mMin(unit.tint2.a * 1.15, 1), xorRandom)
-	
-	local tint2 = { r=r, g=g, b=b, a=a }
-
 	unit.attributes.scale = scale
 	unit.attributes.tint1 = tint1
 	unit.attributes.tint2 = tint2
@@ -204,10 +226,19 @@ local function generateApperance(unit, tier)
 	unit.attack.scale = scale
 	unit.attack.tint1 = tint1
 	unit.attack.tint2 = tint2
+	if unit.pTint then
+	    unit.attack.pTint = calculateRGBa(unit.pTint, tier)
+	end
+	if unit.sTint then
+	    unit.attack.sTint = calculateRGBa(unit.sTint, tier)
+	end
+	if unit.smTint then
+	    unit.attack.smTint = calculateRGBa(unit.smTint, tier)
+	end
     end
 end
 
-local function buildUnits(startingPoints, template, attackGenerator, upgradeTable, variations, tiers, multipler)
+local function buildUnits(startingPoints, template, attackGenerator, upgradeTable, variations, tiers)
     local unitSet = {}
     
     for t=1, tiers do
@@ -218,6 +249,10 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
 	    unit.name = unit.name .. "-v" .. i .. "-t" .. t .. "-rampant"
 	    generateApperance(unit, t)
 	    upgradeEntity(startingPoints, unit, upgradeTable,  t)
+	    
+	    if unit.attackName then
+		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t .. "-rampant"
+	    end
 	    
 	    local entity
 	    if (unit.type == "spitter") then
@@ -243,35 +278,8 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
     return unitSet
 end
 
-local function processUpgradeTable(upgradeTable)
-    
-    for i=1,#upgradeTable do
-	local bonus = upgradeTable[i]
-	if (bonus.type == "attribute") or (bonus.type == "attack") then
-	    if not bonus.mapping then
-		for x = 1, #bonus do
-		    bonus[x] = bonus[x] * 0.10
-		end
-	    end
-	elseif (bonus.type == "resistance") then
-	    if bonus.decrease then
-		for x = 1, #bonus.decrease do
-		    bonus.decrease[x] = bonus.decrease[x] * 0.10
-		end
-	    end
-	    if bonus.percent then
-		for x = 1, #bonus.percent do
-		    bonus.percent[x] = bonus.percent[x] * 0.10
-		end
-	    end
-	end
-    end
-    
-    return upgradeTable
-end
-
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
-    local unitPoints = #upgradeTable.units * 10
+    local unitPoints = #upgradeTable.unit * 10
     local unitSpawnerPoints = #upgradeTable.unitSpawner * 10
     local probabilityPoints = #upgradeTable.probabilityTable * 10
 
@@ -296,6 +304,9 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    generateApperance(unitSpawner, t)
 	    upgradeEntity(unitSpawnerPoints, unitSpawner, upgradeTable.unitSpawner, t)
 
+	    if unitSpawner.autoplace then
+		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[t]
+	    end
 	    data:extend({
 		    makeUnitSpawner(unitSpawner.name,
 				    unitSpawner.attributes,
@@ -318,7 +329,14 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t .. "-rampant"
 	    generateApperance(worm, t)
 	    upgradeEntity(wormPoints, worm, upgradeTable, t)
-	    	    
+
+	    if worm.attackName then
+		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t .. "-rampant"
+	    end
+	    
+	    if worm.autoplace then
+		worm.attributes["autoplace"] = worm.autoplace[t]
+	    end
 	    data:extend({
 		    makeWorm(worm.name,
 			     worm.attributes,
