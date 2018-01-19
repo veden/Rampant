@@ -1,4 +1,20 @@
+local stringUtils = require("libs/StringUtils")
 local vanillaBuildings = require("prototypes/buildings/UpdatesVanilla")
+
+local isRampant = stringUtils.isRampant
+
+if settings.startup["rampant-newEnemies"].value then
+    for k,v in pairs(data.raw["unit-spawner"]) do
+	if not isRampant(k) then
+	    v.autoplace = nil
+	end
+    end
+    for k,v in pairs(data.raw["turret"]) do
+	if not isRampant(k) then
+	    v.autoplace = nil
+	end
+    end
+end
 
 if settings.startup["rampant-enableSwarm"] then    
     for k, unit in pairs(data.raw["unit"]) do

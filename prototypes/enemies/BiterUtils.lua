@@ -72,9 +72,9 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	distraction_cooldown = biterAttributes.distractionCooldown or 300,
 	corpse = biterAttributes.corpse,
 	dying_explosion = biterAttributes.explosion,
-	dying_sound =  make_biter_dying_sounds(1.0),
+	dying_sound =  make_spitter_dying_sounds(0.8),
 	working_sound =  make_biter_calls(0.7),
-	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint1, biterAttributes.tint2)
+	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint)
     }
 end
 
@@ -313,7 +313,7 @@ function biterFunctions.createMeleeAttack(attributes)
 	{
 	    type = "projectile",
 	    range = attributes.range or 0.5,
-	    cooldown = attributes.cooldown or 30,
+	    cooldown = attributes.cooldown or 35,
 	    ammo_category = "melee",
 	    ammo_type = {
 		category = "melee",
@@ -428,7 +428,7 @@ function biterFunctions.createFireAttack(attributes, fireAttack)
 	    }
     } 
 
-    if (attributes.tint1 ~= nil) then
+    if (attributes.tint ~= nil) then
 	attack.animation = spitterattackanimation(attributes.scale, 
 						  attributes.tint1, 
 						  attributes.tint2)

@@ -1,7 +1,7 @@
 local stringUtils = {}
 
 function stringUtils.isRampant(str)
-    return (string.sub(str,1,7) == "rampant")
+    return stringUtils.ends(str, "rampant")
 end
 
 function stringUtils.starts(str, start)
