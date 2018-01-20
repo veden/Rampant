@@ -20,7 +20,9 @@ local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
 local makeColor = colorUtils.makeColor
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
+local buildWorm = swarmUtils.buildWorm
 local createAcidBall = acidBall.createAcidBall
+local createFireAttack = biterUtils.createFireAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
@@ -214,7 +216,7 @@ buildUnitSpawner(
 	    resistances = {},
 
 	    type = "biter",
-	    scale = {
+	    scales = {
 		[1] = 0.5,
 		[2] = 0.6,
 		[3] = 0.7,
@@ -235,7 +237,7 @@ buildUnitSpawner(
 
 	    attributes = {},	    
 	    resistances = {},
-	    scale = {
+	    scales = {
 		[1] = 0.5,
 		[2] = 0.6,
 		[3] = 0.7,
@@ -246,18 +248,6 @@ buildUnitSpawner(
 		[8] = 1.2,
 		[9] = 1.3,
 		[10] = 1.4
-	    },
-	    autoplace = {
-		[1] = 0,
-		[2] = 2,
-		[3] = 3,
-		[4] = 4,
-		[5] = 5,
-		[6] = 6,
-		[7] = 7,
-		[8] = 8,
-		[9] = 9,
-		[10] = 10
 	    },
 	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
 	}
@@ -727,7 +717,7 @@ buildUnitSpawner(
 	    resistances = {},
 
 	    type = "spitter",
-	    scale = {
+	    scales = {
 		[1] = 0.5,
 		[2] = 0.6,
 		[3] = 0.7,
@@ -752,7 +742,7 @@ buildUnitSpawner(
 	    attributes = {},
 	    resistances = {},
 	    
-	    scale = {
+	    scales = {
 		[1] = 0.5,
 		[2] = 0.6,
 		[3] = 0.7,
@@ -763,18 +753,6 @@ buildUnitSpawner(
 		[8] = 1.2,
 		[9] = 1.3,
 		[10] = 1.4
-	    },
-	    autoplace = {
-		[1] = 2,
-		[2] = 3,
-		[3] = 4,
-		[4] = 5,
-		[5] = 6,
-		[6] = 7,
-		[7] = 8,
-		[8] = 9,
-		[9] = 10,
-		[10] = 11
 	    },
 	    tint = {r=0.99, g=0.09, b=0.09, a=1}
 	}
@@ -949,6 +927,24 @@ buildUnitSpawner(
 		    [8] = 16,
 		    [9] = 17,
 		    [10] = 17
+		}
+	    },
+
+	    {
+		
+		{
+		    type = "attack",
+		    name = "radius",
+		    [1] = 1.2,
+		    [2] = 1.3,
+		    [3] = 1.4,
+		    [4] = 1.5,
+		    [5] = 1.6,
+		    [6] = 1.7,
+		    [7] = 1.8,
+		    [8] = 1.9,
+		    [9] = 2.0,
+		    [10] = 2.5
 		}
 	    }
 	},
@@ -1178,8 +1174,11 @@ buildUnitSpawner(
 	}
     },
 
-    createMeleeAttack,
-
+    function (attributes)
+	createAcidBall(attributes)
+	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
+    end,
+    
     {
 	unit = 10,
 	unitSpawner = NEUTRAL_NEST_VARIATIONS
@@ -1190,3 +1189,255 @@ buildUnitSpawner(
 	unitSpawner = NEUTRAL_NEST_TIERS
     }
 )
+
+-- neutral worms
+buildWorm(
+    {
+	name = "neutral-worm",
+
+	attributes = {},
+	attack = {},
+	resistances = {},
+
+	scales = {
+	    [1] = 0.5,
+	    [2] = 0.6,
+	    [3] = 0.7,
+	    [4] = 0.8,
+	    [5] = 0.9,
+	    [6] = 1,
+	    [7] = 1.1,
+	    [8] = 1.2,
+	    [9] = 1.3,
+	    [10] = 1.4
+	},
+	attackName = "acid-ball",
+	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	pTint = {r=0, g=1, b=1, a=0.5},
+	sTint = {r=0, g=1, b=1, a=0.5},
+	smTint = makeColor(0.3, 0.75, 0.3, 0.1)
+    },
+
+    {
+	{
+	    {
+		type = "attribute",
+		name = "health",
+		[1] = 10,
+		[2] = 50,
+		[3] = 200,
+		[4] = 350,
+		[5] = 750,
+		[6] = 1000,
+		[7] = 1500,
+		[8] = 1500,
+		[9] = 2500,
+		[10] = 4500
+	    }
+	},
+
+	{
+	    {
+		type = "attack",
+		name = "cooldown",
+		[1] = 100,
+		[2] = 100,
+		[3] = 97,
+		[4] = 97,
+		[5] = 95,
+		[6] = 95,
+		[7] = 93,
+		[8] = 93,
+		[9] = 90,
+		[10] = 90
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "spawningTimeModifer",
+		[1] = 0,
+		[2] = 0,
+		[3] = 1,
+		[4] = 2,
+		[5] = 3,
+		[6] = 7,
+		[7] = 10,
+		[8] = 10,
+		[9] = 12,
+		[10] = 12
+	    }
+	},
+
+	{
+	    {
+		type = "attribute",
+		name = "pollutionToAttack",
+		[1] = 200,
+		[2] = 750,
+		[3] = 1200,
+		[4] = 1750,
+		[5] = 2500,
+		[6] = 5000,
+		[7] = 10000,
+		[8] = 12500,
+		[9] = 15000,
+		[10] = 20000
+	    }
+	},
+
+	{
+	    {
+		type = "attack",
+		name = "damage",
+		[1] = 4,
+		[2] = 9,
+		[3] = 14,
+		[4] = 23,
+		[5] = 30,
+		[6] = 37,
+		[7] = 45,
+		[8] = 57,
+		[9] = 70,
+		[10] = 80
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "healing",
+		[1] = 0.01,
+		[2] = 0.01,
+		[3] = 0.015,
+		[4] = 0.02,
+		[5] = 0.05,
+		[6] = 0.075,
+		[7] = 0.1,
+		[8] = 0.12,
+		[9] = 0.14,
+		[10] = 0.16
+	    }
+	},
+
+	{
+	    {
+		type = "attribute",
+		name = "movement",
+		[1] = 0.185,
+		[2] = 0.18,
+		[3] = 0.18,
+		[4] = 0.17,
+		[5] = 0.17,
+		[6] = 0.16,
+		[7] = 0.16,
+		[8] = 0.15,
+		[9] = 0.15,
+		[10] = 0.14
+	    },
+	    {
+		type = "attribute",
+		name = "distancePerFrame",
+		[1] = 0.04,
+		[2] = 0.045,
+		[3] = 0.050,
+		[4] = 0.055,
+		[5] = 0.060,
+		[6] = 0.065,
+		[7] = 0.070,
+		[8] = 0.075,
+		[9] = 0.08,
+		[10] = 0.084
+	    }
+	},
+
+	{
+	    {
+		type = "resistance",
+		name = "explosion",
+		percent = {
+		    [1] = 0,
+		    [2] = 0,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 20,
+		    [6] = 20,
+		    [7] = 30,
+		    [8] = 30,
+		    [9] = 40,
+		    [10] = 40
+		}
+	    }
+	},
+
+	{
+	    
+	    {
+		type = "attack",
+		name = "range",
+		[1] = 13,
+		[2] = 13,
+		[3] = 14,
+		[4] = 14,
+		[5] = 15,
+		[6] = 15,
+		[7] = 16,
+		[8] = 16,
+		[9] = 17,
+		[10] = 17
+	    }
+	},
+
+	{
+	    
+	    {
+		type = "attack",
+		name = "radius",
+		[1] = 1.2,
+		[2] = 1.3,
+		[3] = 1.4,
+		[4] = 1.5,
+		[5] = 1.6,
+		[6] = 1.7,
+		[7] = 1.8,
+		[8] = 1.9,
+		[9] = 2.0,
+		[10] = 2.5
+	    }
+	}
+    },
+
+    function (attributes)
+	createAcidBall(attributes)
+	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
+    end,
+    
+    10,
+    10
+)
+
+function generateLocal() 
+    local names = {"Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
+    local sizes = {"Larva", "Pupae", "Worker", "Grunt", "Soldier", "General", "Overlord", "Titan", "Leviathan", "Juggernaut"}
+
+    print("[entity-name]")
+
+
+    local name = names[1]
+
+    for t = 1, 10 do
+	local size = sizes[t]
+
+	for v = 1, 20 do
+	    
+	    print("neutral-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
+	    print("neutral-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
+
+	    if (v <= 10) then
+		print("neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
+		print("neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
+	    end
+	end
+    end
+end

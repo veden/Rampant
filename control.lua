@@ -276,6 +276,12 @@ local function rebuildNativeTables()
 	    })
 	    fileEntity(BASE_ALIGNMENT_NEUTRAL, entity)
 	    entity.destroy()
+	    entity = surface.create_entity({
+		    name="neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
+		    position = position
+	    })
+	    fileEntity(BASE_ALIGNMENT_NEUTRAL, entity)
+	    entity.destroy()
     	end
     end
     -- for v=1,ACID_NEST_VARIATIONS do
@@ -435,10 +441,6 @@ local function onTick(event)
 		 gameRef.forces.enemy.evolution_factor,
 		 tick,
 		 surface)
-
-	if natives.useCustomAI then
-	    processBases(map, surface, natives, tick)
-	end
     end
     if (tick == map.squadTick) then
 	map.squadTick = map.squadTick + INTERVAL_SQUAD
@@ -548,7 +550,7 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
-	entity = upgradeEntity(map, entity, surface, natives)
+	entity = upgradeEntity(map, entity, surface, natives, game.forces.enemy.evolution_factor, event.tick)
 	event.entity = registerEnemyBaseStructure(map, entity, natives, game.forces.enemy.evolution_factor, surface, event.tick)
     end
 end

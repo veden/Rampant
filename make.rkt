@@ -5,7 +5,7 @@
   (require json)
   
   (define modFolder "/data/games/factorio/mods/")
-  (define zipModFolder "/data/games/factorio/mods/")
+  (define zipModFolder "/data/games/factorio2/mods/")
   (define configuration (call-with-input-file "info.json"
                           (lambda (port)
                             (string->jsexpr (port->string port)))))
@@ -85,5 +85,6 @@
   
   (define (run)
     (copyFiles modFolder)
+    (copyFiles zipModFolder)
     ;;(makeZip modFolder)
     (system*/exit-code "/data/games/factorio/bin/x64/factorio")))

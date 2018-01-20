@@ -116,7 +116,7 @@ function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor,
 	local base = getChunkBase(map, chunk)
 
 	if not base then
-	    baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+	    base = baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	end
 
 	-- local distance = euclideanDistancePoints(position.x, position.y, 0, 0)
@@ -143,7 +143,7 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
     local base = {
 	x = x,
 	y = y,
-	created = tick,
+	tick = tick,
 	evolution = evolutionFactor,
 	alignments = alignments,
 	pattern = mRandom(MAGIC_MAXIMUM_BASE_NUMBER),

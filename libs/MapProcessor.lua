@@ -33,6 +33,8 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
+local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
+
 -- imported functions
 
 local scents = pheromoneUtils.scents
@@ -87,6 +89,8 @@ end
 function mapProcessor.processMap(map, surface, natives, tick)
     local roll = map.processRoll
     local index = map.processIndex
+
+    local chunkToBase = map.chunkToBase
     
     if (index == 1) then
         roll = mRandom()
@@ -108,6 +112,11 @@ function mapProcessor.processMap(map, surface, natives, tick)
 	    if squads and (getNestCount(map, chunk) > 0) then
 		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+	    end
+
+	    local base = chunkToBase[chunk]
+	    if base and ((base.tick - tick) > BASE_PROCESS_INTERVAL) then
+		
 	    end
 	    
 	    scents(map, chunk)

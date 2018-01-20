@@ -17,6 +17,11 @@ local deepcopy = util.table.deepcopy
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
+local makeBiterCorpse = biterUtils.makeBiterCorpse
+local makeUnitSpawnerCorpse = biterUtils.makeUnitSpawnerCorpse
+local makeWormCorpse = biterUtils.makeWormCorpse
+local makeSpitterCorpse = biterUtils.makeSpitterCorpse
+
 local makeBiter = biterUtils.makeBiter
 local makeSpitter = biterUtils.makeSpitter
 local makeWorm = biterUtils.makeWorm
@@ -209,17 +214,24 @@ local function calculateRGBa(tint, tier)
 end
 
 local function generateApperance(unit, tier)
-    local scaleValue = unit.scale[tier]
+    local scaleValue = unit.scales[tier]
     local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom) + (0.05 * tier)
 
-    if unit.tint then	
-	unit.attributes.scale = scale
-	unit.attributes.tint = calculateRGBa(unit.tint, tier)
+    unit.scale = scale
+    unit.attributes.scale = scale
+    if unit.tint then
+	local tint = calculateRGBa(unit.tint, tier)
+	
+	unit.attributes.tint = tint
+
+	if unit.attack then
+	    unit.attack.scale = scale
+	    unit.attack.tint = tint
+	end
     else
 	local tint1 = calculateRGBa(unit.tint1, tier)
 	local tint2 = calculateRGBa(unit.tint2, tier)
 	
-	unit.attributes.scale = scale
 	unit.attributes.tint1 = tint1
 	unit.attributes.tint2 = tint2
 	
@@ -246,21 +258,23 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
 	
 	for i=1,variations do
 	    local unit = deepcopy(template)
-	    unit.name = unit.name .. "-v" .. i .. "-t" .. t .. "-rampant"
+	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
 	    generateApperance(unit, t)
 	    upgradeEntity(startingPoints, unit, upgradeTable,  t)
 	    
 	    if unit.attackName then
-		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t .. "-rampant"
+		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
 	    end
 	    
 	    local entity
 	    if (unit.type == "spitter") then
+		unit.attributes.corpse = makeSpitterCorpse(unit)
 		entity = makeSpitter(unit.name,
 				     unit.attributes,
 				     attackGenerator(unit.attack),
 				     unit.resistances)
 	    elseif (unit.type == "biter") then
+		unit.attributes.corpse = makeBiterCorpse(unit)
 		entity = makeBiter(unit.name,
 				   unit.attributes,
 				   attackGenerator(unit.attack),
@@ -297,7 +311,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
-	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t .. "-rampant"
+	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
 	    local unitTable = unitSetToProbabilityTable(probabilityPoints,
 							upgradeTable.probabilityTable,
 							unitSet)
@@ -307,6 +321,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    if unitSpawner.autoplace then
 		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[t]
 	    end
+	    unitSpawner.attributes.corpse = makeUnitSpawnerCorpse(unitSpawner)
 	    data:extend({
 		    makeUnitSpawner(unitSpawner.name,
 				    unitSpawner.attributes,
@@ -326,17 +341,18 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 	
 	for i=1,variations do
 	    local worm = deepcopy(template)
-	    worm.name = worm.name .. "-v" .. i .. "-t" .. t .. "-rampant"
+	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
 	    generateApperance(worm, t)
 	    upgradeEntity(wormPoints, worm, upgradeTable, t)
 
 	    if worm.attackName then
-		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t .. "-rampant"
+		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t
 	    end
 	    
 	    if worm.autoplace then
 		worm.attributes["autoplace"] = worm.autoplace[t]
 	    end
+	    worm.attributes.corpse = makeWormCorpse(worm)
 	    data:extend({
 		    makeWorm(worm.name,
 			     worm.attributes,

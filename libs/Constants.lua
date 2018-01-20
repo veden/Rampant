@@ -121,6 +121,8 @@ constants.BASE_ALIGNMENT_NEUTRAL_ADVANCED = 17
 constants.BASE_ALIGNMENT_ENERGY_THIEF = 18
 constants.BASE_ALIGNMENT_ELECTRIC = 19
 
+constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_MINUTE * 1
+
 local neutralPath = {}
 neutralPath[constants.BASE_ALIGNMENT_ACID] = true
 neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
