@@ -53,8 +53,7 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-stream-rampant")
 
@@ -68,8 +67,7 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-1-stream-rampant")
 
@@ -83,8 +81,7 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-2-stream-rampant")
 
@@ -98,8 +95,7 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-3-stream-rampant")
 end

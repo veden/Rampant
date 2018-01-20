@@ -77,8 +77,7 @@ function NEUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    damageModifier = 1.1,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-infected-ball-stream-rampant")
 
@@ -93,8 +92,7 @@ function NEUpdates.useDumbProjectiles()
     	    fire_penalty = 15,
     	    damageModifier = 1.2,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-mutated-ball-stream-rampant")
 
@@ -110,8 +108,7 @@ function NEUpdates.useDumbProjectiles()
     	    fire_penalty = 15,
     	    damageModifier = 2.3,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-infected-ball-stream-rampant")
 
@@ -126,8 +123,7 @@ function NEUpdates.useDumbProjectiles()
     	    fire_penalty = 15,
     	    damageModifier = 2.6,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-mutated-ball-stream-rampant")
     
@@ -142,8 +138,7 @@ function NEUpdates.useDumbProjectiles()
     	    fire_penalty = 15,
     	    damageModifier = 3.3,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-infected-ball-stream-rampant")
 
@@ -159,8 +154,7 @@ function NEUpdates.useDumbProjectiles()
     	    fire_penalty = 15,
     	    damageModifier = 3.6,
     	    scale = biterUtils.findRunScale(unit),
-    	    tint1 = biterUtils.findTint(unit),
-    	    tint2 = biterUtils.findTint(unit)
+    	    tint = biterUtils.findTint(unit)
     	},
     	"ne-mutated-ball-stream-rampant")
     

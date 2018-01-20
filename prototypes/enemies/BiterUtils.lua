@@ -1,5 +1,101 @@
 local biterFunctions = {}
 
+function biterFunctions.makeSpitterCorpse(attributes)
+    local name = attributes.name .. "-corpse-rampant"
+    data:extend(
+	{
+	    {
+		type = "corpse",
+		name = name,
+		icon = "__base__/graphics/icons/big-biter-corpse.png",
+		icon_size = 32,
+		selectable_in_game = false,
+		selection_box = {{-1, -1}, {1, 1}},
+		subgroup="corpses",
+		order = "c[corpse]-b[spitter]-a[small]",
+		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
+		dying_speed = 0.04,
+		time_before_removed = 15 * 60 * 60,
+		final_render_layer = "corpse",
+		animation = spitterdyinganimation(attributes.scale, attributes.tint)
+	    }
+    })
+return name
+end
+
+function biterFunctions.makeBiterCorpse(attributes)
+    local name = attributes.name .. "-corpse-rampant"
+    data:extend({
+	{
+	    type = "corpse",
+	    name = name,
+	    icon = "__base__/graphics/icons/big-biter-corpse.png",
+	    icon_size = 32,
+	    selectable_in_game = false,
+	    selection_box = {{-1, -1}, {1, 1}},
+	    subgroup="corpses",
+	    order = "c[corpse]-b[spitter]-a[small]",
+	    flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
+	    dying_speed = 0.04,
+	    time_before_removed = 15 * 60 * 60,
+	    final_render_layer = "corpse",
+	    animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	}
+    })
+    return name
+end
+
+function biterFunctions.makeUnitSpawnerCorpse(attributes)
+    local name = attributes.name .. "-corpse-rampant"
+    data:extend({
+	    {
+	    type = "corpse",
+	    name = name,
+	    flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
+	    icon = "__base__/graphics/icons/biter-spawner-corpse.png",
+	    icon_size = 32,
+	    collision_box = {{-2, -2}, {2, 2}},
+	    selection_box = {{-2, -2}, {2, 2}},
+	    selectable_in_game = false,
+	    dying_speed = 0.04,
+	    time_before_removed = 15 * 60 * 60,
+	    subgroup="corpses",
+	    order = "c[corpse]-c[spitter-spawner]",
+	    final_render_layer = "remnants",
+	    animation =
+		{
+		    spawner_die_animation(0, attributes.tint),
+		    spawner_die_animation(1, attributes.tint),
+		    spawner_die_animation(2, attributes.tint),
+		    spawner_die_animation(3, attributes.tint)
+		}
+	    }
+    })
+    return name
+end
+
+function biterFunctions.makeWormCorpse(attributes)
+    local name = attributes.name .. "-corpse-rampant"
+    data:extend({
+	    {
+	    type = "corpse",
+	    name = name,
+	    icon = "__base__/graphics/icons/medium-worm-corpse.png",
+	    icon_size = 32,
+	    selection_box = {{-0.8, -0.8}, {0.8, 0.8}},
+	    selectable_in_game = false,
+	    subgroup="corpses",
+	    order = "c[corpse]-c[worm]-b[medium]",
+	    flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"},
+	    dying_speed = 0.01,
+	    time_before_removed = 15 * 60 * 60,
+	    final_render_layer = "corpse",
+	    animation = worm_die_animation(attributes.scale, attributes.tint)
+	    }
+    })
+    return name
+end
+
 function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResistances)
     local resistances = {}
     for k,v in pairs(biterResistances) do
@@ -9,7 +105,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
     
     return {
 	type = "unit",
-	name = name,
+	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/small-biter.png",
 	icon_size = 32,
 	flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
@@ -48,7 +144,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 
     return {
 	type = "unit",
-	name = name,
+	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/small-spitter.png",
 	icon_size = 32,
 	flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
@@ -87,7 +183,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 
     local o = {
 	type = "unit-spawner",
-	name = name,
+	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/biter-spawner.png",
 	icon_size = 32,
 	flags = {"placeable-player", "placeable-enemy", "not-repairable"},
@@ -122,7 +218,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	-- in ticks per 1 pu
 	pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
 	pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,
-	corpse = "biter-spawner-corpse",
+	corpse = biterAttributes.corpse,
 	dying_explosion = "blood-explosion-huge",
 	max_count_of_owned_units = biterAttributes.unitsOwned or 7,
 	max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
@@ -158,7 +254,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
     
     local o = {
 	type = "turret",
-	name = name,
+	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/medium-worm.png",
 	icon_size = 32,
 	flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "breaths-air"},
@@ -171,7 +267,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	selection_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
 	shooting_cursor_size = attributes.cursorSize or 3,
 	rotation_speed = attributes.rotationSpeed or 1,
-	corpse = "medium-worm-corpse",
+	corpse = attributes.corpse,
 	dying_explosion = "blood-explosion-big",
 	dying_sound = make_worm_dying_sounds(0.9),
 	folded_speed = attributes.foldedSpeed or 0.01,
@@ -430,8 +526,7 @@ function biterFunctions.createFireAttack(attributes, fireAttack)
 
     if (attributes.tint ~= nil) then
 	attack.animation = spitterattackanimation(attributes.scale, 
-						  attributes.tint1, 
-						  attributes.tint2)
+						  attributes.tint)
     end
     
     return attack

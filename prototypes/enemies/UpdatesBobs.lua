@@ -94,8 +94,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"acid-ball-3-stream-rampant")
 
@@ -110,8 +109,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 0,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-electric-ball-stream-rampant")
 
@@ -126,8 +124,7 @@ function bobsUpdates.useDumbProjectiles()
 	    damageModifier = 0.8,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-explosive-ball-stream-rampant")
 
@@ -141,8 +138,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"wide-acid-ball-stream-rampant")
 
@@ -156,8 +152,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-fire-ball-stream-rampant")
 
@@ -171,8 +166,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-poison-ball-stream-rampant")
     
@@ -186,8 +180,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-titan-ball-stream-rampant")
 
@@ -201,8 +194,7 @@ function bobsUpdates.useDumbProjectiles()
 	    warmup = 30,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-behemoth-ball-stream-rampant")
 
@@ -217,8 +209,7 @@ function bobsUpdates.useDumbProjectiles()
     	    turn_range = 1,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
     	},
     	"bob-leviathan-ball-stream-rampant")
 end

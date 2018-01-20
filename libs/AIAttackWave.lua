@@ -119,7 +119,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
 								     scoreUnitGroupLocation,
 								     map)
 	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local squadPosition = surface.find_non_colliding_position("biter-spawner-hive-rampant",
+	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
 								      positionFromDirectionAndChunk(squadDirection,
 												    chunk,
 												    map.position,
