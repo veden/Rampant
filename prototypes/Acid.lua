@@ -1,218 +1,47 @@
 -- imports
 
-local acidBall = require("prototypes/enemies/AttackAcidBall")
-local biterUtils = require("prototypes/enemies/BiterUtils")
+local acidBall = require("utils/AttackAcidBall")
+local biterUtils = require("utils/BiterUtils")
+local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local constants = require("libs/Constants")
-local colorUtils = require("ColorUtils")
+local colorUtils = require("utils/ColorUtils")
+package.path = "../libs/?.lua;" .. package.path
+local constants = require("Constants")
 
 -- constants
 
-local SUICIDE_BITER_NEST_TIERS = constants.SUICIDE_BITER_NEST_TIERS
-local SUICIDE_BITER_NEST_VARIATIONS = constants.SUICIDE_BITER_NEST_VARIATIONS
+local ACID_NEST_TIERS = constants.ACID_NEST_TIERS
+local ACID_NEST_VARIATIONS = constants.ACID_NEST_VARIATIONS
 
-local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
-local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
-
+local ACID_WORM_TIERS = constants.ACID_WORM_TIERS
+local ACID_WORM_VARIATIONS = constants.ACID_WORM_VARIATIONS
 
 -- imported functions
 
 local makeColor = colorUtils.makeColor
 
+local makeSmokeSoft = smokeUtils.makeSmokeSoft
+
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAcidBall = acidBall.createAcidBall
 local createFireAttack = biterUtils.createFireAttack
-local createSuicideAttack = biterUtils.createSuicideAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
+makeSmokeSoft({name="acid", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 
--- module code
-
--- suicide
--- buildUnitSpawner(
---     {
--- 	unit = 10,
--- 	unitSpawner = 5,
--- 	probabilityTable = 5
---     },
---     {
--- 	unit = {
--- 	    name = "suicide-biter",
-
--- 	    attributes = {
--- 		health = 30,
--- 		movement = 0.21,
--- 		distancePerFrame = 0.1,
--- 		healing = 0.01,
--- 		explosion = "blood-explosion-small",
--- 	    },
-
--- 	    attack = {
--- 		area = 3.5,
--- 		damage = 20,
--- 		explosion = "explosion",
--- 		scorchmark = "small-scorchmark",
--- 		explosionCount = 2,
--- 		explosionDistance = 2,
--- 	    },
-
--- 	    resistances = {
--- 		explosion = {
--- 		    decrease = 0,
--- 		    percent = -50
--- 		},
--- 		laser = {
--- 		    decrease = 1,
--- 		    percent = 0
--- 		},
--- 		fire = {
--- 		    decrease = 0,
--- 		    percent = -60
--- 		}
--- 	    },
-
--- 	    type = "biter",
--- 	    scale = 0.55,
--- 	    tint1 = {r=0.6, g=0.0, b=0.70, a=0.8},
--- 	    tint2 = {r=0.7, g=0.0, b=0.72, a=0.4}
--- 	},
-
--- 	unitSpawner = {
--- 	    name = "suicide-biter-nest",
--- 	    attributes = {
--- 		health = 30,
--- 		healing = 0.01,
--- 		unitsOwned = 7,
--- 		unitsToSpawn = 5,
--- 		spawingCooldownStart = 360,
--- 		spawingCooldownStop = 150,
-
--- 	    },
-
--- 	    resistances = {
--- 		explosion = {
--- 		    decrease = 0,
--- 		    percent = -50
--- 		},
--- 		laser = {
--- 		    decrease = 1,
--- 		    percent = 0
--- 		},
--- 		fire = {
--- 		    decrease = 0,
--- 		    percent = -60
--- 		}
--- 	    },
--- 	    scale = 0.95,
--- 	    tint = {r=0.7, g=0.0, b=0.72, a=0.4}
--- 	}
---     },
-
---     {
--- 	unit = {
--- 	    {
--- 		cost = 1,
--- 		bonus = {
--- 		    {
--- 			type = "attribute",
--- 			name = "health",
--- 			adjustment = 50
--- 		    }
--- 		}
--- 	    }
--- 	},
-
--- 	unitSpawner = {
--- 	    {
--- 		cost = 1,
--- 		bonus = {
--- 		    {
--- 			type = "attribute",
--- 			name = "health",
--- 			adjustment = 50
--- 		    }
--- 		}
--- 	    }
--- 	},
-
--- 	probabilityTable = {
--- 	    {
--- 		cost = 1,
--- 		index = 1,
--- 		adjustment = 1
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 2,
--- 		adjustment = 1
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 3,
--- 		adjustment = 1
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 4,
--- 		adjustment = 1
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 5,
--- 		adjustment = 1
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 6,
--- 		adjustment = 1.5
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 7,
--- 		adjustment = 2
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 8,
--- 		adjustment = 2
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 9,
--- 		adjustment = 1.5
--- 	    },
--- 	    {
--- 		cost = 1,
--- 		index = 10,
--- 		adjustment = 1
--- 	    }
--- 	}
---     },
-
---     createSuicideAttack,
-
---     {
--- 	unit = 5,
--- 	unitSpawner = SUICIDE_BITER_NEST_VARIATIONS
---     },
-
---     {
--- 	unit = 10,
--- 	unitSpawner = SUICIDE_BITER_NEST_TIERS
---     }
--- )
-
--- neutral biters
+-- acid biters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "neutral-biter",
+	    name = "acid-biter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
-	    attack = {},
+	    attack = {
+		damageType = "acid"
+	    },
 	    resistances = {},
 
 	    type = "biter",
@@ -228,28 +57,28 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    tint2 = {r=1, g=0.63, b=0, a=0.4}
+	    tint1 = {r=0, g=0.85, b=0.83, a=0.65},
+	    tint2 = {r=0, g=0.85, b=0.63, a=0.65}
 	},
 
 	unitSpawner = {
-	    name = "neutral-biter-nest",
+	    name = "acid-biter-nest",
 
 	    attributes = {},	    
 	    resistances = {},
 	    scales = {
 		[1] = 0.5,
-		[2] = 0.6,
-		[3] = 0.7,
-		[4] = 0.8,
-		[5] = 0.9,
-		[6] = 1,
-		[7] = 1.1,
-		[8] = 1.2,
-		[9] = 1.3,
-		[10] = 1.4
+		[2] = 0.5,
+		[3] = 0.5,
+		[4] = 0.5,
+		[5] = 0.5,
+		[6] = 0.5,
+		[7] = 0.5,
+		[8] = 0.5,
+		[9] = 0.5,
+		[10] = 0.5
 	    },
-	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+	    tint = {r=0, g=0.85, b=0.83, a=0.65}
 	}
     },
 
@@ -443,6 +272,35 @@ buildUnitSpawner(
 			[8] = 13,
 			[9] = 14,
 			[10] = 15
+		    }
+		},
+		
+		{
+		    type = "resistance",
+		    name = "acid",
+		    decrease = {
+			[1] = 7,
+			[2] = 7,
+			[3] = 10,
+			[4] = 10,
+			[5] = 13,
+			[6] = 13,
+			[7] = 16,
+			[8] = 16,
+			[9] = 19,
+			[10] = 23
+		    },
+		    percent = {
+			[1] = 65,
+			[2] = 65,
+			[3] = 70,
+			[4] = 75,
+			[5] = 75,
+			[6] = 80,
+			[7] = 85,
+			[8] = 85,
+			[9] = 90,
+			[10] = 90
 		    }
 		}
 	    },
@@ -671,6 +529,34 @@ buildUnitSpawner(
 			[9] = 65,
 			[10] = 65
 		    }
+		},
+		{
+		    type = "resistance",
+		    name = "acid",
+		    decrease = {
+			[1] = 7,
+			[2] = 7,
+			[3] = 10,
+			[4] = 10,
+			[5] = 13,
+			[6] = 13,
+			[7] = 16,
+			[8] = 16,
+			[9] = 19,
+			[10] = 23
+		    },
+		    percent = {
+			[1] = 65,
+			[2] = 65,
+			[3] = 70,
+			[4] = 75,
+			[5] = 75,
+			[6] = 80,
+			[7] = 85,
+			[8] = 85,
+			[9] = 90,
+			[10] = 90
+		    }
 		}
 		
 	    }
@@ -695,25 +581,27 @@ buildUnitSpawner(
 
     {
 	unit = 10,
-	unitSpawner = NEUTRAL_NEST_VARIATIONS
+	unitSpawner = ACID_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = NEUTRAL_NEST_TIERS
+	unitSpawner = ACID_NEST_TIERS
     }
 )
 
--- neutral spitters
+-- acid spitters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "neutral-spitter",
+	    name = "acid-spitter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
-	    attack = {},
+	    attack = {
+		softSmokeName = "acid-soft-smoke-rampant"
+	    },
 	    resistances = {},
 
 	    type = "spitter",
@@ -730,31 +618,30 @@ buildUnitSpawner(
 		[10] = 1.4
 	    },
 	    attackName = "acid-ball",
-	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	    tint = {r=0, g=0.85, b=0.83, a=0.65},
 	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5},
-	    smTint = makeColor(0.3, 0.75, 0.3, 0.1)
+	    sTint = {r=0, g=1, b=1, a=0.5}
 	},
 
 	unitSpawner = {
-	    name = "neutral-spitter-nest",
+	    name = "acid-spitter-nest",
 
 	    attributes = {},
 	    resistances = {},
 	    
 	    scales = {
 		[1] = 0.5,
-		[2] = 0.6,
-		[3] = 0.7,
-		[4] = 0.8,
-		[5] = 0.9,
-		[6] = 1,
-		[7] = 1.1,
-		[8] = 1.2,
-		[9] = 1.3,
-		[10] = 1.4
+		[2] = 0.5,
+		[3] = 0.5,
+		[4] = 0.5,
+		[5] = 0.5,
+		[6] = 0.5,
+		[7] = 0.5,
+		[8] = 0.5,
+		[9] = 0.5,
+		[10] = 0.5
 	    },
-	    tint = {r=0.99, g=0.09, b=0.09, a=1}
+	    tint = {r=0, g=0.85, b=0.83, a=0.65}
 	}
     },
 
@@ -913,6 +800,37 @@ buildUnitSpawner(
 	    },
 
 	    {
+		{
+		    type = "resistance",
+		    name = "acid",
+		    decrease = {
+			[1] = 7,
+			[2] = 7,
+			[3] = 10,
+			[4] = 10,
+			[5] = 13,
+			[6] = 13,
+			[7] = 16,
+			[8] = 16,
+			[9] = 19,
+			[10] = 23
+		    },
+		    percent = {
+			[1] = 65,
+			[2] = 65,
+			[3] = 70,
+			[4] = 75,
+			[5] = 75,
+			[6] = 80,
+			[7] = 85,
+			[8] = 85,
+			[9] = 90,
+			[10] = 90
+		    }
+		}
+	    },
+	    
+	    {
 		
 		{
 		    type = "attack",
@@ -946,6 +864,63 @@ buildUnitSpawner(
 		    [9] = 2.0,
 		    [10] = 2.5
 		}
+	    },
+
+	    {
+		
+		{
+		    type = "attack",
+		    name = "particleVerticalAcceleration",
+		    [1] = 0.01,
+		    [2] = 0.01,
+		    [3] = 0.02,
+		    [4] = 0.02,
+		    [5] = 0.03,
+		    [6] = 0.03,
+		    [7] = 0.04,
+		    [8] = 0.04,
+		    [9] = 0.05,
+		    [10] = 0.05
+		}
+
+	    },
+
+	    {
+		
+		{
+		    type = "attack",
+		    name = "particleHoizontalSpeed",
+		    [1] = 0.6,
+		    [2] = 0.6,
+		    [3] = 0.7,
+		    [4] = 0.7,
+		    [5] = 0.8,
+		    [6] = 0.8,
+		    [7] = 0.9,
+		    [8] = 0.9,
+		    [9] = 1,
+		    [10] = 1
+		}
+
+	    },
+
+	    {
+		
+		{
+		    type = "attack",
+		    name = "particleHoizontalSpeedDeviation",
+		    [1] = 0.0025,
+		    [2] = 0.0025,
+		    [3] = 0.0024,
+		    [4] = 0.0024,
+		    [5] = 0.0023,
+		    [6] = 0.0023,
+		    [7] = 0.0022,
+		    [8] = 0.0022,
+		    [9] = 0.0021,
+		    [10] = 0.0021
+		}
+
 	    }
 	},
 	
@@ -1156,6 +1131,37 @@ buildUnitSpawner(
 		    }
 		}
 		
+	    },
+
+	    {
+		{
+		    type = "resistance",
+		    name = "acid",
+		    decrease = {
+			[1] = 7,
+			[2] = 7,
+			[3] = 10,
+			[4] = 10,
+			[5] = 13,
+			[6] = 13,
+			[7] = 16,
+			[8] = 16,
+			[9] = 19,
+			[10] = 23
+		    },
+		    percent = {
+			[1] = 65,
+			[2] = 65,
+			[3] = 70,
+			[4] = 75,
+			[5] = 75,
+			[6] = 80,
+			[7] = 85,
+			[8] = 85,
+			[9] = 90,
+			[10] = 90
+		    }
+		}
 	    }
 	    
 	},
@@ -1181,22 +1187,24 @@ buildUnitSpawner(
     
     {
 	unit = 10,
-	unitSpawner = NEUTRAL_NEST_VARIATIONS
+	unitSpawner = ACID_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = NEUTRAL_NEST_TIERS
+	unitSpawner = ACID_NEST_TIERS
     }
 )
 
--- neutral worms
+-- acid worms
 buildWorm(
     {
-	name = "neutral-worm",
+	name = "acid-worm",
 
 	attributes = {},
-	attack = {},
+	attack = {
+	    softSmokeName = "acid-soft-smoke-rampant"
+	},
 	resistances = {},
 
 	scales = {
@@ -1211,11 +1219,10 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "acid-ball",
-	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	attackName = "worm-acid-ball",
+	tint = {r=0, g=0.85, b=0.83, a=0.65},
 	pTint = {r=0, g=1, b=1, a=0.5},
-	sTint = {r=0, g=1, b=1, a=0.5},
-	smTint = makeColor(0.3, 0.75, 0.3, 0.1)
+	sTint = {r=0, g=1, b=1, a=0.5}
     },
 
     {
@@ -1223,11 +1230,11 @@ buildWorm(
 	    {
 		type = "attribute",
 		name = "health",
-		[1] = 10,
-		[2] = 50,
-		[3] = 200,
-		[4] = 350,
-		[5] = 750,
+		[1] = 200,
+		[2] = 350,
+		[3] = 500,
+		[4] = 750,
+		[5] = 900,
 		[6] = 1000,
 		[7] = 1500,
 		[8] = 1500,
@@ -1240,65 +1247,48 @@ buildWorm(
 	    {
 		type = "attack",
 		name = "cooldown",
-		[1] = 100,
-		[2] = 100,
-		[3] = 97,
-		[4] = 97,
-		[5] = 95,
-		[6] = 95,
-		[7] = 93,
-		[8] = 93,
-		[9] = 90,
-		[10] = 90
+		[1] = 50,
+		[2] = 50,
+		[3] = 45,
+		[4] = 45,
+		[5] = 40,
+		[6] = 40,
+		[7] = 35,
+		[8] = 35,
+		[9] = 30,
+		[10] = 30
 	    }
+	},
+
+	{
+	    {
+		type = "attribute",
+		name = "evolutionRequirement",
+		[1] = 0,
+		[2] = 0.1,
+		[3] = 0.2,
+		[4] = 0.3,
+		[5] = 0.4,
+		[6] = 0.5,
+		[7] = 0.6,
+		[8] = 0.7,
+		[9] = 0.8,
+		[10] = 0.9
+	    }		
 	},
 	
 	{
 	    {
-		type = "attribute",
-		name = "spawningTimeModifer",
-		[1] = 0,
-		[2] = 0,
-		[3] = 1,
-		[4] = 2,
-		[5] = 3,
-		[6] = 7,
-		[7] = 10,
-		[8] = 10,
-		[9] = 12,
-		[10] = 12
-	    }
-	},
-
-	{
-	    {
-		type = "attribute",
-		name = "pollutionToAttack",
-		[1] = 200,
-		[2] = 750,
-		[3] = 1200,
-		[4] = 1750,
-		[5] = 2500,
-		[6] = 5000,
-		[7] = 10000,
-		[8] = 12500,
-		[9] = 15000,
-		[10] = 20000
-	    }
-	},
-
-	{
-	    {
 		type = "attack",
 		name = "damage",
-		[1] = 4,
-		[2] = 9,
-		[3] = 14,
-		[4] = 23,
-		[5] = 30,
-		[6] = 37,
-		[7] = 45,
-		[8] = 57,
+		[1] = 12,
+		[2] = 20,
+		[3] = 25,
+		[4] = 30,
+		[5] = 35,
+		[6] = 40,
+		[7] = 50,
+		[8] = 60,
 		[9] = 70,
 		[10] = 80
 	    }
@@ -1324,7 +1314,93 @@ buildWorm(
 	{
 	    {
 		type = "attribute",
-		name = "movement",
+		name = "foldedSpeed",
+		[1] = 0.1,
+		[2] = 0.1,
+		[3] = 0.11,
+		[4] = 0.11,
+		[5] = 0.12,
+		[6] = 0.12,
+		[7] = 0.13,
+		[8] = 0.13,
+		[9] = 0.14,
+		[10] = 0.15
+	    }
+	},
+
+
+	{
+	    {
+		type = "attribute",
+		name = "prepareRange",
+		[1] = 30,
+		[2] = 30,
+		[3] = 31,
+		[4] = 31,
+		[5] = 32,
+		[6] = 32,
+		[7] = 33,
+		[8] = 33,
+		[9] = 34,
+		[10] = 34
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "foldingSpeed",
+		[1] = 0.15,
+		[2] = 0.15,
+		[3] = 0.16,
+		[4] = 0.16,
+		[5] = 0.16,
+		[6] = 0.17,
+		[7] = 0.17,
+		[8] = 0.18,
+		[9] = 0.18,
+		[10] = 0.19
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "endingAttackSpeed",
+		[1] = 0.3,
+		[2] = 0.3,
+		[3] = 0.3,
+		[4] = 0.31,
+		[5] = 0.31,
+		[6] = 0.32,
+		[7] = 0.32,
+		[8] = 0.33,
+		[9] = 0.33,
+		[10] = 0.
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "attackSpeed",
+		[1] = 0.03,
+		[2] = 0.03,
+		[3] = 0.04,
+		[4] = 0.04,
+		[5] = 0.05,
+		[6] = 0.05,
+		[7] = 0.06,
+		[8] = 0.06,
+		[9] = 0.07,
+		[10] = 0.07
+	    }
+	},
+	
+	{
+	    {
+		type = "attribute",
+		name = "preparedSpeed",
 		[1] = 0.185,
 		[2] = 0.18,
 		[3] = 0.18,
@@ -1335,20 +1411,42 @@ buildWorm(
 		[8] = 0.15,
 		[9] = 0.15,
 		[10] = 0.14
-	    },
+	    }
+	},
+
+	{
 	    {
 		type = "attribute",
-		name = "distancePerFrame",
-		[1] = 0.04,
-		[2] = 0.045,
-		[3] = 0.050,
-		[4] = 0.055,
-		[5] = 0.060,
-		[6] = 0.065,
-		[7] = 0.070,
-		[8] = 0.075,
-		[9] = 0.08,
-		[10] = 0.084
+		name = "preparingSpeed",
+		[1] = 0.025,
+		[2] = 0.025,
+		[3] = 0.026,
+		[4] = 0.026,
+		[5] = 0.027,
+		[6] = 0.027,
+		[7] = 0.028,
+		[8] = 0.028,
+		[9] = 0.029,
+		[10] = 0.029
+	    }
+	},
+
+	{
+	    {
+		type = "resistance",
+		name = "physical",
+		decrease = {
+		    [1] = 0,
+		    [2] = 0,
+		    [3] = 5,
+		    [4] = 5,
+		    [5] = 8,
+		    [6] = 8,
+		    [7] = 10,
+		    [8] = 10,
+		    [9] = 12,
+		    [10] = 12
+		}
 	    }
 	},
 
@@ -1356,6 +1454,18 @@ buildWorm(
 	    {
 		type = "resistance",
 		name = "explosion",
+		decrease = {
+		    [1] = 0,
+		    [2] = 0,
+		    [3] = 5,
+		    [4] = 5,
+		    [5] = 8,
+		    [6] = 8,
+		    [7] = 10,
+		    [8] = 10,
+		    [9] = 12,
+		    [10] = 12
+		},
 		percent = {
 		    [1] = 0,
 		    [2] = 0,
@@ -1372,20 +1482,80 @@ buildWorm(
 	},
 
 	{
+	    type = "resistance",
+	    name = "acid",
+	    decrease = {
+		[1] = 7,
+		[2] = 7,
+		[3] = 10,
+		[4] = 10,
+		[5] = 13,
+		[6] = 13,
+		[7] = 16,
+		[8] = 16,
+		[9] = 19,
+		[10] = 23
+	    },
+	    percent = {
+		[1] = 65,
+		[2] = 65,
+		[3] = 70,
+		[4] = 75,
+		[5] = 75,
+		[6] = 80,
+		[7] = 85,
+		[8] = 85,
+		[9] = 90,
+		[10] = 90
+	    }
+	},
+	
+	{
+	    {
+		type = "resistance",
+		name = "fire",
+		decrease = {
+		    [1] = 3,
+		    [2] = 3,
+		    [3] = 4,
+		    [4] = 4,
+		    [5] = 6,
+		    [6] = 6,
+		    [7] = 6,
+		    [8] = 6,
+		    [9] = 7,
+		    [10] = 7
+		},
+		percent = {
+		    [1] = 70,
+		    [2] = 70,
+		    [3] = 72,
+		    [4] = 72,
+		    [5] = 73,
+		    [6] = 73,
+		    [7] = 74,
+		    [8] = 74,
+		    [9] = 75,
+		    [10] = 75
+		}
+	    }
+	},
+
+	{
 	    
 	    {
 		type = "attack",
 		name = "range",
-		[1] = 13,
-		[2] = 13,
-		[3] = 14,
-		[4] = 14,
-		[5] = 15,
-		[6] = 15,
-		[7] = 16,
-		[8] = 16,
-		[9] = 17,
-		[10] = 17
+		[1] = 21,
+		[2] = 22,
+		[3] = 23,
+		[4] = 23,
+		[5] = 24,
+		[6] = 26,
+		[7] = 26,
+		[8] = 28,
+		[9] = 30,
+		[10] = 32
 	    }
 	},
 
@@ -1394,17 +1564,75 @@ buildWorm(
 	    {
 		type = "attack",
 		name = "radius",
-		[1] = 1.2,
-		[2] = 1.3,
-		[3] = 1.4,
-		[4] = 1.5,
-		[5] = 1.6,
-		[6] = 1.7,
-		[7] = 1.8,
-		[8] = 1.9,
-		[9] = 2.0,
-		[10] = 2.5
+		[1] = 1.5,
+		[2] = 1.6,
+		[3] = 1.7,
+		[4] = 1.8,
+		[5] = 1.9,
+		[6] = 2.0,
+		[7] = 2.2,
+		[8] = 2.3,
+		[9] = 2.5,
+		[10] = 3.0
 	    }
+
+	},
+
+	{
+	    
+	    {
+		type = "attack",
+		name = "particleVerticalAcceleration",
+		[1] = 0.01,
+		[2] = 0.01,
+		[3] = 0.02,
+		[4] = 0.02,
+		[5] = 0.03,
+		[6] = 0.03,
+		[7] = 0.04,
+		[8] = 0.04,
+		[9] = 0.05,
+		[10] = 0.05
+	    }
+
+	},
+
+	{
+	    
+	    {
+		type = "attack",
+		name = "particleHoizontalSpeed",
+		[1] = 0.6,
+		[2] = 0.6,
+		[3] = 0.7,
+		[4] = 0.7,
+		[5] = 0.8,
+		[6] = 0.8,
+		[7] = 0.9,
+		[8] = 0.9,
+		[9] = 1,
+		[10] = 1
+	    }
+
+	},
+
+	{
+	    
+	    {
+		type = "attack",
+		name = "particleHoizontalSpeedDeviation",
+		[1] = 0.0025,
+		[2] = 0.0025,
+		[3] = 0.0024,
+		[4] = 0.0024,
+		[5] = 0.0023,
+		[6] = 0.0023,
+		[7] = 0.0022,
+		[8] = 0.0022,
+		[9] = 0.0021,
+		[10] = 0.0021
+	    }
+
 	}
     },
 
@@ -1412,32 +1640,7 @@ buildWorm(
 	createAcidBall(attributes)
 	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
     end,
-    
-    10,
-    10
+
+    ACID_WORM_VARIATIONS,
+    ACID_WORM_TIERS
 )
-
-function generateLocal() 
-    local names = {"Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
-    local sizes = {"Larva", "Pupae", "Worker", "Grunt", "Soldier", "General", "Overlord", "Titan", "Leviathan", "Juggernaut"}
-
-    print("[entity-name]")
-
-
-    local name = names[1]
-
-    for t = 1, 10 do
-	local size = sizes[t]
-
-	for v = 1, 20 do
-	    
-	    print("neutral-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-	    print("neutral-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-
-	    if (v <= 10) then
-		print("neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-		print("neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-	    end
-	end
-    end
-end

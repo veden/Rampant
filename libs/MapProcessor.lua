@@ -12,6 +12,7 @@ local playerUtils = require("PlayerUtils")
 local chunkUtils = require("ChunkUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mathUtils = require("MathUtils")
+local baseUtils = require("BaseUtils")
 
 -- constants
 
@@ -59,6 +60,8 @@ local canAttack = aiPredicates.canAttack
 
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
+local processBase = baseUtils.processBase
+
 local mMin = math.min
 
 local mRandom = math.random
@@ -86,7 +89,7 @@ end
     In theory, this might be fine as smaller bases have less surface to attack and need to have 
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(map, surface, natives, tick)
+function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local roll = map.processRoll
     local index = map.processIndex
 
@@ -115,8 +118,8 @@ function mapProcessor.processMap(map, surface, natives, tick)
 	    end
 
 	    local base = chunkToBase[chunk]
-	    if base and ((base.tick - tick) > BASE_PROCESS_INTERVAL) then
-		
+	    if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
+		processBase(map, surface, natives, tick, base, evolutionFactor)
 	    end
 	    
 	    scents(map, chunk)

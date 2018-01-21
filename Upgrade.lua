@@ -171,6 +171,7 @@ function upgrade.attempt(natives)
 
 	natives.bases = {}
 	natives.baseIndex = 1
+	natives.baseIncrement = 0
 	
 	global.regionMap = nil
 	
