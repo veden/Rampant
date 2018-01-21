@@ -21,14 +21,6 @@ local config = require("config")
 
 -- constants
 
-local SUICIDE_BITER_NEST_TIERS = constants.SUICIDE_BITER_NEST_TIERS
-local SUICIDE_BITER_NEST_VARIATIONS = constants.SUICIDE_BITER_NEST_VARIATIONS
-local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
-local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
-
-local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
-local BASE_ALIGNMENT_SUICIDE = constants.BASE_ALIGNMENT_SUICIDE
-
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
@@ -49,8 +41,6 @@ local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
-
-local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
@@ -94,10 +84,8 @@ local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
 local upgradeEntity = baseUtils.upgradeEntity
+local rebuildNativeTables = baseUtils.rebuildNativeTables
 
-local processBases = baseProcessor.processBases
-
-local mFloor = math.floor
 local mRandom = math.random
 
 -- local references to global
@@ -191,12 +179,17 @@ local function rebuildMap()
     map.position = {x=0,
 		    y=0}
 
+    map.position2Top = {0, 0}
+    map.position2Bottom = {0, 0}
     --this is shared between two different queries
     map.area = {{0, 0}, {0, 0}}
+    map.area2 = {map.position2Top, map.position2Bottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
     map.filteredEntitiesEnemyTypeQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
     map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name="", area=map.area }
@@ -234,117 +227,8 @@ local function rebuildMap()
     end
 
     processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
-end
-
-local function rebuildNativeTables()
-    natives.evolutionTable = {}
-
-    local fileEntity = function(baseAlignment, entity)
-	local evoRequirement = mFloor(entity.prototype.build_base_evolution_requirement/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
-	local eTable = natives.evolutionTable[baseAlignment]
-	if not eTable then
-	    eTable = {}
-	    natives.evolutionTable[baseAlignment] = eTable
-	end
-	local aTable = eTable[evoRequirement]
-	if not aTable then
-	    aTable = {}
-	    eTable[evoRequirement] = aTable
-	end
-	aTable[#aTable+1] = entity.name
-    end
-    
-    local surface = game.surfaces[1]
-    
-    local position = { x = 0, y = 0 }
-    
-    -- for v = 1, SUICIDE_BITER_NEST_VARIATIONS do
-    -- 	for t = 1, SUICIDE_BITER_NEST_TIERS do
-    -- 	    local entity = surface.create_entity({
-    -- 		    name="suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
-    -- 		    position = position
-    -- 	    })
-    -- 	    fileEntity(BASE_ALIGNMENT_SUICIDE, entity)
-    -- 	    entity.destroy()
-    -- 	end
-    -- end
-    for v=1,NEUTRAL_NEST_VARIATIONS do
-    	for t=1,NEUTRAL_NEST_TIERS do
-	    local entity = surface.create_entity({
-		    name="neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(BASE_ALIGNMENT_NEUTRAL, entity)
-	    entity.destroy()
-	    entity = surface.create_entity({
-		    name="neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(BASE_ALIGNMENT_NEUTRAL, entity)
-	    entity.destroy()
-    	end
-    end
-    -- for v=1,ACID_NEST_VARIATIONS do
-    -- 	for t=1,ACID_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,FIRE_NEST_VARIATIONS do
-    -- 	for t=1,FIRE_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,PHYSICAL_NEST_VARIATIONS do
-    -- 	for t=1,PHYSICAL_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,LASER_NEST_VARIATIONS do
-    -- 	for t=1,LASER_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,INFERNO_NEST_VARIATIONS do
-    -- 	for t=1,INFERNO_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,POSION_NEST_VARIATIONS do
-    -- 	for t=1,POSION_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,INFESTER_NEST_VARIATIONS do
-    -- 	for t=1,INFESTER_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,TROLL_NEST_VARIATIONS do
-    -- 	for t=1,TROLL_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,FAST_NEST_VARIATIONS do
-    -- 	for t=1,FAST_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,WEB_NEST_VARIATIONS do
-    -- 	for t=1,WEB_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,DECAYING_NEST_VARIATIONS do
-    -- 	for t=1,DECAYING_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-    -- for v=1,UNDYING_NEST_VARIATIONS do
-    -- 	for t=1,UNDYING_NEST_TIERS do
-	    
-    -- 	end
-    -- end
-end
+end    
+     
 
 local function onModSettingsChange(event)
     
@@ -419,13 +303,14 @@ local function onTick(event)
 	
 	processPlayers(gameRef.players, map, surface, natives, tick)
 
-	processMap(map, surface, natives, tick)
+	processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
     end
     if (tick == map.scanTick) then
 	map.scanTick = map.scanTick + INTERVAL_SCAN
-	local surface = game.surfaces[1]
+	local gameRef = game
+	local surface = gameRef.surfaces[1]
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
+	processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
 	scanMap(map, surface, natives)
 	
@@ -440,7 +325,8 @@ local function onTick(event)
 	planning(natives,
 		 gameRef.forces.enemy.evolution_factor,
 		 tick,
-		 surface)
+		 surface,
+		 gameRef.connected_players)
     end
     if (tick == map.squadTick) then
 	map.squadTick = map.squadTick + INTERVAL_SQUAD
@@ -550,8 +436,9 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == 1) then
-	entity = upgradeEntity(map, entity, surface, natives, game.forces.enemy.evolution_factor, event.tick)
-	event.entity = registerEnemyBaseStructure(map, entity, natives, game.forces.enemy.evolution_factor, surface, event.tick)
+	local evo = game.forces.enemy.evolution_factor
+	entity = upgradeEntity(map, entity, surface, natives, evo, event.tick)
+	event.entity = registerEnemyBaseStructure(map, entity, natives, evo, surface, event.tick)
     end
 end
 

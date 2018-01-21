@@ -21,6 +21,10 @@ local mFloor = math.floor
 
 -- module code
 
+function mathUtils.roundToFloor(number, multiple)
+    return mFloor(number / multiple) * multiple
+end
+
 function mathUtils.roundToNearest(number, multiple)
     local num = number + (multiple * 0.5)
     return num - (num % multiple)

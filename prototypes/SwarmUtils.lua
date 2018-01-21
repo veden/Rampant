@@ -1,7 +1,8 @@
 local swarmUtils = {}
 -- imports
 
-local biterUtils = require("prototypes/enemies/BiterUtils")
+local biterUtils = require("utils/BiterUtils")
+package.path = "../?.lua;" .. package.path
 local mathUtils = require("libs/MathUtils")
 
 -- imported functions

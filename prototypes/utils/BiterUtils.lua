@@ -269,6 +269,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	rotation_speed = attributes.rotationSpeed or 1,
 	corpse = attributes.corpse,
 	dying_explosion = "blood-explosion-big",
+	inventory_size = attributes.inventorySize,
 	dying_sound = make_worm_dying_sounds(0.9),
 	folded_speed = attributes.foldedSpeed or 0.01,
 	folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
@@ -423,7 +424,7 @@ function biterFunctions.createMeleeAttack(attributes)
 				target_effects =
 				    {
 					type = "damage",
-					damage = { amount = attributes.damage, type = "physical"}
+					damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
 				    }
 			    }
 		    }

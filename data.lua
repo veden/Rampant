@@ -1,4 +1,4 @@
-local acidBall = require("prototypes/enemies/AttackAcidBall")
+local acidBall = require("prototypes/utils/AttackAcidBall")
 
 if settings.startup["rampant-useDumbProjectiles"].value then
     acidBall.generateLegacy()
@@ -12,7 +12,7 @@ require("prototypes/buildings/ChunkScanner")
 -- require("prototypes/tile/fillableDirt")
 
 if settings.startup["rampant-newEnemies"].value then
-    require("UnitClasses")
+    require("prototypes/Neutral")
 end
 
 -- require("prototypes/enemies/UnitSuicideBiters")

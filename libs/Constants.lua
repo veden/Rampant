@@ -98,6 +98,12 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
+constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 2048
+
+constants.BASE_SPAWNER_UPGRADE = 300
+constants.BASE_WORM_UPGRADE = 250
+constants.BASE_UPGRADE = 1500
+
 constants.BASE_DISTANCE_THRESHOLD = 40 * constants.CHUNK_SIZE
 constants.BASE_DISTANCE_LEVEL_BONUS = 300
 
@@ -121,13 +127,13 @@ constants.BASE_ALIGNMENT_NEUTRAL_ADVANCED = 17
 constants.BASE_ALIGNMENT_ENERGY_THIEF = 18
 constants.BASE_ALIGNMENT_ELECTRIC = 19
 
-constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_MINUTE * 1
+constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
 
 local neutralPath = {}
 neutralPath[constants.BASE_ALIGNMENT_ACID] = true
 neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
 neutralPath[constants.BASE_ALIGNMENT_PHYSICAL] = true
-neutralPath[constants.BASE_ALIGNMENT_LASER] = true
+neutralPath[constants.BASE_ALIGNMENT_ELECTRIC] = true
 
 constants.BASE_ALIGNMENT_PATHS = {}
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
@@ -255,13 +261,19 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 -- unit spawners
 
-constants.SUICIDE_BITER_NEST_TIERS = 7
+constants.SUICIDE_BITER_NEST_TIERS = 10
 constants.SUICIDE_BITER_NEST_VARIATIONS = 5
 
-constants.NEUTRAL_NEST_TIERS = 7
+constants.NEUTRAL_NEST_TIERS = 10
 constants.NEUTRAL_NEST_VARIATIONS = 20
+constants.NEUTRAL_WORM_TIERS = 10
+constants.NEUTRAL_WORM_VARIATIONS = 20
 
-constants.ACID_NEST_TIERS = 7
-constants.ACID_NEST_VARIATIONS = 5
+constants.ACID_NEST_TIERS = 10
+constants.ACID_NEST_VARIATIONS = 20
+constants.ACID_WORM_TIERS = 10
+constants.ACID_WORM_VARIATIONS = 20
+
+
 
 return constants

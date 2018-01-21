@@ -168,7 +168,7 @@ data:extend({
 	    setting_type = "runtime-global",
 	    default_value = 1.0,
 	    minimum_value = 0.0,
-	    maximum_value = 5.0,
+	    maximum_value = 100.0,
 	    order = "f[modifier]-b[ai]",
 	    per_user = false
 	},
