@@ -15,17 +15,38 @@ local NEUTRAL_WORM_VARIATIONS = constants.NEUTRAL_WORM_VARIATIONS
 local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
 local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
 
+local PHYSICAL_WORM_TIERS = constants.PHYSICAL_WORM_TIERS
+local PHYSICAL_WORM_VARIATIONS = constants.PHYSICAL_WORM_VARIATIONS
+local PHYSICAL_NEST_TIERS = constants.PHYSICAL_NEST_TIERS
+local PHYSICAL_NEST_VARIATIONS = constants.PHYSICAL_NEST_VARIATIONS
+
+local ELECTRIC_WORM_TIERS = constants.ELECTRIC_WORM_TIERS
+local ELECTRIC_WORM_VARIATIONS = constants.ELECTRIC_WORM_VARIATIONS
+local ELECTRIC_NEST_TIERS = constants.ELECTRIC_NEST_TIERS
+local ELECTRIC_NEST_VARIATIONS = constants.ELECTRIC_NEST_VARIATIONS
+
 local ACID_WORM_TIERS = constants.ACID_WORM_TIERS
 local ACID_WORM_VARIATIONS = constants.ACID_WORM_VARIATIONS
 local ACID_NEST_TIERS = constants.ACID_NEST_TIERS
 local ACID_NEST_VARIATIONS = constants.ACID_NEST_VARIATIONS
 
-local SUICIDE_BITER_NEST_TIERS = constants.SUICIDE_BITER_NEST_TIERS
-local SUICIDE_BITER_NEST_VARIATIONS = constants.SUICIDE_BITER_NEST_VARIATIONS
+local SUICIDE_WORM_TIERS = constants.SUICIDE_WORM_TIERS
+local SUICIDE_WORM_VARIATIONS = constants.SUICIDE_WORM_VARIATIONS
+local SUICIDE_NEST_TIERS = constants.SUICIDE_NEST_TIERS
+local SUICIDE_NEST_VARIATIONS = constants.SUICIDE_NEST_VARIATIONS
+
+local NUCLEAR_WORM_TIERS = constants.NUCLEAR_WORM_TIERS
+local NUCLEAR_WORM_VARIATIONS = constants.NUCLEAR_WORM_VARIATIONS
+local NUCLEAR_NEST_TIERS = constants.NUCLEAR_NEST_TIERS
+local NUCLEAR_NEST_VARIATIONS = constants.NUCLEAR_NEST_VARIATIONS
+
 
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
 local BASE_ALIGNMENT_ACID = constants.BASE_ALIGNMENT_ACID
+local BASE_ALIGNMENT_ELECTRIC = constants.BASE_ALIGNMENT_ELECTRIC
+local BASE_ALIGNMENT_PHYSICAL = constants.BASE_ALIGNMENT_PHYSICAL
 local BASE_ALIGNMENT_SUICIDE = constants.BASE_ALIGNMENT_SUICIDE
+local BASE_ALIGNMENT_NUCLEAR = constants.BASE_ALIGNMENT_NUCLEAR
 
 local BASE_WORM_UPGRADE = constants.BASE_WORM_UPGRADE
 local BASE_SPAWNER_UPGRADE = constants.BASE_SPAWNER_UPGRADE
@@ -115,9 +136,13 @@ local function findUpgrade(base, evoIndex, natives, evolutionTable)
     -- while alignmentPick do
     -- 	used[alignmentPick] = true
 
+    if not evolutionTable then
+	print(alignmentPick)
+    end
+    
     for evo=evoIndex, 0, -EVOLUTION_INCREMENTS do
 	local entitySet = evolutionTable[alignmentPick][evo]
-	if (#entitySet > 0) then
+	if entitySet and (#entitySet > 0) then
 	    return entitySet[mRandom(#entitySet)]
 	end
     end
@@ -135,28 +160,26 @@ local function findUpgrade(base, evoIndex, natives, evolutionTable)
 end
 
 function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor, tick)
-    if not isRampant(entity.name) then
-	local position = entity.position
-	local entityType = entity.type
-	entity.destroy()
-	local chunk = getChunkByPosition(map, position)
-	local base = getChunkBase(map, chunk)
+    local position = entity.position
+    local entityType = entity.type
+    entity.destroy()
+    local chunk = getChunkByPosition(map, position)
+    local base = getChunkBase(map, chunk)
 
-	if not base then
-	    base = baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
-	end
+    if not base then
+	base = baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+    end
 
-	local distance = roundToFloor(mMin(1,
-					   euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
-				      EVOLUTION_INCREMENTS)
-	local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
+    local distance = roundToFloor(mMin(1,
+				       euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
+				  EVOLUTION_INCREMENTS)
+    local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
 
-	local spawnerName = findUpgrade(base, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
-	if spawnerName then
-	    local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
-	    if newPosition then
-		entity = surface.create_entity({name = spawnerName, position = newPosition})
-	    end
+    local spawnerName = findUpgrade(base, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
+    if spawnerName then
+	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
+	if newPosition then
+	    entity = surface.create_entity({name = spawnerName, position = newPosition})
 	end
     end
 
@@ -213,7 +236,7 @@ function baseUtils.processBase(map, surface, natives, tick, base, evolutionFacto
     base.tick = tick
 end
 
-function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick, expansion)
+function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
@@ -323,8 +346,8 @@ function baseUtils.rebuildNativeTables(natives, surface)
 
     processUnitClass(PHYSICAL_NEST_VARIATIONS,
 		     PHYSICAL_NEST_TIERS,
-		     PHYSICAL_NEST_VARIATIONS,
-		     PHYSICAL_NEST_TIERS,
+		     0,
+		     0,
 		     PHYSICAL_WORM_VARIATIONS,
 		     PHYSICAL_WORM_TIERS,
 		     surface,
@@ -332,27 +355,137 @@ function baseUtils.rebuildNativeTables(natives, surface)
 		     BASE_ALIGNMENT_PHYSICAL,
 		     "physical")
 
-    processUnitClass(FIRE_NEST_VARIATIONS,
-		     FIRE_NEST_TIERS,
-		     FIRE_NEST_VARIATIONS,
-		     FIRE_NEST_TIERS,
-		     FIRE_WORM_VARIATIONS,
-		     FIRE_WORM_TIERS,
-		     surface,
-		     natives,
-		     BASE_ALIGNMENT_FIRE,
-		     "fire")
+    -- processUnitClass(FIRE_NEST_VARIATIONS,
+    -- 		     FIRE_NEST_TIERS,
+    -- 		     FIRE_NEST_VARIATIONS,
+    -- 		     FIRE_NEST_TIERS,
+    -- 		     FIRE_WORM_VARIATIONS,
+    -- 		     FIRE_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_FIRE,
+    -- 		     "fire")
 
     processUnitClass(ELECTRIC_NEST_VARIATIONS,
 		     ELECTRIC_NEST_TIERS,
-		     ELECTRIC_NEST_VARIATIONS,
-		     ELECTRIC_NEST_TIERS,
+		     0,
+		     0,
 		     ELECTRIC_WORM_VARIATIONS,
 		     ELECTRIC_WORM_TIERS,
 		     surface,
 		     natives,
 		     BASE_ALIGNMENT_ELECTRIC,
 		     "electric")
+
+    processUnitClass(SUICIDE_NEST_VARIATIONS,
+    		     SUICIDE_NEST_TIERS,
+		     0,
+		     0,
+    		     SUICIDE_WORM_VARIATIONS,
+    		     SUICIDE_WORM_TIERS,
+    		     surface,
+    		     natives,
+    		     BASE_ALIGNMENT_SUICIDE,
+    		     "suicide")
+
+    processUnitClass(NUCLEAR_NEST_VARIATIONS,
+    		     NUCLEAR_NEST_TIERS,
+		     0,
+		     0,
+    		     NUCLEAR_WORM_VARIATIONS,
+    		     NUCLEAR_WORM_TIERS,
+    		     surface,
+    		     natives,
+    		     BASE_ALIGNMENT_NUCLEAR,
+    		     "nuclear")
+
+    -- processUnitClass(TROLL_NEST_VARIATIONS,
+    -- 		     TROLL_NEST_TIERS,
+    -- 		     TROLL_NEST_VARIATIONS,
+    -- 		     TROLL_NEST_TIERS,
+    -- 		     TROLL_WORM_VARIATIONS,
+    -- 		     TROLL_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_TROLL,
+    -- 		     "troll")
+
+    -- processUnitClass(INFERNO_NEST_VARIATIONS,
+    -- 		     INFERNO_NEST_TIERS,
+    -- 		     INFERNO_NEST_VARIATIONS,
+    -- 		     INFERNO_NEST_TIERS,
+    -- 		     INFERNO_WORM_VARIATIONS,
+    -- 		     INFERNO_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_INFERNO,
+    -- 		     "inferno")
+
+    -- processUnitClass(FAST_NEST_VARIATIONS,
+    -- 		     FAST_NEST_TIERS,
+    -- 		     FAST_NEST_VARIATIONS,
+    -- 		     FAST_NEST_TIERS,
+    -- 		     FAST_WORM_VARIATIONS,
+    -- 		     FAST_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_FAST,
+    -- 		     "fast")
+
+    -- processUnitClass(DECAYING_NEST_VARIATIONS,
+    -- 		     DECAYING_NEST_TIERS,
+    -- 		     DECAYING_NEST_VARIATIONS,
+    -- 		     DECAYING_NEST_TIERS,
+    -- 		     DECAYING_WORM_VARIATIONS,
+    -- 		     DECAYING_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_DECAYING,
+    -- 		     "decaying")
+
+    -- processUnitClass(UNDYING_NEST_VARIATIONS,
+    -- 		     UNDYING_NEST_TIERS,
+    -- 		     UNDYING_NEST_VARIATIONS,
+    -- 		     UNDYING_NEST_TIERS,
+    -- 		     UNDYING_WORM_VARIATIONS,
+    -- 		     UNDYING_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_UNDYING,
+    -- 		     "undying")
+
+    -- processUnitClass(POSION_NEST_VARIATIONS,
+    -- 		     POSION_NEST_TIERS,
+    -- 		     POSION_NEST_VARIATIONS,
+    -- 		     POSION_NEST_TIERS,
+    -- 		     POSION_WORM_VARIATIONS,
+    -- 		     POSION_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_POSION,
+    -- 		     "posion")
+
+    -- processUnitClass(LASER_NEST_VARIATIONS,
+    -- 		     LASER_NEST_TIERS,
+    -- 		     LASER_NEST_VARIATIONS,
+    -- 		     LASER_NEST_TIERS,
+    -- 		     LASER_WORM_VARIATIONS,
+    -- 		     LASER_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_LASER,
+    -- 		     "laser")
+
+    -- processUnitClass(WASP_NEST_VARIATIONS,
+    -- 		     WASP_NEST_TIERS,
+    -- 		     WASP_NEST_VARIATIONS,
+    -- 		     WASP_NEST_TIERS,
+    -- 		     WASP_WORM_VARIATIONS,
+    -- 		     WASP_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_WASP,
+    -- 		     "wasp")
 end
 
 return baseUtils

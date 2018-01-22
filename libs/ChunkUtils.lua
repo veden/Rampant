@@ -53,6 +53,8 @@ local getNestCount = chunkPropertyUtils.getNestCount
 local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
 
+local upgradeEntity = baseUtils.upgradeEntity
+
 local setChunkBase = chunkPropertyUtils.setChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
@@ -253,13 +255,8 @@ function chunkUtils.scorePlayerBuildings(surface, map, natives)
 end
 
 function chunkUtils.scoreEnemyBuildings(surface, map)
-    local query = map.filteredEntitiesEnemyTypeQuery
-    
-    query.type = "unit-spawner"
-    local nests = surface.count_entities_filtered(map.filteredEntitiesEnemyTypeQuery)
-    
-    query.type = "turret"
-    local worms = surface.count_entities_filtered(map.filteredEntitiesEnemyTypeQuery)
+    local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
+    local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
 
     return nests, worms
 end
@@ -276,23 +273,33 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 
 	local resources = surface.count_entities_filtered(map.countResourcesQuery) * 0.001
 	
-	if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
+	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
-	if (nests > 0) or (worms > 0) then
+	if (#nests > 0) or (#worms > 0) then
 	    local base = findNearbyBase(map, chunk, BASE_SEARCH_RADIUS)
 	    if base then
 		setChunkBase(map, chunk, base)
 	    else
 		createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	    end
+	    if (#nests > 0) then
+		for i = 1, #nests do
+		    upgradeEntity(map, nests[i], surface, natives, evolutionFactor, tick)
+		end
+	    end
+	    if (#worms > 0) then
+		for i = 1, #worms do
+		    upgradeEntity(map, worms[i], surface, natives, evolutionFactor, tick)
+		end
+	    end
 	end
 	
-	setNestCount(map, chunk, nests)
+	setNestCount(map, chunk, #nests)
 	setPlayerBaseGenerator(map, chunk, playerObjects)
 	setResourceGenerator(map, chunk, resources)
-	setWormCount(map, chunk, worms)
+	setWormCount(map, chunk, #worms)
 
 	chunk[PASSABLE] = pass
 	chunk[PATH_RATING] = passScore

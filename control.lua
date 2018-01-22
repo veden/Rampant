@@ -160,8 +160,6 @@ local function rebuildMap()
     map.chunkToResource = {}
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
-
-    natives.bases = {}
     
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
@@ -187,7 +185,8 @@ local function rebuildMap()
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
-    map.filteredEntitiesEnemyTypeQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesUnitSpawnereQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
     map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
@@ -266,9 +265,8 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
-    if upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value) then
-	rebuildNativeTables()
-    end
+    upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
+
     -- RE-ENABLE WHEN COMPLETE
     natives.useCustomAI = constants.DEV_CUSTOM_AI
     -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
@@ -289,7 +287,7 @@ local function onConfigChanged()
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
 	rebuildMap()
-	rebuildNativeTables()
+	rebuildNativeTables(natives, game.surfaces[1])
     end
 end
 

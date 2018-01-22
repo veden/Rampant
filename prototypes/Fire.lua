@@ -10,11 +10,11 @@ local constants = require("Constants")
 
 -- constants
 
-local ACID_NEST_TIERS = constants.ACID_NEST_TIERS
-local ACID_NEST_VARIATIONS = constants.ACID_NEST_VARIATIONS
+local FIRE_NEST_TIERS = constants.FIRE_NEST_TIERS
+local FIRE_NEST_VARIATIONS = constants.FIRE_NEST_VARIATIONS
 
-local ACID_WORM_TIERS = constants.ACID_WORM_TIERS
-local ACID_WORM_VARIATIONS = constants.ACID_WORM_VARIATIONS
+local FIRE_WORM_TIERS = constants.FIRE_WORM_TIERS
+local FIRE_WORM_VARIATIONS = constants.FIRE_WORM_VARIATIONS
 
 -- imported functions
 
@@ -28,19 +28,19 @@ local createAcidBall = acidBall.createAcidBall
 local createFireAttack = biterUtils.createFireAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="acid", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+makeSmokeSoft({name="fire", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 
--- acid biters
+-- fire biters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "acid-biter",
+	    name = "fire-biter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		damageType = "acid"
+		damageType = "fire"
 	    },
 	    resistances = {},
 
@@ -57,12 +57,12 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    tint1 = {r=0, g=0.85, b=0.13, a=0.65},
-	    tint2 = {r=0, g=0.85, b=0.13, a=0.65}
+	    tint1 = {r=0.65, g=0, b=0, a=0.65},
+	    tint2 = {r=1, g=1, b=1, a=0.4}
 	},
 
 	unitSpawner = {
-	    name = "acid-biter-nest",
+	    name = "fire-biter-nest",
 
 	    attributes = {},	    
 	    resistances = {},
@@ -78,13 +78,14 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=0, g=0.85, b=0.13, a=0.65}
+	    tint = {r=1.0, g=0, b=0, a=1.0}
 	}
     },
 
     {
 	unit = {
 	    {
+
 		type = "attribute",
 		name = "health",
 		[1] = 15,
@@ -97,9 +98,11 @@ buildUnitSpawner(
 		[8] = 3000,
 		[9] = 5000,
 		[10] = 10000
+
 	    },
 
 	    {
+		
 		type = "attack",
 		name = "cooldown",
 		[1] = 35,
@@ -112,9 +115,11 @@ buildUnitSpawner(
 		[8] = 50,
 		[9] = 55,
 		[10] = 57
+		
 	    },
 	    
 	    {
+		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -127,9 +132,11 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -142,9 +149,11 @@ buildUnitSpawner(
 		[8] = 25000,
 		[9] = 30000,
 		[10] = 40000
+		
 	    },
 
 	    {
+		
 		type = "attack",
 		name = "damage",
 		[1] = 7,
@@ -157,9 +166,11 @@ buildUnitSpawner(
 		[8] = 90,
 		[9] = 150,
 		[10] = 200
+		
 	    },
 	    
 	    {
+		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -172,9 +183,11 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "movement",
 		[1] = 0.2,
@@ -213,10 +226,10 @@ buildUnitSpawner(
 		    [4] = 5,
 		    [5] = 6,
 		    [6] = 8,
-		    [7] = 9,
-		    [8] = 9,
-		    [9] = 10,
-		    [10] = 10
+		    [7] = 10,
+		    [8] = 12,
+		    [9] = 14,
+		    [10] = 15
 		},
 		percent = {
 		    [1] = 0,
@@ -260,10 +273,10 @@ buildUnitSpawner(
 		    [10] = 15
 		}
 	    },
-	    
+
 	    {
 		type = "resistance",
-		name = "acid",
+		name = "fire",
 		decrease = {
 		    [1] = 7,
 		    [2] = 7,
@@ -291,7 +304,6 @@ buildUnitSpawner(
 	    },
 
 	    {
-		
 		type = "attack",
 		name = "range",
 		[1] = 0.5,
@@ -304,12 +316,14 @@ buildUnitSpawner(
 		[8] = 1.50,
 		[9] = 1.75,
 		[10] = 2.0
+		
 	    }
 	},
 	
 	unitSpawner = {
 
 	    {
+		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -322,9 +336,11 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -337,9 +353,11 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -352,9 +370,11 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -367,24 +387,27 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0,
-		[2] = 0.1,
-		[3] = 0.2,
-		[4] = 0.3,
-		[5] = 0.4,
-		[6] = 0.5,
-		[7] = 0.6,
-		[8] = 0.7,
-		[9] = 0.8,
-		[10] = 0.9
+		[2] = 0.12,
+		[3] = 0.22,
+		[4] = 0.32,
+		[5] = 0.42,
+		[6] = 0.52,
+		[7] = 0.62,
+		[8] = 0.72,
+		[9] = 0.82,
+		[10] = 0.92
+		
 	    },
 
-	    {		
+	    {
 		type = "attribute",
 		name = "unitsOwned",
 		[1] = 7,
@@ -397,8 +420,10 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 11,
 		[10] = 11
+		
 	    },
 	    {
+		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -413,6 +438,7 @@ buildUnitSpawner(
 		[10] = 9
 	    },
 
+	    
 	    {
 		type = "resistance",
 		name = "physical",
@@ -475,35 +501,6 @@ buildUnitSpawner(
 		type = "resistance",
 		name = "fire",
 		decrease = {
-		    [1] = 3,
-		    [2] = 3,
-		    [3] = 4,
-		    [4] = 4,
-		    [5] = 6,
-		    [6] = 6,
-		    [7] = 6,
-		    [8] = 6,
-		    [9] = 7,
-		    [10] = 7
-		},
-		percent = {
-		    [1] = 60,
-		    [2] = 60,
-		    [3] = 62,
-		    [4] = 62,
-		    [5] = 63,
-		    [6] = 63,
-		    [7] = 64,
-		    [8] = 64,
-		    [9] = 65,
-		    [10] = 65
-		}
-	    },
-
-	    {
-		type = "resistance",
-		name = "acid",
-		decrease = {
 		    [1] = 7,
 		    [2] = 7,
 		    [3] = 10,
@@ -528,7 +525,6 @@ buildUnitSpawner(
 		    [10] = 90
 		}
 	    }
-	    
 	},
 
 	probabilityTable = {
@@ -549,26 +545,27 @@ buildUnitSpawner(
 
     {
 	unit = 10,
-	unitSpawner = ACID_NEST_VARIATIONS
+	unitSpawner = FIRE_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = ACID_NEST_TIERS
+	unitSpawner = FIRE_NEST_TIERS
     }
 )
 
--- acid spitters
+-- fire spitters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "acid-spitter",
+	    name = "fire-spitter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = "acid-soft-smoke-rampant"
+		damageType = "fire",
+		softSmokeName = "fire-soft-smoke-rampant"
 	    },
 	    resistances = {},
 
@@ -585,14 +582,14 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "acid-ball",
-	    tint = {r=0, g=0.85, b=0.1, a=0.65},
-	    pTint = {r=0, g=1, b=0.1, a=0.5},
-	    sTint = {r=0, g=1, b=0.1, a=0.5}
+	    attackName = "spitter-fire",
+	    tint = {r=0.65, g=0, b=0, a=0.65},
+	    pTint = {r=1, g=1, b=1, a=0.5},
+	    sTint = {r=1, g=1, b=1, a=0.5}
 	},
 
 	unitSpawner = {
-	    name = "acid-spitter-nest",
+	    name = "fire-spitter-nest",
 
 	    attributes = {},
 	    resistances = {},
@@ -609,13 +606,14 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=0, g=0.85, b=0.1, a=0.65}
+	    tint = {r=0.99, g=0.09, b=0.09, a=1}
 	}
     },
 
     {
 	unit = {
 	    {
+		
 		type = "attribute",
 		name = "health",
 		[1] = 10,
@@ -628,9 +626,11 @@ buildUnitSpawner(
 		[8] = 1500,
 		[9] = 2500,
 		[10] = 4500
+		
 	    },
 
 	    {
+		
 		type = "attack",
 		name = "cooldown",
 		[1] = 100,
@@ -643,9 +643,11 @@ buildUnitSpawner(
 		[8] = 93,
 		[9] = 90,
 		[10] = 90
+		
 	    },
 	    
 	    {
+		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -658,9 +660,11 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -673,9 +677,11 @@ buildUnitSpawner(
 		[8] = 12500,
 		[9] = 15000,
 		[10] = 20000
+		
 	    },
 
 	    {
+		
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -688,9 +694,11 @@ buildUnitSpawner(
 		[8] = 57,
 		[9] = 70,
 		[10] = 80
+		
 	    },
 	    
 	    {
+		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -703,9 +711,10 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
+		
 	    },
 
-
+	    
 	    {
 		type = "attribute",
 		name = "movement",
@@ -736,39 +745,8 @@ buildUnitSpawner(
 	    },
 
 	    {
-		
-		type = "resistance",
-		name = "physical",
-		decrease = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 5,
-		    [4] = 5,
-		    [5] = 8,
-		    [6] = 8,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		}
-		
-	    },
-
-	    {
 		type = "resistance",
 		name = "explosion",
-		decrease = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 5,
-		    [4] = 5,
-		    [5] = 8,
-		    [6] = 8,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		},
 		percent = {
 		    [1] = 0,
 		    [2] = 0,
@@ -784,40 +762,8 @@ buildUnitSpawner(
 	    },
 
 	    {
-		
 		type = "resistance",
 		name = "fire",
-		decrease = {
-		    [1] = 3,
-		    [2] = 3,
-		    [3] = 4,
-		    [4] = 4,
-		    [5] = 6,
-		    [6] = 6,
-		    [7] = 6,
-		    [8] = 6,
-		    [9] = 7,
-		    [10] = 7
-		},
-		percent = {
-		    [1] = 70,
-		    [2] = 70,
-		    [3] = 72,
-		    [4] = 72,
-		    [5] = 73,
-		    [6] = 73,
-		    [7] = 74,
-		    [8] = 74,
-		    [9] = 75,
-		    [10] = 75
-		}
-		
-	    },
-
-	    {
-		
-		type = "resistance",
-		name = "acid",
 		decrease = {
 		    [1] = 7,
 		    [2] = 7,
@@ -842,10 +788,9 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
-		
 	    },
 	    
-	    {	
+	    {
 		type = "attack",
 		name = "range",
 		[1] = 13,
@@ -873,6 +818,7 @@ buildUnitSpawner(
 		[8] = 1.9,
 		[9] = 2.0,
 		[10] = 2.5
+		
 	    },
 
 	    {
@@ -888,7 +834,6 @@ buildUnitSpawner(
 		[8] = 0.04,
 		[9] = 0.05,
 		[10] = 0.05
-		
 	    },
 
 	    {
@@ -904,7 +849,6 @@ buildUnitSpawner(
 		[8] = 0.9,
 		[9] = 1,
 		[10] = 1
-		
 	    },
 
 	    {
@@ -920,13 +864,13 @@ buildUnitSpawner(
 		[8] = 0.0022,
 		[9] = 0.0021,
 		[10] = 0.0021
-		
 	    }
 	},
 	
 	unitSpawner = {
 
 	    {
+		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -939,9 +883,11 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -954,9 +900,11 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -969,9 +917,11 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -984,24 +934,27 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
+		
 	    },
 
 	    {
+		
 		type = "attribute",
 		name = "evolutionRequirement",
-		[1] = 0,
-		[2] = 0.1,
-		[3] = 0.2,
-		[4] = 0.3,
-		[5] = 0.4,
-		[6] = 0.5,
-		[7] = 0.6,
-		[8] = 0.7,
-		[9] = 0.8,
+		[1] = 0.08,
+		[2] = 0.16,
+		[3] = 0.24,
+		[4] = 0.35,
+		[5] = 0.40,
+		[6] = 0.45,
+		[7] = 0.55,
+		[8] = 0.65,
+		[9] = 0.75,
 		[10] = 0.9
+		
 	    },
 
-	    {		
+	    {
 		type = "attribute",
 		name = "unitsOwned",
 		[1] = 7,
@@ -1014,8 +967,10 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 11,
 		[10] = 11
+		
 	    },
 	    {
+		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -1058,7 +1013,7 @@ buildUnitSpawner(
 		    [10] = 20
 		}
 	    },
-	    
+
 	    {
 		type = "resistance",
 		name = "explosion",
@@ -1087,39 +1042,10 @@ buildUnitSpawner(
 		    [10] = 20
 		}
 	    },
-	    
+
 	    {
 		type = "resistance",
 		name = "fire",
-		decrease = {
-		    [1] = 3,
-		    [2] = 3,
-		    [3] = 4,
-		    [4] = 4,
-		    [5] = 6,
-		    [6] = 6,
-		    [7] = 6,
-		    [8] = 6,
-		    [9] = 7,
-		    [10] = 7
-		},
-		percent = {
-		    [1] = 60,
-		    [2] = 60,
-		    [3] = 62,
-		    [4] = 62,
-		    [5] = 63,
-		    [6] = 63,
-		    [7] = 64,
-		    [8] = 64,
-		    [9] = 65,
-		    [10] = 65
-		}
-	    },
-	   
-	    {
-		type = "resistance",
-		name = "acid",
 		decrease = {
 		    [1] = 7,
 		    [2] = 7,
@@ -1144,8 +1070,7 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
-	    }
-	    
+	    }	    
 	},
 
 	probabilityTable = {
@@ -1169,23 +1094,24 @@ buildUnitSpawner(
     
     {
 	unit = 10,
-	unitSpawner = ACID_NEST_VARIATIONS
+	unitSpawner = FIRE_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = ACID_NEST_TIERS
+	unitSpawner = FIRE_NEST_TIERS
     }
 )
 
--- acid worms
+-- fire worms
 buildWorm(
     {
-	name = "acid-worm",
+	name = "fire-worm",
 
 	attributes = {},
 	attack = {
-	    softSmokeName = "acid-soft-smoke-rampant"
+	    damageType = "fire",
+	    softSmokeName = "fire-soft-smoke-rampant"
 	},
 	resistances = {},
 
@@ -1201,14 +1127,14 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-acid-ball",
-	tint = {r=0, g=0.85, b=0.1, a=0.65},
-	pTint = {r=0, g=1, b=0.1, a=0.5},
-	sTint = {r=0, g=1, b=0.1, a=0.5}
+	attackName = "worm-fire",
+	tint = {r=0.65, g=0, b=0, a=0.65},
+	pTint = {r=1, g=1, b=1, a=0.5},
+	sTint = {r=1, g=1, b=1, a=0.5}
     },
 
     {
-	{
+	{    
 	    type = "attribute",
 	    name = "health",
 	    [1] = 200,
@@ -1223,7 +1149,7 @@ buildWorm(
 	    [10] = 4500
 	},
 
-	{
+	{    
 	    type = "attack",
 	    name = "cooldown",
 	    [1] = 50,
@@ -1238,7 +1164,7 @@ buildWorm(
 	    [10] = 30
 	},
 
-	{
+	{    
 	    type = "attribute",
 	    name = "evolutionRequirement",
 	    [1] = 0,
@@ -1253,7 +1179,7 @@ buildWorm(
 	    [10] = 0.9
 	},
 	
-	{
+	{    
 	    type = "attack",
 	    name = "damage",
 	    [1] = 12,
@@ -1268,7 +1194,7 @@ buildWorm(
 	    [10] = 80
 	},
 	
-	{
+	{    
 	    type = "attribute",
 	    name = "healing",
 	    [1] = 0.01,
@@ -1283,7 +1209,7 @@ buildWorm(
 	    [10] = 0.16
 	},
 
-	{
+	{    
 	    type = "attribute",
 	    name = "prepareRange",
 	    [1] = 30,
@@ -1298,7 +1224,7 @@ buildWorm(
 	    [10] = 34
 	},
 	
-	{
+	{    
 	    type = "attribute",
 	    name = "foldingSpeed",
 	    [1] = 0.15,
@@ -1312,8 +1238,8 @@ buildWorm(
 	    [9] = 0.18,
 	    [10] = 0.19
 	},
-
-	{
+	
+	{    
 	    type = "attribute",
 	    name = "preparingSpeed",
 	    [1] = 0.025,
@@ -1376,7 +1302,7 @@ buildWorm(
 
 	{
 	    type = "resistance",
-	    name = "acid",
+	    name = "fire",
 	    decrease = {
 		[1] = 7,
 		[2] = 7,
@@ -1402,38 +1328,8 @@ buildWorm(
 		[10] = 90
 	    }
 	},
-	
-	{
-	    type = "resistance",
-	    name = "fire",
-	    decrease = {
-		[1] = 3,
-		[2] = 3,
-		[3] = 4,
-		[4] = 4,
-		[5] = 6,
-		[6] = 6,
-		[7] = 6,
-		[8] = 6,
-		[9] = 7,
-		[10] = 7
-	    },
-	    percent = {
-		[1] = 70,
-		[2] = 70,
-		[3] = 72,
-		[4] = 72,
-		[5] = 73,
-		[6] = 73,
-		[7] = 74,
-		[8] = 74,
-		[9] = 75,
-		[10] = 75
-	    }
-	},
 
 	{
-	    
 	    type = "attack",
 	    name = "range",
 	    [1] = 21,
@@ -1461,7 +1357,6 @@ buildWorm(
 	    [8] = 2.3,
 	    [9] = 2.5,
 	    [10] = 3.0
-	    
 	},
 
 	{
@@ -1477,10 +1372,9 @@ buildWorm(
 	    [8] = 0.04,
 	    [9] = 0.05,
 	    [10] = 0.05
-	    
 	},
 
-	{
+	{	      
 	    type = "attack",
 	    name = "particleHoizontalSpeed",
 	    [1] = 0.6,
@@ -1493,10 +1387,9 @@ buildWorm(
 	    [8] = 0.9,
 	    [9] = 1,
 	    [10] = 1
-	    
 	},
 
-	{
+	{	    
 	    type = "attack",
 	    name = "particleHoizontalSpeedDeviation",
 	    [1] = 0.0025,
@@ -1509,15 +1402,14 @@ buildWorm(
 	    [8] = 0.0022,
 	    [9] = 0.0021,
 	    [10] = 0.0021
-	    
 	}
     },
-    
+
     function (attributes)
 	createAcidBall(attributes)
 	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
     end,
 
-    ACID_WORM_VARIATIONS,
-    ACID_WORM_TIERS
+    FIRE_WORM_VARIATIONS,
+    FIRE_WORM_TIERS
 )

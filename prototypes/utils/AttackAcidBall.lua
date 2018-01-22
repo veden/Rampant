@@ -17,7 +17,7 @@ local acidBall = {}
 
 function acidBall.createAcidBall(attributes)
 
-    local templateDamage = { amount = attributes.damage, type = "acid" }
+    local templateDamage = { amount = attributes.damage, type = attributes.damageType or "acid" }
     local templateArea = {
 	type = "area",
 	radius = attributes.radius,
@@ -25,7 +25,7 @@ function acidBall.createAcidBall(attributes)
 	    {
 		{
 		    type = "instant",
-		    target_effects =
+		    target_effects = (attributes.areaEffects and attributes.areaEffects(attributes)) or 
 			{
 			    {
 				type = "damage",
@@ -42,14 +42,14 @@ function acidBall.createAcidBall(attributes)
 	    type = "direct",
 	    action_delivery = {
 		type = "instant",
-		target_effects = {
-		    type= "create-entity",
-		    entity_name = "acid-splash-purple"
-		}
+		target_effects = (attributes.pointEffects and attributes.pointEffects(attributes)) or
+		    {
+			type= "create-entity",
+			entity_name = attributes.crater or "acid-splash-purple"
+		    }
 	    }
 	}
     }
-
 
     local template = {
 	name = attributes.name,

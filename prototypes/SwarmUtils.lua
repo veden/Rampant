@@ -9,6 +9,8 @@ local mathUtils = require("libs/MathUtils")
 
 local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
+local roundToNearest = mathUtils.roundToNearest
+
 local mMax = math.max
 local mMin = math.min
 
@@ -30,7 +32,7 @@ local makeUnitSpawner = biterUtils.makeUnitSpawner
 
 -- module code
 
-local function unitSetToProbabilityTable(points, upgradeTable, unitSet)
+local function unitSetToProbabilityTable(upgradeTable, unitSet)
     local dividers = {}
     
     for i=1,#unitSet do
@@ -38,6 +40,7 @@ local function unitSetToProbabilityTable(points, upgradeTable, unitSet)
     end
 
     if upgradeTable then
+	local points = #upgradeTable * 10
 	while (points > 0) do
 	    local index = mFloor(xorRandom() * #upgradeTable)+1
 	    local upgrade = upgradeTable[index]
@@ -119,88 +122,106 @@ local function unitSetToProbabilityTable(points, upgradeTable, unitSet)
     return result
 end
 
-local function processUpgradeTable(upgradeTable)
-    
-    for i=1,#upgradeTable do
-	local bonuses = upgradeTable[i]
-	for ii=1,#bonuses do
-	    local bonus = bonuses[ii]
-	    
-	    if (bonus.type == "attribute") or (bonus.type == "attack") then
-		if not bonus.mapping then
-		    for x = 1, #bonus do
-			
-			bonus[x] = bonus[x] * 0.10
-		    end
-		end
-	    elseif (bonus.type == "resistance") then
-		if bonus.decrease then
-		    for x = 1, #bonus.decrease do
-			bonus.decrease[x] = bonus.decrease[x] * 0.10
-		    end
-		end
-		if bonus.percent then
-		    for x = 1, #bonus.percent do
-			bonus.percent[x] = bonus.percent[x] * 0.10
-		    end
-		end
-	    end
-	end
-    end
-    
-    return upgradeTable
-end
+-- local function processUpgradeTable(upgradeTable)
 
-local function upgradeEntity(points, entity, upgradeTable, tier)
-    local remainingPoints = points
+--     for i=1,#upgradeTable do
+-- 	local bonuses = upgradeTable[i]
+-- 	for ii=1,#bonuses do
+-- 	    local bonus = bonuses[ii]
+
+-- 	    if (bonus.type == "attribute") or (bonus.type == "attack") then
+-- 		if not bonus.mapping then
+-- 		    for x = 1, #bonus do
+
+-- 			bonus[x] = bonus[x] * 0.10
+-- 		    end
+-- 		end
+-- 	    elseif (bonus.type == "resistance") then
+-- 		if bonus.decrease then
+-- 		    for x = 1, #bonus.decrease do
+-- 			bonus.decrease[x] = bonus.decrease[x] * 0.10
+-- 		    end
+-- 		end
+-- 		if bonus.percent then
+-- 		    for x = 1, #bonus.percent do
+-- 			bonus.percent[x] = bonus.percent[x] * 0.10
+-- 		    end
+-- 		end
+-- 	    end
+-- 	end
+--     end
+
+--     return upgradeTable
+-- end
+
+local function upgradeEntity(entity, upgradeTable, tier)
     if upgradeTable then
-	while (remainingPoints > 0) do
-	    local upgrade = upgradeTable[mFloor(xorRandom() * #upgradeTable)+1]
-
-	    for i=1, #upgrade do
-		local bonus = upgrade[i]
-		
-		if (bonus.type == "attribute") then
-		    if bonus.mapping then
-			entity.attributes[bonus.name] = bonus.mapping[entity.attributes[bonus.name] or "default"]
-		    else
-			local adj = bonus[tier]
-			adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.875, adj * 1.25, xorRandom)
-			entity.attributes[bonus.name] = (entity.attributes[bonus.name] or 0) + adj
+	for upgradeIndex=1, #upgradeTable do
+	    local upgrade = upgradeTable[upgradeIndex]
+	    
+	    if (upgrade.type == "attribute") then
+		if upgrade.mapping then
+		    entity.attributes[upgrade.mapping] = upgrade[tier]
+		else
+		    local adj = upgrade[tier]
+		    local min = upgrade.min or adj * 0.70
+		    local max = upgrade.max or adj * 1.30
+		    if (adj < 0) then
+			local t = min
+			min = max
+			max = t
 		    end
-		end
-		if (bonus.type == "resistance") then
-		    local field = bonus.name
-		    if not entity.resistances[field] then
-			entity.resistances[field] = {}
-		    end
-		    local adj
-		    if bonus.decrease then
-			adj = bonus.decrease[tier]
-			entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + adj
-		    end
-		    if bonus.percent then
-			adj = bonus.percent[tier]
-			entity.resistances[field].percent = mMin((entity.resistances[field].percent or 0) + adj, 100)
-		    end
-		end
-		if (bonus.type == "attack") then
-		    if bonus.mapping then
-			entity.attack[bonus.name] = bonus.mapping[entity.attack[bonus.name] or "default"]
-		    else
-			local adj = bonus[tier]
-			-- if adj < 0 then
-			--     adj = -adj
-			--     adj = -gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.75, adj * 1.25, xorRandom)
-			-- else
-			adj = gaussianRandomRangeRG(adj, adj * 0.2, adj * 0.875, adj * 1.25, xorRandom)
-			--end
-			entity.attack[bonus.name] = (entity.attack[bonus.name] or 0) + adj
-		    end
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    entity.attributes[upgrade.name] = (entity.attributes[upgrade.name] or 0) + adj
 		end
 	    end
-	    
-	    remainingPoints = remainingPoints - 1
+	    if (upgrade.type == "resistance") then
+		local field = upgrade.name
+		if not entity.resistances[field] then
+		    entity.resistances[field] = {}
+		end
+		local adj
+		if upgrade.decrease then
+		    adj = upgrade.decrease[tier]
+		    local min = upgrade.min or adj * 0.70
+		    local max = upgrade.max or adj * 1.30
+		    if (adj < 0) then
+			local t = min
+			min = max
+			max = t
+		    end
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + adj
+		end
+		if upgrade.percent then
+		    adj = upgrade.percent[tier]
+		    local min = upgrade.min or adj * 0.70
+		    local max = upgrade.max or adj * 1.30
+		    if (adj < 0) then
+			local t = min
+			min = max
+			max = t
+		    end
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    entity.resistances[field].percent = mMin((entity.resistances[field].percent or 0) + adj, 100)
+		end
+	    end
+	    if (upgrade.type == "attack") then
+		if upgrade.mapping then
+		    entity.attack[upgrade.mapping] = upgrade[tier]
+		else
+		    local adj = upgrade[tier]
+		    local min = upgrade.min or adj * 0.70
+		    local max = upgrade.max or adj * 1.30
+		    if (adj < 0) then
+			local t = min
+			min = max
+			max = t
+		    end
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    entity.attack[upgrade.name] = (entity.attack[upgrade.name] or 0) + adj
+		end
+	    end
 	end
     end
 end
@@ -229,16 +250,21 @@ local function generateApperance(unit, tier)
 	    unit.attack.scale = scale
 	    unit.attack.tint = tint
 	end
-    else
+    end
+    if unit.tint1 and unit.tint2 then
 	local tint1 = calculateRGBa(unit.tint1, tier)
 	local tint2 = calculateRGBa(unit.tint2, tier)
 	
 	unit.attributes.tint1 = tint1
 	unit.attributes.tint2 = tint2
-	
-	unit.attack.scale = scale
-	unit.attack.tint1 = tint1
-	unit.attack.tint2 = tint2
+
+	if unit.attack then
+	    unit.attack.scale = scale
+	    unit.attack.tint1 = tint1
+	    unit.attack.tint2 = tint2
+	end
+    end
+    if unit.attack then
 	if unit.pTint then
 	    unit.attack.pTint = calculateRGBa(unit.pTint, tier)
 	end
@@ -251,7 +277,7 @@ local function generateApperance(unit, tier)
     end
 end
 
-local function buildUnits(startingPoints, template, attackGenerator, upgradeTable, variations, tiers)
+local function buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
     local unitSet = {}
     
     for t=1, tiers do
@@ -261,7 +287,7 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
 	    local unit = deepcopy(template)
 	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
 	    generateApperance(unit, t)
-	    upgradeEntity(startingPoints, unit, upgradeTable,  t)
+	    upgradeEntity(unit, upgradeTable,  t)
 	    
 	    if unit.attackName then
 		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
@@ -294,15 +320,8 @@ local function buildUnits(startingPoints, template, attackGenerator, upgradeTabl
 end
 
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
-    local unitPoints = #upgradeTable.unit * 10
-    local unitSpawnerPoints = #upgradeTable.unitSpawner * 10
-    local probabilityPoints = #upgradeTable.probabilityTable * 10
-
-    processUpgradeTable(upgradeTable.unit)
-    processUpgradeTable(upgradeTable.unitSpawner)
     
-    local unitSet = buildUnits(unitPoints,
-			       templates.unit,
+    local unitSet = buildUnits(templates.unit,
 			       attackGenerator,
 			       upgradeTable.unit,
 			       variations.unit,
@@ -313,11 +332,10 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
-	    local unitTable = unitSetToProbabilityTable(probabilityPoints,
-							upgradeTable.probabilityTable,
+	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
 							unitSet)
 	    generateApperance(unitSpawner, t)
-	    upgradeEntity(unitSpawnerPoints, unitSpawner, upgradeTable.unitSpawner, t)
+	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, t)
 
 	    if unitSpawner.autoplace then
 		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[t]
@@ -335,16 +353,13 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
-    local wormPoints = #upgradeTable * 10
-    processUpgradeTable(upgradeTable)
-    
     for t=1, tiers do
 	
 	for i=1,variations do
 	    local worm = deepcopy(template)
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
 	    generateApperance(worm, t)
-	    upgradeEntity(wormPoints, worm, upgradeTable, t)
+	    upgradeEntity(worm, upgradeTable, t)
 
 	    if worm.attackName then
 		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t

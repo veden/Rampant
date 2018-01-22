@@ -98,7 +98,7 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
-constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 2048
+constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 20480
 
 constants.BASE_SPAWNER_UPGRADE = 300
 constants.BASE_WORM_UPGRADE = 250
@@ -109,7 +109,7 @@ constants.BASE_DISTANCE_LEVEL_BONUS = 300
 
 constants.BASE_ALIGNMENT_NEUTRAL = 1
 constants.BASE_ALIGNMENT_FIRE = 2
-constants.BASE_ALIGNMENT_BURROW = 3
+constants.BASE_ALIGNMENT_NUCLEAR = 3
 constants.BASE_ALIGNMENT_SUICIDE = 4
 constants.BASE_ALIGNMENT_INFEST = 5
 constants.BASE_ALIGNMENT_ACID = 6
@@ -123,9 +123,10 @@ constants.BASE_ALIGNMENT_FAST = 13
 constants.BASE_ALIGNMENT_WEB = 14
 constants.BASE_ALIGNMENT_DECAYING = 15
 constants.BASE_ALIGNMENT_UNDYING = 16
-constants.BASE_ALIGNMENT_NEUTRAL_ADVANCED = 17
-constants.BASE_ALIGNMENT_ENERGY_THIEF = 18
-constants.BASE_ALIGNMENT_ELECTRIC = 19
+constants.BASE_ALIGNMENT_ENERGY_THIEF = 17
+constants.BASE_ALIGNMENT_ELECTRIC = 18
+constants.BASE_ALIGNMENT_WASP = 19
+-- constants.BASE_ALIGNMENT_BURROW = 3
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
 
@@ -134,9 +135,37 @@ neutralPath[constants.BASE_ALIGNMENT_ACID] = true
 neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
 neutralPath[constants.BASE_ALIGNMENT_PHYSICAL] = true
 neutralPath[constants.BASE_ALIGNMENT_ELECTRIC] = true
+neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
+neutralPath[constants.BASE_ALIGNMENT_SUICIDE] = true
+-- neutralPath[constants.BASE_ALIGNMENT_WEB] = true
+neutralPath[constants.BASE_ALIGNMENT_TROLL] = true
+neutralPath[constants.BASE_ALIGNMENT_FAST] = true
+neutralPath[constants.BASE_ALIGNMENT_WASP] = true
+
+local suicidePath = {}
+suicidePath[constants.BASE_ALIGNMENT_NUCLEAR] = true
+
+local firePath = {}
+firePath[constants.BASE_ALIGNMENT_INFERNO] = true
+
+local acidPath = {}
+acidPath[constants.BASE_ALIGNMENT_POSION] = true
+-- acidPath[constants.BASE_ALIGNMENT_INFEST] = true
+
+local decayingPath = {}
+decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
+
+local electricPath = {}
+-- electricPath[constants.BASE_ALIGNMENT_ENERGY_THIEF] = true
+electricPath[constants.BASE_ALIGNMENT_LASER] = true
 
 constants.BASE_ALIGNMENT_PATHS = {}
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = firePath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = suicidePath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
 
 -- ai retreat
 
@@ -261,9 +290,6 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 -- unit spawners
 
-constants.SUICIDE_BITER_NEST_TIERS = 10
-constants.SUICIDE_BITER_NEST_VARIATIONS = 5
-
 constants.NEUTRAL_NEST_TIERS = 10
 constants.NEUTRAL_NEST_VARIATIONS = 20
 constants.NEUTRAL_WORM_TIERS = 10
@@ -274,6 +300,69 @@ constants.ACID_NEST_VARIATIONS = 20
 constants.ACID_WORM_TIERS = 10
 constants.ACID_WORM_VARIATIONS = 20
 
+constants.FIRE_NEST_TIERS = 10
+constants.FIRE_NEST_VARIATIONS = 20
+constants.FIRE_WORM_TIERS = 10
+constants.FIRE_WORM_VARIATIONS = 20
 
+constants.PHYSICAL_NEST_TIERS = 10
+constants.PHYSICAL_NEST_VARIATIONS = 20
+constants.PHYSICAL_WORM_TIERS = 10
+constants.PHYSICAL_WORM_VARIATIONS = 20
+
+constants.TROLL_NEST_TIERS = 10
+constants.TROLL_NEST_VARIATIONS = 20
+constants.TROLL_WORM_TIERS = 10
+constants.TROLL_WORM_VARIATIONS = 20
+
+constants.FAST_NEST_TIERS = 10
+constants.FAST_NEST_VARIATIONS = 20
+constants.FAST_WORM_TIERS = 10
+constants.FAST_WORM_VARIATIONS = 20
+
+constants.SUICIDE_NEST_TIERS = 10
+constants.SUICIDE_NEST_VARIATIONS = 20
+constants.SUICIDE_WORM_TIERS = 10
+constants.SUICIDE_WORM_VARIATIONS = 20
+
+constants.WASP_NEST_TIERS = 10
+constants.WASP_NEST_VARIATIONS = 20
+constants.WASP_WORM_TIERS = 10
+constants.WASP_WORM_VARIATIONS = 20
+
+constants.POISON_NEST_TIERS = 10
+constants.POISON_NEST_VARIATIONS = 20
+constants.POISON_WORM_TIERS = 10
+constants.POISON_WORM_VARIATIONS = 20
+
+constants.DECAYING_NEST_TIERS = 10
+constants.DECAYING_NEST_VARIATIONS = 20
+constants.DECAYING_WORM_TIERS = 10
+constants.DECAYING_WORM_VARIATIONS = 20
+
+constants.UNDYING_NEST_TIERS = 10
+constants.UNDYING_NEST_VARIATIONS = 20
+constants.UNDYING_WORM_TIERS = 10
+constants.UNDYING_WORM_VARIATIONS = 20
+
+constants.ELECTRIC_NEST_TIERS = 10
+constants.ELECTRIC_NEST_VARIATIONS = 20
+constants.ELECTRIC_WORM_TIERS = 10
+constants.ELECTRIC_WORM_VARIATIONS = 20
+
+constants.LASER_NEST_TIERS = 10
+constants.LASER_NEST_VARIATIONS = 20
+constants.LASER_WORM_TIERS = 10
+constants.LASER_WORM_VARIATIONS = 20
+
+constants.INFERNO_NEST_TIERS = 10
+constants.INFERNO_NEST_VARIATIONS = 20
+constants.INFERNO_WORM_TIERS = 10
+constants.INFERNO_WORM_VARIATIONS = 20
+
+constants.NUCLEAR_NEST_TIERS = 10
+constants.NUCLEAR_NEST_VARIATIONS = 20
+constants.NUCLEAR_WORM_TIERS = 10
+constants.NUCLEAR_WORM_VARIATIONS = 20
 
 return constants
