@@ -169,6 +169,8 @@ function upgrade.attempt(natives)
     	    squad.chunk = nil
     	end
 
+	natives.evolutionTableUnitSpawner = {}
+	natives.evolutionTableWorm = {}
 	natives.bases = {}
 	natives.baseIndex = 1
 	natives.baseIncrement = 0

@@ -20,27 +20,27 @@ function biterFunctions.makeSpitterCorpse(attributes)
 		animation = spitterdyinganimation(attributes.scale, attributes.tint)
 	    }
     })
-return name
+    return name
 end
 
 function biterFunctions.makeBiterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend({
-	{
-	    type = "corpse",
-	    name = name,
-	    icon = "__base__/graphics/icons/big-biter-corpse.png",
-	    icon_size = 32,
-	    selectable_in_game = false,
-	    selection_box = {{-1, -1}, {1, 1}},
-	    subgroup="corpses",
-	    order = "c[corpse]-b[spitter]-a[small]",
-	    flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
-	    dying_speed = 0.04,
-	    time_before_removed = 15 * 60 * 60,
-	    final_render_layer = "corpse",
-	    animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
-	}
+	    {
+		type = "corpse",
+		name = name,
+		icon = "__base__/graphics/icons/big-biter-corpse.png",
+		icon_size = 32,
+		selectable_in_game = false,
+		selection_box = {{-1, -1}, {1, 1}},
+		subgroup="corpses",
+		order = "c[corpse]-b[spitter]-a[small]",
+		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
+		dying_speed = 0.04,
+		time_before_removed = 15 * 60 * 60,
+		final_render_layer = "corpse",
+		animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	    }
     })
     return name
 end
@@ -49,26 +49,26 @@ function biterFunctions.makeUnitSpawnerCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend({
 	    {
-	    type = "corpse",
-	    name = name,
-	    flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
-	    icon = "__base__/graphics/icons/biter-spawner-corpse.png",
-	    icon_size = 32,
-	    collision_box = {{-2, -2}, {2, 2}},
-	    selection_box = {{-2, -2}, {2, 2}},
-	    selectable_in_game = false,
-	    dying_speed = 0.04,
-	    time_before_removed = 15 * 60 * 60,
-	    subgroup="corpses",
-	    order = "c[corpse]-c[spitter-spawner]",
-	    final_render_layer = "remnants",
-	    animation =
-		{
-		    spawner_die_animation(0, attributes.tint),
-		    spawner_die_animation(1, attributes.tint),
-		    spawner_die_animation(2, attributes.tint),
-		    spawner_die_animation(3, attributes.tint)
-		}
+		type = "corpse",
+		name = name,
+		flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
+		icon = "__base__/graphics/icons/biter-spawner-corpse.png",
+		icon_size = 32,
+		collision_box = {{-2, -2}, {2, 2}},
+		selection_box = {{-2, -2}, {2, 2}},
+		selectable_in_game = false,
+		dying_speed = 0.04,
+		time_before_removed = 15 * 60 * 60,
+		subgroup="corpses",
+		order = "c[corpse]-c[spitter-spawner]",
+		final_render_layer = "remnants",
+		animation =
+		    {
+			spawner_die_animation(0, attributes.tint),
+			spawner_die_animation(1, attributes.tint),
+			spawner_die_animation(2, attributes.tint),
+			spawner_die_animation(3, attributes.tint)
+		    }
 	    }
     })
     return name
@@ -78,19 +78,19 @@ function biterFunctions.makeWormCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend({
 	    {
-	    type = "corpse",
-	    name = name,
-	    icon = "__base__/graphics/icons/medium-worm-corpse.png",
-	    icon_size = 32,
-	    selection_box = {{-0.8, -0.8}, {0.8, 0.8}},
-	    selectable_in_game = false,
-	    subgroup="corpses",
-	    order = "c[corpse]-c[worm]-b[medium]",
-	    flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"},
-	    dying_speed = 0.01,
-	    time_before_removed = 15 * 60 * 60,
-	    final_render_layer = "corpse",
-	    animation = worm_die_animation(attributes.scale, attributes.tint)
+		type = "corpse",
+		name = name,
+		icon = "__base__/graphics/icons/medium-worm-corpse.png",
+		icon_size = 32,
+		selection_box = {{-0.8, -0.8}, {0.8, 0.8}},
+		selectable_in_game = false,
+		subgroup="corpses",
+		order = "c[corpse]-c[worm]-b[medium]",
+		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"},
+		dying_speed = 0.01,
+		time_before_removed = 15 * 60 * 60,
+		final_render_layer = "corpse",
+		animation = worm_die_animation(attributes.scale, attributes.tint)
 	    }
     })
     return name
@@ -271,16 +271,16 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	dying_explosion = "blood-explosion-big",
 	inventory_size = attributes.inventorySize,
 	dying_sound = make_worm_dying_sounds(0.9),
-	folded_speed = attributes.foldedSpeed or 0.01,
+	folded_speed = 0.01,
 	folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
 	preparing_speed = attributes.preparingSpeed or 0.025,
 	preparing_animation = worm_preparing_animation(attributes.scale, attributes.tint, "forward"),
-	prepared_speed = attributes.preparedSpeed or 0.015,
+	prepared_speed = 0.015,
 	prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
-	starting_attack_speed = attributes.attackSpeed or 0.03,
+	starting_attack_speed = 0.03,
 	starting_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "forward"),
 	starting_attack_sound = make_worm_roars(0.8),
-	ending_attack_speed = attributes.endingAttackSpeed or 0.03,
+	ending_attack_speed = 0.03,
 	ending_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "backward"),
 	folding_speed = attributes.foldingSpeed or 0.015,
 	folding_animation =  worm_preparing_animation(attributes.scale, attributes.tint, "backward"),
@@ -298,99 +298,158 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 end
 
 function biterFunctions.createSuicideAttack(attributes)
-    return { type = "projectile",
-             range = 0.5,
-             cooldown = 35,
-             ammo_category = "melee",
-             ammo_type = { 
-		 category = "biological",
-		 action = {
-		     {
-			 type = "direct",
-			 action_delivery = {
-			     type = "instant",
-			     target_effects =
-				 {
-				     {
-					 type = "create-entity",
-					 entity_name = attributes.explosion,
-					 check_buildability = true
-				     },
-				     {
-					 type = "nested-result",
-					 action = {
-					     type = "area",
-					     radius = attributes.area,
-					     action_delivery = {
-						 type = "instant",
-						 target_effects = {
-						     {
-							 type = "damage",
-							 damage = {
-							     amount = attributes.damage, 
-							     type = "explosion"
-							 }
-						     },
-						 }
-					     }
-					 }
-				     },
-				     {
-					 type = "create-entity",
-					 entity_name = attributes.scorchmark,
-					 check_buildability = true
-				     }
-				 }
-			     
-			 },
-		     },
-		     {
-			 type = "cluster",
-			 cluster_count = attributes.explosionCount,
-			 distance = attributes.explosionDistance,
-			 distance_deviation = 3,
-			 action_delivery =
-			     {
-				 type = "instant",
-				 target_effects= {
-				     {
-					 type="create-entity",
-					 entity_name = attributes.explosion,
-					 check_buildability = true
-				     },
-				     {
-					 type = "create-entity",
-					 entity_name = attributes.scorchmark,
-					 check_buildability = true
-				     },
-				     {
-					 type = "nested-result",
-					 action = {
-					     type = "area",
-					     radius = attributes.area,
-					     action_delivery = {
-						 type = "instant",
-						 target_effects = {
-						     {
-							 type = "damage",
-							 damage = {
-							     amount = attributes.damage, 
-							     type = "explosion"
-							 }
-						     },
-						 }
-					     }
-					 }
-				     }
-				 }
-			     }
-		     }
-		     
-		 }
-	     },
-	     sound = make_biter_roars(0.5),
-	     animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+    local o = {
+	type = "projectile",
+	range = attributes.range or 0.5,
+	cooldown = attributes.cooldown or 35,
+	ammo_category = "melee",
+	ammo_type = { 
+	    category = "biological"
+	},
+	sound = make_biter_roars(0.5),
+	animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
     }
+    
+    if attributes.nuclear then
+	o.ammo_type.action = {
+	    type = "direct",
+	    action_delivery =
+		{
+		    type = "instant",
+		    target_effects =
+			{
+			    {
+				repeat_count = 100,
+				type = "create-trivial-smoke",
+				smoke_name = "nuclear-smoke",
+				offset_deviation = {{-1, -1}, {1, 1}},
+				slow_down_factor = 1,
+				starting_frame = 3,
+				starting_frame_deviation = 5,
+				starting_frame_speed = 0,
+				starting_frame_speed_deviation = 5,
+				speed_from_center = 0.5,
+				speed_deviation = 0.2
+			    },
+			    {
+				type = "create-entity",
+				entity_name = "explosion"
+			    },
+			    {
+				type = "damage",
+				damage = {amount = attributes.damage or 400, type = attributes.damageType or "explosion"}
+			    },
+			    {
+				type = "create-entity",
+				entity_name = "small-scorchmark",
+				check_buildability = true
+			    },
+			    {
+				type = "nested-result",
+				action =
+				    {
+					type = "area",
+					target_entities = false,
+					repeat_count = attributes.repeatCount or 2000,
+					radius = attributes.radius or 35,
+					action_delivery =
+					    {
+						type = "projectile",
+						projectile = "atomic-bomb-wave",
+						starting_speed = 0.5
+					    }
+				    }
+			    }
+			}
+		}
+	}
+    else
+	o.ammo_type.action = {
+	    {
+		type = "direct",
+		action_delivery = {
+		    type = "instant",
+		    target_effects =
+			{
+			    {
+				type = "create-entity",
+				entity_name = attributes.explosion,
+				check_buildability = true
+			    },
+			    {
+				type = "nested-result",
+				action = {
+				    type = "area",
+				    radius = attributes.radius,
+				    action_delivery = {
+					type = "instant",
+					target_effects = {
+					    {
+						type = "damage",
+						damage = {
+						    amount = attributes.damage, 
+						    type = attributes.damageType or "explosion"
+						}
+					    },
+					}
+				    }
+				}
+			    },
+			    {
+				type = "create-entity",
+				entity_name = attributes.scorchmark,
+				check_buildability = true
+			    }
+			}
+		    
+		},
+	    },
+	    {
+		type = "cluster",
+		cluster_count = attributes.explosionCount,
+		distance = attributes.explosionDistance,
+		distance_deviation = 3,
+		action_delivery =
+		    {
+			type = "instant",
+			target_effects= {
+			    {
+				type="create-entity",
+				entity_name = attributes.explosion,
+				check_buildability = true
+			    },
+			    {
+				type = "create-entity",
+				entity_name = attributes.scorchmark,
+				check_buildability = true
+			    },
+			    {
+				type = "nested-result",
+				action = {
+				    type = "area",
+				    radius = attributes.radius,
+				    action_delivery = {
+					type = "instant",
+					target_effects = {
+					    {
+						type = "damage",
+						damage = {
+						    amount = attributes.damage, 
+						    type = attributes.damageType or "explosion"
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+	    }
+	    
+	}
+	
+    end
+    return o
 end
 
 function biterFunctions.findRunScale(entity)
@@ -403,6 +462,33 @@ end
 
 function biterFunctions.findTint(entity)
     return entity.run_animation.layers[2].tint
+end
+
+function biterFunctions.createElectricAttack(attributes, electricBeam, animation)
+    return
+	{
+	    type = "beam",
+	    ammo_category = "combat-robot-beam",
+	    cooldown = attributes.cooldown or 20,
+	    range = attributes.range or 15,
+	    ammo_type =
+		{
+		    category = "combat-robot-beam",
+		    action =
+			{
+			    type = "direct",
+			    action_delivery =
+				{
+				    type = "beam",
+				    beam = electricBeam or "electric-beam",
+				    max_length = attributes.range or 15,
+				    duration = attributes.duration or 20,
+				    source_offset = {0.15, -0.5},
+				}
+			}
+		},
+	    animation = animation
+	}
 end
 
 function biterFunctions.createMeleeAttack(attributes)
