@@ -13,11 +13,12 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 function streamUtils.makeStream(info)
     local attributes = util.table.deepcopy(info)
     local softSmokeName = attributes.softSmokeName or makeSmokeSoft(attributes)
+    local name = attributes.name .. "-stream-rampant"
     data:extend(
 	{
 	    {
 		type = "stream",
-		name = attributes.name .. "-stream-rampant",
+		name = name,
 		flags = {"not-on-map"},
 		stream_light = {intensity = 1, size = 4},
 		ground_light = {intensity = 0.8, size = 4},
@@ -84,6 +85,7 @@ function streamUtils.makeStream(info)
 	    }
 	}
     )
+    return name
 end
 
 return streamUtils
