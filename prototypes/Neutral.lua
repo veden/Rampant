@@ -1,6 +1,6 @@
 -- imports
 
-local acidBall = require("utils/AttackAcidBall")
+local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
 local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
@@ -24,8 +24,8 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
-local createAcidBall = acidBall.createAcidBall
-local createFireAttack = biterUtils.createFireAttack
+local createAttackBall = acidBall.createAttackBall
+local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
 makeSmokeSoft({name="neutral", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
@@ -1022,8 +1022,8 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	createAcidBall(attributes)
-	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
+	createAttackBall(attributes)
+	return createStreamAttack(attributes, attributes.name .. "-stream-rampant")
     end,
     
     {
@@ -1339,8 +1339,8 @@ buildWorm(
     },
 
     function (attributes)
-	createAcidBall(attributes)
-	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
+	createAttackBall(attributes)
+	return createStreamAttack(attributes, attributes.name .. "-stream-rampant")
     end,
 
     NEUTRAL_WORM_VARIATIONS,

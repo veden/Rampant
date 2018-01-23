@@ -583,9 +583,8 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	makeBeam(attributes)
 	return createElectricAttack(attributes,
-				    attributes.name .. "-beam-rampant",
+				    makeBeam(attributes),
 				    biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2))
     end,
 

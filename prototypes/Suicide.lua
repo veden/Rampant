@@ -1,6 +1,6 @@
 -- imports
 
-local acidBall = require("utils/AttackAcidBall")
+local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
 local stickerUtils = require("utils/StickerUtils")
 local smokeUtils = require("utils/SmokeUtils")
@@ -26,8 +26,8 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 local makeSticker = stickerUtils.makeSticker
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
-local createAcidBall = acidBall.createAcidBall
-local createFireAttack = biterUtils.createFireAttack
+local createAttackBall = acidBall.createAttackBall
+local createStreamAttack = biterUtils.createStreamAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 
 makeSmokeSoft({name="suicide", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
@@ -935,8 +935,7 @@ buildWorm(
 
     function (attributes)
 	makeSticker(attributes)
-	createAcidBall(attributes)
-	return createFireAttack(attributes, attributes.name .. "-stream-rampant")
+	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
 
     SUICIDE_WORM_VARIATIONS,

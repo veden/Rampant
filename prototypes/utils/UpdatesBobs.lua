@@ -5,7 +5,7 @@ local biterUtils = require("BiterUtils")
 function bobsUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];
 
-    turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
@@ -16,7 +16,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"bob-explosive-ball-stream-rampant")
 
-    turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
@@ -27,7 +27,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"bob-fire-ball-stream-rampant")
 
-    turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
@@ -38,7 +38,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"bob-poison-ball-stream-rampant")
 
-    turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
@@ -49,7 +49,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"bob-piercing-ball-stream-rampant")
     
-    turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
@@ -60,7 +60,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"bob-electric-ball-stream-rampant")
 
-    turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 28,
@@ -71,7 +71,7 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"acid-ball-5-stream-rampant")
 
-    turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 60,
     	    range = 30,
@@ -85,7 +85,7 @@ function bobsUpdates.useDumbProjectiles()
     local units = data.raw["unit"]
 
     local unit = units["behemoth-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -99,7 +99,7 @@ function bobsUpdates.useDumbProjectiles()
     	"acid-ball-3-stream-rampant")
 
     unit = units["bob-big-electric-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 15,
@@ -114,7 +114,7 @@ function bobsUpdates.useDumbProjectiles()
     	"bob-electric-ball-stream-rampant")
 
     unit = units["bob-huge-explosive-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -129,7 +129,7 @@ function bobsUpdates.useDumbProjectiles()
     	"bob-explosive-ball-stream-rampant")
 
     unit = units["bob-huge-acid-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -143,7 +143,7 @@ function bobsUpdates.useDumbProjectiles()
     	"wide-acid-ball-stream-rampant")
 
     unit = units["bob-giant-fire-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -157,7 +157,7 @@ function bobsUpdates.useDumbProjectiles()
     	"bob-fire-ball-stream-rampant")
 
     unit = units["bob-giant-poison-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -171,7 +171,7 @@ function bobsUpdates.useDumbProjectiles()
     	"bob-poison-ball-stream-rampant")
     
     unit = units["bob-titan-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -185,7 +185,7 @@ function bobsUpdates.useDumbProjectiles()
     	"bob-titan-ball-stream-rampant")
 
     unit = units["bob-behemoth-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
@@ -200,7 +200,7 @@ function bobsUpdates.useDumbProjectiles()
 
     
     unit = units["bob-leviathan-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
     	{
     	    cooldown = 90,
     	    range = 17,

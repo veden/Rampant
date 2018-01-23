@@ -1,4 +1,4 @@
-local acidBall = require("prototypes/utils/AttackAcidBall")
+local acidBall = require("prototypes/utils/AttackBall")
 
 if settings.startup["rampant-useDumbProjectiles"].value then
     acidBall.generateLegacy()
@@ -12,13 +12,14 @@ if settings.startup["rampant-newEnemies"].value then
     require("prototypes/Physical")
     require("prototypes/Suicide")
     require("prototypes/Fire")
-    require("prototypes/Inferno")
+    require("prototypes/Electric")
     require("prototypes/Nuclear")
+    require("prototypes/Inferno")
     -- require("prototypes/Fast")
     -- require("prototypes/Troll")
     -- require("prototypes/Decaying")
     -- require("prototypes/Undying")
     -- require("prototypes/Wasp")
     -- require("prototypes/Laser")
-    require("prototypes/Electric")
+    
 end

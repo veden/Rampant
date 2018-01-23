@@ -520,7 +520,7 @@ function biterFunctions.createMeleeAttack(attributes)
 	}
 end
 
-function biterFunctions.createFireAttack(attributes, fireAttack)
+function biterFunctions.createStreamAttack(attributes, fireAttack)
     local attack = {
 	type = "stream",
 	ammo_category = "flamethrower",

@@ -327,8 +327,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 			       variations.unit,
 			       tiers.unit)
     
-    for t=1, tiers.unitSpawner do
-	
+    for t=1, tiers.unitSpawner do	
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
@@ -354,7 +353,6 @@ end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
     for t=1, tiers do
-	
 	for i=1,variations do
 	    local worm = deepcopy(template)
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t

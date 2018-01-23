@@ -145,9 +145,12 @@ function beamUtils.makeBeam(attributes)
         volume = 0.7
       }
     }
-    result.name = attributes.name .. "-beam-rampant"
+
+    local name = attributes.name .. "-beam-rampant"
+    result.name = name
 
     data:extend({result})
+    return name
 end
 
 return beamUtils
