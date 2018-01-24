@@ -90,8 +90,8 @@ end
 --     end
 -- end
 
-function unitGroupUtils.createSquad(position, surface, natives)
-    local unitGroup = surface.create_unit_group({position=position})
+function unitGroupUtils.createSquad(position, surface, natives, group)
+    local unitGroup = group or surface.create_unit_group({position=position})
     
     local squad = {
 	group = unitGroup, 
@@ -131,11 +131,13 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
 	    return squad
 	end
     end
-    return nil
+    local squad = unitGroupUtils.createSquad(nil,nil,natives,unitGroup)
+    squad.kamikaze = mRandom() < unitGroupUtils.calculateKamikazeThreshold(#unitGroup.members, natives)
+    return squad
 end
 
-function unitGroupUtils.calculateKamikazeThreshold(squad, natives)
-    local squadSizeBonus = mLog((#squad.group.members / natives.attackWaveMaxSize) + 0.1) + 1
+function unitGroupUtils.calculateKamikazeThreshold(memberCount, natives)
+    local squadSizeBonus = mLog((memberCount / natives.attackWaveMaxSize) + 0.1) + 1
     return natives.kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
 end
 
