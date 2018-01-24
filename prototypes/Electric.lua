@@ -622,7 +622,7 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-beam",
+	attackName = "worm-electric",
 	tint = {r=0, g=0.25, b=0.83, a=0.65}
     },
 
@@ -637,9 +637,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [8] = 3000,
+	    [9] = 5000,
+	    [10] = 9000
 	},
 
 	{
@@ -913,10 +913,7 @@ buildWorm(
     },
     
     function (attributes)
-	makeBeam(attributes)
-	
-	return createElectricAttack(attributes,
-				    attributes.name .. "-beam-rampant")
+	return createElectricAttack(attributes, makeBeam(attributes))
     end,
 
     ELECTRIC_WORM_VARIATIONS,

@@ -585,7 +585,7 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "acid-ball",
+	    attackName = "acid-spitter",
 	    tint = {r=0, g=0.85, b=0.1, a=0.65},
 	    pTint = {r=0, g=1, b=0.1, a=0.5},
 	    sTint = {r=0, g=1, b=0.1, a=0.5}
@@ -1200,7 +1200,7 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-acid-ball",
+	attackName = "acid-worm",
 	tint = {r=0, g=0.85, b=0.1, a=0.65},
 	pTint = {r=0, g=1, b=0.1, a=0.5},
 	sTint = {r=0, g=1, b=0.1, a=0.5}
@@ -1217,9 +1217,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [8] = 3000,
+	    [9] = 5000,
+	    [10] = 9000
 	},
 
 	{

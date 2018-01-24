@@ -99,8 +99,7 @@ buildUnitSpawner(
 
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
 		[1] = 35,
@@ -113,11 +112,9 @@ buildUnitSpawner(
 		[8] = 50,
 		[9] = 55,
 		[10] = 57
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -130,11 +127,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -147,11 +142,9 @@ buildUnitSpawner(
 		[8] = 25000,
 		[9] = 30000,
 		[10] = 40000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 7,
@@ -164,11 +157,9 @@ buildUnitSpawner(
 		[8] = 90,
 		[9] = 150,
 		[10] = 200
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -181,11 +172,9 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "movement",
 		[1] = 0.2,
@@ -290,8 +279,7 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -304,11 +292,9 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -321,11 +307,9 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -338,11 +322,9 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -355,11 +337,9 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0,
@@ -372,25 +352,24 @@ buildUnitSpawner(
 		[8] = 0.72,
 		[9] = 0.82,
 		[10] = 0.92
-		
 	    },
 
-	    {		type = "attribute",
-			name = "unitsOwned",
-			[1] = 7,
-			[2] = 7,
-			[3] = 8,
-			[4] = 8,
-			[5] = 9,
-			[6] = 9,
-			[7] = 10,
-			[8] = 10,
-			[9] = 11,
-			[10] = 11
-			
-	    },
 	    {
+		type = "attribute",
+		name = "unitsOwned",
+		[1] = 7,
+		[2] = 7,
+		[3] = 8,
+		[4] = 8,
+		[5] = 9,
+		[6] = 9,
+		[7] = 10,
+		[8] = 10,
+		[9] = 11,
+		[10] = 11
 		
+	    },
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -548,7 +527,7 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "acid-ball",
+	    attackName = "neutral-spitter",
 	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
 	    pTint = {r=0, g=1, b=1, a=0.5},
 	    sTint = {r=0, g=1, b=1, a=0.5}
@@ -578,8 +557,7 @@ buildUnitSpawner(
 
     {
 	unit = {
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 10,
@@ -592,11 +570,9 @@ buildUnitSpawner(
 		[8] = 1500,
 		[9] = 2500,
 		[10] = 4500
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
 		[1] = 100,
@@ -609,11 +585,9 @@ buildUnitSpawner(
 		[8] = 93,
 		[9] = 90,
 		[10] = 90
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -626,11 +600,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -643,11 +615,9 @@ buildUnitSpawner(
 		[8] = 12500,
 		[9] = 15000,
 		[10] = 20000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -660,11 +630,9 @@ buildUnitSpawner(
 		[8] = 57,
 		[9] = 70,
 		[10] = 80
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -677,7 +645,6 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
-		
 	    },
 
 	    
@@ -755,7 +722,6 @@ buildUnitSpawner(
 		[8] = 1.9,
 		[9] = 2.0,
 		[10] = 2.5
-		
 	    },
 
 	    {
@@ -806,8 +772,7 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -820,11 +785,9 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -837,11 +800,9 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -854,11 +815,9 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -871,11 +830,9 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0.08,
@@ -888,25 +845,24 @@ buildUnitSpawner(
 		[8] = 0.65,
 		[9] = 0.75,
 		[10] = 0.9
-		
 	    },
 
-	    {		type = "attribute",
-			name = "unitsOwned",
-			[1] = 7,
-			[2] = 7,
-			[3] = 8,
-			[4] = 8,
-			[5] = 9,
-			[6] = 9,
-			[7] = 10,
-			[8] = 10,
-			[9] = 11,
-			[10] = 11
-			
-	    },
 	    {
-		
+		type = "attribute",
+		name = "unitsOwned",
+		[1] = 7,
+		[2] = 7,
+		[3] = 8,
+		[4] = 8,
+		[5] = 9,
+		[6] = 9,
+		[7] = 10,
+		[8] = 10,
+		[9] = 11,
+		[10] = 11
+	    },
+
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -1022,8 +978,8 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	createAttackBall(attributes)
-	return createStreamAttack(attributes, attributes.name .. "-stream-rampant")
+	
+	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
     
     {
@@ -1060,7 +1016,7 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-acid-ball",
+	attackName = "neutral-worm",
 	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
 	pTint = {r=0, g=1, b=1, a=0.5},
 	sTint = {r=0, g=1, b=1, a=0.5}
@@ -1077,9 +1033,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [8] = 2250,
+	    [9] = 3000,
+	    [10] = 5000
 	},
 
 	{    
@@ -1339,8 +1295,7 @@ buildWorm(
     },
 
     function (attributes)
-	createAttackBall(attributes)
-	return createStreamAttack(attributes, attributes.name .. "-stream-rampant")
+	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
 
     NEUTRAL_WORM_VARIATIONS,

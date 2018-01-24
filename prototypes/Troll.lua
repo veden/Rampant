@@ -10,11 +10,11 @@ local constants = require("Constants")
 
 -- constants
 
-local FIRE_NEST_TIERS = constants.FIRE_NEST_TIERS
-local FIRE_NEST_VARIATIONS = constants.FIRE_NEST_VARIATIONS
+local TROLL_NEST_TIERS = constants.TROLL_NEST_TIERS
+local TROLL_NEST_VARIATIONS = constants.TROLL_NEST_VARIATIONS
 
-local FIRE_WORM_TIERS = constants.FIRE_WORM_TIERS
-local FIRE_WORM_VARIATIONS = constants.FIRE_WORM_VARIATIONS
+local TROLL_WORM_TIERS = constants.TROLL_WORM_TIERS
+local TROLL_WORM_VARIATIONS = constants.TROLL_WORM_VARIATIONS
 
 -- imported functions
 
@@ -28,20 +28,18 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="fire", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+makeSmokeSoft({name="troll", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 
--- fire biters
+-- troll biters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "fire-biter",
+	    name = "troll-biter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
-	    attack = {
-		damageType = "fire"
-	    },
+	    attack = {},
 	    resistances = {},
 
 	    type = "biter",
@@ -57,12 +55,12 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    tint1 = {r=0.65, g=0, b=0, a=0.65},
-	    tint2 = {r=1, g=1, b=1, a=0.4}
+	    tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
+	    tint2 = {r=1, g=0.63, b=0, a=0.4}
 	},
 
 	unitSpawner = {
-	    name = "fire-biter-nest",
+	    name = "troll-biter-nest",
 
 	    attributes = {},	    
 	    resistances = {},
@@ -78,7 +76,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=1.0, g=0, b=0, a=1.0}
+	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
 	}
     },
 
@@ -88,21 +86,20 @@ buildUnitSpawner(
 
 		type = "attribute",
 		name = "health",
-		[1] = 15,
-		[2] = 75,
-		[3] = 150,
-		[4] = 250,
-		[5] = 400,
-		[6] = 750,
-		[7] = 1500,
-		[8] = 3000,
-		[9] = 5000,
-		[10] = 10000
+		[1] = 30,
+		[2] = 150,
+		[3] = 300,
+		[4] = 500,
+		[5] = 800,
+		[6] = 1500,
+		[7] = 3000,
+		[8] = 6000,
+		[9] = 10000,
+		[10] = 20000
 
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
 		[1] = 35,
@@ -115,11 +112,9 @@ buildUnitSpawner(
 		[8] = 50,
 		[9] = 55,
 		[10] = 57
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -132,11 +127,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -149,11 +142,9 @@ buildUnitSpawner(
 		[8] = 25000,
 		[9] = 30000,
 		[10] = 40000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 7,
@@ -166,54 +157,50 @@ buildUnitSpawner(
 		[8] = 90,
 		[9] = 150,
 		[10] = 200
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
-		[1] = 0.01,
-		[2] = 0.01,
-		[3] = 0.015,
-		[4] = 0.02,
-		[5] = 0.05,
-		[6] = 0.075,
-		[7] = 0.1,
-		[8] = 0.12,
-		[9] = 0.14,
-		[10] = 0.16
-		
+		[1] = 0.04,
+		[2] = 0.04,
+		[3] = 0.06,
+		[4] = 0.08,
+		[5] = 0.2,
+		[6] = 0.3,
+		[7] = 0.4,
+		[8] = 0.6,
+		[9] = 0.8,
+		[10] = 1
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "movement",
-		[1] = 0.2,
-		[2] = 0.19,
-		[3] = 0.185,
-		[4] = 0.18,
-		[5] = 0.175,
+		[1] = 0.16,
+		[2] = 0.16,
+		[3] = 0.155,
+		[4] = 0.15,
+		[5] = 0.155,
+		[6] = 0.15,
+		[7] = 0.15,
+		[8] = 0.15,
+		[9] = 0.15,
+		[10] = 0.15
+	    },
+	    {
+		type = "attribute",
+		name = "distancePerFrame",
+		[1] = 0.075,
+		[2] = 0.095,
+		[3] = 0.12,
+		[4] = 0.16,
+		[5] = 0.165,
 		[6] = 0.17,
 		[7] = 0.17,
 		[8] = 0.17,
 		[9] = 0.17,
 		[10] = 0.17
-	    },
-	    {
-		type = "attribute",
-		name = "distancePerFrame",
-		[1] = 0.1,
-		[2] = 0.125,
-		[3] = 0.15,
-		[4] = 0.19,
-		[5] = 0.195,
-		[6] = 0.2,
-		[7] = 0.2,
-		[8] = 0.2,
-		[9] = 0.2,
-		[10] = 0.2
 	    },
 
 	    {
@@ -244,7 +231,7 @@ buildUnitSpawner(
 		    [10] = 15
 		}
 	    },
-
+	    
 	    {
 		type = "resistance",
 		name = "explosion",
@@ -278,28 +265,28 @@ buildUnitSpawner(
 		type = "resistance",
 		name = "fire",
 		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
+		    [1] = -15,
+		    [2] = -15,
+		    [3] = -20,
+		    [4] = -20,
+		    [5] = -25,
+		    [6] = -25,
+		    [7] = -30,
+		    [8] = -30,
+		    [9] = -35,
+		    [10] = -45
 		},
 		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
+		    [1] = -100,
+		    [2] = -100,
+		    [3] = -100,
+		    [4] = -120,
+		    [5] = -120,
+		    [6] = -160,
+		    [7] = -160,
+		    [8] = -200,
+		    [9] = -200,
+		    [10] = -240
 		}
 	    },
 
@@ -322,42 +309,37 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
-		[1] = 350,
-		[2] = 500,
-		[3] = 750,
-		[4] = 1500,
-		[5] = 2500,
-		[6] = 3500,
-		[7] = 5000,
-		[8] = 7000,
-		[9] = 10000,
-		[10] = 15000
-		
+		[1] = 700,
+		[2] = 1000,
+		[3] = 1500,
+		[4] = 3000,
+		[5] = 5000,
+		[6] = 7000,
+		[7] = 10000,
+		[8] = 14000,
+		[9] = 20000,
+		[10] = 30000
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
-		[1] = 0.02,
-		[2] = 0.02,
-		[3] = 0.022,
-		[4] = 0.024,
-		[5] = 0.026,
-		[6] = 0.028,
-		[7] = 0.03,
-		[8] = 0.032,
-		[9] = 0.034,
-		[10] = 0.036
-		
+		[1] = 0.08,
+		[2] = 0.1,
+		[3] = 0.2,
+		[4] = 0.3,
+		[5] = 0.4,
+		[6] = 0.5,
+		[7] = 0.8,
+		[8] = 1,
+		[9] = 1.2,
+		[10] = 1.5
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -370,11 +352,9 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -387,11 +367,9 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0,
@@ -404,7 +382,6 @@ buildUnitSpawner(
 		[8] = 0.72,
 		[9] = 0.82,
 		[10] = 0.92
-		
 	    },
 
 	    {
@@ -422,8 +399,7 @@ buildUnitSpawner(
 		[10] = 11
 		
 	    },
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -501,28 +477,28 @@ buildUnitSpawner(
 		type = "resistance",
 		name = "fire",
 		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
+		    [1] = -15,
+		    [2] = -15,
+		    [3] = -20,
+		    [4] = -20,
+		    [5] = -25,
+		    [6] = -25,
+		    [7] = -30,
+		    [8] = -30,
+		    [9] = -35,
+		    [10] = -45
 		},
 		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
+		    [1] = -100,
+		    [2] = -100,
+		    [3] = -100,
+		    [4] = -120,
+		    [5] = -120,
+		    [6] = -160,
+		    [7] = -160,
+		    [8] = -200,
+		    [9] = -200,
+		    [10] = -240
 		}
 	    }
 	},
@@ -545,27 +521,26 @@ buildUnitSpawner(
 
     {
 	unit = 10,
-	unitSpawner = FIRE_NEST_VARIATIONS
+	unitSpawner = TROLL_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = FIRE_NEST_TIERS
+	unitSpawner = TROLL_NEST_TIERS
     }
 )
 
--- fire spitters
+-- troll spitters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "fire-spitter",
+	    name = "troll-spitter",
 
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		damageType = "fire",
-		softSmokeName = "fire-soft-smoke-rampant"
+		softSmokeName = "troll-soft-smoke-rampant"
 	    },
 	    resistances = {},
 
@@ -582,14 +557,14 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "fire-spitter",
-	    tint = {r=0.65, g=0, b=0, a=0.65},
-	    pTint = {r=1, g=1, b=1, a=0.5},
-	    sTint = {r=1, g=1, b=1, a=0.5}
+	    attackName = "troll-spitter",
+	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	    pTint = {r=0, g=1, b=1, a=0.5},
+	    sTint = {r=0, g=1, b=1, a=0.5}
 	},
 
 	unitSpawner = {
-	    name = "fire-spitter-nest",
+	    name = "troll-spitter-nest",
 
 	    attributes = {},
 	    resistances = {},
@@ -612,25 +587,22 @@ buildUnitSpawner(
 
     {
 	unit = {
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
-		[1] = 10,
-		[2] = 50,
-		[3] = 200,
-		[4] = 350,
-		[5] = 750,
-		[6] = 1000,
-		[7] = 1500,
-		[8] = 1500,
-		[9] = 2500,
-		[10] = 4500
-		
+		[1] = 20,
+		[2] = 100,
+		[3] = 400,
+		[4] = 700,
+		[5] = 1500,
+		[6] = 2000,
+		[7] = 3000,
+		[8] = 6000,
+		[9] = 5000,
+		[10] = 9000
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
 		[1] = 100,
@@ -643,11 +615,9 @@ buildUnitSpawner(
 		[8] = 93,
 		[9] = 90,
 		[10] = 90
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -660,11 +630,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -677,11 +645,9 @@ buildUnitSpawner(
 		[8] = 12500,
 		[9] = 15000,
 		[10] = 20000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -694,40 +660,37 @@ buildUnitSpawner(
 		[8] = 57,
 		[9] = 70,
 		[10] = 80
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
-		[1] = 0.01,
-		[2] = 0.01,
-		[3] = 0.015,
-		[4] = 0.02,
-		[5] = 0.05,
-		[6] = 0.075,
-		[7] = 0.1,
-		[8] = 0.12,
-		[9] = 0.14,
-		[10] = 0.16
-		
+		[1] = 0.02,
+		[2] = 0.08,
+		[3] = 0.1,
+		[4] = 0.2,
+		[5] = 0.3,
+		[6] = 0.5,
+		[7] = 0.6,
+		[8] = 0.7,
+		[9] = 0.8,
+		[10] = 1
 	    },
 
 	    
 	    {
 		type = "attribute",
 		name = "movement",
-		[1] = 0.185,
-		[2] = 0.18,
-		[3] = 0.18,
-		[4] = 0.17,
-		[5] = 0.17,
-		[6] = 0.16,
-		[7] = 0.16,
-		[8] = 0.15,
-		[9] = 0.15,
-		[10] = 0.14
+		[1] = 0.165,
+		[2] = 0.16,
+		[3] = 0.16,
+		[4] = 0.15,
+		[5] = 0.15,
+		[6] = 0.14,
+		[7] = 0.14,
+		[8] = 0.13,
+		[9] = 0.13,
+		[10] = 0.12
 	    },
 	    {
 		type = "attribute",
@@ -761,32 +724,32 @@ buildUnitSpawner(
 		}
 	    },
 
-	    {
+{
 		type = "resistance",
 		name = "fire",
 		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
+		    [1] = -15,
+		    [2] = -15,
+		    [3] = -20,
+		    [4] = -20,
+		    [5] = -25,
+		    [6] = -25,
+		    [7] = -30,
+		    [8] = -30,
+		    [9] = -35,
+		    [10] = -45
 		},
 		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
+		    [1] = -100,
+		    [2] = -100,
+		    [3] = -100,
+		    [4] = -120,
+		    [5] = -120,
+		    [6] = -160,
+		    [7] = -160,
+		    [8] = -200,
+		    [9] = -200,
+		    [10] = -240
 		}
 	    },
 	    
@@ -818,7 +781,6 @@ buildUnitSpawner(
 		[8] = 1.9,
 		[9] = 2.0,
 		[10] = 2.5
-		
 	    },
 
 	    {
@@ -869,42 +831,37 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
-		[1] = 350,
-		[2] = 500,
-		[3] = 750,
-		[4] = 1500,
-		[5] = 2500,
-		[6] = 3500,
-		[7] = 5000,
-		[8] = 7000,
-		[9] = 10000,
-		[10] = 15000
-		
+		[1] = 700,
+		[2] = 1000,
+		[3] = 1500,
+		[4] = 3000,
+		[5] = 5000,
+		[6] = 7000,
+		[7] = 10000,
+		[8] = 14000,
+		[9] = 20000,
+		[10] = 30000
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
-		[2] = 0.02,
-		[3] = 0.022,
-		[4] = 0.024,
-		[5] = 0.026,
-		[6] = 0.028,
-		[7] = 0.03,
-		[8] = 0.032,
-		[9] = 0.034,
-		[10] = 0.036
-		
+		[2] = 0.1,
+		[3] = 0.2,
+		[4] = 0.3,
+		[5] = 0.4,
+		[6] = 0.5,
+		[7] = 0.8,
+		[8] = 1,
+		[9] = 1.2,
+		[10] = 1.4
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -917,11 +874,9 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -934,11 +889,9 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0.08,
@@ -951,7 +904,6 @@ buildUnitSpawner(
 		[8] = 0.65,
 		[9] = 0.75,
 		[10] = 0.9
-		
 	    },
 
 	    {
@@ -967,10 +919,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 11,
 		[10] = 11
-		
 	    },
-	    {
-		
+
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -1047,30 +998,30 @@ buildUnitSpawner(
 		type = "resistance",
 		name = "fire",
 		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
+		    [1] = -15,
+		    [2] = -15,
+		    [3] = -20,
+		    [4] = -20,
+		    [5] = -25,
+		    [6] = -25,
+		    [7] = -30,
+		    [8] = -30,
+		    [9] = -35,
+		    [10] = -45
 		},
 		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
+		    [1] = -100,
+		    [2] = -100,
+		    [3] = -100,
+		    [4] = -120,
+		    [5] = -120,
+		    [6] = -160,
+		    [7] = -160,
+		    [8] = -200,
+		    [9] = -200,
+		    [10] = -240
 		}
-	    }	    
+	    }
 	},
 
 	probabilityTable = {
@@ -1088,29 +1039,29 @@ buildUnitSpawner(
     },
 
     function (attributes)
+	
 	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
     
     {
 	unit = 10,
-	unitSpawner = FIRE_NEST_VARIATIONS
+	unitSpawner = TROLL_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = FIRE_NEST_TIERS
+	unitSpawner = TROLL_NEST_TIERS
     }
 )
 
--- fire worms
+-- troll worms
 buildWorm(
     {
-	name = "fire-worm",
+	name = "troll-worm",
 
 	attributes = {},
 	attack = {
-	    damageType = "fire",
-	    softSmokeName = "fire-soft-smoke-rampant"
+	    softSmokeName = "troll-soft-smoke-rampant"
 	},
 	resistances = {},
 
@@ -1126,26 +1077,26 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "fire-worm",
-	tint = {r=0.65, g=0, b=0, a=0.65},
-	pTint = {r=1, g=1, b=1, a=0.5},
-	sTint = {r=1, g=1, b=1, a=0.5}
+	attackName = "troll-worm",
+	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	pTint = {r=0, g=1, b=1, a=0.5},
+	sTint = {r=0, g=1, b=1, a=0.5}
     },
 
     {
 	{    
 	    type = "attribute",
 	    name = "health",
-	    [1] = 200,
-	    [2] = 350,
-	    [3] = 500,
-	    [4] = 750,
-	    [5] = 900,
-	    [6] = 1000,
-	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [1] = 400,
+	    [2] = 700,
+	    [3] = 1000,
+	    [4] = 1500,
+	    [5] = 1800,
+	    [6] = 2000,
+	    [7] = 3000,
+	    [8] = 5000,
+	    [9] = 7500,
+	    [10] = 10500
 	},
 
 	{    
@@ -1196,16 +1147,16 @@ buildWorm(
 	{    
 	    type = "attribute",
 	    name = "healing",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.015,
-	    [4] = 0.02,
-	    [5] = 0.05,
-	    [6] = 0.075,
-	    [7] = 0.1,
-	    [8] = 0.12,
-	    [9] = 0.14,
-	    [10] = 0.16
+	    [1] = 0.08,
+	    [2] = 0.08,
+	    [3] = 0.085,
+	    [4] = 0.1,
+	    [5] = 0.2,
+	    [6] = 0.3,
+	    [7] = 0.4,
+	    [8] = 0.5,
+	    [9] = 0.8,
+	    [10] = 1
 	},
 
 	{    
@@ -1300,33 +1251,33 @@ buildWorm(
 	},
 
 	{
-	    type = "resistance",
-	    name = "fire",
-	    decrease = {
-		[1] = 7,
-		[2] = 7,
-		[3] = 10,
-		[4] = 10,
-		[5] = 13,
-		[6] = 13,
-		[7] = 16,
-		[8] = 16,
-		[9] = 19,
-		[10] = 23
+		type = "resistance",
+		name = "fire",
+		decrease = {
+		    [1] = -15,
+		    [2] = -15,
+		    [3] = -20,
+		    [4] = -20,
+		    [5] = -25,
+		    [6] = -25,
+		    [7] = -30,
+		    [8] = -30,
+		    [9] = -35,
+		    [10] = -45
+		},
+		percent = {
+		    [1] = -100,
+		    [2] = -100,
+		    [3] = -100,
+		    [4] = -120,
+		    [5] = -120,
+		    [6] = -160,
+		    [7] = -160,
+		    [8] = -200,
+		    [9] = -200,
+		    [10] = -240
+		}
 	    },
-	    percent = {
-		[1] = 65,
-		[2] = 65,
-		[3] = 70,
-		[4] = 75,
-		[5] = 75,
-		[6] = 80,
-		[7] = 85,
-		[8] = 85,
-		[9] = 90,
-		[10] = 90
-	    }
-	},
 
 	{
 	    type = "attack",
@@ -1404,10 +1355,10 @@ buildWorm(
 	}
     },
 
-    function (attributes)	
+    function (attributes)
 	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
 
-    FIRE_WORM_VARIATIONS,
-    FIRE_WORM_TIERS
+    TROLL_WORM_VARIATIONS,
+    TROLL_WORM_TIERS
 )
