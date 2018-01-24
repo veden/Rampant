@@ -55,11 +55,11 @@ local function removeTendril(base, tendril)
     end    
 end
 
-local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives)
+local function buildTendrilPath(map, tendril, surface, base, tick, natives)
     local tendrilUnit = tendril.unit
     if not tendrilUnit.valid then
 	removeTendril(base, tendril)
-	tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
+	tendrilUtils.buildTendril(map, natives, base, surface, tick)
 	return
     end
     if (tendril.cycles > 0) then
@@ -67,17 +67,17 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 	return
     end
     local tendrilPosition = tendrilUnit.position
-    local chunk = getChunkByPosition(regionMap, tendrilPosition)
+    local chunk = getChunkByPosition(map, tendrilPosition)
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	local tendrilPath,tendrilDirection = scoreNeighborsForResource(chunk,
-								       getNeighborChunks(regionMap, chunk.x, chunk.y),
+								       getNeighborChunks(map, chunk.x, chunk.y),
 								       scoreTendrilChunk,
 								       nil)
 	if (tendrilDirection == -1) then
 	    if (chunk[RESOURCE_GENERATOR] ~= 0) then
-		buildOutpost(regionMap, natives, base, surface, tendril)
+		buildOutpost(map, natives, base, surface, tendril)
 		removeTendril(base, tendril)
-		tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
+		tendrilUtils.buildTendril(map, natives, base, surface, tick)
 		colorChunk(chunk.x, chunk.y, "hazard-concrete-left", surface)
 	    end
 	    return
@@ -90,7 +90,7 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
 								 32,
 								 2)
 	    if position then
-		buildNest(regionMap, base, surface, tendril.unit.position, "spitter-spawner")
+		buildNest(map, base, surface, tendril.unit.position, "spitter-spawner")
 		-- tendril.cycles = 3
 		tendrilUnit.set_command({ type = defines.command.go_to_location,
 					  destination = position,
@@ -101,9 +101,9 @@ local function buildTendrilPath(regionMap, tendril, surface, base, tick, natives
     end
 end
 
-function tendrilUtils.advanceTendrils(regionMap, base, surface, tick, natives)
+function tendrilUtils.advanceTendrils(map, base, surface, tick, natives)
     for i=1, #base.tendrils do
-    	buildTendrilPath(regionMap, base.tendrils[i], surface, base, tick, natives)
+    	buildTendrilPath(map, base.tendrils[i], surface, base, tick, natives)
     end
 end
 
@@ -128,11 +128,11 @@ function tendrilUtils.createTendril(base, surface)
     return tendril
 end
 
-function tendrilUtils.buildTendril(regionMap, natives, base, surface, tick)
-    -- local chunk = getChunkByPosition(regionMap, base.x, base.y)
+function tendrilUtils.buildTendril(map, natives, base, surface, tick)
+    -- local chunk = getChunkByPosition(map, base.x, base.y)
     -- if chunk then
     -- 	local tempNeighbors = {nil, nil, nil, nil, nil, nil, nil, nil}
-    -- 	buildTendrilPath(regionMap, chunk, surface, base, tempNeighbors)
+    -- 	buildTendrilPath(map, chunk, surface, base, tempNeighbors)
     local tendril = tendrilUtils.createTendril(base, surface)
     if tendril then
 	base.tendrils[#base.tendrils+1] = tendril

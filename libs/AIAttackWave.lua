@@ -81,23 +81,25 @@ local function scoreUnitGroupLocation(neighborChunk)
     return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
 
-local function validUnitGroupLocation(regionMap, neighborChunk)
-    return neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS and (getNestCount(regionMap, neighborChunk) == 0)
+local function validUnitGroupLocation(map, neighborChunk)
+    return neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS and (getNestCount(map, neighborChunk) == 0)
 end
 
-function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
-    if ((tick - getRallyTick(regionMap, chunk) > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST) and
-	(#natives.squads < natives.maxSquads)) then
-	setRallyTick(regionMap, chunk, tick)
+function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
+    if ((tick - getRallyTick(map, chunk) > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST) -- and
+	-- (#natives.squads < natives.maxSquads)
+    ) then
+	setRallyTick(map, chunk, tick)
 	local cX = chunk.x
 	local cY = chunk.y
 	for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do
 	    for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
 		if (x ~= cX) and (y ~= cY) then
-		    local rallyChunk = getChunkByXY(regionMap, x, y)
-		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(regionMap, rallyChunk) > 0) then
-			aiAttackWave.formSquads(regionMap, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
-			if (natives.points < AI_VENGENCE_SQUAD_COST) and (#natives.squads < natives.maxSquads) then
+		    local rallyChunk = getChunkByXY(map, x, y)
+		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
+			aiAttackWave.formSquads(map, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
+			if (natives.points < AI_VENGENCE_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+			then
 			    return
 			end
 		    end
@@ -107,20 +109,20 @@ function aiAttackWave.rallyUnits(chunk, regionMap, surface, natives, tick)
     end
 end
 
-function aiAttackWave.formSquads(regionMap, surface, natives, chunk, cost)
+function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
     local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
 
     if valid and (mRandom() < natives.formSquadThreshold) then
 	
-	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(regionMap, chunk.x, chunk.y),
+	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
 								     validUnitGroupLocation,
 								     scoreUnitGroupLocation,
-								     regionMap)
+								     map)
 	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local squadPosition = surface.find_non_colliding_position("biter-spawner-hive-rampant",
 								      positionFromDirectionAndChunk(squadDirection,
 												    chunk,
-												    regionMap.position,
+												    map.position,
 												    0.98),
 								      CHUNK_SIZE,
 								      4)

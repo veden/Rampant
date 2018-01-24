@@ -19,7 +19,7 @@ local advanceTendrils = tendrilUtils.advanceTendrils
 
 -- module code
 
-function baseProcessor.processBases(regionMap, surface, natives, tick)
+function baseProcessor.processBases(map, surface, natives, tick)
     local baseIndex = natives.baseIndex
     local bases = natives.bases
 
@@ -27,8 +27,8 @@ function baseProcessor.processBases(regionMap, surface, natives, tick)
     for index = baseIndex, endIndex do
         local base = bases[index]
 
-	buildOrder(regionMap, natives, base, surface, tick)
-	advanceTendrils(regionMap, base, surface, tick, natives)
+	buildOrder(map, natives, base, surface, tick)
+	advanceTendrils(map, base, surface, tick, natives)
     end
 
     if (endIndex == #bases) then

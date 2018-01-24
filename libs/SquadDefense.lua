@@ -10,16 +10,12 @@ local chunkUtils = require("ChunkUtils")
 
 -- constants
 
-local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
+-- local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
-local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
-
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
-
-local RETREAT_FILTER = constants.RETREAT_FILTER
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 
@@ -27,9 +23,11 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
+local addSquadToChunk = chunkUtils.addSquadToChunk
+
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local getNeighborChunks = mapUtils.getNeighborChunks
-local findNearBySquad = unitGroupUtils.findNearBySquad
+local findNearbySquadFiltered = unitGroupUtils.findNearbySquadFiltered
 local addMovementPenalty = movementUtils.addMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
@@ -43,12 +41,12 @@ local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
 
 -- module code
 
-local function scoreRetreatLocation(regionMap, neighborChunk)
-    return -(neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100) + (getPlayerBaseGenerator(regionMap, neighborChunk) * 20))
+local function scoreRetreatLocation(map, neighborChunk)
+    return -(neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100) + (getPlayerBaseGenerator(map, neighborChunk) * 20))
 end
 
-function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, natives, tick, radius, force)
-    if (tick - getRetreatTick(regionMap, chunk) > INTERVAL_LOGIC) and ((getEnemyStructureCount(regionMap, chunk) == 0) or force) then
+function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, force)
+    if (tick - getRetreatTick(map, chunk) > INTERVAL_LOGIC) and ((getEnemyStructureCount(map, chunk) == 0) or force) then
 	local performRetreat = false
 	local enemiesToSquad = nil
 	
@@ -60,14 +58,14 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 	end
 	
 	if performRetreat then
-	    setRetreatTick(regionMap, chunk, tick)
+	    setRetreatTick(map, chunk, tick)
 	    local exitPath,exitDirection  = scoreNeighborsForRetreat(chunk,
-								     getNeighborChunks(regionMap, chunk.x, chunk.y),
+								     getNeighborChunks(map, chunk.x, chunk.y),
 								     scoreRetreatLocation,
-								     regionMap)
+								     map)
 	    if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local retreatPosition = findMovementPosition(surface,
-							     positionFromDirectionAndChunk(exitDirection, position, regionMap.position, 0.98),
+							     positionFromDirectionAndChunk(exitDirection, position, map.position, 0.98),
 							     false)
 		
 		if not retreatPosition then
@@ -77,7 +75,7 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
                 
-		local newSquad = findNearBySquad(natives, retreatPosition, HALF_CHUNK_SIZE, RETREAT_FILTER)
+		local newSquad = findNearbySquadFiltered(map, exitPath, retreatPosition)
 
 		if not newSquad then
 		    newSquad = createSquad(retreatPosition, surface, natives)
@@ -86,15 +84,18 @@ function aiDefense.retreatUnits(chunk, position, squad, regionMap, surface, nati
 		end
 
 		if newSquad then
+		    local cmd = map.retreatCommand
+		    cmd.group = newSquad.group
 		    if enemiesToSquad then
-			membersToSquad(newSquad, enemiesToSquad, force)
+			membersToSquad(cmd, enemiesToSquad, force)
 		    else
-			membersToSquad(newSquad, squad.group.members, true)
+			membersToSquad(cmd, squad.group.members, true)
 			newSquad.penalties = squad.penalties
 			if squad.rabid then
 			    newSquad.rabid = true
 			end
 		    end
+		    addSquadToChunk(map, chunk, newSquad)
 		    addMovementPenalty(natives, newSquad, chunk)
 		end
 	    end

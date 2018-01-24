@@ -15,7 +15,8 @@ local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 function aiPredicates.canAttack(natives, surface)
     return (((natives.state == AI_STATE_AGGRESSIVE) or aiPredicates.canAttackDark(natives, surface))
-	    and not surface.peaceful_mode and (#natives.squads < natives.maxSquads))
+	    and not surface.peaceful_mode -- and (#natives.squads < natives.maxSquads)
+    )
 end
 
 function aiPredicates.isDark(surface)

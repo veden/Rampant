@@ -17,19 +17,19 @@ function tests.pheromoneLevels(size)
 	size = size * constants.CHUNK_SIZE
     end
     print("------")
-    print(#global.regionMap.processQueue)
+    print(#global.map.processQueue)
     print(playerChunkX .. ", " .. playerChunkY)
     print("--")
     for y=playerChunkY-size, playerChunkY+size,32 do
 	for x=playerChunkX-size, playerChunkX+size,32 do
-            if (global.regionMap[x] ~= nil) then
-                local chunk = global.regionMap[x][y]
+            if (global.map[x] ~= nil) then
+                local chunk = global.map[x][y]
                 if (chunk ~= nil) then
                     local str = ""
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk) .. " " .. "n/" .. chunkUtils.getNestCount(global.regionMap, chunk) .. " " .. "w/" .. chunkUtils.getWormCount(global.regionMap, chunk)
+		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk) .. " " .. "n/" .. chunkUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkUtils.getWormCount(global.map, chunk)
 		    if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
 			print("=============")
 			print(chunk.x, chunk.y, str)
@@ -124,7 +124,7 @@ function tests.getOffsetChunk(x, y)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125)
     local chunkY = math.floor(playerPosition.y * 0.03125)
-    local chunk = mapUtils.getChunkByIndex(global.regionMap, chunkX + x, chunkY + y)
+    local chunk = mapUtils.getChunkByIndex(global.map, chunkX + x, chunkY + y)
     print(serpent.dump(chunk))
 end
 
@@ -163,7 +163,7 @@ end
 
 function tests.registeredNest(x)
     local entity = tests.createEnemy(x)
-    chunk.registerEnemyBaseStructure(global.regionMap,
+    chunk.registerEnemyBaseStructure(global.map,
 				     entity,
 				     nil)
 end
@@ -272,7 +272,7 @@ end
 
 
 function tests.showMovementGrid()
-    local chunks = global.regionMap.processQueue
+    local chunks = global.map.processQueue
     for i=1,#chunks do
 	local chunk = chunks[i]
 	local color = "concrete"
@@ -288,7 +288,7 @@ function tests.showMovementGrid()
 end
 
 function tests.colorResourcePoints()
-    local chunks = global.regionMap.processQueue
+    local chunks = global.map.processQueue
     for i=1,#chunks do
 	local chunk = chunks[i]
 	local color = "concrete"
@@ -307,7 +307,7 @@ end
 function tests.exportAiState(onTick)
 
     local printState = function ()
-	local chunks = global.regionMap.processQueue
+	local chunks = global.map.processQueue
 	local s = ""
 	for i=1,#chunks do
 	    local chunk = chunks[i]
@@ -321,12 +321,12 @@ function tests.exportAiState(onTick)
 				   chunk[constants.PATH_RATING],
 				   chunk.x,
 				   chunk.y,
-				   chunkUtils.getNestCount(global.regionMap, chunk),
-				   chunkUtils.getWormCount(global.regionMap, chunk),
-				   chunkUtils.getRallyTick(global.regionMap, chunk),
-				   chunkUtils.getRetreatTick(global.regionMap, chunk),
-				   chunkUtils.getResourceGenerator(global.regionMap, chunk),
-				   chunkUtils.getPlayerBaseGenerator(global.regionMap, chunk)}, ",") .. "\n"
+				   chunkUtils.getNestCount(global.map, chunk),
+				   chunkUtils.getWormCount(global.map, chunk),
+				   chunkUtils.getRallyTick(global.map, chunk),
+				   chunkUtils.getRetreatTick(global.map, chunk),
+				   chunkUtils.getResourceGenerator(global.map, chunk),
+				   chunkUtils.getPlayerBaseGenerator(global.map, chunk)}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end
@@ -357,7 +357,7 @@ end
 
 function tests.stepAdvanceTendrils()
     -- for _, base in pairs(global.natives.bases) do
-    -- 	tendrilUtils.advanceTendrils(global.regionMap, base, game.surfaces[1], {nil,nil,nil,nil,nil,nil,nil,nil})
+    -- 	tendrilUtils.advanceTendrils(global.map, base, game.surfaces[1], {nil,nil,nil,nil,nil,nil,nil,nil})
     -- end
 end
 
