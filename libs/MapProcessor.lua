@@ -83,18 +83,18 @@ end
     In theory, this might be fine as smaller bases have less surface to attack and need to have 
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(regionMap, surface, natives, tick)
-    local roll = regionMap.processRoll
-    local index = regionMap.processIndex
+function mapProcessor.processMap(map, surface, natives, tick)
+    local roll = map.processRoll
+    local index = map.processIndex
     
     if (index == 1) then
         roll = mRandom()
-        regionMap.processRoll = roll
+        map.processRoll = roll
     end
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     
-    local processQueue = regionMap.processQueue
+    local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
         local chunk = processQueue[x]
@@ -102,21 +102,21 @@ function mapProcessor.processMap(regionMap, surface, natives, tick)
 	if (chunk[CHUNK_TICK] ~= tick) then
 	    chunk[CHUNK_TICK] = tick
 	    
-	    processPheromone(regionMap, chunk)
+	    processPheromone(map, chunk)
 
-	    if squads and (getNestCount(regionMap, chunk) > 0) then
-		formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
-		squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
+	    if squads and (getNestCount(map, chunk) > 0) then
+		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+		squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
 	    end
 	    
-	    scents(regionMap, chunk)
+	    scents(map, chunk)
 	end
     end
     
     if (endIndex == #processQueue) then
-        regionMap.processIndex = 1
+        map.processIndex = 1
     else
-        regionMap.processIndex = endIndex + 1
+        map.processIndex = endIndex + 1
     end
 end
 
@@ -126,7 +126,7 @@ end
     vs 
     the slower passive version processing the entire map in multiple passes.
 --]]
-function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
+function mapProcessor.processPlayers(players, map, surface, natives, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(players)
@@ -140,7 +140,7 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local playerChunk = getChunkByPosition(regionMap, player.character.position)
+	    local playerChunk = getChunkByPosition(map, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		playerScent(playerChunk)
@@ -150,34 +150,34 @@ function mapProcessor.processPlayers(players, regionMap, surface, natives, tick)
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
 	if validPlayer(player) then 
-	    local playerChunk = getChunkByPosition(regionMap, player.character.position)
+	    local playerChunk = getChunkByPosition(map, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local vengence = (allowingAttacks and
 				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
-				      ((getEnemyStructureCount(regionMap, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
+				      ((getEnemyStructureCount(map, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
 		
 		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
-			local chunk = getChunkByXY(regionMap, x, y)
+			local chunk = getChunkByXY(map, x, y)
 			
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 
-			    processPheromone(regionMap, chunk)
+			    processPheromone(map, chunk)
 
-			    if (getNestCount(regionMap, chunk) > 0) then
+			    if (getNestCount(map, chunk) > 0) then
 				if squads then
-				    formSquads(regionMap, surface, natives, chunk, AI_SQUAD_COST)
-				    squads = (natives.points >= AI_SQUAD_COST) and (#natives.squads < natives.maxSquads)
+				    formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+				    squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
 				end
 				if vengence then
-				    formSquads(regionMap, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST) and (#natives.squads < natives.maxSquads)
+				    formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
+				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
 				end
 			    end
 			    
-			    scents(regionMap, chunk)
+			    scents(map, chunk)
 			end
 		    end
 		end
@@ -189,14 +189,14 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanMap(regionMap, surface, natives)
-    local index = regionMap.scanIndex
+function mapProcessor.scanMap(map, surface, natives)
+    local index = map.scanIndex
 
-    local unitCountQuery = regionMap.filteredEntitiesEnemyUnitQuery
+    local unitCountQuery = map.filteredEntitiesEnemyUnitQuery
     local offset = unitCountQuery.area[2]
     local chunkBox = unitCountQuery.area[1]
 
-    local processQueue = regionMap.processQueue
+    local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
     
     for x=index,endIndex do
@@ -226,13 +226,13 @@ function mapProcessor.scanMap(regionMap, surface, natives)
 	    end
 	end
 
-	analyzeChunk(chunk, natives, surface, regionMap)
+	analyzeChunk(chunk, natives, surface, map)
     end
 
     if (endIndex == #processQueue) then
-	regionMap.scanIndex = 1
+	map.scanIndex = 1
     else
-	regionMap.scanIndex = endIndex + 1
+	map.scanIndex = endIndex + 1
     end
 end
 

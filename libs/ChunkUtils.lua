@@ -39,6 +39,8 @@ local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
 
 local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
 
+local tRemove = table.remove
+
 local mFloor = math.floor
 
 -- module code
@@ -76,12 +78,12 @@ local function fullScan(chunk, can_place_entity, canPlaceQuery)
     return passableNorthSouth, passableEastWest
 end
 
-local function addEnemyStructureToChunk(regionMap, chunk, entity, base)
+local function addEnemyStructureToChunk(map, chunk, entity, base)
     local lookup
     if (entity.type == "unit-spawner") then
-	lookup = regionMap.chunkToNests
+	lookup = map.chunkToNests
     elseif (entity.type == "turret") then
-	lookup = regionMap.chunkToWorms
+	lookup = map.chunkToWorms
     else
 	return
     end
@@ -93,22 +95,22 @@ local function addEnemyStructureToChunk(regionMap, chunk, entity, base)
     lookup[chunk] = lookup[chunk] + 1
 
     -- if base then
-    -- 	local baseCollection = regionMap.chunkToBases[chunk]
+    -- 	local baseCollection = map.chunkToBases[chunk]
     -- 	if not baseCollection then
     -- 	    baseCollection = {}
-    -- 	    regionMap.chunkToBases[chunk] = baseCollection
+    -- 	    map.chunkToBases[chunk] = baseCollection
     -- 	end
     -- 	baseCollection[base.id] = chunk
     -- end
     
 end
 
-local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
+local function removeEnemyStructureFromChunk(map, chunk, entity)
     local lookup
     if (entity.type == "unit-spawner") then
-	lookup = regionMap.chunkToNests
+	lookup = map.chunkToNests
     elseif (entity.type == "turret") then
-	lookup = regionMap.chunkToWorms
+	lookup = map.chunkToWorms
     else
 	return
     end
@@ -137,7 +139,7 @@ local function removeEnemyStructureFromChunk(regionMap, chunk, entity)
     end
 end
 
-local function getEntityOverlapChunks(regionMap, entity)
+local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
     
     local leftTopChunk = SENTINEL_IMPASSABLE_CHUNK
@@ -179,15 +181,15 @@ local function getEntityOverlapChunks(regionMap, entity)
         local rightBottomChunkX = rightTopChunkX 
         local rightBottomChunkY = leftBottomChunkY
 	
-        leftTopChunk = getChunkByUnalignedXY(regionMap, leftTopChunkX, leftTopChunkY)
+        leftTopChunk = getChunkByUnalignedXY(map, leftTopChunkX, leftTopChunkY)
         if (leftTopChunkX ~= rightTopChunkX) then
-            rightTopChunk = getChunkByUnalignedXY(regionMap, rightTopChunkX, rightTopChunkY)
+            rightTopChunk = getChunkByUnalignedXY(map, rightTopChunkX, rightTopChunkY)
         end
         if (leftTopChunkY ~= leftBottomChunkY) then
-            leftBottomChunk = getChunkByUnalignedXY(regionMap, leftBottomChunkX, leftBottomChunkY)
+            leftBottomChunk = getChunkByUnalignedXY(map, leftBottomChunkX, leftBottomChunkY)
         end
         if (leftTopChunkX ~= rightBottomChunkX) and (leftTopChunkY ~= rightBottomChunkY) then
-            rightBottomChunk = getChunkByUnalignedXY(regionMap, rightBottomChunkX, rightBottomChunkY)
+            rightBottomChunk = getChunkByUnalignedXY(map, rightBottomChunkX, rightBottomChunkY)
         end
     end
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
@@ -195,9 +197,9 @@ end
 
 -- external functions
 
-function chunkUtils.calculatePassScore(surface, regionMap)
+function chunkUtils.calculatePassScore(surface, map)
     local count_tiles_filtered = surface.count_tiles_filtered
-    local filteredTilesQuery = regionMap.filteredTilesQuery
+    local filteredTilesQuery = map.filteredTilesQuery
     
     local passScore = 0
     for i=1,#WATER_TILE_NAMES do
@@ -208,11 +210,11 @@ function chunkUtils.calculatePassScore(surface, regionMap)
     return 1 - (passScore * 0.0009765625)
 end
 
-function chunkUtils.scanChunkPaths(chunk, surface, regionMap)
+function chunkUtils.scanChunkPaths(chunk, surface, map)
     local pass = CHUNK_IMPASSABLE
     local passableNorthSouth, passableEastWest = fullScan(chunk,
 							  surface.can_place_entity,
-							  regionMap.canPlaceQuery)
+							  map.canPlaceQuery)
     
     if passableEastWest and passableNorthSouth then
 	pass = CHUNK_ALL_DIRECTIONS
@@ -224,8 +226,8 @@ function chunkUtils.scanChunkPaths(chunk, surface, regionMap)
     return pass
 end
 
-function chunkUtils.scorePlayerBuildings(surface, regionMap, natives)
-    local entities = surface.find_entities_filtered(regionMap.filteredEntitiesPlayerQuery)
+function chunkUtils.scorePlayerBuildings(surface, map, natives)
+    local entities = surface.find_entities_filtered(map.filteredEntitiesPlayerQuery)
 
     local playerObjects = 0
     local safeBuildings = natives.safeBuildings
@@ -251,38 +253,38 @@ function chunkUtils.scorePlayerBuildings(surface, regionMap, natives)
     return playerObjects
 end
 
-function chunkUtils.scoreEnemyBuildings(surface, regionMap)
-    local query = regionMap.filteredEntitiesEnemyTypeQuery
+function chunkUtils.scoreEnemyBuildings(surface, map)
+    local query = map.filteredEntitiesEnemyTypeQuery
     
     query.type = "unit-spawner"
-    local nests = surface.count_entities_filtered(regionMap.filteredEntitiesEnemyTypeQuery)
+    local nests = surface.count_entities_filtered(map.filteredEntitiesEnemyTypeQuery)
     
     query.type = "turret"
-    local worms = surface.count_entities_filtered(regionMap.filteredEntitiesEnemyTypeQuery)
+    local worms = surface.count_entities_filtered(map.filteredEntitiesEnemyTypeQuery)
 
     return nests, worms
 end
 
-function chunkUtils.initialScan(chunk, natives, surface, regionMap)
-    local passScore = chunkUtils.calculatePassScore(surface, regionMap)
+function chunkUtils.initialScan(chunk, natives, surface, map)
+    local passScore = chunkUtils.calculatePassScore(surface, map)
 
     if (passScore >= 0.40) then
-	local pass = chunkUtils.scanChunkPaths(chunk, surface, regionMap)
+	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 	
-	local playerObjects = chunkUtils.scorePlayerBuildings(surface, regionMap, natives)
+	local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
 
-	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, regionMap)
+	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, map)
 
-	local resources = surface.count_entities_filtered(regionMap.countResourcesQuery) * 0.001
+	local resources = surface.count_entities_filtered(map.countResourcesQuery) * 0.001
 	
 	if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
-	chunkUtils.setNestCount(regionMap, chunk, nests)
-	chunkUtils.setPlayerBaseGenerator(regionMap, chunk, playerObjects)
-	chunkUtils.setResourceGenerator(regionMap, chunk, resources)
-	chunkUtils.setWormCount(regionMap, chunk, worms)
+	chunkUtils.setNestCount(map, chunk, nests)
+	chunkUtils.setPlayerBaseGenerator(map, chunk, playerObjects)
+	chunkUtils.setResourceGenerator(map, chunk, resources)
+	chunkUtils.setWormCount(map, chunk, worms)
 
 	chunk[PASSABLE] = pass
 	chunk[PATH_RATING] = passScore
@@ -293,15 +295,15 @@ function chunkUtils.initialScan(chunk, natives, surface, regionMap)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function chunkUtils.chunkPassScan(chunk, surface, regionMap)
-    local passScore = chunkUtils.calculatePassScore(surface, regionMap)
+function chunkUtils.chunkPassScan(chunk, surface, map)
+    local passScore = chunkUtils.calculatePassScore(surface, map)
 
     if (passScore >= 0.40) then
-	local pass = chunkUtils.scanChunkPaths(chunk, surface, regionMap)
+	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 	
-	local playerObjects = chunkUtils.getPlayerBaseGenerator(regionMap, chunk)
+	local playerObjects = chunkUtils.getPlayerBaseGenerator(map, chunk)
 
-	local nests = chunkUtils.getNestCount(regionMap, chunk)
+	local nests = chunkUtils.getNestCount(map, chunk)
 
 	if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
@@ -316,12 +318,12 @@ function chunkUtils.chunkPassScan(chunk, surface, regionMap)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function chunkUtils.analyzeChunk(chunk, natives, surface, regionMap)    
-    local playerObjects = chunkUtils.scorePlayerBuildings(surface, regionMap, natives)
-    chunkUtils.setPlayerBaseGenerator(regionMap, chunk, playerObjects)
+function chunkUtils.analyzeChunk(chunk, natives, surface, map)    
+    local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
+    chunkUtils.setPlayerBaseGenerator(map, chunk, playerObjects)
 end
 
--- function chunkUtils.remakeChunk(regionMap, chunk, surface, natives, tick, tempQuery)
+-- function chunkUtils.remakeChunk(map, chunk, surface, natives, tick, tempQuery)
 --     tempQuery.force = "enemy"
 --     local enemies = surface.find_entities_filtered(tempQuery)
 
@@ -340,94 +342,129 @@ end
 -- 	    enemy.destroy()
 -- 	end
 --     end
---     -- local foundBase = findNearbyBase(natives, chunk) or createBase(regionMap, natives, chunk, surface, tick)
+--     -- local foundBase = findNearbyBase(natives, chunk) or createBase(map, natives, chunk, surface, tick)
 --     -- if foundBase then
 --     -- 	foundBase.upgradePoints = foundBase.upgradePoints + points
 --     -- end    
 -- end
 
-function chunkUtils.getNestCount(regionMap, chunk)
-    return regionMap.chunkToNests[chunk] or 0
+function chunkUtils.getNestCount(map, chunk)
+    return map.chunkToNests[chunk] or 0
 end
 
-function chunkUtils.getWormCount(regionMap, chunk)
-    return regionMap.chunkToWorms[chunk] or 0
+function chunkUtils.getWormCount(map, chunk)
+    return map.chunkToWorms[chunk] or 0
 end
 
-function chunkUtils.setWormCount(regionMap, chunk, count)
+function chunkUtils.setWormCount(map, chunk, count)
     if (count == 0) then
-	regionMap.chunkToWorms[chunk] = nil
+	map.chunkToWorms[chunk] = nil
     else
-	regionMap.chunkToWorms[chunk] = count
+	map.chunkToWorms[chunk] = count
     end
 end
 
-function chunkUtils.setNestCount(regionMap, chunk, count)
+function chunkUtils.setNestCount(map, chunk, count)
     if (count == 0) then
-	regionMap.chunkToNests[chunk] = nil
+	map.chunkToNests[chunk] = nil
     else
-	regionMap.chunkToNests[chunk] = count
+	map.chunkToNests[chunk] = count
     end
 end
 
-function chunkUtils.getNestCount(regionMap, chunk)
-    return regionMap.chunkToNests[chunk] or 0
+function chunkUtils.getNestCount(map, chunk)
+    return map.chunkToNests[chunk] or 0
 end
 
-function chunkUtils.getWormCount(regionMap, chunk)
-    return regionMap.chunkToWorms[chunk] or 0
+function chunkUtils.getWormCount(map, chunk)
+    return map.chunkToWorms[chunk] or 0
 end
 
-function chunkUtils.getEnemyStructureCount(regionMap, chunk)
-    return (regionMap.chunkToNests[chunk] or 0) + (regionMap.chunkToWorms[chunk] or 0)
+function chunkUtils.getEnemyStructureCount(map, chunk)
+    return (map.chunkToNests[chunk] or 0) + (map.chunkToWorms[chunk] or 0)
 end
 
-function chunkUtils.getRetreatTick(regionMap, chunk)
-    return regionMap.chunkToRetreats[chunk] or 0
+function chunkUtils.getRetreatTick(map, chunk)
+    return map.chunkToRetreats[chunk] or 0
 end
 
-function chunkUtils.getRallyTick(regionMap, chunk)
-    return regionMap.chunkToRallys[chunk] or 0
+function chunkUtils.getRallyTick(map, chunk)
+    return map.chunkToRallys[chunk] or 0
 end
 
-function chunkUtils.setRallyTick(regionMap, chunk, tick)
-    regionMap.chunkToRallys[chunk] = tick 
+function chunkUtils.setRallyTick(map, chunk, tick)
+    map.chunkToRallys[chunk] = tick 
 end
 
-function chunkUtils.setRetreatTick(regionMap, chunk, tick)
-    regionMap.chunkToRetreats[chunk] = tick
+function chunkUtils.setRetreatTick(map, chunk, tick)
+    map.chunkToRetreats[chunk] = tick
 end
 
-function chunkUtils.setResourceGenerator(regionMap, chunk, resourceGenerator)
+function chunkUtils.setResourceGenerator(map, chunk, resourceGenerator)
     if (resourceGenerator == 0) then
-	regionMap.chunkToResource[chunk] = nil
+	map.chunkToResource[chunk] = nil
     else
-	regionMap.chunkToResource[chunk] = resourceGenerator
+	map.chunkToResource[chunk] = resourceGenerator
     end
 end
 
-function chunkUtils.getResourceGenerator(regionMap, chunk)
-    return regionMap.chunkToResource[chunk] or 0
+function chunkUtils.getResourceGenerator(map, chunk)
+    return map.chunkToResource[chunk] or 0
 end
 
-function chunkUtils.addResourceGenerator(regionMap, chunk, delta)
-    regionMap.chunkToResource[chunk] = (regionMap.chunkToResource[chunk] or 0) + delta
+function chunkUtils.addResourceGenerator(map, chunk, delta)
+    map.chunkToResource[chunk] = (map.chunkToResource[chunk] or 0) + delta
 end
 
-function chunkUtils.getPlayerBaseGenerator(regionMap, chunk)
-    return regionMap.chunkToPlayerBase[chunk] or 0
+function chunkUtils.getPlayerBaseGenerator(map, chunk)
+    return map.chunkToPlayerBase[chunk] or 0
 end
 
-function chunkUtils.setPlayerBaseGenerator(regionMap, chunk, playerGenerator)
+function chunkUtils.addSquadToChunk(map, chunk, squad)
+    if (chunk ~= squad.chunk) then
+	local chunkToSquad = map.chunkToSquad
+	chunkUtils.removeSquadFromChunk(map, squad)
+	if not chunkToSquad[chunk] then
+	    chunkToSquad[chunk] = {}
+	end
+	chunkToSquad[chunk][#chunkToSquad[chunk]+1] = squad
+
+	squad.chunk = chunk
+    end
+end
+
+function chunkUtils.removeSquadFromChunk(map, squad)
+    local chunkToSquad = map.chunkToSquad
+    if squad.chunk then
+	local squads = chunkToSquad[squad.chunk]
+	if squads then
+	    for i=#squads, 1, -1 do    
+		if (squads[i] == squad) then
+		    tRemove(squads, i)
+		    break
+		end
+	    end
+	    if (#squads == 0) then
+		chunkToSquad[squad.chunk] = nil
+	    end
+	end
+    end
+end
+
+function chunkUtils.getSquadsOnChunk(map, chunk)
+    return map.chunkToSquad[chunk] or {}
+end
+
+function chunkUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
     if (playerGenerator == 0) then
-	regionMap.chunkToPlayerBase[chunk] = nil
+	map.chunkToPlayerBase[chunk] = nil
     else
-	regionMap.chunkToPlayerBase[chunk] = playerGenerator
+	map.chunkToPlayerBase[chunk] = playerGenerator
     end
 end
 
-function chunkUtils.addPlayerBaseGenerator(regionMap, chunk, playerGenerator)
-    regionMap.chunkToPlayerBase[chunk] = (regionMap.chunkToPlayerBase[chunk] or 0) + playerGenerator
+function chunkUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
+    map.chunkToPlayerBase[chunk] = (map.chunkToPlayerBase[chunk] or 0) + playerGenerator
 end
 
 function chunkUtils.createChunk(topX, topY)
@@ -456,70 +493,70 @@ function chunkUtils.colorChunk(x, y, tileType, surface)
     surface.set_tiles(tiles, false)
 end
 
-function chunkUtils.entityForPassScan(regionMap, entity)
-    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+function chunkUtils.entityForPassScan(map, entity)
+    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
 
     if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	regionMap.chunkToPassScan[leftTop] = true
+	map.chunkToPassScan[leftTop] = true
     end
     if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	regionMap.chunkToPassScan[rightTop] = true
+	map.chunkToPassScan[rightTop] = true
     end
     if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	regionMap.chunkToPassScan[leftBottom] = true
+	map.chunkToPassScan[leftBottom] = true
     end
     if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	regionMap.chunkToPassScan[rightBottom] = true
+	map.chunkToPassScan[rightBottom] = true
     end
 end
 
-function chunkUtils.registerEnemyBaseStructure(regionMap, entity, base)
+function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
 	
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(regionMap, leftTop, entity, base)
+	    addEnemyStructureToChunk(map, leftTop, entity, base)
 	end
 	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(regionMap, rightTop, entity, base)
+	    addEnemyStructureToChunk(map, rightTop, entity, base)
 	end
 	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(regionMap, leftBottom, entity, base)
+	    addEnemyStructureToChunk(map, leftBottom, entity, base)
 	end
 	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(regionMap, rightBottom, entity, base)
+	    addEnemyStructureToChunk(map, rightBottom, entity, base)
 	end	
     end
 end
 
-function chunkUtils.unregisterEnemyBaseStructure(regionMap, entity)
+function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
 	
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(regionMap, leftTop, entity)
+	    removeEnemyStructureFromChunk(map, leftTop, entity)
 	end
 	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(regionMap, rightTop, entity)
+	    removeEnemyStructureFromChunk(map, rightTop, entity)
 	end
 	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(regionMap, leftBottom, entity)
+	    removeEnemyStructureFromChunk(map, leftBottom, entity)
 	end
 	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(regionMap, rightBottom, entity)
+	    removeEnemyStructureFromChunk(map, rightBottom, entity)
 	end
     end
 end
 
-function chunkUtils.addRemovePlayerEntity(regionMap, entity, natives, addObject, creditNatives)
+function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, creditNatives)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
         entityValue = BUILDING_PHEROMONES[entity.type]
 
-        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
+        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
         if not addObject then
     	    if creditNatives then
     		natives.points = natives.points + entityValue
@@ -527,38 +564,38 @@ function chunkUtils.addRemovePlayerEntity(regionMap, entity, natives, addObject,
     	    entityValue = -entityValue
     	end
     	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    chunkUtils.addPlayerBaseGenerator(regionMap, leftTop, entityValue)
+	    chunkUtils.addPlayerBaseGenerator(map, leftTop, entityValue)
     	end
     	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    chunkUtils.addPlayerBaseGenerator(regionMap, rightTop, entityValue)
+	    chunkUtils.addPlayerBaseGenerator(map, rightTop, entityValue)
     	end
     	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    chunkUtils.addPlayerBaseGenerator(regionMap, leftBottom, entityValue)
+	    chunkUtils.addPlayerBaseGenerator(map, leftBottom, entityValue)
     	end
     	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    chunkUtils.addPlayerBaseGenerator(regionMap, rightBottom, entityValue)
+	    chunkUtils.addPlayerBaseGenerator(map, rightBottom, entityValue)
     	end
     end
     return entity
 end
 
-function chunkUtils.unregisterResource(entity, regionMap)
+function chunkUtils.unregisterResource(entity, map)
     if entity.prototype.infinite_resource then
 	return
     end
-    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(regionMap, entity)
-   
+    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
+    
     if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	chunkUtils.addResourceGenerator(regionMap, leftTop, -RESOURCE_GENERATOR_INCREMENT)
+	chunkUtils.addResourceGenerator(map, leftTop, -RESOURCE_GENERATOR_INCREMENT)
     end
     if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	chunkUtils.addResourceGenerator(regionMap, rightTop, -RESOURCE_GENERATOR_INCREMENT)
+	chunkUtils.addResourceGenerator(map, rightTop, -RESOURCE_GENERATOR_INCREMENT)
     end
     if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	chunkUtils.addResourceGenerator(regionMap, leftBottom, -RESOURCE_GENERATOR_INCREMENT)
+	chunkUtils.addResourceGenerator(map, leftBottom, -RESOURCE_GENERATOR_INCREMENT)
     end
     if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	chunkUtils.addResourceGenerator(regionMap, rightBottom, -RESOURCE_GENERATOR_INCREMENT)
+	chunkUtils.addResourceGenerator(map, rightBottom, -RESOURCE_GENERATOR_INCREMENT)
     end
 end
 

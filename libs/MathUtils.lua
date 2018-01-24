@@ -16,9 +16,8 @@ local mMax = math.max
 local mSqrt = math.sqrt
 local mLog10 = math.log10
 
-local mFloor = math.floor
-
 local mRandom = math.random
+local mFloor = math.floor
 
 -- module code
 
@@ -33,41 +32,98 @@ function mathUtils.randomTickEvent(tick, low, high)
     return tick + nextTick
 end
 
+function mathUtils.xorRandom(state)
+    local xor = bit32.bxor
+    local lshift = bit32.lshift
+    local rshift = bit32.rshift
+    
+    state = state + 21594771
+
+    return function()
+	state = xor(state, lshift(state, 13))
+	state = xor(state, rshift(state, 17))
+	state = xor(state, lshift(state, 5))
+	state = state % 2147483647
+	return state * 4.65661287525e-10
+    end
+end
+
 --[[
     Used for gaussian random numbers
 --]]
-local function marsagliaPolarMethod(rg)
+function mathUtils.gaussianRandom(mean, std_dev)
+    -- marsagliaPolarMethod
     local iid1 
     local iid2 
     local q 
     repeat
-	if rg then
-	    iid1 = 2 * rg() + -1
-	    iid2 = 2 * rg() + -1
-	else
-	    iid1 = 2 * mRandom() + -1
-	    iid2 = 2 * mRandom() + -1
-	end
+	iid1 = 2 * mRandom() + -1
+	iid2 = 2 * mRandom() + -1
 	q = (iid1 * iid1) + (iid2 * iid2)
     until (q ~= 0) and (q < 1)
     local s = mSqrt((-2 * mLog10(q)) / q)
-    return iid1 * s
+    local v = iid1 * s
+    
+    return mean + (v * std_dev)
 end
 
-function mathUtils.gaussianRandom(mean, std_dev, rg) 
-    return mean + (marsagliaPolarMethod(rg) * std_dev)
-end
-
-function mathUtils.gaussianRandomRange(mean, std_dev, min, max, rg)
-    local q
+function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
+    if (min == max) then
+	return min
+    end
+    local r
     repeat
-	q = mathUtils.gaussianRandom(mean, std_dev, rg)
-    until (q >= min) and (q <= max)
-    return q
+	local iid1 
+	local iid2 
+	local q 
+	repeat
+	    iid1 = 2 * mRandom() + -1
+	    iid2 = 2 * mRandom() + -1
+	    q = (iid1 * iid1) + (iid2 * iid2)
+	until (q ~= 0) and (q < 1)
+	local s = mSqrt((-2 * mLog10(q)) / q)
+	local v = iid1 * s
+	
+	r = mean + (v * std_dev)
+    until (r >= min) and (r <= max)
+    return r
 end
 
-function mathUtils.positionToChunkOffset(position)
-    return mFloor(position.x * 0.03125), mFloor(position.y * 0.03125)
+function mathUtils.gaussianRandomRG(mean, std_dev, rg) 
+    -- marsagliaPolarMethod
+    local iid1 
+    local iid2 
+    local q 
+    repeat
+	iid1 = 2 * rg() + -1
+	iid2 = 2 * rg() + -1
+	q = (iid1 * iid1) + (iid2 * iid2)
+    until (q ~= 0) and (q < 1)
+    local s = mSqrt((-2 * mLog10(q)) / q)
+    local v = iid1 * s
+    
+    return mean + (v * std_dev)
+end
+
+function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
+    local r
+    if (min == max) then
+	return min
+    end
+    repeat
+	local iid1 
+	local iid2 
+	local q 
+	repeat
+	    iid1 = 2 * rg() + -1
+	    iid2 = 2 * rg() + -1
+	    q = (iid1 * iid1) + (iid2 * iid2)
+	until (q ~= 0) and (q < 1)
+	local s = mSqrt((-2 * mLog10(q)) / q)
+	local v = iid1 * s
+	r = mean + (v * std_dev)
+    until (r >= min) and (r <= max)
+    return r
 end
 
 function mathUtils.euclideanDistanceNamed(p1, p2)

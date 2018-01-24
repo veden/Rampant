@@ -105,7 +105,7 @@ function upgrade.attempt(natives)
 
 	-- used to precompute some values per logic cycle
 	natives.retreatThreshold = 0
-	natives.maxSquads = 0
+	-- natives.maxSquads = 0
 	natives.rallyThreshold = 0
 	natives.formSquadThreshold = 0
 	natives.attackWaveSize = 0
@@ -163,10 +163,16 @@ function upgrade.attempt(natives)
 	game.surfaces[1].print("Rampant - Version 0.15.23")
 	global.version = constants.VERSION_33
     end
-    if (global.version < constants.VERSION_37) then
+    if (global.version < constants.VERSION_38) then
 
-	game.surfaces[1].print("Rampant - Version 0.16.2")
-	global.version = constants.VERSION_37
+	for _,squad in pairs(natives.squads) do
+    	    squad.chunk = nil
+    	end
+	
+	global.regionMap = nil
+	
+	game.surfaces[1].print("Rampant - Version 0.16.3")
+	global.version = constants.VERSION_38
     end
     return starting ~= global.version, natives
 end
