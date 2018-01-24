@@ -82,6 +82,8 @@ local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
+local positionToChunkXY = mapUtils.positionToChunkXY
+
 local processBases = baseProcessor.processBases
 
 local mRandom = math.random
@@ -430,17 +432,18 @@ end
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
     if (event.item.name == "landfill") and (surfaceIndex == 1) then
+	local surface = game.surfaces[1]
 	local chunks = {}
-	local positions = event.tiles
-	for i=1,#positions do
-	    local position = positions[i].position	    
-	    local chunk = mapUtils.getChunkByPosition(regionMap, position, true)
+	local tiles = event.tiles
+	for i=1,#tiles do
+	    local position = tiles[i].position	    
+	    local chunk = getChunkByPosition(map, position, true)
 
 	    -- weird bug with table pointer equality using name instead pointer comparison
 	    if not chunk.name then
 		map.chunkToPassScan[chunk] = true
 	    else
-		local x,y = mapUtils.positionToChunkXY(position)
+		local x,y = positionToChunkXY(position)
 		local addMe = true
 		for ci=1,#chunks do
 		    local c = chunks[ci]
@@ -450,13 +453,12 @@ local function onSurfaceTileChange(event)
 		    end
 		end
 		if addMe then
-		    chunks[#chunks+1] = {x=x,y=y}
+		    local chunkXY = {x=x,y=y}
+		    chunks[#chunks+1] = chunkXY
+		    onChunkGenerated({area = { left_top = chunkXY },
+				      surface = surface})
 		end
 	    end
-	end
-	for i=1,#chunks do
-	    onChunkGenerated({area = { left_top = chunks[i] },
-			      surface = game.surfaces[surfaceIndex]})
 	end
     end
 end
