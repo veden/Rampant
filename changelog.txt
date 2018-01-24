@@ -1,20 +1,11 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.16.3
-Date: 1. 13. 2018
+Version: 0.16.4
+Date: 1. 23. 2018
   Major Feature:
     - Generated enemies for a large varity of things to battle
     - Evolving bases now get stronger over time and specialize their units
-  Bugfixes:
+ Bugfixes:
     - Fixed a cause where squads could get stuck on hard to pass terrain
-    - Fixed creative mode tile wand robot error (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=220&hilit=rampant#p335574)
-  Improvements:
-    - Removed squad limit
-    - Squads converted from vanilla control receive immediate kamikaze roll
-    - Units not under a unit group, now get a kamikaze roll before being put into a retreating squad
-  Optimizations:
-    - Reworked squad regrouping to be surrounding chunks instead comparing against master list
-  Framework:
-    - Add squads to chunk map for faster location sensitive lookups
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.2
