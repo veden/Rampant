@@ -411,9 +411,9 @@ local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or event.robot.surface.index
     if (event.item.name == "landfill") and (surfaceIndex == 1) then
 	local chunks = {}
-	local positions = event.positions
+	local positions = event.tiles
 	for i=1,#positions do
-	    local position = positions[i]	    
+	    local position = positions[i].position	    
 	    local chunk = mapUtils.getChunkByPosition(regionMap, position, true)
 
 	    -- weird bug with table pointer equality using name instead pointer comparison
