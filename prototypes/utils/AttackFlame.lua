@@ -26,8 +26,8 @@ function attackFlame.createAttackFlame(attributes)
     local fireName = makeFire({
 	    name = attributes.name,
 	    fireTint = attributes.fTint or {r=0, g=0.9, b=0, a=0.5},
-	    smokeWithGlowTint = attributes.smokeWithGlowName,
-	    smokeWithoutGlowName = attributes.smokeWithoutGlowName,
+	    smokeWithGlowName = attributes.smokeWithGlowName,
+	    smokeAddingFuelName = attributes.smokeAddingFuelName,
 	    spawnEntityName = spawnEntityName,
 	    damageMaxMultipler = attributes.damageMaxMultipler,
 	    multiplerIncrease = attributes.multiplerIncrease,
@@ -39,6 +39,8 @@ function attackFlame.createAttackFlame(attributes)
 	    stickerAnimation = attributes.stickerAnimation,
 	    stickerDuration = attributes.stickerDuration,
 	    stickerDamagePerTick = attributes.stickerDamagePerTick,
+	    stickerDamagePerTickType = attributes.stickerDamagePerTickType,
+	    stickerMovementModifier = attributes.stickerMovementModifier,
 	    fireSpreadRadius = attributes.fireSpreadRadius
     })
     
@@ -46,7 +48,9 @@ function attackFlame.createAttackFlame(attributes)
 	    name = attributes.name,
 	    particleTint = attributes.pTint or {r=0, g=1, b=1, a=0.5},
 	    spineAnimationTint = attributes.sTint or {r=0, g=1, b=1, a=0.5},
-	    softSmokeTint = attributes.softSmokeName or makeColor(0.3, 0.75, 0.3, 0.1),
+	    softSmokeTint = attributes.smTint or makeColor(0.3, 0.75, 0.3, 0.1),
+	    softSmokeName = attributes.softSmokeName,
+	    particleTimeout = attributes.particleTimeout,
 	    actions = {
 		{
 		    type = "area",

@@ -7,6 +7,7 @@ local swarmUtils = require("SwarmUtils")
 local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
+local math3d = require("math3d")
 
 -- constants
 
@@ -21,6 +22,10 @@ local INFERNO_WORM_VARIATIONS = constants.INFERNO_WORM_VARIATIONS
 local makeColor = colorUtils.makeColor
 
 local makeSmokeSoft = smokeUtils.makeSmokeSoft
+local makeSmokeWithGlow = smokeUtils.makeSmokeWithGlow
+local makeSmokeWithoutGlow = smokeUtils.makeSmokeWithoutGlow
+local makeSmokeAddingFuel = smokeUtils.makeSmokeAddingFuel
+
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
@@ -46,7 +51,22 @@ buildUnitSpawner(
 		softSmokeName = softSmoke,
 		smokeWithGlowName = smokeGlow,
 		smokeWithoutGlowName = smokeWithoutGlow,
-		smokeAddingFuelName = smokeFuel
+		smokeAddingFuelName = smokeFuel,
+		stickerAnimation = { 
+		    filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
+		    line_length = 8,
+		    width = 60,
+		    height = 118,
+		    frame_count = 25,
+		    axially_symmetrical = false,
+		    direction_count = 1,
+		    blend_mode = "normal",
+		    animation_speed = 1,
+		    scale = 0.2,
+		    tint = { r = 1, g = 1, b = 1, a = 0.35 },
+		    shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
+		},
+		stickerDamagePerTickType = "fire"
 	    },
 	    resistances = {},
 
@@ -94,7 +114,6 @@ buildUnitSpawner(
     {
 	unit = {
 	    {
-		
 		type = "attribute",
 		name = "health",
 		[1] = 10,
@@ -107,11 +126,129 @@ buildUnitSpawner(
 		[8] = 1500,
 		[9] = 2500,
 		[10] = 4500
-		
 	    },
 
 	    {
-		
+		type = "attack",
+		name = "stickerDamagePerTick",
+		[1] = 1.6,
+		[2] = 1.6,
+		[3] = 1.8,
+		[4] = 1.8,
+		[5] = 2,
+		[6] = 2,
+		[7] = 2.5,
+		[8] = 2.5,
+		[9] = 3,
+		[10] = 3
+	    },
+
+	    {
+		type = "attack",
+		name = "particleTimeout",
+		[1] = 3,
+		[2] = 3,
+		[3] = 4,
+		[4] = 4,
+		[5] = 5,
+		[6] = 5,
+		[7] = 6,
+		[8] = 6,
+		[9] = 7,
+		[10] = 7
+	    },
+
+	    {
+		type = "attack",
+		name = "fireSpreadRadius",
+		[1] = 0.75,
+		[2] = 0.75,
+		[3] = 0.77,
+		[4] = 0.77,
+		[5] = 0.79,
+		[6] = 0.79,
+		[7] = 0.83,
+		[8] = 0.83,
+		[9] = 0.85,
+		[10] = 0.85
+	    },
+
+	    {
+		type = "attack",
+		name = "damageMaxMultipler",
+		[1] = 6,
+		[2] = 6,
+		[3] = 7,
+		[4] = 7,
+		[5] = 8,
+		[6] = 8,
+		[7] = 9,
+		[8] = 9,
+		[9] = 10,
+		[10] = 10
+	    },
+	    
+	    {
+		type = "attack",
+		name = "damageMaxMultipler",
+		[1] = 6,
+		[2] = 6,
+		[3] = 7,
+		[4] = 7,
+		[5] = 8,
+		[6] = 8,
+		[7] = 9,
+		[8] = 9,
+		[9] = 10,
+		[10] = 10
+	    },
+
+	    {
+		type = "attack",
+		name = "stickerMovementModifier",
+		[1] = 1.1,
+		[2] = 1.1,
+		[3] = 1.1,
+		[4] = 1.1,
+		[5] = 1.1,
+		[6] = 1.1,
+		[7] = 1.1,
+		[8] = 1.1,
+		[9] = 1.1,
+		[10] = 1.1
+	    },
+	    
+	    {
+		type = "attack",
+		name = "fireSpreadCooldown",
+		[1] = 30,
+		[2] = 30,
+		[3] = 29,
+		[4] = 29,
+		[5] = 28,
+		[6] = 28,
+		[7] = 27,
+		[8] = 27,
+		[9] = 25,
+		[10] = 25
+	    },
+	    
+	    {
+		type = "attack",
+		name = "stickerDuration",
+		[1] = 1800,
+		[2] = 1800,
+		[3] = 1900,
+		[4] = 1900,
+		[5] = 2000,
+		[6] = 2000,
+		[7] = 2100,
+		[8] = 2100,
+		[9] = 2200,
+		[10] = 2200
+	    },
+	    
+	    {
 		type = "attack",
 		name = "cooldown",
 		[1] = 100,
@@ -124,11 +261,9 @@ buildUnitSpawner(
 		[8] = 93,
 		[9] = 90,
 		[10] = 90
-		
 	    },
 	    
 	    {
-		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
@@ -141,11 +276,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 12,
 		[10] = 12
-		
 	    },
 
 	    {
-		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -158,11 +291,9 @@ buildUnitSpawner(
 		[8] = 12500,
 		[9] = 15000,
 		[10] = 20000
-		
 	    },
 
 	    {
-		
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -175,11 +306,9 @@ buildUnitSpawner(
 		[8] = 57,
 		[9] = 70,
 		[10] = 80
-		
 	    },
 	    
 	    {
-		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -192,7 +321,6 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
-		
 	    },
 
 	    
@@ -299,7 +427,6 @@ buildUnitSpawner(
 		[8] = 1.9,
 		[9] = 2.0,
 		[10] = 2.5
-		
 	    },
 
 	    {
@@ -351,7 +478,6 @@ buildUnitSpawner(
 	unitSpawner = {
 
 	    {
-		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -364,11 +490,9 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
-		
 	    },
 
 	    {
-		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -381,11 +505,9 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
-		
 	    },
 
 	    {
-		
 		type = "attribute",
 		name = "spawingCooldownStart",
 		[1] = 360,
@@ -398,11 +520,9 @@ buildUnitSpawner(
 		[8] = 345,
 		[9] = 340,
 		[10] = 340
-		
 	    },
 
 	    {
-		
 		type = "attribute",
 		name = "spawingCooldownEnd",
 		[1] = 150,
@@ -415,11 +535,9 @@ buildUnitSpawner(
 		[8] = 135,
 		[9] = 130,
 		[10] = 130
-		
 	    },
 
 	    {
-		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0.08,
@@ -432,7 +550,6 @@ buildUnitSpawner(
 		[8] = 0.65,
 		[9] = 0.75,
 		[10] = 0.9
-		
 	    },
 
 	    {
@@ -448,10 +565,8 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 11,
 		[10] = 11
-		
 	    },
 	    {
-		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -591,7 +706,25 @@ buildWorm(
 	attributes = {},
 	attack = {
 	    damageType = "fire",
-	    softSmokeName = "inferno-soft-smoke-rampant"
+	    softSmokeName = softSmoke,
+	    smokeWithGlowName = smokeGlow,
+	    smokeWithoutGlowName = smokeWithoutGlow,
+	    smokeAddingFuelName = smokeFuel,
+	    stickerAnimation = { 
+		filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
+		line_length = 8,
+		width = 60,
+		height = 118,
+		frame_count = 25,
+		axially_symmetrical = false,
+		direction_count = 1,
+		blend_mode = "normal",
+		animation_speed = 1,
+		scale = 0.2,
+		tint = { r = 1, g = 1, b = 1, a = 0.35 },
+		shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
+	    },
+	    stickerDamagePerTickType = "fire"
 	},
 	resistances = {},
 
@@ -629,6 +762,126 @@ buildWorm(
 	    [10] = 4500
 	},
 
+	{
+	    type = "attack",
+	    name = "stickerDamagePerTick",
+	    [1] = 1.6,
+	    [2] = 1.6,
+	    [3] = 1.8,
+	    [4] = 1.8,
+	    [5] = 2,
+	    [6] = 2,
+	    [7] = 2.5,
+	    [8] = 2.5,
+	    [9] = 3,
+	    [10] = 3
+	},
+
+	{
+	    type = "attack",
+	    name = "particleTimeout",
+	    [1] = 3,
+	    [2] = 3,
+	    [3] = 4,
+	    [4] = 4,
+	    [5] = 5,
+	    [6] = 5,
+	    [7] = 6,
+	    [8] = 6,
+	    [9] = 7,
+	    [10] = 7
+	},
+
+	{
+	    type = "attack",
+	    name = "fireSpreadRadius",
+	    [1] = 0.75,
+	    [2] = 0.75,
+	    [3] = 0.77,
+	    [4] = 0.77,
+	    [5] = 0.79,
+	    [6] = 0.79,
+	    [7] = 0.83,
+	    [8] = 0.83,
+	    [9] = 0.85,
+	    [10] = 0.85
+	},
+
+	{
+	    type = "attack",
+	    name = "damageMaxMultipler",
+	    [1] = 6,
+	    [2] = 6,
+	    [3] = 7,
+	    [4] = 7,
+	    [5] = 8,
+	    [6] = 8,
+	    [7] = 9,
+	    [8] = 9,
+	    [9] = 10,
+	    [10] = 10
+	},
+	
+	{
+	    type = "attack",
+	    name = "damageMaxMultipler",
+	    [1] = 6,
+	    [2] = 6,
+	    [3] = 7,
+	    [4] = 7,
+	    [5] = 8,
+	    [6] = 8,
+	    [7] = 9,
+	    [8] = 9,
+	    [9] = 10,
+	    [10] = 10
+	},
+
+	{
+	    type = "attack",
+	    name = "stickerMovementModifier",
+	    [1] = 1.1,
+	    [2] = 1.1,
+	    [3] = 1.1,
+	    [4] = 1.1,
+	    [5] = 1.1,
+	    [6] = 1.1,
+	    [7] = 1.1,
+	    [8] = 1.1,
+	    [9] = 1.1,
+	    [10] = 1.1
+	},
+	
+	{
+	    type = "attack",
+	    name = "fireSpreadCooldown",
+	    [1] = 30,
+	    [2] = 30,
+	    [3] = 29,
+	    [4] = 29,
+	    [5] = 28,
+	    [6] = 28,
+	    [7] = 27,
+	    [8] = 27,
+	    [9] = 25,
+	    [10] = 25
+	},
+	
+	{
+	    type = "attack",
+	    name = "stickerDuration",
+	    [1] = 1800,
+	    [2] = 1800,
+	    [3] = 1900,
+	    [4] = 1900,
+	    [5] = 2000,
+	    [6] = 2000,
+	    [7] = 2100,
+	    [8] = 2100,
+	    [9] = 2200,
+	    [10] = 2200
+	},
+	
 	{    
 	    type = "attack",
 	    name = "cooldown",
@@ -782,7 +1035,7 @@ buildWorm(
 
 	{
 	    type = "resistance",
-	    name = "inferno",
+	    name = "fire",
 	    decrease = {
 		[1] = 7,
 		[2] = 7,
