@@ -136,12 +136,12 @@ neutralPath[constants.BASE_ALIGNMENT_ACID] = true
 neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
 neutralPath[constants.BASE_ALIGNMENT_PHYSICAL] = true
 neutralPath[constants.BASE_ALIGNMENT_ELECTRIC] = true
-neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
+-- neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
 neutralPath[constants.BASE_ALIGNMENT_SUICIDE] = true
 -- neutralPath[constants.BASE_ALIGNMENT_WEB] = true
 neutralPath[constants.BASE_ALIGNMENT_TROLL] = true
 neutralPath[constants.BASE_ALIGNMENT_FAST] = true
-neutralPath[constants.BASE_ALIGNMENT_WASP] = true
+-- neutralPath[constants.BASE_ALIGNMENT_WASP] = true
 
 local suicidePath = {}
 suicidePath[constants.BASE_ALIGNMENT_NUCLEAR] = true
@@ -150,11 +150,11 @@ local firePath = {}
 firePath[constants.BASE_ALIGNMENT_INFERNO] = true
 
 local acidPath = {}
-acidPath[constants.BASE_ALIGNMENT_POSION] = true
+-- acidPath[constants.BASE_ALIGNMENT_POSION] = true
 -- acidPath[constants.BASE_ALIGNMENT_INFEST] = true
 
 local decayingPath = {}
-decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
+-- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
 
 local electricPath = {}
 -- electricPath[constants.BASE_ALIGNMENT_ENERGY_THIEF] = true
@@ -165,7 +165,7 @@ constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = firePath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = suicidePath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
 
 -- ai retreat

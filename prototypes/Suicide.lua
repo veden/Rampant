@@ -30,7 +30,7 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 
-makeSmokeSoft({name="suicide", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = makeSmokeSoft({name="suicide", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 
 -- suicide biters
 buildUnitSpawner(
@@ -609,7 +609,7 @@ buildWorm(
 		    }
 		}    
 	    end,
-	    softSmokeName = "suicide-soft-smoke-rampant"
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 
@@ -625,7 +625,7 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-suicide-ball",
+	attackName = "suicide-worm",
 	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
 	pTint = {r=0, g=1, b=1, a=0.5},
 	sTint = {r=0, g=1, b=1, a=0.5}
@@ -642,9 +642,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [8] = 3000,
+	    [9] = 5000,
+	    [10] = 9000
 	},
 
 	{    

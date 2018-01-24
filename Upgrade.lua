@@ -182,7 +182,7 @@ function upgrade.attempt(natives)
 	natives.baseIndex = 1
 	natives.baseIncrement = 0
 	
-	game.surfaces[1].print("Rampant - Version 0.16.4")
+	game.surfaces[1].print("Rampant - Version 0.16.5")
 	global.version = constants.VERSION_39
     end
     
