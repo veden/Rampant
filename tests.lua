@@ -154,7 +154,7 @@ function tests.createEnemy(x,d)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local a = {name=x, position={chunkX, chunkY}}
+    local a = {name=x, position={chunkX, chunkY}, force="enemy"}
     if d then
 	a['direction'] = d
     end
