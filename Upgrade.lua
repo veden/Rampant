@@ -169,17 +169,23 @@ function upgrade.attempt(natives)
     	    squad.chunk = nil
     	end
 
+	global.regionMap = nil
+	
+	game.surfaces[1].print("Rampant - Version 0.16.3")
+	global.version = constants.VERSION_38
+    end
+    if (global.version < constants.VERSION_39) then
+
 	natives.evolutionTableUnitSpawner = {}
 	natives.evolutionTableWorm = {}
 	natives.bases = {}
 	natives.baseIndex = 1
 	natives.baseIncrement = 0
 	
-	global.regionMap = nil
-	
-	game.surfaces[1].print("Rampant - Version 0.16.3")
-	global.version = constants.VERSION_38
+	game.surfaces[1].print("Rampant - Version 0.16.4")
+	global.version = constants.VERSION_39
     end
+    
     return starting ~= global.version, natives
 end
 
