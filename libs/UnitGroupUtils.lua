@@ -277,7 +277,7 @@ function unitGroupUtils.regroupSquads(natives, map)
 		end
 		
 	        if mergedSquads and not squad.kamikaze then
-	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(squad, natives)
+	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(#squad.group.members, natives)
 	    	    if (mRandom() < kamikazeThreshold) then
 	    		squad.kamikaze = true
 	    	    end
