@@ -1,11 +1,13 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.16.5
+Version: 0.16.6
 Date: 1. 23. 2018
   Major Feature:
     - Generated enemies for a large varity of things to battle
     - Evolving bases now get stronger over time and specialize their units
  Bugfixes:
     - Fixed a cause where squads could get stuck on hard to pass terrain
+ Tweaks:
+    - Increased squad movement penalty before removal from 8000 to 10000
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.2

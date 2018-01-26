@@ -161,6 +161,19 @@ data:extend({
 	    per_user = false
 	},
 
+
+	{
+	    type = "double-setting",
+	    name = "rampant-deadZoneFrequency",
+	    description = "rampant-deadZoneFrequency",
+	    setting_type = "runtime-global",
+	    default_value = 0.1,
+	    minimum_value = 0.0,
+	    maximum_value = 1.0,
+	    order = "f[modifier]-c[ai]",
+	    per_user = false
+	},
+	
 	{
 	    type = "double-setting",
 	    name = "rampant-aiPointsScaler",

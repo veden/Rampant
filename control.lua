@@ -1,10 +1,10 @@
 -- imports
 
 local baseUtils = require("libs/BaseUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
-local baseProcessor = require("libs/BaseProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
@@ -49,8 +49,6 @@ local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
 local roundToNearest = mathUtils.roundToNearest
 
--- imported functions
-
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local entityForPassScan = chunkUtils.entityForPassScan
@@ -73,10 +71,14 @@ local cleanSquads = unitGroupUtils.cleanSquads
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
+local createBase = baseUtils.createBase
+
 local squadsAttack = squadAttack.squadsAttack
 local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
+
+local getChunkBase = chunkPropertyUtils.getChunkBase
 
 local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
@@ -241,6 +243,8 @@ local function onModSettingsChange(event)
     
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
     upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
+
+    upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     
     upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
     upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
@@ -288,7 +292,7 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
+	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, true)
     end
 end
 
@@ -434,10 +438,17 @@ end
 local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
-    if (surface.index == 1) then
-	local evo = game.forces.enemy.evolution_factor
-	entity = upgradeEntity(map, entity, surface, natives, evo, event.tick)
-	event.entity = registerEnemyBaseStructure(map, entity, natives, evo, surface, event.tick)
+    if entity.valid and (surface.index == 1) then
+	local chunk = getChunkByPosition(map, entity.position)
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	    local evolutionFactor = entity.force.enemy.evolution_factor
+	    local base = getChunkBase(map, chunk)
+	    if not base then
+		base = createBase(map, natives, evolutionFactor, chunk, surface)
+	    end
+	    entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
+	    event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
+	end
     end
 end
 

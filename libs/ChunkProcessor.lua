@@ -19,7 +19,7 @@ local chunkPassScan = chunkUtils.chunkPassScan
 
 -- module code
 
-function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack, tick, evolutionFactor)
+function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack, tick, evolutionFactor, rebuilding)
     local processQueue = map.processQueue
 
     local area = map.area
@@ -41,7 +41,7 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = initialScan(chunk, natives, surface, map, tick, evolutionFactor)
+        chunk = initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
 
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local chunkX = chunk.x

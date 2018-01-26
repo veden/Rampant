@@ -2,6 +2,7 @@ local chunkUtils = {}
 
 -- imports
 
+local stringUtils = require("StringUtils")
 local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
@@ -41,6 +42,7 @@ local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
 
 -- imported functions
 
+local isRampant = stringUtils.isRampant
 local setNestCount = chunkPropertyUtils.setNestCount
 local setPlayerBaseGenerator = chunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = chunkPropertyUtils.addPlayerBaseGenerator
@@ -261,7 +263,7 @@ function chunkUtils.scoreEnemyBuildings(surface, map)
     return nests, worms
 end
 
-function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor)
+function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
     if (passScore >= 0.40) then
@@ -278,18 +280,33 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	end
 
 	if (#nests > 0) or (#worms > 0) then
-	    local base = findNearbyBase(map, chunk, BASE_SEARCH_RADIUS)
+	    local base = findNearbyBase(map, chunk, natives)
 	    if base then
 		setChunkBase(map, chunk, base)
+	    else
+		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	    end
+	    local alignment = base.alignment
 	    if (#nests > 0) then
 		for i = 1, #nests do
-		    upgradeEntity(map, nests[i], surface, natives, evolutionFactor, tick)
+		    if rebuilding then
+			if not isRampant(nests[i].name) then
+			    upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor)
+			end
+		    else
+			upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor)
+		    end
 		end
 	    end
 	    if (#worms > 0) then
 		for i = 1, #worms do
-		    upgradeEntity(map, worms[i], surface, natives, evolutionFactor, tick)
+		    if rebuilding then
+			if not isRampant(worms[i].name) then
+			    upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor)
+			end
+		    else
+			upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor)
+		    end
 		end
 	    end
 	end
@@ -385,7 +402,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFa
 	local chunk = getChunkByPosition(map, entity.position)
 	local base
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    base = findNearbyBase(map, chunk, BASE_SEARCH_RADIUS)
+	    base = findNearbyBase(map, chunk, natives)
 	    if not base then
 		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	    end
