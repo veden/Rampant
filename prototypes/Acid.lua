@@ -813,7 +813,7 @@ buildUnitSpawner(
 		}
 		
 	    },
-
+	    
 	    {
 		
 		type = "resistance",

@@ -279,7 +279,7 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
-	if (#nests > 0) or (#worms > 0) then
+	if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
 	    local base = findNearbyBase(map, chunk, natives)
 	    if base then
 		setChunkBase(map, chunk, base)
@@ -401,7 +401,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFa
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
 	local chunk = getChunkByPosition(map, entity.position)
 	local base
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and natives.newEnemies then
 	    base = findNearbyBase(map, chunk, natives)
 	    if not base then
 		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)

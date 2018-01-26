@@ -99,6 +99,8 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
         roll = mRandom()
         map.processRoll = roll
     end
+
+    local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     
@@ -117,9 +119,11 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
 	    end
 
-	    local base = chunkToBase[chunk]
-	    if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
-		processBase(map, surface, natives, tick, base, evolutionFactor)
+	    if newEnemies then
+		local base = chunkToBase[chunk]
+		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
+		    processBase(map, surface, natives, tick, base, evolutionFactor)
+		end
 	    end
 	    
 	    scents(map, chunk)

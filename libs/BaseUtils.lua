@@ -167,16 +167,20 @@ end
 
 local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 
-    local evoTop = roundToFloor(gaussianRandomRange(evoIndex, evoIndex * 0.2, 0, evoIndex), EVOLUTION_INCREMENTS)
+    local evoTop = roundToFloor(gaussianRandomRange(evoIndex, evoIndex * 0.3, 0, evoIndex), EVOLUTION_INCREMENTS)
 
+    local alignment
     for evo=evoTop, 0, -EVOLUTION_INCREMENTS do	
 	local entitySet = evolutionTable[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
-	    return entitySet[mRandom(#entitySet)]
+	    alignment =  entitySet[mRandom(#entitySet)]
+	    if (mRandom() > 0.5) then
+		break
+	    end
 	end
     end
     
-    return nil
+    return alignment
 end
 
 function baseUtils.recycleBases(natives, tick)
@@ -221,7 +225,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
 
     local spawnerName = findEntityUpgrade(baseAlignment, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
-	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 1)
+	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
 	if newPosition then
 	    entity = surface.create_entity({name = spawnerName, position = newPosition})
 	end

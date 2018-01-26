@@ -21,7 +21,9 @@ function attackFlame.createAttackFlame(attributes)
     
     local spawnEntityName = makeSpreadEffect({
 	    name = attributes.name,
-	    smokeWithoutGlowName = attributes.smokeWithoutGlowName
+	    smokeWithoutGlowName = attributes.smokeWithoutGlowName,
+	    fireDamagePerTick = attributes.fireDamagePerTick,
+	    fireDamagePerTickType = attributes.fireDamagePerTickType,
     })
     local fireName = makeFire({
 	    name = attributes.name,
@@ -29,6 +31,8 @@ function attackFlame.createAttackFlame(attributes)
 	    smokeWithGlowName = attributes.smokeWithGlowName,
 	    smokeAddingFuelName = attributes.smokeAddingFuelName,
 	    spawnEntityName = spawnEntityName,
+	    fireDamagePerTick = attributes.fireDamagePerTick,
+	    fireDamagePerTickType = attributes.fireDamagePerTickType,
 	    damageMaxMultipler = attributes.damageMaxMultipler,
 	    multiplerIncrease = attributes.multiplerIncrease,
 	    multiplerDecrease = attributes.multiplerDecrease
@@ -39,7 +43,9 @@ function attackFlame.createAttackFlame(attributes)
 	    stickerAnimation = attributes.stickerAnimation,
 	    stickerDuration = attributes.stickerDuration,
 	    stickerDamagePerTick = attributes.stickerDamagePerTick,
+	    stickerDamagePerTick2 = attributes.stickerDamagePerTick2,
 	    stickerDamagePerTickType = attributes.stickerDamagePerTickType,
+	    stickerDamagePerTickType2 = attributes.stickerDamagePerTickType2,
 	    stickerMovementModifier = attributes.stickerMovementModifier,
 	    fireSpreadRadius = attributes.fireSpreadRadius
     })
