@@ -2,7 +2,7 @@
 Version: 0.16.5
 Date: 1. 24. 2018
   Bugfixes:
-    - Fix for calculatekamikazethreshold passing table instead of a number
+    - Fix from Pxanych for calculatekamikazethreshold passing table instead of a number
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.4
