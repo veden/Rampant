@@ -60,6 +60,10 @@ local FAST_WORM_VARIATIONS = constants.FAST_WORM_VARIATIONS
 local FAST_NEST_TIERS = constants.FAST_NEST_TIERS
 local FAST_NEST_VARIATIONS = constants.FAST_NEST_VARIATIONS
 
+local LASER_WORM_TIERS = constants.LASER_WORM_TIERS
+local LASER_WORM_VARIATIONS = constants.LASER_WORM_VARIATIONS
+local LASER_NEST_TIERS = constants.LASER_NEST_TIERS
+local LASER_NEST_VARIATIONS = constants.LASER_NEST_VARIATIONS
 
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
 local BASE_ALIGNMENT_ACID = constants.BASE_ALIGNMENT_ACID
@@ -70,6 +74,7 @@ local BASE_ALIGNMENT_NUCLEAR = constants.BASE_ALIGNMENT_NUCLEAR
 local BASE_ALIGNMENT_INFERNO = constants.BASE_ALIGNMENT_INFERNO
 local BASE_ALIGNMENT_FIRE = constants.BASE_ALIGNMENT_FIRE
 local BASE_ALIGNMENT_FAST = constants.BASE_ALIGNMENT_FAST
+local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
 
 local BASE_WORM_UPGRADE = constants.BASE_WORM_UPGRADE
@@ -79,6 +84,8 @@ local BASE_UPGRADE = constants.BASE_UPGRADE
 local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
 local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
+
+local BASE_ALIGNMENT_EVOLUTION_BASELINE = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -96,6 +103,7 @@ local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 local roundToFloor = mathUtils.roundToFloor
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
+local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local mFloor = math.floor
 
@@ -148,22 +156,56 @@ function baseUtils.findNearbyBase(map, chunk, chunkRadius)
     return foundBase
 end
 
-local function findUpgrade(base, evoIndex, natives, evolutionTable)
+local function findEntityUpgrade(base, evoIndex, natives, evolutionTable)
     -- local used = { }
     -- local alignments = base.alignments
 
     -- local alignmentPick = base.alignments[mRandom(#base.alignments)]
-    local alignmentPick = base.alignment
+
+    local alignments = evolutionTable[base.alignment]
+    -- while alignmentPick do
+    -- 	used[alignmentPick] = true
+
+    local entity = nil
+    
+    for evo=evoIndex, 0, -EVOLUTION_INCREMENTS do
+	local entitySet = alignments[roundToFloor(evo, EVOLUTION_INCREMENTS)]
+	if base.alignment ~= 1 then
+	    print(serpent.dump(entitySet))
+	end
+	if entitySet and (#entitySet > 0) then
+	    entity = entitySet[mRandom(#entitySet)]
+	    if (mRandom() > 0.5) then
+		break
+	    end
+	end
+    end
+
+    -- alignmentPick = nil
+    -- for x = #alignments, 1, -1 do
+    --     if not used[alignments[x]] then
+    -- 	alignmentPick = alignments[x]
+    -- 	break
+    --     end
+    -- end
+    -- end
+    
+    return entity
+end
+
+local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
+    -- local used = { }
+    -- local alignments = base.alignments
+
+    -- local alignmentPick = base.alignments[mRandom(#base.alignments)]
     
     -- while alignmentPick do
     -- 	used[alignmentPick] = true
 
-    if not evolutionTable then
-	print(alignmentPick)
-    end
-    
-    for evo=evoIndex, 0, -EVOLUTION_INCREMENTS do
-	local entitySet = evolutionTable[alignmentPick][evo]
+    local evoTop = roundToFloor(gaussianRandomRange(evoIndex, evoIndex * 0.2, 0, evoIndex), EVOLUTION_INCREMENTS)
+
+    for evo=evoTop, 0, -EVOLUTION_INCREMENTS do	
+	local entitySet = evolutionTable[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
 	    return entitySet[mRandom(#entitySet)]
 	end
@@ -197,9 +239,9 @@ function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor,
 				  EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
 
-    local spawnerName = findUpgrade(base, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
+    local spawnerName = findEntityUpgrade(base, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
-	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
+	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 1)
 	if newPosition then
 	    entity = surface.create_entity({name = spawnerName, position = newPosition})
 	end
@@ -267,9 +309,8 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
 
     local distanceIndex = roundToFloor(mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX), EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distanceIndex, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
-    
-    --local alignments = { BASE_ALIGNMENT_NEUTRAL }
-    local alignment = BASE_ALIGNMENT_NEUTRAL
+
+    local alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL
     
     local base = {
 	x = x,
@@ -304,6 +345,16 @@ local function fileEntity(baseAlignment, entity, evolutionTable)
 	eTable[evoRequirement] = aTable
     end
     aTable[#aTable+1] = entity.name
+end
+
+local function fileAlignment(baseAlignment, evolution, evolutionTable)
+    local evoRequirement = mFloor(evolution/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
+    local eTable = evolutionTable[evoRequirement]
+    if not eTable then
+	eTable = {}
+	evolutionTable[evoRequirement] = eTable
+    end
+    eTable[#eTable+1] = baseAlignment
 end
 
 local function processUnitClass(biterVariation, biterTier, spitterVariation, spitterTier, wormVariation, wormTier, surface, natives, baseAlignment, baseAlignmentString)
@@ -341,13 +392,17 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     end
 end
 
-function baseUtils.rebuildNativeTables(natives, surface)
+function baseUtils.rebuildNativeTables(natives, surface, rg)
     natives.evolutionTableUnitSpawner = {}
     natives.evolutionTableWorm = {}
     natives.evolutionTableAlignment = {}
-
+    
     -- todo fill out alignment evolution levels
-    natives.evolutionTableAlignment =
+    for alignment,evo in pairs(BASE_ALIGNMENT_EVOLUTION_BASELINE) do
+	fileAlignment(alignment,
+		      gaussianRandomRangeRG(evo, evo * 0.2, evo * 0.5, evo * 1.5, rg),
+		      natives.evolutionTableAlignment)
+    end
     
     processUnitClass(NEUTRAL_NEST_VARIATIONS,
 		     NEUTRAL_NEST_TIERS,
@@ -492,16 +547,16 @@ function baseUtils.rebuildNativeTables(natives, surface)
     -- 		     BASE_ALIGNMENT_POSION,
     -- 		     "posion")
 
-    -- processUnitClass(LASER_NEST_VARIATIONS,
-    -- 		     LASER_NEST_TIERS,
-    -- 		     LASER_NEST_VARIATIONS,
-    -- 		     LASER_NEST_TIERS,
-    -- 		     LASER_WORM_VARIATIONS,
-    -- 		     LASER_WORM_TIERS,
-    -- 		     surface,
-    -- 		     natives,
-    -- 		     BASE_ALIGNMENT_LASER,
-    -- 		     "laser")
+    processUnitClass(LASER_NEST_VARIATIONS,
+    		     LASER_NEST_TIERS,
+    		     LASER_NEST_VARIATIONS,
+    		     LASER_NEST_TIERS,
+    		     LASER_WORM_VARIATIONS,
+    		     LASER_WORM_TIERS,
+    		     surface,
+    		     natives,
+    		     BASE_ALIGNMENT_LASER,
+    		     "laser")
 
     -- processUnitClass(WASP_NEST_VARIATIONS,
     -- 		     WASP_NEST_TIERS,

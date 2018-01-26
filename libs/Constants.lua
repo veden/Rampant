@@ -17,7 +17,7 @@ constants.VERSION_27 = 27
 constants.VERSION_28 = 28
 constants.VERSION_33 = 33
 constants.VERSION_38 = 38
-constants.VERSION_39 = 39
+constants.VERSION_40 = 40
 
 -- misc
 
@@ -99,7 +99,7 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
-constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 20480
+constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 5480
 
 constants.BASE_SPAWNER_UPGRADE = 300
 constants.BASE_WORM_UPGRADE = 250
@@ -149,24 +149,38 @@ suicidePath[constants.BASE_ALIGNMENT_NUCLEAR] = true
 local firePath = {}
 firePath[constants.BASE_ALIGNMENT_INFERNO] = true
 
-local acidPath = {}
+-- local acidPath = {}
 -- acidPath[constants.BASE_ALIGNMENT_POSION] = true
 -- acidPath[constants.BASE_ALIGNMENT_INFEST] = true
 
-local decayingPath = {}
+-- local decayingPath = {}
 -- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
 
-local electricPath = {}
+-- local electricPath = {}
 -- electricPath[constants.BASE_ALIGNMENT_ENERGY_THIEF] = true
-electricPath[constants.BASE_ALIGNMENT_LASER] = true
+-- electricPath[constants.BASE_ALIGNMENT_LASER] = true
 
 constants.BASE_ALIGNMENT_PATHS = {}
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = firePath
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = suicidePath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
+
+constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
+    [constants.BASE_ALIGNMENT_NEUTRAL] = 0,
+    [constants.BASE_ALIGNMENT_ACID] = 0.1,
+    [constants.BASE_ALIGNMENT_ELECTRIC] = 0.2,
+    [constants.BASE_ALIGNMENT_SUICIDE] = 0.3,
+    [constants.BASE_ALIGNMENT_PHYSICAL] = 0.4,
+    [constants.BASE_ALIGNMENT_LASER] = 0.4,
+    [constants.BASE_ALIGNMENT_FIRE] = 0.4,
+    [constants.BASE_ALIGNMENT_FAST] = 0.5,
+    [constants.BASE_ALIGNMENT_TROLL] = 0.5,
+    [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
+    [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
+}
 
 -- ai retreat
 
