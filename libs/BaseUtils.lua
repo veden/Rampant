@@ -2,7 +2,6 @@ local baseUtils = {}
 
 -- imports
 
-local stringUtils = require("StringUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
@@ -76,6 +75,7 @@ local BASE_ALIGNMENT_FIRE = constants.BASE_ALIGNMENT_FIRE
 local BASE_ALIGNMENT_FAST = constants.BASE_ALIGNMENT_FAST
 local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
+local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 
 local BASE_WORM_UPGRADE = constants.BASE_WORM_UPGRADE
 local BASE_SPAWNER_UPGRADE = constants.BASE_SPAWNER_UPGRADE
@@ -86,6 +86,8 @@ local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
 local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
 local BASE_ALIGNMENT_EVOLUTION_BASELINE = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+
+local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -100,6 +102,7 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- imported functions
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+local mahattenDistancePoints = mathUtils.mahattenDistancePoints
 local roundToFloor = mathUtils.roundToFloor
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
@@ -110,8 +113,6 @@ local mFloor = math.floor
 local mMin = math.min
 local mMax = math.max
 
-local getChunkByPosition = mapUtils.getChunkByPosition
-local getChunkByXY = mapUtils.getChunkByXY
 local getChunkBase = chunkPropertyUtils.getChunkBase
 local setChunkBase = chunkPropertyUtils.setChunkBase
 
@@ -119,60 +120,41 @@ local mRandom = math.random
 
 -- module code
 
-function baseUtils.findNearbyBase(map, chunk, chunkRadius)
+function baseUtils.findNearbyBase(map, chunk, natives)
     if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
 	return nil
     end
 
-    local tested = {}
-    
     local x = chunk.x
     local y = chunk.y
 
     local foundBase = getChunkBase(map, chunk)
     if foundBase then
-	return foundBase
+    	return foundBase
     end
-    
-    local closest = MAGIC_MAXIMUM_NUMBER
-    for xi = x-chunkRadius, x+chunkRadius, CHUNK_SIZE do
-	for yi = y-chunkRadius, y+chunkRadius, CHUNK_SIZE do
-	    if (xi ~= x) and (yi ~= y)  then
-		local base = getChunkBase(map, getChunkByXY(map, xi, yi))
-		if base then
-		    if not tested[base] then
-			tested[base] = true
-			local distance = euclideanDistancePoints(base.x, base.y, x, y)
-			if (distance <= (BASE_DISTANCE_THRESHOLD + (base.level * BASE_DISTANCE_LEVEL_BONUS))) and (distance < closest) then
-			    closest = distance
-			    foundBase = base
-			end
-		    end
-		end
-	    end
+
+    local bases = natives.bases
+    local distanceThreshold = -1
+    for i=1, #bases do
+	local base = bases[i]
+	local distance = euclideanDistancePoints(base.x, base.y, x, y)
+	if (distance <= base.distanceThreshold) and (base.distanceThreshold >= distanceThreshold) then
+	    foundBase = base
+	    distanceThreshold = base.distanceThreshold
 	end
     end
     
     return foundBase
 end
 
-local function findEntityUpgrade(base, evoIndex, natives, evolutionTable)
-    -- local used = { }
-    -- local alignments = base.alignments
-
-    -- local alignmentPick = base.alignments[mRandom(#base.alignments)]
-
-    local alignments = evolutionTable[base.alignment]
-    -- while alignmentPick do
-    -- 	used[alignmentPick] = true
-
+local function findEntityUpgrade(baseAlignment, evoIndex, natives, evolutionTable)
+    
+    local alignments = evolutionTable[baseAlignment]
+    
     local entity = nil
     
     for evo=evoIndex, 0, -EVOLUTION_INCREMENTS do
 	local entitySet = alignments[roundToFloor(evo, EVOLUTION_INCREMENTS)]
-	if base.alignment ~= 1 then
-	    print(serpent.dump(entitySet))
-	end
 	if entitySet and (#entitySet > 0) then
 	    entity = entitySet[mRandom(#entitySet)]
 	    if (mRandom() > 0.5) then
@@ -180,27 +162,11 @@ local function findEntityUpgrade(base, evoIndex, natives, evolutionTable)
 	    end
 	end
     end
-
-    -- alignmentPick = nil
-    -- for x = #alignments, 1, -1 do
-    --     if not used[alignments[x]] then
-    -- 	alignmentPick = alignments[x]
-    -- 	break
-    --     end
-    -- end
-    -- end
     
     return entity
 end
 
 local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
-    -- local used = { }
-    -- local alignments = base.alignments
-
-    -- local alignmentPick = base.alignments[mRandom(#base.alignments)]
-    
-    -- while alignmentPick do
-    -- 	used[alignmentPick] = true
 
     local evoTop = roundToFloor(gaussianRandomRange(evoIndex, evoIndex * 0.2, 0, evoIndex), EVOLUTION_INCREMENTS)
 
@@ -210,28 +176,17 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 	    return entitySet[mRandom(#entitySet)]
 	end
     end
-
-    -- alignmentPick = nil
-    -- for x = #alignments, 1, -1 do
-    --     if not used[alignments[x]] then
-    -- 	alignmentPick = alignments[x]
-    -- 	break
-    --     end
-    -- end
-    -- end
     
     return nil
 end
 
-function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor, tick)
+function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolutionFactor)
     local position = entity.position
     local entityType = entity.type
     entity.destroy()
-    local chunk = getChunkByPosition(map, position)
-    local base = getChunkBase(map, chunk)
 
-    if not base then
-	base = baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+    if (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
+	return nil
     end
 
     local distance = roundToFloor(mMin(1,
@@ -239,7 +194,7 @@ function baseUtils.upgradeEntity(map, entity, surface, natives, evolutionFactor,
 				  EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
 
-    local spawnerName = findEntityUpgrade(base, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
+    local spawnerName = findEntityUpgrade(baseAlignment, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
 	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 1)
 	if newPosition then
@@ -291,7 +246,7 @@ function baseUtils.processBase(map, surface, natives, tick, base, evolutionFacto
     end
 
     if entity and (#entity > 0) then
-	baseUtils.upgradeEntity(map, entity[mRandom(#entity)], surface, natives, evolutionFactor, tick)
+	baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment, natives, evolutionFactor)
 	base.points = base.points - cost
     end
 
@@ -310,15 +265,25 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
     local distanceIndex = roundToFloor(mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX), EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distanceIndex, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
 
-    local alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL
     
+    local alignment
+    if (mRandom() < natives.deadZoneFrequency) then
+	alignment = BASE_ALIGNMENT_DEADZONE
+    else
+	alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL
+    end
+    
+    local baseLevel = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
+    local baseDistanceThreshold = gaussianRandomRange(BASE_DISTANCE_THRESHOLD, BASE_DISTANCE_THRESHOLD * 0.2, BASE_DISTANCE_THRESHOLD * 0.75, BASE_DISTANCE_THRESHOLD * 1.50)
+    local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
+
     local base = {
 	x = x,
 	y = y,
+	distanceThreshold = distanceThreshold,
 	tick = tick,
 	alignment = alignment,
-	points = 0,
-	level = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
+	points = 0
     }
 
     setChunkBase(map, chunk, base)

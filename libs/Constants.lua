@@ -17,13 +17,12 @@ constants.VERSION_27 = 27
 constants.VERSION_28 = 28
 constants.VERSION_33 = 33
 constants.VERSION_38 = 38
-constants.VERSION_40 = 40
+constants.VERSION_41 = 41
 
 -- misc
 
 constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-green" }
 
-constants.CHUNK_SIZE_DIVIDER = 0.03125
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 10000
@@ -56,6 +55,8 @@ constants.DOUBLE_CHUNK_SIZE = constants.CHUNK_SIZE * 2
 constants.TRIPLE_CHUNK_SIZE = constants.CHUNK_SIZE * 3
 constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
 constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
+
+constants.CHUNK_SIZE_DIVIDER = 1 / constants.CHUNK_SIZE
 
 constants.CHUNK_IMPASSABLE = 0
 constants.CHUNK_NORTH_SOUTH = 1
@@ -99,14 +100,16 @@ constants.AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
+constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 20
+
 constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 5480
 
 constants.BASE_SPAWNER_UPGRADE = 300
 constants.BASE_WORM_UPGRADE = 250
 constants.BASE_UPGRADE = 1500
 
-constants.BASE_DISTANCE_THRESHOLD = 40 * constants.CHUNK_SIZE
-constants.BASE_DISTANCE_LEVEL_BONUS = 300
+constants.BASE_DISTANCE_THRESHOLD = 30 * constants.CHUNK_SIZE
+constants.BASE_DISTANCE_LEVEL_BONUS = 15
 
 constants.BASE_ALIGNMENT_NEUTRAL = 1
 constants.BASE_ALIGNMENT_FIRE = 2
@@ -127,6 +130,7 @@ constants.BASE_ALIGNMENT_UNDYING = 16
 constants.BASE_ALIGNMENT_ENERGY_THIEF = 17
 constants.BASE_ALIGNMENT_ELECTRIC = 18
 constants.BASE_ALIGNMENT_WASP = 19
+constants.BASE_ALIGNMENT_DEADZONE = 20
 -- constants.BASE_ALIGNMENT_BURROW = 3
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
@@ -235,7 +239,7 @@ constants.RALLY_CRY_DISTANCE = 96
 
 constants.GROUP_MERGE_DISTANCE = 28
 
-constants.MAX_PENALTY_BEFORE_PURGE = 8000
+constants.MAX_PENALTY_BEFORE_PURGE = 10000
 
 -- player building pheromones
 
