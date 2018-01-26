@@ -64,6 +64,8 @@ local planning = aiPlanning.planning
 
 local rallyUnits = aiAttackWave.rallyUnits
 
+local recycleBases = baseUtils.recycleBases
+
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
@@ -330,6 +332,8 @@ local function onTick(event)
 		 tick,
 		 surface,
 		 gameRef.connected_players)
+
+	recycleBases(natives, tick)
     end
     if (tick == map.squadTick) then
 	map.squadTick = map.squadTick + INTERVAL_SQUAD

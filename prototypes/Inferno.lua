@@ -84,7 +84,7 @@ buildUnitSpawner(
 		[10] = 1.4
 	    },
 	    attackName = "spitter-inferno",
-	    tint = {r=0.65, g=0, b=0, a=0.65},
+	    tint = {r=0.65, g=0, b=0, a=1},
 	    pTint = {r=1, g=1, b=1, a=0.5},
 	    sTint = {r=1, g=1, b=1, a=0.5}
 	},

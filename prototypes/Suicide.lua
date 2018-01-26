@@ -59,8 +59,8 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    tint2 = {r=1, g=0.63, b=0, a=0.4}
+	    tint1 = {r=0.56, g=0.46, b=0, a=0.65},
+	    tint2 = {r=0.56, g=0.46, b=0, a=0.65}
 	},
 
 	unitSpawner = {
@@ -80,7 +80,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+	    tint = {r=0.56, g=0.46, b=0, a=0.65}
 	}
     },
 
@@ -626,7 +626,7 @@ buildWorm(
 	    [10] = 1.4
 	},
 	attackName = "suicide-worm",
-	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	tint = {r=0.56, g=0.46, b=0, a=0.65},
 	pTint = {r=0, g=1, b=1, a=0.5},
 	sTint = {r=0, g=1, b=1, a=0.5}
     },
