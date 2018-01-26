@@ -528,7 +528,7 @@ buildUnitSpawner(
 		[10] = 1.4
 	    },
 	    attackName = "neutral-spitter",
-	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
+	    tint = {r=0.56, g=0.46, b=0.42, a=1},
 	    pTint = {r=0, g=1, b=1, a=0.5},
 	    sTint = {r=0, g=1, b=1, a=0.5}
 	},

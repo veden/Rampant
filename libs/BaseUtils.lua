@@ -4,7 +4,6 @@ local baseUtils = {}
 
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
-local mapUtils = require("MapUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
@@ -87,7 +86,8 @@ local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
 local BASE_ALIGNMENT_EVOLUTION_BASELINE = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
 
-local MAGIC_MAXIMUM_BASE_NUMBER = constants.MAGIC_MAXIMUM_BASE_NUMBER
+local BASE_QUEUE_SIZE = constants.BASE_QUEUE_SIZE
+local BASE_COLLECTION_THRESHOLD = constants.BASE_COLLECTION_THRESHOLD
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -95,14 +95,11 @@ local BASE_ALIGNMENT_PATHS = constants.BASE_ALIGNMENT_PATHS
 
 local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
-local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
-
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
-local mahattenDistancePoints = mathUtils.mahattenDistancePoints
 local roundToFloor = mathUtils.roundToFloor
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
@@ -115,6 +112,8 @@ local mMax = math.max
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
 local setChunkBase = chunkPropertyUtils.setChunkBase
+
+local tRemove = table.remove
 
 local mRandom = math.random
 
@@ -179,6 +178,32 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
     
     return nil
 end
+
+function baseUtils.recycleBases(natives, tick)
+    local baseIndex = natives.baseIndex
+    local bases = natives.bases
+
+    local removeMe = {}
+    
+    local endIndex = mMin(baseIndex+BASE_QUEUE_SIZE, #bases)
+    for index = baseIndex, endIndex do
+        local base = bases[index]
+
+	if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
+	    removeMe[#removeMe+1] = index
+	end
+    end
+    for i=#removeMe, 1, -1 do
+	tRemove(bases, i)
+    end
+
+    if (endIndex == #bases) then
+	natives.baseIndex = 1
+    else
+	natives.baseIndex = endIndex + 1
+    end    
+end
+
 
 function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolutionFactor)
     local position = entity.position
