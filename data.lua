@@ -1,17 +1,8 @@
-require("prototypes/enemies/AttackAcidBall")
-require("prototypes/enemies/AttackAcidFlame")
+local acidBall = require("prototypes/utils/AttackBall")
 
-require("prototypes/buildings/tunnel")
-require("prototypes/buildings/UnitSpawners")
+if settings.startup["rampant-useDumbProjectiles"].value then
+    acidBall.generateLegacy()
+end
 
-require("prototypes/tile/fillableDirt")
+require("prototypes/buildings/ChunkScanner")
 
-
-
--- if settings.startup["rampant-newEnemies"].value then
---     require("BuildSwarm")
--- end
-
--- require("prototypes/enemies/UnitSuicideBiters")
--- require("prototypes/enemies/UnitFireSpitters")
--- require("prototypes/enemies/UnitTendril")

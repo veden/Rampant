@@ -51,12 +51,10 @@ local mMax = math.max
 local function isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints)
     return canAttack(natives, surface) and
 	(tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and
-	((evolution_factor > 0.7) and
-		(natives.points > maxPoints * 0.85) and
-		(#natives.squads > 20))
+	((evolution_factor > 0.7) and (natives.points > maxPoints * 0.85) and (#natives.squads > 20))
 end
 
-function aiPlanning.planning(natives, evolution_factor, tick, surface)
+function aiPlanning.planning(natives, evolution_factor, tick, surface, connectedPlayers)
     local maxPoints = AI_MAX_POINTS * evolution_factor
 
     if natives.aiNocturnalMode then
@@ -76,10 +74,13 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
     local threshold = natives.attackThresholdRange
     natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
+
+    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
+    
+    natives.baseIncrement = points
     
     if (natives.points < maxPoints) then
-	natives.points = natives.points + mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) +
-		((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
+	natives.points = natives.points + points
     end
     
     if (natives.temperamentTick == tick) then
@@ -101,7 +102,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface)
 
     if isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints) then
 	natives.lastShakeMessage = tick
-	for i, player in pairs(game.connected_players) do
+	for _, player in pairs(connectedPlayers) do
 		if player.mod_settings["rampant-attack-warning"].value then
 			player.print("Rampant: The ground begins to shake")
 		end

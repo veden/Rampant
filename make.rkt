@@ -5,7 +5,7 @@
   (require json)
   
   (define modFolder "/data/games/factorio/mods/")
-  (define zipModFolder "/data/games/factorio/mods/")
+  (define zipModFolder "/data/games/factorio2/mods/")
   (define configuration (call-with-input-file "info.json"
                           (lambda (port)
                             (string->jsexpr (port->string port)))))
@@ -34,7 +34,6 @@
          (string->path "changelog.txt")
          (string->path "Upgrade.lua")
          (string->path "settings.lua")
-         ;(string->path "BuildSwarm.lua")
          (string->path "README.md")
          (string->path "NOTICE")
          (string->path "libs")
@@ -74,7 +73,6 @@
       (copyFile "changelog.txt" modFolder)
       (copyFile "Upgrade.lua" modFolder)
       (copyFile "tests.lua" modFolder)
-      ;(copyFile "BuildSwarm.lua" modFolder)
       (copyDirectory "libs" modFolder)
       (copyDirectory "locale" modFolder)
       (copyDirectory "sounds" modFolder)
@@ -83,5 +81,6 @@
   
   (define (run)
     ;;(copyFiles modFolder)
+    ;;(copyFiles zipModFolder)
     (makeZip modFolder)
     (system*/exit-code "/data/games/factorio/bin/x64/factorio")))

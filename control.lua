@@ -1,9 +1,10 @@
 -- imports
 
+local baseUtils = require("libs/BaseUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
-local baseProcessor = require("libs/BaseProcessor")
 local mapProcessor = require("libs/MapProcessor")
 local constants = require("libs/Constants")
 local pheromoneUtils = require("libs/PheromoneUtils")
@@ -48,8 +49,6 @@ local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
 local roundToNearest = mathUtils.roundToNearest
 
--- imported functions
-
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local entityForPassScan = chunkUtils.entityForPassScan
@@ -65,6 +64,8 @@ local planning = aiPlanning.planning
 
 local rallyUnits = aiAttackWave.rallyUnits
 
+local recycleBases = baseUtils.recycleBases
+
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
@@ -72,19 +73,22 @@ local cleanSquads = unitGroupUtils.cleanSquads
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
+local createBase = baseUtils.createBase
+
 local squadsAttack = squadAttack.squadsAttack
 local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
+
+local getChunkBase = chunkPropertyUtils.getChunkBase
 
 local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
-local positionToChunkXY = mapUtils.positionToChunkXY
-
-local processBases = baseProcessor.processBases
+local upgradeEntity = baseUtils.upgradeEntity
+local rebuildNativeTables = baseUtils.rebuildNativeTables
 
 local mRandom = math.random
 
@@ -138,7 +142,7 @@ local function onChunkGenerated(event)
     end
 end
 
-local function rebuildRegionMap()
+local function rebuildMap()
     game.surfaces[1].print("Rampant - Reindexing chunks, please wait.")
     -- clear old map processing Queue
     -- prevents queue adding duplicate chunks
@@ -150,6 +154,7 @@ local function rebuildRegionMap()
     map.processIndex = 1
     map.scanIndex = 1
 
+    map.chunkToBase = {}
     map.chunkToHives = {}
     map.chunkToNests = {}
     map.chunkToWorms = {}
@@ -159,29 +164,35 @@ local function rebuildRegionMap()
     map.chunkToResource = {}
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
-     
+    
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK,
-			    SENTINEL_IMPASSABLE_CHUNK }
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK,
+		      SENTINEL_IMPASSABLE_CHUNK }
     map.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK,
-				    SENTINEL_IMPASSABLE_CHUNK }
+			      SENTINEL_IMPASSABLE_CHUNK,
+			      SENTINEL_IMPASSABLE_CHUNK,
+			      SENTINEL_IMPASSABLE_CHUNK }
     map.position = {x=0,
-			  y=0}
+		    y=0}
 
+    map.position2Top = {0, 0}
+    map.position2Bottom = {0, 0}
     --this is shared between two different queries
     map.area = {{0, 0}, {0, 0}}
+    map.area2 = {map.position2Top, map.position2Bottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
-    map.filteredEntitiesEnemyTypeQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesUnitSpawnereQuery = { area=map.area, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
+    map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
+    map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
     map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name="", area=map.area }
@@ -204,22 +215,8 @@ local function rebuildRegionMap()
     map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
     map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
     
-    -- clear pending chunks, will be added when loop runs below
-    global.pendingChunks = {}
-    pendingChunks = global.pendingChunks
+end    
 
-    -- queue all current chunks that wont be generated during play
-    local surface = game.surfaces[1]
-    local tick = game.tick
-    for chunk in surface.get_chunks() do
-	onChunkGenerated({ tick = tick,
-			   surface = surface, 
-			   area = { left_top = { x = chunk.x * 32,
-						 y = chunk.y * 32 }}})
-    end
-
-    processPendingChunks(natives, map, surface, pendingChunks, tick)
-end
 
 local function onModSettingsChange(event)
     
@@ -248,6 +245,8 @@ local function onModSettingsChange(event)
     
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
     upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
+
+    upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     
     upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
     upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
@@ -256,6 +255,10 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
+
+    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
+    
+    upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
     natives.useCustomAI = constants.DEV_CUSTOM_AI
@@ -266,7 +269,7 @@ local function onModSettingsChange(event)
     -- 	game.forces.enemy.ai_controllable = true
     -- end
     -- if changed and newValue then
-    -- 	rebuildRegionMap()
+    -- 	rebuildMap()
     -- 	return false
     -- end
     return true
@@ -276,7 +279,26 @@ local function onConfigChanged()
     local upgraded
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
-	rebuildRegionMap()
+	rebuildMap()
+	if natives.newEnemies then
+	    rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
+	end
+
+	-- clear pending chunks, will be added when loop runs below
+	global.pendingChunks = {}
+	pendingChunks = global.pendingChunks
+
+	-- queue all current chunks that wont be generated during play
+	local surface = game.surfaces[1]
+	local tick = game.tick
+	for chunk in surface.get_chunks() do
+	    onChunkGenerated({ tick = tick,
+			       surface = surface, 
+			       area = { left_top = { x = chunk.x * 32,
+						     y = chunk.y * 32 }}})
+	end
+
+	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, true)
     end
 end
 
@@ -290,13 +312,14 @@ local function onTick(event)
 	
 	processPlayers(gameRef.players, map, surface, natives, tick)
 
-	processMap(map, surface, natives, tick)
+	processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
     end
     if (tick == map.scanTick) then
 	map.scanTick = map.scanTick + INTERVAL_SCAN
-	local surface = game.surfaces[1]
+	local gameRef = game
+	local surface = gameRef.surfaces[1]
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick)
+	processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
 	scanMap(map, surface, natives)
 	
@@ -311,10 +334,11 @@ local function onTick(event)
 	planning(natives,
 		 gameRef.forces.enemy.evolution_factor,
 		 tick,
-		 surface)
+		 surface,
+		 gameRef.connected_players)
 
-	if natives.useCustomAI then
-	    processBases(map, surface, natives, tick)
+	if natives.newEnemies then
+	    recycleBases(natives, tick)
 	end
     end
     if (tick == map.squadTick) then
@@ -424,8 +448,21 @@ end
 local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
-    if (surface.index == 1) then
-	registerEnemyBaseStructure(map, entity, nil)
+    if entity.valid and (surface.index == 1) then
+	local chunk = getChunkByPosition(map, entity.position)
+	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	    local evolutionFactor = entity.force.evolution_factor
+	    if natives.newEnemies then
+		local base = getChunkBase(map, chunk)
+		if not base then
+		    base = createBase(map, natives, evolutionFactor, chunk, surface, event.tick)
+		end
+		entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
+	    end
+	    if entity then
+		event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
+	    end
+	end
     end
 end
 
@@ -439,7 +476,7 @@ local function onSurfaceTileChange(event)
 	    local position = tiles[i].position	    
 	    local chunk = getChunkByPosition(map, position, true)
 
-	    -- weird bug with table pointer equality using name instead pointer comparison
+	    -- weird bug with table pointer equality using name instead of pointer comparison
 	    if not chunk.name then
 		map.chunkToPassScan[chunk] = true
 	    else
@@ -533,12 +570,14 @@ remote.add_interface("rampantTests",
 			 gaussianRandomTest = tests.gaussianRandomTest,
 			 reveal = tests.reveal,
 			 showMovementGrid = tests.showMovementGrid,
+			 showBaseGrid = tests.showBaseGrid,
 			 baseStats = tests.baseStats,
 			 mergeBases = tests.mergeBases,
 			 clearBases = tests.clearBases,
 			 getOffsetChunk = tests.getOffsetChunk,
 			 registeredNest = tests.registeredNest,
 			 colorResourcePoints = tests.colorResourcePoints,
+			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 exportAiState = tests.exportAiState(onTick)
 		     }

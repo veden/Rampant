@@ -4,7 +4,7 @@ local aiAttackWave = {}
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local chunkUtils = require("ChunkUtils")
+local chunkPropetyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 package.path = "../?.lua;" .. package.path
@@ -41,9 +41,9 @@ local mRandom = math.random
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local getNestCount = chunkUtils.getNestCount
-local getRallyTick = chunkUtils.getRallyTick
-local setRallyTick = chunkUtils.setRallyTick
+local getNestCount = chunkPropetyUtils.getNestCount
+local getRallyTick = chunkPropetyUtils.getRallyTick
+local setRallyTick = chunkPropetyUtils.setRallyTick
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByXY = mapUtils.getChunkByXY
@@ -119,7 +119,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
 								     scoreUnitGroupLocation,
 								     map)
 	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local squadPosition = surface.find_non_colliding_position("biter-spawner-hive-rampant",
+	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
 								      positionFromDirectionAndChunk(squadDirection,
 												    chunk,
 												    map.position,

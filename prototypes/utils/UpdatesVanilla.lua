@@ -5,7 +5,7 @@ local biterUtils = require("BiterUtils")
 function vanillaUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];
 
-    turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 60,
 	    range = 21,
@@ -17,7 +17,7 @@ function vanillaUpdates.useDumbProjectiles()
 	},
 	"acid-ball-2-stream-rampant")
 
-    turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 60,
 	    range = 25,
@@ -30,7 +30,7 @@ function vanillaUpdates.useDumbProjectiles()
 	"acid-ball-3-stream-rampant")
 
 
-    turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createFireAttack(
+    turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 60,
 	    range = 26,
@@ -44,7 +44,7 @@ function vanillaUpdates.useDumbProjectiles()
     local units = data.raw["unit"];
 
     local unit = units["small-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 100,
 	    range = 13,
@@ -53,13 +53,12 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-stream-rampant")
 
     unit = units["medium-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 95,
 	    range = 14,
@@ -68,13 +67,12 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-1-stream-rampant")
 
     unit = units["big-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 90,
 	    range = 15,
@@ -83,13 +81,12 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-2-stream-rampant")
 
     unit = units["behemoth-spitter"]
-    unit["attack_parameters"] = biterUtils.createFireAttack(
+    unit["attack_parameters"] = biterUtils.createStreamAttack(
 	{
 	    cooldown = 90,
 	    range = 16,
@@ -98,8 +95,7 @@ function vanillaUpdates.useDumbProjectiles()
 	    turn_range = 1,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit),
-	    tint1 = biterUtils.findTint(unit),
-	    tint2 = biterUtils.findTint(unit)
+	    tint = biterUtils.findTint(unit)
 	},
 	"acid-ball-3-stream-rampant")
 end

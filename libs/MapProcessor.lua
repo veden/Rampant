@@ -10,7 +10,9 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local playerUtils = require("PlayerUtils")
 local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mathUtils = require("MathUtils")
+local baseUtils = require("BaseUtils")
 
 -- constants
 
@@ -32,6 +34,8 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
+local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
+
 -- imported functions
 
 local scents = pheromoneUtils.scents
@@ -49,12 +53,14 @@ local validPlayer = playerUtils.validPlayer
 
 local analyzeChunk = chunkUtils.analyzeChunk
 
-local getNestCount = chunkUtils.getNestCount
-local getEnemyStructureCount = chunkUtils.getEnemyStructureCount
+local getNestCount = chunkPropertyUtils.getNestCount
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
 
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
+
+local processBase = baseUtils.processBase
 
 local mMin = math.min
 
@@ -83,14 +89,18 @@ end
     In theory, this might be fine as smaller bases have less surface to attack and need to have 
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(map, surface, natives, tick)
+function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local roll = map.processRoll
     local index = map.processIndex
+
+    local chunkToBase = map.chunkToBase
     
     if (index == 1) then
         roll = mRandom()
         map.processRoll = roll
     end
+
+    local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     
@@ -107,6 +117,13 @@ function mapProcessor.processMap(map, surface, natives, tick)
 	    if squads and (getNestCount(map, chunk) > 0) then
 		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+	    end
+
+	    if newEnemies then
+		local base = chunkToBase[chunk]
+		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
+		    processBase(map, surface, natives, tick, base, evolutionFactor)
+		end
 	    end
 	    
 	    scents(map, chunk)

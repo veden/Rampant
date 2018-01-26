@@ -121,9 +121,6 @@ function upgrade.attempt(natives)
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 
-	natives.bases = {}
-	natives.baseDistanceMin = 0
-	natives.baseIndex = 1
 	natives.randomGenerator = game.create_random_generator()
 
 	game.surfaces[1].print("Rampant - Version 0.15.11")
@@ -168,17 +165,26 @@ function upgrade.attempt(natives)
 	for _,squad in pairs(natives.squads) do
     	    squad.chunk = nil
     	end
-	
+
 	global.regionMap = nil
 	
 	game.surfaces[1].print("Rampant - Version 0.16.3")
 	global.version = constants.VERSION_38
     end
-    if (global.version < constants.VERSION_40) then
+    if (global.version < constants.VERSION_41) then
+
+	natives.evolutionTableUnitSpawner = {}
+	natives.evolutionTableWorm = {}
+	natives.evolutionTableAlignment = {}
+	natives.bases = {}
+	natives.baseIndex = 1
+	natives.baseIncrement = 0
+	natives.baseLookup = {}
 	
-	game.surfaces[1].print("Rampant - Version 0.16.5")
-	global.version = constants.VERSION_40
+	game.surfaces[1].print("Rampant - Version 0.16.6")
+	global.version = constants.VERSION_41
     end
+    
     return starting ~= global.version, natives
 end
 
