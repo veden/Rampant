@@ -1,6 +1,6 @@
 local acidBall = require("prototypes/utils/AttackBall")
 
-if not settings.startup["rampant-newEnemies"].value and settings.startup["rampant-useDumbProjectiles"].value then
+if settings.startup["rampant-useDumbProjectiles"].value then
     acidBall.generateLegacy()
 end
 

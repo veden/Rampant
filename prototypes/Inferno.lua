@@ -47,7 +47,8 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		damageType = "fire",
+		damageType = "acid",
+		fireDamagePerTickType = "acid",
 		softSmokeName = softSmoke,
 		smokeWithGlowName = smokeGlow,
 		smokeWithoutGlowName = smokeWithoutGlow,
@@ -66,7 +67,7 @@ buildUnitSpawner(
 		    tint = { r = 1, g = 1, b = 1, a = 0.35 },
 		    shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
 		},
-		stickerDamagePerTickType = "fire"
+		stickerDamagePerTickType = "acid"
 	    },
 	    resistances = {},
 
@@ -705,7 +706,8 @@ buildWorm(
 
 	attributes = {},
 	attack = {
-	    damageType = "fire",
+	    damageType = "acid",
+	    fireDamagePerTickType = "acid",
 	    softSmokeName = softSmoke,
 	    smokeWithGlowName = smokeGlow,
 	    smokeWithoutGlowName = smokeWithoutGlow,
@@ -724,7 +726,7 @@ buildWorm(
 		tint = { r = 1, g = 1, b = 1, a = 0.35 },
 		shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
 	    },
-	    stickerDamagePerTickType = "fire"
+	    stickerDamagePerTickType = "acid"
 	},
 	resistances = {},
 

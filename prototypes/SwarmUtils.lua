@@ -237,7 +237,7 @@ end
 
 local function generateApperance(unit, tier)
     local scaleValue = unit.scales[tier]
-    local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom) + (0.05 * tier)
+    local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom)
 
     unit.scale = scale
     unit.attributes.scale = scale

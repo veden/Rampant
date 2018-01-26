@@ -40,7 +40,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		damageType = "fire"
+		damageType = "acid"
 	    },
 	    resistances = {},
 
@@ -524,6 +524,37 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
+	    },
+
+	    {
+		
+		type = "resistance",
+		name = "acid",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+		
 	    }
 	},
 
@@ -564,7 +595,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		damageType = "fire",
+		damageType = "acid",
 		softSmokeName = "fire-soft-smoke-rampant"
 	    },
 	    resistances = {},
@@ -788,6 +819,37 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
+	    },
+
+	    {
+		
+		type = "resistance",
+		name = "acid",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+		
 	    },
 	    
 	    {
@@ -1070,7 +1132,38 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
-	    }	    
+	    },
+
+	    {
+		
+		type = "resistance",
+		name = "acid",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+		
+	    }
 	},
 
 	probabilityTable = {
@@ -1109,7 +1202,7 @@ buildWorm(
 
 	attributes = {},
 	attack = {
-	    damageType = "fire",
+	    damageType = "acid",
 	    softSmokeName = "fire-soft-smoke-rampant"
 	},
 	resistances = {},
@@ -1327,6 +1420,37 @@ buildWorm(
 		[10] = 90
 	    }
 	},
+
+	{
+		
+		type = "resistance",
+		name = "acid",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+		
+	    },
 
 	{
 	    type = "attack",

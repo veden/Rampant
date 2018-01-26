@@ -256,6 +256,8 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
+    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
+    
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
@@ -278,7 +280,9 @@ local function onConfigChanged()
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
 	rebuildMap()
-	rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
+	if natives.newEnemies then
+	    rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
+	end
 
 	-- clear pending chunks, will be added when loop runs below
 	global.pendingChunks = {}
@@ -333,7 +337,9 @@ local function onTick(event)
 		 surface,
 		 gameRef.connected_players)
 
-	recycleBases(natives, tick)
+	if natives.newEnemies then
+	    recycleBases(natives, tick)
+	end
     end
     if (tick == map.squadTick) then
 	map.squadTick = map.squadTick + INTERVAL_SQUAD
@@ -445,13 +451,17 @@ local function onEnemyBaseBuild(event)
     if entity.valid and (surface.index == 1) then
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local evolutionFactor = entity.force.enemy.evolution_factor
-	    local base = getChunkBase(map, chunk)
-	    if not base then
-		base = createBase(map, natives, evolutionFactor, chunk, surface)
+	    local evolutionFactor = entity.force.evolution_factor
+	    if natives.newEnemies then
+		local base = getChunkBase(map, chunk)
+		if not base then
+		    base = createBase(map, natives, evolutionFactor, chunk, surface, event.tick)
+		end
+		entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
 	    end
-	    entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
-	    event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
+	    if entity then
+		event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
+	    end
 	end
     end
 end
