@@ -13,11 +13,12 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 function streamUtils.makeStream(info)
     local attributes = util.table.deepcopy(info)
     local softSmokeName = attributes.softSmokeName or makeSmokeSoft(attributes)
+    local name = attributes.name .. "-stream-rampant"
     data:extend(
 	{
 	    {
 		type = "stream",
-		name = attributes.name .. "-stream-rampant",
+		name = name,
 		flags = {"not-on-map"},
 		stream_light = {intensity = 1, size = 4},
 		ground_light = {intensity = 0.8, size = 4},
@@ -34,9 +35,9 @@ function streamUtils.makeStream(info)
 		particle_buffer_size = 90,
 		particle_spawn_interval = 1,
 		particle_spawn_timeout = attributes.particleTimeout or 1,
-		particle_vertical_acceleration = attributes.particleVertialAcceleration or (0.005 * 2),
-		particle_horizontal_speed = attributes.particleHoizontalSpeed or (0.2 * 0.75 * 4),
-		particle_horizontal_speed_deviation = attributes.particleHoizontalSpeedDeviation or (0.005 * 0.50),
+		particle_vertical_acceleration = attributes.particleVerticalAcceleration or 0.01,
+		particle_horizontal_speed = attributes.particleHoizontalSpeed or 0.6,
+		particle_horizontal_speed_deviation = attributes.particleHoizontalSpeedDeviation or 0.0025,
 		particle_start_alpha = 0.5,
 		particle_end_alpha = 1,
 		particle_start_scale = 0.2,
@@ -84,6 +85,7 @@ function streamUtils.makeStream(info)
 	    }
 	}
     )
+    return name
 end
 
 return streamUtils

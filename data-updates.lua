@@ -1,6 +1,6 @@
-local vanillaUpdates = require("prototypes/enemies/UpdatesVanilla")
-local bobsUpdates = require("prototypes/enemies/UpdatesBobs")
-local NEUpdates = require("prototypes/enemies/UpdatesNE")
+local vanillaUpdates = require("prototypes/utils/UpdatesVanilla")
+local bobsUpdates = require("prototypes/utils/UpdatesBobs")
+local NEUpdates = require("prototypes/utils/UpdatesNE")
 local constants = require("libs/Constants")
 
 local function bobsDetected()
@@ -22,11 +22,11 @@ end
 if settings.startup["rampant-useDumbProjectiles"].value then
     vanillaUpdates.useDumbProjectiles()
     if bobsDetected() then
-    	require("prototypes/enemies/AttackBobs")
+    	require("prototypes/utils/AttackBobs")
     	bobsUpdates.useDumbProjectiles()
     end
     if NEDetected() then
-    	require("prototypes/enemies/AttackNE")
+    	require("prototypes/utils/AttackNE")
     	NEUpdates.useDumbProjectiles()
     	if settings.startup["rampant-useNEUnitLaunchers"].value then
     	    NEUpdates.useNEUnitLaunchers()

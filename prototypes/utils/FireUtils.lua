@@ -29,7 +29,7 @@ function fireUtils.makeSpreadEffect(attributes)
 		name = name,
 		flags = {"placeable-off-grid", "not-on-map"},
 
-		damage_per_tick = attributes.damagePerTick or { amount = 45/60, type = "fire" },
+		damage_per_tick = { amount = attributes.fireDamagePerTick or 45/60, type = attributes.fireDamagePerTickType or "fire"  },
 		
 		spawn_entity = name,
 		maximum_spread_count = 100,
@@ -117,11 +117,11 @@ function fireUtils.makeFire(attributes)
 		name = name,
 		flags = {"placeable-off-grid", "not-on-map"},
 		color = attributes.fireTint,
-		damage_per_tick = attributes.damagePerTick or { amount = 45/60, type = "fire" },
+		damage_per_tick = { amount = attributes.fireDamagePerTick or 45/60, type = attributes.fireDamagePerTickType or "fire"  },
 
-		maximum_damage_multiplier = 6,
-		damage_multiplier_increase_per_added_fuel = 1,
-		damage_multiplier_decrease_per_tick = 0.005,
+		maximum_damage_multiplier = attributes.damageMaxMultipler or 6,
+		damage_multiplier_increase_per_added_fuel = attributes.mutliplerIncrease or 1,
+		damage_multiplier_decrease_per_tick = attributes.mutliplerDecrease or 0.005,
 		
 		spawn_entity = spawnEntityName,
 		

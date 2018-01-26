@@ -18,8 +18,13 @@ local mLog10 = math.log10
 
 local mRandom = math.random
 local mFloor = math.floor
+local mAbs = math.abs
 
 -- module code
+
+function mathUtils.roundToFloor(number, multiple)
+    return mFloor(number / multiple) * multiple
+end
 
 function mathUtils.roundToNearest(number, multiple)
     local num = number + (multiple * 0.5)
@@ -117,7 +122,7 @@ function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
 	repeat
 	    iid1 = 2 * rg() + -1
 	    iid2 = 2 * rg() + -1
-	    q = (iid1 * iid1) + (iid2 * iid2)
+	    q = (iid1 * iid1) + (iid2 * iid2)	    
 	until (q ~= 0) and (q < 1)
 	local s = mSqrt((-2 * mLog10(q)) / q)
 	local v = iid1 * s
@@ -136,6 +141,12 @@ function mathUtils.euclideanDistancePoints(x1, y1, x2, y2)
     local xs = x1 - x2
     local ys = y1 - y2
     return ((xs * xs) + (ys * ys)) ^ 0.5
+end
+
+function mathUtils.mahattenDistancePoints(x1, y1, x2, y2)
+    local xs = x1 - x2
+    local ys = y1 - y2
+    return mAbs(xs + ys)
 end
 
 function mathUtils.euclideanDistanceArray(p1, p2)

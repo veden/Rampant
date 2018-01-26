@@ -43,7 +43,7 @@ function mapUtils.getChunkByPosition(map, position)
 end
 
 function mapUtils.getChunkByUnalignedXY(map, x, y)
-     local chunkX = map[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
+    local chunkX = map[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
 	local chunkY = mFloor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
