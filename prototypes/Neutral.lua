@@ -28,7 +28,7 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="neutral", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = makeSmokeSoft({name="neutral", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 
 -- neutral biters
 buildUnitSpawner(
@@ -76,7 +76,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+	    tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	}
     },
 
@@ -510,7 +510,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = "neutral-soft-smoke-rampant"
+		softSmokeName = softSmoke
 	    },
 	    resistances = {},
 
@@ -567,9 +567,9 @@ buildUnitSpawner(
 		[5] = 750,
 		[6] = 1000,
 		[7] = 1500,
-		[8] = 1500,
-		[9] = 2500,
-		[10] = 4500
+		[8] = 2500,
+		[9] = 4500,
+		[10] = 7000
 	    },
 
 	    {		
@@ -1000,7 +1000,7 @@ buildWorm(
 
 	attributes = {},
 	attack = {
-	    softSmokeName = "neutral-soft-smoke-rampant"
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 
@@ -1023,7 +1023,7 @@ buildWorm(
     },
 
     {
-	{    
+	{
 	    type = "attribute",
 	    name = "health",
 	    [1] = 200,
@@ -1033,9 +1033,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 2250,
-	    [9] = 3000,
-	    [10] = 5000
+	    [8] = 3000,
+	    [9] = 5000,
+	    [10] = 9000
 	},
 
 	{    

@@ -281,8 +281,6 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	    local base = findNearbyBase(map, chunk, BASE_SEARCH_RADIUS)
 	    if base then
 		setChunkBase(map, chunk, base)
-	    else
-		createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	    end
 	    if (#nests > 0) then
 		for i = 1, #nests do

@@ -15,7 +15,7 @@ if settings.startup["rampant-newEnemies"].value then
     -- require("prototypes/Poison")
     -- require("prototypes/Undying")
     -- require("prototypes/Wasp")
-    -- require("prototypes/Laser")
+    require("prototypes/Laser")
     
     for k, unitSpawner in pairs(data.raw["unit-spawner"]) do
 	if (unitSpawner.name ~= "biter-spawner") then

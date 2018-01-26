@@ -211,23 +211,8 @@ local function rebuildMap()
     map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
     map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
     
-    -- clear pending chunks, will be added when loop runs below
-    global.pendingChunks = {}
-    pendingChunks = global.pendingChunks
-
-    -- queue all current chunks that wont be generated during play
-    local surface = game.surfaces[1]
-    local tick = game.tick
-    for chunk in surface.get_chunks() do
-	onChunkGenerated({ tick = tick,
-			   surface = surface, 
-			   area = { left_top = { x = chunk.x * 32,
-						 y = chunk.y * 32 }}})
-    end
-
-    processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
 end    
-     
+
 
 local function onModSettingsChange(event)
     
@@ -287,7 +272,23 @@ local function onConfigChanged()
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
 	rebuildMap()
-	rebuildNativeTables(natives, game.surfaces[1])
+	rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
+
+	-- clear pending chunks, will be added when loop runs below
+	global.pendingChunks = {}
+	pendingChunks = global.pendingChunks
+
+	-- queue all current chunks that wont be generated during play
+	local surface = game.surfaces[1]
+	local tick = game.tick
+	for chunk in surface.get_chunks() do
+	    onChunkGenerated({ tick = tick,
+			       surface = surface, 
+			       area = { left_top = { x = chunk.x * 32,
+						     y = chunk.y * 32 }}})
+	end
+
+	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor)
     end
 end
 

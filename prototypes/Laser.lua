@@ -10,11 +10,11 @@ local constants = require("Constants")
 
 -- constants
 
-local FAST_NEST_TIERS = constants.FAST_NEST_TIERS
-local FAST_NEST_VARIATIONS = constants.FAST_NEST_VARIATIONS
+local LASER_NEST_TIERS = constants.LASER_NEST_TIERS
+local LASER_NEST_VARIATIONS = constants.LASER_NEST_VARIATIONS
 
-local FAST_WORM_TIERS = constants.FAST_WORM_TIERS
-local FAST_WORM_VARIATIONS = constants.FAST_WORM_VARIATIONS
+local LASER_WORM_TIERS = constants.LASER_WORM_TIERS
+local LASER_WORM_VARIATIONS = constants.LASER_WORM_VARIATIONS
 
 -- imported functions
 
@@ -28,15 +28,16 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="fast", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = makeSmokeSoft({name="laser", softSmokeTint=makeColor(0.3, 0.3, 0.75, 0.1)})
 
--- fast biters
+-- laser biters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "fast-biter",
+	    name = "laser-biter",
 
 	    attributes = {
+		damageType = "laser",
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {},
@@ -55,12 +56,12 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    tint2 = {r=1, g=0.63, b=0, a=0.4}
+	    tint1 = {r=0, g=0, b=0.42, a=0.65},
+	    tint2 = {r=0, g=0, b=0.42, a=0.4}
 	},
 
 	unitSpawner = {
-	    name = "fast-biter-nest",
+	    name = "laser-biter-nest",
 
 	    attributes = {},	    
 	    resistances = {},
@@ -76,7 +77,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+	    tint = {r=0, g=0, b=0.42, a=0.65}
 	}
     },
 
@@ -99,42 +100,37 @@ buildUnitSpawner(
 
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
 		[1] = 35,
-		[2] = 36,
-		[3] = 38,
-		[4] = 38,
-		[5] = 40,
-		[6] = 42,
-		[7] = 42,
-		[8] = 43,
-		[9] = 43,
-		[10] = 45
-		
+		[2] = 35,
+		[3] = 35,
+		[4] = 35,
+		[5] = 35,
+		[6] = 35,
+		[7] = 50,
+		[8] = 50,
+		[9] = 55,
+		[10] = 57
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
 		[2] = 0,
 		[3] = 1,
 		[4] = 2,
-		[5] = 2,
-		[6] = 5,
-		[7] = 8,
-		[8] = 8,
-		[9] = 10,
-		[10] = 10
-		
+		[5] = 3,
+		[6] = 7,
+		[7] = 10,
+		[8] = 10,
+		[9] = 12,
+		[10] = 12
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -147,11 +143,9 @@ buildUnitSpawner(
 		[8] = 25000,
 		[9] = 30000,
 		[10] = 40000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 7,
@@ -164,11 +158,9 @@ buildUnitSpawner(
 		[8] = 90,
 		[9] = 150,
 		[10] = 200
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -181,37 +173,35 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "movement",
-		[1] = 0.22,
-		[2] = 0.22,
-		[3] = 0.23,
-		[4] = 0.23,
-		[5] = 0.23,
-		[6] = 0.23,
-		[7] = 0.24,
-		[8] = 0.24,
-		[9] = 0.24,
-		[10] = 0.25
+		[1] = 0.2,
+		[2] = 0.19,
+		[3] = 0.185,
+		[4] = 0.18,
+		[5] = 0.175,
+		[6] = 0.17,
+		[7] = 0.17,
+		[8] = 0.17,
+		[9] = 0.17,
+		[10] = 0.17
 	    },
 	    {
 		type = "attribute",
 		name = "distancePerFrame",
-		[1] = 0.12,
-		[2] = 0.145,
-		[3] = 0.17,
-		[4] = 0.21,
-		[5] = 0.215,
-		[6] = 0.22,
-		[7] = 0.22,
-		[8] = 0.24,
-		[9] = 0.24,
-		[10] = 0.26
+		[1] = 0.1,
+		[2] = 0.125,
+		[3] = 0.15,
+		[4] = 0.19,
+		[5] = 0.195,
+		[6] = 0.2,
+		[7] = 0.2,
+		[8] = 0.2,
+		[9] = 0.2,
+		[10] = 0.2
 	    },
 
 	    {
@@ -272,6 +262,35 @@ buildUnitSpawner(
 	    },
 
 	    {
+		type = "resistance",
+		name = "laser",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+	    },
+
+	    {
 		type = "attack",
 		name = "range",
 		[1] = 0.5,
@@ -290,8 +309,7 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -304,11 +322,9 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -321,45 +337,39 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
-		[1] = 330,
-		[2] = 330,
-		[3] = 325,
-		[4] = 325,
-		[5] = 320,
-		[6] = 320,
-		[7] = 315,
-		[8] = 315,
-		[9] = 310,
-		[10] = 310
-		
+		[1] = 360,
+		[2] = 360,
+		[3] = 355,
+		[4] = 355,
+		[5] = 350,
+		[6] = 350,
+		[7] = 345,
+		[8] = 345,
+		[9] = 340,
+		[10] = 340
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
-		[1] = 120,
-		[2] = 120,
-		[3] = 125,
-		[4] = 125,
-		[5] = 120,
-		[6] = 120,
-		[7] = 115,
-		[8] = 115,
-		[9] = 110,
-		[10] = 110
-		
+		[1] = 150,
+		[2] = 150,
+		[3] = 145,
+		[4] = 145,
+		[5] = 140,
+		[6] = 140,
+		[7] = 135,
+		[8] = 135,
+		[9] = 130,
+		[10] = 130
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0,
@@ -372,7 +382,6 @@ buildUnitSpawner(
 		[8] = 0.72,
 		[9] = 0.82,
 		[10] = 0.92
-		
 	    },
 
 	    {
@@ -390,8 +399,7 @@ buildUnitSpawner(
 		[10] = 11
 		
 	    },
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -492,6 +500,35 @@ buildUnitSpawner(
 		    [9] = 65,
 		    [10] = 65
 		}
+	    },
+
+	    {
+		type = "resistance",
+		name = "laser",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
 	    }
 	},
 
@@ -513,26 +550,27 @@ buildUnitSpawner(
 
     {
 	unit = 10,
-	unitSpawner = FAST_NEST_VARIATIONS
+	unitSpawner = LASER_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = FAST_NEST_TIERS
+	unitSpawner = LASER_NEST_TIERS
     }
 )
 
--- fast spitters
+-- laser spitters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "fast-spitter",
+	    name = "laser-spitter",
 
 	    attributes = {
+		damageType = "laser",
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = "fast-soft-smoke-rampant"
+		softSmokeName = softSmoke
 	    },
 	    resistances = {},
 
@@ -549,14 +587,14 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "fast-ball",
-	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5}
+	    attackName = "laser-spitter",
+	    tint = {r=0, g=0, b=0.42, a=0.65},
+	    pTint = {r=0, g=0, b=1, a=0.5},
+	    sTint = {r=0, g=0, b=1, a=0.5}
 	},
 
 	unitSpawner = {
-	    name = "fast-spitter-nest",
+	    name = "laser-spitter-nest",
 
 	    attributes = {},
 	    resistances = {},
@@ -573,7 +611,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=0.99, g=0.09, b=0.09, a=1}
+	    tint = {r=0, g=0, b=0.42, a=0.65}
 	}
     },
 
@@ -594,42 +632,37 @@ buildUnitSpawner(
 		[10] = 7000
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "cooldown",
-		[1] = 80,
-		[2] = 80,
-		[3] = 77,
-		[4] = 77,
-		[5] = 75,
-		[6] = 75,
-		[7] = 73,
-		[8] = 73,
-		[9] = 70,
-		[10] = 70
-		
+		[1] = 100,
+		[2] = 100,
+		[3] = 97,
+		[4] = 97,
+		[5] = 95,
+		[6] = 95,
+		[7] = 93,
+		[8] = 93,
+		[9] = 90,
+		[10] = 90
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawningTimeModifer",
 		[1] = 0,
 		[2] = 0,
 		[3] = 1,
 		[4] = 2,
-		[5] = 2,
-		[6] = 5,
-		[7] = 8,
-		[8] = 8,
-		[9] = 10,
-		[10] = 10
-		
+		[5] = 3,
+		[6] = 7,
+		[7] = 10,
+		[8] = 10,
+		[9] = 12,
+		[10] = 12
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "pollutionToAttack",
 		[1] = 200,
@@ -642,11 +675,9 @@ buildUnitSpawner(
 		[8] = 12500,
 		[9] = 15000,
 		[10] = 20000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -659,11 +690,9 @@ buildUnitSpawner(
 		[8] = 57,
 		[9] = 70,
 		[10] = 80
-		
 	    },
 	    
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.01,
@@ -676,37 +705,36 @@ buildUnitSpawner(
 		[8] = 0.12,
 		[9] = 0.14,
 		[10] = 0.16
-		
 	    },
 
 	    
 	    {
 		type = "attribute",
 		name = "movement",
-		[1] = 0.205,
-		[2] = 0.20,
-		[3] = 0.20,
-		[4] = 0.21,
-		[5] = 0.21,
-		[6] = 0.22,
-		[7] = 0.22,
-		[8] = 0.23,
-		[9] = 0.23,
-		[10] = 0.24
+		[1] = 0.185,
+		[2] = 0.18,
+		[3] = 0.18,
+		[4] = 0.17,
+		[5] = 0.17,
+		[6] = 0.16,
+		[7] = 0.16,
+		[8] = 0.15,
+		[9] = 0.15,
+		[10] = 0.14
 	    },
 	    {
 		type = "attribute",
 		name = "distancePerFrame",
-		[1] = 0.06,
-		[2] = 0.065,
-		[3] = 0.070,
-		[4] = 0.075,
-		[5] = 0.080,
-		[6] = 0.085,
-		[7] = 0.090,
-		[8] = 0.095,
-		[9] = 0.10,
-		[10] = 0.104
+		[1] = 0.04,
+		[2] = 0.045,
+		[3] = 0.050,
+		[4] = 0.055,
+		[5] = 0.060,
+		[6] = 0.065,
+		[7] = 0.070,
+		[8] = 0.075,
+		[9] = 0.08,
+		[10] = 0.084
 	    },
 
 	    {
@@ -726,6 +754,35 @@ buildUnitSpawner(
 		}
 	    },
 
+	    {
+		type = "resistance",
+		name = "laser",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+	    },
+	    
 	    {
 		type = "attack",
 		name = "range",
@@ -754,7 +811,6 @@ buildUnitSpawner(
 		[8] = 1.9,
 		[9] = 2.0,
 		[10] = 2.5
-		
 	    },
 
 	    {
@@ -775,16 +831,16 @@ buildUnitSpawner(
 	    {
 		type = "attack",
 		name = "particleHoizontalSpeed",
-		[1] = 0.7,
-		[2] = 0.7,
-		[3] = 0.8,
-		[4] = 0.8,
-		[5] = 0.9,
-		[6] = 0.9,
-		[7] = 0.10,
-		[8] = 0.10,
-		[9] = 1.1,
-		[10] = 1.1
+		[1] = 0.6,
+		[2] = 0.6,
+		[3] = 0.7,
+		[4] = 0.7,
+		[5] = 0.8,
+		[6] = 0.8,
+		[7] = 0.9,
+		[8] = 0.9,
+		[9] = 1,
+		[10] = 1
 	    },
 
 	    {
@@ -805,8 +861,7 @@ buildUnitSpawner(
 	
 	unitSpawner = {
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 350,
@@ -819,11 +874,9 @@ buildUnitSpawner(
 		[8] = 7000,
 		[9] = 10000,
 		[10] = 15000
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "healing",
 		[1] = 0.02,
@@ -836,45 +889,39 @@ buildUnitSpawner(
 		[8] = 0.032,
 		[9] = 0.034,
 		[10] = 0.036
-		
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownStart",
-		[1] = 330,
-		[2] = 330,
-		[3] = 325,
-		[4] = 325,
-		[5] = 320,
-		[6] = 320,
-		[7] = 315,
-		[8] = 315,
-		[9] = 310,
-		[10] = 310
-		
+		[1] = 360,
+		[2] = 360,
+		[3] = 355,
+		[4] = 355,
+		[5] = 350,
+		[6] = 350,
+		[7] = 345,
+		[8] = 345,
+		[9] = 340,
+		[10] = 340
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "spawingCooldownEnd",
-		[1] = 120,
-		[2] = 120,
-		[3] = 115,
-		[4] = 115,
-		[5] = 110,
-		[6] = 110,
-		[7] = 105,
-		[8] = 105,
-		[9] = 100,
-		[10] = 100
-		
+		[1] = 150,
+		[2] = 150,
+		[3] = 145,
+		[4] = 145,
+		[5] = 140,
+		[6] = 140,
+		[7] = 135,
+		[8] = 135,
+		[9] = 130,
+		[10] = 130
 	    },
 
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "evolutionRequirement",
 		[1] = 0.08,
@@ -887,7 +934,6 @@ buildUnitSpawner(
 		[8] = 0.65,
 		[9] = 0.75,
 		[10] = 0.9
-		
 	    },
 
 	    {
@@ -903,10 +949,9 @@ buildUnitSpawner(
 		[8] = 10,
 		[9] = 11,
 		[10] = 11
-		
 	    },
-	    {
-		
+
+	    {		
 		type = "attribute",
 		name = "unitsToSpawn",
 		[1] = 5,
@@ -1004,7 +1049,36 @@ buildUnitSpawner(
 		    [9] = 65,
 		    [10] = 65
 		}
-	    }	    
+	    },
+
+	    {
+		type = "resistance",
+		name = "laser",
+		decrease = {
+		    [1] = 7,
+		    [2] = 7,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 13,
+		    [6] = 13,
+		    [7] = 16,
+		    [8] = 16,
+		    [9] = 19,
+		    [10] = 23
+		},
+		percent = {
+		    [1] = 65,
+		    [2] = 65,
+		    [3] = 70,
+		    [4] = 75,
+		    [5] = 75,
+		    [6] = 80,
+		    [7] = 85,
+		    [8] = 85,
+		    [9] = 90,
+		    [10] = 90
+		}
+	    }
 	},
 
 	probabilityTable = {
@@ -1021,29 +1095,30 @@ buildUnitSpawner(
 	}
     },
 
-    function (attributes)
+    function (attributes)	
 	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
     
     {
 	unit = 10,
-	unitSpawner = FAST_NEST_VARIATIONS
+	unitSpawner = LASER_NEST_VARIATIONS
     },
 
     {
 	unit = 10,
-	unitSpawner = FAST_NEST_TIERS
+	unitSpawner = LASER_NEST_TIERS
     }
 )
 
--- fast worms
+-- laser worms
 buildWorm(
     {
-	name = "fast-worm",
+	name = "laser-worm",
 
 	attributes = {},
 	attack = {
-	    softSmokeName = "fast-soft-smoke-rampant"
+	    damageType = "laser",
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 
@@ -1059,10 +1134,10 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "worm-fast",
-	tint = {r=0.56, g=0.46, b=0.42, a=0.65},
-	pTint = {r=0, g=1, b=1, a=0.5},
-	sTint = {r=0, g=1, b=1, a=0.5}
+	attackName = "laser-worm",
+	tint = {r=0, g=0, b=0.42, a=0.65},
+	pTint = {r=0, g=0, b=1, a=0.5},
+	sTint = {r=0, g=0, b=1, a=0.5}
     },
 
     {
@@ -1076,9 +1151,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 3000,
-	    [9] = 5000,
-	    [10] = 9000
+	    [8] = 2250,
+	    [9] = 3000,
+	    [10] = 5000
 	},
 
 	{    
@@ -1159,31 +1234,31 @@ buildWorm(
 	{    
 	    type = "attribute",
 	    name = "foldingSpeed",
-	    [1] = 0.17,
-	    [2] = 0.17,
-	    [3] = 0.18,
-	    [4] = 0.18,
-	    [5] = 0.18,
-	    [6] = 0.19,
-	    [7] = 0.19,
-	    [8] = 0.20,
-	    [9] = 0.20,
-	    [10] = 0.21
+	    [1] = 0.15,
+	    [2] = 0.15,
+	    [3] = 0.16,
+	    [4] = 0.16,
+	    [5] = 0.16,
+	    [6] = 0.17,
+	    [7] = 0.17,
+	    [8] = 0.18,
+	    [9] = 0.18,
+	    [10] = 0.19
 	},
 	
 	{    
 	    type = "attribute",
 	    name = "preparingSpeed",
-	    [1] = 0.027,
-	    [2] = 0.027,
-	    [3] = 0.028,
-	    [4] = 0.028,
-	    [5] = 0.029,
-	    [6] = 0.029,
-	    [7] = 0.030,
-	    [8] = 0.030,
-	    [9] = 0.031,
-	    [10] = 0.031
+	    [1] = 0.025,
+	    [2] = 0.025,
+	    [3] = 0.026,
+	    [4] = 0.026,
+	    [5] = 0.027,
+	    [6] = 0.027,
+	    [7] = 0.028,
+	    [8] = 0.028,
+	    [9] = 0.029,
+	    [10] = 0.029
 	},
 
 	{
@@ -1309,16 +1384,16 @@ buildWorm(
 	{	      
 	    type = "attack",
 	    name = "particleHoizontalSpeed",
-	    [1] = 0.8,
-	    [2] = 0.8,
-	    [3] = 0.9,
-	    [4] = 0.9,
-	    [5] = 1,
-	    [6] = 1,
-	    [7] = 1.1,
-	    [8] = 1.1,
-	    [9] = 1.2,
-	    [10] = 1.2
+	    [1] = 0.6,
+	    [2] = 0.6,
+	    [3] = 0.7,
+	    [4] = 0.7,
+	    [5] = 0.8,
+	    [6] = 0.8,
+	    [7] = 0.9,
+	    [8] = 0.9,
+	    [9] = 1,
+	    [10] = 1
 	},
 
 	{	    
@@ -1341,6 +1416,6 @@ buildWorm(
 	return createStreamAttack(attributes, createAttackBall(attributes))
     end,
 
-    FAST_WORM_VARIATIONS,
-    FAST_WORM_TIERS
+    LASER_WORM_VARIATIONS,
+    LASER_WORM_TIERS
 )
