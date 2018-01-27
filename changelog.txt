@@ -11,7 +11,7 @@ Date: 1. 26. 2018
 Version: 0.16.6
 Date: 1. 25. 2018
   Features:
-    - Generated enemies for a large varity of things to battle
+    - Generated enemies for a large variety of things to battle
     - Evolving bases now get stronger over time and specialize their units
     - Creates areas clear of biters
   Bugfixes:

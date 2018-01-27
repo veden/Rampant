@@ -77,17 +77,6 @@ data:extend({
 	    order = "d[modifier]-b[wave]",
 	    per_user = false
 	},
-
-	{
-	    type = "int-setting",
-	    name = "rampant-newEnemyTiers",
-	    setting_type = "startup",
-	    minimum_value = 5,
-	    maximum_value = 10,
-	    default_value = 5,
-	    order = "d[modifier]-c[wave]",
-	    per_user = false
-	},
 	
 	{
 	    type = "int-setting",
