@@ -47,6 +47,8 @@ local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
 -- imported functions
 
+local positionToChunkXY = mapUtils.positionToChunkXY
+
 local roundToNearest = mathUtils.roundToNearest
 
 local getChunkByPosition = mapUtils.getChunkByPosition

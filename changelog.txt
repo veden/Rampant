@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.10
+Date: 1. 27. 2018
+  Bugfixes:
+    - Fixed missing function in surfaceTileChange call (https://mods.factorio.com/mod/Rampant/discussion/5a6cf2ff68436500096b638b)
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.9
 Date: 1. 27. 2018
   Bugfixes:
