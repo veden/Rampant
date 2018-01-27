@@ -2,9 +2,7 @@
 
 local attackFlame = require("utils/AttackFlame")
 local biterUtils = require("utils/BiterUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 local math3d = require("math3d")
@@ -19,23 +17,15 @@ local INFERNO_WORM_VARIATIONS = constants.INFERNO_WORM_VARIATIONS
 
 -- imported functions
 
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
-local makeSmokeWithGlow = smokeUtils.makeSmokeWithGlow
-local makeSmokeWithoutGlow = smokeUtils.makeSmokeWithoutGlow
-local makeSmokeAddingFuel = smokeUtils.makeSmokeAddingFuel
-
-
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackFlame = attackFlame.createAttackFlame
 local createStreamAttack = biterUtils.createStreamAttack
 
-local softSmoke = makeSmokeSoft({name="inferno", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
-local smokeGlow = makeSmokeWithGlow({name="inferno", smokeWithGlowTint=makeColor(0.3, 0.75, 0.3, 0.1)})
-local smokeWithoutGlow = makeSmokeWithoutGlow({name="inferno", smokeWithoutGlowTint=makeColor(0.3, 0.75, 0.3, 0.1)})
-local smokeFuel = makeSmokeAddingFuel({name="inferno"})
+local softSmoke = "the-soft-smoke-rampant"
+local smokeGlow = "the-glow-smoke-rampant"
+local smokeWithoutGlow = "the-without-glow-smoke-rampant"
+local smokeFuel = "the-adding-fuel-rampant"
 
 -- inferno spitters
 buildUnitSpawner(

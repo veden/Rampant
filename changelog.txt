@@ -1,6 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.7
+Date: 1. 26. 2018
+  Improvements:
+    - Reduced the number of trivial smoke created to 4 from ~20
+  Tweaks:
+    - Turned off new enemies by default
+    - Set default number of enemy variations per tier to 1
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.6
-Date: 1. 23. 2018
+Date: 1. 25. 2018
   Features:
     - Generated enemies for a large varity of things to battle
     - Evolving bases now get stronger over time and specialize their units

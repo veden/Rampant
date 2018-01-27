@@ -2,9 +2,7 @@
 
 local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 
@@ -18,17 +16,13 @@ local ACID_WORM_VARIATIONS = constants.ACID_WORM_VARIATIONS
 
 -- imported functions
 
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
-
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="acid", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = "the-soft-smoke-rampant"
 
 -- acid biters
 buildUnitSpawner(
@@ -568,7 +562,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = "acid-soft-smoke-rampant"
+		softSmokeName = softSmoke
 	    },
 	    resistances = {},
 
@@ -1184,7 +1178,7 @@ buildWorm(
 
 	attributes = {},
 	attack = {
-	    softSmokeName = "acid-soft-smoke-rampant"
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 

@@ -18,6 +18,7 @@ constants.VERSION_28 = 28
 constants.VERSION_33 = 33
 constants.VERSION_38 = 38
 constants.VERSION_41 = 41
+constants.VERSION_42 = 42
 
 -- misc
 
@@ -311,79 +312,82 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 -- unit spawners
 
-constants.NEUTRAL_NEST_TIERS = 10
-constants.NEUTRAL_NEST_VARIATIONS = 20
-constants.NEUTRAL_WORM_TIERS = 10
-constants.NEUTRAL_WORM_VARIATIONS = 20
+local variations = settings.startup["rampant-newEnemyVariations"].value
+local tiers = settings.startup["rampant-newEnemyTiers"].value
 
-constants.ACID_NEST_TIERS = 10
-constants.ACID_NEST_VARIATIONS = 20
-constants.ACID_WORM_TIERS = 10
-constants.ACID_WORM_VARIATIONS = 20
+constants.NEUTRAL_NEST_TIERS = tiers
+constants.NEUTRAL_NEST_VARIATIONS = variations
+constants.NEUTRAL_WORM_TIERS = tiers
+constants.NEUTRAL_WORM_VARIATIONS = variations
 
-constants.FIRE_NEST_TIERS = 10
-constants.FIRE_NEST_VARIATIONS = 20
-constants.FIRE_WORM_TIERS = 10
-constants.FIRE_WORM_VARIATIONS = 20
+constants.ACID_NEST_TIERS = tiers
+constants.ACID_NEST_VARIATIONS = variations
+constants.ACID_WORM_TIERS = tiers
+constants.ACID_WORM_VARIATIONS = variations
 
-constants.PHYSICAL_NEST_TIERS = 10
-constants.PHYSICAL_NEST_VARIATIONS = 20
-constants.PHYSICAL_WORM_TIERS = 10
-constants.PHYSICAL_WORM_VARIATIONS = 20
+constants.FIRE_NEST_TIERS = tiers
+constants.FIRE_NEST_VARIATIONS = variations
+constants.FIRE_WORM_TIERS = tiers
+constants.FIRE_WORM_VARIATIONS = variations
 
-constants.TROLL_NEST_TIERS = 10
-constants.TROLL_NEST_VARIATIONS = 20
-constants.TROLL_WORM_TIERS = 10
-constants.TROLL_WORM_VARIATIONS = 20
+constants.PHYSICAL_NEST_TIERS = tiers
+constants.PHYSICAL_NEST_VARIATIONS = variations
+constants.PHYSICAL_WORM_TIERS = tiers
+constants.PHYSICAL_WORM_VARIATIONS = variations
 
-constants.FAST_NEST_TIERS = 10
-constants.FAST_NEST_VARIATIONS = 20
-constants.FAST_WORM_TIERS = 10
-constants.FAST_WORM_VARIATIONS = 20
+constants.TROLL_NEST_TIERS = tiers
+constants.TROLL_NEST_VARIATIONS = variations
+constants.TROLL_WORM_TIERS = tiers
+constants.TROLL_WORM_VARIATIONS = variations
 
-constants.SUICIDE_NEST_TIERS = 10
-constants.SUICIDE_NEST_VARIATIONS = 20
-constants.SUICIDE_WORM_TIERS = 10
-constants.SUICIDE_WORM_VARIATIONS = 20
+constants.FAST_NEST_TIERS = tiers
+constants.FAST_NEST_VARIATIONS = variations
+constants.FAST_WORM_TIERS = tiers
+constants.FAST_WORM_VARIATIONS = variations
 
-constants.WASP_NEST_TIERS = 10
-constants.WASP_NEST_VARIATIONS = 20
-constants.WASP_WORM_TIERS = 10
-constants.WASP_WORM_VARIATIONS = 20
+constants.SUICIDE_NEST_TIERS = tiers
+constants.SUICIDE_NEST_VARIATIONS = variations
+constants.SUICIDE_WORM_TIERS = tiers
+constants.SUICIDE_WORM_VARIATIONS = variations
 
-constants.POISON_NEST_TIERS = 10
-constants.POISON_NEST_VARIATIONS = 20
-constants.POISON_WORM_TIERS = 10
-constants.POISON_WORM_VARIATIONS = 20
+constants.WASP_NEST_TIERS = tiers
+constants.WASP_NEST_VARIATIONS = variations
+constants.WASP_WORM_TIERS = tiers
+constants.WASP_WORM_VARIATIONS = variations
 
-constants.DECAYING_NEST_TIERS = 10
-constants.DECAYING_NEST_VARIATIONS = 20
-constants.DECAYING_WORM_TIERS = 10
-constants.DECAYING_WORM_VARIATIONS = 20
+constants.POISON_NEST_TIERS = tiers
+constants.POISON_NEST_VARIATIONS = variations
+constants.POISON_WORM_TIERS = tiers
+constants.POISON_WORM_VARIATIONS = variations
 
-constants.UNDYING_NEST_TIERS = 10
-constants.UNDYING_NEST_VARIATIONS = 20
-constants.UNDYING_WORM_TIERS = 10
-constants.UNDYING_WORM_VARIATIONS = 20
+constants.DECAYING_NEST_TIERS = tiers
+constants.DECAYING_NEST_VARIATIONS = variations
+constants.DECAYING_WORM_TIERS = tiers
+constants.DECAYING_WORM_VARIATIONS = variations
 
-constants.ELECTRIC_NEST_TIERS = 10
-constants.ELECTRIC_NEST_VARIATIONS = 20
-constants.ELECTRIC_WORM_TIERS = 10
-constants.ELECTRIC_WORM_VARIATIONS = 20
+constants.UNDYING_NEST_TIERS = tiers
+constants.UNDYING_NEST_VARIATIONS = variations
+constants.UNDYING_WORM_TIERS = tiers
+constants.UNDYING_WORM_VARIATIONS = variations
 
-constants.LASER_NEST_TIERS = 10
-constants.LASER_NEST_VARIATIONS = 20
-constants.LASER_WORM_TIERS = 10
-constants.LASER_WORM_VARIATIONS = 20
+constants.ELECTRIC_NEST_TIERS = tiers
+constants.ELECTRIC_NEST_VARIATIONS = variations
+constants.ELECTRIC_WORM_TIERS = tiers
+constants.ELECTRIC_WORM_VARIATIONS = variations
 
-constants.INFERNO_NEST_TIERS = 10
-constants.INFERNO_NEST_VARIATIONS = 20
-constants.INFERNO_WORM_TIERS = 10
-constants.INFERNO_WORM_VARIATIONS = 20
+constants.LASER_NEST_TIERS = tiers
+constants.LASER_NEST_VARIATIONS = variations
+constants.LASER_WORM_TIERS = tiers
+constants.LASER_WORM_VARIATIONS = variations
 
-constants.NUCLEAR_NEST_TIERS = 10
-constants.NUCLEAR_NEST_VARIATIONS = 20
-constants.NUCLEAR_WORM_TIERS = 10
-constants.NUCLEAR_WORM_VARIATIONS = 20
+constants.INFERNO_NEST_TIERS = tiers
+constants.INFERNO_NEST_VARIATIONS = variations
+constants.INFERNO_WORM_TIERS = tiers
+constants.INFERNO_WORM_VARIATIONS = variations
+
+constants.NUCLEAR_NEST_TIERS = tiers
+constants.NUCLEAR_NEST_VARIATIONS = variations
+constants.NUCLEAR_WORM_TIERS = tiers
+constants.NUCLEAR_WORM_VARIATIONS = variations
 
 return constants

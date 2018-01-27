@@ -17,11 +17,16 @@ local makeSticker = stickerUtils.makeSticker
 
 -- module code
 
+local softSmoke = "the-soft-smoke-rampant"
+local smokeGlow = "the-glow-smoke-rampant"
+local smokeWithoutGlow = "the-without-glow-smoke-rampant"
+local smokeFuel = "the-adding-fuel-rampant"
+
 makeStream({
 	name = "bob-explosive-ball",
 	particleTint = {r=1, g=0.97, b=0.34, a=0.5},
 	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},
-	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -70,12 +75,13 @@ makeStream({
 local name = "bob-fire-ball"
 local spawnEntityName = makeSpreadEffect({
 	name = name,
-	smokeWithoutGlowTint = makeColor(0.45,0.25,0.1, 0.25),
+	smokeWithoutGlowName = smokeWithoutGlow
 })
 local fireName = makeFire({
 	name = name,
 	fireTint = {r=0, g=0.9, b=0, a=0.5},
-	smokeWithGlowTint = {r=0.2, g=0.8, b=0.2, a=0.25},
+	smokeWithGlowName = smokeGlow,
+	smokeAddingFuelName = smokeFuel,
 	spawnEntityName = spawnEntityName
 })
 local stickerName = makeSticker({
@@ -86,7 +92,7 @@ makeStream({
 	name = name,
 	particleTint = {r=1, g=0.17, b=0.17, a=0.5},
 	spineAnimationTint = {r=1, g=0.43, b=0.17, a=0.5},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeTint = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -130,7 +136,7 @@ makeStream({
 	name = "bob-poison-ball",
 	particleTint = {r=0.1, g=0.5, b=1, a=0.5},
 	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -201,7 +207,7 @@ makeStream({
 	name = "bob-piercing-ball",
 	particleTint = {r=0.1, g=0.1, b=0.1, a=0.8},
 	spineAnimationTint = {r=0.1, g=0.1, b=0.1, a=0.8},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "cluster",
@@ -283,7 +289,7 @@ makeStream({
 	name = "bob-electric-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "cluster",
@@ -323,7 +329,7 @@ makeStream({
 	name = "bob-titan-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -375,7 +381,7 @@ makeStream({
 	name = "bob-behemoth-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -431,7 +437,7 @@ makeStream({
 	name = "bob-leviathan-ball",
 	particleTint = {r=0, g=0.1, b=1, a=1},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "cluster",

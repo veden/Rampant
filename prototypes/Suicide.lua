@@ -3,9 +3,7 @@
 local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
 local stickerUtils = require("utils/StickerUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 
@@ -19,10 +17,6 @@ local SUICIDE_WORM_VARIATIONS = constants.SUICIDE_WORM_VARIATIONS
 
 -- imported functions
 
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
-
 local makeSticker = stickerUtils.makeSticker
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
@@ -30,7 +24,7 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 
-local softSmoke = makeSmokeSoft({name="suicide", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = "the-soft-smoke-rampant"
 
 -- suicide biters
 buildUnitSpawner(
