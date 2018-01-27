@@ -2,7 +2,7 @@
 Version: 0.16.8
 Date: 1. 26. 2018
   Bugfixes:
-    - Added a check for 0 elements on_tick empty interval (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=220#p338531)
+    - Fixed on_tick empty interval (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=220#p338531)
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.7
