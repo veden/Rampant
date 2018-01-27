@@ -234,9 +234,9 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     return entity
 end
 
-function baseUtils.upgradeBase(base)
+local function upgradeBase(base)
     local paths = BASE_ALIGNMENT_PATHS[base.alignment]
-    if paths and (#paths > 0) then
+    if paths then
 	base.alignment = paths[mRandom(#paths)]
 	return true
     end
@@ -268,7 +268,7 @@ function baseUtils.processBase(map, surface, natives, tick, base, evolutionFacto
 	end
     elseif (choice >= 0.995) then
 	if (base.points >= BASE_UPGRADE) then
-	    if baseUtils.upgradeBase(base) then
+	    if upgradeBase(base) then
 		base.points = base.points - BASE_UPGRADE
 	    end
 	end

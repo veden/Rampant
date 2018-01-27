@@ -138,23 +138,9 @@ constants.BASE_ALIGNMENT_DEADZONE = 20
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
 
-local neutralPath = {}
-neutralPath[constants.BASE_ALIGNMENT_ACID] = true
-neutralPath[constants.BASE_ALIGNMENT_FIRE] = true
-neutralPath[constants.BASE_ALIGNMENT_PHYSICAL] = true
-neutralPath[constants.BASE_ALIGNMENT_ELECTRIC] = true
 -- neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
-neutralPath[constants.BASE_ALIGNMENT_SUICIDE] = true
 -- neutralPath[constants.BASE_ALIGNMENT_WEB] = true
-neutralPath[constants.BASE_ALIGNMENT_TROLL] = true
-neutralPath[constants.BASE_ALIGNMENT_FAST] = true
 -- neutralPath[constants.BASE_ALIGNMENT_WASP] = true
-
-local suicidePath = {}
-suicidePath[constants.BASE_ALIGNMENT_NUCLEAR] = true
-
-local firePath = {}
-firePath[constants.BASE_ALIGNMENT_INFERNO] = true
 
 -- local acidPath = {}
 -- acidPath[constants.BASE_ALIGNMENT_POSION] = true
@@ -168,9 +154,17 @@ firePath[constants.BASE_ALIGNMENT_INFERNO] = true
 -- electricPath[constants.BASE_ALIGNMENT_LASER] = true
 
 constants.BASE_ALIGNMENT_PATHS = {}
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = neutralPath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = firePath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = suicidePath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
+    constants.BASE_ALIGNMENT_ACID,
+    constants.BASE_ALIGNMENT_FIRE,
+    constants.BASE_ALIGNMENT_PHYSICAL,
+    constants.BASE_ALIGNMENT_ELECTRIC,
+    constants.BASE_ALIGNMENT_SUICIDE,
+    constants.BASE_ALIGNMENT_TROLL,
+    constants.BASE_ALIGNMENT_FAST
+}
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
