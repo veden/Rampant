@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.9
+Date: 1. 27. 2018
+  Bugfixes:
+    - Fixed uninitialized kamikazeThreshold
+    - Fixed that deadzones wouldn't expire allowing for resettling
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.8
 Date: 1. 26. 2018
   Bugfixes:
