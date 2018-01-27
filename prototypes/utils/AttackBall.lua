@@ -1,16 +1,10 @@
 -- import
 
 local streamUtils = require("StreamUtils")
-local colorUtils = require("ColorUtils")
-local smokeUtils = require("SmokeUtils")
-
 
 -- imported functions
 
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
-
 local makeStream = streamUtils.makeStream
-local makeColor = colorUtils.makeColor
 
 -- dumb acid projectiles
 local AttackBall = {}
@@ -67,16 +61,14 @@ function AttackBall.createAttackBall(attributes)
 end
 
 function AttackBall.generateLegacy()
-    makeSmokeSoft({name="acid-ball", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
-    
-    AttackBall.createAttackBall({name="acid-ball", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=4, radius=1.2})
-    AttackBall.createAttackBall({name="acid-ball-1", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=9, radius=1.3})
-    AttackBall.createAttackBall({name="acid-ball-2", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=14, radius=1.4})
-    AttackBall.createAttackBall({name="acid-ball-3", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=23, radius=1.5})
-    AttackBall.createAttackBall({name="wide-acid-ball", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=18, radius=3})
-    AttackBall.createAttackBall({name="acid-ball-4", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=25, radius=1.75})
-    AttackBall.createAttackBall({name="acid-ball-5", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=50, radius=2})
-    AttackBall.createAttackBall({name="acid-ball-6", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="acid-ball-soft-smoke-rampant", damage=70, radius=2.5})
+    AttackBall.createAttackBall({name="acid-ball", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=4, radius=1.2})
+    AttackBall.createAttackBall({name="acid-ball-1", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=9, radius=1.3})
+    AttackBall.createAttackBall({name="acid-ball-2", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=14, radius=1.4})
+    AttackBall.createAttackBall({name="acid-ball-3", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=23, radius=1.5})
+    AttackBall.createAttackBall({name="wide-acid-ball", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=18, radius=3})
+    AttackBall.createAttackBall({name="acid-ball-4", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=25, radius=1.75})
+    AttackBall.createAttackBall({name="acid-ball-5", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=50, radius=2})
+    AttackBall.createAttackBall({name="acid-ball-6", pTint={r=0, g=1, b=1, a=0.5}, sTint={r=0, g=1, b=1, a=0.5}, softSmokeName="the-soft-smoke-rampant", damage=70, radius=2.5})
 end
 
 return AttackBall

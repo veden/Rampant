@@ -28,7 +28,7 @@ local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="troll", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = "the-soft-smoke-rampant"
 
 -- troll biters
 buildUnitSpawner(
@@ -540,7 +540,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = "troll-soft-smoke-rampant"
+		softSmokeName = softSmoke
 	    },
 	    resistances = {},
 
@@ -1061,7 +1061,7 @@ buildWorm(
 
 	attributes = {},
 	attack = {
-	    softSmokeName = "troll-soft-smoke-rampant"
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 

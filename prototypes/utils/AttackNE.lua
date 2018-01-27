@@ -1,20 +1,20 @@
 -- import
 
 local streamUtils = require("StreamUtils")
-local colorUtils = require("ColorUtils")
 
 -- imported functions
 
 local makeStream = streamUtils.makeStream
-local makeColor = colorUtils.makeColor
 
 -- module code
+
+local softSmoke = "the-soft-smoke-rampant"
 
 makeStream({
 	name = "ne-infected-unit-ball",
 	particleTint = {r=0, g=0.97, b=0.34, a=0.5},
 	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
-	softSmokeTint = makeColor(0.7, 0.4, 0.2, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -56,7 +56,7 @@ makeStream({
 	name = "ne-mutated-unit-ball",
 	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
-	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -109,7 +109,7 @@ makeStream({
 	name = "ne-infected-ball",
 	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
-	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",
@@ -153,7 +153,7 @@ makeStream({
 	name = "ne-mutated-ball",
 	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
-	softSmokeTint = makeColor(0.3, 0.75, 0.3, 0.1),
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",

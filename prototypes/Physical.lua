@@ -28,7 +28,7 @@ local createAttackBall = physicalBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="physical", softSmokeTint=makeColor(0.75, 0.75, 0.75, 0.1)})
+local softSmoke = "the-soft-smoke-rampant"
 
 -- physical biters
 buildUnitSpawner(
@@ -522,7 +522,7 @@ buildWorm(
 		    }
 		}
 	    end,
-	    softSmokeName = "physical-soft-smoke-rampant"
+	    softSmokeName =  softSmoke
 	},
 	resistances = {},
 

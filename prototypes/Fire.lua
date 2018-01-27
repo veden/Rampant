@@ -2,9 +2,7 @@
 
 local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 
@@ -18,17 +16,13 @@ local FIRE_WORM_VARIATIONS = constants.FIRE_WORM_VARIATIONS
 
 -- imported functions
 
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
-
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-makeSmokeSoft({name="fire", softSmokeTint=makeColor(0.3, 0.75, 0.3, 0.1)})
+local softSmoke = "the-soft-smoke-rampant"
 
 -- fire biters
 buildUnitSpawner(
@@ -596,7 +590,7 @@ buildUnitSpawner(
 	    },
 	    attack = {
 		damageType = "acid",
-		softSmokeName = "fire-soft-smoke-rampant"
+		softSmokeName = softSmoke
 	    },
 	    resistances = {},
 
@@ -643,8 +637,7 @@ buildUnitSpawner(
 
     {
 	unit = {
-	    {
-		
+	    {		
 		type = "attribute",
 		name = "health",
 		[1] = 10,
@@ -654,10 +647,9 @@ buildUnitSpawner(
 		[5] = 750,
 		[6] = 1000,
 		[7] = 1500,
-		[8] = 1500,
-		[9] = 2500,
-		[10] = 4500
-		
+		[8] = 2500,
+		[9] = 4500,
+		[10] = 7000
 	    },
 
 	    {
@@ -1203,7 +1195,7 @@ buildWorm(
 	attributes = {},
 	attack = {
 	    damageType = "acid",
-	    softSmokeName = "fire-soft-smoke-rampant"
+	    softSmokeName = softSmoke
 	},
 	resistances = {},
 
@@ -1226,7 +1218,7 @@ buildWorm(
     },
 
     {
-	{    
+	{
 	    type = "attribute",
 	    name = "health",
 	    [1] = 200,
@@ -1236,9 +1228,9 @@ buildWorm(
 	    [5] = 900,
 	    [6] = 1000,
 	    [7] = 1500,
-	    [8] = 1500,
-	    [9] = 2500,
-	    [10] = 4500
+	    [8] = 3000,
+	    [9] = 5000,
+	    [10] = 9000
 	},
 
 	{    
@@ -1422,35 +1414,35 @@ buildWorm(
 	},
 
 	{
-		
-		type = "resistance",
-		name = "acid",
-		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
-		},
-		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
-		}
-		
+	    
+	    type = "resistance",
+	    name = "acid",
+	    decrease = {
+		[1] = 7,
+		[2] = 7,
+		[3] = 10,
+		[4] = 10,
+		[5] = 13,
+		[6] = 13,
+		[7] = 16,
+		[8] = 16,
+		[9] = 19,
+		[10] = 23
 	    },
+	    percent = {
+		[1] = 65,
+		[2] = 65,
+		[3] = 70,
+		[4] = 75,
+		[5] = 75,
+		[6] = 80,
+		[7] = 85,
+		[8] = 85,
+		[9] = 90,
+		[10] = 90
+	    }
+	    
+	},
 
 	{
 	    type = "attack",
