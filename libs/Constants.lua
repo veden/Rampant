@@ -313,7 +313,7 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 -- unit spawners
 
 local variations = settings.startup["rampant-newEnemyVariations"].value
-local tiers = settings.startup["rampant-newEnemyTiers"].value
+local tiers = 10
 
 constants.NEUTRAL_NEST_TIERS = tiers
 constants.NEUTRAL_NEST_VARIATIONS = variations
