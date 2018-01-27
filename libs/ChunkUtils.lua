@@ -33,6 +33,7 @@ local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 local CHUNK_TICK = constants.CHUNK_TICK
 
 local BASE_SEARCH_RADIUS = constants.BASE_SEARCH_RADIUS
+local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 
 local PATH_RATING = constants.PATH_RATING
 
@@ -282,7 +283,9 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
 	    local base = findNearbyBase(map, chunk, natives)
 	    if base then
-		setChunkBase(map, chunk, base)
+		if (base.alignment ~= BASE_ALIGNMENT_DEADZONE) then
+		    setChunkBase(map, chunk, base)
+		end
 	    else
 		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)
 	    end

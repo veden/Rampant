@@ -315,7 +315,9 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
 	points = 0
     }
 
-    setChunkBase(map, chunk, base)
+    if (alignment ~= BASE_ALIGNMENT_DEADZONE) then
+	setChunkBase(map, chunk, base)
+    end
     
     -- if not buildHive(map, base, surface) then
     -- 	return nil
