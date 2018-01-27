@@ -236,7 +236,7 @@ end
 
 function baseUtils.upgradeBase(base)
     local paths = BASE_ALIGNMENT_PATHS[base.alignment]
-    if paths then
+    if paths and (#paths > 0) then
 	base.alignment = paths[mRandom(#paths)]
 	return true
     end

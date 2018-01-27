@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles. Adds new Enemies. Difficulty setting in mod options menu.
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles. Adds new Enemies. Difficulty setting in mod options menu.  
 
 # Forum Post
 
@@ -26,7 +26,7 @@ Configure Options not in game menu:
 
 # Features
 
-- New Enemy Factions - Neutral, Acid, Fast, Physical, Electric, Inferno, Suicide, Fire, Nuclear, Laser, Troll
+- New Enemy Factions - Neutral, Acid, Fast, Physical, Electric, Inferno, Suicide, Fire, Nuclear, Laser, Troll  
 - Swarming - Units will smoothly slide by one another allowing for streamlined attacking  
 - Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
 - Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
