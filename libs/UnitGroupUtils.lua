@@ -155,7 +155,7 @@ function unitGroupUtils.cleanSquads(natives, map)
     for i=1, squadCount do
 	local squad = squads[i]
 	local group = squad.group
-	if group.valid then
+	if group and group.valid then
 	    local memberCount = #group.members
 	    if (memberCount == 0) then
 		removeSquadFromChunk(map, squad)

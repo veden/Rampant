@@ -8,6 +8,9 @@ local constants = require("Constants")
 
 -- constants
 
+local LASER_UNIT_TIERS = constants.LASER_UNIT_TIERS
+local LASER_UNIT_VARIATIONS = constants.LASER_UNIT_VARIATIONS
+
 local LASER_NEST_TIERS = constants.LASER_NEST_TIERS
 local LASER_NEST_VARIATIONS = constants.LASER_NEST_VARIATIONS
 
@@ -543,12 +546,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = LASER_UNIT_VARIATIONS,
 	unitSpawner = LASER_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = LASER_UNIT_TIERS,
 	unitSpawner = LASER_NEST_TIERS
     }
 )
@@ -1094,12 +1097,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = LASER_UNIT_VARIATIONS,
 	unitSpawner = LASER_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = LASER_UNIT_TIERS,
 	unitSpawner = LASER_NEST_TIERS
     }
 )

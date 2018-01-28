@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.11
+Date: 1. 27. 2018
+  Bugfixes:
+    - A a null check for nil'ed squad groups (https://mods.factorio.com/mod/Rampant/discussion/5a6d09cb9a95f7000b165865)
+  Improvements:
+    - Added setting options for changing tiers and variations to allow for a smaller memory footprint
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.10
 Date: 1. 27. 2018
   Bugfixes:

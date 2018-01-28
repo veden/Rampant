@@ -8,6 +8,9 @@ local constants = require("Constants")
 
 -- constants
 
+local FAST_UNIT_TIERS = constants.FAST_UNIT_TIERS
+local FAST_UNIT_VARIATIONS = constants.FAST_UNIT_VARIATIONS
+
 local FAST_NEST_TIERS = constants.FAST_NEST_TIERS
 local FAST_NEST_VARIATIONS = constants.FAST_NEST_VARIATIONS
 
@@ -506,12 +509,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = FAST_UNIT_VARIATIONS,
 	unitSpawner = FAST_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = FAST_UNIT_TIERS,
 	unitSpawner = FAST_NEST_TIERS
     }
 )
@@ -1020,12 +1023,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = FAST_UNIT_VARIATIONS,
 	unitSpawner = FAST_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = FAST_UNIT_TIERS,
 	unitSpawner = FAST_NEST_TIERS
     }
 )

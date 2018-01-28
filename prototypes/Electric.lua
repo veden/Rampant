@@ -8,6 +8,9 @@ local constants = require("Constants")
 
 -- constants
 
+local ELECTRIC_UNIT_TIERS = constants.ELECTRIC_UNIT_TIERS
+local ELECTRIC_UNIT_VARIATIONS = constants.ELECTRIC_UNIT_VARIATIONS
+
 local ELECTRIC_NEST_TIERS = constants.ELECTRIC_NEST_TIERS
 local ELECTRIC_NEST_VARIATIONS = constants.ELECTRIC_NEST_VARIATIONS
 
@@ -589,12 +592,12 @@ buildUnitSpawner(
     end,
 
     {
-	unit = 10,
+	unit = ELECTRIC_UNIT_VARIATIONS,
 	unitSpawner = ELECTRIC_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = ELECTRIC_UNIT_TIERS,
 	unitSpawner = ELECTRIC_NEST_TIERS
     }
 )

@@ -2,13 +2,14 @@
 
 local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 
 -- constants
+
+local TROLL_UNIT_TIERS = constants.TROLL_UNIT_TIERS
+local TROLL_UNIT_VARIATIONS = constants.TROLL_UNIT_VARIATIONS
 
 local TROLL_NEST_TIERS = constants.TROLL_NEST_TIERS
 local TROLL_NEST_VARIATIONS = constants.TROLL_NEST_VARIATIONS
@@ -17,10 +18,6 @@ local TROLL_WORM_TIERS = constants.TROLL_WORM_TIERS
 local TROLL_WORM_VARIATIONS = constants.TROLL_WORM_VARIATIONS
 
 -- imported functions
-
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
@@ -520,12 +517,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = TROLL_UNIT_VARIATIONS,
 	unitSpawner = TROLL_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = TROLL_UNIT_TIERS,
 	unitSpawner = TROLL_NEST_TIERS
     }
 )
@@ -1044,12 +1041,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = TROLL_UNIT_VARIATIONS,
 	unitSpawner = TROLL_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = TROLL_UNIT_TIERS,
 	unitSpawner = TROLL_NEST_TIERS
     }
 )

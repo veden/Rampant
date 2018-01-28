@@ -9,6 +9,9 @@ local math3d = require("math3d")
 
 -- constants
 
+local INFERNO_UNIT_TIERS = constants.INFERNO_UNIT_TIERS
+local INFERNO_UNIT_VARIATIONS = constants.INFERNO_UNIT_VARIATIONS
+
 local INFERNO_NEST_TIERS = constants.INFERNO_NEST_TIERS
 local INFERNO_NEST_VARIATIONS = constants.INFERNO_NEST_VARIATIONS
 
@@ -679,12 +682,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = INFERNO_UNIT_VARIATIONS,
 	unitSpawner = INFERNO_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = INFERNO_UNIT_TIERS,
 	unitSpawner = INFERNO_NEST_TIERS
     }
 )

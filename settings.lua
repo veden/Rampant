@@ -66,17 +66,6 @@ data:extend({
 	    order = "c[modifier]-a[threshold]",
 	    per_user = false
 	},
-
-	{
-	    type = "int-setting",
-	    name = "rampant-newEnemyVariations",
-	    setting_type = "startup",
-	    minimum_value = 1,
-	    maximum_value = 20,
-	    default_value = 1,
-	    order = "d[modifier]-b[wave]",
-	    per_user = false
-	},
 	
 	{
 	    type = "int-setting",
@@ -257,8 +246,77 @@ data:extend({
 	    default_value = false,
 	    order = "l[modifier]-b[unit]",
 	    per_user = false
+	},
+
+
+	{
+	    type = "int-setting",
+	    name = "rampant-newEnemyNestTiers",
+	    description = "rampant-newEnemyNestTiers",
+	    setting_type = "startup",
+	    default_value = 5,
+	    allowed_values = { 5, 10 },
+	    order = "l[modifer]-b[seed]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-newEnemyNestVariations",
+	    description = "rampant-newEnemyNestVariations",
+	    setting_type = "startup",
+	    minimum_value = 1,
+	    maximum_value = 20,
+	    default_value = 1,
+	    order = "d[modifier]-b[wave]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-newEnemyWormTiers",
+	    description = "rampant-newEnemyWormTiers",
+	    setting_type = "startup",
+	    default_value = 5,
+	    allowed_values = { 5, 10 },
+	    order = "l[modifer]-b[seed]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-newEnemyWormVariations",
+	    description = "rampant-newEnemyWormVariations",
+	    setting_type = "startup",
+	    minimum_value = 1,
+	    maximum_value = 20,
+	    default_value = 1,
+	    order = "d[modifier]-b[wave]",
+	    per_user = false
+	},
+
+		{
+	    type = "int-setting",
+	    name = "rampant-newEnemyUnitTiers",
+	    description = "rampant-newEnemyUnitTiers",
+	    setting_type = "startup",
+	    default_value = 5,
+	    allowed_values = { 5, 10 },
+	    order = "l[modifer]-b[seed]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-newEnemyUnitVariations",
+	    description = "rampant-newEnemyUnitVariations",
+	    setting_type = "startup",
+	    minimum_value = 1,
+	    maximum_value = 20,
+	    default_value = 1,
+	    order = "d[modifier]-b[wave]",
+	    per_user = false
 	}
-	
 		
 	-- {
 	--     type = "bool-setting",

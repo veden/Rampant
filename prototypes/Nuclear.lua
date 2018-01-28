@@ -9,6 +9,9 @@ local constants = require("Constants")
 
 -- constants
 
+local NUCLEAR_UNIT_TIERS = constants.NUCLEAR_UNIT_TIERS
+local NUCLEAR_UNIT_VARIATIONS = constants.NUCLEAR_UNIT_VARIATIONS
+
 local NUCLEAR_NEST_TIERS = constants.NUCLEAR_NEST_TIERS
 local NUCLEAR_NEST_VARIATIONS = constants.NUCLEAR_NEST_VARIATIONS
 
@@ -540,12 +543,12 @@ buildUnitSpawner(
     createSuicideAttack,
 
     {
-	unit = 10,
+	unit = NUCLEAR_UNIT_VARIATIONS,
 	unitSpawner = NUCLEAR_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = NUCLEAR_UNIT_TIERS,
 	unitSpawner = NUCLEAR_NEST_TIERS
     }
 )

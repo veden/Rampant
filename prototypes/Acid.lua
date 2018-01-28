@@ -8,6 +8,9 @@ local constants = require("Constants")
 
 -- constants
 
+local ACID_UNIT_TIERS = constants.ACID_UNIT_TIERS
+local ACID_UNIT_VARIATIONS = constants.ACID_UNIT_VARIATIONS
+
 local ACID_NEST_TIERS = constants.ACID_NEST_TIERS
 local ACID_NEST_VARIATIONS = constants.ACID_NEST_VARIATIONS
 
@@ -542,12 +545,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = ACID_UNIT_VARIATIONS,
 	unitSpawner = ACID_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = ACID_UNIT_TIERS,
 	unitSpawner = ACID_NEST_TIERS
     }
 )
@@ -1161,12 +1164,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = ACID_UNIT_VARIATIONS,
 	unitSpawner = ACID_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = ACID_UNIT_TIERS,
 	unitSpawner = ACID_NEST_TIERS
     }
 )

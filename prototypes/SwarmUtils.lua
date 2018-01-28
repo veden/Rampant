@@ -4,6 +4,7 @@ local swarmUtils = {}
 local biterUtils = require("utils/BiterUtils")
 package.path = "../?.lua;" .. package.path
 local mathUtils = require("libs/MathUtils")
+local constants = require("libs/Constants")
 
 -- imported functions
 
@@ -17,6 +18,9 @@ local mMin = math.min
 local mFloor = math.floor
 
 local deepcopy = util.table.deepcopy
+
+local TIER_SET_10 = constants.TIER_SET_10
+local TIER_SET_5 = constants.TIER_SET_5
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
@@ -40,9 +44,9 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     end
 
     if upgradeTable then
-	local points = #upgradeTable * 10
+	local points = #unitSet * 10
 	while (points > 0) do
-	    local index = mFloor(xorRandom() * #upgradeTable)+1
+	    local index = mFloor(xorRandom() * #unitSet)+1
 	    local upgrade = upgradeTable[index]
 
 	    dividers[index] = dividers[index] + upgrade
@@ -280,7 +284,8 @@ end
 local function buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
     local unitSet = {}
     
-    for t=1, tiers do
+    for tier=1, tiers do
+	local t = ((tiers == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	local result = {}
 	
 	for i=1,variations do
@@ -327,7 +332,8 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 			       variations.unit,
 			       tiers.unit)
     
-    for t=1, tiers.unitSpawner do	
+    for tier=1, tiers.unitSpawner do
+	local t = ((tiers.unitSpawner == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
@@ -352,7 +358,8 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
-    for t=1, tiers do
+    for tier=1, tiers do
+	local t = ((tiers == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	for i=1,variations do
 	    local worm = deepcopy(template)
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
