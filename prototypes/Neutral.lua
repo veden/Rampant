@@ -8,6 +8,9 @@ local constants = require("Constants")
 
 -- constants
 
+local NEUTRAL_UNIT_TIERS = constants.NEUTRAL_UNIT_TIERS
+local NEUTRAL_UNIT_VARIATIONS = constants.NEUTRAL_UNIT_VARIATIONS
+
 local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
 local NEUTRAL_NEST_VARIATIONS = constants.NEUTRAL_NEST_VARIATIONS
 
@@ -484,12 +487,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = NEUTRAL_UNIT_VARIATIONS,
 	unitSpawner = NEUTRAL_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = NEUTRAL_UNIT_TIERS,
 	unitSpawner = NEUTRAL_NEST_TIERS
     }
 )
@@ -977,12 +980,12 @@ buildUnitSpawner(
     end,
     
     {
-	unit = 10,
+	unit = NEUTRAL_UNIT_VARIATIONS,
 	unitSpawner = NEUTRAL_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = NEUTRAL_UNIT_TIERS,
 	unitSpawner = NEUTRAL_NEST_TIERS
     }
 )

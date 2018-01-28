@@ -8,6 +8,9 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local TIER_SET_10 = constants.TIER_SET_10
+local TIER_SET_5 = constants.TIER_SET_5
+
 local NEUTRAL_WORM_TIERS = constants.NEUTRAL_WORM_TIERS
 local NEUTRAL_WORM_VARIATIONS = constants.NEUTRAL_WORM_VARIATIONS
 local NEUTRAL_NEST_TIERS = constants.NEUTRAL_NEST_TIERS
@@ -355,9 +358,10 @@ end
 
 local function processUnitClass(biterVariation, biterTier, spitterVariation, spitterTier, wormVariation, wormTier, surface, natives, baseAlignment, baseAlignmentString)
     local position = { x = 0, y = 0 }
-    
-    for v=1,biterVariation do
-    	for t=1,biterTier do
+
+    for tier=1,biterTier do
+	local t = ((biterTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	for v=1,biterVariation do    	
 	    local entity = surface.create_entity({
 		    name= baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
 		    position = position
@@ -366,8 +370,9 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
 	    entity.destroy()
     	end
     end
-    for v=1,spitterVariation do
-    	for t=1,spitterTier do
+    for tier=1,spitterTier do
+	local t = ((spitterTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+    	for v=1,spitterVariation do
 	    local entity = surface.create_entity({
 		    name=baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
 		    position = position
@@ -376,8 +381,9 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
 	    entity.destroy()
     	end
     end
-    for v=1,wormVariation do
-    	for t=1,wormTier do
+    for tier=1,wormTier do
+	local t = ((wormTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+    	for v=1,wormVariation do
 	    local entity = surface.create_entity({
 		    name=baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant",
 		    position = position

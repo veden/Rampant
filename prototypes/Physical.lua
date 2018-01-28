@@ -2,13 +2,14 @@
 
 local physicalBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
-local smokeUtils = require("utils/SmokeUtils")
 local swarmUtils = require("SwarmUtils")
-local colorUtils = require("utils/ColorUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
 
 -- constants
+
+local PHYSICAL_UNIT_TIERS = constants.PHYSICAL_UNIT_TIERS
+local PHYSICAL_UNIT_VARIATIONS = constants.PHYSICAL_UNIT_VARIATIONS
 
 local PHYSICAL_NEST_TIERS = constants.PHYSICAL_NEST_TIERS
 local PHYSICAL_NEST_VARIATIONS = constants.PHYSICAL_NEST_VARIATIONS
@@ -17,10 +18,6 @@ local PHYSICAL_WORM_TIERS = constants.PHYSICAL_WORM_TIERS
 local PHYSICAL_WORM_VARIATIONS = constants.PHYSICAL_WORM_VARIATIONS
 
 -- imported functions
-
-local makeColor = colorUtils.makeColor
-
-local makeSmokeSoft = smokeUtils.makeSmokeSoft
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
@@ -491,12 +488,12 @@ buildUnitSpawner(
     createMeleeAttack,
 
     {
-	unit = 10,
+	unit = PHYSICAL_UNIT_VARIATIONS,
 	unitSpawner = PHYSICAL_NEST_VARIATIONS
     },
 
     {
-	unit = 10,
+	unit = PHYSICAL_UNIT_TIERS,
 	unitSpawner = PHYSICAL_NEST_TIERS
     }
 )
