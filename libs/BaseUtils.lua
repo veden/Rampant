@@ -406,7 +406,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     natives.evolutionTableUnitSpawner = {}
     natives.evolutionTableWorm = {}
     natives.evolutionTableAlignment = {}
-    
+
     -- todo fill out alignment evolution levels
     for alignment,evo in pairs(BASE_ALIGNMENT_EVOLUTION_BASELINE) do
 	fileAlignment(alignment,
@@ -414,11 +414,13 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 		      natives.evolutionTableAlignment)
     end
 
-    if ENABLED_NE_UNITS then
+    local option = settings.startup["NE_Difficulty"]
+    if option and option.value and ENABLED_NE_UNITS then
 	processNEUnitClass(natives, surface)
     end
 
-    if ENABLED_BOBS_UNITS then
+    local option = settings.startup["bobmods-enemies-enableartifacts"]
+    if option and option.value and ENABLED_BOBS_UNITS then
 	processBobsUnitClass(natives, surface)
     end
     

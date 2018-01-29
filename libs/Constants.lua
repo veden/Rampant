@@ -19,7 +19,7 @@ constants.VERSION_33 = 33
 constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
-constants.VERSION_47 = 47
+constants.VERSION_48 = 48
 
 -- misc
 
@@ -189,13 +189,15 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
 constants.ENABLED_NE_UNITS = settings.startup["rampant-enableBobsUnits"].value
 constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableNEUnits"].value
 
-if settings.startup["bobmods-enemies-enableartifacts"].value and constants.ENABLED_BOBS_UNITS then
+local option = settings.startup["bobmods-enemies-enableartifacts"]
+if option and option.value and constants.ENABLED_BOBS_UNITS then
     -- local t = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
     -- t[#t+1] = constants.BASE_ALIGNMENT_BOBS
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_BOBS] = 0.1
 end
 
-if settings.startup["NE_Difficulty"].value and constants.ENABLED_NE_UNITS then
+option = settings.startup["NE_Difficulty"]
+if option and option.value and constants.ENABLED_NE_UNITS then
     -- local t = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
     -- t[#t+1] = constants.BASE_ALIGNMENT_NE
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
