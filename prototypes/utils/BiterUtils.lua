@@ -123,6 +123,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	attack_parameters = biterAttack,
 	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
+	loot = biterAttributes.loot,
 	spawning_time_modifier = biterAttributes.spawningTimeModifer or 0,
 	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
 	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
@@ -160,6 +161,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale}, 
 	    {0.6 * biterAttributes.scale, 0}},
 	attack_parameters = biterAttack,
+	loot = biterAttributes.loot,
 	vision_distance = biterAttributes.vision or 30,
 	movement_speed = biterAttributes.movement,
 	spawning_time_modifier = biterAttributes.spawningTimeModifer or 0,
@@ -190,6 +192,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	max_health = biterAttributes.health,
 	order="b-b-g",
 	subgroup="enemies",
+	loot = biterAttributes.loot,
 	resistances = resistances,
 	working_sound = {
 	    sound =
@@ -261,6 +264,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	order="b-b-e",
 	subgroup="enemies",
 	max_health = attributes.health,
+	loot = attributes.loot,
 	resistances = resistances,
 	healing_per_tick = attributes.healing or 0.01,
 	collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
@@ -450,6 +454,128 @@ function biterFunctions.createSuicideAttack(attributes)
 	
     end
     return o
+end
+
+function biterFunctions.makeWormAlienLootTable(name)
+    local biterLoot
+    local artifacts = settings.startup["bobmods-enemies-enableartifacts"].value or settings.startup["NE_Alien_Artifacts"].value
+    local newArtifacts = settings.startup["bobmods-enemies-enablenewartifacts"].value
+
+    if newArtifacts and name then
+	biterLoot = {
+	    [1] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.5 },
+	    [2] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 2,  probability = 0.5 },
+	    [3] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [4] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [5] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [6] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [7] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [8] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [9] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [10] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.75 }
+	}
+    elseif artifacts then
+	biterLoot = {
+	    [1] = {  item = "alien-artifact",  count_min = 1,  count_max = 1,  probability = 0.5 },
+	    [2] = {  item = "alien-artifact",  count_min = 1,  count_max = 2,  probability = 0.5 },
+	    [3] = {  item = "alien-artifact",  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [4] = {  item = "alien-artifact",  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [5] = {  item = "alien-artifact",  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [6] = {  item = "alien-artifact",  count_min = 2,  count_max = 3,  probability = 0.5 },
+	    [7] = {  item = "alien-artifact",  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [8] = {  item = "alien-artifact",  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [9] = {  item = "alien-artifact",  count_min = 2,  count_max = 4,  probability = 0.75 },
+	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 4,  probability = 0.75 }
+	}
+    end
+    
+    return biterLoot
+end
+
+function biterFunctions.makeSpawnerAlienLootTable(name)
+    local biterLoot
+    local artifacts = settings.startup["bobmods-enemies-enableartifacts"].value or settings.startup["NE_Alien_Artifacts"].value
+    local newArtifacts = settings.startup["bobmods-enemies-enablenewartifacts"].value
+
+    if newArtifacts and name then
+	biterLoot = {
+	    [1] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.5 },
+	    [2] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 2,  probability = 0.5 },
+	    [3] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [4] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.5 },
+	    [5] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [6] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [7] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [8] = {  item = "alien-artifact-" .. name,  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [9] = {  item = "alien-artifact-" .. name,  count_min = 3,  count_max = 7,  probability = 0.75 },
+	    [10] = {  item = "alien-artifact-" .. name,  count_min = 3,  count_max = 7,  probability = 0.75 }
+	}
+    elseif artifacts then
+	biterLoot = {
+	    [1] = {  item = "alien-artifact",  count_min = 1,  count_max = 1,  probability = 0.5 },
+	    [2] = {  item = "alien-artifact",  count_min = 1,  count_max = 2,  probability = 0.5 },
+	    [3] = {  item = "alien-artifact",  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [4] = {  item = "alien-artifact",  count_min = 2,  count_max = 4,  probability = 0.5 },
+	    [5] = {  item = "alien-artifact",  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [6] = {  item = "alien-artifact",  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [7] = {  item = "alien-artifact",  count_min = 2,  count_max = 5,  probability = 0.75 },
+	    [8] = {  item = "alien-artifact",  count_min = 3,  count_max = 6,  probability = 0.75 },
+	    [9] = {  item = "alien-artifact",  count_min = 3,  count_max = 6,  probability = 0.75 },
+	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 }
+	}
+    end
+    
+    return biterLoot
+end
+
+function biterFunctions.makeUnitAlienLootTable(name)
+    local biterLoot
+    local artifacts = settings.startup["bobmods-enemies-enableartifacts"].value or settings.startup["NE_Alien_Artifacts"].value
+    local smallArtifacts = settings.startup["bobmods-enemies-enablesmallartifacts"].value or settings.startup["NE_Alien_Artifacts"].value
+    local newArtifacts = settings.startup["bobmods-enemies-enablenewartifacts"].value
+
+    if smallArtifacts and newArtifacts and name then
+	biterLoot = {
+	    [1] = {  item = "small-alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.25 },
+	    [2] = {  item = "small-alien-artifact-" .. name,  count_min = 1,  count_max = 2,  probability = 0.25 },
+	    [3] = {  item = "small-alien-artifact-" .. name,  count_min = 1,  count_max = 3,  probability = 0.25 },
+	    [4] = {  item = "small-alien-artifact-" .. name,  count_min = 2,  count_max = 4,  probability = 0.5 },
+	    [5] = {  item = "small-alien-artifact-" .. name,  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [6] = {  item = "small-alien-artifact-" .. name,  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [7] = {  item = "small-alien-artifact-" .. name,  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [8] = {  item = "small-alien-artifact-" .. name,  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [9] = {  item = "small-alien-artifact-" .. name,  count_min = 3,  count_max = 7,  probability = 0.75 },
+	    [10] = {  item = "small-alien-artifact-" .. name,  count_min = 3,  count_max = 7,  probability = 0.75 }
+	}
+    elseif smallArtifacts then
+	biterLoot = {
+	    [1] = {  item = "small-alien-artifact",  count_min = 1,  count_max = 1,  probability = 0.25 },
+	    [2] = {  item = "small-alien-artifact",  count_min = 1,  count_max = 2,  probability = 0.25 },
+	    [3] = {  item = "small-alien-artifact",  count_min = 1,  count_max = 3,  probability = 0.25 },
+	    [4] = {  item = "small-alien-artifact",  count_min = 2,  count_max = 4,  probability = 0.5 },
+	    [5] = {  item = "small-alien-artifact",  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [6] = {  item = "small-alien-artifact",  count_min = 2,  count_max = 5,  probability = 0.5 },
+	    [7] = {  item = "small-alien-artifact",  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [8] = {  item = "small-alien-artifact",  count_min = 2,  count_max = 6,  probability = 0.75 },
+	    [9] = {  item = "small-alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 },
+	    [10] = {  item = "small-alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 }
+	}
+    elseif artifacts then
+	biterLoot = {
+	    [1] = nil,
+	    [2] = nil,
+	    [3] = nil,
+	    [4] = nil,
+	    [5] = nil,
+	    [6] = {  item = "alien-artifact",  count_min = 1,  count_max = 3,  probability = 0.5 },
+	    [7] = {  item = "alien-artifact",  count_min = 2,  count_max = 5,  probability = 0.75 },
+	    [8] = {  item = "alien-artifact",  count_min = 3,  count_max = 6,  probability = 0.75 },
+	    [9] = {  item = "alien-artifact",  count_min = 3,  count_max = 6,  probability = 0.75 },
+	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 }
+	}
+    end
+    
+    return biterLoot
 end
 
 function biterFunctions.findRunScale(entity)

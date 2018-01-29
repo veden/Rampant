@@ -29,12 +29,21 @@ local createSuicideAttack = biterUtils.createSuicideAttack
 
 local softSmoke = "the-soft-smoke-rampant"
 
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+local biterLoot = makeUnitAlienLootTable("yellow")
+local spawnerLoot = makeSpawnerAlienLootTable("yellow")
+local wormLoot = makeWormAlienLootTable("yellow")
+
 -- nuclear biters
 buildUnitSpawner(
     {
 	unit = {
 	    name = "nuclear-biter",
 
+	    loot = biterLoot,
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
@@ -64,6 +73,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "nuclear-biter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},	    
 	    resistances = {},
 	    scales = {
@@ -558,6 +568,7 @@ buildWorm(
     {
 	name = "nuclear-worm",
 
+	loot = wormLoot,
 	attributes = {},
 	attack = {
 	    stickerAnimation = {

@@ -27,12 +27,23 @@ local createMeleeAttack = biterUtils.createMeleeAttack
 
 local softSmoke = "the-soft-smoke-rampant"
 
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+local biterLoot = makeUnitAlienLootTable("red")
+local spawnerLoot = makeSpawnerAlienLootTable("red")
+local wormLoot = makeWormAlienLootTable("red")
+
+
+
 -- physical biters
 buildUnitSpawner(
     {
 	unit = {
 	    name = "physical-biter",
 
+	    loot = biterLoot,
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
@@ -61,6 +72,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "physical-biter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},	    
 	    resistances = {},
 	    scales = {
@@ -503,6 +515,7 @@ buildWorm(
     {
 	name = "physical-worm",
 
+	loot = wormLoot,
 	attributes = {
 	},
 	attack = {

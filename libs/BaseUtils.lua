@@ -5,11 +5,16 @@ local baseUtils = {}
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local neUnits = require("NEBaseUtils")
+local bobsUnits = require("BobsBaseUtils")
 
 -- constants
 
 local TIER_SET_10 = constants.TIER_SET_10
 local TIER_SET_5 = constants.TIER_SET_5
+
+local ENABLED_BOBS_UNITS = constants.ENABLED_BOBS_UNITS
+local ENABLED_NE_UNITS = constants.ENABLED_NE_UNITS
 
 local NEUTRAL_WORM_TIERS = constants.NEUTRAL_WORM_TIERS
 local NEUTRAL_WORM_VARIATIONS = constants.NEUTRAL_WORM_VARIATIONS
@@ -104,6 +109,9 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 local roundToFloor = mathUtils.roundToFloor
+
+local processNEUnitClass = neUnits.processNEUnitClass
+local processBobsUnitClass = bobsUnits.processBobsUnitClass
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
@@ -404,6 +412,14 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 	fileAlignment(alignment,
 		      gaussianRandomRangeRG(evo, evo * 0.2, evo * 0.5, evo * 1.5, rg),
 		      natives.evolutionTableAlignment)
+    end
+
+    if ENABLED_NE_UNITS then
+	processNEUnitClass(natives, surface)
+    end
+
+    if ENABLED_BOBS_UNITS then
+	processBobsUnitClass(natives, surface)
     end
     
     processUnitClass(NEUTRAL_NEST_VARIATIONS,

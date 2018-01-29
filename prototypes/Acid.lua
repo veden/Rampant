@@ -21,11 +21,20 @@ local ACID_WORM_VARIATIONS = constants.ACID_WORM_VARIATIONS
 
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
+
 local createAttackBall = acidBall.createAttackBall
 local createStreamAttack = biterUtils.createStreamAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
 local softSmoke = "the-soft-smoke-rampant"
+
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+local biterLoot = makeUnitAlienLootTable("green")
+local spawnerLoot = makeSpawnerAlienLootTable("green")
+local wormLoot = makeWormAlienLootTable("green")
 
 -- acid biters
 buildUnitSpawner(
@@ -54,6 +63,7 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
+	    loot = biterLoot,
 	    tint1 = {r=0, g=0.85, b=0.13, a=0.65},
 	    tint2 = {r=0, g=0.85, b=0.13, a=0.65}
 	},
@@ -61,6 +71,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "acid-biter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},	    
 	    resistances = {},
 	    scales = {
@@ -561,6 +572,7 @@ buildUnitSpawner(
 	unit = {
 	    name = "acid-spitter",
 
+	    loot = biterLoot,
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
@@ -591,6 +603,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "acid-spitter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},
 	    resistances = {},
 	    
@@ -1113,7 +1126,7 @@ buildUnitSpawner(
 		    [10] = 65
 		}
 	    },
-	   
+	    
 	    {
 		type = "resistance",
 		name = "acid",
@@ -1179,6 +1192,7 @@ buildWorm(
     {
 	name = "acid-worm",
 
+	loot = wormLoot,
 	attributes = {},
 	attack = {
 	    softSmokeName = softSmoke

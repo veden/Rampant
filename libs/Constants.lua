@@ -19,7 +19,7 @@ constants.VERSION_33 = 33
 constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
-constants.VERSION_46 = 46
+constants.VERSION_47 = 47
 
 -- misc
 
@@ -135,6 +135,8 @@ constants.BASE_ALIGNMENT_ENERGY_THIEF = 17
 constants.BASE_ALIGNMENT_ELECTRIC = 18
 constants.BASE_ALIGNMENT_WASP = 19
 constants.BASE_ALIGNMENT_DEADZONE = 20
+constants.BASE_ALIGNMENT_NE = 21
+constants.BASE_ALIGNMENT_BOBS = 22
 -- constants.BASE_ALIGNMENT_BURROW = 3
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
@@ -183,6 +185,21 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
     [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
 }
+
+constants.ENABLED_NE_UNITS = settings.startup["rampant-enableBobsUnits"].value
+constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableNEUnits"].value
+
+if settings.startup["bobmods-enemies-enableartifacts"].value and constants.ENABLED_BOBS_UNITS then
+    -- local t = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
+    -- t[#t+1] = constants.BASE_ALIGNMENT_BOBS
+    constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_BOBS] = 0.1
+end
+
+if settings.startup["NE_Difficulty"].value and constants.ENABLED_NE_UNITS then
+    -- local t = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
+    -- t[#t+1] = constants.BASE_ALIGNMENT_NE
+    constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
+end
 
 -- ai retreat
 

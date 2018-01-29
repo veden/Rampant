@@ -17,12 +17,12 @@ if settings.startup["rampant-newEnemies"].value then
     -- require("prototypes/Wasp")
     require("prototypes/Laser")
     
-    for k, unitSpawner in pairs(data.raw["unit-spawner"]) do
+    for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
 	if (unitSpawner.name ~= "biter-spawner") then
 	   unitSpawner.autoplace = nil 
 	end
     end
-    for k, unitSpawner in pairs(data.raw["turret"]) do
+    for _, unitSpawner in pairs(data.raw["turret"]) do
 	if (unitSpawner.name ~= "small-worm-turret") then
 	   unitSpawner.autoplace = nil 
 	end
