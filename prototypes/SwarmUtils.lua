@@ -297,6 +297,10 @@ local function buildUnits(template, attackGenerator, upgradeTable, variations, t
 	    if unit.attackName then
 		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
 	    end
+
+	    if unit.loot then
+		unit.attributes.loot = { unit.loot[t] }
+	    end
 	    
 	    local entity
 	    if (unit.type == "spitter") then
@@ -342,6 +346,10 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    generateApperance(unitSpawner, t)
 	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, t)
 
+	    if unitSpawner.loot then
+		unitSpawner.attributes.loot = { unitSpawner.loot[t] }
+	    end
+	    
 	    if unitSpawner.autoplace then
 		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[t]
 	    end
@@ -368,6 +376,10 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 
 	    if worm.attackName then
 		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t
+	    end
+
+	    if worm.loot then
+		worm.attributes.loot = { worm.loot[t] }
 	    end
 	    
 	    if worm.autoplace then

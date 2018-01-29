@@ -24,6 +24,16 @@ local buildWorm = swarmUtils.buildWorm
 local createElectricAttack = biterUtils.createElectricAttack
 local makeBeam = beamUtils.makeBeam
 
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+local biterLoot = makeUnitAlienLootTable("blue")
+local spawnerLoot = makeSpawnerAlienLootTable("blue")
+local wormLoot = makeWormAlienLootTable("blue")
+
+
+
 -- electric biters
 buildUnitSpawner(
     {
@@ -33,6 +43,7 @@ buildUnitSpawner(
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
+	    loot = biterLoot,
 	    attack = {
 		damageType = "electric"
 	    },
@@ -59,6 +70,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "electric-biter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},	    
 	    resistances = {},
 	    scales = {
@@ -607,6 +619,7 @@ buildWorm(
     {
 	name = "electric-worm",
 
+	loot = wormLoot,
 	attributes = {},
 	attack = {
 	    damageType = "electric"

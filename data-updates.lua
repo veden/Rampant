@@ -3,14 +3,6 @@ local bobsUpdates = require("prototypes/utils/UpdatesBobs")
 local NEUpdates = require("prototypes/utils/UpdatesNE")
 local constants = require("libs/Constants")
 
-local function bobsDetected()
-    return settings.startup["bobmods-enemies-aliensdropartifacts"] ~= nil
-end
-
-local function NEDetected()
-    return settings.startup["NE_Difficulty"] ~= nil
-end
-
 if settings.startup["rampant-removeBloodParticles"].value then
     local explosions = data.raw["explosion"]
     
@@ -21,11 +13,11 @@ end
 
 if settings.startup["rampant-useDumbProjectiles"].value then
     vanillaUpdates.useDumbProjectiles()
-    if bobsDetected() then
+    if settings.startup["bobmods-enemies-enableartifacts"].value then
     	require("prototypes/utils/AttackBobs")
     	bobsUpdates.useDumbProjectiles()
     end
-    if NEDetected() then
+    if settings.startup["NE_Difficulty"].value then
     	require("prototypes/utils/AttackNE")
     	NEUpdates.useDumbProjectiles()
     	if settings.startup["rampant-useNEUnitLaunchers"].value then

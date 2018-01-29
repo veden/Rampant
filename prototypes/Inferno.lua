@@ -30,12 +30,23 @@ local smokeGlow = "the-glow-smoke-rampant"
 local smokeWithoutGlow = "the-without-glow-smoke-rampant"
 local smokeFuel = "the-adding-fuel-rampant"
 
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+local biterLoot = makeUnitAlienLootTable("orange")
+local spawnerLoot = makeSpawnerAlienLootTable("orange")
+local wormLoot = makeWormAlienLootTable("orange")
+
+
+
 -- inferno spitters
 buildUnitSpawner(
     {
 	unit = {
 	    name = "inferno-spitter",
 
+	    loot = biterLoot,
 	    attributes = {
 		explosion = "blood-explosion-small"
 	    },
@@ -86,6 +97,7 @@ buildUnitSpawner(
 	unitSpawner = {
 	    name = "inferno-spitter-nest",
 
+	    loot = spawnerLoot,
 	    attributes = {},
 	    resistances = {},
 	    
@@ -697,6 +709,7 @@ buildWorm(
     {
 	name = "inferno-worm",
 
+	loot = wormLoot,
 	attributes = {},
 	attack = {
 	    damageType = "acid",

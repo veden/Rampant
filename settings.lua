@@ -316,6 +316,24 @@ data:extend({
 	    default_value = 1,
 	    order = "d[modifier]-b[wave]",
 	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-enableBobsUnits",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-c[trigger]",
+	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
+	    name = "rampant-enableNEUnits",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-d[trigger]",
+	    per_user = false
 	}
 		
 	-- {

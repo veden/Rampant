@@ -274,21 +274,21 @@ function tests.showBaseGrid()
     local n = {}
 
     for k,v in pairs(global.natives.bases) do
-	n[v] = k % 5
+	n[v] = k % 4
     end
 
     local chunks = global.map.chunkToBase
     for chunk,base in pairs(chunks) do
 	local pick = n[base]
 	local color = "concrete"
-	if (pick == 1) then
+	if  base.alignment == constants.BASE_ALIGNMENT_NE then
 	    color = "hazard-concrete-left"
+	elseif (pick == 1) then
+	    color = "water"
 	elseif (pick == 2) then
 	    color = "deepwater"
 	elseif (pick == 3) then
 	    color = "water-green"
-	elseif (pick == 4) then
-	    color = "water"
 	end
 	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[1])
     end

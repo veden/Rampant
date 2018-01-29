@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.12
+Date: 1. 28. 2018
+  Bugfixes:
+    - Fixed an error where item could be nil (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=240#p339033)
+  Improvements:
+    - Added support for bobs and NE artifacts
+    - Added options to include Bobs or NE as factions
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.11
 Date: 1. 27. 2018
   Bugfixes:

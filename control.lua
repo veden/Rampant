@@ -258,8 +258,7 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
-    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
-    
+    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)    
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
@@ -470,7 +469,7 @@ end
 
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
-    if (event.item.name == "landfill") and (surfaceIndex == 1) then
+    if event.item and (event.item.name == "landfill") and (surfaceIndex == 1) then
 	local surface = game.surfaces[1]
 	local chunks = {}
 	local tiles = event.tiles
