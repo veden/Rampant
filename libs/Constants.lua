@@ -139,7 +139,7 @@ constants.BASE_ALIGNMENT_NE = 21
 constants.BASE_ALIGNMENT_BOBS = 22
 -- constants.BASE_ALIGNMENT_BURROW = 3
 
-constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 5
+constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 
 -- neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
 -- neutralPath[constants.BASE_ALIGNMENT_WEB] = true
