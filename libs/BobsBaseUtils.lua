@@ -8,7 +8,6 @@ local constants = require("Constants")
 
 local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 local BASE_ALIGNMENT_BOBS = constants.BASE_ALIGNMENT_BOBS
-local ENABLED_NE_UNITS = constants.ENABLED_NE_UNITS
 
 -- imported functions
 
