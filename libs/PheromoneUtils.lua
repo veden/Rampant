@@ -87,7 +87,7 @@ function pheromoneUtils.processPheromone(map, chunk)
 	    (tempNeighbors[4][RESOURCE_PHEROMONE] - chunkResource))
     
     chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * totalMovement)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
-    chunk[BASE_PHEROMONE] = (chunkBase + (0.25 * totalBase)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunk[BASE_PHEROMONE] = (chunkBase + (0.30 * totalBase)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * totalPlayer)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.25 * totalResource)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
 end

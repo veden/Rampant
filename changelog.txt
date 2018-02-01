@@ -6,8 +6,16 @@ Date: 1. 31. 2018
     - Switched biter clump scanner to chunk based search for roughly constant performance
   Bugfixes:
     - Potential desync fix relating to squads
+    - unitGroup being nil (https://mods.factorio.com/mod/Rampant/discussion/5a72832d3b14f30009910dce)
     - Squads not being deallocated for chunks when group is no longer valid
-    - Fix for 5 tier of units resulted in only the larva class 
+    - Fix for 5 tier of units resulted in only the larva class
+  Tweaks:
+    - Increased player base pheromone generation by 10 times
+    - Increased retreat threshold max from 10000 to 18000
+    - Increased the spread of player base pheromone from 0.25 to 0.30 (this is only for pathfinding)
+    - Increased the generation of player pheromone from 150 to 300
+    - Increased the death pheromone from enemys from 500 to 600
+    - Increased the player aggro distance from 4 chunks to just over 5 chunks
   Framework:
     - Changing squads on a chunk to a map instead of an array
 
