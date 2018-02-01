@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.16
+Date: 1. 31. 2018
+  Improvements:
+    - Added support for NE Buildings artifacts
+    - Switched biter clump scanner to chunk based search for roughly constant performance
+  Bugfixes:
+    - Potential desync fix relating to squads
+    - Squads not being deallocated for chunks when group is no longer valid
+    - Fix for 5 tier of units resulted in only the larva class 
+  Framework:
+    - Changing squads on a chunk to a map instead of an array
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.15
 Date: 1. 29. 2018
   Bugfixes:

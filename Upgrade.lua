@@ -19,8 +19,6 @@ function upgrade.attempt(natives)
     local starting = global.version
     if (global.version == nil) then
         natives.squads = {}
-        natives.scouts = {}
-        natives.tunnels = {}
         natives.points = 0
 
         global.version = constants.VERSION_5
@@ -179,7 +177,6 @@ function upgrade.attempt(natives)
 	natives.bases = {}
 	natives.baseIndex = 1
 	natives.baseIncrement = 0
-	natives.baseLookup = {}
 	
 	game.surfaces[1].print("Rampant - Version 0.16.6")
 	global.version = constants.VERSION_41
@@ -191,10 +188,14 @@ function upgrade.attempt(natives)
 	game.surfaces[1].print("Rampant - Version 0.16.9")
 	global.version = constants.VERSION_44
     end
-    if (global.version < constants.VERSION_50) then
+    if (global.version < constants.VERSION_51) then
+
+	natives.scouts = nil
+        natives.tunnels = nil
+	natives.baseLookup = nil
 	
-	game.surfaces[1].print("Rampant - Version 0.16.15")
-	global.version = constants.VERSION_50
+	game.surfaces[1].print("Rampant - Version 0.16.16")
+	global.version = constants.VERSION_51
     end
     
     return starting ~= global.version, natives

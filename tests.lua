@@ -3,6 +3,7 @@ local tests = {}
 local constants = require("libs/Constants")
 local mathUtils = require("libs/MathUtils")
 local chunkUtils = require("libs/ChunkUtils")
+local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
 -- local tendrilUtils = require("libs/TendrilUtils")
@@ -29,7 +30,7 @@ function tests.pheromoneLevels(size)
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk) .. " " .. "n/" .. chunkUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkUtils.getWormCount(global.map, chunk)
+		    str = str .. " " .. "p/" .. game.surfaces[1].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getWormCount(global.map, chunk)
 		    if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
 			print("=============")
 			print(chunk.x, chunk.y, str)
@@ -177,6 +178,10 @@ function tests.attackOrigin()
                            destination={0,0},
                            radius=32})
     end
+end
+
+function tests.dumpNatives()
+    print(serpent.dump(global.natives))
 end
 
 function tests.cheatMode()
@@ -355,12 +360,12 @@ function tests.exportAiState(onTick)
 				   chunk[constants.PATH_RATING],
 				   chunk.x,
 				   chunk.y,
-				   chunkUtils.getNestCount(global.map, chunk),
-				   chunkUtils.getWormCount(global.map, chunk),
-				   chunkUtils.getRallyTick(global.map, chunk),
-				   chunkUtils.getRetreatTick(global.map, chunk),
-				   chunkUtils.getResourceGenerator(global.map, chunk),
-				   chunkUtils.getPlayerBaseGenerator(global.map, chunk)}, ",") .. "\n"
+				   chunkPropertyUtils.getNestCount(global.map, chunk),
+				   chunkPropertyUtils.getWormCount(global.map, chunk),
+				   chunkPropertyUtils.getRallyTick(global.map, chunk),
+				   chunkPropertyUtils.getRetreatTick(global.map, chunk),
+				   chunkPropertyUtils.getResourceGenerator(global.map, chunk),
+				   chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end
@@ -387,6 +392,10 @@ function tests.exportAiState(onTick)
 	    script.on_event(defines.events.on_tick, onTick)
 	end
     end
+end
+
+function tests.dumpEnvironment(x)
+    print (serpent.dump(global[x]))
 end
 
 function tests.stepAdvanceTendrils()

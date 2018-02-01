@@ -50,8 +50,6 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
 		if group then
 		    recycleBiters(natives, group.members)
 		    group.destroy()
-		else
-		    units.unit.destroy()
 		end
 	    end
             return

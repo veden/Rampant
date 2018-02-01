@@ -48,10 +48,7 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 -- module code
 
 function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
-
-    local squads = getSquadsOnChunk(map, chunk)
-    for s=1,#squads do
-	local squad = squads[s]
+    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
 	local unitGroup = squad.group
 	if unitGroup.valid and RETREAT_FILTER[squad.status] then
 	    if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
@@ -63,9 +60,7 @@ function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
     local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
     for i=1,#neighbors do
-	squads = getSquadsOnChunk(map, neighbors[i])
-	for s=1,#squads do
-	    local squad = squads[s]
+	for _,squad in pairs(getSquadsOnChunk(map, neighbors[i])) do
 	    local unitGroup = squad.group
 	    if unitGroup.valid and RETREAT_FILTER[squad.status] then
 		if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
@@ -74,21 +69,35 @@ function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
 	    end
 	end
     end
+    return nil
 end
 
--- function unitGroupUtils.findNearbySquad(natives, position, distance)
---     local squads = natives.squads
+function unitGroupUtils.findNearbySquad(map, chunk, position)
 
---     for i=1,#squads do
--- 	local squad = squads[i]
--- 	local unitGroup = squad.group
--- 	if unitGroup.valid then
--- 	    if (euclideanDistanceNamed(unitGroup.position, position) <= distance) then
--- 		return squad
--- 	    end
--- 	end
---     end
--- end
+    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
+	local unitGroup = squad.group
+	if unitGroup.valid then
+	    if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
+		return squad
+	    end
+	end
+    end
+
+    local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
+
+    for i=1,#neighbors do
+	for _,squad in pairs(getSquadsOnChunk(map, neighbors[i])) do
+	    local unitGroup = squad.group
+	    if unitGroup.valid then
+		if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
+		    return squad
+		end
+	    end
+	end
+    end
+    
+    return nil
+end
 
 function unitGroupUtils.createSquad(position, surface, natives, group)
     local unitGroup = group or surface.create_unit_group({position=position})
@@ -182,6 +191,8 @@ function unitGroupUtils.cleanSquads(natives, map)
 
 		cleanSquads[#cleanSquads+1] = squad
 	    end
+	else
+	    removeSquadFromChunk(map, squad)
 	end
     end
     
@@ -203,8 +214,7 @@ end
 local function mergeGroups(squads, squad, group, status, position, memberCount)
     local merge = false
     local maxed = false
-    for x=1, #squads do
-	local mergeSquad = squads[x]
+    for _,mergeSquad in pairs(squads) do
 	if mergeSquad ~= squad then
 	    
 	    local mergeGroup = mergeSquad.group
