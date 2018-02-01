@@ -11,7 +11,6 @@ local mapUtils = require("MapUtils")
 local playerUtils = require("PlayerUtils")
 local chunkUtils = require("ChunkUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
-local mathUtils = require("MathUtils")
 local baseUtils = require("BaseUtils")
 
 -- constants
@@ -21,7 +20,6 @@ local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
-local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
@@ -58,7 +56,7 @@ local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
 
-local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
+local findNearbySquad = unitGroupUtils.findNearbySquad
 
 local processBase = baseUtils.processBase
 
@@ -116,7 +114,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 
 	    if squads and (getNestCount(map, chunk) > 0) then
 		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-		squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+		squads = (natives.points >= AI_SQUAD_COST)
 	    end
 
 	    if newEnemies then
@@ -186,11 +184,11 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 			    if (getNestCount(map, chunk) > 0) then
 				if squads then
 				    formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-				    squads = (natives.points >= AI_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+				    squads = (natives.points >= AI_SQUAD_COST)
 				end
 				if vengence then
 				    formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST) -- and (#natives.squads < natives.maxSquads)
+				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST)
 				end
 			    end
 			    
@@ -228,15 +226,7 @@ function mapProcessor.scanMap(map, surface, natives)
 	local unitCount = surface.count_entities_filtered(unitCountQuery)
 
 	if (unitCount > 300) then
-	    local closeBy = false
-	    local squads = natives.squads
-	    for i=1, #squads do
-		local squadGroup = squads[i].group
-		if squadGroup.valid and (euclideanDistanceNamed(squadGroup.position, chunk) < DOUBLE_CHUNK_SIZE) then
-		    closeBy = true
-		    break
-		end
-	    end
+	    local closeBy = findNearbySquad(map, chunk, chunk)
 	    
 	    if not closeBy then
 		recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))

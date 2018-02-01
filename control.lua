@@ -133,6 +133,12 @@ local function onLoad()
     natives = global.natives
     pendingChunks = global.pendingChunks
 
+    --    print(serpent.dump(global))
+    -- print(serpent.dump(map.chunkToSquad))
+    -- print(serpent.dump(natives))
+    -- print(serpent.dump(natives.squads))
+    -- print(serpent.dump(natives.bases))
+    
     hookEvents()
 end
 
@@ -563,8 +569,10 @@ remote.add_interface("rampantTests",
 			 entitiesOnPlayerChunk = tests.entitiesOnPlayerChunk,
 			 findNearestPlayerEnemy = tests.findNearestPlayerEnemy,
 			 aiStats = tests.aiStats,
+			 dumpEnvironment = tests.dumpEnvironment,
 			 fillableDirtTest = tests.fillableDirtTest,
 			 tunnelTest = tests.tunnelTest,
+			 dumpNatives = tests.dumpNatives,
 			 createEnemy = tests.createEnemy,
 			 attackOrigin = tests.attackOrigin,
 			 cheatMode = tests.cheatMode,

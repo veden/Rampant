@@ -461,12 +461,10 @@ function biterFunctions.makeWormAlienLootTable(name)
 
     local a = settings.startup["bobmods-enemies-enableartifacts"]
     local b = settings.startup["NE_Alien_Artifacts"]
-    local artifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablesmallartifacts"]
-    b = settings.startup["NE_Alien_Artifacts"]
-    local smallArtifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablenewartifacts"]
-    local newArtifacts = a and a.value
+    local d = settings.startup["NE_Bio_Ammo_Damage"]
+    local artifacts = (a and a.value) or (b and b.value) or d
+    local c = settings.startup["bobmods-enemies-enablenewartifacts"]
+    local newArtifacts = c and c.value
     
     if newArtifacts and name then
 	biterLoot = {
@@ -503,12 +501,10 @@ function biterFunctions.makeSpawnerAlienLootTable(name)
     local biterLoot
     local a = settings.startup["bobmods-enemies-enableartifacts"]
     local b = settings.startup["NE_Alien_Artifacts"]
-    local artifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablesmallartifacts"]
-    b = settings.startup["NE_Alien_Artifacts"]
-    local smallArtifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablenewartifacts"]
-    local newArtifacts = a and a.value
+    local d = settings.startup["NE_Bio_Ammo_Damage"]
+    local artifacts = (a and a.value) or (b and b.value) or d
+    local c = settings.startup["bobmods-enemies-enablenewartifacts"]
+    local newArtifacts = c and c.value
     
     if newArtifacts and name then
 	biterLoot = {
@@ -546,11 +542,10 @@ function biterFunctions.makeUnitAlienLootTable(name)
     local a = settings.startup["bobmods-enemies-enableartifacts"]
     local b = settings.startup["NE_Alien_Artifacts"]
     local artifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablesmallartifacts"]
-    b = settings.startup["NE_Alien_Artifacts"]
-    local smallArtifacts = (a and a.value) or (b and b.value)
-    a = settings.startup["bobmods-enemies-enablenewartifacts"]
-    local newArtifacts = a and a.value
+    local c = settings.startup["bobmods-enemies-enablesmallartifacts"]
+    local smallArtifacts = (c and c.value) or (b and b.value)
+    local d = settings.startup["bobmods-enemies-enablenewartifacts"]
+    local newArtifacts = d and d.value
 
     if smallArtifacts and newArtifacts and name then
 	biterLoot = {

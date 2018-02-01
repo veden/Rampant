@@ -87,31 +87,34 @@ function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
 end
 
 function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
-    if (chunk ~= squad.chunk) then
-	local chunkToSquad = map.chunkToSquad
-	chunkPropertyUtils.removeSquadFromChunk(map, squad)
-	if not chunkToSquad[chunk] then
-	    chunkToSquad[chunk] = {}
-	end
-	chunkToSquad[chunk][#chunkToSquad[chunk]+1] = squad
+    local chunkToSquad = map.chunkToSquad
 
-	squad.chunk = chunk
+    if squad.chunk ~= chunk then
+	chunkPropertyUtils.removeSquadFromChunk(map, squad)
     end
+    
+    if not chunkToSquad[chunk] then
+	chunkToSquad[chunk] = {}
+    end
+    chunkToSquad[chunk][squad] = squad
+    
+    squad.chunk = chunk
 end
 
 function chunkPropertyUtils.removeSquadFromChunk(map, squad)
     local chunkToSquad = map.chunkToSquad
-    if squad.chunk then
-	local squads = chunkToSquad[squad.chunk]
+    local chunk = squad.chunk
+    if chunk then
+	local squads = chunkToSquad[chunk]
 	if squads then
-	    for i=#squads, 1, -1 do    
-		if (squads[i] == squad) then
-		    tRemove(squads, i)
-		    break
-		end
+	    squads[squad] = nil
+	    local i = 0
+	    for _,_ in pairs(squads) do
+		i = i + 1
+		break
 	    end
-	    if (#squads == 0) then
-		chunkToSquad[squad.chunk] = nil
+	    if (i == 0) then
+	    	chunkToSquad[chunk] = nil
 	    end
 	end
     end

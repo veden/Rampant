@@ -126,38 +126,6 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     return result
 end
 
--- local function processUpgradeTable(upgradeTable)
-
---     for i=1,#upgradeTable do
--- 	local bonuses = upgradeTable[i]
--- 	for ii=1,#bonuses do
--- 	    local bonus = bonuses[ii]
-
--- 	    if (bonus.type == "attribute") or (bonus.type == "attack") then
--- 		if not bonus.mapping then
--- 		    for x = 1, #bonus do
-
--- 			bonus[x] = bonus[x] * 0.10
--- 		    end
--- 		end
--- 	    elseif (bonus.type == "resistance") then
--- 		if bonus.decrease then
--- 		    for x = 1, #bonus.decrease do
--- 			bonus.decrease[x] = bonus.decrease[x] * 0.10
--- 		    end
--- 		end
--- 		if bonus.percent then
--- 		    for x = 1, #bonus.percent do
--- 			bonus.percent[x] = bonus.percent[x] * 0.10
--- 		    end
--- 		end
--- 	    end
--- 	end
---     end
-
---     return upgradeTable
--- end
-
 local function upgradeEntity(entity, upgradeTable, tier)
     if upgradeTable then
 	for upgradeIndex=1, #upgradeTable do
@@ -317,12 +285,12 @@ local function buildUnits(template, attackGenerator, upgradeTable, variations, t
 				   unit.resistances)
 	    end
 
-	    result[i] = entity.name
+	    result[#result+1] = entity.name
 	    
 	    data:extend({entity})
 	end
 	
-	unitSet[t] = result
+	unitSet[#unitSet+1] = result
     end
     
     return unitSet
