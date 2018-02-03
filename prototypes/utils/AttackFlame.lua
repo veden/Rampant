@@ -7,6 +7,10 @@ local colorUtils = require("ColorUtils")
 local fireUtils = require("FireUtils")
 local stickerUtils = require("StickerUtils")
 
+-- constants
+
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
+
 -- imported functions
 
 local makeColor = colorUtils.makeColor
@@ -61,6 +65,7 @@ function attackFlame.createAttackFlame(attributes)
 		{
 		    type = "area",
 		    radius = attributes.radius or 2.5,
+		    force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		    action_delivery =
 			{
 			    type = "instant",

@@ -3,14 +3,16 @@
 -- import
 
 local streamUtils = require("StreamUtils")
-local colorUtils = require("ColorUtils")
 local fireUtils = require("FireUtils")
 local stickerUtils = require("StickerUtils")
+
+-- constants
+
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
 
 -- imported functions
 
 local makeStream = streamUtils.makeStream
-local makeColor = colorUtils.makeColor
 local makeSpreadEffect = fireUtils.makeSpreadEffect
 local makeFire = fireUtils.makeFire
 local makeSticker = stickerUtils.makeSticker
@@ -55,6 +57,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -111,6 +114,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 2,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -155,6 +159,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 2,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -182,6 +187,7 @@ data:extend({
 	    action =
 		{
 		    type = "direct",
+		    force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		    action_delivery =
 			{
 			    type = "instant",
@@ -226,6 +232,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -253,6 +260,7 @@ data:extend({
 	    action =
 		{
 		    type = "direct",
+		    force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		    action_delivery =
 			{
 			    type = "instant",
@@ -308,6 +316,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -352,6 +361,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -404,6 +414,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -475,6 +486,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 3,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",

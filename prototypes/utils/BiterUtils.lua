@@ -630,6 +630,52 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
 	}
 end
 
+
+function biterFunctions.createRailAttack(attributes, railBeam, animation)
+    return {
+      type = "projectile",
+      ammo_category = "railgun",
+      cooldown = 3 * 60,
+      movement_slow_down_factor = 0.6,
+      projectile_creation_distance = 0.6,
+      ammo_type = {
+	category = "railgun",
+	target_type = "direction",
+	clamp_position = true,
+	action =
+	    {
+		type = "line",
+		range = 50,
+		width = attributes.width or 0.5,
+
+		source_effects =
+		    {
+			type = "create-explosion",
+			entity_name = railBeam or "railgun-beam"
+		    },
+		action_delivery =
+		    {
+			type = "instant",
+			target_effects =
+			    {
+				type = "damage",
+				damage = { amount = attributes.damage or 100, type=attributes.damageType or "physical" }
+			    }
+		    }
+	    }
+      },
+      	animation = animation,
+      range = 50,
+      sound =
+      {
+        {
+          filename = "__base__/sound/railgun.ogg",
+          volume = 0.8
+        }
+      }
+    }
+end
+
 function biterFunctions.createMeleeAttack(attributes)
     return
 	{

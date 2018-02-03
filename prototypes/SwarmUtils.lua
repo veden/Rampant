@@ -298,17 +298,16 @@ end
 
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
     
-    local unitSet = buildUnits(templates.unit,
-			       attackGenerator,
-			       upgradeTable.unit,
-			       variations.unit,
-			       tiers.unit)
-    
     for tier=1, tiers.unitSpawner do
 	local t = ((tiers.unitSpawner == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
+	    local unitSet = buildUnits(templates.unit,
+				       attackGenerator,
+				       upgradeTable.unit,
+				       variations.unit,
+				       tiers.unit)
 	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
 							unitSet)
 	    generateApperance(unitSpawner, t)

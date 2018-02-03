@@ -2,6 +2,10 @@
 
 local streamUtils = require("StreamUtils")
 
+-- constants
+
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
+
 -- imported functions
 
 local makeStream = streamUtils.makeStream
@@ -15,6 +19,7 @@ function AttackBall.createAttackBall(attributes)
     local templateArea = {
 	type = "area",
 	radius = attributes.radius,
+	force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 	action_delivery =
 	    {
 		{
