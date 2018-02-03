@@ -334,7 +334,18 @@ data:extend({
 	    default_value = true,
 	    order = "b[modifier]-d[trigger]",
 	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-disallowFriendlyFire",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-e[trigger]",
+	    per_user = false
 	}
+
+	
 		
 	-- {
 	--     type = "bool-setting",

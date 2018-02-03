@@ -2,6 +2,10 @@
 
 local streamUtils = require("StreamUtils")
 
+-- constants
+
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
+
 -- imported functions
 
 local makeStream = streamUtils.makeStream
@@ -84,6 +88,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 2,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -128,6 +133,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 1.5,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
@@ -176,6 +182,7 @@ makeStream({
 	    {
 		type = "area",
 		radius = 2,
+		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
 		action_delivery =
 		    {
 			type = "instant",
