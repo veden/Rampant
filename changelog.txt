@@ -3,7 +3,7 @@ Version: 0.16.17
 Date: 2. 02. 2018
   Improvements:
     - Changed defualt for friendly fire to off for worm and spitter splash damage
-    - Generating unit spawner probability for each variation and tier instead of sharing a single table
+    - Generating unit spawner probabilities for each tier instead of sharing a single table
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.16
