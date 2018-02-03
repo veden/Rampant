@@ -44,14 +44,12 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     end
 
     if upgradeTable then
-	local points = #unitSet * 10
-	while (points > 0) do
+	local points = #unitSet * 2
+	for _=1,points do
 	    local index = mFloor(xorRandom() * #unitSet)+1
 	    local upgrade = upgradeTable[index]
 
 	    dividers[index] = dividers[index] + upgrade
-	    
-	    points = points - 1
 	end
     end
     
@@ -299,15 +297,17 @@ end
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
     
     for tier=1, tiers.unitSpawner do
+	local unitSet = buildUnits(templates.unit,
+				   attackGenerator,
+				   upgradeTable.unit,
+				   variations.unit,
+				   tiers.unit)
+	
+	
 	local t = ((tiers.unitSpawner == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
-	    local unitSet = buildUnits(templates.unit,
-				       attackGenerator,
-				       upgradeTable.unit,
-				       variations.unit,
-				       tiers.unit)
 	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
 							unitSet)
 	    generateApperance(unitSpawner, t)
