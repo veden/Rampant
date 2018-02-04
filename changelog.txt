@@ -4,6 +4,8 @@ Date: 2. 02. 2018
   Improvements:
     - Changed defualt for friendly fire to off for worm and spitter splash damage
     - Generating unit spawner probabilities for each tier instead of sharing a single table
+    - Changed electric biters to target multiple entities with their beams at a time
+    - Changed electric worms to shoot a projectile that explodes into an electrical cluster
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.16
