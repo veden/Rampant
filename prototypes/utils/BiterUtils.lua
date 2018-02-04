@@ -719,7 +719,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack)
 			    {
 				type = "stream",
 				stream = fireAttack,
-				duration = 160,
+				duration = 160
 			    }
 		    }
 	    },

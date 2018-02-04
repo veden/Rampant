@@ -7,6 +7,7 @@ Date: 2. 02. 2018
     - Changed electric biters to target multiple entities with their beams at a time
     - Changed electric worms to shoot a projectile that explodes into an electrical cluster
     - Added settings for controlling what tier enemies start and end at
+    - Changed laser spitters and worms to shoot a projectile that explodes into an laser cluster
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.16

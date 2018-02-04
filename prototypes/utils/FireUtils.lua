@@ -22,7 +22,7 @@ local makeColor = colorUtils.makeColor
 
 function fireUtils.makeSpreadEffect(attributes)
     local name = attributes.name .. "-spread-rampant"
-    local smokeName = attributes.smokeWithoutGlowName or makeSmokeWithoutGlow(attributes)
+    local smokeName = attributes.smokeWithoutGlowName --or makeSmokeWithoutGlow(attributes)
     data:extend({
 	    {
 		type = "fire",
@@ -110,8 +110,8 @@ end
 function fireUtils.makeFire(attributes)
     local name = attributes.name .. "-fire-rampant"
     local spawnEntityName = attributes.spawnEntityName
-    local smokeAddingFuelName = attributes.smokeAddingFuelName or makeSmokeAddingFuel(attributes)
-    local smokeName = attributes.smokeWithGlowName or makeSmokeWithGlow(attributes)
+    local smokeAddingFuelName = attributes.smokeAddingFuelName --or makeSmokeAddingFuel(attributes)
+    local smokeName = attributes.smokeWithGlowName --or makeSmokeWithGlow(attributes)
     data:extend({{
 		type = "fire",
 		name = name,

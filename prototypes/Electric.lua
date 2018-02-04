@@ -43,6 +43,8 @@ local electricBubble = makeBubble({
 })
 
 
+local softSmoke = "the-soft-smoke-rampant"
+
 -- electric biters
 buildUnitSpawner(
     {
@@ -633,6 +635,7 @@ buildWorm(
 	attack = {
 	    bubble = electricBubble,
 	    damageType = "electric",
+	    softSmokeName = softSmoke,
 	    pointEffects = function(attributes)
 		return 
 		    {
@@ -714,6 +717,7 @@ buildWorm(
 	{
 	    type = "attack",
 	    name = "clusters",
+	    min = 2,
 	    [1] = 5,
 	    [2] = 5,
 	    [3] = 6,
@@ -965,6 +969,52 @@ buildWorm(
 	    [10] = 32
 	},
 
+
+	{
+	    type = "attack",
+	    name = "particleVerticalAcceleration",
+	    [1] = 0.01,
+	    [2] = 0.01,
+	    [3] = 0.02,
+	    [4] = 0.02,
+	    [5] = 0.03,
+	    [6] = 0.03,
+	    [7] = 0.04,
+	    [8] = 0.04,
+	    [9] = 0.05,
+	    [10] = 0.05
+	},
+
+	{	      
+	    type = "attack",
+	    name = "particleHoizontalSpeed",
+	    [1] = 0.6,
+	    [2] = 0.6,
+	    [3] = 0.7,
+	    [4] = 0.7,
+	    [5] = 0.8,
+	    [6] = 0.8,
+	    [7] = 0.9,
+	    [8] = 0.9,
+	    [9] = 1,
+	    [10] = 1
+	},
+
+	{	    
+	    type = "attack",
+	    name = "particleHoizontalSpeedDeviation",
+	    [1] = 0.0025,
+	    [2] = 0.0025,
+	    [3] = 0.0024,
+	    [4] = 0.0024,
+	    [5] = 0.0023,
+	    [6] = 0.0023,
+	    [7] = 0.0022,
+	    [8] = 0.0022,
+	    [9] = 0.0021,
+	    [10] = 0.0021
+	},
+	
 	{
 	    type = "attack",
 	    name = "radius",

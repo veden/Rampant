@@ -1,6 +1,7 @@
 -- imports
 
 local acidBall = require("utils/AttackBall")
+local beamUtils = require("utils/BeamUtils")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
 package.path = "../libs/?.lua;" .. package.path
@@ -22,7 +23,11 @@ local LASER_WORM_VARIATIONS = constants.LASER_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
+local makeLaser = beamUtils.makeLaser
 local createStreamAttack = biterUtils.createStreamAttack
+local makeBeam = beamUtils.makeBeam
+local makeBubble = beamUtils.makeBubble
+
 local createMeleeAttack = biterUtils.createMeleeAttack
 
 local softSmoke = "the-soft-smoke-rampant"
@@ -34,6 +39,12 @@ local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 local biterLoot = makeUnitAlienLootTable("blue")
 local spawnerLoot = makeSpawnerAlienLootTable("blue")
 local wormLoot = makeWormAlienLootTable("blue")
+
+
+local laserBubble = makeBubble({
+	name = "laser-worm",
+	lTint = {r=0, g=0, b=0.42, a=0.65}
+})
 
 
 -- laser biters
@@ -579,7 +590,35 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
-		softSmokeName = softSmoke
+		bubble = laserBubble,
+		softSmokeName = softSmoke,
+		damageType = "laser",
+		pointEffects = function(attributes)
+		    return 
+			{
+			    {
+				type="nested-result",
+				action = {
+				    {
+					type = "cluster",
+					cluster_count = attributes.clusters,
+					distance = attributes.clusterDistance,
+					distance_deviation = 3,
+					action_delivery =
+					    {
+						type = "projectile",
+						projectile = attributes.laserName,
+						duration = 20,
+						direction_deviation = 0.6,
+						starting_speed = attributes.startingSpeed,
+						starting_speed_deviation = 0.3
+					    },
+					repeat_count = 2
+				    }
+				}
+			    }
+			}
+		end
 	    },
 	    resistances = {},
 
@@ -791,6 +830,52 @@ buildUnitSpawner(
 		    [9] = 90,
 		    [10] = 90
 		}
+	    },
+
+	    {
+		type = "attack",
+		name = "startingSpeed",
+		[1] = 0.25,
+		[2] = 0.25,
+		[3] = 0.27,
+		[4] = 0.27,
+		[5] = 0.29,
+		[6] = 0.29,
+		[7] = 0.31,
+		[8] = 0.31,
+		[9] = 0.33,
+		[10] = 0.33
+	    },
+	    
+	    {
+		type = "attack",
+		name = "clusterDistance",
+		[1] = 3,
+		[2] = 3,
+		[3] = 4,
+		[4] = 4,
+		[5] = 5,
+		[6] = 5,
+		[7] = 6,
+		[8] = 6,
+		[9] = 7,
+		[10] = 7
+	    },
+	    
+	    {
+		type = "attack",
+		name = "clusters",
+		min = 2,
+		[1] = 2,
+		[2] = 3,
+		[3] = 3,
+		[4] = 4,
+		[5] = 4,
+		[6] = 5,
+		[7] = 5,
+		[8] = 5,
+		[9] = 6,
+		[10] = 6
 	    },
 	    
 	    {
@@ -1105,8 +1190,10 @@ buildUnitSpawner(
 	}
     },
 
-    function (attributes)	
-	return createStreamAttack(attributes, createAttackBall(attributes))
+    function (attributes)
+	attributes.laserName = makeLaser(attributes)
+	return createStreamAttack(attributes,
+				  createAttackBall(attributes))
     end,
     
     {
@@ -1128,8 +1215,35 @@ buildWorm(
 	loot = wormLoot,
 	attributes = {},
 	attack = {
+	    bubble = laserBubble,
+	    softSmokeName = softSmoke,
 	    damageType = "laser",
-	    softSmokeName = softSmoke
+	    pointEffects = function(attributes)
+		return 
+		    {
+			{
+			    type="nested-result",
+			    action = {
+				{
+				    type = "cluster",
+				    cluster_count = attributes.clusters,
+				    distance = attributes.clusterDistance,
+				    distance_deviation = 3,
+				    action_delivery =
+					{
+					    type = "projectile",
+					    projectile = attributes.laserName,
+					    duration = 20,
+					    direction_deviation = 0.6,
+					    starting_speed = attributes.startingSpeed,
+					    starting_speed_deviation = 0.3
+					},
+				    repeat_count = 3
+				}
+			    }
+			}
+		    }
+	    end
 	},
 	resistances = {},
 
@@ -1148,7 +1262,8 @@ buildWorm(
 	attackName = "laser-worm",
 	tint = {r=0, g=0, b=0.42, a=0.65},
 	pTint = {r=0, g=0, b=1, a=0.5},
-	sTint = {r=0, g=0, b=1, a=0.5}
+	sTint = {r=0, g=0, b=1, a=0.5},
+	lTint = {r=0, g=0, b=1, a=0.5}
     },
 
     {
@@ -1379,6 +1494,52 @@ buildWorm(
 
 	{
 	    type = "attack",
+	    name = "startingSpeed",
+	    [1] = 0.25,
+	    [2] = 0.25,
+	    [3] = 0.27,
+	    [4] = 0.27,
+	    [5] = 0.29,
+	    [6] = 0.29,
+	    [7] = 0.31,
+	    [8] = 0.31,
+	    [9] = 0.33,
+	    [10] = 0.33
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusterDistance",
+	    [1] = 3,
+	    [2] = 3,
+	    [3] = 4,
+	    [4] = 4,
+	    [5] = 5,
+	    [6] = 5,
+	    [7] = 6,
+	    [8] = 6,
+	    [9] = 7,
+	    [10] = 7
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusters",
+	    min = 2,
+	    [1] = 5,
+	    [2] = 5,
+	    [3] = 6,
+	    [4] = 6,
+	    [5] = 7,
+	    [6] = 7,
+	    [7] = 8,
+	    [8] = 8,
+	    [9] = 9,
+	    [10] = 9
+	},
+	
+	{
+	    type = "attack",
 	    name = "particleVerticalAcceleration",
 	    [1] = 0.01,
 	    [2] = 0.01,
@@ -1424,7 +1585,9 @@ buildWorm(
     },
 
     function (attributes)
-	return createStreamAttack(attributes, createAttackBall(attributes))
+	attributes.laserName = makeLaser(attributes)
+	return createStreamAttack(attributes,
+				  createAttackBall(attributes))
     end,
 
     LASER_WORM_VARIATIONS,
