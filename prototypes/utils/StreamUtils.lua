@@ -12,7 +12,7 @@ local makeSmokeSoft = smokeUtils.makeSmokeSoft
 
 function streamUtils.makeStream(info)
     local attributes = util.table.deepcopy(info)
-    local softSmokeName = attributes.softSmokeName or makeSmokeSoft(attributes)
+    local softSmokeName = attributes.softSmokeName --or makeSmokeSoft(attributes)
     local name = attributes.name .. "-stream-rampant"
     data:extend(
 	{
