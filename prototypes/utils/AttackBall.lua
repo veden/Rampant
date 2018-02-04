@@ -20,7 +20,7 @@ function AttackBall.createAttackBall(attributes)
 	type = "area",
 	radius = attributes.radius,
 	force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-	action_delivery =
+	action_delivery = (attributes.areaActionDelivery and attributes.areaActionDelivery(attributes)) or
 	    {
 		{
 		    type = "instant",

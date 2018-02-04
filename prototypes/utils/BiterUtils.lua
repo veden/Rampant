@@ -609,20 +609,21 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
 	    type = "beam",
 	    ammo_category = "combat-robot-beam",
 	    cooldown = attributes.cooldown or 20,
-	    range = attributes.range or 15,
+	    min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
+	    range = (attributes.range and (attributes.range + 2)) or 15,
 	    ammo_type =
 		{
 		    category = "combat-robot-beam",
 		    action =
 			{
-			    type = "direct",
+			    type = "line",
+			    range = (attributes.range and (attributes.range + 2)) or 15,
+			    width = attributes.width or 0.5,
 			    action_delivery =
 				{
 				    type = "beam",
 				    beam = electricBeam or "electric-beam",
-				    max_length = attributes.range or 15,
-				    duration = attributes.duration or 20,
-				    source_offset = {0.15, -0.5},
+				    duration = attributes.duration or 20
 				}
 			}
 		},
@@ -630,49 +631,30 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
 	}
 end
 
-
-function biterFunctions.createRailAttack(attributes, railBeam, animation)
+function biterFunctions.createCapsuleAttack(attributes, capsule, animation)
     return {
-      type = "projectile",
-      ammo_category = "railgun",
-      cooldown = 3 * 60,
-      movement_slow_down_factor = 0.6,
-      projectile_creation_distance = 0.6,
-      ammo_type = {
-	category = "railgun",
-	target_type = "direction",
-	clamp_position = true,
-	action =
+        type = "projectile",
+        ammo_category = "capsule",
+        cooldown = attributes.cooldown or 15,
+        projectile_creation_distance = 0.6,
+        range = attributes.range or 20,
+        ammo_type =
 	    {
-		type = "line",
-		range = 50,
-		width = attributes.width or 0.5,
-
-		source_effects =
+		category = "capsule",
+		target_type = "position",
+		action =
 		    {
-			type = "create-explosion",
-			entity_name = railBeam or "railgun-beam"
-		    },
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
+			type = "direct",
+			action_delivery =
 			    {
-				type = "damage",
-				damage = { amount = attributes.damage or 100, type=attributes.damageType or "physical" }
+				type = "projectile",
+				projectile = capsule or "defender-capsule",
+				starting_speed = attributes.startingSpeed or 0.3,
+				max_range = attributes.maxRange or 20
 			    }
 		    }
-	    }
-      },
-      	animation = animation,
-      range = 50,
-      sound =
-      {
-        {
-          filename = "__base__/sound/railgun.ogg",
-          volume = 0.8
-        }
-      }
+	    },
+	animation = animation
     }
 end
 

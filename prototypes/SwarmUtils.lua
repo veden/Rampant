@@ -238,6 +238,9 @@ local function generateApperance(unit, tier)
 	if unit.pTint then
 	    unit.attack.pTint = calculateRGBa(unit.pTint, tier)
 	end
+	if unit.lTint then
+	    unit.attack.lTint = calculateRGBa(unit.lTint, tier)
+	end
 	if unit.sTint then
 	    unit.attack.sTint = calculateRGBa(unit.sTint, tier)
 	end
