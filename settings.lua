@@ -43,7 +43,7 @@ data:extend({
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 7,
-	    order = "c[modifier]-c[threshold]",
+	    order = "b[modifier]-c[threshold]",
 	    per_user = false
 	},
 	
@@ -53,7 +53,7 @@ data:extend({
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 20,
-	    order = "c[modifier]-b[threshold]",
+	    order = "b[modifier]-d[threshold]",
 	    per_user = false
 	},
 
@@ -63,7 +63,7 @@ data:extend({
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
 	    default_value = 0,
-	    order = "c[modifier]-a[threshold]",
+	    order = "b[modifier]-e[threshold]",
 	    per_user = false
 	},
 	
@@ -74,7 +74,39 @@ data:extend({
 	    minimum_value = 20,
 	    maximum_value = 400,
 	    default_value = 150,
-	    order = "d[modifier]-a[wave]",
+	    order = "b[modifier]-f[wave]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-permanentNocturnal",
+	    description = "rampant-permanentNocturnal",
+	    setting_type = "runtime-global",
+	    default_value = false,
+	    order = "b[modifier]-g[ai]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-aiPointsScaler",
+	    description = "rampant-aiPointsScaler",
+	    setting_type = "runtime-global",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100.0,
+	    order = "b[modifier]-h[ai]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-enableSwarm",
+	    description = "rampant-enableSwarm",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-j[unit]",
 	    per_user = false
 	},
 
@@ -83,7 +115,7 @@ data:extend({
 	    name = "rampant-safeBuildings",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-a[safe]",
+	    order = "c[modifier]-a[safe]",
 	    per_user = false
 	},
 	
@@ -92,17 +124,17 @@ data:extend({
 	    name = "rampant-safeBuildings-curvedRail",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-b[safe]",
+	    order = "c[modifier]-b[safe]",
 	    per_user = false
 	},
 
-		
+	
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-straightRail",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-c[safe]",
+	    order = "c[modifier]-c[safe]",
 	    per_user = false
 	},
 
@@ -111,7 +143,7 @@ data:extend({
 	    name = "rampant-safeBuildings-bigElectricPole",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-d[safe]",
+	    order = "c[modifier]-d[safe]",
 	    per_user = false
 	},
 
@@ -120,7 +152,7 @@ data:extend({
 	    name = "rampant-safeBuildings-railSignals",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-e[safe]",
+	    order = "c[modifier]-e[safe]",
 	    per_user = false
 	},
 	
@@ -129,7 +161,7 @@ data:extend({
 	    name = "rampant-safeBuildings-railChainSignals",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-f[safe]",
+	    order = "c[modifier]-f[safe]",
 	    per_user = false
 	},
 
@@ -138,7 +170,7 @@ data:extend({
 	    name = "rampant-safeBuildings-trainStops",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-g[safe]",
+	    order = "c[modifier]-g[safe]",
 	    per_user = false
 	},
 
@@ -147,20 +179,29 @@ data:extend({
 	    name = "rampant-safeBuildings-lamps",
 	    setting_type = "runtime-global",
 	    default_value = false,
-	    order = "e[modifier]-h[safe]",
+	    order = "c[modifier]-h[safe]",
 	    per_user = false
 	},
 	
 	{
 	    type = "bool-setting",
-	    name = "rampant-permanentNocturnal",
-	    description = "rampant-permanentNocturnal",
-	    setting_type = "runtime-global",
+	    name = "rampant-addWallResistanceAcid",
+	    description = "rampant-addWallResistanceAcid",
+	    setting_type = "startup",
 	    default_value = false,
-	    order = "f[modifier]-a[ai]",
+	    order = "c[modifier]-j[damage]",
 	    per_user = false
 	},
 
+{
+	    type = "bool-setting",
+	    name = "rampant-disallowFriendlyFire",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "c[modifier]-k[trigger]",
+	    per_user = false
+	},
+	
 
 	{
 	    type = "double-setting",
@@ -170,62 +211,24 @@ data:extend({
 	    default_value = 0.1,
 	    minimum_value = 0.0,
 	    maximum_value = 1.0,
-	    order = "f[modifier]-c[ai]",
+	    order = "d[modifier]-a[ai]",
 	    per_user = false
 	},
 	
-	{
-	    type = "double-setting",
-	    name = "rampant-aiPointsScaler",
-	    description = "rampant-aiPointsScaler",
-	    setting_type = "runtime-global",
-	    default_value = 1.0,
-	    minimum_value = 0.0,
-	    maximum_value = 100.0,
-	    order = "f[modifier]-b[ai]",
-	    per_user = false
-	},
 
+	
+
+	
+	
 	{
 	    type = "bool-setting",
-	    name = "rampant-addWallResistanceAcid",
-	    description = "rampant-addWallResistanceAcid",
+	    name = "rampant-newEnemies",
+	    description = "rampant-newEnemies",
 	    setting_type = "startup",
 	    default_value = false,
-	    order = "g[modifier]-a[damage]",
+	    order = "e[modifier]-a[unit]",
 	    per_user = false
-	},
-
-	
-	{
-	    type = "bool-setting",
-	    name = "rampant-removeBloodParticles",
-	    description = "rampant-reduceBloodParticles",
-	    setting_type = "startup",
-	    default_value = true,
-	    order = "h[modifier]-a[optimize]",
-	    per_user = false
-	},
-	
-	{
-	    type = "bool-setting",
-	    name = "rampant-attack-warning",
-	    description = "rampant-attack-warning",
-	    setting_type = "runtime-per-user",
-	    default_value = true,
-	    order = "j[modifer]-a[message]",
-	    per_user = true
-	},
-	
-	{
-	    type = "bool-setting",
-	    name = "rampant-enableSwarm",
-	    description = "rampant-enableSwarm",
-	    setting_type = "startup",
-	    default_value = true,
-	    order = "k[modifier]-a[unit]",
-	    per_user = false
-	},
+	},	
 
 	{
 	    type = "int-setting",
@@ -234,17 +237,7 @@ data:extend({
 	    setting_type = "startup",
 	    minimum_value = 0,
 	    default_value = 0,
-	    order = "l[modifer]-a[seed]",
-	    per_user = false
-	},
-
-	{
-	    type = "bool-setting",
-	    name = "rampant-newEnemies",
-	    description = "rampant-newEnemies",
-	    setting_type = "startup",
-	    default_value = false,
-	    order = "l[modifier]-b[unit]",
+	    order = "l[modifer]-b[unit]",
 	    per_user = false
 	},
 
@@ -256,7 +249,7 @@ data:extend({
 	    setting_type = "startup",
 	    default_value = 5,
 	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-b[seed]",
+	    order = "l[modifer]-c[unit]",
 	    per_user = false
 	},
 
@@ -268,7 +261,7 @@ data:extend({
 	    minimum_value = 1,
 	    maximum_value = 20,
 	    default_value = 1,
-	    order = "d[modifier]-b[wave]",
+	    order = "l[modifier]-d[unit]",
 	    per_user = false
 	},
 
@@ -279,7 +272,7 @@ data:extend({
 	    setting_type = "startup",
 	    default_value = 5,
 	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-b[seed]",
+	    order = "l[modifer]-e[unit]",
 	    per_user = false
 	},
 
@@ -291,18 +284,18 @@ data:extend({
 	    minimum_value = 1,
 	    maximum_value = 20,
 	    default_value = 1,
-	    order = "d[modifier]-b[wave]",
+	    order = "l[modifier]-f[unit]",
 	    per_user = false
 	},
 
-		{
+	{
 	    type = "int-setting",
 	    name = "rampant-newEnemyUnitTiers",
 	    description = "rampant-newEnemyUnitTiers",
 	    setting_type = "startup",
 	    default_value = 5,
 	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-b[seed]",
+	    order = "l[modifer]-g[unit]",
 	    per_user = false
 	},
 
@@ -314,7 +307,7 @@ data:extend({
 	    minimum_value = 1,
 	    maximum_value = 20,
 	    default_value = 1,
-	    order = "d[modifier]-b[wave]",
+	    order = "l[modifier]-h[unit]",
 	    per_user = false
 	},
 
@@ -323,7 +316,7 @@ data:extend({
 	    name = "rampant-enableBobsUnits",
 	    setting_type = "startup",
 	    default_value = true,
-	    order = "b[modifier]-c[trigger]",
+	    order = "l[modifier]-i[unit]",
 	    per_user = false
 	},
 	
@@ -332,31 +325,52 @@ data:extend({
 	    name = "rampant-enableNEUnits",
 	    setting_type = "startup",
 	    default_value = true,
-	    order = "b[modifier]-d[trigger]",
+	    order = "l[modifier]-j[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-tierStart",
+	    setting_type = "startup",
+	    default_value = 1,
+	    minimum_value = 1,
+	    maximum_value = 10,
+	    order = "l[modifier]-l[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "int-setting",
+	    name = "rampant-tierEnd",
+	    setting_type = "startup",
+	    minimum_value = 1,
+	    maximum_value = 10,
+	    default_value = 4,
+	    order = "l[modifier]-m[unit]",
 	    per_user = false
 	},
 
 	{
 	    type = "bool-setting",
-	    name = "rampant-disallowFriendlyFire",
+	    name = "rampant-removeBloodParticles",
+	    description = "rampant-reduceBloodParticles",
 	    setting_type = "startup",
 	    default_value = true,
-	    order = "b[modifier]-e[trigger]",
+	    order = "n[modifier]-a[optimize]",
 	    per_user = false
-	}
-
+	},
 	
-		
-	-- {
-	--     type = "bool-setting",
-	--     name = "rampant-reduceAnimations",
-	--     description = "rampant-reduceAnimations",
-	--     setting_type = "startup",
-	--     default_value = true,
-	--     order = "h[modifier]-b[optimize]",
-	--     per_user = false
-	-- }
-
+	{
+	    type = "bool-setting",
+	    name = "rampant-attack-warning",
+	    description = "rampant-attack-warning",
+	    setting_type = "runtime-per-user",
+	    default_value = true,
+	    order = "o[modifer]-a[message]",
+	    per_user = true
+	},	
+	
 
 	-- ,
 
