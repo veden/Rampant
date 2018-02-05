@@ -687,6 +687,43 @@ function biterFunctions.createMeleeAttack(attributes)
 	}
 end
 
+function biterFunctions.biterAttackSounds()
+    return {
+	{
+	    filename = "__base__/sound/creatures/spitter-1.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-2.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-3.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-4.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-5.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-6.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-7.ogg",
+	    volume = 0.7
+	},
+	{
+	    filename = "__base__/sound/creatures/spitter-8.ogg",
+	    volume = 0.7
+	}
+    }
+end
+
 function biterFunctions.createStreamAttack(attributes, fireAttack)
     local attack = {
 	type = "stream",
@@ -719,7 +756,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack)
 			    {
 				type = "stream",
 				stream = fireAttack,
-				duration = 160
+				duration = 160,
 			    }
 		    }
 	    },

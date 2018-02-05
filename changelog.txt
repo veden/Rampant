@@ -1,13 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.17
 Date: 2. 02. 2018
+  Features:
+    - Added the Wasp faction, an enemy that throws smaller flying enemies
   Improvements:
     - Added setting to turn off most of the friendly fire for worm and spitter splash damage
-    - Generating unit spawner probabilities for each tier instead of sharing a single table
     - Changed electric biters to target multiple entities with their beams at a time
     - Changed electric worms to shoot a projectile that explodes into an electrical cluster
     - Added settings for controlling what tier enemies start and end at
     - Changed laser spitters and worms to shoot a projectile that explodes into an laser cluster
+  Bugfixes:
+    - Added laser resistance to laser worms
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.16

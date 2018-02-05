@@ -1,6 +1,7 @@
 local swarmUtils = {}
 -- imports
 
+local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 package.path = "../?.lua;" .. package.path
 local mathUtils = require("libs/MathUtils")
@@ -30,6 +31,7 @@ local makeWormCorpse = biterUtils.makeWormCorpse
 local makeSpitterCorpse = biterUtils.makeSpitterCorpse
 
 local makeBiter = biterUtils.makeBiter
+local makeDrone = droneUtils.makeDrone
 local makeSpitter = biterUtils.makeSpitter
 local makeWorm = biterUtils.makeWorm
 local makeUnitSpawner = biterUtils.makeUnitSpawner
@@ -206,18 +208,24 @@ local function calculateRGBa(tint, tier)
 end
 
 local function generateApperance(unit, tier)
-    local scaleValue = unit.scales[tier]
-    local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom)
+    local scale
+    
+    if unit.scales then
+	local scaleValue = unit.scales[tier]
+	scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom)
 
-    unit.scale = scale
-    unit.attributes.scale = scale
+	unit.scale = scale
+	unit.attributes.scale = scale
+    end
     if unit.tint then
 	local tint = calculateRGBa(unit.tint, tier)
 	
 	unit.attributes.tint = tint
 
 	if unit.attack then
-	    unit.attack.scale = scale
+	    if scale then
+		unit.attack.scale = scale
+	    end
 	    unit.attack.tint = tint
 	end
     end
@@ -229,7 +237,9 @@ local function generateApperance(unit, tier)
 	unit.attributes.tint2 = tint2
 
 	if unit.attack then
-	    unit.attack.scale = scale
+	    if scale then
+		unit.attack.scale = scale
+	    end
 	    unit.attack.tint1 = tint1
 	    unit.attack.tint2 = tint2
 	end
@@ -250,7 +260,7 @@ local function generateApperance(unit, tier)
     end
 end
 
-local function buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
+function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
     local unitSet = {}
     
     for tier=1, tiers do
@@ -284,6 +294,12 @@ local function buildUnits(template, attackGenerator, upgradeTable, variations, t
 				   unit.attributes,
 				   attackGenerator(unit.attack),
 				   unit.resistances)
+	    elseif (unit.type == "drone") then
+		entity = makeDrone(unit.name,
+				   unit.attributes,
+				   unit.resistances,
+				   attackGenerator(unit.attack),
+				   unit.death)
 	    end
 
 	    result[#result+1] = entity.name
@@ -298,14 +314,13 @@ local function buildUnits(template, attackGenerator, upgradeTable, variations, t
 end
 
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
-    
-    for tier=1, tiers.unitSpawner do
-	local unitSet = buildUnits(templates.unit,
-				   attackGenerator,
-				   upgradeTable.unit,
-				   variations.unit,
-				   tiers.unit)
-	
+    local unitSet = swarmUtils.buildUnits(templates.unit,
+					  attackGenerator,
+					  upgradeTable.unit,
+					  variations.unit,
+					  tiers.unit)
+
+    for tier=1, tiers.unitSpawner do	
 	
 	local t = ((tiers.unitSpawner == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
 	for i=1,variations.unitSpawner do
