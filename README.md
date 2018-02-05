@@ -26,7 +26,7 @@ Configure Options not in game menu:
 
 # Features
 
-- New Enemy Factions - Neutral, Acid, Fast, Physical, Electric, Inferno, Suicide, Fire, Nuclear, Laser, Troll, Wasp  
+- New Enemy Factions - Neutral, Acid, Fast, Physical, Electric, Inferno, Suicide, Fire, Nuclear, Laser, Troll, Wasp, Spawner  
 - Swarming - Units will smoothly slide by one another allowing for streamlined attacking  
 - Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
 - Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
