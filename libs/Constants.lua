@@ -138,6 +138,7 @@ constants.BASE_ALIGNMENT_WASP = 19
 constants.BASE_ALIGNMENT_DEADZONE = 20
 constants.BASE_ALIGNMENT_NE = 21
 constants.BASE_ALIGNMENT_BOBS = 22
+constants.BASE_ALIGNMENT_SPAWNER = 23
 -- constants.BASE_ALIGNMENT_BURROW = 3
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
@@ -170,6 +171,7 @@ constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
 }
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
@@ -185,6 +187,7 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_FIRE] = 0.4,
     [constants.BASE_ALIGNMENT_FAST] = 0.5,
     [constants.BASE_ALIGNMENT_TROLL] = 0.5,
+    [constants.BASE_ALIGNMENT_SPAWNER] = 0.6,
     [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
     [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
 }
@@ -388,6 +391,14 @@ constants.TROLL_WORM_TIERS = wormTiers
 constants.TROLL_WORM_VARIATIONS = wormVariations
 constants.TROLL_UNIT_TIERS = unitTiers
 constants.TROLL_UNIT_VARIATIONS = unitVariations
+
+constants.SPAWNER_NEST_TIERS = nestTiers
+constants.SPAWNER_NEST_VARIATIONS = nestVariations
+constants.SPAWNER_WORM_TIERS = wormTiers
+constants.SPAWNER_WORM_VARIATIONS = wormVariations
+constants.SPAWNER_UNIT_TIERS = unitTiers
+constants.SPAWNER_UNIT_VARIATIONS = unitVariations
+
 
 constants.FAST_NEST_TIERS = nestTiers
 constants.FAST_NEST_VARIATIONS = nestVariations

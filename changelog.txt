@@ -3,6 +3,7 @@ Version: 0.16.17
 Date: 2. 02. 2018
   Features:
     - Added the Wasp faction, an enemy that throws smaller flying enemies
+    - Added the Spawner faction, an enemy that throws egg sack that make biters
   Improvements:
     - Added setting to turn off most of the friendly fire for worm and spitter splash damage
     - Changed electric biters to target multiple entities with their beams at a time

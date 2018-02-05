@@ -14,6 +14,7 @@ if settings.startup["rampant-newEnemies"].value then
     -- require("prototypes/Decaying")
     -- require("prototypes/Poison")
     -- require("prototypes/Undying")
+    require("prototypes/Spawner")
     require("prototypes/Wasp")
     require("prototypes/Laser")
     

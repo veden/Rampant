@@ -763,41 +763,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack)
 	
 	cyclic_sound =
 	    {
-                begin_sound =
-		    {
-			{
-			    filename = "__base__/sound/creatures/spitter-1.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-2.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-3.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-4.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-5.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-6.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-7.ogg",
-			    volume = 0.7
-			},
-			{
-			    filename = "__base__/sound/creatures/spitter-8.ogg",
-			    volume = 0.7
-			}
-		    },
+                begin_sound = biterFunctions.biterAttackSounds(),
                 middle_sound =
 		    {
 			{

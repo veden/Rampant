@@ -9,14 +9,14 @@ local constants = require("Constants")
 
 -- constants
 
-local WASP_UNIT_TIERS = constants.WASP_UNIT_TIERS
-local WASP_UNIT_VARIATIONS = constants.WASP_UNIT_VARIATIONS
+local SPAWNER_UNIT_TIERS = constants.SPAWNER_UNIT_TIERS
+local SPAWNER_UNIT_VARIATIONS = constants.SPAWNER_UNIT_VARIATIONS
 
-local WASP_NEST_TIERS = constants.WASP_NEST_TIERS
-local WASP_NEST_VARIATIONS = constants.WASP_NEST_VARIATIONS
+local SPAWNER_NEST_TIERS = constants.SPAWNER_NEST_TIERS
+local SPAWNER_NEST_VARIATIONS = constants.SPAWNER_NEST_VARIATIONS
 
-local WASP_WORM_TIERS = constants.WASP_WORM_TIERS
-local WASP_WORM_VARIATIONS = constants.WASP_WORM_VARIATIONS
+local SPAWNER_WORM_TIERS = constants.SPAWNER_WORM_TIERS
+local SPAWNER_WORM_VARIATIONS = constants.SPAWNER_WORM_VARIATIONS
 
 -- imported functions
 
@@ -24,6 +24,7 @@ local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
 local createAttackBall = acidBall.createAttackBall
+local createMeleeAttack = biterUtils.createMeleeAttack
 local createCapsuleAttack = biterUtils.createCapsuleAttack
 
 local biterAttackSounds = biterUtils.biterAttackSounds
@@ -36,33 +37,40 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
-local biterLoot = makeUnitAlienLootTable("purple")
-local spawnerLoot = makeSpawnerAlienLootTable("purple")
-local wormLoot = makeWormAlienLootTable("purple")
+local biterLoot = makeUnitAlienLootTable("green")
+local spawnerLoot = makeSpawnerAlienLootTable("green")
+local wormLoot = makeWormAlienLootTable("green")
 
--- wasp
+-- spawner
 buildUnits(
     {
-	name = "wasp-drone",
+	name = "spawner-drone",
 
 	attributes = {
-	    followsPlayer = true
+	    followsPlayer = false
 	},
 	attack = {
 	    softSmokeName = softSmoke
 	},
-	death = function (attributes)
+	death = function (attack, attributes)
 	    return {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				type = "create-entity",
-				entity_name = "acid-splash-purple"
-			    }
-		    }
+		{
+		    type = "cluster",
+		    cluster_count = attack.clusters,
+		    distance = attack.clusterDistance,
+		    distance_deviation = 3,
+		    action_delivery =
+			{
+			    type = "projectile",
+			    projectile = createCapsuleProjectile("spawner-drone-sub" .. attributes.tier,
+								 attack,
+								 "spawner-biter" ..  attributes.tier .. "-rampant"),
+			    direction_deviation = 0.6,
+			    starting_speed = 0.25,
+			    max_range = attack.range,
+			    starting_speed_deviation = 0.3
+			}
+		}
 	    }
 	end,
 	scales = {
@@ -80,11 +88,11 @@ buildUnits(
 	resistances = {},
 
 	type = "drone",
-	attackName = "wasp-drone",
-	tint = {r=1, g=1, b=0, a=1},
-	pTint = {r=0, g=1, b=1, a=0.5},
-	sTint = {r=0, g=1, b=1, a=0.5},
-	dTint = {r=0, g=0, b=1, a=1}
+	attackName = "spawner-drone",
+	tint = {r=1, g=0, b=1, a=1},
+	pTint = {r=1, g=0, b=1, a=1},
+	sTint = {r=1, g=0, b=1, a=1},
+	dTint = {r=1, g=0, b=1, a=1}
     },
     function (attack)
 	return {
@@ -103,9 +111,8 @@ buildUnits(
 			    type = "direct",
 			    action_delivery =
 				{
-				    type = "stream",
-				    stream = createAttackBall(attack),
-				    duration = 160
+				    type = "instant",
+				    damage = { damage = 0, damageType = "acid" }
 				}
 			}
 		}
@@ -115,46 +122,92 @@ buildUnits(
 	{		
 	    type = "attribute",
 	    name = "health",
-	    [1] = 10,
-	    [2] = 15,
-	    [3] = 20,
-	    [4] = 25,
-	    [5] = 30,
-	    [6] = 35,
-	    [7] = 40,
-	    [8] = 45,
-	    [9] = 50,
-	    [10] = 55
+	    [1] = 100,
+	    [2] = 100,
+	    [3] = 110,
+	    [4] = 110,
+	    [5] = 120,
+	    [6] = 120,
+	    [7] = 130,
+	    [8] = 130,
+	    [9] = 140,
+	    [10] = 140
 	},
 
+{
+	    type = "attack",
+	    name = "startingSpeed",
+	    [1] = 0.25,
+	    [2] = 0.25,
+	    [3] = 0.27,
+	    [4] = 0.27,
+	    [5] = 0.29,
+	    [6] = 0.29,
+	    [7] = 0.31,
+	    [8] = 0.31,
+	    [9] = 0.33,
+	    [10] = 0.33
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusterDistance",
+	    [1] = 3,
+	    [2] = 3,
+	    [3] = 4,
+	    [4] = 4,
+	    [5] = 5,
+	    [6] = 5,
+	    [7] = 6,
+	    [8] = 6,
+	    [9] = 7,
+	    [10] = 7
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusters",
+	    min = 2,
+	    [1] = 5,
+	    [2] = 5,
+	    [3] = 6,
+	    [4] = 6,
+	    [5] = 7,
+	    [6] = 7,
+	    [7] = 8,
+	    [8] = 8,
+	    [9] = 9,
+	    [10] = 9
+	},
+	
 	{		
 	    type = "attack",
 	    name = "cooldown",
-	    [1] = 60,
-	    [2] = 60,
-	    [3] = 55,
-	    [4] = 55,
-	    [5] = 50,
-	    [6] = 50,
-	    [7] = 45,
-	    [8] = 45,
-	    [9] = 40,
-	    [10] = 40
+	    [1] = 100,
+	    [2] = 100,
+	    [3] = 97,
+	    [4] = 97,
+	    [5] = 95,
+	    [6] = 95,
+	    [7] = 93,
+	    [8] = 93,
+	    [9] = 90,
+	    [10] = 90
 	},
 
 	{		
 	    type = "attribute",
 	    name = "ttl",
-	    [1] = 300,
-	    [2] = 300,
-	    [3] = 350,
-	    [4] = 350,
-	    [5] = 400,
-	    [6] = 400,
-	    [7] = 450,
-	    [8] = 450,
-	    [9] = 500,
-	    [10] = 500
+	    [1] = 400,
+	    [2] = 400,
+	    [3] = 450,
+	    [4] = 450,
+	    [5] = 500,
+	    [6] = 500,
+	    [7] = 550,
+	    [8] = 550,
+	    [9] = 600,
+	    [10] = 600
 	},
 	
 	{		
@@ -307,33 +360,20 @@ buildUnits(
 	    [10] = 0.0021
 	}
     },
-    WASP_UNIT_VARIATIONS,
-    WASP_UNIT_TIERS
+    SPAWNER_UNIT_VARIATIONS,
+    SPAWNER_UNIT_TIERS
 )
 
+-- spawner units
 buildUnits(
     {
-	name = "wasp-worm-drone",
+	name = "spawner-biter",
 
-	attributes = {	    
+	attributes = {
+	    explosion = "blood-explosion-small"
 	},
 	attack = {
-	    softSmokeName = softSmoke
 	},
-	death = function (attributes)
-	    return {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				type = "create-entity",
-				entity_name = "acid-splash-purple"
-			    }
-		    }
-	    }
-	end,
 	scales = {
 	    [1] = 0.5,
 	    [2] = 0.5,
@@ -348,112 +388,87 @@ buildUnits(
 	},
 	resistances = {},
 
-	type = "drone",
-	attackName = "wasp-worm-drone",
-	tint = {r=1, g=1, b=0, a=1},
-	pTint = {r=0, g=1, b=1, a=0.5},
-	sTint = {r=0, g=1, b=1, a=0.5},
-	dTint = {r=0, g=0, b=1, a=1}
+	type = "biter",
+	tint1 = {r=1, g=0, b=1, a=1},
+	tint2 = {r=1, g=0.63, b=0, a=0.4}
     },
-    function (attack)
-	return {
-	    type = "projectile",
-	    ammo_category = "bullet",
-	    cooldown = attack.cooldown or 20,
-	    projectile_center = {0, 1},
-	    projectile_creation_distance = 0.6,
-	    range = attack.range or 15,
-	    sound = biterAttackSounds(),
-	    ammo_type =
-		{
-		    category = "bullet",
-		    action =
-			{
-			    type = "direct",
-			    action_delivery =
-				{
-				    type = "stream",
-				    stream = createAttackBall(attack),
-				    duration = 160
-				}
-			}
-		}
-	}
-    end,
+    createMeleeAttack,
     {
-	{		
+	{
+
 	    type = "attribute",
 	    name = "health",
-	    [1] = 10,
-	    [2] = 15,
-	    [3] = 20,
-	    [4] = 25,
-	    [5] = 30,
-	    [6] = 35,
-	    [7] = 40,
-	    [8] = 45,
-	    [9] = 50,
-	    [10] = 55
+	    [1] = 15,
+	    [2] = 30,
+	    [3] = 45,
+	    [4] = 60,
+	    [5] = 75,
+	    [6] = 90,
+	    [7] = 110,
+	    [8] = 145,
+	    [9] = 165,
+	    [10] = 180
+
 	},
-	
+
 	{		
 	    type = "attack",
 	    name = "cooldown",
-	    [1] = 60,
-	    [2] = 60,
-	    [3] = 55,
-	    [4] = 55,
-	    [5] = 50,
-	    [6] = 50,
-	    [7] = 45,
-	    [8] = 45,
-	    [9] = 40,
-	    [10] = 40
+	    [1] = 35,
+	    [2] = 35,
+	    [3] = 35,
+	    [4] = 35,
+	    [5] = 35,
+	    [6] = 35,
+	    [7] = 50,
+	    [8] = 50,
+	    [9] = 55,
+	    [10] = 57
+	},
+	
+	{		
+	    type = "attribute",
+	    name = "spawningTimeModifer",
+	    [1] = 0,
+	    [2] = 0,
+	    [3] = 1,
+	    [4] = 2,
+	    [5] = 3,
+	    [6] = 7,
+	    [7] = 10,
+	    [8] = 10,
+	    [9] = 12,
+	    [10] = 12
 	},
 
 	{		
 	    type = "attribute",
-	    name = "ttl",
-	    [1] = 300,
-	    [2] = 300,
-	    [3] = 350,
-	    [4] = 350,
-	    [5] = 400,
-	    [6] = 400,
-	    [7] = 450,
-	    [8] = 450,
-	    [9] = 500,
-	    [10] = 500
+	    name = "pollutionToAttack",
+	    [1] = 200,
+	    [2] = 750,
+	    [3] = 1750,
+	    [4] = 3500,
+	    [5] = 5000,
+	    [6] = 10000,
+	    [7] = 20000,
+	    [8] = 25000,
+	    [9] = 30000,
+	    [10] = 40000
 	},
-	
+
 	{		
 	    type = "attack",
 	    name = "damage",
-	    [1] = 2,
-	    [2] = 4,
-	    [3] = 7,
-	    [4] = 13,
-	    [5] = 15,
-	    [6] = 18,
-	    [7] = 22,
-	    [8] = 28,
-	    [9] = 35,
-	    [10] = 40
-	},
-
-	{
-	    type = "attack",
-	    name = "rangeFromPlayer",
-	    [1] = 10,
-	    [2] = 10,
-	    [3] = 11,
-	    [4] = 11,
-	    [5] = 12,
-	    [6] = 12,
-	    [7] = 13,
-	    [8] = 13,
-	    [9] = 14,
-	    [10] = 14
+	    [1] = 7,
+	    [2] = 15,
+	    [3] = 22.5,
+	    [4] = 35,
+	    [5] = 45,
+	    [6] = 60,
+	    [7] = 75,
+	    [8] = 90,
+	    [9] = 150,
+	    [10] = 200
 	},
 	
 	{		
@@ -471,121 +486,118 @@ buildUnits(
 	    [10] = 0.16
 	},
 
-	
-	{
+	{		
 	    type = "attribute",
 	    name = "movement",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.02,
-	    [4] = 0.02,
-	    [5] = 0.03,
-	    [6] = 0.03,
-	    [7] = 0.04,
-	    [8] = 0.04,
-	    [9] = 0.05,
-	    [10] = 0.05
+	    [1] = 0.2,
+	    [2] = 0.19,
+	    [3] = 0.185,
+	    [4] = 0.18,
+	    [5] = 0.175,
+	    [6] = 0.17,
+	    [7] = 0.17,
+	    [8] = 0.17,
+	    [9] = 0.17,
+	    [10] = 0.17
 	},
 	{
 	    type = "attribute",
 	    name = "distancePerFrame",
-	    [1] = 0.013,
-	    [2] = 0.013,
-	    [3] = 0.014,
-	    [4] = 0.014,
-	    [5] = 0.015,
-	    [6] = 0.015,
-	    [7] = 0.016,
-	    [8] = 0.016,
-	    [9] = 0.017,
-	    [10] = 0.017
+	    [1] = 0.1,
+	    [2] = 0.125,
+	    [3] = 0.15,
+	    [4] = 0.19,
+	    [5] = 0.195,
+	    [6] = 0.2,
+	    [7] = 0.2,
+	    [8] = 0.2,
+	    [9] = 0.2,
+	    [10] = 0.2
+	},
+
+	{
+	    type = "resistance",
+	    name = "physical",
+	    decrease = {
+		[1] = 0,
+		[2] = 0,
+		[3] = 4,
+		[4] = 5,
+		[5] = 6,
+		[6] = 8,
+		[7] = 10,
+		[8] = 12,
+		[9] = 14,
+		[10] = 15
+	    },
+	    percent = {
+		[1] = 0,
+		[2] = 0,
+		[3] = 0,
+		[4] = 10,
+		[5] = 12,
+		[6] = 12,
+		[7] = 13,
+		[8] = 13,
+		[9] = 14,
+		[10] = 15
+	    }
+	},
+	{
+	    type = "resistance",
+	    name = "explosion",
+	    decrease = {
+		[1] = 0,
+		[2] = 0,
+		[3] = 0,
+		[4] = 0,
+		[5] = 0,
+		[6] = 0,
+		[7] = 10,
+		[8] = 12,
+		[9] = 14,
+		[10] = 15
+	    },
+	    percent = {
+		[1] = 0,
+		[2] = 0,
+		[3] = 0,
+		[4] = 10,
+		[5] = 12,
+		[6] = 12,
+		[7] = 13,
+		[8] = 13,
+		[9] = 14,
+		[10] = 15
+	    }
 	},
 
 	{
 	    type = "attack",
 	    name = "range",
-	    [1] = 10,
-	    [2] = 10,
-	    [3] = 11,
-	    [4] = 11,
-	    [5] = 12,
-	    [6] = 12,
-	    [7] = 13,
-	    [8] = 13,
-	    [9] = 14,
-	    [10] = 14
-	},
-
-	{
-	    type = "attack",
-	    name = "radius",
-	    [1] = 1.2,
-	    [2] = 1.3,
-	    [3] = 1.4,
-	    [4] = 1.5,
-	    [5] = 1.6,
-	    [6] = 1.7,
-	    [7] = 1.8,
-	    [8] = 1.9,
-	    [9] = 2.0,
-	    [10] = 2.5
-	},
-
-	{
-	    type = "attack",
-	    name = "particleVerticalAcceleration",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.02,
-	    [4] = 0.02,
-	    [5] = 0.03,
-	    [6] = 0.03,
-	    [7] = 0.04,
-	    [8] = 0.04,
-	    [9] = 0.05,
-	    [10] = 0.05
-	},
-
-	{
-	    type = "attack",
-	    name = "particleHoizontalSpeed",
-	    [1] = 0.6,
-	    [2] = 0.6,
-	    [3] = 0.7,
-	    [4] = 0.7,
-	    [5] = 0.8,
-	    [6] = 0.8,
-	    [7] = 0.9,
-	    [8] = 0.9,
-	    [9] = 1,
-	    [10] = 1
-	},
-
-	{
-	    type = "attack",
-	    name = "particleHoizontalSpeedDeviation",
-	    [1] = 0.0025,
-	    [2] = 0.0025,
-	    [3] = 0.0024,
-	    [4] = 0.0024,
-	    [5] = 0.0023,
-	    [6] = 0.0023,
-	    [7] = 0.0022,
-	    [8] = 0.0022,
-	    [9] = 0.0021,
-	    [10] = 0.0021
+	    [1] = 0.5,
+	    [2] = 0.5,
+	    [3] = 0.75,
+	    [4] = 0.75,
+	    [5] = 1.0,
+	    [6] = 1.0,
+	    [7] = 1.25,
+	    [8] = 1.50,
+	    [9] = 1.75,
+	    [10] = 2.0
+	    
 	}
     },
-    WASP_UNIT_VARIATIONS,
-    WASP_UNIT_TIERS
+    SPAWNER_UNIT_VARIATIONS,
+    SPAWNER_UNIT_TIERS
 )
 
 
--- wasp spitters
+-- spawner spitters
 buildUnitSpawner(
     {
 	unit = {
-	    name = "wasp-spitter",
+	    name = "spawner-spitter",
 
 	    loot = biterLoot,
 	    attributes = {
@@ -609,14 +621,14 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "wasp-drone",
-	    tint = {r=1, g=1, b=0, a=1},
-	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5}
+	    attackName = "spawner-drone",
+	    tint = {r=1, g=0, b=1, a=1},
+	    pTint = {r=1, g=0, b=1, a=1},
+	    sTint = {r=1, g=0, b=1, a=1}
 	},
 
 	unitSpawner = {
-	    name = "wasp-spitter-nest",
+	    name = "spawner-spitter-nest",
 
 	    loot = spawnerLoot,
 	    attributes = {},
@@ -634,7 +646,7 @@ buildUnitSpawner(
 		[9] = 0.5,
 		[10] = 0.5
 	    },
-	    tint = {r=1, g=1, b=0, a=1}
+	    tint = {r=1, g=0, b=1, a=1}
 	}
     },
 
@@ -1069,20 +1081,20 @@ buildUnitSpawner(
     end,
 
     {
-	unit = WASP_UNIT_VARIATIONS,
-	unitSpawner = WASP_NEST_VARIATIONS
+	unit = SPAWNER_UNIT_VARIATIONS,
+	unitSpawner = SPAWNER_NEST_VARIATIONS
     },
 
     {
-	unit = WASP_UNIT_TIERS,
-	unitSpawner = WASP_NEST_TIERS
+	unit = SPAWNER_UNIT_TIERS,
+	unitSpawner = SPAWNER_NEST_TIERS
     }
 )
 
--- wasp worms
+-- spawner worms
 buildWorm(
     {
-	name = "wasp-worm",
+	name = "spawner-worm",
 
 	loot = wormLoot,	    
 	attributes = {
@@ -1104,10 +1116,10 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "wasp-worm-drone",
-	tint = {r=1, g=1, b=0, a=1},
-	pTint = {r=0, g=1, b=1, a=0.5},
-	sTint = {r=0, g=1, b=1, a=0.5}
+	attackName = "spawner-drone",
+	tint = {r=1, g=0, b=1, a=1},
+	pTint = {r=1, g=0, b=1, a=1},
+	sTint = {r=1, g=0, b=1, a=1}
     },
 
     {
@@ -1389,6 +1401,6 @@ buildWorm(
 							   attributes.name .. "-drone-rampant"))
     end,
 
-    WASP_WORM_VARIATIONS,
-    WASP_WORM_TIERS
+    SPAWNER_WORM_VARIATIONS,
+    SPAWNER_WORM_TIERS
 )

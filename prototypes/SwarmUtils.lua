@@ -270,6 +270,7 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 	for i=1,variations do
 	    local unit = deepcopy(template)
 	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
+	    unit.attributes.tier = "-v" .. i .. "-t" .. t
 	    generateApperance(unit, t)
 	    upgradeEntity(unit, upgradeTable,  t)
 	    
@@ -299,7 +300,7 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 				   unit.attributes,
 				   unit.resistances,
 				   attackGenerator(unit.attack),
-				   unit.death)
+				   unit.death(unit.attack, unit.attributes))
 	    end
 
 	    result[#result+1] = entity.name

@@ -8,7 +8,8 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
     for k,v in pairs(biterResistances) do
 	v.type = k
 	resistances[#resistances+1] = v
-    end    
+    end
+    attributes.name = name
     
     local drone = {
 	type = "combat-robot",
@@ -23,12 +24,12 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
 	alert_when_damaged = false,
 	collision_box = {{0, 0}, {0, 0}},
 	selection_box = {{-0.5, -1.5}, {0.5, -0.5}},
-	distance_per_frame = attributes.distancePerFrame or 0.13,
+	distance_per_frame = attributes.distancePerFrame or 0.0,
 	time_to_live = attributes.ttl or (60 * 45),
 	follows_player = attributes.followsPlayer or false,
 	friction = attributes.friction or 0.01,
 	range_from_player = attributes.rangeFromPlayer or 6.0,
-	speed = attributes.movement or 0.01,
+	speed = attributes.movement or 0.00,
 	destroy_action = biterDeath,
 	attack_parameters = biterAttack,
 	idle =
@@ -190,12 +191,12 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
     return drone
 end
 
-function droneUtils.createCapsuleProjectile(attributes, entityName)
-    local name = attributes.name .. "-capsule-rampant"
-    
-    data:extend({{
+function droneUtils.createCapsuleProjectile(name, attributes, entityName)
+    local n = name .. "-capsule-rampant"
+
+    local cap = {
 		type = "projectile",
-		name = name,
+		name = n,
 		flags = {"not-on-map"},
 		collision_box = {{-0.3, -1.1}, {0.3, 1.1}},
 		direction_only = true,
@@ -213,6 +214,10 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
 					    show_in_tooltip = true,
 					    entity_name = entityName,
 					},
+					{
+					    type = "damage",
+					    damage = {amount = attributes.damage or 5, type = attributes.damageType or "explosion"}
+					}
 				    }
 			    }
 		    },
@@ -259,8 +264,10 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
 			starting_frame_speed_deviation = 5
 		    }
 		}
-    }})
-    return name
+    }
+
+    data:extend({cap})
+    return n
 end
 
 return droneUtils

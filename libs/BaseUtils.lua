@@ -76,7 +76,12 @@ local WASP_WORM_VARIATIONS = constants.WASP_WORM_VARIATIONS
 local WASP_NEST_TIERS = constants.WASP_NEST_TIERS
 local WASP_NEST_VARIATIONS = constants.WASP_NEST_VARIATIONS
 
+local SPAWNER_WORM_TIERS = constants.SPAWNER_WORM_TIERS
+local SPAWNER_WORM_VARIATIONS = constants.SPAWNER_WORM_VARIATIONS
+local SPAWNER_NEST_TIERS = constants.SPAWNER_NEST_TIERS
+local SPAWNER_NEST_VARIATIONS = constants.SPAWNER_NEST_VARIATIONS
 
+local BASE_ALIGNMENT_SPAWNER = constants.BASE_ALIGNMENT_SPAWNER
 local BASE_ALIGNMENT_WASP = constants.BASE_ALIGNMENT_WASP
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
 local BASE_ALIGNMENT_ACID = constants.BASE_ALIGNMENT_ACID
@@ -597,6 +602,18 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     		     natives,
     		     BASE_ALIGNMENT_WASP,
     		     "wasp")
+
+    processUnitClass(0,
+    		     0,
+    		     SPAWNER_NEST_VARIATIONS,
+    		     SPAWNER_NEST_TIERS,
+    		     SPAWNER_WORM_VARIATIONS,
+    		     SPAWNER_WORM_TIERS,
+    		     surface,
+    		     natives,
+    		     BASE_ALIGNMENT_SPAWNER,
+    		     "spawner")
+
 end
 
 return baseUtils
