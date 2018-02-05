@@ -71,6 +71,13 @@ local LASER_WORM_VARIATIONS = constants.LASER_WORM_VARIATIONS
 local LASER_NEST_TIERS = constants.LASER_NEST_TIERS
 local LASER_NEST_VARIATIONS = constants.LASER_NEST_VARIATIONS
 
+local WASP_WORM_TIERS = constants.WASP_WORM_TIERS
+local WASP_WORM_VARIATIONS = constants.WASP_WORM_VARIATIONS
+local WASP_NEST_TIERS = constants.WASP_NEST_TIERS
+local WASP_NEST_VARIATIONS = constants.WASP_NEST_VARIATIONS
+
+
+local BASE_ALIGNMENT_WASP = constants.BASE_ALIGNMENT_WASP
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
 local BASE_ALIGNMENT_ACID = constants.BASE_ALIGNMENT_ACID
 local BASE_ALIGNMENT_ELECTRIC = constants.BASE_ALIGNMENT_ELECTRIC
@@ -83,6 +90,8 @@ local BASE_ALIGNMENT_FAST = constants.BASE_ALIGNMENT_FAST
 local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
+
+
 
 local BASE_WORM_UPGRADE = constants.BASE_WORM_UPGRADE
 local BASE_SPAWNER_UPGRADE = constants.BASE_SPAWNER_UPGRADE
@@ -578,16 +587,16 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     		     BASE_ALIGNMENT_LASER,
     		     "laser")
 
-    -- processUnitClass(WASP_NEST_VARIATIONS,
-    -- 		     WASP_NEST_TIERS,
-    -- 		     WASP_NEST_VARIATIONS,
-    -- 		     WASP_NEST_TIERS,
-    -- 		     WASP_WORM_VARIATIONS,
-    -- 		     WASP_WORM_TIERS,
-    -- 		     surface,
-    -- 		     natives,
-    -- 		     BASE_ALIGNMENT_WASP,
-    -- 		     "wasp")
+    processUnitClass(0,
+    		     0,
+    		     WASP_NEST_VARIATIONS,
+    		     WASP_NEST_TIERS,
+    		     WASP_WORM_VARIATIONS,
+    		     WASP_WORM_TIERS,
+    		     surface,
+    		     natives,
+    		     BASE_ALIGNMENT_WASP,
+    		     "wasp")
 end
 
 return baseUtils

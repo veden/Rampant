@@ -161,6 +161,7 @@ constants.BASE_ALIGNMENT_PATHS = {}
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
     constants.BASE_ALIGNMENT_ACID,
     constants.BASE_ALIGNMENT_FIRE,
+    constants.BASE_ALIGNMENT_WASP,
     constants.BASE_ALIGNMENT_PHYSICAL,
     constants.BASE_ALIGNMENT_ELECTRIC,
     constants.BASE_ALIGNMENT_SUICIDE,
@@ -180,6 +181,7 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_SUICIDE] = 0.3,
     [constants.BASE_ALIGNMENT_PHYSICAL] = 0.4,
     [constants.BASE_ALIGNMENT_LASER] = 0.4,
+    [constants.BASE_ALIGNMENT_WASP] = 0.5,
     [constants.BASE_ALIGNMENT_FIRE] = 0.4,
     [constants.BASE_ALIGNMENT_FAST] = 0.5,
     [constants.BASE_ALIGNMENT_TROLL] = 0.5,

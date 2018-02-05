@@ -14,7 +14,7 @@ if settings.startup["rampant-newEnemies"].value then
     -- require("prototypes/Decaying")
     -- require("prototypes/Poison")
     -- require("prototypes/Undying")
-    -- require("prototypes/Wasp")
+    require("prototypes/Wasp")
     require("prototypes/Laser")
     
     for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
