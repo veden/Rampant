@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_52 = 52
+constants.VERSION_53 = 53
 
 -- misc
 
@@ -347,8 +347,11 @@ for i=tierStart,tierEnd,step10 do
     tiers10[#tiers10+1] = math.ceil(i)
 end
 
-constants.TIER_SET_5 = tiers5
-constants.TIER_SET_10 = tiers10
+constants.TIER_UPGRADE_SET_5 = tiers5
+constants.TIER_UPGRADE_SET_10 = tiers10
+
+constants.TIER_NAMING_SET_5 = { 1, 3, 5, 7, 10 }
+constants.TIER_NAMING_SET_10 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
 
 local nestVariations = settings.startup["rampant-newEnemyNestVariations"].value
 local nestTiers = settings.startup["rampant-newEnemyNestTiers"].value

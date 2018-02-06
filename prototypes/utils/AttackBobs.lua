@@ -95,7 +95,7 @@ makeStream({
 	name = name,
 	particleTint = {r=1, g=0.17, b=0.17, a=0.5},
 	spineAnimationTint = {r=1, g=0.43, b=0.17, a=0.5},
-	softSmokeTint = softSmoke,
+	softSmokeName = softSmoke,
 	actions = {
 	    {
 		type = "direct",

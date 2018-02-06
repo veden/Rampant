@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.18
+Date: 2. 05. 2018
+  Bugfixes:
+    - Fixed the enemy naming so the enemy tiers can be changed without losing enemies (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=240#p340944)
+    - Fixed bob enemies load error (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=240#p340897)
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.17
 Date: 2. 02. 2018
   Features:
