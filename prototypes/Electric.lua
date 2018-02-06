@@ -25,7 +25,7 @@ local buildWorm = swarmUtils.buildWorm
 local createElectricAttack = biterUtils.createElectricAttack
 local createAttackBall = attackBall.createAttackBall
 local makeLaser = beamUtils.makeLaser
-local createStreamAttack = biterUtils.createStreamAttack
+local createRangedAttack = biterUtils.createRangedAttack
 local makeBeam = beamUtils.makeBeam
 local makeBubble = beamUtils.makeBubble
 
@@ -633,6 +633,7 @@ buildWorm(
 	loot = wormLoot,
 	attributes = {},
 	attack = {
+	    type = "projectile",
 	    bubble = electricBubble,
 	    damageType = "electric",
 	    softSmokeName = softSmoke,
@@ -1033,7 +1034,7 @@ buildWorm(
     
     function (attributes)
 	attributes.laserName = makeLaser(attributes)
-	return createStreamAttack(attributes,
+	return createRangedAttack(attributes,
 				  createAttackBall(attributes))
     end,
 

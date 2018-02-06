@@ -18,6 +18,15 @@ data:extend({
 	    order = "a[modifier]-b[projectiles]",
 	    per_user = false
 	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-forceOldProjectiles",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "a[modifier]-b[projectiles]",
+	    per_user = false
+	},
 	
 	{
 	    type = "bool-setting",

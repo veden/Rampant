@@ -24,7 +24,7 @@ local makeSticker = stickerUtils.makeSticker
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
-local createStreamAttack = biterUtils.createStreamAttack
+local createRangedAttack = biterUtils.createRangedAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 
 local softSmoke = "the-soft-smoke-rampant"
@@ -571,6 +571,7 @@ buildWorm(
 	loot = wormLoot,
 	attributes = {},
 	attack = {
+	    type = "projectile",
 	    stickerAnimation = {
 		filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
 		priority = "extra-high",
@@ -917,7 +918,8 @@ buildWorm(
 
     function (attributes)
 	makeSticker(attributes)
-	return createStreamAttack(attributes, createAttackBall(attributes))
+	return createRangedAttack(attributes,
+				  createAttackBall(attributes))
     end,
 
     NUCLEAR_WORM_VARIATIONS,

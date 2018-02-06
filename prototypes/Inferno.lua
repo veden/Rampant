@@ -23,7 +23,7 @@ local INFERNO_WORM_VARIATIONS = constants.INFERNO_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackFlame = attackFlame.createAttackFlame
-local createStreamAttack = biterUtils.createStreamAttack
+local createRangedAttack = biterUtils.createRangedAttack
 
 local softSmoke = "the-soft-smoke-rampant"
 local smokeGlow = "the-glow-smoke-rampant"
@@ -51,6 +51,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
+		type = "stream",
 		damageType = "acid",
 		fireDamagePerTickType = "acid",
 		softSmokeName = softSmoke,
@@ -690,7 +691,10 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	return createStreamAttack(attributes, createAttackFlame(attributes))
+	return createRangedAttack(attributes,
+				  createAttackFlame(attributes),
+				  spitterattackanimation(attributes.scale,
+							 attributes.tint))
     end,
     
     {
@@ -712,6 +716,7 @@ buildWorm(
 	loot = wormLoot,
 	attributes = {},
 	attack = {
+	    type = "stream",
 	    damageType = "acid",
 	    fireDamagePerTickType = "acid",
 	    softSmokeName = softSmoke,
@@ -1147,7 +1152,8 @@ buildWorm(
     },
 
     function (attributes)
-	return createStreamAttack(attributes, createAttackFlame(attributes))
+	return createRangedAttack(attributes,
+				  createAttackFlame(attributes))
     end,
 
     INFERNO_WORM_VARIATIONS,

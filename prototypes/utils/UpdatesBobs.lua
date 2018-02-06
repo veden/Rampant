@@ -1,217 +1,246 @@
 local bobsUpdates = {}
 
+local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
 local biterUtils = require("BiterUtils")
 
 function bobsUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];
 
-    turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 60,
-    	    range = 26,
-    	    min_range = 3,
-    	    turn_range = 1,
-    	    fire_penalty = 0,
-    	    scale = 1.2
-    	},
-    	"bob-explosive-ball-stream-rampant")
-
-    turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 60,
-    	    range = 26,
-    	    min_range = 3,
-    	    turn_range = 1,
-    	    fire_penalty = 0,
-    	    scale = 1.2
-    	},
-    	"bob-fire-ball-stream-rampant")
-
-    turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 60,
-    	    range = 26,
-    	    min_range = 3,
-    	    turn_range = 1,
-    	    fire_penalty = 0,
-    	    scale = 1.2
-    	},
-    	"bob-poison-ball-stream-rampant")
-
-    turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 60,
-    	    range = 26,
-    	    min_range = 3,
-    	    turn_range = 1,
-    	    fire_penalty = 0,
-    	    scale = 1.2
-    	},
-    	"bob-piercing-ball-stream-rampant")
+    local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
     
-    turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
+    turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 26,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
+	    type = "projectile",
     	    scale = 1.2
     	},
-    	"bob-electric-ball-stream-rampant")
+    	"bob-explosive-ball-" .. attackType .. "-rampant")
 
-    turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
+    turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
+    	{
+    	    cooldown = 60,
+    	    range = 26,
+    	    min_range = 3,
+    	    turn_range = 1,
+    	    fire_penalty = 0,
+	    type = "projectile",
+    	    scale = 1.2
+    	},
+    	"bob-fire-ball-" .. attackType .. "-rampant")
+
+    turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
+    	{
+    	    cooldown = 60,
+    	    range = 26,
+    	    min_range = 3,
+    	    turn_range = 1,
+    	    fire_penalty = 0,
+	    type = "projectile",
+    	    scale = 1.2
+    	},
+    	"bob-poison-ball-" .. attackType .. "-rampant")
+
+    turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
+    	{
+    	    cooldown = 60,
+    	    range = 26,
+    	    min_range = 3,
+    	    turn_range = 1,
+    	    fire_penalty = 0,
+	    type = "projectile",
+    	    scale = 1.2
+    	},
+    	"bob-piercing-ball-" .. attackType .. "-rampant")
+    
+    turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
+    	{
+    	    cooldown = 60,
+    	    range = 26,
+    	    min_range = 3,
+    	    turn_range = 1,
+    	    fire_penalty = 0,
+	    type = "projectile",
+    	    scale = 1.2
+    	},
+    	"bob-electric-ball-" .. attackType .. "-rampant")
+
+    turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 28,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
+	    type = "projectile",
     	    scale = 1.6
     	},
-    	"acid-ball-5-stream-rampant")
+    	"acid-ball-5-" .. attackType .. "-rampant")
 
-    turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
+    turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 30,
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
+	    type = "projectile",
     	    scale = 2
     	},
-    	"acid-ball-6-stream-rampant")
+    	"acid-ball-6-" .. attackType .. "-rampant")
 
     local units = data.raw["unit"]
 
     local unit = units["behemoth-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
+	    type = "projectile",
     	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
+	    scale = biterUtils.findRunScale(unit)
     	},
-    	"acid-ball-3-stream-rampant")
+    	"acid-ball-3-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-big-electric-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 90,
     	    range = 15,
     	    min_range = 3,
     	    turn_range = 1,
 	    damageModifier = 0.6,
+	    type = "projectile",
 	    warmup = 30,
     	    fire_penalty = 0,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
+	    scale = biterUtils.findRunScale(unit)
     	},
-    	"bob-electric-ball-stream-rampant")
+    	"bob-electric-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-huge-explosive-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 90,
     	    range = 16,
     	    min_range = 3,
+	    type = "projectile",
 	    warmup = 30,
     	    turn_range = 1,
 	    damageModifier = 0.8,
     	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
+	    scale = biterUtils.findRunScale(unit)
     	},
-    	"bob-explosive-ball-stream-rampant")
+    	"bob-explosive-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-huge-acid-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 16,
-    	    min_range = 3,
-    	    turn_range = 1,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    range = 16,
+	    min_range = 3,
+	    type = "projectile",
+	    turn_range = 1,
 	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"wide-acid-ball-stream-rampant")
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"wide-acid-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-giant-fire-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 16,
-    	    min_range = 3,
-    	    turn_range = 1,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    range = 16,
+	    type = "projectile",
+	    min_range = 3,
+	    turn_range = 1,
 	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"bob-fire-ball-stream-rampant")
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"bob-fire-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-giant-poison-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 16,
-    	    min_range = 3,
-    	    turn_range = 1,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    range = 16,
+	    type = "projectile",
+	    min_range = 3,
+	    turn_range = 1,
 	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"bob-poison-ball-stream-rampant")
-    
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"bob-poison-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
+
     unit = units["bob-titan-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 16,
-    	    min_range = 3,
-    	    turn_range = 1,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    range = 16,
+	    type = "projectile",
+	    min_range = 3,
+	    turn_range = 1,
 	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"bob-titan-ball-stream-rampant")
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"bob-titan-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["bob-behemoth-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 16,
-    	    min_range = 3,
-    	    turn_range = 1,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    range = 16,
+	    type = "projectile",
+	    min_range = 3,
+	    turn_range = 1,
 	    warmup = 30,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"bob-behemoth-ball-stream-rampant")
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"bob-behemoth-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
-    
+
     unit = units["bob-leviathan-spitter"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
-    	{
-    	    cooldown = 90,
-    	    range = 17,
-    	    min_range = 3,
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 90,
+	    type = "projectile",
+	    range = 17,
+	    min_range = 3,
 	    warmup = 30,
-    	    turn_range = 1,
-    	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit),
-	    tint = biterUtils.findTint(unit)
-    	},
-    	"bob-leviathan-ball-stream-rampant")
+	    turn_range = 1,
+	    fire_penalty = 15,
+	    scale = biterUtils.findRunScale(unit)
+	},
+	"bob-leviathan-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 end
 
 return bobsUpdates

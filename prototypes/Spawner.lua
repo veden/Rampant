@@ -25,7 +25,7 @@ local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
 local createAttackBall = acidBall.createAttackBall
 local createMeleeAttack = biterUtils.createMeleeAttack
-local createCapsuleAttack = biterUtils.createCapsuleAttack
+local createProjectileAttack = biterUtils.createProjectileAttack
 
 local biterAttackSounds = biterUtils.biterAttackSounds
 
@@ -134,7 +134,7 @@ buildUnits(
 	    [10] = 140
 	},
 
-{
+	{
 	    type = "attack",
 	    name = "startingSpeed",
 	    [1] = 0.25,
@@ -1073,11 +1073,11 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	return createCapsuleAttack(attributes,
-				   createCapsuleProjectile(attributes.name,
-							   attributes,
-							   attributes.name .. "-drone-rampant"),
-				   spitterattackanimation(attributes.scale, attributes.tint))
+	return createProjectileAttack(attributes,
+				      createCapsuleProjectile(attributes.name,
+							      attributes,
+							      attributes.name .. "-drone-rampant"),
+				      spitterattackanimation(attributes.scale, attributes.tint))
     end,
 
     {
@@ -1395,10 +1395,10 @@ buildWorm(
     },
 
     function (attributes)
-	return createCapsuleAttack(attributes,
-				   createCapsuleProjectile(attributes.name,
-							   attributes,
-							   attributes.name .. "-drone-rampant"))
+	return createProjectileAttack(attributes,
+				      createCapsuleProjectile(attributes.name,
+							      attributes,
+							      attributes.name .. "-drone-rampant"))
     end,
 
     SPAWNER_WORM_VARIATIONS,

@@ -1,11 +1,15 @@
 local NEUpdates = {}
 
+local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
 local biterUtils = require("BiterUtils")
 
 function NEUpdates.useNEUnitLaunchers ()
     local turrets = data.raw["turret"];
+
+    local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
     
-    turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
+    turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 25,
@@ -15,9 +19,9 @@ function NEUpdates.useNEUnitLaunchers ()
 	    damageModifier = 2.5,
     	    scale = 1.2
     	},
-    	"ne-infected-unit-ball-stream-rampant")
+    	"ne-infected-unit-ball-" .. attackType .. "-rampant")
 
-    turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createStreamAttack(
+    turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 30,
@@ -27,18 +31,20 @@ function NEUpdates.useNEUnitLaunchers ()
 	    damageModifier = 3,
     	    scale = 1.6
     	},
-    	"ne-mutated-unit-ball-stream-rampant")
+    	"ne-mutated-unit-ball-" .. attackType .. "-rampant")
 end
 
 function NEUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];    
 
+    local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
+    
     local turret = turrets["small-worm-turret"]
     turret["attack_parameters"].range = 19
 
     turret = turrets["medium-worm-turret"]
     turret["attack_parameters"].range = 22
-    turret["attack_parameters"] = biterUtils.createStreamAttack(
+    turret["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 25,
@@ -48,11 +54,11 @@ function NEUpdates.useDumbProjectiles()
 	    damageModifier = 4.5,
 	    scale = 1.2
     	},
-    	"ne-infected-ball-stream-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant")
 
     turret = turrets["big-worm-turret"]
     turret["attack_parameters"].range = 27
-    turret["attack_parameters"] = biterUtils.createStreamAttack(
+    turret["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 60,
     	    range = 30,
@@ -62,12 +68,12 @@ function NEUpdates.useDumbProjectiles()
 	    damageModifier = 5.5,
 	    scale = 1.6
     	},
-    	"ne-mutated-ball-stream-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant")
     
     local units = data.raw["unit"]
 
     local unit = units["small-spitter-Mk2"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 13,
@@ -79,10 +85,10 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-stream-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant")
 
     unit = units["small-spitter-Mk3"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 13,
@@ -94,11 +100,11 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-stream-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant")
 
     
     unit = units["medium-spitter-Mk2"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 14,
@@ -110,10 +116,10 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-stream-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant")
 
     unit = units["medium-spitter-Mk3"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 14,
@@ -125,10 +131,10 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-stream-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant")
     
     unit = units["big-spitter-Mk2"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 15,
@@ -140,11 +146,11 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-stream-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant")
 
     
     unit = units["big-spitter-Mk3"]
-    unit["attack_parameters"] = biterUtils.createStreamAttack(
+    unit["attack_parameters"] = biterUtils.createRangedAttack(
     	{
     	    cooldown = 100,
     	    range = 15,
@@ -156,7 +162,7 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-stream-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant")
     
 end
 

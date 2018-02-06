@@ -24,7 +24,7 @@ local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
 local createAttackBall = acidBall.createAttackBall
-local createCapsuleAttack = biterUtils.createCapsuleAttack
+local createProjectileAttack = biterUtils.createProjectileAttack
 
 local biterAttackSounds = biterUtils.biterAttackSounds
 
@@ -49,6 +49,7 @@ buildUnits(
 	    followsPlayer = true
 	},
 	attack = {
+	    type = "stream",
 	    softSmokeName = softSmoke
 	},
 	death = function (attributes)
@@ -318,6 +319,7 @@ buildUnits(
 	attributes = {	    
 	},
 	attack = {
+	    type = "stream",
 	    softSmokeName = softSmoke
 	},
 	death = function (attributes)
@@ -1061,7 +1063,7 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	return createCapsuleAttack(attributes,
+	return createProjectileAttack(attributes,
 				   createCapsuleProjectile(attributes.name,
 							   attributes,
 							   attributes.name .. "-drone-rampant"),
@@ -1383,7 +1385,7 @@ buildWorm(
     },
 
     function (attributes)
-	return createCapsuleAttack(attributes,
+	return createProjectileAttack(attributes,
 				   createCapsuleProjectile(attributes.name,
 							   attributes,
 							   attributes.name .. "-drone-rampant"))

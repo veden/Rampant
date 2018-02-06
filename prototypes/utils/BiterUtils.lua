@@ -1,5 +1,7 @@
 local biterFunctions = {}
 
+local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
 function biterFunctions.makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend(
@@ -603,6 +605,31 @@ function biterFunctions.findTint(entity)
     return entity.run_animation.layers[2].tint
 end
 
+function biterFunctions.acidSplashSounds()
+    return {
+	type = "play-sound",
+	sound =
+	    {
+		{
+		    filename = "__base__/sound/creatures/projectile-acid-burn-1.ogg",
+		    volume = 0.8
+		},
+		{
+		    filename = "__base__/sound/creatures/projectile-acid-burn-2.ogg",
+		    volume = 0.8
+		},
+		{
+		    filename = "__base__/sound/creatures/projectile-acid-burn-long-1.ogg",
+		    volume = 0.8
+		},
+		{
+		    filename = "__base__/sound/creatures/projectile-acid-burn-long-2.ogg",
+		    volume = 0.8
+		}
+	    }
+    }
+end
+
 function biterFunctions.createElectricAttack(attributes, electricBeam, animation)
     return
 	{
@@ -631,7 +658,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
 	}
 end
 
-function biterFunctions.createCapsuleAttack(attributes, capsule, animation)
+function biterFunctions.createProjectileAttack(attributes, projectile, animation)
     return {
         type = "projectile",
         ammo_category = "capsule",
@@ -645,10 +672,12 @@ function biterFunctions.createCapsuleAttack(attributes, capsule, animation)
 		action =
 		    {
 			type = "direct",
+			entity_flags = { "player-creation" },
 			action_delivery =
 			    {
 				type = "projectile",
-				projectile = capsule or "defender-capsule",
+				projectile = projectile or "defender-capsule",
+				entity_flags = { "player-creation" },
 				starting_speed = attributes.startingSpeed or 0.3,
 				max_range = attributes.maxRange or 20
 			    }
@@ -724,7 +753,15 @@ function biterFunctions.biterAttackSounds()
     }
 end
 
-function biterFunctions.createStreamAttack(attributes, fireAttack)
+function biterFunctions.createRangedAttack(attributes, attack, animation)
+    if (attributes.type == "stream") or FORCE_OLD_PROJECTILES then
+	return biterFunctions.createStreamAttack(attributes, attack, animation)
+    elseif (attributes.type == "projectile") then
+	return biterFunctions.createProjectileAttack(attributes, attack, animation)
+    end
+end
+
+function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
     local attack = {
 	type = "stream",
 	ammo_category = "flamethrower",
@@ -778,14 +815,10 @@ function biterFunctions.createStreamAttack(attributes, fireAttack)
 			    volume = 0.5
 			}
 		    }
-	    }
+	    },
+	animation = animation
     } 
 
-    if (attributes.tint ~= nil) then
-	attack.animation = spitterattackanimation(attributes.scale, 
-						  attributes.tint)
-    end
-    
     return attack
 end
 
