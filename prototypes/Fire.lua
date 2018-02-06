@@ -22,7 +22,7 @@ local FIRE_WORM_VARIATIONS = constants.FIRE_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
-local createStreamAttack = biterUtils.createStreamAttack
+local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
 local softSmoke = "the-soft-smoke-rampant"
@@ -605,6 +605,7 @@ buildUnitSpawner(
 	    },
 	    loot = biterLoot,
 	    attack = {
+		type = "projectile",
 		damageType = "acid",
 		softSmokeName = softSmoke
 	    },
@@ -1190,7 +1191,10 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	return createStreamAttack(attributes, createAttackBall(attributes))
+	return createRangedAttack(attributes,
+				  createAttackBall(attributes),
+				  spitterattackanimation(attributes.scale,
+							 attributes.tint))
     end,
     
     {
@@ -1212,6 +1216,7 @@ buildWorm(
 	attributes = {},
 	loot = wormLoot,
 	attack = {
+	    type = "projectile",
 	    damageType = "acid",
 	    softSmokeName = softSmoke
 	},
@@ -1539,7 +1544,8 @@ buildWorm(
     },
 
     function (attributes)	
-	return createStreamAttack(attributes, createAttackBall(attributes))
+	return createRangedAttack(attributes,
+				  createAttackBall(attributes))
     end,
 
     FIRE_WORM_VARIATIONS,

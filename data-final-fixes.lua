@@ -20,15 +20,23 @@ if settings.startup["rampant-newEnemies"].value then
     
     for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
 	if (unitSpawner.name ~= "biter-spawner") then
-	   unitSpawner.autoplace = nil 
+	    unitSpawner.autoplace = nil 
 	end
     end
     for _, unitSpawner in pairs(data.raw["turret"]) do
 	if (unitSpawner.name ~= "small-worm-turret") then
-	   unitSpawner.autoplace = nil 
+	    unitSpawner.autoplace = nil 
 	end
     end
 end
+
+-- for k, wall in pairs(data.raw["wall"]) do
+--     if not wall.collision_mask then
+-- 	wall.collision_mask = {"player-layer", "item-layer", "object-layer" }
+--     end
+--     wall.collision_mask[#wall.collision_mask+1] = "layer-11"
+--     print(serpent.dump(wall.collision_mask))
+-- end
 
 if settings.startup["rampant-enableSwarm"] then    
     for k, unit in pairs(data.raw["unit"]) do

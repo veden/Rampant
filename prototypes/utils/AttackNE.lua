@@ -1,203 +1,165 @@
 -- import
 
-local streamUtils = require("StreamUtils")
-
--- constants
-
-local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
-
--- imported functions
-
-local makeStream = streamUtils.makeStream
+local attackBall = require("AttackBall")
 
 -- module code
 
 local softSmoke = "the-soft-smoke-rampant"
+local createAttackBall = attackBall.createAttackBall
 
-makeStream({
+
+createAttackBall(
+    {
 	name = "ne-infected-unit-ball",
-	particleTint = {r=0, g=0.97, b=0.34, a=0.5},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	pTint = {r=0, g=0.97, b=0.34, a=0.5},
+	sTint = {r=0, g=0.1, b=1, a=1},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "unit-cluster",
-				    trigger_created_entity = "true"
-				},
-				{
-				    type = "create-sticker",
-				    sticker = "slowdown-sticker",
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "Infected-Poison-Cloud"
-				},
-				{
-				    type = "damage",
-				    damage = {amount = 10, type = "explosion"}
-				},
-				{
-				    type = "damage",
-				    damage = {amount = 24, type = "poison"}
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "unit-cluster",
+		    trigger_created_entity = "true"
+		},
+		{
+		    type = "create-sticker",
+		    sticker = "slowdown-sticker",
+		},
+		{
+		    type = "create-entity",
+		    entity_name = "Infected-Poison-Cloud"
+		},
+		{
+		    type = "damage",
+		    damage = {amount = 10, type = "explosion"}
+		},
+		{
+		    type = "damage",
+		    damage = {amount = 24, type = "poison"}
+		}
 	    }
-	}
-})
+	end,
+	radius = 1,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 0, type = "explosion" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "ne-mutated-unit-ball",
-	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
-	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
+	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
+	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "unit-cluster",
-				    trigger_created_entity = "true"
-				},
-				{
-				    type = "create-sticker",
-				    sticker = "slowdown-sticker",
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "acid-splash-purple"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 2,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 8, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 18, type = "acid" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "unit-cluster",
+		    trigger_created_entity = "true"
+		},
+		{
+		    type = "create-sticker",
+		    sticker = "slowdown-sticker",
+		},
+		{
+		    type = "create-entity",
+		    entity_name = "acid-splash-purple"
+		}
 	    }
-	}
-})
+	end,
+	radius = 2,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 8, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 18, type = "acid" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "ne-infected-ball",
-	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
-	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
+	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
+	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "Infected-Poison-Cloud"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 1.5,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 5, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 12, type = "poison" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "Infected-Poison-Cloud"
+		}
 	    }
-	}
-})
+	end,
+	radius = 1.5,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 5, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 12, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "ne-mutated-ball",
-	particleTint = {r=0.5, g=0.7, b=0.34, a=0.5},
-	spineAnimationTint = {r=0.5, g=0.97, b=0.34, a=0.5},
+	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
+	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "acid-splash-purple"
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "acid-splash-mutated"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 2,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 5, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 12, type = "acid" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "acid-splash-purple"
+		}
 	    }
-	}
-})
+	end,
+	radius = 1.5,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 5, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 12, type = "acid" }
+		    }
+		}
+	end	    
+    }
+)

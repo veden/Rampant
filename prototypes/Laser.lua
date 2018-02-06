@@ -24,8 +24,7 @@ local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
 local makeLaser = beamUtils.makeLaser
-local createStreamAttack = biterUtils.createStreamAttack
-local makeBeam = beamUtils.makeBeam
+local createRangedAttack = biterUtils.createRangedAttack
 local makeBubble = beamUtils.makeBubble
 
 local createMeleeAttack = biterUtils.createMeleeAttack
@@ -590,6 +589,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
+		type = "projectile",
 		bubble = laserBubble,
 		softSmokeName = softSmoke,
 		damageType = "laser",
@@ -1192,8 +1192,10 @@ buildUnitSpawner(
 
     function (attributes)
 	attributes.laserName = makeLaser(attributes)
-	return createStreamAttack(attributes,
-				  createAttackBall(attributes))
+	return createRangedAttack(attributes,
+				  createAttackBall(attributes),
+				  spitterattackanimation(attributes.scale,
+							 attributes.tint))
     end,
     
     {
@@ -1215,6 +1217,7 @@ buildWorm(
 	loot = wormLoot,
 	attributes = {},
 	attack = {
+	    type = "projectile",
 	    bubble = laserBubble,
 	    softSmokeName = softSmoke,
 	    damageType = "laser",
@@ -1615,7 +1618,7 @@ buildWorm(
 
     function (attributes)
 	attributes.laserName = makeLaser(attributes)
-	return createStreamAttack(attributes,
+	return createRangedAttack(attributes,
 				  createAttackBall(attributes))
     end,
 

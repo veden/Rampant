@@ -22,7 +22,7 @@ local PHYSICAL_WORM_VARIATIONS = constants.PHYSICAL_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = physicalBall.createAttackBall
-local createStreamAttack = biterUtils.createStreamAttack
+local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
 local softSmoke = "the-soft-smoke-rampant"
@@ -519,6 +519,7 @@ buildWorm(
 	attributes = {
 	},
 	attack = {
+	    type = "projectile",
 	    damageType = "physical",
 	    pointEffects = function (attributes)
 		return {
@@ -853,7 +854,8 @@ buildWorm(
     },
 
     function (attributes)
-	return createStreamAttack(attributes, createAttackBall(attributes))
+	return createRangedAttack(attributes,
+				  createAttackBall(attributes))
     end,
 
     PHYSICAL_WORM_VARIATIONS,

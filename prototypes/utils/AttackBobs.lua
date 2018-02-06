@@ -2,9 +2,9 @@
 
 -- import
 
-local streamUtils = require("StreamUtils")
 local fireUtils = require("FireUtils")
 local stickerUtils = require("StickerUtils")
+local attackBall = require("AttackBall")
 
 -- constants
 
@@ -12,10 +12,11 @@ local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].
 
 -- imported functions
 
-local makeStream = streamUtils.makeStream
 local makeSpreadEffect = fireUtils.makeSpreadEffect
 local makeFire = fireUtils.makeFire
 local makeSticker = stickerUtils.makeSticker
+
+local createAttackBall = attackBall.createAttackBall
 
 -- module code
 
@@ -24,54 +25,44 @@ local smokeGlow = "the-glow-smoke-rampant"
 local smokeWithoutGlow = "the-without-glow-smoke-rampant"
 local smokeFuel = "the-adding-fuel-rampant"
 
-makeStream({
+
+createAttackBall(
+    {
 	name = "bob-explosive-ball",
-	particleTint = {r=1, g=0.97, b=0.34, a=0.5},
-	spineAnimationTint = {r=1, g=0.97, b=0.34, a=0.5},
+	pTint = {r=1, g=0.97, b=0.34, a=0.5},
+	sTint = {r=1, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-scorchmark",
-				    check_buildability = true
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "big-explosion",
-				    check_buildability = true
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "small-fire-cloud"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 25, type = "explosion" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "small-scorchmark",
+		    check_buildability = true
+		},
+		{
+		    type = "create-entity",
+		    entity_name = "big-explosion",
+		    check_buildability = true
+		},
+		{
+		    type = "create-entity",
+		    entity_name = "small-fire-cloud"
+		}
 	    }
-	}
-})
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 25, type = "explosion" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
@@ -91,89 +82,67 @@ local stickerName = makeSticker({
 	name = name,
 	spawnEntityName = spawnEntityName
 })
-makeStream({
+createAttackBall(
+    {
 	name = name,
-	particleTint = {r=1, g=0.17, b=0.17, a=0.5},
-	spineAnimationTint = {r=1, g=0.43, b=0.17, a=0.5},
+	pTint = {r=1, g=0.17, b=0.17, a=0.5},
+	sTint = {r=1, g=0.43, b=0.17, a=0.5},
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-fire",
-				    entity_name = fireName
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 2,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-sticker",
-				    sticker = stickerName,
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 20, type = "fire" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-fire",
+		    entity_name = fireName
+		}
 	    }
-	}
-})
+	end,
+	radius = 2,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "create-sticker",
+			sticker = stickerName,
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 20, type = "fire" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "bob-poison-ball",
-	particleTint = {r=0.1, g=0.5, b=1, a=0.5},
-	spineAnimationTint = {r=0, g=0, b=1, a=0.5},
+	pTint = {r=0.1, g=0.5, b=1, a=0.5},
+	sTint = {r=0, g=0, b=1, a=0.5},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-poison-cloud"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 2,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 20, type = "poison" }
-				}
-			    }
-		    }
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "small-poison-cloud"
+		}
 	    }
-	}
-})
+	end,
+	radius = 2,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 20, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
 
 -- piercing
 
@@ -209,44 +178,45 @@ data:extend({
 	}
 })
 
-makeStream({
+createAttackBall(
+    {
 	name = "bob-piercing-ball",
-	particleTint = {r=0.1, g=0.1, b=0.1, a=0.8},
-	spineAnimationTint = {r=0.1, g=0.1, b=0.1, a=0.8},
+	pTint = {r=0.1, g=0.1, b=0.1, a=0.8},
+	sTint = {r=0.1, g=0.1, b=0.1, a=0.8},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "cluster",
-		cluster_count = 10,
-		distance = 4,
-		distance_deviation = 3,
-		action_delivery =
-		    {
-			type = "projectile",
-			projectile = "piercing-spike-rampant",
-			direction_deviation = 0.6,
-			starting_speed = 1,
-			starting_speed_deviation = 0.0
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    type = "nested-result",
+		    action = {
+			type = "cluster",
+			cluster_count = 10,
+			distance = 4,
+			distance_deviation = 3,
+			action_delivery =
 			    {
-				{
-				    type = "damage",
-				    damage = { amount = 30, type = "bob-pierce" }
-				}
+				type = "projectile",
+				projectile = "piercing-spike-rampant",
+				direction_deviation = 0.6,
+				starting_speed = 1,
+				starting_speed_deviation = 0.0
 			    }
 		    }
-	    }
-	}
-})
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 30, type = "bob-pierce" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
@@ -292,232 +262,199 @@ data:extend({
 	}
 })
 
-
-makeStream({
+createAttackBall(
+    {
 	name = "bob-electric-ball",
-	particleTint = {r=0, g=0.1, b=1, a=1},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "cluster",
-		cluster_count = 5,
-		distance = 2,
-		distance_deviation = 2,
-		action_delivery =
-		    {
-			type = "projectile",
-			projectile = "electric-spike-rampant",
-			direction_deviation = 0.6,
-			starting_speed = 0.65,
-			starting_speed_deviation = 0.0
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    type = "nested-result",
+		    action = {
+			type = "cluster",
+			cluster_count = 5,
+			distance = 2,
+			distance_deviation = 2,
+			action_delivery =
 			    {
-				{
-				    type = "damage",
-				    damage = { amount = 25, type = "electric" }
-				}
+				type = "projectile",
+				projectile = "electric-spike-rampant",
+				direction_deviation = 0.6,
+				starting_speed = 0.65,
+				starting_speed_deviation = 0.0
 			    }
 		    }
-	    }
-	}
-})
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 25, type = "electric" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "bob-titan-ball",
-	particleTint = {r=0, g=0.1, b=1, a=1},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
 		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-fire-cloud"
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "big-explosion"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
+			type = "create-entity",
+			entity_name = "small-fire-cloud"
+		    },
 		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 10, type = "electric" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 10, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 10, type = "fire" }
-				}
-			    }
+			type = "create-entity",
+			entity_name = "big-explosion"
 		    }
-	    }
-	}
-})
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 10, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 10, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 10, type = "fire" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "bob-behemoth-ball",
-	particleTint = {r=0, g=0.1, b=1, a=1},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "direct",
-		action_delivery =
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
 		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "create-entity",
-				    entity_name = "small-poison-cloud"
-				},
-				{
-				    type = "create-entity",
-				    entity_name = "big-explosion"
-				}
-			    }
-		    }
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
+			type = "create-entity",
+			entity_name = "small-poison-cloud"
+		    },
 		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "electric" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "fire" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "poison" }
-				}
-			    }
+			type = "create-entity",
+			entity_name = "big-explosion"
 		    }
-	    }
-	}
-})
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "fire" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
 
 --
 
-makeStream({
+createAttackBall(
+    {
 	name = "bob-leviathan-ball",
-	particleTint = {r=0, g=0.1, b=1, a=1},
-	spineAnimationTint = {r=0, g=0.1, b=1, a=1},
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	actions = {
-	    {
-		type = "cluster",
-		cluster_count = 4,
-		distance = 3,
-		distance_deviation = 1,
-		action_delivery ={
-		    type = "instant",
-		    target_effects = {
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    type = "nested-result",
+		    action = 
 			{
-			    type = "create-entity",
-			    entity_name = "big-explosion",
-			    direction_deviation = 0.6,
-			    starting_speed = 1,
-			    starting_speed_deviation = 0.0
-			}
-		    }
-		}
-	    },
-	    {
-		type = "direct",
-		action_delivery = {
-		    type = "instant",
-		    target_effects = {
-			{
-			    type = "create-entity",
-			    entity_name = "big-explosion",
-			    direction_deviation = 0.6,
-			    starting_speed = 1,
-			    starting_speed_deviation = 0.0
-			}
-		    }
-		}
-	    },
-	    {
-		type = "area",
-		radius = 3,
-		force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
-		action_delivery =
-		    {
-			type = "instant",
-			target_effects =
-			    {
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "electric" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "explosion" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "fire" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "poison" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "bob-pierce" }
-				},
-				{
-				    type = "damage",
-				    damage = { amount = 15, type = "acid" }
+			    type = "cluster",
+			    cluster_count = 4,
+			    distance = 3,
+			    distance_deviation = 1,
+			    action_delivery ={
+				type = "instant",
+				target_effects = {
+				    {
+					type = "create-entity",
+					entity_name = "big-explosion",
+					direction_deviation = 0.6,
+					starting_speed = 1,
+					starting_speed_deviation = 0.0
+				    }
 				}
 			    }
+			}
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "fire" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "poison" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "bob-pierce" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15, type = "acid" }
 		    }
-	    }
-	}
-})
+		}
+	end	    
+    }
+)
