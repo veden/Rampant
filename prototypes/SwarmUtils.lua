@@ -20,8 +20,11 @@ local mFloor = math.floor
 
 local deepcopy = util.table.deepcopy
 
-local TIER_SET_10 = constants.TIER_SET_10
-local TIER_SET_5 = constants.TIER_SET_5
+local TIER_UPGRADE_SET_5 = constants.TIER_UPGRADE_SET_5
+local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
+
+local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
+local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
@@ -264,22 +267,23 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
     local unitSet = {}
     
     for tier=1, tiers do
-	local t = ((tiers == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+	local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
 	local result = {}
 	
 	for i=1,variations do
 	    local unit = deepcopy(template)
 	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
 	    unit.attributes.tier = "-v" .. i .. "-t" .. t
-	    generateApperance(unit, t)
-	    upgradeEntity(unit, upgradeTable,  t)
+	    generateApperance(unit, ut)
+	    upgradeEntity(unit, upgradeTable,  ut)
 	    
 	    if unit.attackName then
 		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
 	    end
 
 	    if unit.loot then
-		unit.attributes.loot = { unit.loot[t] }
+		unit.attributes.loot = { unit.loot[ut] }
 	    end
 	    
 	    local entity
@@ -322,22 +326,22 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 					  tiers.unit)
 
     for tier=1, tiers.unitSpawner do	
-	
-	local t = ((tiers.unitSpawner == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+	local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
 	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
 							unitSet)
-	    generateApperance(unitSpawner, t)
-	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, t)
+	    generateApperance(unitSpawner, ut)
+	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, ut)
 
 	    if unitSpawner.loot then
-		unitSpawner.attributes.loot = { unitSpawner.loot[t] }
+		unitSpawner.attributes.loot = { unitSpawner.loot[ut] }
 	    end
 	    
 	    if unitSpawner.autoplace then
-		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[t]
+		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[ut]
 	    end
 	    unitSpawner.attributes.corpse = makeUnitSpawnerCorpse(unitSpawner)
 	    data:extend({
@@ -353,23 +357,24 @@ end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
     for tier=1, tiers do
-	local t = ((tiers == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+	local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
 	for i=1,variations do
 	    local worm = deepcopy(template)
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
-	    generateApperance(worm, t)
-	    upgradeEntity(worm, upgradeTable, t)
+	    generateApperance(worm, ut)
+	    upgradeEntity(worm, upgradeTable, ut)
 
 	    if worm.attackName then
 		worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t
 	    end
 
 	    if worm.loot then
-		worm.attributes.loot = { worm.loot[t] }
+		worm.attributes.loot = { worm.loot[ut] }
 	    end
 	    
 	    if worm.autoplace then
-		worm.attributes["autoplace"] = worm.autoplace[t]
+		worm.attributes["autoplace"] = worm.autoplace[ut]
 	    end
 	    worm.attributes.corpse = makeWormCorpse(worm)
 	    data:extend({

@@ -10,8 +10,8 @@ local bobsUnits = require("BobsBaseUtils")
 
 -- constants
 
-local TIER_SET_10 = constants.TIER_SET_10
-local TIER_SET_5 = constants.TIER_SET_5
+local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
+local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
 local ENABLED_BOBS_UNITS = constants.ENABLED_BOBS_UNITS
 local ENABLED_NE_UNITS = constants.ENABLED_NE_UNITS
@@ -382,7 +382,7 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     local position = { x = 0, y = 0 }
 
     for tier=1,biterTier do
-	local t = ((biterTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((biterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
 	for v=1,biterVariation do    	
 	    local entity = surface.create_entity({
 		    name= baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
@@ -393,7 +393,7 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     	end
     end
     for tier=1,spitterTier do
-	local t = ((spitterTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((spitterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
     	for v=1,spitterVariation do
 	    local entity = surface.create_entity({
 		    name=baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
@@ -404,7 +404,7 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     	end
     end
     for tier=1,wormTier do
-	local t = ((wormTier == 5) and TIER_SET_5[tier]) or TIER_SET_10[tier]
+	local t = ((wormTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
     	for v=1,wormVariation do
 	    local entity = surface.create_entity({
 		    name=baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant",
