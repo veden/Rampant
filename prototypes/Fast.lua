@@ -543,6 +543,7 @@ buildUnitSpawner(
 	    },
 	    attack = {
 		type = "projectile",
+		directionOnly = true,
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},

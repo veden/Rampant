@@ -607,6 +607,7 @@ buildUnitSpawner(
 	    attack = {
 		type = "projectile",
 		damageType = "acid",
+		directionOnly = true,
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},

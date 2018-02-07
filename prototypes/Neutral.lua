@@ -521,6 +521,7 @@ buildUnitSpawner(
 	    },
 	    attack = {
 		type = "projectile",
+		directionOnly = true,
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},
@@ -990,7 +991,6 @@ buildUnitSpawner(
     },
 
     function (attributes)
-	
 	return createRangedAttack(attributes,
 				  createAttackBall(attributes),
 				  spitterattackanimation(attributes.scale,

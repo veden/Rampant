@@ -661,25 +661,24 @@ end
 function biterFunctions.createProjectileAttack(attributes, projectile, animation)
     return {
         type = "projectile",
-        ammo_category = "capsule",
+        ammo_category = "rocket",
         cooldown = attributes.cooldown or 15,
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
         ammo_type =
 	    {
-		category = "capsule",
+		category = "rocket",
+		clamp_position = true,
 		target_type = "position",
 		action =
 		    {
 			type = "direct",
-			entity_flags = { "player-creation" },
 			action_delivery =
 			    {
 				type = "projectile",
-				projectile = projectile or "defender-capsule",
-				entity_flags = { "player-creation" },
+				projectile = projectile or "defender-bullet",
 				starting_speed = attributes.startingSpeed or 0.3,
-				max_range = attributes.maxRange or 20
+				max_range = attributes.maxRange or attributes.range or 20
 			    }
 		    }
 	    },
@@ -688,32 +687,31 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
 end
 
 function biterFunctions.createMeleeAttack(attributes)
-    return
-	{
-	    type = "projectile",
-	    range = attributes.range or 0.5,
-	    cooldown = attributes.cooldown or 35,
-	    ammo_category = "melee",
-	    ammo_type = {
-		category = "melee",
-		target_type = "entity",
-		action =
-		    {
-			type = "direct",
-			action_delivery =
-			    {
-				type = "instant",
-				target_effects =
-				    {
-					type = "damage",
-					damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
-				    }
-			    }
-		    }
-	    },
-	    sound = make_biter_roars(0.4),
-	    animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
-	}
+    return {
+		type = "projectile",
+		range = attributes.range or 0.5,
+		cooldown = attributes.cooldown or 35,
+		ammo_category = "melee",
+		ammo_type = {
+		    category = "melee",
+		    target_type = "entity",
+		    action =
+			{
+			    type = "direct",
+			    action_delivery =
+				{
+				    type = "instant",
+				    target_effects =
+					{
+					    type = "damage",
+					    damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
+					}
+				}
+			}
+		},
+		sound = make_biter_roars(0.4),
+		animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	    }
 end
 
 function biterFunctions.biterAttackSounds()

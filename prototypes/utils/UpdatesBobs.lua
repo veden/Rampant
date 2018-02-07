@@ -6,8 +6,6 @@ local biterUtils = require("BiterUtils")
 
 function bobsUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];
-
-    local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
     
     turrets["bob-big-explosive-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -16,10 +14,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.2
     	},
-    	"bob-explosive-ball-" .. attackType .. "-rampant")
+    	"bob-explosive-ball-stream-rampant")
 
     turrets["bob-big-fire-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -28,10 +26,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.2
     	},
-    	"bob-fire-ball-" .. attackType .. "-rampant")
+    	"bob-fire-ball-stream-rampant")
 
     turrets["bob-big-poison-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -40,10 +38,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.2
     	},
-    	"bob-poison-ball-" .. attackType .. "-rampant")
+    	"bob-poison-ball-stream-rampant")
 
     turrets["bob-big-piercing-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -52,10 +50,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.2
     	},
-    	"bob-piercing-ball-" .. attackType .. "-rampant")
+    	"bob-piercing-ball-stream-rampant")
     
     turrets["bob-big-electric-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -64,10 +62,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.2
     	},
-    	"bob-electric-ball-" .. attackType .. "-rampant")
+    	"bob-electric-ball-stream-rampant")
 
     turrets["bob-giant-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -76,10 +74,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 1.6
     	},
-    	"acid-ball-5-" .. attackType .. "-rampant")
+    	"acid-ball-5-stream-rampant")
 
     turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
     	{
@@ -88,10 +86,10 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
-	    type = "projectile",
+	    type = "stream",
     	    scale = 2
     	},
-    	"acid-ball-6-" .. attackType .. "-rampant")
+    	"acid-ball-6-stream-rampant")
 
     local units = data.raw["unit"]
 
@@ -103,11 +101,11 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
 	    warmup = 30,
-	    type = "projectile",
+	    type = "stream",
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
     	},
-    	"acid-ball-3-" .. attackType .. "-rampant",
+    	"acid-ball-3-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -119,12 +117,12 @@ function bobsUpdates.useDumbProjectiles()
     	    min_range = 3,
     	    turn_range = 1,
 	    damageModifier = 0.6,
-	    type = "projectile",
+	    type = "stream",
 	    warmup = 30,
     	    fire_penalty = 0,
 	    scale = biterUtils.findRunScale(unit)
     	},
-    	"bob-electric-ball-" .. attackType .. "-rampant",
+    	"bob-electric-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -134,14 +132,14 @@ function bobsUpdates.useDumbProjectiles()
     	    cooldown = 90,
     	    range = 16,
     	    min_range = 3,
-	    type = "projectile",
+	    type = "stream",
 	    warmup = 30,
     	    turn_range = 1,
 	    damageModifier = 0.8,
     	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
     	},
-    	"bob-explosive-ball-" .. attackType .. "-rampant",
+    	"bob-explosive-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -151,13 +149,13 @@ function bobsUpdates.useDumbProjectiles()
 	    cooldown = 90,
 	    range = 16,
 	    min_range = 3,
-	    type = "projectile",
+	    type = "stream",
 	    turn_range = 1,
 	    warmup = 30,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"wide-acid-ball-" .. attackType .. "-rampant",
+	"wide-acid-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -166,14 +164,14 @@ function bobsUpdates.useDumbProjectiles()
 	{
 	    cooldown = 90,
 	    range = 16,
-	    type = "projectile",
+	    type = "stream",
 	    min_range = 3,
 	    turn_range = 1,
 	    warmup = 30,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"bob-fire-ball-" .. attackType .. "-rampant",
+	"bob-fire-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -182,14 +180,14 @@ function bobsUpdates.useDumbProjectiles()
 	{
 	    cooldown = 90,
 	    range = 16,
-	    type = "projectile",
+	    type = "stream",
 	    min_range = 3,
 	    turn_range = 1,
 	    warmup = 30,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"bob-poison-ball-" .. attackType .. "-rampant",
+	"bob-poison-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -198,14 +196,14 @@ function bobsUpdates.useDumbProjectiles()
 	{
 	    cooldown = 90,
 	    range = 16,
-	    type = "projectile",
+	    type = "stream",
 	    min_range = 3,
 	    turn_range = 1,
 	    warmup = 30,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"bob-titan-ball-" .. attackType .. "-rampant",
+	"bob-titan-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -214,14 +212,14 @@ function bobsUpdates.useDumbProjectiles()
 	{
 	    cooldown = 90,
 	    range = 16,
-	    type = "projectile",
+	    type = "stream",
 	    min_range = 3,
 	    turn_range = 1,
 	    warmup = 30,
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"bob-behemoth-ball-" .. attackType .. "-rampant",
+	"bob-behemoth-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 
@@ -230,7 +228,7 @@ function bobsUpdates.useDumbProjectiles()
     unit["attack_parameters"] = biterUtils.createRangedAttack(
 	{
 	    cooldown = 90,
-	    type = "projectile",
+	    type = "stream",
 	    range = 17,
 	    min_range = 3,
 	    warmup = 30,
@@ -238,7 +236,7 @@ function bobsUpdates.useDumbProjectiles()
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"bob-leviathan-ball-" .. attackType .. "-rampant",
+	"bob-leviathan-ball-stream-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
 			       biterUtils.findTint(unit)))
 end

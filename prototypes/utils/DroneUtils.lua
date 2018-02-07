@@ -198,9 +198,11 @@ function droneUtils.createCapsuleProjectile(name, attributes, entityName)
 		type = "projectile",
 		name = n,
 		flags = {"not-on-map"},
-		collision_box = {{-0.3, -1.1}, {0.3, 1.1}},
-		direction_only = true,
-		acceleration = 0.005,
+		collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
+		collision_mask = attributes.collisionMask or { "layer-11" },
+		direction_only = attributes.directionOnly,
+		piercing_damage = attributes.piercingDamage or 0,
+		acceleration = attributes.acceleration or 0.01,
 		action =
 		    {
 			type = "direct",

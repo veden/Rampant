@@ -192,16 +192,16 @@ buildUnits(
 	{
 	    type = "attribute",
 	    name = "movement",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.02,
-	    [4] = 0.02,
-	    [5] = 0.03,
-	    [6] = 0.03,
-	    [7] = 0.04,
-	    [8] = 0.04,
-	    [9] = 0.05,
-	    [10] = 0.05
+	    [1] = 0.03,
+	    [2] = 0.03,
+	    [3] = 0.04,
+	    [4] = 0.04,
+	    [5] = 0.05,
+	    [6] = 0.05,
+	    [7] = 0.06,
+	    [8] = 0.06,
+	    [9] = 0.07,
+	    [10] = 0.07
 	},
 	{
 	    type = "attribute",
@@ -221,16 +221,16 @@ buildUnits(
 	{
 	    type = "attack",
 	    name = "rangeFromPlayer",
-	    [1] = 10,
-	    [2] = 10,
-	    [3] = 11,
-	    [4] = 11,
-	    [5] = 12,
-	    [6] = 12,
-	    [7] = 13,
-	    [8] = 13,
-	    [9] = 14,
-	    [10] = 14
+	    [1] = 18,
+	    [2] = 18,
+	    [3] = 19,
+	    [4] = 19,
+	    [5] = 20,
+	    [6] = 20,
+	    [7] = 21,
+	    [8] = 21,
+	    [9] = 22,
+	    [10] = 22
 	},
 	
 	{
@@ -594,6 +594,9 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
+		type = "projectile",
+		directionOnly = true,
+		collisionBox = {{0,0}, {0,0}},
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},
@@ -1090,6 +1093,8 @@ buildWorm(
 	attributes = {
 	},
 	attack = {
+	    type = "projectile",
+	    collisionBox = {{0,0}, {0,0}},
 	    softSmokeName = softSmoke
 	},
 	resistances = {},
@@ -1386,9 +1391,9 @@ buildWorm(
 
     function (attributes)
 	return createProjectileAttack(attributes,
-				   createCapsuleProjectile(attributes.name,
-							   attributes,
-							   attributes.name .. "-drone-rampant"))
+				  createCapsuleProjectile(attributes.name,
+							  attributes,
+							  attributes.name .. "-drone-rampant"))
     end,
 
     WASP_WORM_VARIATIONS,

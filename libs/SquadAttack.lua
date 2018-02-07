@@ -68,7 +68,7 @@ function squadAttack.squadsAttack(map, surface, natives)
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
-        if group.valid and (squad.status == SQUAD_RAIDING) then
+        if group and group.valid and (squad.status == SQUAD_RAIDING) then
 	    local groupState = group.state
 	    if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
 		local groupPosition = group.position
@@ -128,7 +128,7 @@ function squadAttack.squadsBeginAttack(natives, players)
     for i=1,#squads do
         local squad = squads[i]
 	local group = squad.group
-        if (squad.status == SQUAD_GUARDING) and group.valid then
+        if (squad.status == SQUAD_GUARDING) and group and group.valid then
 	    local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
 
 	    local groupPosition = group.position	    
