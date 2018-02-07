@@ -330,6 +330,11 @@ constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
 -- unit spawners
 
+local function roundToNearest(number, multiple)
+    local num = number + (multiple * 0.5)
+    return num - (num % multiple)
+end
+
 local tiers5 = {}
 
 local tierStart = settings.startup["rampant-tierStart"].value
@@ -337,14 +342,14 @@ local tierEnd = settings.startup["rampant-tierEnd"].value
 
 local step5 = (tierEnd - tierStart) / 5
 for i=tierStart,tierEnd,step5 do
-    tiers5[#tiers5+1] = math.ceil(i)
+    tiers5[#tiers5+1] = roundToNearest(i, 1)
 end
 
 local tiers10 = {}
 
 local step10 = (tierEnd - tierStart) / 10
 for i=tierStart,tierEnd,step10 do
-    tiers10[#tiers10+1] = math.ceil(i)
+    tiers10[#tiers10+1] = roundToNearest(i, 1)
 end
 
 constants.TIER_UPGRADE_SET_5 = tiers5

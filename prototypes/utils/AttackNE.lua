@@ -14,7 +14,7 @@ createAttackBall(
 	pTint = {r=0, g=0.97, b=0.34, a=0.5},
 	sTint = {r=0, g=0.1, b=1, a=1},
 	softSmokeName = softSmoke,
-	type = "projectile",
+	type = "stream",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -61,7 +61,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "projectile",
+	type = "stream",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -104,7 +104,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "projectile",
+	type = "stream",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -138,7 +138,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "projectile",
+	type = "stream",
 	pointEffects = function (attributes)
 	    return {
 		{

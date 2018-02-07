@@ -604,6 +604,7 @@ buildUnitSpawner(
 		explosion = "blood-explosion-small"
 	    },
 	    attack = {
+		type = "projectile",
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},
@@ -1074,10 +1075,10 @@ buildUnitSpawner(
 
     function (attributes)
 	return createProjectileAttack(attributes,
-				      createCapsuleProjectile(attributes.name,
-							      attributes,
-							      attributes.name .. "-drone-rampant"),
-				      spitterattackanimation(attributes.scale, attributes.tint))
+				  createCapsuleProjectile(attributes.name,
+							  attributes,
+							  attributes.name .. "-drone-rampant"),
+				  spitterattackanimation(attributes.scale, attributes.tint))
     end,
 
     {
@@ -1100,6 +1101,7 @@ buildWorm(
 	attributes = {
 	},
 	attack = {
+	    type = "projectile",
 	    softSmokeName = softSmoke
 	},
 	resistances = {},
@@ -1396,9 +1398,9 @@ buildWorm(
 
     function (attributes)
 	return createProjectileAttack(attributes,
-				      createCapsuleProjectile(attributes.name,
-							      attributes,
-							      attributes.name .. "-drone-rampant"))
+				  createCapsuleProjectile(attributes.name,
+							  attributes,
+							  attributes.name .. "-drone-rampant"))
     end,
 
     SPAWNER_WORM_VARIATIONS,

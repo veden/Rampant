@@ -593,6 +593,7 @@ buildUnitSpawner(
 		bubble = laserBubble,
 		softSmokeName = softSmoke,
 		damageType = "laser",
+		directionOnly = true,
 		pointEffects = function(attributes)
 		    return 
 			{

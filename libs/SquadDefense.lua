@@ -61,7 +61,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		setRetreatTick(map, chunk, tick + (INTERVAL_LOGIC * 10))
 		performRetreat = false
 	    end
-	elseif squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
+	elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
 	    performRetreat = #squad.group.members > 1
 	end
 	

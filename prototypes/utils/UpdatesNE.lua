@@ -13,6 +13,7 @@ function NEUpdates.useNEUnitLaunchers ()
     	{
     	    cooldown = 60,
     	    range = 25,
+	    type = "stream",
     	    min_range = 3,
     	    turn_range = 1,
     	    fire_penalty = 0,
@@ -26,6 +27,7 @@ function NEUpdates.useNEUnitLaunchers ()
     	    cooldown = 60,
     	    range = 30,
     	    min_range = 3,
+	    type = "stream",
     	    turn_range = 1,
     	    fire_penalty = 0,
 	    damageModifier = 3,
@@ -49,6 +51,7 @@ function NEUpdates.useDumbProjectiles()
     	    cooldown = 60,
     	    range = 25,
     	    min_range = 3,
+	    type = "stream",
     	    turn_range = 1,
     	    fire_penalty = 0,
 	    damageModifier = 4.5,
@@ -64,6 +67,7 @@ function NEUpdates.useDumbProjectiles()
     	    range = 30,
     	    min_range = 3,
     	    turn_range = 1,
+	    type = "stream",
     	    fire_penalty = 0,
 	    damageModifier = 5.5,
 	    scale = 1.6
@@ -79,13 +83,16 @@ function NEUpdates.useDumbProjectiles()
     	    range = 13,
     	    min_range = 3,
     	    turn_range = 1,
+	    type = "stream",
     	    fire_penalty = 15,
 	    warmup = 30,
     	    damageModifier = 1.1,
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-" .. attackType .. "-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["small-spitter-Mk3"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
@@ -94,13 +101,16 @@ function NEUpdates.useDumbProjectiles()
     	    range = 13,
     	    min_range = 3,
     	    turn_range = 1,
+	    type = "stream",
 	    warmup = 30,
     	    fire_penalty = 15,
     	    damageModifier = 1.2,
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-" .. attackType .. "-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     
     unit = units["medium-spitter-Mk2"]
@@ -109,6 +119,7 @@ function NEUpdates.useDumbProjectiles()
     	    cooldown = 100,
     	    range = 14,
     	    min_range = 3,
+	    type = "stream",
     	    turn_range = 1,
 	    warmup = 30,
     	    fire_penalty = 15,
@@ -116,7 +127,9 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-" .. attackType .. "-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     unit = units["medium-spitter-Mk3"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
@@ -125,13 +138,16 @@ function NEUpdates.useDumbProjectiles()
     	    range = 14,
     	    min_range = 3,
     	    turn_range = 1,
+	    type = "stream",
 	    warmup = 30,
     	    fire_penalty = 15,
     	    damageModifier = 2.6,
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-" .. attackType .. "-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
     
     unit = units["big-spitter-Mk2"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
@@ -139,6 +155,7 @@ function NEUpdates.useDumbProjectiles()
     	    cooldown = 100,
     	    range = 15,
     	    min_range = 3,
+	    type = "stream",
     	    turn_range = 1,
 	    warmup = 30,
     	    fire_penalty = 15,
@@ -146,7 +163,9 @@ function NEUpdates.useDumbProjectiles()
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-infected-ball-" .. attackType .. "-rampant")
+    	"ne-infected-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
 
     
     unit = units["big-spitter-Mk3"]
@@ -156,13 +175,16 @@ function NEUpdates.useDumbProjectiles()
     	    range = 15,
     	    min_range = 3,
     	    turn_range = 1,
+	    type = "stream",
 	    warmup = 30,
     	    fire_penalty = 15,
     	    damageModifier = 3.6,
     	    scale = biterUtils.findRunScale(unit),
     	    tint = biterUtils.findTint(unit)
     	},
-    	"ne-mutated-ball-" .. attackType .. "-rampant")
+    	"ne-mutated-ball-" .. attackType .. "-rampant",
+	spitterattackanimation(biterUtils.findRunScale(unit),
+			       biterUtils.findTint(unit)))
     
 end
 
