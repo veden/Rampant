@@ -13,6 +13,7 @@ local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
@@ -95,7 +96,12 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	elseif natives.aiNocturnalMode then
 	    natives.state = AI_STATE_NOCTURNAL
 	else
-	    natives.state = AI_STATE_AGGRESSIVE
+	    roll = mRandom()
+	    if (roll > 0.03) then
+		natives.state = AI_STATE_AGGRESSIVE
+	    else
+		natives.state = AI_STATE_RAIDING
+	    end
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end

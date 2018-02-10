@@ -31,6 +31,10 @@ local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE  = defines.distraction.none
 
+local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
+
+local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
+
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local PASSABLE = constants.PASSABLE
@@ -67,8 +71,14 @@ local function attackWaveValidCandidate(chunk, natives, surface)
 	end
     end
     local hasBasePheromone = false
-    if (chunk[BASE_PHEROMONE] > 0) then
+    local basePheromone = chunk[BASE_PHEROMONE]
+    if (basePheromone > 0) then
 	hasBasePheromone = true
+	if (natives.state == AI_STATE_RAIDING) then
+	    if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
+		total = total + basePheromone
+	    end
+	end
     end
     if natives.attackUsePollution then
 	total = total + surface.get_pollution(chunk)

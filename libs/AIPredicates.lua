@@ -6,6 +6,7 @@ local constants = require("Constants")
 
 -- constants
 
+local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
@@ -14,7 +15,8 @@ local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 -- module code
 
 function aiPredicates.canAttack(natives, surface)
-    return ((natives.state == AI_STATE_AGGRESSIVE) or aiPredicates.canAttackDark(natives, surface)) and not surface.peaceful_mode
+    return ((natives.state == AI_STATE_AGGRESSIVE) or aiPredicates.canAttackDark(natives, surface) or
+	    (natives.state == AI_STATE_RAIDING)) and not surface.peaceful_mode
 end
 
 function aiPredicates.isDark(surface)
