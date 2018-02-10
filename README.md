@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Also removes homing biter projectiles. Adds new Enemies. Difficulty setting in mod options menu.  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disable by default). Difficulty setting in mod options menu.  
 
 # Forum Post
 
@@ -46,6 +46,9 @@ Configure Options not in game menu:
 - Pathfinding - Unit groups will use potential fields to perform only single step pathfinding allowing for efficient and dynamic pathing  
 - Peace mode - If something sets peace mode, Rampant will respect it  
 - Ion Cannon Reaction - Firing the Ion Cannon will cause nests around the blast site to form into an attack wave and agitate all biters  
+- Rocket Reaction - Firing the rocket from the rocket silo will cause the biters to form extra attack waves  
+- Blockable Projectiles - Some of the biters projectiles can now be blocked by walls and trees  
+- Raiding AI state - The AI will periodically send attack waves based on building proximity and not just pollution  
 
 # Planned Features
 
