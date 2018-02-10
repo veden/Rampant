@@ -365,6 +365,329 @@ buildUnits(
     SPAWNER_UNIT_TIERS
 )
 
+buildUnits(
+    {
+	name = "spawner-worm-drone",
+
+	attributes = {
+	    followsPlayer = false
+	},
+	attack = {
+	    checkBuildability = true,
+	    softSmokeName = softSmoke
+	},
+	death = function (attack, attributes)
+	    return {
+		{
+		    type = "cluster",
+		    cluster_count = attack.clusters,
+		    distance = attack.clusterDistance,
+		    distance_deviation = 3,
+		    action_delivery =
+			{
+			    type = "projectile",
+			    projectile = createCapsuleProjectile("spawner-drone-sub" .. attributes.tier,
+								 attack,
+								 "spawner-biter" ..  attributes.tier .. "-rampant"),
+			    direction_deviation = 0.6,
+			    starting_speed = 0.25,
+			    max_range = attack.range,
+			    starting_speed_deviation = 0.3
+			}
+		}
+	    }
+	end,
+	scales = {
+	    [1] = 0.5,
+	    [2] = 0.5,
+	    [3] = 0.6,
+	    [4] = 0.6,
+	    [5] = 0.7,
+	    [6] = 0.7,
+	    [7] = 0.8,
+	    [8] = 0.8,
+	    [9] = 0.9,
+	    [10] = 0.9
+	},
+	resistances = {},
+
+	type = "drone",
+	attackName = "spawner-drone",
+	tint = {r=1, g=0, b=1, a=1},
+	pTint = {r=1, g=0, b=1, a=1},
+	sTint = {r=1, g=0, b=1, a=1},
+	dTint = {r=1, g=0, b=1, a=1}
+    },
+    function (attack)
+	return {
+	    type = "projectile",
+	    ammo_category = "bullet",
+	    cooldown = attack.cooldown or 20,
+	    projectile_center = {0, 1},
+	    projectile_creation_distance = 0.6,
+	    range = attack.range or 15,
+	    sound = biterAttackSounds(),
+	    ammo_type =
+		{
+		    category = "bullet",
+		    action =
+			{
+			    type = "direct",
+			    action_delivery =
+				{
+				    type = "instant",
+				    damage = { damage = 0, damageType = "acid" }
+				}
+			}
+		}
+	}
+    end,
+    {
+	{		
+	    type = "attribute",
+	    name = "health",
+	    [1] = 100,
+	    [2] = 100,
+	    [3] = 110,
+	    [4] = 110,
+	    [5] = 120,
+	    [6] = 120,
+	    [7] = 130,
+	    [8] = 130,
+	    [9] = 140,
+	    [10] = 140
+	},
+
+	{
+	    type = "attack",
+	    name = "startingSpeed",
+	    [1] = 0.25,
+	    [2] = 0.25,
+	    [3] = 0.27,
+	    [4] = 0.27,
+	    [5] = 0.29,
+	    [6] = 0.29,
+	    [7] = 0.31,
+	    [8] = 0.31,
+	    [9] = 0.33,
+	    [10] = 0.33
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusterDistance",
+	    [1] = 3,
+	    [2] = 3,
+	    [3] = 4,
+	    [4] = 4,
+	    [5] = 5,
+	    [6] = 5,
+	    [7] = 6,
+	    [8] = 6,
+	    [9] = 7,
+	    [10] = 7
+	},
+	
+	{
+	    type = "attack",
+	    name = "clusters",
+	    min = 2,
+	    [1] = 5,
+	    [2] = 5,
+	    [3] = 6,
+	    [4] = 6,
+	    [5] = 7,
+	    [6] = 7,
+	    [7] = 8,
+	    [8] = 8,
+	    [9] = 9,
+	    [10] = 9
+	},
+	
+	{		
+	    type = "attack",
+	    name = "cooldown",
+	    [1] = 100,
+	    [2] = 100,
+	    [3] = 97,
+	    [4] = 97,
+	    [5] = 95,
+	    [6] = 95,
+	    [7] = 93,
+	    [8] = 93,
+	    [9] = 90,
+	    [10] = 90
+	},
+
+	{		
+	    type = "attribute",
+	    name = "ttl",
+	    [1] = 400,
+	    [2] = 400,
+	    [3] = 450,
+	    [4] = 450,
+	    [5] = 500,
+	    [6] = 500,
+	    [7] = 550,
+	    [8] = 550,
+	    [9] = 600,
+	    [10] = 600
+	},
+	
+	{		
+	    type = "attack",
+	    name = "damage",
+	    [1] = 2,
+	    [2] = 4,
+	    [3] = 7,
+	    [4] = 13,
+	    [5] = 15,
+	    [6] = 18,
+	    [7] = 22,
+	    [8] = 28,
+	    [9] = 35,
+	    [10] = 40
+	},
+	
+	{		
+	    type = "attribute",
+	    name = "healing",
+	    [1] = 0.01,
+	    [2] = 0.01,
+	    [3] = 0.015,
+	    [4] = 0.02,
+	    [5] = 0.05,
+	    [6] = 0.075,
+	    [7] = 0.1,
+	    [8] = 0.12,
+	    [9] = 0.14,
+	    [10] = 0.16
+	},
+
+	
+	{
+	    type = "attribute",
+	    name = "movement",
+	    [1] = 0.01,
+	    [2] = 0.01,
+	    [3] = 0.02,
+	    [4] = 0.02,
+	    [5] = 0.03,
+	    [6] = 0.03,
+	    [7] = 0.04,
+	    [8] = 0.04,
+	    [9] = 0.05,
+	    [10] = 0.05
+	},
+	{
+	    type = "attribute",
+	    name = "distancePerFrame",
+	    [1] = 0.013,
+	    [2] = 0.013,
+	    [3] = 0.014,
+	    [4] = 0.014,
+	    [5] = 0.015,
+	    [6] = 0.015,
+	    [7] = 0.016,
+	    [8] = 0.016,
+	    [9] = 0.017,
+	    [10] = 0.017
+	},
+
+	{
+	    type = "attack",
+	    name = "rangeFromPlayer",
+	    [1] = 10,
+	    [2] = 10,
+	    [3] = 11,
+	    [4] = 11,
+	    [5] = 12,
+	    [6] = 12,
+	    [7] = 13,
+	    [8] = 13,
+	    [9] = 14,
+	    [10] = 14
+	},
+	
+	{
+	    type = "attack",
+	    name = "range",
+	    [1] = 10,
+	    [2] = 10,
+	    [3] = 11,
+	    [4] = 11,
+	    [5] = 12,
+	    [6] = 12,
+	    [7] = 13,
+	    [8] = 13,
+	    [9] = 14,
+	    [10] = 14
+	},
+
+	{
+	    type = "attack",
+	    name = "radius",
+	    [1] = 1.2,
+	    [2] = 1.3,
+	    [3] = 1.4,
+	    [4] = 1.5,
+	    [5] = 1.6,
+	    [6] = 1.7,
+	    [7] = 1.8,
+	    [8] = 1.9,
+	    [9] = 2.0,
+	    [10] = 2.5
+	},
+
+	{
+	    type = "attack",
+	    name = "particleVerticalAcceleration",
+	    [1] = 0.01,
+	    [2] = 0.01,
+	    [3] = 0.02,
+	    [4] = 0.02,
+	    [5] = 0.03,
+	    [6] = 0.03,
+	    [7] = 0.04,
+	    [8] = 0.04,
+	    [9] = 0.05,
+	    [10] = 0.05
+	},
+
+	{
+	    type = "attack",
+	    name = "particleHoizontalSpeed",
+	    [1] = 0.6,
+	    [2] = 0.6,
+	    [3] = 0.7,
+	    [4] = 0.7,
+	    [5] = 0.8,
+	    [6] = 0.8,
+	    [7] = 0.9,
+	    [8] = 0.9,
+	    [9] = 1,
+	    [10] = 1
+	},
+
+	{
+	    type = "attack",
+	    name = "particleHoizontalSpeedDeviation",
+	    [1] = 0.0025,
+	    [2] = 0.0025,
+	    [3] = 0.0024,
+	    [4] = 0.0024,
+	    [5] = 0.0023,
+	    [6] = 0.0023,
+	    [7] = 0.0022,
+	    [8] = 0.0022,
+	    [9] = 0.0021,
+	    [10] = 0.0021
+	}
+    },
+    SPAWNER_UNIT_VARIATIONS,
+    SPAWNER_UNIT_TIERS
+)
+
 -- spawner units
 buildUnits(
     {
@@ -607,14 +930,14 @@ buildUnitSpawner(
 	    attack = {
 		type = "projectile",
 		softSmokeName = softSmoke,
+		directionOnly = true,
 		sourceEffect = function (attributes)
 		    return 
 			{
-			    type = "area",
-			    radius = 10.0,
-			    action_delivery = {
+			    {
 				type = "damage",
-				damage = {amount = attributes.damage or 5, type = attributes.damageType or "physical"}
+				affects_target = true,
+				damage = {amount = attributes.healthDamage or 5, type = attributes.damageType or "physical"}
 			    }
 			}
 		end
@@ -634,7 +957,7 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "spawner-drone",
+	    attackName = "spawner-worm-drone",
 	    tint = {r=1, g=0, b=1, a=1},
 	    pTint = {r=1, g=0, b=1, a=1},
 	    sTint = {r=1, g=0, b=1, a=1}
@@ -1085,12 +1408,21 @@ buildUnitSpawner(
 	}
     },
 
-    function (attributes)
-	return createProjectileAttack(attributes,
-				      createCapsuleProjectile(attributes.name,
-							      attributes,
-							      attributes.name .. "-drone-rampant"),
-				      spitterattackanimation(attributes.scale, attributes.tint))
+    function (attack, attributes)
+	local divider
+	if attributes.health < 100 then
+	    divider = 3
+	elseif attributes.health < 1000 then
+	    divider = 5
+	else
+	    divider = 7
+	end
+	attack.healthDamage = attributes.health / divider
+	return createProjectileAttack(attack,
+				      createCapsuleProjectile(attack.name,
+							      attack,
+							      attack.name .. "-drone-rampant"),
+				      spitterattackanimation(attack.scale, attack.tint))
     end,
 
     {

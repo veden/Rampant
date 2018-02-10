@@ -200,6 +200,7 @@ function droneUtils.createCapsuleProjectile(name, attributes, entityName)
 	    action_delivery =
 		{
 		    type = "instant",
+		    source_effects = attributes.sourceEffect and attributes.sourceEffect(attributes),
 		    target_effects =
 			{
 			    {
@@ -218,9 +219,9 @@ function droneUtils.createCapsuleProjectile(name, attributes, entityName)
 	}
     }
 
-    if attributes.sourceEffect then
-	actions[#actions+1] = attributes.sourceEffect(attributes)
-    end
+    -- if attributes.sourceEffect then
+    -- 	actions[#actions+1] = attributes.sourceEffect(attributes)
+    -- end
     
     local cap = {
 	type = "projectile",
