@@ -18,6 +18,8 @@ local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
+local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
+
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
 
@@ -64,7 +66,6 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 
     local attackWaveMaxSize = natives.attackWaveMaxSize
     natives.retreatThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
-    -- natives.maxSquads = AI_MAX_SQUAD_COUNT * evolution_factor
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.25 * evolution_factor), 0.10)
     natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.66667)
@@ -97,10 +98,15 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    natives.state = AI_STATE_NOCTURNAL
 	else
 	    roll = mRandom()
-	    if (roll > 0.03) then
+	    if (roll > 0.08) then
 		natives.state = AI_STATE_AGGRESSIVE
 	    else
 		natives.state = AI_STATE_RAIDING
+
+		natives.points = natives.points + 1000
+		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+		    natives.points = AI_MAX_OVERFLOW_POINTS
+		end
 	    end
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
@@ -109,9 +115,9 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
     if isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints) then
 	natives.lastShakeMessage = tick
 	for _, player in pairs(connectedPlayers) do
-		if player.mod_settings["rampant-attack-warning"].value then
-			player.print("Rampant: The ground begins to shake")
-		end
+	    if player.mod_settings["rampant-attack-warning"].value then
+		player.print("Rampant: The ground begins to shake")
+	    end
 	end
     end
     
