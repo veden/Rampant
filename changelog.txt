@@ -4,12 +4,15 @@ Date: 2. 09. 2018
   Features:
     - Blockable projectiles, most projectiles will be stop by walls and other objects
     - Rocket launches now agitate biters
-    - Added Raiding phase where for a short period of time the ai no longer needs pollution to trigger an attack wave
+    - Added Raiding phase where for a short period of time the ai triggers based on player base proximity for an attack wave to form
   Improvements:
     - Switched linear tier generation from rounding using ceiling to nearest number
     - Spawner faction spitters now degrade when attacking and check buildability for units to prevent infinite biter masses when attacking
+    - Added a random roll to form biters during map processing to cause a more spread out squad formations
   Bugfixes:
     - Added check for null group (https://github.com/veden/Rampant/issues/16)
+    - Added check for null alignment table (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=240#p342122)
+    - Fix for adaptive factions only adapting one chunk of each faction instead of the whole faction
   Tweaks:
     - Changed Spawner baseline evolution requirement from 60 to 70%
   Framework:

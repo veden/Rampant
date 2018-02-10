@@ -112,15 +112,17 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    
 	    processPheromone(map, chunk)
 
-	    if squads and (getNestCount(map, chunk) > 0) then
+	    local chunkRoll = mRandom()
+	    
+	    if squads and (getNestCount(map, chunk) > 0) and (chunkRoll < 0.90) then
 		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		squads = (natives.points >= AI_SQUAD_COST)
 	    end
 
 	    if newEnemies then
 		local base = chunkToBase[chunk]
-		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
-		    processBase(map, surface, natives, tick, base, evolutionFactor)
+		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (chunkRoll < 0.10) then
+		    processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
 		end
 	    end
 	    

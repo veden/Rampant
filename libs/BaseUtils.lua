@@ -174,6 +174,10 @@ end
 local function findEntityUpgrade(baseAlignment, evoIndex, natives, evolutionTable)
     
     local alignments = evolutionTable[baseAlignment]
+
+    if not alignments then
+	return nil
+    end
     
     local entity = nil
     
@@ -239,7 +243,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     local entityType = entity.type
     entity.destroy()
 
-    if (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
+    if not baseAlignment or (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
 	return nil
     end
 
@@ -261,22 +265,22 @@ end
 
 local function upgradeBase(base)
     local paths = BASE_ALIGNMENT_PATHS[base.alignment]
-    if paths then
+    if paths and (#paths > 0) then
 	base.alignment = paths[mRandom(#paths)]
 	return true
     end
     return false
 end
 
-function baseUtils.processBase(map, surface, natives, tick, base, evolutionFactor)
+function baseUtils.processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
     local areaTop = map.position2Top
     local areaBottom = map.position2Bottom
 
-    areaTop[1] = base.x
-    areaTop[2] = base.y
+    areaTop[1] = chunk.x
+    areaTop[2] = chunk.y
 
-    areaBottom[1] = base.x + CHUNK_SIZE
-    areaBottom[2] = base.y + CHUNK_SIZE
+    areaBottom[1] = chunk.x + CHUNK_SIZE
+    areaBottom[2] = chunk.y + CHUNK_SIZE
     
     local entity
     local cost
