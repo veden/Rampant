@@ -101,7 +101,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
-    
+
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
