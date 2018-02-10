@@ -291,13 +291,13 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 		unit.attributes.corpse = makeSpitterCorpse(unit)
 		entity = makeSpitter(unit.name,
 				     unit.attributes,
-				     attackGenerator(unit.attack),
+				     attackGenerator(unit.attack, unit.attributes),
 				     unit.resistances)
 	    elseif (unit.type == "biter") then
 		unit.attributes.corpse = makeBiterCorpse(unit)
 		entity = makeBiter(unit.name,
 				   unit.attributes,
-				   attackGenerator(unit.attack),
+				   attackGenerator(unit.attack, unit.attributes),
 				   unit.resistances)
 	    elseif (unit.type == "drone") then
 		entity = makeDrone(unit.name,
