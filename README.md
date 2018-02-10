@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Difficulty setting in mod options menu.  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Difficulty setting in mod options menu.  
 
 # Forum Post
 
@@ -29,7 +29,7 @@ Configure Options not in game menu:
 - New Enemy Factions - Neutral, Acid, Fast, Physical, Electric, Inferno, Suicide, Fire, Nuclear, Laser, Troll, Wasp, Spawner  
 - Swarming - Units will smoothly slide by one another allowing for streamlined attacking  
 - Difficulty Scaling - A mod option to control how quickly the ai can perform actions like making attack waves.  
-- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with daynight extender mod  
+- Nocturnal Mode - A mod option to force biters to only attack at night. Does not yet affect vanilla attacks. Best use with clockwork or daynight extender mod  
 - Recycling Biters - When large groups of biters form on the game map and aren't assigned to a unit group or near a base will be periodically removed and refunded to the ai causing attack waves proportional to the number of units removed.  
 - Breaching - When biters are destroying structures nearby unit groups will come to join them  
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
