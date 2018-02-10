@@ -2,11 +2,14 @@
 
 local attackBall = require("AttackBall")
 
+local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
 -- module code
 
 local softSmoke = "the-soft-smoke-rampant"
 local createAttackBall = attackBall.createAttackBall
 
+local multipler = (FORCE_OLD_PROJECTILES and 1) or 2.7 
 
 createAttackBall(
     {
@@ -14,7 +17,7 @@ createAttackBall(
 	pTint = {r=0, g=0.97, b=0.34, a=0.5},
 	sTint = {r=0, g=0.1, b=1, a=1},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -32,11 +35,11 @@ createAttackBall(
 		},
 		{
 		    type = "damage",
-		    damage = {amount = 10, type = "explosion"}
+		    damage = {amount = 10 * multipler, type = "explosion"}
 		},
 		{
 		    type = "damage",
-		    damage = {amount = 24, type = "poison"}
+		    damage = {amount = 24 * multipler, type = "poison"}
 		}
 	    }
 	end,
@@ -61,7 +64,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -85,11 +88,11 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 8, type = "explosion" }
+			damage = { amount = 8 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 18, type = "acid" }
+			damage = { amount = 18 * multipler, type = "acid" }
 		    }
 		}
 	end	    
@@ -104,7 +107,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -119,16 +122,51 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 5, type = "explosion" }
+			damage = { amount = 5 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 12, type = "poison" }
+			damage = { amount = 12 * multipler, type = "poison" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "ne-infected-ball-direction",
+	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
+	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "Infected-Poison-Cloud"
+		}
+	    }
+	end,
+	radius = 1.5,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 5 * multipler, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 12 * multipler, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 --
 
@@ -138,7 +176,7 @@ createAttackBall(
 	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
 	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -153,13 +191,48 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 5, type = "explosion" }
+			damage = { amount = 5 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 12, type = "acid" }
+			damage = { amount = 12 * multipler, type = "acid" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "ne-mutated-ball-direction",
+	pTint = {r=0.5, g=0.7, b=0.34, a=0.5},
+	sTint = {r=0.5, g=0.97, b=0.34, a=0.5},
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "acid-splash-purple"
+		}
+	    }
+	end,
+	radius = 1.5,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 5 * multipler, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 12 * multipler, type = "acid" }
+		    }
+		}
+	end	    
+    }
+)
+end

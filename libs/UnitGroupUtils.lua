@@ -160,7 +160,6 @@ function unitGroupUtils.cleanSquads(natives, map)
     local squadCount = #squads
 
     local cleanSquads = {}
-
     for i=1, squadCount do
 	local squad = squads[i]
 	local group = squad.group
@@ -214,25 +213,27 @@ end
 local function mergeGroups(squads, squad, group, status, position, memberCount)
     local merge = false
     local maxed = false
-    for _,mergeSquad in pairs(squads) do	    
-	local mergeGroup = mergeSquad.group
-	if mergeGroup and mergeGroup.valid and (euclideanDistanceNamed(position, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
-	    local mergeMembers = mergeGroup.members
-	    local mergeCount = #mergeMembers
-	    if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
-		for memberIndex=1, mergeCount do
-		    group.add_member(mergeMembers[memberIndex])
+    for _,mergeSquad in pairs(squads) do
+	if (mergeSquad ~= squad) then
+	    local mergeGroup = mergeSquad.group
+	    if mergeGroup and mergeGroup.valid and (euclideanDistanceNamed(position, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
+		local mergeMembers = mergeGroup.members
+		local mergeCount = #mergeMembers
+		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
+		    for memberIndex=1, mergeCount do
+			group.add_member(mergeMembers[memberIndex])
+		    end
+		    if mergeSquad.kamikaze then
+			squad.kamikaze = true
+		    end
+		    merge = true
+		    mergeGroup.destroy()
 		end
-		if mergeSquad.kamikaze then
-		    squad.kamikaze = true
+		memberCount = memberCount + mergeCount
+		if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
+		    maxed = true
+		    break
 		end
-		merge = true
-		mergeGroup.destroy()
-	    end
-	    memberCount = memberCount + mergeCount
-	    if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
-		maxed = true
-		break
 	    end
 	end
     end

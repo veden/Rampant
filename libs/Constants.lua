@@ -260,7 +260,7 @@ constants.RALLY_CRY_DISTANCE = 96
 
 constants.GROUP_MERGE_DISTANCE = 28
 
-constants.MAX_PENALTY_BEFORE_PURGE = 10000
+constants.MAX_PENALTY_BEFORE_PURGE = 20000
 
 -- player building pheromones
 

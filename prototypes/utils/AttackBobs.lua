@@ -10,6 +10,8 @@ local attackBall = require("AttackBall")
 
 local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
 
+local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
 -- imported functions
 
 local makeSpreadEffect = fireUtils.makeSpreadEffect
@@ -26,13 +28,15 @@ local smokeWithoutGlow = "the-without-glow-smoke-rampant"
 local smokeFuel = "the-adding-fuel-rampant"
 
 
+local multipler = (FORCE_OLD_PROJECTILES and 1) or 2.7 
+
 createAttackBall(
     {
 	name = "bob-explosive-ball",
 	pTint = {r=1, g=0.97, b=0.34, a=0.5},
 	sTint = {r=1, g=0.97, b=0.34, a=0.5},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -57,12 +61,53 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 25, type = "explosion" }
+			damage = { amount = 25 * multipler, type = "explosion" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+	{
+	    name = "bob-explosive-ball-direction",
+	    pTint = {r=1, g=0.97, b=0.34, a=0.5},
+	    sTint = {r=1, g=0.97, b=0.34, a=0.5},
+	    softSmokeName = softSmoke,
+	    directionOnly = true,
+	    type = "projectile",
+	    pointEffects = function (attributes)
+		return {
+		    {
+			type = "create-entity",
+			entity_name = "small-scorchmark",
+			check_buildability = true
+		    },
+		    {
+			type = "create-entity",
+			entity_name = "big-explosion",
+			check_buildability = true
+		    },
+		    {
+			type = "create-entity",
+			entity_name = "small-fire-cloud"
+		    }
+		}
+	    end,
+	    radius = 3,
+	    areaEffects = function (attributes)
+		return 
+		    {
+			{
+			    type = "damage",
+			    damage = { amount = 25  * multipler, type = "explosion" }
+			}
+		    }
+	    end	    
+	}
+    )
+end
 
 --
 
@@ -88,7 +133,7 @@ createAttackBall(
 	pTint = {r=1, g=0.17, b=0.17, a=0.5},
 	sTint = {r=1, g=0.43, b=0.17, a=0.5},
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -107,12 +152,48 @@ createAttackBall(
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 20, type = "fire" }
+			damage = { amount = 20 * multipler, type = "fire" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    name = "bob-fire-ball-direction"
+    createAttackBall(
+    {
+	name = name,
+	pTint = {r=1, g=0.17, b=0.17, a=0.5},
+	sTint = {r=1, g=0.43, b=0.17, a=0.5},
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-fire",
+		    entity_name = fireName
+		}
+	    }
+	end,
+	radius = 2,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "create-sticker",
+			sticker = stickerName,
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 20 * multipler, type = "fire" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 --
 
@@ -122,7 +203,7 @@ createAttackBall(
 	pTint = {r=0.1, g=0.5, b=1, a=0.5},
 	sTint = {r=0, g=0, b=1, a=0.5},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return {
 		{
@@ -137,12 +218,43 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 20, type = "poison" }
+			damage = { amount = 20 * multipler, type = "poison" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+createAttackBall(
+    {
+	name = "bob-poison-ball-direction",
+	pTint = {r=0.1, g=0.5, b=1, a=0.5},
+	sTint = {r=0, g=0, b=1, a=0.5},	
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return {
+		{
+		    type = "create-entity",
+		    entity_name = "small-poison-cloud"
+		}
+	    }
+	end,
+	radius = 2,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 20 * multipler, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 -- piercing
 
@@ -163,7 +275,7 @@ data:extend({
 			    target_effects =
 				{
 				    type = "damage",
-				    damage = {amount = 8, type = "bob-pierce"}
+				    damage = {amount = 8 * multipler, type = "bob-pierce"}
 				}
 			}
 		},
@@ -184,7 +296,7 @@ createAttackBall(
 	pTint = {r=0.1, g=0.1, b=0.1, a=0.8},
 	sTint = {r=0.1, g=0.1, b=0.1, a=0.8},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return 
 		{
@@ -211,7 +323,7 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 30, type = "bob-pierce" }
+			damage = { amount = 30 * multipler, type = "bob-pierce" }
 		    }
 		}
 	end	    
@@ -242,7 +354,7 @@ data:extend({
 				    },
 				    {
 					type = "damage",
-					damage = { amount = 8, type = "electric"}
+					damage = { amount = 8 * multipler, type = "electric"}
 				    }
 				}
 			}
@@ -268,7 +380,7 @@ createAttackBall(
 	pTint = {r=0, g=0.1, b=1, a=1},
 	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return 
 		{
@@ -295,12 +407,55 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 25, type = "electric" }
+			damage = { amount = 25 * multipler, type = "electric" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "bob-electric-ball-direction",
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    type = "nested-result",
+		    action = {
+			type = "cluster",
+			cluster_count = 5,
+			distance = 2,
+			distance_deviation = 2,
+			action_delivery =
+			    {
+				type = "projectile",
+				projectile = "electric-spike-rampant",
+				direction_deviation = 0.6,
+				starting_speed = 0.65,
+				starting_speed_deviation = 0.0
+			    }
+		    }
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 25 * multipler, type = "electric" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 --
 
@@ -310,7 +465,7 @@ createAttackBall(
 	pTint = {r=0, g=0.1, b=1, a=1},
 	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return 
 		{
@@ -330,20 +485,63 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 10, type = "electric" }
+			damage = { amount = 10 * multipler, type = "electric" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 10, type = "explosion" }
+			damage = { amount = 10 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 10, type = "fire" }
+			damage = { amount = 10 * multipler, type = "fire" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "bob-titan-ball-direction",
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
+	softSmokeName = softSmoke,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "create-entity",
+			entity_name = "small-fire-cloud"
+		    },
+		    {
+			type = "create-entity",
+			entity_name = "big-explosion"
+		    }
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 10 * multipler, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 10 * multipler, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 10 * multipler, type = "fire" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 --
 
@@ -353,7 +551,7 @@ createAttackBall(
 	pTint = {r=0, g=0.1, b=1, a=1},
 	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return 
 		{
@@ -373,24 +571,72 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "electric" }
+			damage = { amount = 15 * multipler, type = "electric" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "explosion" }
+			damage = { amount = 15 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "fire" }
+			damage = { amount = 15 * multipler, type = "fire" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "poison" }
+			damage = { amount = 15 * multipler, type = "poison" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "bob-behemoth-ball-direction",
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "create-entity",
+			entity_name = "small-poison-cloud"
+		    },
+		    {
+			type = "create-entity",
+			entity_name = "big-explosion"
+		    }
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "fire" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "poison" }
+		    }
+		}
+	end	    
+    }
+)
+end
 
 --
 
@@ -400,7 +646,7 @@ createAttackBall(
 	pTint = {r=0, g=0.1, b=1, a=1},
 	sTint = {r=0, g=0.1, b=1, a=1},	
 	softSmokeName = softSmoke,
-	type = "stream",
+	type = "projectile",
 	pointEffects = function (attributes)
 	    return 
 		{
@@ -432,29 +678,97 @@ createAttackBall(
 		{
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "electric" }
+			damage = { amount = 15 * multipler, type = "electric" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "explosion" }
+			damage = { amount = 15 * multipler, type = "explosion" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "fire" }
+			damage = { amount = 15 * multipler, type = "fire" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "poison" }
+			damage = { amount = 15 * multipler, type = "poison" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "bob-pierce" }
+			damage = { amount = 15 * multipler, type = "bob-pierce" }
 		    },
 		    {
 			type = "damage",
-			damage = { amount = 15, type = "acid" }
+			damage = { amount = 15 * multipler, type = "acid" }
 		    }
 		}
 	end	    
     }
 )
+
+if not FORCE_OLD_PROJECTILES then
+    createAttackBall(
+    {
+	name = "bob-leviathan-ball-direction",
+	pTint = {r=0, g=0.1, b=1, a=1},
+	sTint = {r=0, g=0.1, b=1, a=1},	
+	softSmokeName = softSmoke,
+	directionOnly = true,
+	type = "projectile",
+	pointEffects = function (attributes)
+	    return 
+		{
+		    type = "nested-result",
+		    action = 
+			{
+			    type = "cluster",
+			    cluster_count = 4,
+			    distance = 3,
+			    distance_deviation = 1,
+			    action_delivery ={
+				type = "instant",
+				target_effects = {
+				    {
+					type = "create-entity",
+					entity_name = "big-explosion",
+					direction_deviation = 0.6,
+					starting_speed = 1,
+					starting_speed_deviation = 0.0
+				    }
+				}
+			    }
+			}
+		}
+	end,
+	radius = 3,
+	areaEffects = function (attributes)
+	    return 
+		{
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "electric" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "explosion" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "fire" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "poison" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "bob-pierce" }
+		    },
+		    {
+			type = "damage",
+			damage = { amount = 15 * multipler, type = "acid" }
+		    }
+		}
+	end	    
+    }
+)
+end

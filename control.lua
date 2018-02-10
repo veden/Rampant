@@ -514,6 +514,10 @@ local function onResourceDepleted(event)
     end
 end
 
+local function onTriggerEntityCreated(event)
+    print("triggered", event.tick)
+end
+
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
     if (event.item.name == "cliff-explosives") and (surface.index == 1) then
@@ -524,6 +528,16 @@ local function onUsedCapsule(event)
 	    entityForPassScan(map, cliffs[i])
 	end
     end
+end
+
+local function onRocketLaunch(event)
+    local entity = event.rocket_silo or event.rocket
+    if entity and (entity.surface.index == 1) then
+	natives.points = natives.points + 2000
+	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+	    natives.points = AI_MAX_OVERFLOW_POINTS
+	end
+    end    
 end
 
 local function onInit()
@@ -558,6 +572,10 @@ script.on_event({defines.events.on_player_mined_entity,
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, onBuild)
 
+script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
+
+script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
+
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
@@ -568,6 +586,7 @@ remote.add_interface("rampantTests",
 			 activeSquads = tests.activeSquads,
 			 entitiesOnPlayerChunk = tests.entitiesOnPlayerChunk,
 			 findNearestPlayerEnemy = tests.findNearestPlayerEnemy,
+			 morePoints = tests.morePoints,
 			 aiStats = tests.aiStats,
 			 dumpEnvironment = tests.dumpEnvironment,
 			 fillableDirtTest = tests.fillableDirtTest,

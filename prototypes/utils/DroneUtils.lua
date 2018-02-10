@@ -194,78 +194,87 @@ end
 function droneUtils.createCapsuleProjectile(name, attributes, entityName)
     local n = name .. "-capsule-rampant"
 
-    local cap = {
-		type = "projectile",
-		name = n,
-		flags = {"not-on-map"},
-		collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
-		collision_mask = attributes.collisionMask or { "layer-11" },
-		direction_only = attributes.directionOnly,
-		piercing_damage = attributes.piercingDamage or 0,
-		acceleration = attributes.acceleration or 0.01,
-		action =
-		    {
-			type = "direct",
-			action_delivery =
+    local actions = {
+	{
+	    type = "direct",
+	    action_delivery =
+		{
+		    type = "instant",
+		    target_effects =
+			{
 			    {
-				type = "instant",
-				target_effects =
-				    {
-					{
-					    type = "create-entity",
-					    show_in_tooltip = true,
-					    entity_name = entityName,
-					},
-					{
-					    type = "damage",
-					    damage = {amount = attributes.damage or 5, type = attributes.damageType or "explosion"}
-					}
-				    }
+				type = "create-entity",
+				show_in_tooltip = true,
+				trigger_created_entity = attributes.triggerCreated,
+				entity_name = entityName,
+				check_buildability = attributes.checkBuildability
+			    },
+			    {
+				type = "damage",
+				damage = {amount = attributes.damage or 5, type = attributes.damageType or "explosion"}
 			    }
-		    },
-		light = {intensity = 0.5, size = 4},
-		enable_drawing_with_mask = true,
-		animation = {
-		    layers = {
-			{
-			    filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule.png",
-			    flags = { "no-crop" },
-			    frame_count = 1,
-			    width = 28,
-			    height = 20,
-			    priority = "high"
-			},
-			{
-			    filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule-mask.png",
-			    flags = { "no-crop" },
-			    frame_count = 1,
-			    width = 28,
-			    height = 20,
-			    priority = "high",
-			    apply_runtime_tint = true,
-			},
-		    },
-		},
-		shadow =
-		    {
-			filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule-shadow.png",
-			flags = { "no-crop" },
-			frame_count = 1,
-			width = 26,
-			height = 20,
-			priority = "high"
-		    },
-		smoke = {
-		    {
-			name = attributes.softSmokeName,
-			deviation = {0.15, 0.15},
-			frequency = 1,
-			position = {0, 0},
-			starting_frame = 3,
-			starting_frame_deviation = 5,
-			starting_frame_speed_deviation = 5
-		    }
+			}
 		}
+	}
+    }
+
+    if attributes.sourceEffect then
+	actions[#actions+1] = attributes.sourceEffect(attributes)
+    end
+    
+    local cap = {
+	type = "projectile",
+	name = n,
+	flags = {"not-on-map"},
+	collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
+	collision_mask = attributes.collisionMask or { "layer-11" },
+	direction_only = attributes.directionOnly,
+	piercing_damage = attributes.piercingDamage or 0,
+	acceleration = attributes.acceleration or 0.01,
+	action = actions,
+	light = {intensity = 0.5, size = 4},
+	enable_drawing_with_mask = true,
+	animation = {
+	    layers = {
+		{
+		    filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule.png",
+		    flags = { "no-crop" },
+		    frame_count = 1,
+		    width = 28,
+		    height = 20,
+		    priority = "high"
+		},
+		{
+		    filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule-mask.png",
+		    flags = { "no-crop" },
+		    frame_count = 1,
+		    width = 28,
+		    height = 20,
+		    priority = "high",
+		    apply_runtime_tint = true,
+		},
+	    },
+	},
+	shadow =
+	    {
+		filename = "__base__/graphics/entity/combat-robot-capsule/defender-capsule-shadow.png",
+		flags = { "no-crop" },
+		frame_count = 1,
+		width = 26,
+		height = 20,
+		priority = "high"
+	    },
+	smoke = {
+	    {
+		name = attributes.softSmokeName,
+		deviation = {0.15, 0.15},
+		frequency = 1,
+		position = {0, 0},
+		starting_frame = 3,
+		starting_frame_deviation = 5,
+		starting_frame_speed_deviation = 5
+	    }
+	}
     }
 
     data:extend({cap})
