@@ -4,11 +4,16 @@ Date: 2. 09. 2018
   Features:
     - Blockable projectiles, most projectiles will be stop by walls and other objects
     - Rocket launches now agitate biters
+    - Added Raiding phase where for a short period of time the ai no longer needs pollution to trigger an attack wave
   Improvements:
     - Switched linear tier generation from rounding using ceiling to nearest number
     - Spawner faction spitters now degrade when attacking and check buildability for units to prevent infinite biter masses when attacking
   Bugfixes:
     - Added check for null group (https://github.com/veden/Rampant/issues/16)
+  Tweaks:
+    - Changed Spawner baseline evolution requirement from 60 to 70%
+  Framework:
+    - Added interop function for registering unit groups from other mods for Rampant AI management
 
 
 ---------------------------------------------------------------------------------------------------

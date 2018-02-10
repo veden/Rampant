@@ -1,5 +1,7 @@
 local interop = {}
 
+local unitGroupUtils = require("UnitGroupUtils")
+
 function interop.addAIPoints(value)
     global.natives.points = global.natives.points + value
 end
@@ -76,6 +78,10 @@ end
 
 function interop.getAttackUsePlayer()
     return global.natives.attackUsePlayer
+end
+
+function interop.registerUnitGroup(unitGroup)
+    unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, global.natives, unitGroup)
 end
 
 return interop

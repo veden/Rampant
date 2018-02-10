@@ -515,7 +515,7 @@ local function onResourceDepleted(event)
 end
 
 local function onTriggerEntityCreated(event)
-    print("triggered", event.tick)
+
 end
 
 local function onUsedCapsule(event)

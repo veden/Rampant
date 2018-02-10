@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_53 = 53
+constants.VERSION_54 = 54
 
 -- misc
 
@@ -85,6 +85,8 @@ constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000
 constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
 
+constants.RAIDING_MINIMUM_BASE_THRESHOLD = 250
+
 constants.AI_UNIT_REFUND = 3
 
 -- constants.AI_MAX_SQUAD_COUNT = 30
@@ -95,6 +97,7 @@ constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
 constants.AI_STATE_NOCTURNAL = 3
+constants.AI_STATE_RAIDING = 4
 
 constants.AI_MIN_STATE_DURATION = 1
 constants.AI_MAX_STATE_DURATION = 4
@@ -187,7 +190,7 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_FIRE] = 0.4,
     [constants.BASE_ALIGNMENT_FAST] = 0.5,
     [constants.BASE_ALIGNMENT_TROLL] = 0.5,
-    [constants.BASE_ALIGNMENT_SPAWNER] = 0.6,
+    [constants.BASE_ALIGNMENT_SPAWNER] = 0.7,
     [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
     [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
 }
