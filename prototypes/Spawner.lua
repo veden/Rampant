@@ -50,6 +50,7 @@ buildUnits(
 	    followsPlayer = false
 	},
 	attack = {
+	    checkBuildability = true,
 	    softSmokeName = softSmoke
 	},
 	death = function (attack, attributes)
@@ -605,7 +606,18 @@ buildUnitSpawner(
 	    },
 	    attack = {
 		type = "projectile",
-		softSmokeName = softSmoke
+		softSmokeName = softSmoke,
+		sourceEffect = function (attributes)
+		    return 
+			{
+			    type = "area",
+			    radius = 10.0,
+			    action_delivery = {
+				type = "damage",
+				damage = {amount = attributes.damage or 5, type = attributes.damageType or "physical"}
+			    }
+			}
+		end
 	    },
 	    resistances = {},
 
@@ -671,16 +683,16 @@ buildUnitSpawner(
 	    {		
 		type = "attack",
 		name = "cooldown",
-		[1] = 100,
-		[2] = 100,
-		[3] = 97,
-		[4] = 97,
-		[5] = 95,
-		[6] = 95,
-		[7] = 93,
-		[8] = 93,
-		[9] = 90,
-		[10] = 90
+		[1] = 180,
+		[2] = 180,
+		[3] = 177,
+		[4] = 177,
+		[5] = 175,
+		[6] = 175,
+		[7] = 173,
+		[8] = 173,
+		[9] = 170,
+		[10] = 170
 	    },
 
 	    {		
@@ -1075,10 +1087,10 @@ buildUnitSpawner(
 
     function (attributes)
 	return createProjectileAttack(attributes,
-				  createCapsuleProjectile(attributes.name,
-							  attributes,
-							  attributes.name .. "-drone-rampant"),
-				  spitterattackanimation(attributes.scale, attributes.tint))
+				      createCapsuleProjectile(attributes.name,
+							      attributes,
+							      attributes.name .. "-drone-rampant"),
+				      spitterattackanimation(attributes.scale, attributes.tint))
     end,
 
     {
@@ -1398,9 +1410,9 @@ buildWorm(
 
     function (attributes)
 	return createProjectileAttack(attributes,
-				  createCapsuleProjectile(attributes.name,
-							  attributes,
-							  attributes.name .. "-drone-rampant"))
+				      createCapsuleProjectile(attributes.name,
+							      attributes,
+							      attributes.name .. "-drone-rampant"))
     end,
 
     SPAWNER_WORM_VARIATIONS,

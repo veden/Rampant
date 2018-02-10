@@ -121,6 +121,10 @@ function tests.findNearestPlayerEnemy()
     print("--")
 end
 
+function tests.morePoints(points)
+    global.natives.points = global.natives.points + points
+end
+
 function tests.getOffsetChunk(x, y)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125)

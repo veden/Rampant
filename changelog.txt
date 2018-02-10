@@ -2,7 +2,8 @@
 Version: 0.16.19
 Date: 2. 05. 2018
   Features:
-    - Blockable projectiles, most projectiles will be stop by walls and other objects.
+    - Blockable projectiles, most projectiles will be stop by walls and other objects
+    - Rocket launches now agitate biters
   Improvements:
     - Switched linear tier generation from rounding using ceiling to nearest number
   Bugfixes:
