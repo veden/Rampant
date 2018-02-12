@@ -280,6 +280,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	end
 
 	if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
+	    local nestCount = 0
+	    local wormCount = 0
 	    local base = findNearbyBase(map, chunk, natives)
 	    if base then
 		if (base.alignment ~= BASE_ALIGNMENT_DEADZONE) then
@@ -293,10 +295,14 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 		for i = 1, #nests do
 		    if rebuilding then
 			if not isRampant(nests[i].name) then
-			    upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor)
+			    if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
+				nestCount = nestCount + 1
+			    end
 			end
 		    else
-			upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor)
+			if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
+			    nestCount = nestCount + 1
+			end
 		    end
 		end
 	    end
@@ -304,19 +310,27 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 		for i = 1, #worms do
 		    if rebuilding then
 			if not isRampant(worms[i].name) then
-			    upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor)
+			    if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
+				wormCount = wormCount + 1
+			    end
 			end
 		    else
-			upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor)
+			if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
+			    wormCount = wormCount + 1
+			end
 		    end
 		end
 	    end
+	    setNestCount(map, chunk, nestCount)
+	    setWormCount(map, chunk, wormCount)
+	else
+	    setNestCount(map, chunk, #nests)
+	    setWormCount(map, chunk, #worms)
 	end
 	
-	setNestCount(map, chunk, #nests)
 	setPlayerBaseGenerator(map, chunk, playerObjects)
 	setResourceGenerator(map, chunk, resources)
-	setWormCount(map, chunk, #worms)
+	
 
 	chunk[PASSABLE] = pass
 	chunk[PATH_RATING] = passScore

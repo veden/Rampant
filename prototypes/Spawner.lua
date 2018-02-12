@@ -245,16 +245,16 @@ buildUnits(
 	{
 	    type = "attribute",
 	    name = "movement",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.02,
-	    [4] = 0.02,
-	    [5] = 0.03,
-	    [6] = 0.03,
-	    [7] = 0.04,
-	    [8] = 0.04,
-	    [9] = 0.05,
-	    [10] = 0.05
+	    [1] = 0.00,
+	    [2] = 0.00,
+	    [3] = 0.00,
+	    [4] = 0.00,
+	    [5] = 0.00,
+	    [6] = 0.00,
+	    [7] = 0.00,
+	    [8] = 0.00,
+	    [9] = 0.00,
+	    [10] = 0.00
 	},
 	{
 	    type = "attribute",
@@ -568,16 +568,16 @@ buildUnits(
 	{
 	    type = "attribute",
 	    name = "movement",
-	    [1] = 0.01,
-	    [2] = 0.01,
-	    [3] = 0.02,
-	    [4] = 0.02,
-	    [5] = 0.03,
-	    [6] = 0.03,
-	    [7] = 0.04,
-	    [8] = 0.04,
-	    [9] = 0.05,
-	    [10] = 0.05
+	    [1] = 0.0,
+	    [2] = 0.0,
+	    [3] = 0.0,
+	    [4] = 0.0,
+	    [5] = 0.0,
+	    [6] = 0.0,
+	    [7] = 0.0,
+	    [8] = 0.0,
+	    [9] = 0.0,
+	    [10] = 0.0
 	},
 	{
 	    type = "attribute",
@@ -930,6 +930,7 @@ buildUnitSpawner(
 	    attack = {
 		type = "projectile",
 		softSmokeName = softSmoke,
+		triggerCreated = true,
 		directionOnly = true,
 		sourceEffect = function (attributes)
 		    return 
@@ -957,7 +958,7 @@ buildUnitSpawner(
 		[9] = 1.3,
 		[10] = 1.4
 	    },
-	    attackName = "spawner-worm-drone",
+	    attackName = "spawner-drone",
 	    tint = {r=1, g=0, b=1, a=1},
 	    pTint = {r=1, g=0, b=1, a=1},
 	    sTint = {r=1, g=0, b=1, a=1}
@@ -972,15 +973,15 @@ buildUnitSpawner(
 
 	    scales = {
 		[1] = 0.5,
-		[2] = 0.5,
-		[3] = 0.5,
-		[4] = 0.5,
-		[5] = 0.5,
-		[6] = 0.5,
-		[7] = 0.5,
-		[8] = 0.5,
-		[9] = 0.5,
-		[10] = 0.5
+		[2] = 0.6,
+		[3] = 0.7,
+		[4] = 0.8,
+		[5] = 0.9,
+		[6] = 1.0,
+		[7] = 1.1,
+		[8] = 1.2,
+		[9] = 1.3,
+		[10] = 1.4
 	    },
 	    tint = {r=1, g=0, b=1, a=1}
 	}
@@ -1411,11 +1412,9 @@ buildUnitSpawner(
     function (attack, attributes)
 	local divider
 	if attributes.health < 100 then
-	    divider = 3
-	elseif attributes.health < 1000 then
-	    divider = 5
+	    divider = 2
 	else
-	    divider = 7
+	    divider = 2.5
 	end
 	attack.healthDamage = attributes.health / divider
 	return createProjectileAttack(attack,
@@ -1446,6 +1445,7 @@ buildWorm(
 	},
 	attack = {
 	    type = "projectile",
+	    triggerCreated = true,
 	    softSmokeName = softSmoke
 	},
 	resistances = {},
@@ -1462,7 +1462,7 @@ buildWorm(
 	    [9] = 1.3,
 	    [10] = 1.4
 	},
-	attackName = "spawner-drone",
+	attackName = "spawner-worm-drone",
 	tint = {r=1, g=0, b=1, a=1},
 	pTint = {r=1, g=0, b=1, a=1},
 	sTint = {r=1, g=0, b=1, a=1}

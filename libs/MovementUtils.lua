@@ -45,13 +45,13 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
         local penalty = penalties[i]
         if (penalty.c == chunk) then
             penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
-	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
-		local group = units.group
-		if group then
-		    recycleBiters(natives, group.members)
-		    group.destroy()
-		end
-	    end
+	    -- if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
+	    -- 	local group = units.group
+	    -- 	if group then
+	    -- 	    recycleBiters(natives, group.members)
+	    -- 	    group.destroy()
+	    -- 	end
+	    -- end
             return
         end
     end

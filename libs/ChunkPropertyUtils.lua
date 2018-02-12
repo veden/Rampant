@@ -74,6 +74,14 @@ function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
     end
 end
 
+function chunkPropertyUtils.setChunkSpawnerEggTick(map, chunk, tick)
+    map.chunkToSpawner[chunk] = tick
+end
+
+function chunkPropertyUtils.getChunkSpawnerEggTick(map, chunk)
+    return map.chunkToSpawner[chunk] or 0
+end
+
 function chunkPropertyUtils.getResourceGenerator(map, chunk)
     return map.chunkToResource[chunk] or 0
 end

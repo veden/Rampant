@@ -18,6 +18,7 @@ local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
 local mathUtils = require("libs/MathUtils")
 local config = require("config")
+local stringUtils = require("StringUtils")
 
 -- constants
 
@@ -26,6 +27,7 @@ local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
+local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -57,6 +59,7 @@ local entityForPassScan = chunkUtils.entityForPassScan
 
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
+local processSpawnerChunks = chunkProcessor.processSpawnerChunks
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -84,10 +87,15 @@ local retreatUnits = squadDefense.retreatUnits
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
 
+local isSpawner = stringUtils.isSpawner
+
 local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
+
+local getChunkSpawnerEggTick = chunkPropertyUtils.getChunkSpawnerEggTick
+local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
@@ -163,15 +171,19 @@ local function rebuildMap()
     map.scanIndex = 1
 
     map.chunkToBase = {}
-    map.chunkToHives = {}
     map.chunkToNests = {}
     map.chunkToWorms = {}
-    map.chunkToRetreats = {}
-    map.chunkToRallys = {}
     map.chunkToPlayerBase = {}
     map.chunkToResource = {}
+
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
+
+    map.chunkToRetreats = {}
+    map.chunkToRallys = {}
+    map.chunkToSpawner = {}
+
+    map.queueSpawners = {}
     
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
@@ -328,7 +340,9 @@ local function onTick(event)
 
 	processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
-	scanMap(map, surface, natives)
+	scanMap(map, surface, natives, tick)
+
+	map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
 	
 	map.chunkToPassScan = processScanChunks(map, surface)
     end
@@ -466,7 +480,7 @@ local function onEnemyBaseBuild(event)
 		end
 		entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
 	    end
-	    if entity then
+	    if entity and entity.valid then
 		event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
 	    end
 	end
@@ -515,7 +529,22 @@ local function onResourceDepleted(event)
 end
 
 local function onTriggerEntityCreated(event)
-
+    local entity = event.entity
+    if entity and entity.valid then
+	local name = event.entity.name
+	if isSpawner(name) then
+	    local tick = event.tick
+	    local chunk = getChunkByPosition(map, entity.position)
+	    if chunk and ((tick - getChunkSpawnerEggTick(map, chunk)) > INTERVAL_SPAWNER) then
+		setChunkSpawnerEggTick(map, chunk, tick)
+		map.queueSpawners[#map.queueSpawners+1] = {
+		    tick,
+		    chunk,
+		    entity.position
+		}
+	    end
+	end
+    end
 end
 
 local function onUsedCapsule(event)

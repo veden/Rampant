@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_54 = 54
+constants.VERSION_55 = 55
 
 -- misc
 
@@ -44,6 +44,9 @@ constants.INTERVAL_SCAN = 21
 constants.INTERVAL_CHUNK = 17
 constants.INTERVAL_LOGIC = 61
 constants.INTERVAL_SQUAD = 41
+constants.INTERVAL_SPAWNER = constants.TICKS_A_SECOND * 10
+constants.INTERVAL_RALLY = constants.TICKS_A_SECOND * 10
+constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
 
 constants.RESOURCE_GENERATOR_INCREMENT = 0.001
 
@@ -367,6 +370,8 @@ local wormVariations = settings.startup["rampant-newEnemyWormVariations"].value
 local wormTiers = settings.startup["rampant-newEnemyWormTiers"].value
 local unitVariations = settings.startup["rampant-newEnemyUnitVariations"].value
 local unitTiers = settings.startup["rampant-newEnemyUnitTiers"].value
+
+constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
 
 constants.NEUTRAL_NEST_TIERS = nestTiers
 constants.NEUTRAL_NEST_VARIATIONS = nestVariations
