@@ -31,6 +31,13 @@ if settings.startup["rampant-useDumbProjectiles"].value then
     end
 end
 
+for _, robot in pairs(data.raw["combat-robot"]) do
+    if not robot.collision_mask then
+	robot.collision_mask = {}
+    end
+    robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+end
+
 --[[
     try to make sure new maps use the correct map settings without having to completely load the mod.
     done because seeing desync issues with dynamic map-settings changes before re-saving the map.

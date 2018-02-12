@@ -1,6 +1,15 @@
 local biterFunctions = {}
 
+local unitSpawnerUtils = require("UnitSpawnerUtils")
+
+
 local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+
+
+local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
+local spawner_die_animation = unitSpawnerUtils.spawner_die_animation
+
+
 
 function biterFunctions.makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
@@ -66,10 +75,10 @@ function biterFunctions.makeUnitSpawnerCorpse(attributes)
 		final_render_layer = "remnants",
 		animation =
 		    {
-			spawner_die_animation(0, attributes.tint),
-			spawner_die_animation(1, attributes.tint),
-			spawner_die_animation(2, attributes.tint),
-			spawner_die_animation(3, attributes.tint)
+			spawner_die_animation(0, attributes.tint, attributes.scale),
+			spawner_die_animation(1, attributes.tint, attributes.scale),
+			spawner_die_animation(2, attributes.tint, attributes.scale),
+			spawner_die_animation(3, attributes.tint, attributes.scale)
 		    }
 	    }
     })
@@ -219,7 +228,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	    },
 	healing_per_tick = biterAttributes.healing or 0.02,
 	collision_box = {{-3.2 * biterAttributes.scale, -2.2 * biterAttributes.scale}, {2.2 * biterAttributes.scale, 2.2 * biterAttributes.scale}},
-	selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
+	selection_box = {{-3.6 * biterAttributes.scale, -2.6 * biterAttributes.scale}, {2.6 * biterAttributes.scale, 2.6 * biterAttributes.scale}},
 	-- in ticks per 1 pu
 	pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
 	pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,
@@ -229,10 +238,10 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
 	animations =
 	    {
-		spawner_idle_animation(0, biterAttributes.tint),
-		spawner_idle_animation(1, biterAttributes.tint),
-		spawner_idle_animation(2, biterAttributes.tint),
-		spawner_idle_animation(3, biterAttributes.tint)
+		spawner_idle_animation(0, biterAttributes.tint, biterAttributes.scale),
+		spawner_idle_animation(1, biterAttributes.tint, biterAttributes.scale),
+		spawner_idle_animation(2, biterAttributes.tint, biterAttributes.scale),
+		spawner_idle_animation(3, biterAttributes.tint, biterAttributes.scale)
 	    },
 	result_units = unitSet,
 	-- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds

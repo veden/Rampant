@@ -1,5 +1,6 @@
 -- import
 
+local stickerUtils = require("StickerUtils")
 local streamUtils = require("StreamUtils")
 local projectileUtils = require("ProjectileUtils")
 
@@ -15,6 +16,11 @@ local makeProjectile = projectileUtils.makeProjectile
 
 -- dumb acid projectiles
 local AttackBall = {}
+
+stickerUtils.makeSticker({
+	name = "the-sticker"
+	
+})
 
 function AttackBall.createAttackBall(attributes)
 
@@ -53,8 +59,14 @@ function AttackBall.createAttackBall(attributes)
 		type = "instant",
 		target_effects = (attributes.pointEffects and attributes.pointEffects(attributes)) or
 		    {
+			{
 			type= "create-entity",
 			entity_name = attributes.crater or "acid-splash-purple"
+			},
+			{
+				type = "damage",
+				damage = templateDamage
+			}
 		    }
 	    }
 	}

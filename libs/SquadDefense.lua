@@ -17,7 +17,7 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
@@ -49,8 +49,8 @@ local function scoreRetreatLocation(map, neighborChunk)
     return -(neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100) + (getPlayerBaseGenerator(map, neighborChunk) * 20))
 end
 
-function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, force)
-    if (tick - getRetreatTick(map, chunk) > INTERVAL_LOGIC) and ((getEnemyStructureCount(map, chunk) == 0) or force) then
+function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
+    if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast or force) then
 	local performRetreat = false
 	local enemiesToSquad = nil
 	
@@ -58,7 +58,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 	    enemiesToSquad = surface.find_enemy_units(position, radius)
 	    performRetreat = #enemiesToSquad > 0
 	    if (mRandom() < calculateKamikazeThreshold(#enemiesToSquad, natives)) then
-		setRetreatTick(map, chunk, tick + (INTERVAL_LOGIC * 10))
+		setRetreatTick(map, chunk, tick)
 		performRetreat = false
 	    end
 	elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
@@ -95,7 +95,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		    local cmd = map.retreatCommand
 		    cmd.group = newSquad.group
 		    if enemiesToSquad then
-			membersToSquad(cmd, enemiesToSquad, force)
+			membersToSquad(cmd, enemiesToSquad, artilleryBlast)
 		    else
 			membersToSquad(cmd, squad.group.members, true)
 			newSquad.penalties = squad.penalties

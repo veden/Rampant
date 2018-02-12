@@ -19,7 +19,7 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
-local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+local INTERVAL_RALLY = constants.INTERVAL_RALLY
 
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
@@ -96,7 +96,7 @@ local function validUnitGroupLocation(map, neighborChunk)
 end
 
 function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
-    if ((tick - getRallyTick(map, chunk) > INTERVAL_LOGIC) and (natives.points >= AI_VENGENCE_SQUAD_COST)
+    if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (natives.points >= AI_VENGENCE_SQUAD_COST)
     ) then
 	setRallyTick(map, chunk, tick)
 	local cX = chunk.x
@@ -106,8 +106,7 @@ function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
 		if (x ~= cX) and (y ~= cY) then
 		    local rallyChunk = getChunkByXY(map, x, y)
 		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
-			aiAttackWave.formSquads(map, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST)
-			if (natives.points < AI_VENGENCE_SQUAD_COST) then
+			if not aiAttackWave.formSquads(map, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST) then
 			    return
 			end
 		    end
@@ -151,6 +150,8 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
 	    end
 	end
     end
+    
+    return (natives.points - cost) > 0
 end
 
 return aiAttackWave

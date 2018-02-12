@@ -32,6 +32,10 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
+local INTERVAL_RALLY = constants.INTERVAL_RALLY
+local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
+local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
+
 local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
 
 -- imported functions
@@ -115,8 +119,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    local chunkRoll = mRandom()
 	    
 	    if squads and (getNestCount(map, chunk) > 0) and (chunkRoll < 0.90) then
-		formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-		squads = (natives.points >= AI_SQUAD_COST)
+		squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 	    end
 
 	    if newEnemies then
@@ -185,12 +188,10 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 
 			    if (getNestCount(map, chunk) > 0) then
 				if squads then
-				    formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-				    squads = (natives.points >= AI_SQUAD_COST)
+				    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 				end
 				if vengence then
-				    formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				    vengence = (natives.points >= AI_VENGENCE_SQUAD_COST)
+				    vengence = formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
 				end
 			    end
 			    
@@ -206,12 +207,16 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanMap(map, surface, natives)
+function mapProcessor.scanMap(map, surface, natives, tick)
     local index = map.scanIndex
 
     local unitCountQuery = map.filteredEntitiesEnemyUnitQuery
     local offset = unitCountQuery.area[2]
     local chunkBox = unitCountQuery.area[1]
+
+    local retreats = map.chunkToRetreats
+    local rallys = map.chunkToRallys
+    local spawners = map.chunkToSpawner
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
@@ -224,7 +229,22 @@ function mapProcessor.scanMap(map, surface, natives)
 	
 	offset[1] = chunk.x + CHUNK_SIZE
 	offset[2] = chunk.y + CHUNK_SIZE
-	
+
+	local retreatTick = retreats[chunk]
+	if retreatTick and ((tick - retreatTick) > INTERVAL_RETREAT) then
+	    retreats[chunk] = nil
+	end
+
+	local rallyTick = rallys[chunk]
+	if rallyTick and ((tick - rallyTick) > INTERVAL_RALLY) then
+	    rallys[chunk] = nil
+	end
+
+	local SpawnerTick = spawners[chunk]
+	if SpawnerTick and ((tick - SpawnerTick) > INTERVAL_SPAWNER) then
+	    spawners[chunk] = nil
+	end
+
 	local unitCount = surface.count_entities_filtered(unitCountQuery)
 
 	if (unitCount > 300) then

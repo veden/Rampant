@@ -4,14 +4,23 @@ local chunkProcessor = {}
 
 local chunkUtils = require("ChunkUtils")
 local constants = require("Constants")
+local squadDefense = require("SquadDefense")
+local unitGroupUtils = require("UnitGroupUtils")
 
 -- constants
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
+local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
+local SPAWNER_EGG_TIMEOUT = constants.SPAWNER_EGG_TIMEOUT
+
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
+
+local retreatUnits = squadDefense.retreatUnits
+
+local findNearbySquad = unitGroupUtils.findNearbySquad
 
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
@@ -88,5 +97,35 @@ function chunkProcessor.processScanChunks(map, surface)
    
     return {}
 end
+
+function chunkProcessor.processSpawnerChunks(map, surface, natives, tick)
+    local queue = map.queueSpawners
+
+    local result = {}
+    
+    for i=1, #queue do
+	local o = queue[i]
+	if ((tick - o[1]) > SPAWNER_EGG_TIMEOUT) then
+	    local chunk = o[2]
+	    local position = o[3]
+	    
+	    retreatUnits(chunk,
+			 position,
+			 nil,
+			 map,
+			 surface, 
+			 natives,
+			 tick,
+			 RETREAT_GRAB_RADIUS,
+			 false,
+			 true)
+	else
+	    result[#result+1] = o
+	end
+    end
+    
+    return result
+end
+
 
 return chunkProcessor

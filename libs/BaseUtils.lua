@@ -256,11 +256,11 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     if spawnerName then
 	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
 	if newPosition then
-	    entity = surface.create_entity({name = spawnerName, position = newPosition})
+	    return surface.create_entity({name = spawnerName, position = newPosition})
 	end
     end
 
-    return entity
+    return nil
 end
 
 local function upgradeBase(base)
