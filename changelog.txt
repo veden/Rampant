@@ -1,11 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.20
 Date: 2. 11. 2018
-  Features:
   Improvements:
     - Removed squad movement penalty before disband
     - Combat robots now take damage from biter projectiles and explosions
     - Spawner biters are now put into groups after they are spawned
+    - Changed pheromone spread to no longer take into account water tiles
+    - Added enemy nests to the resource pheromone field as a negative weight
   Bugfixes:
     - Removed Deadzone nests and worms from the internal memory map
     - Fix for unit spawner scaling based on tier (Existing saves will have spawners overlap due to scale increase)
@@ -13,8 +14,15 @@ Date: 2. 11. 2018
     - Fixed local of worm spawner eggs
   Tweaks:
     - Increased damage spawner spitters take when shooting
+    - Increased resource persistance from 0.9 to 0.99
+    - Increased base and resource dispersal from 0.3 to 0.35
+    - Increased resource generation range from a min of 90 to a min of 900
+    - Adjusted unit spawner collision and selection box
+    - Reduced spawner biter size
   Optimizations:
     - Added property garbage collection for certain chunk properties
+  Framework:
+    - Fixed visualizer selection
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.19

@@ -227,8 +227,8 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 		}
 	    },
 	healing_per_tick = biterAttributes.healing or 0.02,
-	collision_box = {{-3.2 * biterAttributes.scale, -2.2 * biterAttributes.scale}, {2.2 * biterAttributes.scale, 2.2 * biterAttributes.scale}},
-	selection_box = {{-3.6 * biterAttributes.scale, -2.6 * biterAttributes.scale}, {2.6 * biterAttributes.scale, 2.6 * biterAttributes.scale}},
+	collision_box = {{-3.0 * biterAttributes.scale, -2.0 * biterAttributes.scale}, {2.0 * biterAttributes.scale, 2.0 * biterAttributes.scale}},
+	selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
 	-- in ticks per 1 pu
 	pollution_absorbtion_absolute = biterAttributes.pollutionAbsorbtionAbs or 20,
 	pollution_absorbtion_proportional = biterAttributes.pollutionAbsorbtionPro or 0.01,

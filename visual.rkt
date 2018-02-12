@@ -21,6 +21,11 @@
     (/ (- v low)
        (- high low)))
 
+  (define (fromNormalize x low high)
+    (+ (* (- high low)
+          x)
+       low))
+
   (define (roundTo x digits)
     (* (floor (/ x digits))
        digits))    
@@ -142,8 +147,14 @@
         (set! minY miY)
         (set! maxY maY)
 
-        (set! tileWidth (ceiling (/ windowWidth (abs (/ (- maxX minX) CHUNK_SIZE)))))
-        (set! tileHeight (ceiling (/ windowHeight (+ (abs (/ (- maxY minY) CHUNK_SIZE)) 1))))
+        ;; (display (list minX minY maxX maxY))
+        ;;       (display "\n")
+        
+        (set! tileWidth (ceiling (/ windowWidth (+ (abs (/ (- maxX minX) CHUNK_SIZE)) 3))))
+        (set! tileHeight (ceiling (/ windowHeight (+ (abs (/ (- maxY minY) CHUNK_SIZE)) 3))))
+
+        ;; (display (list tileWidth tileHeight))
+        ;;       (display "\n")
         
         (refresh dc)
 
@@ -166,14 +177,16 @@
                tileHeight))
 
     (define (screenX->chunkX x)
-      (+ (* (ceiling (/ x tileWidth))
-            CHUNK_SIZE)
-         minX))
+      (roundTo (fromNormalize (/ x windowWidth)
+                              minX
+                              maxX)
+               CHUNK_SIZE))
     
     (define (screenY->chunkY y)
-      (- (- maxY
-            (* (- (floor (/ y tileHeight)) 2)
-               CHUNK_SIZE))))
+      (roundTo (fromNormalize (/ y windowHeight)
+                              minY
+                              maxY)
+               CHUNK_SIZE))
 
     (set! drawFrame (lambda (context)
                       (send context suspend-flush)
@@ -205,6 +218,12 @@
                                           (screenY->chunkY y))))))
 
     (define (displayHighlight x y)
+      ;; (display (list (screenX->chunkX x)
+      ;;                (screenY->chunkY y)
+      ;;              x
+      ;;              y))
+      ;; (display "\n")
+
       (let ((chunk (findChunk (screenX->chunkX x)
                               (screenY->chunkY y))))
         (set! activeHighlight chunk))
