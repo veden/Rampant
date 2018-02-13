@@ -40,6 +40,7 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 local DEFINES_COMMAND_GROUP = defines.command.group
+local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -48,6 +49,8 @@ local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
 -- imported functions
+
+local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
@@ -80,7 +83,6 @@ local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
 local createBase = baseUtils.createBase
 
-local squadsAttack = squadAttack.squadsAttack
 local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
@@ -224,6 +226,13 @@ local function rebuildMap()
 	distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
+    map.settleCommand = {
+	type = DEFINES_COMMAND_BUILD_BASE,
+	position = map.position,
+	distraction = DEFINES_DISTRACTION_BY_ENEMY,
+	ignore_planner = true
+    }
+    
     map.retreatCommand = { type = DEFINES_COMMAND_GROUP,
 			   group = nil,
 			   distraction = DEFINES_DISTRACTION_NONE }
@@ -280,13 +289,12 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
-    natives.useCustomAI = constants.DEV_CUSTOM_AI
-    -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
-    -- if natives.useCustomAI then
-    -- 	game.forces.enemy.ai_controllable = false
-    -- else
-    -- 	game.forces.enemy.ai_controllable = true
-    -- end
+    upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+    if natives.useCustomAI then
+    	game.forces.enemy.ai_controllable = false
+    else
+    	game.forces.enemy.ai_controllable = true
+    end
     -- if changed and newValue then
     -- 	rebuildMap()
     -- 	return false
@@ -371,7 +379,7 @@ local function onTick(event)
 	regroupSquads(natives, map)
 	
 	squadsBeginAttack(natives, gameRef.players)
-	squadsAttack(map, gameRef.surfaces[1], natives)
+	squadsDispatch(map, gameRef.surfaces[1], natives)
     end
 end
 
