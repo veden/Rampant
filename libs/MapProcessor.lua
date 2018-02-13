@@ -29,6 +29,7 @@ local SENTINEL_IMPASSABLE_CHUNK  = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -45,6 +46,7 @@ local processPheromone = pheromoneUtils.processPheromone
 local playerScent = pheromoneUtils.playerScent
 
 local formSquads = aiAttackWave.formSquads
+local formSettlers = aiAttackWave.formSettlers
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getChunkByXY = mapUtils.getChunkByXY
@@ -105,6 +107,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
+    local settlers = canAttack(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -117,9 +120,14 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    processPheromone(map, chunk)
 
 	    local chunkRoll = mRandom()
-	    
-	    if squads and (getNestCount(map, chunk) > 0) and (chunkRoll < 0.90) then
-		squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+
+	    if (getNestCount(map, chunk) > 0) then
+		if squads and (chunkRoll > 0.90) then
+		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+		end
+		if settlers and (chunkRoll < 0.10) then
+		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST)
+		end
 	    end
 
 	    if newEnemies then

@@ -139,14 +139,6 @@ function upgrade.attempt(natives)
 	global.version = constants.VERSION_26
     end
     if (global.version < constants.VERSION_27) then
-
-	natives.useCustomAI = constants.DEV_CUSTOM_AI
-	-- natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
-	if natives.useCustomAI then
-	    game.forces.enemy.ai_controllable = false
-	else
-	    game.forces.enemy.ai_controllable = true
-	end	
 	
 	game.surfaces[1].print("Rampant - Version 0.15.17")
 	global.version = constants.VERSION_27
@@ -197,10 +189,17 @@ function upgrade.attempt(natives)
 	game.surfaces[1].print("Rampant - Version 0.16.16")
 	global.version = constants.VERSION_51
     end
-    if (global.version < constants.VERSION_55) then
+    if (global.version < constants.VERSION_56) then
+
+	natives.expansion = game.map_settings.enemy_expansion.enabled
+	natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance
+	natives.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
+	natives.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
+	natives.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
+	natives.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
 	
-	game.surfaces[1].print("Rampant - Version 0.16.20")
-	global.version = constants.VERSION_55
+	game.surfaces[1].print("Rampant - Version 0.16.21")
+	global.version = constants.VERSION_56
     end
     
     return starting ~= global.version, natives

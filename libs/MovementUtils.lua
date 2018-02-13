@@ -105,28 +105,28 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, scoreFunction, squad, threshold) 
-    local highestChunk = SENTINEL_IMPASSABLE_CHUNK
-    local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection    
-    for x=1,8 do
-        local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(x, chunk, neighborChunk) and (neighborChunk[RESOURCE_PHEROMONE] > (threshold or 1)) then
-            local score = scoreFunction(squad, neighborChunk)
-            if (score > highestScore) then
-                highestScore = score
-                highestChunk = neighborChunk
-                highestDirection = x
-            end
-        end
-    end
+-- function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, scoreFunction, squad) 
+--     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
+--     local highestScore = -MAGIC_MAXIMUM_NUMBER
+--     local highestDirection    
+--     for x=1,8 do
+--         local neighborChunk = neighborDirectionChunks[x]
+--         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(x, chunk, neighborChunk) then
+--             local score = scoreFunction(squad, neighborChunk)
+--             if (score > highestScore) then
+--                 highestScore = score
+--                 highestChunk = neighborChunk
+--                 highestDirection = x
+--             end
+--         end
+--     end
 
-    if scoreFunction(squad, chunk) > highestScore then
-	return SENTINEL_IMPASSABLE_CHUNK, -1
-    end
+--     if scoreFunction(squad, chunk) > highestScore then
+-- 	return SENTINEL_IMPASSABLE_CHUNK, -1
+--     end
     
-    return highestChunk, highestDirection
-end
+--     return highestChunk, highestDirection
+-- end
 
 --[[
     Expects all neighbors adjacent to a chunk
