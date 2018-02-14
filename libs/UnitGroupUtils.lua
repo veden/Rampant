@@ -114,6 +114,9 @@ function unitGroupUtils.createSquad(position, surface, natives, group)
 	frenzyPosition = {x = 0,
 			  y = 0},
 	cycles = 0,
+	maxDistance = 0,
+	originPosition = {x = 0,
+			  y = 0},
 	chunk = nil
     }
     natives.squads[#natives.squads+1] = squad

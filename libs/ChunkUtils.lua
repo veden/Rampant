@@ -30,6 +30,8 @@ local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 
+local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
+
 local CHUNK_TICK = constants.CHUNK_TICK
 
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
@@ -273,7 +275,7 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 
 	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, map)
 
-	local resources = surface.count_entities_filtered(map.countResourcesQuery) * 0.001
+	local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
 	
 	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS

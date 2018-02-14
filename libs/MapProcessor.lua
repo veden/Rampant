@@ -61,6 +61,7 @@ local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
+local canMigrate = aiPredicates.canMigrate
 
 local findNearbySquad = unitGroupUtils.findNearbySquad
 
@@ -107,7 +108,9 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
-    local settlers = canAttack(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
+    local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
+
+    print("settlers", settlers, roll)
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -119,20 +122,19 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    
 	    processPheromone(map, chunk)
 
-	    local chunkRoll = mRandom()
-
 	    if (getNestCount(map, chunk) > 0) then
-		if squads and (chunkRoll > 0.90) then
+		if squads then
 		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		end
-		if settlers and (chunkRoll < 0.10) then
+		if natives.useCustomAI and settlers then
+		    print("trying to form settlers")
 		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST)
 		end
 	    end
 
 	    if newEnemies then
 		local base = chunkToBase[chunk]
-		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (chunkRoll < 0.10) then
+		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (mRandom() < 0.10) then
 		    processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
 		end
 	    end
