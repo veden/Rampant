@@ -48,7 +48,7 @@ constants.INTERVAL_SPAWNER = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RALLY = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
 
-constants.RESOURCE_GENERATOR_INCREMENT = 0.001
+constants.RESOURCE_NORMALIZER = 1 / 1024 
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
@@ -76,12 +76,14 @@ constants.EVOLUTION_INCREMENTS = 0.05
 
 -- ai
 
+constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
+
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SQUAD_COST = 175
 constants.AI_NEST_COST = 10
 constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
-constants.AI_SETTLER_COST = 300
+constants.AI_SETTLER_COST = 250
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000

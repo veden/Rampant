@@ -8,6 +8,7 @@ local mathUtils = require("libs/MathUtils")
 -- constants
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
 
@@ -108,7 +109,7 @@ function upgrade.attempt(natives)
 	natives.formSquadThreshold = 0
 	natives.attackWaveSize = 0
 	natives.attackWaveDeviation = 0
-	natives.attackWaveLowerBound = 0
+	natives.attackWaveLowerBound = 1
 	natives.attackWaveUpperBound = 0
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
@@ -191,12 +192,32 @@ function upgrade.attempt(natives)
     end
     if (global.version < constants.VERSION_56) then
 
+	for _,squad in pairs(natives.squads) do
+	    squad.maxDistance = 0
+	    squad.originPosition = {
+		x = 0,
+		y = 0
+	    }
+	    squad.settlers = false
+    	end
+
+	print(game.map_settings.enemy_expansion.enabled,
+	      game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE,
+	      game.map_settings.enemy_expansion.min_expansion_cooldown,
+	      game.map_settings.enemy_expansion.max_expansion_cooldown,
+	      game.map_settings.enemy_expansion.settler_group_min_size,
+	      game.map_settings.enemy_expansion.settler_group_max_size)
 	natives.expansion = game.map_settings.enemy_expansion.enabled
-	natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance
+	natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
+	natives.expansionMaxDistanceDerivation = natives.expansionMaxDistance * 0.33
 	natives.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
 	natives.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
 	natives.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
 	natives.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
+
+	natives.settlerCooldown = 0
+	natives.settlerWaveDeviation = 0
+	natives.settlerWaveSize = 0
 	
 	game.surfaces[1].print("Rampant - Version 0.16.21")
 	global.version = constants.VERSION_56

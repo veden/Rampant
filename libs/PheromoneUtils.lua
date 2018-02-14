@@ -1,7 +1,7 @@
 local pheromoneUtils = {}
 
 -- imports
-
+local mathUtils = require("MathUtils")
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
@@ -34,6 +34,8 @@ local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
+local linearInterpolation = mathUtils.linearInterpolation 
+
 -- module code
 
 function pheromoneUtils.scents(map, chunk)
@@ -41,7 +43,7 @@ function pheromoneUtils.scents(map, chunk)
     local resourceGenerator = getResourceGenerator(map, chunk)
     local enemyCount = getEnemyStructureCount(map, chunk)
     if (resourceGenerator > 0) and (enemyCount == 0) then
-	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 1000, 900)
+	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + linearInterpolation(resourceGenerator, 9000, 10000)
     end
 end
 
@@ -111,7 +113,7 @@ function pheromoneUtils.processPheromone(map, chunk)
     if clear then
 	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
     else
-	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * 0.1
+	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * 0.01
     end
 end
 

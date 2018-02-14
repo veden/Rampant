@@ -3,6 +3,7 @@ Version: 0.16.21
 Date: 2. 12. 2018
   Improvements:
    - All other robots now take damage from biter projectiles and explosions (https://mods.factorio.com/mod/Rampant/discussion/5a81bd380333a5000c939c7f)
+   - The cause of death of a biter now drops death pheromone in addition to the biter
   Bugfixes:
    - Inverted comparsion of squad spreading roll
   

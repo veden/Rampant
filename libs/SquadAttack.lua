@@ -52,15 +52,15 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
+local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
 local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
-local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 
 -- module code
 
 local function scoreResourceLocation(squad, neighborChunk)
     local settle = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[RESOURCE_PHEROMONE]
-    return settle - lookupMovementPenalty(squad, neighborChunk)
+    return settle - lookupMovementPenalty(squad, neighborChunk) - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreAttackLocation(squad, neighborChunk)
@@ -76,9 +76,9 @@ local function settleMove(map, attackPosition, attackCmd, squad, group, natives,
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
 	local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
-								       getNeighborChunks(map, x, y),
-								       scoreResourceLocation,
-								       squad)
+								     getNeighborChunks(map, x, y),
+								     scoreResourceLocation,
+								     squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
 	    addMovementPenalty(natives, squad, chunk)

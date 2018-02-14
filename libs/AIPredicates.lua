@@ -8,7 +8,7 @@ local constants = require("Constants")
 
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
-local AI_STATE_MIGRATING = constants.AI_STATE_MI
+local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 -- imported functions
@@ -22,6 +22,8 @@ function aiPredicates.canAttack(natives, surface)
 end
 
 function aiPredicates.canMigrate(natives, surface)
+    print(((natives.state == AI_STATE_MIGRATING) or
+	    aiPredicates.canAttackDark(natives, surface)), natives.expansion)
     return ((natives.state == AI_STATE_MIGRATING) or
 	    aiPredicates.canAttackDark(natives, surface)) and natives.expansion
 end

@@ -7,6 +7,7 @@ local mapUtils = require("MapUtils")
 local chunkPropetyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
+local mathUtils = require("MathUtils")
 package.path = "../?.lua;" .. package.path
 local config = require("config")
 
@@ -15,6 +16,7 @@ local config = require("config")
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
@@ -49,11 +51,15 @@ local getNestCount = chunkPropetyUtils.getNestCount
 local getRallyTick = chunkPropetyUtils.getRallyTick
 local setRallyTick = chunkPropetyUtils.setRallyTick
 
+local gaussianRandomRange = mathUtils.gaussianRandomRange
+
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByXY = mapUtils.getChunkByXY
 local scoreNeighborsForFormation = movementUtils.scoreNeighborsForFormation
+local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
+local settlerWaveScaling = config.settlerWaveScaling
 
 -- module code
 
@@ -87,6 +93,16 @@ local function attackWaveValidCandidate(chunk, natives, surface)
     return (total > natives.attackWaveThreshold) and (hasBasePheromone or hasPlayerPheromone)
 end
 
+local function scoreSettlerLocation(neighborChunk)
+    return neighborChunk[RESOURCE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
+end
+
+local function validSettlerLocation(map, chunk, neighborChunk)
+    local chunkResource = chunk[RESOURCE_PHEROMONE]
+    print((neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * constants.RESOURCE_MINIMUM_FORMATION_DELTA)))
+    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * constants.RESOURCE_MINIMUM_FORMATION_DELTA))
+end
+
 local function scoreUnitGroupLocation(neighborChunk)
     return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
@@ -114,6 +130,53 @@ function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
 	    end
 	end
     end
+end
+
+function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
+
+    if (mRandom() < natives.formSquadThreshold) then
+	
+	local squadPath, squadDirection = scoreNeighborsForResource(chunk,
+								    getNeighborChunks(map, chunk.x, chunk.y),
+								    validSettlerLocation,
+								    scoreSettlerLocation,
+								    map)
+	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+	    print("making settlers")
+	    
+	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+								      positionFromDirectionAndChunk(squadDirection,
+												    chunk,
+												    map.position,
+												    0.98),
+								      CHUNK_SIZE,
+								      4)
+	    if squadPosition then
+		local squad = createSquad(squadPosition, surface, natives)
+
+		squad.settlers = true
+		squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance,
+							natives.expansionMaxDistanceDerivation,
+							CHUNK_SIZE * 1,
+							natives.expansionMaxDistance)
+		squad.originPosition.x = squadPosition.x
+		squad.originPosition.y = squadPosition.y
+		
+		local scaledWaveSize = settlerWaveScaling(natives)
+		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
+									   group = squad.group,
+									   distraction = DEFINES_DISTRACTION_NONE },
+							       unit_count = scaledWaveSize,
+							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+		if (foundUnits > 0) then
+		    print("found settlers")
+		    natives.points = natives.points - cost
+		end
+	    end
+	end
+    end
+    
+    return (natives.points - cost) > 0
 end
 
 function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
