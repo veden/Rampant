@@ -374,7 +374,7 @@ script.on_nth_tick(INTERVAL_SQUAD,
 		       regroupSquads(natives, map)
 		       
 		       squadsBeginAttack(natives, gameRef.players)
-		       squadsDispatch(map, gameRef.surfaces[1], natives)
+		       squadsAttack(map, gameRef.surfaces[1], natives)
 
 end)
 

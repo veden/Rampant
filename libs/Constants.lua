@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_55 = 55
+constants.VERSION_56 = 56
 
 -- misc
 
