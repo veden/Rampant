@@ -110,8 +110,6 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
 
-    print("settlers", settlers, roll)
-
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     for x=index,endIndex do
@@ -127,7 +125,6 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		end
 		if natives.useCustomAI and settlers then
-		    print("trying to form settlers")
 		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST)
 		end
 	    end

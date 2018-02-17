@@ -21,9 +21,7 @@ function aiPredicates.canAttack(natives, surface)
 	    (natives.state == AI_STATE_RAIDING)) and not surface.peaceful_mode
 end
 
-function aiPredicates.canMigrate(natives, surface)
-    print(((natives.state == AI_STATE_MIGRATING) or
-	    aiPredicates.canAttackDark(natives, surface)), natives.expansion)
+function aiPredicates.canMigrate(natives, surface) 
     return ((natives.state == AI_STATE_MIGRATING) or
 	    aiPredicates.canAttackDark(natives, surface)) and natives.expansion
 end

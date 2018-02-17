@@ -10,12 +10,16 @@ local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 
+local chunkUtils = require("ChunkUtils")
+
 -- constants
 
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
+
+local SQUAD_BUILDING = constants.SQUAD_BUILDING
 
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_SETTLING = constants.SQUAD_SETTLING
@@ -36,6 +40,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- imported functions
 
 local mRandom = math.random
+
+local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local findMovementPosition = movementUtils.findMovementPosition
 
@@ -68,9 +74,9 @@ local function scoreAttackLocation(squad, neighborChunk)
     return damage - lookupMovementPenalty(squad, neighborChunk)
 end
 
-local function settleMove(map, attackPosition, attackCmd, squad, group, natives, surface)
+local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, group, natives, surface)
     local groupState = group.state
-    
+
     if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
@@ -88,13 +94,27 @@ local function settleMove(map, attackPosition, attackCmd, squad, group, natives,
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local resourceGenerator = getResourceGenerator(map, attackChunk)
-	    -- or max distance is hit
-	    if (resourceGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
-		
+	    local distance = euclideanDistancePoints(groupPosition.x, groupPosition.y, squad.originPosition.x, squad.originPosition.y)
+
+	    if (distance >= squad.maxDistance) or (resourceGenerator ~= 0) then
+		local position = findMovementPosition(surface, groupPosition)
+		if position then
+		    attackPosition.x = position.x
+		    attackPosition.y = position.y
+		    
+		    squad.status = SQUAD_BUILDING
+
+		    chunkUtils.colorChunk(attackChunk.x, attackChunk.y, "hazard-concrete-left", surface)
+		    
+		    group.set_command(settleCmd)
+		else
+		    addMovementPenalty(natives, squad, attackChunk)
+		end
+	    elseif (resourceGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then	
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
 		attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-
+		
 		local position = findMovementPosition(surface, positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35))
 		if position then
 		    attackPosition.x = position.x
@@ -105,8 +125,6 @@ local function settleMove(map, attackPosition, attackCmd, squad, group, natives,
 		else
 		    addMovementPenalty(natives, squad, attackChunk)
 		end
-	    elseif (resourceGenerator ~= 0) then
-		-- settle chunk
 	    end
 	end
     end
@@ -172,7 +190,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     local attackPosition = map.position
     local attackCmd = map.attackAreaCommand
     local settleCmd = map.settleCommand
-
+    
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
@@ -181,7 +199,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
 	    if (squad.status == SQUAD_RAIDING) then
 		attackMove(map, attackPosition, attackCmd, squad, group, natives, surface)
 	    elseif (squad.status == SQUAD_SETTLING) then
-		settleMove(map, attackPosition, settleCmd, squad, group, natives, surface)
+		settleMove(map, attackPosition, attackCmd, settleCmd, squad, group, natives, surface)
 	    end
         end
     end
@@ -192,18 +210,26 @@ function squadAttack.squadsBeginAttack(natives, players)
     for i=1,#squads do
         local squad = squads[i]
 	local group = squad.group
-        if not squad.settlers and (squad.status == SQUAD_GUARDING) and group and group.valid then
-	    local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
-
-	    local groupPosition = group.position	    
-	    if playersWithinProximityToPosition(players, groupPosition, 100) then
-		squad.frenzy = true
-		squad.frenzyPosition.x = groupPosition.x
-		squad.frenzyPosition.y = groupPosition.y
+        if squad.settlers then
+	    if (squad.status == SQUAD_GUARDING) and group and group.valid then
+		local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+		squad.kamikaze = mRandom() < kamikazeThreshold
+		squad.status = SQUAD_SETTLING
 	    end
-	    
-	    squad.kamikaze = mRandom() < kamikazeThreshold
-	    squad.status = SQUAD_RAIDING
+	else
+	    if (squad.status == SQUAD_GUARDING) and group and group.valid then
+		local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+
+		local groupPosition = group.position	    
+		if playersWithinProximityToPosition(players, groupPosition, 100) then
+		    squad.frenzy = true
+		    squad.frenzyPosition.x = groupPosition.x
+		    squad.frenzyPosition.y = groupPosition.y
+		end
+		
+		squad.kamikaze = mRandom() < kamikazeThreshold
+		squad.status = SQUAD_RAIDING
+	    end
 	end
     end
 end

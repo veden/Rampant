@@ -279,6 +279,9 @@ function tests.mergeBases()
     baseUtils.mergeBases(natives)
 end
 
+function tests.unitBuildBase()
+end
+
 function tests.showBaseGrid()
     local n = {}
 

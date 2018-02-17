@@ -201,13 +201,7 @@ function upgrade.attempt(natives)
 	    squad.settlers = false
     	end
 
-	print(game.map_settings.enemy_expansion.enabled,
-	      game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE,
-	      game.map_settings.enemy_expansion.min_expansion_cooldown,
-	      game.map_settings.enemy_expansion.max_expansion_cooldown,
-	      game.map_settings.enemy_expansion.settler_group_min_size,
-	      game.map_settings.enemy_expansion.settler_group_max_size)
-	natives.expansion = game.map_settings.enemy_expansion.enabled
+	natives.expansion = game.map_settings.enemy_expansion.enabled or true
 	natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
 	natives.expansionMaxDistanceDerivation = natives.expansionMaxDistance * 0.33
 	natives.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
