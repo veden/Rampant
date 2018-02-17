@@ -29,6 +29,7 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
+local SETTLER_DISTANCE = constants.SETTLER_DISTANCE
 
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE  = defines.distraction.none
@@ -48,6 +49,8 @@ local mRandom = math.random
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local getNestCount = chunkPropetyUtils.getNestCount
+local getChunkSettlerTick = chunkPropetyUtils.getChunkSettlerTick
+local setChunkSettlerTick = chunkPropetyUtils.setChunkSettlerTick
 local getRallyTick = chunkPropetyUtils.getRallyTick
 local setRallyTick = chunkPropetyUtils.setRallyTick
 
@@ -111,8 +114,7 @@ local function validUnitGroupLocation(map, neighborChunk)
 end
 
 function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
-    if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (natives.points >= AI_VENGENCE_SQUAD_COST)
-    ) then
+    if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (natives.points >= AI_VENGENCE_SQUAD_COST)) then
 	setRallyTick(map, chunk, tick)
 	local cX = chunk.x
 	local cY = chunk.y
@@ -131,7 +133,23 @@ function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
     end
 end
 
-function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
+local function noNearbySettlers(map, chunk, tick)
+    local cX = chunk.x
+    local cY = chunk.y
+    for x=cX - SETTLER_DISTANCE, cX + SETTLER_DISTANCE, 32 do
+	for y=cY - SETTLER_DISTANCE, cY + SETTLER_DISTANCE, 32 do
+	    if (x ~= cX) and (y ~= cY) then
+		local c = getChunkByXY(map, x, y)
+		if (c ~= SENTINEL_IMPASSABLE_CHUNK) and ((tick - getChunkSettlerTick(map, c)) < 0) then
+		    return false
+		end
+	    end
+	end
+    end
+    return true
+end
+
+function aiAttackWave.formSettlers(map, surface, natives, chunk, cost, tick)
 
     if (mRandom() < natives.formSquadThreshold) then
 	
@@ -141,8 +159,8 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
 								    scoreSettlerLocation,
 								    map)
 	
-	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-
+	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) and noNearbySettlers(map, chunk, tick) then
+	    
 	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
 								      positionFromDirectionAndChunk(squadDirection,
 												    chunk,
@@ -168,6 +186,7 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
+		    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
 		    natives.points = natives.points - cost
 		end
 	    end

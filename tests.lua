@@ -401,6 +401,22 @@ function tests.exportAiState(onTick)
     end
 end
 
+function tests.unitGroupBuild()
+    local surface = game.surfaces[1]
+    local group = surface.create_unit_group({position={-32, -32}})
+    
+    for i=1,10 do
+	group.add_member(surface.create_entity({name="small-biter", position={-32, -32}}))
+    end
+
+    group.set_command({
+	type = defines.command.build_base,
+	destination = {-64, -64},
+	distraction = defines.distraction.by_enemy,
+	ignore_planner = true
+    })
+end
+
 function tests.dumpEnvironment(x)
     print (serpent.dump(global[x]))
 end

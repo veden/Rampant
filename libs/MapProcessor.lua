@@ -125,7 +125,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		end
 		if natives.useCustomAI and settlers then
-		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST)
+		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST, tick)
 		end
 	    end
 
@@ -224,6 +224,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
     local spawners = map.chunkToSpawner
+    local settlers = map.chunkToSettler
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
@@ -247,10 +248,16 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    rallys[chunk] = nil
 	end
 
-	local SpawnerTick = spawners[chunk]
-	if SpawnerTick and ((tick - SpawnerTick) > INTERVAL_SPAWNER) then
+	local spawnerTick = spawners[chunk]
+	if spawnerTick and ((tick - spawnerTick) > INTERVAL_SPAWNER) then
 	    spawners[chunk] = nil
 	end
+
+	local settlerTick = spawners[chunk]
+	if settlerTick and ((tick - settlerTick) > 0) then
+	    settlers[chunk] = nil
+	end
+
 
 	local unitCount = surface.count_entities_filtered(unitCountQuery)
 

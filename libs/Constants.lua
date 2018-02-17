@@ -267,6 +267,7 @@ constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
 
 constants.RALLY_CRY_DISTANCE = 96
+constants.SETTLER_DISTANCE = 129
 
 constants.GROUP_MERGE_DISTANCE = 28
 

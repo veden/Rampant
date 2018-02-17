@@ -30,6 +30,18 @@ function chunkPropertyUtils.setNestCount(map, chunk, count)
     end
 end
 
+function chunkPropertyUtils.getChunkSettlerTick(map, chunk)
+    return map.chunkToSettler[chunk] or 0
+end
+
+function chunkPropertyUtils.setChunkSettlerTick(map, chunk, tick)
+    if (tick == 0) then
+	map.chunkToSettler[chunk] = nil
+    else
+	map.chunkToSettler[chunk] = tick
+    end
+end
+
 function chunkPropertyUtils.getNestCount(map, chunk)
     return map.chunkToNests[chunk] or 0
 end
