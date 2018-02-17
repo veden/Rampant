@@ -118,7 +118,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 
 	    local chunkRoll = mRandom()
 	    
-	    if squads and (getNestCount(map, chunk) > 0) and (chunkRoll < 0.90) then
+	    if squads and (getNestCount(map, chunk) > 0) then
 		squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 	    end
 
