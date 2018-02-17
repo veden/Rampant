@@ -45,6 +45,8 @@ local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local findMovementPosition = movementUtils.findMovementPosition
 
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+
 local getNeighborChunks = mapUtils.getNeighborChunks
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 local getChunkByXY = mapUtils.getChunkByXY
@@ -96,7 +98,7 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	    local resourceGenerator = getResourceGenerator(map, attackChunk)
 	    local distance = euclideanDistancePoints(groupPosition.x, groupPosition.y, squad.originPosition.x, squad.originPosition.y)
 
-	    if (distance >= squad.maxDistance) or (resourceGenerator ~= 0) then
+	    if (distance >= squad.maxDistance) or ((resourceGenerator ~= 0) and (getEnemyStructureCount(map, chunk) == 0)) then
 		local position = findMovementPosition(surface, groupPosition)
 		if position then
 		    attackPosition.x = position.x

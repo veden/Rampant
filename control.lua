@@ -184,6 +184,7 @@ local function rebuildMap()
     map.chunkToRetreats = {}
     map.chunkToRallys = {}
     map.chunkToSpawner = {}
+    map.chunkToSettler = {}
 
     map.queueSpawners = {}
     
@@ -654,6 +655,7 @@ remote.add_interface("rampantTests",
 			 colorResourcePoints = tests.colorResourcePoints,
 			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
+			 unitGroupBuild = tests.unitGroupBuild,
 			 exportAiState = tests.exportAiState(nil)
 		     }
 )
