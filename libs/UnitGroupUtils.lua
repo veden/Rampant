@@ -182,22 +182,13 @@ function unitGroupUtils.cleanSquads(natives, map)
 		local status = squad.status
 		local cycles = squad.cycles
 		if (status == SQUAD_RETREATING) and (cycles == 0) then
-		    if squad.settlers then
-			squad.status = SQUAD_SETTLING
-		    else
-			squad.status = SQUAD_GUARDING
-		    end
-		    
+		    squad.status = SQUAD_GUARDING
 		    squad.frenzy = true
 		    local squadPosition = group.position
 		    squad.frenzyPosition.x = squadPosition.x
 		    squad.frenzyPosition.y = squadPosition.y
-		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) then
-		    if squad.settlers then
-			squad.status = SQUAD_SETTLING
-		    else
-			squad.status = SQUAD_GUARDING
-		    end
+		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) and not squad.settlers then
+		    squad.status = SQUAD_GUARDING
 		elseif (cycles > 0) then
 		    squad.cycles = cycles - 1
 		end

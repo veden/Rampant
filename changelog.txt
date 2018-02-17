@@ -6,6 +6,7 @@ Date: 2. 12. 2018
    - The cause of death of a biter now drops death pheromone in addition to the biter
   Bugfixes:
    - Inverted comparsion of squad spreading roll
+   - Added check for valid surface when using trigger entities
   
 
 ---------------------------------------------------------------------------------------------------

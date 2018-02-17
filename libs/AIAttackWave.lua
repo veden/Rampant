@@ -99,7 +99,6 @@ end
 
 local function validSettlerLocation(map, chunk, neighborChunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
-    print((neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * constants.RESOURCE_MINIMUM_FORMATION_DELTA)))
     return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * constants.RESOURCE_MINIMUM_FORMATION_DELTA))
 end
 
@@ -141,9 +140,9 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
 								    validSettlerLocation,
 								    scoreSettlerLocation,
 								    map)
+	
 	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    print("making settlers")
-	    
+
 	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
 								      positionFromDirectionAndChunk(squadDirection,
 												    chunk,
@@ -169,7 +168,6 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost)
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
-		    print("found settlers")
 		    natives.points = natives.points - cost
 		end
 	    end
