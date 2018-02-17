@@ -321,59 +321,62 @@ local function onConfigChanged()
     end
 end
 
-local function onTick(event)
-    local tick = event.tick
-    if (tick == map.processTick) then
-	map.processTick = map.processTick + INTERVAL_PROCESS
+script.on_nth_tick(INTERVAL_PROCESS,
+		   function (event)
 
-	local gameRef = game
-	local surface = gameRef.surfaces[1]
-	
-	processPlayers(gameRef.players, map, surface, natives, tick)
+		       local tick = event.tick
+		       local gameRef = game
+		       local surface = gameRef.surfaces[1]
+		       
+		       processPlayers(gameRef.players, map, surface, natives, tick)
+		       
+		       processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
+end)
 
-	processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
-    end
-    if (tick == map.scanTick) then
-	map.scanTick = map.scanTick + INTERVAL_SCAN
-	local gameRef = game
-	local surface = gameRef.surfaces[1]
+script.on_nth_tick(INTERVAL_SCAN,
+		   function (event)
+		       local tick = event.tick
+		       local gameRef = game
+		       local surface = gameRef.surfaces[1]
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
+		       processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
-	scanMap(map, surface, natives, tick)
+		       scanMap(map, surface, natives, tick)
 
-	map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
-	
-	map.chunkToPassScan = processScanChunks(map, surface)
-    end
-    if (tick == map.logicTick) then
-	map.logicTick = map.logicTick + INTERVAL_LOGIC
+		       map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
+		       
+		       map.chunkToPassScan = processScanChunks(map, surface)
 
-	local gameRef = game
-	local surface = gameRef.surfaces[1]
-	
-	planning(natives,
-		 gameRef.forces.enemy.evolution_factor,
-		 tick,
-		 surface,
-		 gameRef.connected_players)
+end)
 
-	if natives.newEnemies then
-	    recycleBases(natives, tick)
-	end
-    end
-    if (tick == map.squadTick) then
-	map.squadTick = map.squadTick + INTERVAL_SQUAD
+script.on_nth_tick(INTERVAL_LOGIC,
+		   function (event)
+		       local tick = event.tick
+		       local gameRef = game
+		       local surface = gameRef.surfaces[1]
+		       
+		       planning(natives,
+				gameRef.forces.enemy.evolution_factor,
+				tick,
+				surface,
+				gameRef.connected_players)
 
-	local gameRef = game
-	
-	cleanSquads(natives, map)
-	regroupSquads(natives, map)
-	
-	squadsBeginAttack(natives, gameRef.players)
-	squadsAttack(map, gameRef.surfaces[1], natives)
-    end
-end
+		       if natives.newEnemies then
+			   recycleBases(natives, tick)
+		       end
+end)
+
+script.on_nth_tick(INTERVAL_SQUAD,
+		   function (event)
+		       local gameRef = game
+		       
+		       cleanSquads(natives, map)
+		       regroupSquads(natives, map)
+		       
+		       squadsBeginAttack(natives, gameRef.players)
+		       squadsDispatch(map, gameRef.surfaces[1], natives)
+
+end)
 
 local function onBuild(event)
     local entity = event.created_entity
@@ -606,7 +609,7 @@ script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 
 script.on_event(defines.events.on_entity_died, onDeath)
-script.on_event(defines.events.on_tick, onTick)
+-- script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampantTests",

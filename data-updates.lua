@@ -31,6 +31,20 @@ if settings.startup["rampant-useDumbProjectiles"].value then
     end
 end
 
+for _, robot in pairs(data.raw["logistic-robot"]) do
+    if not robot.collision_mask then
+	robot.collision_mask = {}
+    end
+    robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+end
+
+for _, robot in pairs(data.raw["construction-robot"]) do
+    if not robot.collision_mask then
+	robot.collision_mask = {}
+    end
+    robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+end
+
 for _, robot in pairs(data.raw["combat-robot"]) do
     if not robot.collision_mask then
 	robot.collision_mask = {}
