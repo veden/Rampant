@@ -53,8 +53,6 @@ constants.RESOURCE_NORMALIZER = 1 / 1024
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 500
 
-constants.DEV_CUSTOM_AI = false
-
 -- chunk properties
 
 constants.CHUNK_SIZE = 32

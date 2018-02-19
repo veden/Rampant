@@ -49,12 +49,14 @@ Configure Options not in game menu:
 - Rocket Reaction - Firing the rocket from the rocket silo will cause the biters to form extra attack waves  
 - Blockable Projectiles - Some of the biters projectiles can now be blocked by walls and trees  
 - Raiding AI state - The AI will periodically send attack waves based on building proximity and not just pollution  
+- Migration AI State - Where the ai looks for resources patches to setup new bases  
+- Sieging AI state - Where the ai does a migration event but also builds towards the player and their base  
+- Vanilla AI Replacement - The default expansion and attack waves can be completely turned off and allow Rampant to work its magic  
 
 # Planned Features
 
 - Tunneling Biters  
 - Infesting Biters  
-- Base Expansion  
 
 # Version History
 

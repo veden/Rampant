@@ -290,17 +290,12 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
-    upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+    upgrade.compareTable(natives, "disableVanillaAI", settings.startup["rampant-disableVanillaAI"].value)
 
-    if natives.useCustomAI then
-    	game.forces.enemy.ai_controllable = false
-    else
-    	game.forces.enemy.ai_controllable = true
-    end
-    -- if changed and newValue then
-    -- 	rebuildMap()
-    -- 	return false
-    -- end
+    natives.enabledMigration = natives.expansion and settings.startup["rampant-enableMigration"].value
+    
+    game.forces.enemy.ai_controllable = not natives.disableVanillaAI
+
     return true
 end
 
