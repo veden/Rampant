@@ -24,6 +24,9 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
+local CHUNK_SIZE = constants.CHUNK_SIZE
+local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
+
 local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
 local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 
@@ -40,7 +43,7 @@ local PATH_RATING = constants.PATH_RATING
 
 local PASSABLE = constants.PASSABLE
 
-local RESOURCE_GENERATOR_INCREMENT = constants.RESOURCE_GENERATOR_INCREMENT
+local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
 
 -- imported functions
 
@@ -62,7 +65,7 @@ local upgradeEntity = baseUtils.upgradeEntity
 local setChunkBase = chunkPropertyUtils.setChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
-local getChunkByUnalignedXY = mapUtils.getChunkByUnalignedXY
+local getChunkByXY = mapUtils.getChunkByXY
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local mFloor = math.floor
@@ -116,6 +119,7 @@ local function addEnemyStructureToChunk(map, chunk, entity, base)
     if not entityCollection then
 	lookup[chunk] = 0
     end
+    
     lookup[chunk] = lookup[chunk] + 1
 
     setChunkBase(map, chunk, base)    
@@ -160,41 +164,33 @@ local function getEntityOverlapChunks(map, entity)
         local bottomXOffset
         local bottomYOffset
         
-        if (entity.direction == DEFINES_DIRECTION_EAST) then
-            topXOffset = boundingBox.left_top.y
-            topYOffset = boundingBox.left_top.x
-            bottomXOffset = boundingBox.right_bottom.y
-            bottomYOffset = boundingBox.right_bottom.x
-        else
+        -- if (entity.direction == DEFINES_DIRECTION_EAST) then
+        --     topXOffset = boundingBox.left_top.y
+        --     topYOffset = boundingBox.left_top.x
+        --     bottomXOffset = boundingBox.right_bottom.y
+        --     bottomYOffset = boundingBox.right_bottom.x
+        -- else
             topXOffset = boundingBox.left_top.x
             topYOffset = boundingBox.left_top.y
             bottomXOffset = boundingBox.right_bottom.x
             bottomYOffset = boundingBox.right_bottom.y
-        end
+        -- end
         
-        local leftTopChunkX = mFloor(center.x + topXOffset)
-        local leftTopChunkY = mFloor(center.y + topYOffset)
+        local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE 
+        local leftTopChunkY = mFloor((center.y + topYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         
-        -- used to force things on chunk boundary to not spill over 0.0001
-        local rightTopChunkX = mFloor(center.x + bottomXOffset - 0.0001)
-        local rightTopChunkY = leftTopChunkY
-        
-        -- used to force things on chunk boundary to not spill over 0.0001
-        local leftBottomChunkX = leftTopChunkX
-        local leftBottomChunkY = mFloor(center.y + bottomYOffset - 0.0001)
+        local rightTopChunkX = mFloor((center.x + bottomXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE	
+        local leftBottomChunkY = mFloor((center.y + bottomYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 	
-        local rightBottomChunkX = rightTopChunkX 
-        local rightBottomChunkY = leftBottomChunkY
-	
-        leftTopChunk = getChunkByUnalignedXY(map, leftTopChunkX, leftTopChunkY)
+        leftTopChunk = getChunkByXY(map, leftTopChunkX, leftTopChunkY)
         if (leftTopChunkX ~= rightTopChunkX) then
-            rightTopChunk = getChunkByUnalignedXY(map, rightTopChunkX, rightTopChunkY)
+            rightTopChunk = getChunkByXY(map, rightTopChunkX, leftTopChunkY)
         end
         if (leftTopChunkY ~= leftBottomChunkY) then
-            leftBottomChunk = getChunkByUnalignedXY(map, leftBottomChunkX, leftBottomChunkY)
+            leftBottomChunk = getChunkByXY(map, leftTopChunkX, leftBottomChunkY)
         end
-        if (leftTopChunkX ~= rightBottomChunkX) and (leftTopChunkY ~= rightBottomChunkY) then
-            rightBottomChunk = getChunkByUnalignedXY(map, rightBottomChunkX, rightBottomChunkY)
+        if (leftTopChunkX ~= rightTopChunkX) and (leftTopChunkY ~= leftBottomChunkY) then
+            rightBottomChunk = getChunkByXY(map, rightTopChunkX, leftBottomChunkY)
         end
     end
     return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
@@ -300,6 +296,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 			    if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
 				nestCount = nestCount + 1
 			    end
+			else
+			    nestCount = nestCount + 1
 			end
 		    else
 			if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
@@ -315,6 +313,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 			    if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
 				wormCount = wormCount + 1
 			    end
+			else
+			    wormCount = wormCount + 1
 			end
 		    else
 			if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
@@ -468,6 +468,7 @@ end
 function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, creditNatives)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
+    
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
         entityValue = BUILDING_PHEROMONES[entity.type]
 
@@ -501,16 +502,16 @@ function chunkUtils.unregisterResource(entity, map)
     local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
     
     if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, leftTop, -RESOURCE_GENERATOR_INCREMENT)
+	addResourceGenerator(map, leftTop, -RESOURCE_NORMALIZER)
     end
     if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, rightTop, -RESOURCE_GENERATOR_INCREMENT)
+	addResourceGenerator(map, rightTop, -RESOURCE_NORMALIZER)
     end
     if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, leftBottom, -RESOURCE_GENERATOR_INCREMENT)
+	addResourceGenerator(map, leftBottom, -RESOURCE_NORMALIZER)
     end
     if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, rightBottom, -RESOURCE_GENERATOR_INCREMENT)
+	addResourceGenerator(map, rightBottom, -RESOURCE_NORMALIZER)
     end
 end
 

@@ -190,7 +190,7 @@ function upgrade.attempt(natives)
 	game.surfaces[1].print("Rampant - Version 0.16.16")
 	global.version = constants.VERSION_51
     end
-    if (global.version < constants.VERSION_56) then
+    if (global.version < constants.VERSION_57) then
 
 	for _,squad in pairs(natives.squads) do
 	    squad.maxDistance = 0
@@ -214,7 +214,7 @@ function upgrade.attempt(natives)
 	natives.settlerWaveSize = 0
 	
 	game.surfaces[1].print("Rampant - Version 0.16.21")
-	global.version = constants.VERSION_56
+	global.version = constants.VERSION_57
     end
     
     return starting ~= global.version, natives

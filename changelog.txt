@@ -1,13 +1,15 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.16.21
-Date: 2. 12. 2018
+Version: 0.16.22
+Date: 2. 18. 2018
+  Features:
+    - AI State Migration, where the ai looks for resources patches to setup new bases
+    - AI State Siege, where the ai does a migration event but also builds towards the player and their base
+    - Default is vanilla AI is off by default now
   Improvements:
-   - All other robots now take damage from biter projectiles and explosions (https://mods.factorio.com/mod/Rampant/discussion/5a81bd380333a5000c939c7f)
-   - The cause of death of a biter now drops death pheromone in addition to the biter
+    - Added splitters to be detected by enemies
+    - Added added a recycle waypoint threshold for paths that the unit seems to be stuck in a cycle
   Bugfixes:
-   - Inverted comparsion of squad spreading roll
-   - Added check for valid surface when using trigger entities
-  
+    - Fixed getEntityOverlapping chunks returning more than it should have
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.20
