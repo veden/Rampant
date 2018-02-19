@@ -124,7 +124,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		if squads then
 		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		end
-		if natives.useCustomAI and settlers then
+		if natives.enabledMigration and settlers then
 		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST, tick)
 		end
 	    end

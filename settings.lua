@@ -360,6 +360,27 @@ data:extend({
 	    per_user = false
 	},
 
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-disableVanillaAI",
+	    description = "rampant-disableVanillaAI",
+	    setting_type = 'startup',
+	    default_value = true,
+	    order = "m[total]-a[ai]",
+	    per_user = false
+	},
+
+	{
+	    type = "bool-setting",
+	    name = "rampant-enableMigration",
+	    description = "rampant-enableMigration",
+	    setting_type = 'startup',
+	    default_value = true,
+	    order = "m[total]-b[ai]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",
@@ -378,19 +399,5 @@ data:extend({
 	    default_value = true,
 	    order = "o[modifer]-a[message]",
 	    per_user = true
-	},	
-	
-
-	-- ,
-
-	{
-	    type = "bool-setting",
-	    name = "rampant-useCustomAI",
-	    description = "rampant-useCustomAI",
-	    setting_type = 'startup',
-	    default_value = true,
-	    order = "h[total]-a[ai]",
-	    per_user = false
-	}
-	
+	}	
 })
