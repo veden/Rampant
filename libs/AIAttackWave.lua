@@ -31,6 +31,8 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
 local SETTLER_DISTANCE = constants.SETTLER_DISTANCE
 
+local RESOURCE_MINIMUM_FORMATION_DELTA = constants.RESOURCE_MINIMUM_FORMATION_DELTA
+
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE  = defines.distraction.none
 
@@ -102,7 +104,7 @@ end
 
 local function validSettlerLocation(map, chunk, neighborChunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
-    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * constants.RESOURCE_MINIMUM_FORMATION_DELTA))
+    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * RESOURCE_MINIMUM_FORMATION_DELTA))
 end
 
 local function scoreUnitGroupLocation(neighborChunk)

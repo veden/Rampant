@@ -292,11 +292,11 @@ local function onModSettingsChange(event)
     -- RE-ENABLE WHEN COMPLETE
     upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
 
-    -- if natives.useCustomAI then
-    -- 	game.forces.enemy.ai_controllable = false
-    -- else
-    -- 	game.forces.enemy.ai_controllable = true
-    -- end
+    if natives.useCustomAI then
+    	game.forces.enemy.ai_controllable = false
+    else
+    	game.forces.enemy.ai_controllable = true
+    end
     -- if changed and newValue then
     -- 	rebuildMap()
     -- 	return false
@@ -418,15 +418,9 @@ local function onDeath(event)
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
 		
-		if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK) then
+		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
 		    deathScent(chunk)
-		    if cause and cause.valid then
-			local cChunk = getChunkByPosition(map, cause.position)
-			if (cChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-			    deathScent(cChunk)
-			end
-		    end
 		    
 		    if event.force and (event.force.name == "player") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
@@ -488,6 +482,7 @@ end
 local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
+
     if entity.valid and (surface.index == 1) then
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then

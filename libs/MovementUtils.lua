@@ -10,7 +10,7 @@ local mathUtils = require("MathUtils")
 -- constants
 
 local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
--- local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
+local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
@@ -45,13 +45,9 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
         local penalty = penalties[i]
         if (penalty.c == chunk) then
             penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
-	    -- if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
-	    -- 	local group = units.group
-	    -- 	if group then
-	    -- 	    recycleBiters(natives, group.members)
-	    -- 	    group.destroy()
-	    -- 	end
-	    -- end
+	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
+	    	tableRemove(penalties, i)
+	    end
             return
         end
     end

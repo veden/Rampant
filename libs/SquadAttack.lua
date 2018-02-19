@@ -10,7 +10,7 @@ local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 
-local chunkUtils = require("ChunkUtils")
+--local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -24,6 +24,8 @@ local SQUAD_BUILDING = constants.SQUAD_BUILDING
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
+
+local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -45,7 +47,7 @@ local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local findMovementPosition = movementUtils.findMovementPosition
 
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getNestCount = chunkPropertyUtils.getNestCount
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
@@ -71,6 +73,11 @@ local function scoreResourceLocation(squad, neighborChunk)
     return settle - lookupMovementPenalty(squad, neighborChunk) - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
+local function scoreSiegeLocation(squad, neighborChunk)
+    local settle = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    return settle - lookupMovementPenalty(squad, neighborChunk)
+end
+
 local function scoreAttackLocation(squad, neighborChunk)
     local damage = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage - lookupMovementPenalty(squad, neighborChunk)
@@ -85,7 +92,8 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	local chunk = getChunkByXY(map, x, y)
 	local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
 								     getNeighborChunks(map, x, y),
-								     scoreResourceLocation,
+								     ((natives.state == AI_STATE_SIEGE) and scoreSiegeLocation) or
+									 scoreResourceLocation,
 								     squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
@@ -95,24 +103,23 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	    addMovementPenalty(natives, squad, attackChunk)
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local resourceGenerator = getResourceGenerator(map, attackChunk)
+	    local resourceGenerator = getResourceGenerator(map, groupPosition)
 	    local distance = euclideanDistancePoints(groupPosition.x, groupPosition.y, squad.originPosition.x, squad.originPosition.y)
 
-	    if (distance >= squad.maxDistance) or ((resourceGenerator ~= 0) and (getEnemyStructureCount(map, chunk) == 0)) then
+	    if (distance >= squad.maxDistance) or ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0)) then
 		local position = findMovementPosition(surface, groupPosition)
 		if position then
 		    attackPosition.x = position.x
 		    attackPosition.y = position.y
 		    
 		    squad.status = SQUAD_BUILDING
-
-		    chunkUtils.colorChunk(attackChunk.x, attackChunk.y, "hazard-concrete-left", surface)
 		    
 		    group.set_command(settleCmd)
+		    group.start_moving()
 		else
 		    addMovementPenalty(natives, squad, attackChunk)
 		end
-	    elseif (resourceGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then	
+	    elseif (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) then
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
 		attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY

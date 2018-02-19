@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_56 = 56
+constants.VERSION_57 = 57
 
 -- misc
 
@@ -83,7 +83,7 @@ constants.AI_SQUAD_COST = 175
 constants.AI_NEST_COST = 10
 constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
-constants.AI_SETTLER_COST = 100
+constants.AI_SETTLER_COST = 200
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 10000
@@ -103,6 +103,7 @@ constants.AI_STATE_AGGRESSIVE = 2
 constants.AI_STATE_NOCTURNAL = 3
 constants.AI_STATE_RAIDING = 4
 constants.AI_STATE_MIGRATING = 5
+constants.AI_STATE_SIEGE = 6
 
 constants.AI_MIN_STATE_DURATION = 1
 constants.AI_MAX_STATE_DURATION = 4
@@ -267,7 +268,7 @@ constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
 
 constants.RALLY_CRY_DISTANCE = 96
-constants.SETTLER_DISTANCE = 129
+constants.SETTLER_DISTANCE = 224
 
 constants.GROUP_MERGE_DISTANCE = 28
 
@@ -294,6 +295,7 @@ constants.BUILDING_PHEROMONES["rocket-silo"] = 1200
 constants.BUILDING_PHEROMONES["lamp"] = 40
 constants.BUILDING_PHEROMONES["radar"] = 200
 constants.BUILDING_PHEROMONES["lab"] = 150
+constants.BUILDING_PHEROMONES["splitter"] = 15
 
 -- player defense pheromones
 
