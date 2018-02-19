@@ -298,6 +298,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 			    if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
 				nestCount = nestCount + 1
 			    end
+			else
+			    nestCount = nestCount + 1
 			end
 		    else
 			if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
@@ -313,6 +315,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 			    if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
 				wormCount = wormCount + 1
 			    end
+			else
+			    wormCount = wormCount + 1
 			end
 		    else
 			if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then

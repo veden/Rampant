@@ -24,7 +24,7 @@ config.ionCannonPresent = settings.startup["ion-cannon-radius"] ~= nil
 config.attackWaveScaling = function (natives)
     return mCeil(gaussianRandomRange(natives.attackWaveSize,
 				     natives.attackWaveDeviation,
-				     natives.attackWaveLowerBound,
+				     1,
 				     natives.attackWaveUpperBound))
 end
 

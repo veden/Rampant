@@ -1,11 +1,25 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.22
+Date: 2. 18. 2018
+  Tweaks:
+    - Death pheromone persistance increased from 0.9 to 0.99
+    - Death pheromone per death increased from 600 to 3000
+    - Death Retreat threshold switched to linear interpolation between, 2.5 deaths @ 0%, 400 @ 100% evolution
+    - Increased player pheromone weight for squad movement from 100 to 500
+    - Decreased victory scent multipler from 100000 to 10000
+    - Increased ai max stored points from 10000 to 12500
+  Bugfixes:
+    - Nests and worms not getting counted correctly when upgrading
+  Framework:
+    - Fixed exportaistate visualizer
+---------------------------------------------------------------------------------------------------
 Version: 0.16.21
 Date: 2. 16. 2018
   Improvements:
-   - All other robots now take damage from biter projectiles and explosions (https://mods.factorio.com/mod/Rampant/discussion/5a81bd380333a5000c939c7f)
-   - Removed necessary squad roll during map processing
+    - All other robots now take damage from biter projectiles and explosions (https://mods.factorio.com/mod/Rampant/discussion/5a81bd380333a5000c939c7f)
+    - Removed necessary squad roll during map processing
   Optimizations:
-   - Switched over to the nth tick functions for logic and processing
+    - Switched over to the nth tick functions for logic and processing
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.20

@@ -108,7 +108,6 @@ function upgrade.attempt(natives)
 	natives.formSquadThreshold = 0
 	natives.attackWaveSize = 0
 	natives.attackWaveDeviation = 0
-	natives.attackWaveLowerBound = 0
 	natives.attackWaveUpperBound = 0
 	natives.unitRefundAmount = 0
 	natives.attackWaveThreshold = 0
@@ -197,10 +196,12 @@ function upgrade.attempt(natives)
 	game.surfaces[1].print("Rampant - Version 0.16.16")
 	global.version = constants.VERSION_51
     end
-    if (global.version < constants.VERSION_56) then
+    if (global.version < constants.VERSION_57) then
+
+	natives.attackWaveLowerBound = 1
 	
-	game.surfaces[1].print("Rampant - Version 0.16.21")
-	global.version = constants.VERSION_56
+	game.surfaces[1].print("Rampant - Version 0.16.22")
+	global.version = constants.VERSION_57
     end
     
     return starting ~= global.version, natives

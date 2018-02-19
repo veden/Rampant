@@ -347,7 +347,7 @@ function tests.entityStats(name, d)
     a.destroy()
 end
 
-function tests.exportAiState(onTick)
+function tests.exportAiState()
 
     local printState = function ()
 	local chunks = global.map.processQueue
@@ -381,19 +381,10 @@ function tests.exportAiState(onTick)
 	    interval = tonumber(interval)
 	end
 
-	local wrappedTick = function (event)
-	    if (event.tick % interval == 0) then
-		printState()
-	    end
-	    onTick(event)
-	end
-
 	printState()
 	
 	if (interval > 0) then
-	    script.on_event(defines.events.on_tick, wrappedTick)
-	elseif (interval == 0) then
-	    script.on_event(defines.events.on_tick, onTick)
+	    script.on_nth_tick(interval, printState)
 	end
     end
 end
