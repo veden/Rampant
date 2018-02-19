@@ -28,6 +28,13 @@ config.attackWaveScaling = function (natives)
 				     natives.attackWaveUpperBound))
 end
 
+config.settlerWaveScaling = function (natives)
+    return mCeil(gaussianRandomRange(natives.settlerWaveSize,
+				     natives.settlerWaveDeviation,
+				     natives.expansionMinSize,
+				     natives.expansionMaxSize))
+end
+
 return config
 
 

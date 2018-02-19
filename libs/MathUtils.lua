@@ -37,6 +37,10 @@ function mathUtils.randomTickEvent(tick, low, high)
     return tick + nextTick
 end
 
+function mathUtils.linearInterpolation(percent, min, max)
+    return ((max - min) * percent) + min
+end
+
 function mathUtils.xorRandom(state)
     local xor = bit32.bxor
     local lshift = bit32.lshift

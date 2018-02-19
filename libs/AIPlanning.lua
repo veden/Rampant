@@ -14,7 +14,10 @@ local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
+local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
+local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
+
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
@@ -44,6 +47,8 @@ local canAttack = aiPredicates.canAttack
 
 local randomTickEvent = mathUtils.randomTickEvent
 
+local linearInterpolation = mathUtils.linearInterpolation
+
 local mFloor = math.floor
 
 local mRandom = math.random
@@ -71,9 +76,15 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
     natives.retreatThreshold = linearInterpolation(evolution_factor, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.25 * evolution_factor), 0.10)
+
     natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.66667)
     natives.attackWaveDeviation = (attackWaveMaxSize * 0.5) * 0.333
     natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
+    
+    natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
+    natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.5) * 0.333
+    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinTime, natives.expansionMaxTime))
+    
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
     local threshold = natives.attackThresholdRange
@@ -100,8 +111,12 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    natives.state = AI_STATE_NOCTURNAL
 	else
 	    roll = mRandom()
-	    if (roll > 0.08) then
-		natives.state = AI_STATE_AGGRESSIVE
+	    if (roll < 0.70) then
+	    	natives.state = AI_STATE_AGGRESSIVE
+	    elseif (roll < 0.75) then
+		natives.state = AI_STATE_MIGRATING
+	    elseif (roll < 0.80) then
+		natives.state = AI_STATE_SIEGE
 	    else
 		natives.state = AI_STATE_RAIDING
 

@@ -19,6 +19,7 @@ local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
+local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
 
 local RETREAT_FILTER = constants.RETREAT_FILTER
@@ -106,12 +107,16 @@ function unitGroupUtils.createSquad(position, surface, natives, group)
 	group = unitGroup, 
 	status = SQUAD_GUARDING,
 	penalties = {},
+	settlers = false,
 	rabid = false,
 	frenzy = false,
 	kamikaze = false,
 	frenzyPosition = {x = 0,
 			  y = 0},
 	cycles = 0,
+	maxDistance = 0,
+	originPosition = {x = 0,
+			  y = 0},
 	chunk = nil
     }
     natives.squads[#natives.squads+1] = squad
@@ -182,7 +187,7 @@ function unitGroupUtils.cleanSquads(natives, map)
 		    local squadPosition = group.position
 		    squad.frenzyPosition.x = squadPosition.x
 		    squad.frenzyPosition.y = squadPosition.y
-		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) then
+		elseif (group.state == DEFINES_GROUP_STATE_FINISHED) and not squad.settlers then
 		    squad.status = SQUAD_GUARDING
 		elseif (cycles > 0) then
 		    squad.cycles = cycles - 1
