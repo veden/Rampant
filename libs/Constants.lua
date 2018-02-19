@@ -49,7 +49,7 @@ constants.INTERVAL_SPAWNER = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RALLY = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
 
-constants.RESOURCE_GENERATOR_INCREMENT = 0.001
+constants.RESOURCE_NORMALIZER = 1 / 1024 
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 500
 
@@ -77,13 +77,14 @@ constants.EVOLUTION_INCREMENTS = 0.05
 
 -- ai
 
+constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
+
 constants.AI_POINT_GENERATOR_AMOUNT = 6
-constants.AI_SCOUT_COST = 45
 constants.AI_SQUAD_COST = 175
 constants.AI_NEST_COST = 10
 constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
-constants.AI_SETTLER_COST = 75
+constants.AI_SETTLER_COST = 200
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 12500
@@ -102,6 +103,8 @@ constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
 constants.AI_STATE_NOCTURNAL = 3
 constants.AI_STATE_RAIDING = 4
+constants.AI_STATE_MIGRATING = 5
+constants.AI_STATE_SIEGE = 6
 
 constants.AI_MIN_STATE_DURATION = 1
 constants.AI_MAX_STATE_DURATION = 4
@@ -254,6 +257,8 @@ constants.SQUAD_RETREATING = 1 -- used during squad retreat
 constants.SQUAD_GUARDING = 2 -- used when squad is idle
 constants.SQUAD_BURROWING = 3
 constants.SQUAD_RAIDING = 4 -- used when player stuff is close
+constants.SQUAD_SETTLING = 5
+constants.SQUAD_BUILDING = 6
 
 -- Squad Related
 
@@ -264,6 +269,7 @@ constants.BASE_RALLY_CHANCE = 0.02
 constants.BONUS_RALLY_CHANCE = 0.06
 
 constants.RALLY_CRY_DISTANCE = 96
+constants.SETTLER_DISTANCE = 224
 
 constants.GROUP_MERGE_DISTANCE = 28
 
@@ -290,6 +296,7 @@ constants.BUILDING_PHEROMONES["rocket-silo"] = 1200
 constants.BUILDING_PHEROMONES["lamp"] = 40
 constants.BUILDING_PHEROMONES["radar"] = 200
 constants.BUILDING_PHEROMONES["lab"] = 150
+constants.BUILDING_PHEROMONES["splitter"] = 15
 
 -- player defense pheromones
 

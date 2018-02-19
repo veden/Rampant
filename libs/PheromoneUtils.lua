@@ -1,7 +1,7 @@
 local pheromoneUtils = {}
 
 -- imports
-
+local mathUtils = require("MathUtils")
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
@@ -34,6 +34,8 @@ local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
+local linearInterpolation = mathUtils.linearInterpolation 
+
 -- module code
 
 function pheromoneUtils.scents(map, chunk)
@@ -41,10 +43,7 @@ function pheromoneUtils.scents(map, chunk)
     local resourceGenerator = getResourceGenerator(map, chunk)
     local enemyCount = getEnemyStructureCount(map, chunk)
     if (resourceGenerator > 0) and (enemyCount == 0) then
-	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + mMax(resourceGenerator * 1000, 900)
-    end
-    if (enemyCount > 0) then
-	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] - enemyCount
+	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + linearInterpolation(resourceGenerator, 9000, 10000)
     end
 end
 
@@ -64,12 +63,14 @@ function pheromoneUtils.playerScent(playerChunk)
 end
 
 function pheromoneUtils.processPheromone(map, chunk)
-
+    
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkResource = chunk[RESOURCE_PHEROMONE]
     local chunkPathRating = chunk[PATH_RATING]
+
+    local clear = (getEnemyStructureCount(map, chunk) == 0)
     
     local tempNeighbors = getCardinalChunks(map, chunk.x, chunk.y)
 
@@ -109,7 +110,11 @@ function pheromoneUtils.processPheromone(map, chunk)
     chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[BASE_PHEROMONE] = (chunkBase + (0.35 * baseTotal)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * playerTotal)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
-    chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
+    if clear then
+	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
+    else
+	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * 0.01
+    end
 end
 
 return pheromoneUtils

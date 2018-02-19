@@ -40,6 +40,7 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 local DEFINES_COMMAND_GROUP = defines.command.group
+local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -48,6 +49,8 @@ local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
 -- imported functions
+
+local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
@@ -80,7 +83,6 @@ local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
 local createBase = baseUtils.createBase
 
-local squadsAttack = squadAttack.squadsAttack
 local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
@@ -182,6 +184,7 @@ local function rebuildMap()
     map.chunkToRetreats = {}
     map.chunkToRallys = {}
     map.chunkToSpawner = {}
+    map.chunkToSettler = {}
 
     map.queueSpawners = {}
     
@@ -224,6 +227,13 @@ local function rebuildMap()
 	distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
+    map.settleCommand = {
+	type = DEFINES_COMMAND_BUILD_BASE,
+	destination = map.position,
+	distraction = DEFINES_DISTRACTION_BY_ENEMY,
+	ignore_planner = true
+    }
+    
     map.retreatCommand = { type = DEFINES_COMMAND_GROUP,
 			   group = nil,
 			   distraction = DEFINES_DISTRACTION_NONE }
@@ -280,13 +290,13 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
-    natives.useCustomAI = constants.DEV_CUSTOM_AI
-    -- changed, newValue = upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
-    -- if natives.useCustomAI then
-    -- 	game.forces.enemy.ai_controllable = false
-    -- else
-    -- 	game.forces.enemy.ai_controllable = true
-    -- end
+    upgrade.compareTable(natives, "useCustomAI", settings.startup["rampant-useCustomAI"].value)
+
+    if natives.useCustomAI then
+    	game.forces.enemy.ai_controllable = false
+    else
+    	game.forces.enemy.ai_controllable = true
+    end
     -- if changed and newValue then
     -- 	rebuildMap()
     -- 	return false
@@ -374,7 +384,7 @@ script.on_nth_tick(INTERVAL_SQUAD,
 		       regroupSquads(natives, map)
 		       
 		       squadsBeginAttack(natives, gameRef.players)
-		       squadsAttack(map, gameRef.surfaces[1], natives)
+		       squadsDispatch(map, gameRef.surfaces[1], natives)
 
 end)
 
@@ -472,6 +482,7 @@ end
 local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
+
     if entity.valid and (surface.index == 1) then
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
@@ -533,7 +544,7 @@ end
 
 local function onTriggerEntityCreated(event)
     local entity = event.entity
-    if entity and entity.valid then
+    if entity and entity.valid and (entity.surface.index == 1) then
 	local name = event.entity.name
 	if isSpawner(name) then
 	    local tick = event.tick
@@ -609,7 +620,7 @@ script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 
 script.on_event(defines.events.on_entity_died, onDeath)
--- script.on_event(defines.events.on_tick, onTick)
+--script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampantTests",
@@ -639,7 +650,8 @@ remote.add_interface("rampantTests",
 			 colorResourcePoints = tests.colorResourcePoints,
 			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
-			 exportAiState = tests.exportAiState()
+			 unitGroupBuild = tests.unitGroupBuild,
+			 exportAiState = tests.exportAiState(nil)
 		     }
 )
 

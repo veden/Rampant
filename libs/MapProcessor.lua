@@ -29,6 +29,7 @@ local SENTINEL_IMPASSABLE_CHUNK  = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
@@ -45,6 +46,7 @@ local processPheromone = pheromoneUtils.processPheromone
 local playerScent = pheromoneUtils.playerScent
 
 local formSquads = aiAttackWave.formSquads
+local formSettlers = aiAttackWave.formSettlers
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getChunkByXY = mapUtils.getChunkByXY
@@ -59,6 +61,7 @@ local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = aiPredicates.canAttack
+local canMigrate = aiPredicates.canMigrate
 
 local findNearbySquad = unitGroupUtils.findNearbySquad
 
@@ -105,6 +108,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local newEnemies = natives.newEnemies
     
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
+    local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -116,15 +120,18 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    
 	    processPheromone(map, chunk)
 
-	    local chunkRoll = mRandom()
-	    
-	    if squads and (getNestCount(map, chunk) > 0) then
-		squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+	    if (getNestCount(map, chunk) > 0) then
+		if squads then
+		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
+		end
+		if natives.useCustomAI and settlers then
+		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST, tick)
+		end
 	    end
 
 	    if newEnemies then
 		local base = chunkToBase[chunk]
-		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (chunkRoll < 0.10) then
+		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (mRandom() < 0.10) then
 		    processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
 		end
 	    end
@@ -217,6 +224,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
     local spawners = map.chunkToSpawner
+    local settlers = map.chunkToSettler
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
@@ -240,10 +248,16 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    rallys[chunk] = nil
 	end
 
-	local SpawnerTick = spawners[chunk]
-	if SpawnerTick and ((tick - SpawnerTick) > INTERVAL_SPAWNER) then
+	local spawnerTick = spawners[chunk]
+	if spawnerTick and ((tick - spawnerTick) > INTERVAL_SPAWNER) then
 	    spawners[chunk] = nil
 	end
+
+	local settlerTick = spawners[chunk]
+	if settlerTick and ((tick - settlerTick) > 0) then
+	    settlers[chunk] = nil
+	end
+
 
 	local unitCount = surface.count_entities_filtered(unitCountQuery)
 

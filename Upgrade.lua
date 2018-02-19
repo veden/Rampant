@@ -8,6 +8,7 @@ local mathUtils = require("libs/MathUtils")
 -- constants
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
 
@@ -138,14 +139,6 @@ function upgrade.attempt(natives)
 	global.version = constants.VERSION_26
     end
     if (global.version < constants.VERSION_27) then
-
-	natives.useCustomAI = constants.DEV_CUSTOM_AI
-	-- natives.useCustomAI = settings.startup["rampant-useCustomAI"].value
-	if natives.useCustomAI then
-	    game.forces.enemy.ai_controllable = false
-	else
-	    game.forces.enemy.ai_controllable = true
-	end	
 	
 	game.surfaces[1].print("Rampant - Version 0.15.17")
 	global.version = constants.VERSION_27
@@ -199,6 +192,27 @@ function upgrade.attempt(natives)
     if (global.version < constants.VERSION_57) then
 
 	natives.attackWaveLowerBound = 1
+	
+	for _,squad in pairs(natives.squads) do
+	    squad.maxDistance = 0
+	    squad.originPosition = {
+		x = 0,
+		y = 0
+	    }
+	    squad.settlers = false
+    	end
+
+	natives.expansion = game.map_settings.enemy_expansion.enabled or true
+	natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
+	natives.expansionMaxDistanceDerivation = natives.expansionMaxDistance * 0.33
+	natives.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
+	natives.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
+	natives.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
+	natives.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
+
+	natives.settlerCooldown = 0
+	natives.settlerWaveDeviation = 0
+	natives.settlerWaveSize = 0
 	
 	game.surfaces[1].print("Rampant - Version 0.16.22")
 	global.version = constants.VERSION_57
