@@ -51,7 +51,7 @@ end
 function pheromoneUtils.victoryScent(chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
     if value then
-	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 100000)
+	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 10000)
     end
 end
 

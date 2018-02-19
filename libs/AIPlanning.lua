@@ -33,7 +33,8 @@ local AI_MAX_TEMPERAMENT_DURATION = constants.AI_MAX_TEMPERAMENT_DURATION
 local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
 local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
 
-local RETREAT_MOVEMENT_PHEROMONE_LEVEL = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
 
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
@@ -46,6 +47,8 @@ local randomTickEvent = mathUtils.randomTickEvent
 local mFloor = math.floor
 
 local mRandom = math.random
+
+local linearInterpolation = mathUtils.linearInterpolation
 
 local mMax = math.max
 
@@ -65,12 +68,11 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
     end
 
     local attackWaveMaxSize = natives.attackWaveMaxSize
-    natives.retreatThreshold = -(evolution_factor * RETREAT_MOVEMENT_PHEROMONE_LEVEL)
+    natives.retreatThreshold = linearInterpolation(evolution_factor, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.25 * evolution_factor), 0.10)
     natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.66667)
     natives.attackWaveDeviation = (attackWaveMaxSize * 0.5) * 0.333
-    natives.attackWaveLowerBound = 1
     natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)

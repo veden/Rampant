@@ -53,6 +53,10 @@ function mathUtils.xorRandom(state)
     end
 end
 
+function mathUtils.linearInterpolation(percent, min, max)
+    return ((max - min) * percent) + min
+end
+
 --[[
     Used for gaussian random numbers
 --]]

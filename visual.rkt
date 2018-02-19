@@ -242,7 +242,13 @@
                             100
                             50))))
       (define g (inexact->exact (round (* v 255))))
-      (send dc set-brush (make-object color% r g 0) 'solid))
+      (send dc
+            set-brush
+            (make-object color%
+                         (min (max r 0) 255)
+                         (min (max g 0) 255)
+                         0)
+            'solid))
 
     
     (new radio-box%

@@ -20,7 +20,7 @@ constants.VERSION_38 = 38
 constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
-constants.VERSION_56 = 56
+constants.VERSION_57 = 57
 
 -- misc
 
@@ -28,7 +28,8 @@ constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-g
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL = 18000
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 7500
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 1200000
 
 constants.PROCESS_QUEUE_SIZE = 400
 constants.SCAN_QUEUE_SIZE = 5
@@ -50,7 +51,7 @@ constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
 
 constants.RESOURCE_GENERATOR_INCREMENT = 0.001
 
-constants.PLAYER_PHEROMONE_MULTIPLER = 100
+constants.PLAYER_PHEROMONE_MULTIPLER = 500
 
 constants.DEV_CUSTOM_AI = false
 
@@ -85,7 +86,7 @@ constants.AI_VENGENCE_SQUAD_COST = 45
 constants.AI_SETTLER_COST = 75
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
-constants.AI_MAX_POINTS = 10000
+constants.AI_MAX_POINTS = 12500
 constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
 
 constants.RAIDING_MINIMUM_BASE_THRESHOLD = 250
@@ -222,14 +223,14 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 600
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 3000
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
 
 -- pheromone diffusion amounts
 
-constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.9
+constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.99
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.99

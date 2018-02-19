@@ -639,7 +639,7 @@ remote.add_interface("rampantTests",
 			 colorResourcePoints = tests.colorResourcePoints,
 			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
-			 exportAiState = tests.exportAiState(onTick)
+			 exportAiState = tests.exportAiState()
 		     }
 )
 
