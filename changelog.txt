@@ -20,6 +20,7 @@ Date: 2. 18. 2018
     - Fixed getEntityOverlapping chunks returning more than it should have
   Framework:
     - Fixed exportaistate visualizer
+
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.21
 Date: 2. 16. 2018

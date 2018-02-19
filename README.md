@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Difficulty setting in mod options menu.  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Can completely replace the vanilla AI. Difficulty setting in mod options menu.  
 
 # Forum Post
 
