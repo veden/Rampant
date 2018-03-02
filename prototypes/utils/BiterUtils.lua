@@ -312,7 +312,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 
 end
 
-function biterFunctions.createSuicideAttack(attributes)
+function biterFunctions.createSuicideAttack(attributes, blastWave)
     local o = {
 	type = "projectile",
 	range = attributes.range or 0.5,
@@ -370,7 +370,7 @@ function biterFunctions.createSuicideAttack(attributes)
 					action_delivery =
 					    {
 						type = "projectile",
-						projectile = "atomic-bomb-wave",
+						projectile = blastWave or "atomic-bomb-wave",
 						starting_speed = 0.5
 					    }
 				    }
@@ -697,30 +697,30 @@ end
 
 function biterFunctions.createMeleeAttack(attributes)
     return {
-		type = "projectile",
-		range = attributes.range or 0.5,
-		cooldown = attributes.cooldown or 35,
-		ammo_category = "melee",
-		ammo_type = {
-		    category = "melee",
-		    target_type = "entity",
-		    action =
+	type = "projectile",
+	range = attributes.range or 0.5,
+	cooldown = attributes.cooldown or 35,
+	ammo_category = "melee",
+	ammo_type = {
+	    category = "melee",
+	    target_type = "entity",
+	    action =
+		{
+		    type = "direct",
+		    action_delivery =
 			{
-			    type = "direct",
-			    action_delivery =
+			    type = "instant",
+			    target_effects =
 				{
-				    type = "instant",
-				    target_effects =
-					{
-					    type = "damage",
-					    damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
-					}
+				    type = "damage",
+				    damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
 				}
 			}
-		},
-		sound = make_biter_roars(0.4),
-		animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
-	    }
+		}
+	},
+	sound = make_biter_roars(0.4),
+	animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+    }
 end
 
 function biterFunctions.biterAttackSounds()
