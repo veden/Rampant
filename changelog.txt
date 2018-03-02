@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.23
+Date: 3. 1. 2018
+  Improvements:
+    - Changed nuclear blast damage to scale with tiers and increased explosion count at higher tiers (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=260#p346147)
+  Bugfixes:
+    - Fix for bobs enemies and ne dumb projectiles (https://forums.factorio.com/viewtopic.php?f=94&t=31445&start=260#p345778)
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.22
 Date: 2. 18. 2018
   Features:

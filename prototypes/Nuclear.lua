@@ -3,6 +3,7 @@
 local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
 local stickerUtils = require("utils/StickerUtils")
+local bombUtils = require("utils/BombUtils")
 local swarmUtils = require("SwarmUtils")
 package.path = "../libs/?.lua;" .. package.path
 local constants = require("Constants")
@@ -21,6 +22,7 @@ local NUCLEAR_WORM_VARIATIONS = constants.NUCLEAR_WORM_VARIATIONS
 -- imported functions
 
 local makeSticker = stickerUtils.makeSticker
+local makeAtomicBlast = bombUtils.makeAtomicBlast
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
@@ -53,6 +55,7 @@ buildUnitSpawner(
 	    },
 	    resistances = {},
 
+	    attackName = "nuclear-biter",
 	    type = "biter",
 	    scales = {
 		[1] = 0.5,
@@ -195,14 +198,14 @@ buildUnitSpawner(
 		name = "repeatCount",
 		[1] = 150,
 		[2] = 175,
-		[3] = 200,
-		[4] = 200,
-		[5] = 250,
-		[6] = 250,
-		[7] = 300,
-		[8] = 300,
-		[9] = 350,
-		[10] = 350		
+		[3] = 250,
+		[4] = 300,
+		[5] = 350,
+		[6] = 400,
+		[7] = 450,
+		[8] = 500,
+		[9] = 550,
+		[10] = 600
 	    },
 	    
 	    {		
@@ -550,7 +553,10 @@ buildUnitSpawner(
 	}
     },
 
-    createSuicideAttack,
+    function (attributes)
+	return createSuicideAttack(attributes,
+				   makeAtomicBlast(attributes))
+    end,
 
     {
 	unit = NUCLEAR_UNIT_VARIATIONS,

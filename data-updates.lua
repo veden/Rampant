@@ -15,14 +15,14 @@ if settings.startup["rampant-useDumbProjectiles"].value then
     vanillaUpdates.useDumbProjectiles()
 
     local option = settings.startup["bobmods-enemies-enableartifacts"]
-    if option and option.value then
+    if option then
 	
     	require("prototypes/utils/AttackBobs")
     	bobsUpdates.useDumbProjectiles()
     end
 
     option = settings.startup["NE_Difficulty"]
-    if option and option.value then
+    if option then
     	require("prototypes/utils/AttackNE")
 	NEUpdates.useDumbProjectiles()
     	if settings.startup["rampant-useNEUnitLaunchers"].value then
