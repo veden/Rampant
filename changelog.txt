@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.24
+Date: 4. 14. 2018
+  Tweaks:
+    - Reduced Inferno biters damage at levels 8+
+  Bugfixes:
+    - Removed all conditional requires in data, data-update, and data-update-final
+
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.23
 Date: 3. 1. 2018
   Improvements:
