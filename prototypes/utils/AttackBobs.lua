@@ -776,3 +776,5 @@ function attacks.addAttacks()
 	)
     end
 end
+
+return attacks
