@@ -9,6 +9,8 @@ local constants = require("Constants")
 
 -- constants
 
+local wasp = {}
+
 local WASP_UNIT_TIERS = constants.WASP_UNIT_TIERS
 local WASP_UNIT_VARIATIONS = constants.WASP_UNIT_VARIATIONS
 
@@ -35,6 +37,8 @@ local createCapsuleProjectile = droneUtils.createCapsuleProjectile
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+
+function wasp.addFaction()
 
 local biterLoot = makeUnitAlienLootTable("purple")
 local spawnerLoot = makeSpawnerAlienLootTable("purple")
@@ -1399,3 +1403,6 @@ buildWorm(
     WASP_WORM_VARIATIONS,
     WASP_WORM_TIERS
 )
+end
+
+return wasp

@@ -304,9 +304,6 @@ local function onConfigChanged()
     upgraded, natives = upgrade.attempt(natives)
     if upgraded and onModSettingsChange(nil) then
 	rebuildMap()
-	if natives.newEnemies then
-	    rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
-	end
 
 	-- clear pending chunks, will be added when loop runs below
 	global.pendingChunks = {}
@@ -323,6 +320,9 @@ local function onConfigChanged()
 	end
 
 	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, true)
+    end
+    if natives.newEnemies then
+	rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
     end
 end
 

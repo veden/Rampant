@@ -369,6 +369,8 @@ end
 function chunkUtils.analyzeChunk(chunk, natives, surface, map)    
     local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
     setPlayerBaseGenerator(map, chunk, playerObjects)
+    local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
+    setResourceGenerator(map, chunk, resources)
 end
 
 function chunkUtils.createChunk(topX, topY)

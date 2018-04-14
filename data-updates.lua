@@ -3,6 +3,9 @@ local bobsUpdates = require("prototypes/utils/UpdatesBobs")
 local NEUpdates = require("prototypes/utils/UpdatesNE")
 local constants = require("libs/Constants")
 
+local attackBobs = require("prototypes/utils/AttackBobs")
+local attackNE = require("prototypes/utils/AttackNE")
+
 if settings.startup["rampant-removeBloodParticles"].value then
     local explosions = data.raw["explosion"]
     
@@ -16,14 +19,13 @@ if settings.startup["rampant-useDumbProjectiles"].value then
 
     local option = settings.startup["bobmods-enemies-enableartifacts"]
     if option then
-	
-    	require("prototypes/utils/AttackBobs")
+	attackBobs.addAttacks()
     	bobsUpdates.useDumbProjectiles()
     end
 
     option = settings.startup["NE_Difficulty"]
     if option then
-    	require("prototypes/utils/AttackNE")
+	attackNE.addAttacks()
 	NEUpdates.useDumbProjectiles()
     	if settings.startup["rampant-useNEUnitLaunchers"].value then
     	    NEUpdates.useNEUnitLaunchers()
