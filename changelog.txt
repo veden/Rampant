@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.26
+Date: 5. 19. 2018
+  Bugfixes:
+    - Fix for combination of NE and Bobs with non-standard mod settings in relation to alien artifacts.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.25
 Date: 5. 19. 2018
   Improvements:
