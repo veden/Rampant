@@ -29,6 +29,8 @@ local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
+local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
+
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
@@ -218,8 +220,8 @@ local function rebuildMap()
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
     map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
     map.canPlaceQuery = { name="", position={0,0} }
-    map.filteredTilesQuery = { name="", area=map.area }
-
+    map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
+    
     map.attackAreaCommand = {
 	type = DEFINES_COMMAND_ATTACK_AREA,
 	destination = map.position,
@@ -250,7 +252,7 @@ end
 
 local function onModSettingsChange(event)
     
-    if event and (string.sub(event.setting, 1, 7) ~= "rampant") then
+    if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or (string.sub(event.setting, 1, 18) == "rampant-arsenal")) then
 	return false
     end
     
@@ -302,7 +304,8 @@ end
 local function onConfigChanged()
     local upgraded
     upgraded, natives = upgrade.attempt(natives)
-    if upgraded and onModSettingsChange(nil) then
+    onModSettingsChange(nil)
+    if upgraded then
 	rebuildMap()
 
 	-- clear pending chunks, will be added when loop runs below

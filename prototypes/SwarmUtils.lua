@@ -129,6 +129,100 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     return result
 end
 
+local function scaleAttributes (upgrade, entity)
+    if (upgrade.type == "attribute") then
+	if (entity.type == "biter") then
+	    if (upgrade.name == "health") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitBiterHealthScaler"].value
+	    end
+	    if (upgrade.name == "movement") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitBiterSpeedScaler"].value
+	    end
+	    if (upgrade.name == "distancePerFrame") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitBiterSpeedScaler"].value
+	    end
+	    
+	elseif (entity.type == "spitter") then
+	    if (upgrade.name == "health") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpitterHealthScaler"].value
+	    end
+	    if (upgrade.name == "movement") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpitterSpeedScaler"].value
+	    end
+	    if (upgrade.name == "distancePerFrame") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpitterSpeedScaler"].value
+	    end
+	elseif (entity.type == "drone") then
+	    if (upgrade.name == "health") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitDroneHealthScaler"].value
+	    end
+	    if (upgrade.name == "movement") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitDroneSpeedScaler"].value
+	    end
+	    if (upgrade.name == "distancePerFrame") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitDroneSpeedScaler"].value
+	    end
+	elseif (entity.type == "spawner") then
+	    if (upgrade.name == "health") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpawnerHealthScaler"].value
+	    end
+	    if (upgrade.name == "unitsOwned") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpawnerOwnedScaler"].value
+	    end
+	    if (upgrade.name == "unitsToSpawn") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpawnerSpawnScaler"].value
+	    end
+	    if (upgrade.name == "spawingCooldownStart") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
+	    end
+	    if (upgrade.name == "spawingCooldownEnd") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
+	    end
+	elseif (entity.type == "worm") then
+	    if (upgrade.name == "health") then
+		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitWormHealthScaler"].value
+	    end
+	end
+    end
+    if (upgrade.type == "resistance") then
+	-- not asked for
+    end
+    if (upgrade.type == "attack") then
+	if (entity.type == "biter") then
+	    if (upgrade.name == "damage") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitBiterDamageScaler"].value
+	    end
+	    if (upgrade.name == "range") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitBiterRangeScaler"].value
+	    end
+	elseif (entity.type == "spitter") then
+	    if (upgrade.name == "damage") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterDamageScaler"].value
+	    end
+	    if (upgrade.name == "stickerDamagePerTick") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterDamageScaler"].value
+	    end
+	    if (upgrade.name == "range") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterRangeScaler"].value
+	    end
+	elseif (entity.type == "drone") then
+	    if (upgrade.name == "damage") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneDamageScaler"].value
+	    end
+	    if (upgrade.name == "range") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneRangeScaler"].value
+	    end
+	elseif (entity.type == "worm") then
+	    if (upgrade.name == "damage") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitWormDamageScaler"].value
+	    end
+	    if (upgrade.name == "range") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitWormRangeScaler"].value
+	    end
+	end	
+    end    
+end
+
 local function upgradeEntity(entity, upgradeTable, tier)
     if upgradeTable then
 	for upgradeIndex=1, #upgradeTable do
@@ -149,6 +243,7 @@ local function upgradeEntity(entity, upgradeTable, tier)
 		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
 		    entity.attributes[upgrade.name] = (entity.attributes[upgrade.name] or 0) + adj
 		end
+		scaleAttributes(upgrade, entity)
 	    end
 	    if (upgrade.type == "resistance") then
 		local field = upgrade.name
@@ -196,6 +291,7 @@ local function upgradeEntity(entity, upgradeTable, tier)
 		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
 		    entity.attack[upgrade.name] = (entity.attack[upgrade.name] or 0) + adj
 		end
+		scaleAttributes(upgrade, entity)
 	    end
 	end
     end
@@ -284,8 +380,8 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 
 	    if unit.loot then
 		unit.attributes.loot = { unit.loot[ut] }
-	    end
-	    
+	    end	    
+
 	    local entity
 	    if (unit.type == "spitter") then
 		unit.attributes.corpse = makeSpitterCorpse(unit)
@@ -334,6 +430,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
 							unitSet)
 	    generateApperance(unitSpawner, ut)
+	    unitSpawner.type = "spawner"
 	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, ut)
 
 	    if unitSpawner.loot then
@@ -363,6 +460,7 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 	    local worm = deepcopy(template)
 	    worm.name = worm.name .. "-v" .. i .. "-t" .. t
 	    generateApperance(worm, ut)
+	    worm.type = "worm"
 	    upgradeEntity(worm, upgradeTable, ut)
 
 	    if worm.attackName then

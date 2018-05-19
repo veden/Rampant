@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_59 = 59
+constants.VERSION_60 = 60
 
 -- misc
 
@@ -201,11 +201,11 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
 }
 
-local option = settings.startup["NE_Difficulty"]
-constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and (option and option.value)
+local detectNE = settings.startup["NE_Difficulty"]
+constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and detectNE
 
-option = settings.startup["bobmods-enemies-enableartifacts"]
-constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableBobsUnits"].value and (option and option.value)
+local detectBobs = settings.startup["bobmods-enemies-enableartifacts"]
+constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableBobsUnits"].value and detectBobs
 
 
 if constants.ENABLED_BOBS_UNITS then

@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.25
+Date: 5. 19. 2018
+  Improvements:
+    - Configuration options for scaling biter, spitter, worm, and nests stats by a scaler.
+  Optimizations:
+    - Switched passScore per chunk calculation to use the mutli filter query instead of individual calls for tile counts
+  Bugfixes:
+    - Changed how mod settings are set in memory to prevent missing unit crashes (https://forums.factorio.com/viewtopic.php?f=190&t=31445&start=320#p362819)
+    - Cleaned up NE and Bobs detection
+    - Fixed locale typo in deadZoneFrequency description from with to without(https://forums.factorio.com/viewtopic.php?f=190&t=31445&start=320#p363436)
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.24
 Date: 4. 14. 2018
   Tweaks:
