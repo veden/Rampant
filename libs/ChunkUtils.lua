@@ -10,8 +10,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
-local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
-
 local DEFINES_DIRECTION_EAST = defines.direction.east
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -42,8 +40,6 @@ local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 local PATH_RATING = constants.PATH_RATING
 
 local PASSABLE = constants.PASSABLE
-
-local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
 
 -- imported functions
 
@@ -199,15 +195,7 @@ end
 -- external functions
 
 function chunkUtils.calculatePassScore(surface, map)
-    local count_tiles_filtered = surface.count_tiles_filtered
-    local filteredTilesQuery = map.filteredTilesQuery
-    
-    local passScore = 0
-    for i=1,#WATER_TILE_NAMES do
-	filteredTilesQuery.name = WATER_TILE_NAMES[i]
-	passScore = passScore + count_tiles_filtered(filteredTilesQuery)
-    end
-
+    local passScore = surface.count_tiles_filtered(map.filteredTilesQuery)
     return 1 - (passScore * 0.0009765625)
 end
 

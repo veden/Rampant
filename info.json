@@ -1,10 +1,10 @@
 {
     "name" : "Rampant",
     "factorio_version" : "0.16",
-    "version" : "0.16.24",
+    "version" : "0.16.25",
     "title" : "Rampant",
     "author" : "Veden",
     "homepage" : "https://forums.factorio.com/viewtopic.php?f=94&t=31445",
     "description" : "Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Can completely replace the vanilla AI. Difficulty setting in mod options menu.",
-    "dependencies" : ["base >= 0.16.24", "? bobenemies", "? Natural_Evolution_Enemies", "? Clockwork", "? Orbital Ion Cannon"]
+    "dependencies" : ["base >= 0.16.43", "? bobenemies", "? Natural_Evolution_Enemies", "? Clockwork", "? Orbital Ion Cannon"]
 }

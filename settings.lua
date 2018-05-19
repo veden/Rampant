@@ -202,7 +202,7 @@ data:extend({
 	    per_user = false
 	},
 
-{
+	{
 	    type = "bool-setting",
 	    name = "rampant-disallowFriendlyFire",
 	    setting_type = "startup",
@@ -223,11 +223,6 @@ data:extend({
 	    order = "d[modifier]-a[ai]",
 	    per_user = false
 	},
-	
-
-	
-
-	
 	
 	{
 	    type = "bool-setting",
@@ -360,7 +355,6 @@ data:extend({
 	    per_user = false
 	},
 
-
 	{
 	    type = "bool-setting",
 	    name = "rampant-disableVanillaAI",
@@ -399,5 +393,235 @@ data:extend({
 	    default_value = true,
 	    order = "o[modifer]-a[message]",
 	    per_user = true
-	}	
+	},
+
+
+	
+	{
+	    type = "double-setting",
+	    name = "rampant-unitBiterHealthScaler",
+	    description = "rampant-unitBiterHealthScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-a[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitBiterSpeedScaler",
+	    description = "rampant-unitBiterSpeedScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-b[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitBiterDamageScaler",
+	    description = "rampant-unitBiterDamageScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-c[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitBiterRangeScaler",
+	    description = "rampant-unitBiterRangeScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-d[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpitterHealthScaler",
+	    description = "rampant-unitSpitterHealthScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-e[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpitterSpeedScaler",
+	    description = "rampant-unitSpitterSpeedScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-f[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpitterDamageScaler",
+	    description = "rampant-unitSpitterDamageScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-g[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpitterRangeScaler",
+	    description = "rampant-unitSpitterRangeScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-h[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitDroneHealthScaler",
+	    description = "rampant-unitDroneHealthScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-i[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitDroneSpeedScaler",
+	    description = "rampant-unitDroneSpeedScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-j[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitDroneDamageScaler",
+	    description = "rampant-unitDroneDamageScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-k[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitDroneRangeScaler",
+	    description = "rampant-unitDroneRangeScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-l[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitWormHealthScaler",
+	    description = "rampant-unitWormHealthScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-m[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitWormDamageScaler",
+	    description = "rampant-unitWormDamageScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-n[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitWormRangeScaler",
+	    description = "rampant-unitWormRangeScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-o[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpawnerHealthScaler",
+	    description = "rampant-unitSpawnerHealthScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-p[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpawnerOwnedScaler",
+	    description = "rampant-unitSpawnerOwnedScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-q[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpawnerSpawnScaler",
+	    description = "rampant-unitSpawnerSpawnScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-r[unit]",
+	    per_user = false
+	},
+
+	{
+	    type = "double-setting",
+	    name = "rampant-unitSpawnerRespawnScaler",
+	    description = "rampant-unitSpawnerRespawnScaler",
+	    setting_type = "startup",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 100000.0,
+	    order = "p[modifier]-r[unit]",
+	    per_user = false
+	}
 })
