@@ -558,7 +558,7 @@ function biterFunctions.makeUnitAlienLootTable(name)
     local d = settings.startup["bobmods-enemies-enablenewartifacts"]
     local newArtifacts = d and d.value
 
-    if smallArtifacts and newArtifacts and name then
+    if (c and c.value) and newArtifacts and name then
 	biterLoot = {
 	    [1] = {  item = "small-alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.25 },
 	    [2] = {  item = "small-alien-artifact-" .. name,  count_min = 1,  count_max = 2,  probability = 0.25 },
