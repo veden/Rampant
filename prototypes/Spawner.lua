@@ -41,9 +41,9 @@ local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
 function spawner.addFaction()
 
-    local biterLoot = makeUnitAlienLootTable("green")
-    local spawnerLoot = makeSpawnerAlienLootTable("green")
-    local wormLoot = makeWormAlienLootTable("green")
+    local biterLoot = makeUnitAlienLootTable("orange")
+    local spawnerLoot = makeSpawnerAlienLootTable("orange")
+    local wormLoot = makeWormAlienLootTable("orange")
 
     -- spawner
     buildUnits(

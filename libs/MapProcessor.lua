@@ -166,7 +166,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
-	if validPlayer(player) then 
+	if validPlayer(player, natives) then 
 	    local playerChunk = getChunkByPosition(map, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
@@ -176,7 +176,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     end
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
-	if validPlayer(player) then 
+	if validPlayer(player, natives) then 
 	    local playerChunk = getChunkByPosition(map, player.character.position)
 	    
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
