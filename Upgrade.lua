@@ -56,7 +56,7 @@ function upgrade.attempt(natives)
     	--remove version 14 retreat limit, it has been made redundant
     	natives.retreats = nil
 	
-    	game.surfaces[1].print("Rampant - Version 0.14.13")
+    	game.surfaces[natives.activeSurface].print("Rampant - Version 0.14.13")
     	global.version = constants.VERSION_16
     end
     if (global.version < constants.VERSION_18) then
@@ -64,7 +64,7 @@ function upgrade.attempt(natives)
 	natives.safeEntities = {}
 	natives.safeEntityName = {}
 
-	game.surfaces[1].print("Rampant - Version 0.15.5")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.5")
 	global.version = constants.VERSION_18
     end
     if (global.version < constants.VERSION_20) then
@@ -72,7 +72,7 @@ function upgrade.attempt(natives)
 	natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
 	natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
 	
-	game.surfaces[1].print("Rampant - Version 0.15.8")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.8")
 	global.version = constants.VERSION_20
     end
     if (global.version < constants.VERSION_22) then
@@ -97,7 +97,7 @@ function upgrade.attempt(natives)
 	game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
 	game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
-	game.surfaces[1].print("Rampant - Version 0.15.10")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.10")
 	global.version = constants.VERSION_22
     end
     if (global.version < constants.VERSION_23) then
@@ -121,33 +121,33 @@ function upgrade.attempt(natives)
 
 	natives.randomGenerator = game.create_random_generator()
 
-	game.surfaces[1].print("Rampant - Version 0.15.11")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.11")
 	global.version = constants.VERSION_23
     end
     if (global.version < constants.VERSION_25) then
 
 	game.map_settings.path_finder.min_steps_to_check_path_find_termination = constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 	
-	game.surfaces[1].print("Rampant - Version 0.15.15")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.15")
 	global.version = constants.VERSION_25
     end
     if (global.version < constants.VERSION_26) then
 
 	game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
 	
-	game.surfaces[1].print("Rampant - Version 0.15.16")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.16")
 	global.version = constants.VERSION_26
     end
     if (global.version < constants.VERSION_27) then
 	
-	game.surfaces[1].print("Rampant - Version 0.15.17")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.17")
 	global.version = constants.VERSION_27
     end
     if (global.version < constants.VERSION_33) then
 
 	global.world = nil
 	
-	game.surfaces[1].print("Rampant - Version 0.15.23")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.23")
 	global.version = constants.VERSION_33
     end
     if (global.version < constants.VERSION_38) then
@@ -158,7 +158,7 @@ function upgrade.attempt(natives)
 
 	global.regionMap = nil
 	
-	game.surfaces[1].print("Rampant - Version 0.16.3")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.3")
 	global.version = constants.VERSION_38
     end
     if (global.version < constants.VERSION_41) then
@@ -170,14 +170,14 @@ function upgrade.attempt(natives)
 	natives.baseIndex = 1
 	natives.baseIncrement = 0
 	
-	game.surfaces[1].print("Rampant - Version 0.16.6")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.6")
 	global.version = constants.VERSION_41
     end
     if (global.version < constants.VERSION_44) then
 
 	natives.kamikazeThreshold = 0
 	
-	game.surfaces[1].print("Rampant - Version 0.16.9")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.9")
 	global.version = constants.VERSION_44
     end
     if (global.version < constants.VERSION_51) then
@@ -186,7 +186,7 @@ function upgrade.attempt(natives)
         natives.tunnels = nil
 	natives.baseLookup = nil
 	
-	game.surfaces[1].print("Rampant - Version 0.16.16")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.16")
 	global.version = constants.VERSION_51
     end
     if (global.version < constants.VERSION_57) then
@@ -214,14 +214,12 @@ function upgrade.attempt(natives)
 	natives.settlerWaveDeviation = 0
 	natives.settlerWaveSize = 0
 	
-	game.surfaces[1].print("Rampant - Version 0.16.22")
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.22")
 	global.version = constants.VERSION_57
     end
     if (global.version < constants.VERSION_62) then
-
-	natives.activeSurface = 1
-	
-	game.surfaces[1].print("Rampant - Version 0.16.27")
+		
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.27")
 	global.version = constants.VERSION_62
     end
 
