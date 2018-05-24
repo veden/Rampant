@@ -459,7 +459,7 @@ function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, credi
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
     
-    if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name == "player") then
+    if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         entityValue = BUILDING_PHEROMONES[entity.type]
 
         leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)

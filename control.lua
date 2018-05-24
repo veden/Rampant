@@ -163,7 +163,7 @@ local function onChunkGenerated(event)
 end
 
 local function rebuildMap()
-    game.surfaces[1].print("Rampant - Reindexing chunks, please wait.")
+    game.surfaces[natives.activeSurface].print("Rampant - Reindexing chunks, please wait.")
     -- clear old map processing Queue
     -- prevents queue adding duplicate chunks
     -- chunks are by key, so should overwrite old
@@ -218,7 +218,7 @@ local function rebuildMap()
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
-    map.filteredEntitiesPlayerQuery = { area=map.area, force="player" }
+    map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, inverted = "true" }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
     
@@ -305,6 +305,13 @@ local function onConfigChanged()
     local upgraded
     upgraded, natives = upgrade.attempt(natives)
     onModSettingsChange(nil)
+    if (game.surfaces["battle_surface_2"]) then
+	natives.activeSurface = game.surfaces["battle_surface_2"].index
+    elseif (game.surfaces["battle_surface_1"]) then
+	natives.activeSurface = game.surfaces["battle_surface_1"].index
+    elseif (game.surfaces["battle_surface_1"]) then
+	natives.activeSurface = game.surfaces["nauvis"].index
+    end
     if upgraded then
 	rebuildMap()
 
@@ -313,7 +320,7 @@ local function onConfigChanged()
 	pendingChunks = global.pendingChunks
 
 	-- queue all current chunks that wont be generated during play
-	local surface = game.surfaces[1]
+	local surface = game.surfaces[natives.activeSurface]
 	local tick = game.tick
 	for chunk in surface.get_chunks() do
 	    onChunkGenerated({ tick = tick,
@@ -325,7 +332,7 @@ local function onConfigChanged()
 	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, true)
     end
     if natives.newEnemies then
-	rebuildNativeTables(natives, game.surfaces[1], game.create_random_generator(natives.enemySeed))
+	rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
     end
 end
 
@@ -334,7 +341,7 @@ script.on_nth_tick(INTERVAL_PROCESS,
 
 		       local tick = event.tick
 		       local gameRef = game
-		       local surface = gameRef.surfaces[1]
+		       local surface = gameRef.surfaces[natives.activeSurface]
 		       
 		       processPlayers(gameRef.players, map, surface, natives, tick)
 		       
@@ -345,7 +352,7 @@ script.on_nth_tick(INTERVAL_SCAN,
 		   function (event)
 		       local tick = event.tick
 		       local gameRef = game
-		       local surface = gameRef.surfaces[1]
+		       local surface = gameRef.surfaces[natives.activeSurface]
 
 		       processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
@@ -361,7 +368,7 @@ script.on_nth_tick(INTERVAL_LOGIC,
 		   function (event)
 		       local tick = event.tick
 		       local gameRef = game
-		       local surface = gameRef.surfaces[1]
+		       local surface = gameRef.surfaces[natives.activeSurface]
 		       
 		       planning(natives,
 				gameRef.forces.enemy.evolution_factor,
@@ -382,7 +389,7 @@ script.on_nth_tick(INTERVAL_SQUAD,
 		       regroupSquads(natives, map)
 		       
 		       squadsBeginAttack(natives, gameRef.players)
-		       squadsDispatch(map, gameRef.surfaces[1], natives)
+		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
 
 end)
 
@@ -420,7 +427,7 @@ local function onDeath(event)
 		    -- drop death pheromone where unit died
 		    deathScent(chunk)
 		    
-		    if event.force and (event.force.name == "player") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
+		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
 			local tick = event.tick
 			
 			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
@@ -441,7 +448,7 @@ local function onDeath(event)
 		    end
                 end
                 
-            elseif event.force and (event.force.name == "player") and (entity.type == "unit-spawner") or (entity.type == "turret") then
+            elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
 		local tick = event.tick
 
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
@@ -460,7 +467,7 @@ local function onDeath(event)
 				 (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
 		end
             end
-        elseif (entity.force.name == "player") then
+        elseif (entity.force.name ~= "enemy") then
 	    local creditNatives = false
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
@@ -502,7 +509,7 @@ end
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
     if event.item and (event.item.name == "landfill") and (surfaceIndex == 1) then
-	local surface = game.surfaces[1]
+	local surface = game.surfaces[natives.activeSurface]
 	local chunks = {}
 	local tiles = event.tiles
 	for i=1,#tiles do
