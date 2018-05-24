@@ -119,7 +119,7 @@ local function onIonCannonFired(event)
 	event.force, event.surface, event.player_index, event.position, event.radius
     --]]
     local surface = event.surface
-    if (surface.index == 1) then
+    if (surface.index == natives.activeSurface) then
 	natives.points = natives.points + 3000
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
@@ -157,7 +157,7 @@ end
 local function onChunkGenerated(event)
     -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
     -- are generated, which messes up the scoring.
-    if (event.surface.index == 1) then
+    if (event.surface.index == natives.activeSurface) then
         pendingChunks[#pendingChunks+1] = event
     end
 end
@@ -303,15 +303,17 @@ end
 
 local function onConfigChanged()
     local upgraded
-    upgraded, natives = upgrade.attempt(natives)
-    onModSettingsChange(nil)
-    if (game.surfaces["battle_surface_2"]) then
+
+    if (game.surfaces["battle_surface_2"] ~= nil) then
 	natives.activeSurface = game.surfaces["battle_surface_2"].index
-    elseif (game.surfaces["battle_surface_1"]) then
+    elseif (game.surfaces["battle_surface_1"] ~= nil) then
 	natives.activeSurface = game.surfaces["battle_surface_1"].index
-    elseif (game.surfaces["battle_surface_1"]) then
+    else
 	natives.activeSurface = game.surfaces["nauvis"].index
     end
+
+    upgraded, natives = upgrade.attempt(natives)
+    onModSettingsChange(nil)
     if upgraded then
 	rebuildMap()
 
@@ -395,7 +397,7 @@ end)
 
 local function onBuild(event)
     local entity = event.created_entity
-    if (entity.surface.index == 1) then
+    if (entity.surface.index == natives.activeSurface) then
 	addRemovePlayerEntity(map, entity, natives, true, false)
 	if natives.safeBuildings then
 	    if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
@@ -408,7 +410,7 @@ end
 local function onMine(event)
     local entity = event.entity
     local surface = entity.surface
-    if (surface.index == 1) then	
+    if (surface.index == natives.activeSurface) then	
 	addRemovePlayerEntity(map, entity, natives, false, false)
     end
 end
@@ -416,7 +418,7 @@ end
 local function onDeath(event)
     local entity = event.entity
     local surface = entity.surface
-    if (surface.index == 1) then
+    if (surface.index == natives.activeSurface) then
 	local entityPosition = entity.position
 	local chunk = getChunkByPosition(map, entityPosition)
 	local cause = event.cause
@@ -488,7 +490,7 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     local surface = entity.surface
 
-    if entity.valid and (surface.index == 1) then
+    if entity.valid and (surface.index == natives.activeSurface) then
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local evolutionFactor = entity.force.evolution_factor
@@ -542,14 +544,14 @@ end
 
 local function onResourceDepleted(event)
     local entity = event.entity
-    if (entity.surface.index == 1) then
+    if (entity.surface.index == natives.activeSurface) then
 	chunkUtils.unregisterResource(entity, map)
     end
 end
 
 local function onTriggerEntityCreated(event)
     local entity = event.entity
-    if entity and entity.valid and (entity.surface.index == 1) then
+    if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
 	local name = event.entity.name
 	if isSpawner(name) then
 	    local tick = event.tick
@@ -568,7 +570,7 @@ end
 
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
-    if (event.item.name == "cliff-explosives") and (surface.index == 1) then
+    if (event.item.name == "cliff-explosives") and (surface.index == natives.activeSurface) then
 	local cliffs = surface.find_entities_filtered({area={{event.position.x-0.75,event.position.y-0.75},
 							   {event.position.x+0.75,event.position.y+0.75}},
 						       type="cliff"})
@@ -580,7 +582,7 @@ end
 
 local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
-    if entity and (entity.surface.index == 1) then
+    if entity and (entity.surface.index == natives.activeSurface) then
 	natives.points = natives.points + 2000
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
