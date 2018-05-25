@@ -94,7 +94,7 @@ buildUnits(
     function (attack)
 	return {
 	    type = "projectile",
-	    ammo_category = "bullet",
+	    ammo_category = "biological",
 	    cooldown = attack.cooldown or 20,
 	    projectile_center = {0, 1},
 	    projectile_creation_distance = 0.6,
@@ -102,7 +102,7 @@ buildUnits(
 	    sound = biterAttackSounds(),
 	    ammo_type =
 		{
-		    category = "bullet",
+		    category = "biological",
 		    action =
 			{
 			    type = "direct",
@@ -364,7 +364,7 @@ buildUnits(
     function (attack)
 	return {
 	    type = "projectile",
-	    ammo_category = "bullet",
+	    ammo_category = "biological",
 	    cooldown = attack.cooldown or 20,
 	    projectile_center = {0, 1},
 	    projectile_creation_distance = 0.6,
@@ -372,7 +372,7 @@ buildUnits(
 	    sound = biterAttackSounds(),
 	    ammo_type =
 		{
-		    category = "bullet",
+		    category = "biological",
 		    action =
 			{
 			    type = "direct",

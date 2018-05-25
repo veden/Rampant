@@ -3,6 +3,7 @@ Version: 0.16.27
 Date: 5. 23. 2018
   Tweaks:
     - Changed spawner faction loot drops from green to orange.
+    - Changed attack prototype for wasps so it doesn't show up in bonuses bullet gui
   Improvements:
     - Changes to player accounting to enable multi player forces in a pvp scenario.
     - Check for battle_surface_1 & 2 used in pvp and store and use discovered surface index.

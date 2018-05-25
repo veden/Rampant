@@ -20,8 +20,6 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local retreatUnits = squadDefense.retreatUnits
 
-local findNearbySquad = unitGroupUtils.findNearbySquad
-
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan

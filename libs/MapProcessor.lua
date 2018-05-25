@@ -174,8 +174,10 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 	    end
 	end
     end
-    for i=1,#playerOrdering do
-	local player = players[playerOrdering[i]]
+
+    -- not looping everyone because the cost is high enough already in multiplayer
+    if (#playerOrdering > 0) then
+	local player = players[playerOrdering[1]]
 	if validPlayer(player, natives) then 
 	    local playerChunk = getChunkByPosition(map, player.character.position)
 	    
@@ -258,13 +260,12 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    settlers[chunk] = nil
 	end
 
+	local closeBy = findNearbySquad(map, chunk, chunk)
 
-	local unitCount = surface.count_entities_filtered(unitCountQuery)
-
-	if (unitCount > 300) then
-	    local closeBy = findNearbySquad(map, chunk, chunk)
+	if closeBy then
+	    local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
 	    
-	    if not closeBy then
+	    if deadGroup then
 		recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
 	    end
 	end

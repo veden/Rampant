@@ -208,8 +208,9 @@ function tests.gaussianRandomTest()
 end
 
 function tests.reveal (size)
+    local pos = game.player.character.position
     game.player.force.chart(game.player.surface,
-			    {{x=-size, y=-size}, {x=size, y=size}})
+			    {{x=-size+pos.x, y=-size+pos.y}, {x=size+pos.x, y=size+pos.y}})
 end
 
 function tests.baseStats()

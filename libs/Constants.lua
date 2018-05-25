@@ -201,12 +201,9 @@ constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
 }
 
-local detectNE = settings.startup["NE_Difficulty"]
-constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and detectNE
+constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and (settings.startup["NE_Difficulty"] ~= nil)
 
-local detectBobs = settings.startup["bobmods-enemies-enableartifacts"]
-constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableBobsUnits"].value and detectBobs
-
+constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableBobsUnits"].value and (settings.startup["bobmods-enemies-enableartifacts"] ~= nil)
 
 if constants.ENABLED_BOBS_UNITS then
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_BOBS] = 0.1
