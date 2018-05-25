@@ -219,10 +219,9 @@ function chunkUtils.scorePlayerBuildings(surface, map, natives)
     local entities = surface.find_entities_filtered(map.filteredEntitiesPlayerQuery)
 
     local playerObjects = 0
-    local safeBuildings = natives.safeBuildings
     local safeEntities = natives.safeEntities
     local safeEntityName = natives.safeEntityName
-    if safeBuildings then
+    if natives.safeBuildings then
 	for i=1, #entities do
 	    local entity = entities[i]
 	    local entityType = entity.type

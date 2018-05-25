@@ -432,13 +432,11 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 		      natives.evolutionTableAlignment)
     end
 
-    local option = settings.startup["NE_Difficulty"]
-    if option and option.value and ENABLED_NE_UNITS then
+    if ENABLED_NE_UNITS then
 	processNEUnitClass(natives, surface)
     end
 
-    local option = settings.startup["bobmods-enemies-enableartifacts"]
-    if option and option.value and ENABLED_BOBS_UNITS then
+    if ENABLED_BOBS_UNITS then
 	processBobsUnitClass(natives, surface)
     end
     
