@@ -688,8 +688,8 @@ function spawner.addFaction()
 		[10] = 0.0021
 	    }
 	},
-	SPAWNER_UNIT_VARIATIONS,
-	SPAWNER_UNIT_TIERS
+	SPAWNER_WORM_VARIATIONS,
+	SPAWNER_WORM_TIERS
     )
 
     -- spawner units
@@ -916,8 +916,8 @@ function spawner.addFaction()
 		
 	    }
 	},
-	SPAWNER_UNIT_VARIATIONS,
-	SPAWNER_UNIT_TIERS
+	math.max(SPAWNER_UNIT_VARIATIONS,SPAWNER_WORM_VARIATIONS),
+	math.max(SPAWNER_UNIT_TIERS,SPAWNER_WORM_TIERS)
     )
 
 

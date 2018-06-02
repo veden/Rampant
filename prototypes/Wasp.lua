@@ -582,8 +582,8 @@ buildUnits(
 	    [10] = 0.0021
 	}
     },
-    WASP_UNIT_VARIATIONS,
-    WASP_UNIT_TIERS
+    WASP_WORM_VARIATIONS,
+    WASP_WORM_TIERS
 )
 
 
