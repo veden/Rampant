@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.29
+Date: 6. 3. 2018
+  Tweaks:
+    - Increased ai state min time from 1 to 7 minutes
+    - Increased ai state max time from 4 to 17 minutes
+    - Increased ai temperament min time from 5 to 25 minutes
+    - Increased ai temperament max time from 15 to 32 minutes
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.28
 Date: 6. 1. 2018
   Bugfixes:

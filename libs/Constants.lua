@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_63 = 63
+constants.VERSION_64 = 64
 
 -- misc
 
@@ -105,10 +105,10 @@ constants.AI_STATE_RAIDING = 4
 constants.AI_STATE_MIGRATING = 5
 constants.AI_STATE_SIEGE = 6
 
-constants.AI_MIN_STATE_DURATION = 1
-constants.AI_MAX_STATE_DURATION = 4
-constants.AI_MIN_TEMPERAMENT_DURATION = 5
-constants.AI_MAX_TEMPERAMENT_DURATION = 15
+constants.AI_MIN_STATE_DURATION = 7
+constants.AI_MAX_STATE_DURATION = 17
+constants.AI_MIN_TEMPERAMENT_DURATION = 25
+constants.AI_MAX_TEMPERAMENT_DURATION = 32
 
 -- ai base
 
