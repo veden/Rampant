@@ -1,4 +1,4 @@
-(module BuildScript racket
+a(module BuildScript racket
   (provide run)
   
   (require file/zip)

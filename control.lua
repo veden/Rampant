@@ -658,7 +658,8 @@ remote.add_interface("rampantTests",
 			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 unitGroupBuild = tests.unitGroupBuild,
-			 exportAiState = tests.exportAiState(nil)
+			 exportAiState = tests.exportAiState(nil),
+			 createEnergyTest = tests.createEnergyTest
 		     }
 )
 
