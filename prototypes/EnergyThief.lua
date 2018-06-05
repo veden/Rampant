@@ -44,9 +44,8 @@ function energyThief.addFaction()
 
     local electricBubble = makeBubble({
 	    name = "energyThief-worm",
-	    lTint = {r=0, g=0.1, b=1, a=1}
+	    lTint = {r=0, g=0.8, b=0.8, a=1}
     })
-
 
     local softSmoke = "the-soft-smoke-rampant"
 
@@ -61,7 +60,7 @@ function energyThief.addFaction()
 		},
 		loot = biterLoot,
 		attack = {
-		    damageType = "energyThief"
+		    damageType = "electric"
 		},
 		resistances = {},
 
@@ -79,8 +78,8 @@ function energyThief.addFaction()
 		    [10] = 1.4
 		},
 		attackName = "biter-energyThief",
-		tint1 = {r=0, g=0.25, b=0.83, a=0.65},
-		tint2 = {r=0, g=0.25, b=0.63, a=0.65}
+		tint1 = {r=0, g=0.8, b=0.83, a=0.65},
+		tint2 = {r=0, g=0.6, b=0.63, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -101,7 +100,7 @@ function energyThief.addFaction()
 		    [9] = 1.3,
 		    [10] = 1.4
 		},
-		tint = {r=0, g=0.25, b=0.83, a=0.65}
+		tint = {r=0, g=0.8, b=0.83, a=0.65}
 	    }
 	},
 
@@ -120,21 +119,6 @@ function energyThief.addFaction()
 		    [8] = 2500,
 		    [9] = 4500,
 		    [10] = 7000
-		},
-
-		{
-		    type = "attack",
-		    name = "cooldown",
-		    [1] = 35,
-		    [2] = 35,
-		    [3] = 35,
-		    [4] = 35,
-		    [5] = 35,
-		    [6] = 35,
-		    [7] = 50,
-		    [8] = 50,
-		    [9] = 55,
-		    [10] = 57
 		},
 
 		{
@@ -181,36 +165,6 @@ function energyThief.addFaction()
 		    [9] = 24,
 		    [10] = 24
 		},
-		
-		{
-		    type = "attribute",
-		    name = "spawningTimeModifer",
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 1,
-		    [4] = 2,
-		    [5] = 3,
-		    [6] = 7,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		},
-
-		{
-		    type = "attribute",
-		    name = "pollutionToAttack",
-		    [1] = 200,
-		    [2] = 750,
-		    [3] = 1750,
-		    [4] = 3500,
-		    [5] = 5000,
-		    [6] = 10000,
-		    [7] = 20000,
-		    [8] = 25000,
-		    [9] = 30000,
-		    [10] = 40000
-		},
 
 		{
 		    type = "attack",
@@ -225,52 +179,7 @@ function energyThief.addFaction()
 		    [8] = 90,
 		    [9] = 150,
 		    [10] = 200
-		},
-		
-		{
-		    type = "attribute",
-		    name = "healing",
-		    [1] = 0.01,
-		    [2] = 0.01,
-		    [3] = 0.015,
-		    [4] = 0.02,
-		    [5] = 0.05,
-		    [6] = 0.075,
-		    [7] = 0.1,
-		    [8] = 0.12,
-		    [9] = 0.14,
-		    [10] = 0.16
-		},
-
-
-		{
-		    type = "attribute",
-		    name = "movement",
-		    [1] = 0.2,
-		    [2] = 0.19,
-		    [3] = 0.185,
-		    [4] = 0.18,
-		    [5] = 0.175,
-		    [6] = 0.17,
-		    [7] = 0.17,
-		    [8] = 0.17,
-		    [9] = 0.17,
-		    [10] = 0.17
-		},
-		{
-		    type = "attribute",
-		    name = "distancePerFrame",
-		    [1] = 0.1,
-		    [2] = 0.125,
-		    [3] = 0.15,
-		    [4] = 0.19,
-		    [5] = 0.195,
-		    [6] = 0.2,
-		    [7] = 0.2,
-		    [8] = 0.2,
-		    [9] = 0.2,
-		    [10] = 0.2
-		},
+		},		
 
 		{
 		    type = "resistance",
@@ -332,7 +241,7 @@ function energyThief.addFaction()
 		
 		{
 		    type = "resistance",
-		    name = "energyThief",
+		    name = "electric",
 		    decrease = {
 			[1] = 7,
 			[2] = 7,
@@ -376,111 +285,6 @@ function energyThief.addFaction()
 	    },
 	    
 	    unitSpawner = {
-
-		{
-		    type = "attribute",
-		    name = "health",
-		    [1] = 350,
-		    [2] = 500,
-		    [3] = 750,
-		    [4] = 1500,
-		    [5] = 2500,
-		    [6] = 3500,
-		    [7] = 5000,
-		    [8] = 7000,
-		    [9] = 10000,
-		    [10] = 15000
-		},
-
-		{
-		    type = "attribute",
-		    name = "healing",
-		    [1] = 0.02,
-		    [2] = 0.02,
-		    [3] = 0.022,
-		    [4] = 0.024,
-		    [5] = 0.026,
-		    [6] = 0.028,
-		    [7] = 0.03,
-		    [8] = 0.032,
-		    [9] = 0.034,
-		    [10] = 0.036
-		},
-
-		{
-		    type = "attribute",
-		    name = "spawingCooldownStart",
-		    [1] = 360,
-		    [2] = 360,
-		    [3] = 355,
-		    [4] = 355,
-		    [5] = 350,
-		    [6] = 350,
-		    [7] = 345,
-		    [8] = 345,
-		    [9] = 340,
-		    [10] = 340
-		},
-
-		{
-		    type = "attribute",
-		    name = "spawingCooldownEnd",
-		    [1] = 150,
-		    [2] = 150,
-		    [3] = 145,
-		    [4] = 145,
-		    [5] = 140,
-		    [6] = 140,
-		    [7] = 135,
-		    [8] = 135,
-		    [9] = 130,
-		    [10] = 130
-		},
-
-		{
-		    type = "attribute",
-		    name = "evolutionRequirement",
-		    [1] = 0,
-		    [2] = 0.1,
-		    [3] = 0.2,
-		    [4] = 0.3,
-		    [5] = 0.4,
-		    [6] = 0.5,
-		    [7] = 0.6,
-		    [8] = 0.7,
-		    [9] = 0.8,
-		    [10] = 0.9
-		},
-
-		{		
-		    type = "attribute",
-		    name = "unitsOwned",
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 8,
-		    [4] = 8,
-		    [5] = 9,
-		    [6] = 9,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 11,
-		    [10] = 11
-		},
-
-		{
-		    type = "attribute",
-		    name = "unitsToSpawn",
-		    [1] = 5,
-		    [2] = 5,
-		    [3] = 6,
-		    [4] = 6,
-		    [5] = 7,
-		    [6] = 7,
-		    [7] = 8,
-		    [8] = 8,
-		    [9] = 9,
-		    [10] = 9
-		},
 
 		{
 		    type = "resistance",
@@ -571,7 +375,7 @@ function energyThief.addFaction()
 
 		{
 		    type = "resistance",
-		    name = "energyThief",
+		    name = "electric",
 		    decrease = {
 			[1] = 7,
 			[2] = 7,
@@ -597,19 +401,6 @@ function energyThief.addFaction()
 			[10] = 90
 		    }
 		}
-	    },
-
-	    probabilityTable = {
-		[1] = 1,
-		[2] = 1,
-		[3] = 1,
-		[4] = 1,
-		[5] = 1,
-		[6] = 1,
-		[7] = 1,
-		[8] = 1,
-		[9] = 1,
-		[10] = 1,
 	    }
 	},
 
@@ -640,7 +431,7 @@ function energyThief.addFaction()
 	    attack = {
 		type = "projectile",
 		bubble = electricBubble,
-		damageType = "energyThief",
+		damageType = "electric",
 		softSmokeName = softSmoke,
 		pointEffects = function(attributes)
 		    return 
@@ -668,25 +459,12 @@ function energyThief.addFaction()
 			}
 		end
 	    },
-	    resistances = {},
-
-	    scales = {
-		[1] = 0.5,
-		[2] = 0.6,
-		[3] = 0.7,
-		[4] = 0.8,
-		[5] = 0.9,
-		[6] = 1,
-		[7] = 1.1,
-		[8] = 1.2,
-		[9] = 1.3,
-		[10] = 1.4
-	    },
+	    resistances = {},	    
 	    attackName = "worm-energyThief",
-	    tint = {r=0, g=0.25, b=0.83, a=0.65},
-	    pTint = {r=0, g=0.1, b=1, a=1},
-	    sTint = {r=0, g=0.1, b=1, a=1},
-	    lTint = {r=0, g=0.1, b=1, a=1}
+	    tint = {r=0, g=0.8, b=0.83, a=0.65},
+	    pTint = {r=0, g=0.8, b=0.8, a=1},
+	    sTint = {r=0, g=0.8, b=0.8, a=1},
+	    lTint = {r=0, g=0.8, b=0.8, a=1}
 	},
 
 	{
@@ -734,52 +512,7 @@ function energyThief.addFaction()
 		[8] = 8,
 		[9] = 9,
 		[10] = 9
-	    },
-	    
-	    {
-		type = "attribute",
-		name = "health",
-		[1] = 200,
-		[2] = 350,
-		[3] = 500,
-		[4] = 750,
-		[5] = 900,
-		[6] = 1000,
-		[7] = 1500,
-		[8] = 3000,
-		[9] = 5000,
-		[10] = 9000
-	    },
-
-	    {
-		type = "attack",
-		name = "cooldown",
-		[1] = 50,
-		[2] = 50,
-		[3] = 45,
-		[4] = 45,
-		[5] = 40,
-		[6] = 40,
-		[7] = 35,
-		[8] = 35,
-		[9] = 30,
-		[10] = 30
-	    },
-
-	    {
-		type = "attribute",
-		name = "evolutionRequirement",
-		[1] = 0,
-		[2] = 0.1,
-		[3] = 0.2,
-		[4] = 0.3,
-		[5] = 0.4,
-		[6] = 0.5,
-		[7] = 0.6,
-		[8] = 0.7,
-		[9] = 0.8,
-		[10] = 0.9
-	    },
+	    },		   
 	    
 	    {
 		type = "attack",
@@ -794,67 +527,7 @@ function energyThief.addFaction()
 		[8] = 60,
 		[9] = 70,
 		[10] = 80
-	    },
-	    
-	    {
-		type = "attribute",
-		name = "healing",
-		[1] = 0.01,
-		[2] = 0.01,
-		[3] = 0.015,
-		[4] = 0.02,
-		[5] = 0.05,
-		[6] = 0.075,
-		[7] = 0.1,
-		[8] = 0.12,
-		[9] = 0.14,
-		[10] = 0.16
-	    },
-
-	    {
-		type = "attribute",
-		name = "prepareRange",
-		[1] = 30,
-		[2] = 30,
-		[3] = 31,
-		[4] = 31,
-		[5] = 32,
-		[6] = 32,
-		[7] = 33,
-		[8] = 33,
-		[9] = 34,
-		[10] = 34
-	    },
-	    
-	    {
-		type = "attribute",
-		name = "foldingSpeed",
-		[1] = 0.15,
-		[2] = 0.15,
-		[3] = 0.16,
-		[4] = 0.16,
-		[5] = 0.16,
-		[6] = 0.17,
-		[7] = 0.17,
-		[8] = 0.18,
-		[9] = 0.18,
-		[10] = 0.19
-	    },
-
-	    {
-		type = "attribute",
-		name = "preparingSpeed",
-		[1] = 0.025,
-		[2] = 0.025,
-		[3] = 0.026,
-		[4] = 0.026,
-		[5] = 0.027,
-		[6] = 0.027,
-		[7] = 0.028,
-		[8] = 0.028,
-		[9] = 0.029,
-		[10] = 0.029
-	    },
+	    },	 	    
 
 	    {
 		type = "resistance",
@@ -973,68 +646,8 @@ function energyThief.addFaction()
 		[8] = 28,
 		[9] = 30,
 		[10] = 32
-	    },
-
-
-	    {
-		type = "attack",
-		name = "particleVerticalAcceleration",
-		[1] = 0.01,
-		[2] = 0.01,
-		[3] = 0.02,
-		[4] = 0.02,
-		[5] = 0.03,
-		[6] = 0.03,
-		[7] = 0.04,
-		[8] = 0.04,
-		[9] = 0.05,
-		[10] = 0.05
-	    },
-
-	    {	      
-		type = "attack",
-		name = "particleHoizontalSpeed",
-		[1] = 0.6,
-		[2] = 0.6,
-		[3] = 0.7,
-		[4] = 0.7,
-		[5] = 0.8,
-		[6] = 0.8,
-		[7] = 0.9,
-		[8] = 0.9,
-		[9] = 1,
-		[10] = 1
-	    },
-
-	    {	    
-		type = "attack",
-		name = "particleHoizontalSpeedDeviation",
-		[1] = 0.0025,
-		[2] = 0.0025,
-		[3] = 0.0024,
-		[4] = 0.0024,
-		[5] = 0.0023,
-		[6] = 0.0023,
-		[7] = 0.0022,
-		[8] = 0.0022,
-		[9] = 0.0021,
-		[10] = 0.0021
-	    },
-	    
-	    {
-		type = "attack",
-		name = "radius",
-		[1] = 1.5,
-		[2] = 1.6,
-		[3] = 1.7,
-		[4] = 1.8,
-		[5] = 1.9,
-		[6] = 2.0,
-		[7] = 2.2,
-		[8] = 2.3,
-		[9] = 2.5,
-		[10] = 3.0
 	    }
+	    
 	},
 	
 	function (attributes)
