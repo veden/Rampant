@@ -2,6 +2,18 @@
 Version: 0.16.28
 Date: 6. 1. 2018
   Bugfixes:
+    - Fixed fire biter nest size
+  Tweaks:
+    - Increased laser worm health range top end from 5000 to 9000
+    - Increased troll units scale +0.2
+  Framework:
+    - Refactored new enemy modules
+
+
+---------------------------------------------------------------------------------------------------
+Version: 0.16.28
+Date: 6. 1. 2018
+  Bugfixes:
     - Fixed new enemies setting units and worms to different numbers for variations or tiers causing startup crash
 
 ---------------------------------------------------------------------------------------------------

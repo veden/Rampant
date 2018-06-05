@@ -1,4 +1,4 @@
-a(module BuildScript racket
+(module BuildScript racket
   (provide run)
   
   (require file/zip)
@@ -80,7 +80,7 @@ a(module BuildScript racket
       (copyDirectory "prototypes" modFolder)))
   
   (define (run)
-    ;;(copyFiles modFolder)
+   (copyFiles modFolder)
     ;;(copyFiles zipModFolder)
-    (makeZip modFolder)
+;;    (makeZip modFolder)
     (system*/exit-code "/data/games/factorio/bin/x64/factorio")))
