@@ -65,18 +65,6 @@ function energyThief.addFaction()
 		resistances = {},
 
 		type = "biter",
-		scales = {
-		    [1] = 0.5,
-		    [2] = 0.6,
-		    [3] = 0.7,
-		    [4] = 0.8,
-		    [5] = 0.9,
-		    [6] = 1,
-		    [7] = 1.1,
-		    [8] = 1.2,
-		    [9] = 1.3,
-		    [10] = 1.4
-		},
 		attackName = "biter-energyThief",
 		tint1 = {r=0, g=0.8, b=0.83, a=0.65},
 		tint2 = {r=0, g=0.6, b=0.63, a=0.65}
@@ -88,18 +76,6 @@ function energyThief.addFaction()
 		loot = spawnerLoot,
 		attributes = {},	    
 		resistances = {},
-		scales = {
-		    [1] = 0.5,
-		    [2] = 0.6,
-		    [3] = 0.7,
-		    [4] = 0.8,
-		    [5] = 0.9,
-		    [6] = 1.0,
-		    [7] = 1.1,
-		    [8] = 1.2,
-		    [9] = 1.3,
-		    [10] = 1.4
-		},
 		tint = {r=0, g=0.8, b=0.83, a=0.65}
 	    }
 	},
@@ -165,21 +141,6 @@ function energyThief.addFaction()
 		    [9] = 24,
 		    [10] = 24
 		},
-
-		{
-		    type = "attack",
-		    name = "damage",
-		    [1] = 7,
-		    [2] = 15,
-		    [3] = 22.5,
-		    [4] = 35,
-		    [5] = 45,
-		    [6] = 60,
-		    [7] = 75,
-		    [8] = 90,
-		    [9] = 150,
-		    [10] = 200
-		},		
 
 		{
 		    type = "resistance",
@@ -513,21 +474,6 @@ function energyThief.addFaction()
 		[9] = 9,
 		[10] = 9
 	    },		   
-	    
-	    {
-		type = "attack",
-		name = "damage",
-		[1] = 12,
-		[2] = 20,
-		[3] = 25,
-		[4] = 30,
-		[5] = 35,
-		[6] = 40,
-		[7] = 50,
-		[8] = 60,
-		[9] = 70,
-		[10] = 80
-	    },	 	    
 
 	    {
 		type = "resistance",
@@ -631,21 +577,6 @@ function energyThief.addFaction()
 		    [9] = 75,
 		    [10] = 75
 		}
-	    },
-
-	    {
-		type = "attack",
-		name = "range",
-		[1] = 21,
-		[2] = 22,
-		[3] = 23,
-		[4] = 23,
-		[5] = 24,
-		[6] = 26,
-		[7] = 26,
-		[8] = 28,
-		[9] = 30,
-		[10] = 32
 	    }
 	    
 	},
