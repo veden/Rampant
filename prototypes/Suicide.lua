@@ -90,21 +90,6 @@ function suicide.addFaction()
 		    [9] = 3000,
 		    [10] = 5000
 		},
-
-		{		
-		    type = "attack",
-		    name = "cooldown",
-		    [1] = 35,
-		    [2] = 35,
-		    [3] = 35,
-		    [4] = 35,
-		    [5] = 35,
-		    [6] = 35,
-		    [7] = 50,
-		    [8] = 50,
-		    [9] = 55,
-		    [10] = 57		    
-		},
 		
 		{		
 		    type = "attribute",
@@ -361,35 +346,6 @@ function suicide.addFaction()
 		    [9] = 7,
 		    [10] = 8
 		},
-		
-		{
-		    type = "resistance",
-		    name = "physical",
-		    decrease = {
-			[1] = 2,
-			[2] = 2,
-			[3] = 4,
-			[4] = 4,
-			[5] = 6,
-			[6] = 6,
-			[7] = 10,
-			[8] = 12,
-			[9] = 12,
-			[10] = 14
-		    },
-		    percent = {
-			[1] = 15,
-			[2] = 15,
-			[3] = 17,
-			[4] = 17,
-			[5] = 18,
-			[6] = 18,
-			[7] = 19,
-			[8] = 19,
-			[9] = 20,
-			[10] = 20
-		    }
-		},
 
 		{
 		    type = "resistance",
@@ -507,21 +463,6 @@ function suicide.addFaction()
 
 	    {    
 		type = "attack",
-		name = "cooldown",
-		[1] = 50,
-		[2] = 50,
-		[3] = 45,
-		[4] = 45,
-		[5] = 40,
-		[6] = 40,
-		[7] = 35,
-		[8] = 35,
-		[9] = 30,
-		[10] = 30
-	    },
-
-	    {    
-		type = "attack",
 		name = "stickerMovementModifier",
 		[1] = 1.2,
 		[2] = 1.2,
@@ -549,38 +490,6 @@ function suicide.addFaction()
 		[9] = 2200,
 		[10] = 2200
 	    },	    
-	    
-	    {    
-		type = "attack",
-		name = "damage",
-		[1] = 12,
-		[2] = 20,
-		[3] = 25,
-		[4] = 30,
-		[5] = 35,
-		[6] = 40,
-		[7] = 50,
-		[8] = 60,
-		[9] = 70,
-		[10] = 80
-	    },
-
-	    {
-		type = "resistance",
-		name = "physical",
-		decrease = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 5,
-		    [4] = 5,
-		    [5] = 8,
-		    [6] = 8,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		}
-	    },
 
 	    {
 		type = "resistance",
