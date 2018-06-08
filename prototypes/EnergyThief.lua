@@ -43,17 +43,17 @@ function energyThief.addFaction()
     local wormLoot = makeWormAlienLootTable("blue")
 
     local electricBubble = makeBubble({
-	    name = "energyThief-worm",
+	    name = "energy-thief-worm",
 	    lTint = {r=0, g=0.8, b=0.8, a=1}
     })
 
     local softSmoke = "the-soft-smoke-rampant"
 
-    -- energyThief biters
+    -- energy-thief biters
     buildUnitSpawner(
 	{
 	    unit = {
-		name = "energyThief-biter",
+		name = "energy-thief-biter",
 
 		attributes = {
 		    explosion = "blood-explosion-small"
@@ -65,13 +65,13 @@ function energyThief.addFaction()
 		resistances = {},
 
 		type = "biter",
-		attackName = "biter-energyThief",
+		attackName = "biter-energy-thief",
 		tint1 = {r=0, g=0.8, b=0.83, a=0.65},
 		tint2 = {r=0, g=0.6, b=0.63, a=0.65}
 	    },
 
 	    unitSpawner = {
-		name = "energyThief-biter-nest",
+		name = "energy-thief-biter-nest",
 
 		loot = spawnerLoot,
 		attributes = {},	    
@@ -141,64 +141,6 @@ function energyThief.addFaction()
 		    [9] = 24,
 		    [10] = 24
 		},
-
-		{
-		    type = "resistance",
-		    name = "physical",
-		    decrease = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 4,
-			[4] = 5,
-			[5] = 6,
-			[6] = 8,
-			[7] = 10,
-			[8] = 12,
-			[9] = 14,
-			[10] = 15
-		    },
-		    percent = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 0,
-			[4] = 10,
-			[5] = 12,
-			[6] = 12,
-			[7] = 13,
-			[8] = 13,
-			[9] = 14,
-			[10] = 15
-		    }
-		},
-
-		{
-		    type = "resistance",
-		    name = "explosion",
-		    decrease = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 0,
-			[4] = 0,
-			[5] = 0,
-			[6] = 0,
-			[7] = 10,
-			[8] = 12,
-			[9] = 14,
-			[10] = 15
-		    },
-		    percent = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 0,
-			[4] = 10,
-			[5] = 12,
-			[6] = 12,
-			[7] = 13,
-			[8] = 13,
-			[9] = 14,
-			[10] = 15
-		    }
-		},
 		
 		{
 		    type = "resistance",
@@ -249,93 +191,6 @@ function energyThief.addFaction()
 
 		{
 		    type = "resistance",
-		    name = "physical",
-		    decrease = {
-			[1] = 2,
-			[2] = 2,
-			[3] = 4,
-			[4] = 4,
-			[5] = 6,
-			[6] = 6,
-			[7] = 10,
-			[8] = 12,
-			[9] = 12,
-			[10] = 14
-		    },
-		    percent = {
-			[1] = 15,
-			[2] = 15,
-			[3] = 17,
-			[4] = 17,
-			[5] = 18,
-			[6] = 18,
-			[7] = 19,
-			[8] = 19,
-			[9] = 20,
-			[10] = 20
-		    }
-		},
-
-		{
-		    type = "resistance",
-		    name = "explosion",
-		    decrease = {
-			[1] = 5,
-			[2] = 5,
-			[3] = 6,
-			[4] = 6,
-			[5] = 7,
-			[6] = 7,
-			[7] = 8,
-			[8] = 8,
-			[9] = 9,
-			[10] = 9
-		    },
-		    percent = {
-			[1] = 15,
-			[2] = 15,
-			[3] = 17,
-			[4] = 17,
-			[5] = 18,
-			[6] = 18,
-			[7] = 19,
-			[8] = 19,
-			[9] = 20,
-			[10] = 20
-		    }
-		},
-
-		{
-		    type = "resistance",
-		    name = "fire",
-		    decrease = {
-			[1] = 3,
-			[2] = 3,
-			[3] = 4,
-			[4] = 4,
-			[5] = 6,
-			[6] = 6,
-			[7] = 6,
-			[8] = 6,
-			[9] = 7,
-			[10] = 7
-		    },
-		    percent = {
-			[1] = 60,
-			[2] = 60,
-			[3] = 62,
-			[4] = 62,
-			[5] = 63,
-			[6] = 63,
-			[7] = 64,
-			[8] = 64,
-			[9] = 65,
-			[10] = 65
-		    }
-		},
-
-		{
-		    type = "resistance",
 		    name = "electric",
 		    decrease = {
 			[1] = 7,
@@ -382,10 +237,10 @@ function energyThief.addFaction()
 	}
     )
 
-    -- energyThief worms
+    -- energy-thief worms
     buildWorm(
 	{
-	    name = "energyThief-worm",
+	    name = "energy-thief-worm",
 
 	    loot = wormLoot,
 	    attributes = {},
@@ -421,7 +276,7 @@ function energyThief.addFaction()
 		end
 	    },
 	    resistances = {},	    
-	    attackName = "worm-energyThief",
+	    attackName = "worm-energy-thief",
 	    tint = {r=0, g=0.8, b=0.83, a=0.65},
 	    pTint = {r=0, g=0.8, b=0.8, a=1},
 	    sTint = {r=0, g=0.8, b=0.8, a=1},
@@ -477,52 +332,6 @@ function energyThief.addFaction()
 
 	    {
 		type = "resistance",
-		name = "physical",
-		decrease = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 5,
-		    [4] = 5,
-		    [5] = 8,
-		    [6] = 8,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		}
-	    },
-
-	    {
-		type = "resistance",
-		name = "explosion",
-		decrease = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 5,
-		    [4] = 5,
-		    [5] = 8,
-		    [6] = 8,
-		    [7] = 10,
-		    [8] = 10,
-		    [9] = 12,
-		    [10] = 12
-		},
-		percent = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 20,
-		    [6] = 20,
-		    [7] = 30,
-		    [8] = 30,
-		    [9] = 40,
-		    [10] = 40
-		}
-	    },
-
-	    {
-		type = "resistance",
 		name = "electric",
 		decrease = {
 		    [1] = 7,
@@ -548,35 +357,6 @@ function energyThief.addFaction()
 		    [9] = 90,
 		    [10] = 90
 		}
-	    },
-	    
-	    {
-		type = "resistance",
-		name = "fire",
-		decrease = {
-		    [1] = 3,
-		    [2] = 3,
-		    [3] = 4,
-		    [4] = 4,
-		    [5] = 6,
-		    [6] = 6,
-		    [7] = 6,
-		    [8] = 6,
-		    [9] = 7,
-		    [10] = 7
-		},
-		percent = {
-		    [1] = 70,
-		    [2] = 70,
-		    [3] = 72,
-		    [4] = 72,
-		    [5] = 73,
-		    [6] = 73,
-		    [7] = 74,
-		    [8] = 74,
-		    [9] = 75,
-		    [10] = 75
-		}
 	    }
 	    
 	},
@@ -592,55 +372,197 @@ function energyThief.addFaction()
     )
 end
 
+
+data:extend({
+	{
+	    type = "item",
+	    name = "crystal-drain-rampant",
+	    icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+	    icon_size = 32,
+	    flags = {"goes-to-quickbar"},
+	    subgroup = "energy",
+	    order = "e[accumulator]-a[accumulator]",
+	    place_result = "crystal-drain-rampant",
+	    stack_size = 50
+	},
+	
+	{
+	    type = "radar",
+	    name = "crystal-drain-rampant",
+	    icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+	    icon_size = 32,
+	    flags = {"placeable-enemy"},
+	    minable = {hardness = 0.2, mining_time = 0.5, result = "radar"},
+	    max_health = 500,
+	    corpse = "small-remnants",
+	    collision_box = {{-0.9, -0.9}, {0.9, 0.9}},
+	    selection_box = {{-1.1, -1.1}, {1.1, 1.1}},
+	    energy_per_sector = "100MJ",
+	    has_backer_name = false,
+	    healing_per_tick = 0.02,
+	    max_distance_of_sector_revealed = 0,
+	    max_distance_of_nearby_sector_revealed = 0,
+	    energy_per_nearby_scan = "750kJ",
+	    resistances = {
+		{
+		    type = "fire",
+		    percent = 100
+		},
+		{
+		    type = "electric",
+		    decrease = 23,
+		    percent = 90
+		}
+	    },
+	    energy_source =
+		{
+		    type = "electric",
+		    usage_priority = "primary-input"
+		},
+	    energy_usage = "500kW",
+	    pictures =
+		{
+		    filename = "__Rampant__/graphics/entities/thief/crystal-drain.png",
+		    priority = "low",
+		    width = 128,
+		    height = 128,
+		    apply_projection = false,
+		    direction_count = 32,
+		    animation_speed = 0.5,
+		    line_length = 8,
+		    shift = {0.65, 0}
+		},
+	    vehicle_impact_sound =  { filename = "__base__/sound/car-metal-impact.ogg", volume = 0.65 },
+	    working_sound =
+		{
+		    sound = {
+			{
+			    filename = "__base__/sound/radar.ogg"
+			}
+		    },
+		    apparent_volume = 2,
+		},
+	    radius_minimap_visualisation_color = { r = 0.059, g = 0.092, b = 0.8, a = 0.275 },
+	},
+
+	{
+	    type = "item",
+	    name = "crystal-drain-pole-rampant",
+	    icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+	    icon_size = 32,
+	    flags = {"goes-to-quickbar"},
+	    subgroup = "energy",
+	    order = "e[accumulator]-a[accumulator]",
+	    place_result = "crystal-drain-pole-rampant",
+	    stack_size = 50
+	},
+
+	{
+	    type = "electric-pole",
+	    name = "crystal-drain-pole-rampant",
+	    icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+	    icon_size = 32,
+	    flags = {"placeable-neutral", "player-creation", "fast-replaceable-no-build-while-moving"},
+	    minable = {hardness = 0.2, mining_time = 0.5, result = "big-electric-pole"},
+	    max_health = 150,
+	    healing_per_tick = 0.02,
+	    corpse = "medium-remnants",
+	    resistances =
+		{
+		    {
+			type = "fire",
+			percent = 100
+		    },
+		    {
+			type = "electric",
+			decrease = 23,
+			percent = 90
+		    }
+		},
+	    collision_box = {{-0.55, -0.55}, {0.55, 0.55}},
+	    selection_box = {{-0.75, -0.75}, {0.75, 0.75}},
+	    drawing_box = {{-1, -3}, {1, 0.5}},
+	    maximum_wire_distance = 30,
+	    supply_area_distance = 9,
+	    vehicle_impact_sound =  { filename = "__base__/sound/car-metal-impact.ogg", volume = 0.65 },
+	    pictures =
+		{
+		    filename = "__Rampant__/graphics/entities/thief/crystal-drain-pole.png",
+		    priority = "high",
+		    width = 168,
+		    height = 130,
+		    direction_count = 4,
+		    shift = {1.6, -1.4}
+		},
+	    connection_points =
+		{
+		    {
+			shadow =
+			    {
+				copper = {2.7, 0},
+				green = {1.8, 0},
+				red = {3.6, 0}
+			    },
+			wire =
+			    {
+				copper = {0, -2.5},
+				green = {-0.59375, -2.5},
+				red = {0.625, -2.5}
+			    }
+		    },
+		    {
+			shadow =
+			    {
+				copper = {3.1, 0.2},
+				green = {2.3, -0.3},
+				red = {3.8, 0.6}
+			    },
+			wire =
+			    {
+				copper = {-0.0625, -2.5},
+				green = {-0.5, -3},
+				red = {0.34375, -2}
+			    }
+		    },
+		    {
+			shadow =
+			    {
+				copper = {2.9, 0.06},
+				green = {3.0, -0.6},
+				red = {3.0, 0.8}
+			    },
+			wire =
+			    {
+				copper = {-0.09375, -2.5},
+				green = {-0.09375, -3},
+				red = {-0.09375, -2}
+			    }
+		    },
+		    {
+			shadow =
+			    {
+				copper = {3.1, 0.2},
+				green = {3.8, -0.3},
+				red = {2.35, 0.6}
+			    },
+			wire =
+			    {
+				copper = {-0.0625, -2.4},
+				green = {0.375, -2.9},
+				red = {-0.46875, -2.4}
+			    }
+		    }
+		},
+	    radius_visualisation_picture =
+		{
+		    filename = "__base__/graphics/entity/small-electric-pole/electric-pole-radius-visualization.png",
+		    width = 12,
+		    height = 12,
+		    priority = "extra-high-no-scale"
+		}
+	}
+})
+
+
 return energyThief
 
-{
-    type = "electric-energy-interface",
-    name = "electric-energy-interface",
-    icon = "__base__/graphics/icons/accumulator.png",
-    icon_size = 32,
-    flags = {"placeable-neutral", "player-creation"},
-    minable = {hardness = 0.2, mining_time = 0.5, result = "electric-energy-interface"},
-    max_health = 150,
-    corpse = "medium-remnants",
-    collision_box = {{-0.9, -0.9}, {0.9, 0.9}},
-    selection_box = {{-1, -1}, {1, 1}},
-    enable_gui = true,
-    allow_copy_paste = true,
-    energy_source =
-    {
-      type = "electric",
-      buffer_capacity = "10GJ",
-      usage_priority = "terciary",
-      input_flow_limit = "0kW",
-      output_flow_limit = "500GW"
-    },
-
-    energy_production = "500GW",
-    energy_usage = "0kW",
-    -- also 'pictures' for 4-way sprite is available, or 'animation' resp. 'animations'
-    picture =
-    {
-      filename = "__base__/graphics/entity/accumulator/accumulator.png",
-      priority = "extra-high",
-      width = 124,
-      height = 103,
-      shift = {0.6875, -0.203125},
-      tint = {r=1, g=0.8, b=1, a=1}
-    },
-    vehicle_impact_sound =  { filename = "__base__/sound/car-metal-impact.ogg", volume = 0.65},
-    working_sound =
-    {
-      sound =
-      {
-        filename = "__base__/sound/accumulator-working.ogg",
-        volume = 1
-      },
-      idle_sound =
-      {
-        filename = "__base__/sound/accumulator-idle.ogg",
-        volume = 0.4
-      },
-      max_sounds_per_type = 5
-    }
-}

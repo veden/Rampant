@@ -29,6 +29,11 @@ local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
+local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
+local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
+
+local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
+
 local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
@@ -104,6 +109,7 @@ local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
+local sSub = string.sub
 local mRandom = math.random
 
 -- local references to global
@@ -475,6 +481,41 @@ local function onDeath(event)
 		creditNatives = true
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    victoryScent(chunk, entity.type)
+		end
+		if (cause ~= nil) then
+		    if (sSub(cause.name, 1, 12) == "energy-thief") then
+			local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
+			if conversion then
+			    local newEntity = surface.create_entity({position=entity.position,
+								     name=conversion,
+								     direction=entity.direction,
+								     force="enemy"})
+			    if (conversion == "crystal-drain-pole-rampant") then
+				local wires
+				if (entity.type == "electric-pole") then
+				    wires = entity.neighbours
+				end
+				if wires then
+				    for connectType,neighbourGroup in pairs(wires) do
+					if connectType == "copper" then
+					    for _,v in pairs(neighbourGroup) do
+						newEntity.connect_neighbour(v);
+					    end
+					elseif connectType == "red" then
+					    for _,v in pairs(neighbourGroup) do
+						newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+					    end
+					elseif connectType == "green" then
+					    for _,v in pairs(neighbourGroup) do
+						newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+					    end
+					end
+				    end
+				end
+
+			    end
+			end
+		    end
 		end
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then

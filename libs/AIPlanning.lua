@@ -53,8 +53,6 @@ local mFloor = math.floor
 
 local mRandom = math.random
 
-local linearInterpolation = mathUtils.linearInterpolation
-
 local mMax = math.max
 
 -- module code
@@ -117,13 +115,15 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 		natives.state = AI_STATE_MIGRATING
 	    elseif (roll < 0.80) then
 		natives.state = AI_STATE_SIEGE
-	    else
+	    elseif (evolution_factor >= 0.04) then
 		natives.state = AI_STATE_RAIDING
 
 		natives.points = natives.points + 1000
 		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 		    natives.points = AI_MAX_OVERFLOW_POINTS
 		end
+	    else
+		natives.state = AI_STATE_AGGRESSIVE
 	    end
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)

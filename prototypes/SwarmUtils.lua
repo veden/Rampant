@@ -151,7 +151,6 @@ local function addUnitDefaults(template, upgrades)
 		    [9] = 0.14,
 		    [10] = 0.16
     })
-
     
     if (template.type == "biter") then
 	
@@ -187,6 +186,66 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 0.2
 	})
 
+	pushUpgrade(upgrades,
+		    {
+			type = "resistance",
+			name = "physical",
+			decrease = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 4,
+			    [4] = 5,
+			    [5] = 6,
+			    [6] = 8,
+			    [7] = 10,
+			    [8] = 12,
+			    [9] = 14,
+			    [10] = 15
+			},
+			percent = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 0,
+			    [4] = 10,
+			    [5] = 12,
+			    [6] = 12,
+			    [7] = 13,
+			    [8] = 13,
+			    [9] = 14,
+			    [10] = 15
+			}
+	})
+	
+	pushUpgrade(upgrades,
+		    {
+			type = "resistance",
+			name = "explosion",
+			decrease = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 0,
+			    [4] = 0,
+			    [5] = 0,
+			    [6] = 0,
+			    [7] = 10,
+			    [8] = 12,
+			    [9] = 14,
+			    [10] = 15
+			},
+			percent = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 0,
+			    [4] = 10,
+			    [5] = 12,
+			    [6] = 12,
+			    [7] = 13,
+			    [8] = 13,
+			    [9] = 14,
+			    [10] = 15
+			}
+	})
+	
 	pushUpgrade(upgrades,
 		    {		
 			type = "attribute",
@@ -316,6 +375,24 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 7000
 	})
 
+	pushUpgrade(upgrades,		    
+		    {
+			type = "resistance",
+			name = "explosion",
+			percent = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 10,
+			    [4] = 10,
+			    [5] = 20,
+			    [6] = 20,
+			    [7] = 30,
+			    [8] = 30,
+			    [9] = 40,
+			    [10] = 40
+			}
+	})
+	
 	pushUpgrade(upgrades,
 		    {		
 			type = "attack",
@@ -1109,14 +1186,14 @@ local function upgradeEntity(entity, upgradeTable, tier)
 		    entity.attributes[upgrade.mapping] = upgrade[tier]
 		else
 		    local adj = upgrade[tier]
-		    local min = upgrade.min or adj * 0.70
+		    local min = upgrade.min or adj * 0.85
 		    local max = upgrade.max or adj * 1.30
 		    if (adj < 0) then
 			local t = min
 			min = max
 			max = t
 		    end
-		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
 		    entity.attributes[upgrade.name] = (entity.attributes[upgrade.name] or 0) + adj
 		end
 		scaleAttributes(upgrade, entity)
@@ -1129,26 +1206,26 @@ local function upgradeEntity(entity, upgradeTable, tier)
 		local adj
 		if upgrade.decrease then
 		    adj = upgrade.decrease[tier]
-		    local min = upgrade.min or adj * 0.70
+		    local min = upgrade.min or adj * 0.85
 		    local max = upgrade.max or adj * 1.30
 		    if (adj < 0) then
 			local t = min
 			min = max
 			max = t
 		    end
-		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
 		    entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + adj
 		end
 		if upgrade.percent then
 		    adj = upgrade.percent[tier]
-		    local min = upgrade.min or adj * 0.70
+		    local min = upgrade.min or adj * 0.85
 		    local max = upgrade.max or adj * 1.30
 		    if (adj < 0) then
 			local t = min
 			min = max
 			max = t
 		    end
-		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
 		    entity.resistances[field].percent = mMin((entity.resistances[field].percent or 0) + adj, 100)
 		end
 	    end
@@ -1157,14 +1234,14 @@ local function upgradeEntity(entity, upgradeTable, tier)
 		    entity.attack[upgrade.mapping] = upgrade[tier]
 		else
 		    local adj = upgrade[tier]
-		    local min = upgrade.min or adj * 0.70
+		    local min = upgrade.min or adj * 0.85
 		    local max = upgrade.max or adj * 1.30
 		    if (adj < 0) then
 			local t = min
 			min = max
 			max = t
 		    end
-		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.2, min, max, xorRandom), 0.001)
+		    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
 		    entity.attack[upgrade.name] = (entity.attack[upgrade.name] or 0) + adj
 		end
 		scaleAttributes(upgrade, entity)
@@ -1236,6 +1313,8 @@ local function generateApperance(unit, tier)
 end
 
 function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
+    addUnitDefaults(template, upgradeTable)
+    
     local unitSet = {}
     
     for tier=1, tiers do
@@ -1293,7 +1372,7 @@ end
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
     addUnitDefaults(templates.unit, upgradeTable.unit)   
     addUnitSpawnerDefaults(templates.unitSpawner, upgradeTable.unitSpawner)    
-
+    
     if (not upgradeTable.probabilityTable) then
 	upgradeTable.probabilityTable = {
 	    [1] = 1,
@@ -1318,6 +1397,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
     for tier=1, tiers.unitSpawner do	
 	local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
 	local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+	-- print(tier,t,ut)
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
