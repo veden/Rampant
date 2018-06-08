@@ -1,13 +1,25 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.28
 Date: 6. 1. 2018
+  Features:
+    - Added Energy Thief faction that when they destroy powered buildings or poles they will replace them with their draining crystals
+  Improvements:
+    - Raiding AI state nows requires an evolution of 0.04 before it can trigger
   Bugfixes:
     - Fixed fire biter nest size
+    - Fixed laser faction not having in-place evolution path from electric biters
+    - Fixed range of unit levels being off by one, limiting the max units to level 9 only instead of 10
+    - Fixed missing wasp worm drone locale entry
   Tweaks:
-    - Increased laser worm health range top end from 5000 to 9000
     - Increased troll units scale +0.2
+    - Increased troll health regeneration for units by ~3x, spawners and worms by ~7x
+    - Increased the lower attribute bound from 0.7 to 0.85
+    - Increased the base distance to evolution index ratio from (1 / 5480) to (1 / 7200)
+    - Increased the chance that initial base alignment picks a lower tier alignment by 0.15
+    - Normalized all enemy faction attributes through the defaults, should be minor unit corrections    
   Framework:
     - Refactored new enemy modules
+    - Created default attributes for all unit, unit spawner, worms
 
 
 ---------------------------------------------------------------------------------------------------

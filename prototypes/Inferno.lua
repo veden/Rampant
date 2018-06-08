@@ -222,23 +222,6 @@ function inferno.addFaction()
 
 		{
 		    type = "resistance",
-		    name = "explosion",
-		    percent = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 10,
-			[4] = 10,
-			[5] = 20,
-			[6] = 20,
-			[7] = 30,
-			[8] = 30,
-			[9] = 40,
-			[10] = 40
-		    }
-		},
-
-		{
-		    type = "resistance",
 		    name = "fire",
 		    decrease = {
 			[1] = 10,

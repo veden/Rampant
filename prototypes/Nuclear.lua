@@ -201,35 +201,6 @@ function nuclear.addFaction()
 
 		{
 		    type = "resistance",
-		    name = "physical",
-		    decrease = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 4,
-			[4] = 5,
-			[5] = 6,
-			[6] = 8,
-			[7] = 9,
-			[8] = 9,
-			[9] = 10,
-			[10] = 10
-		    },
-		    percent = {
-			[1] = 0,
-			[2] = 0,
-			[3] = 0,
-			[4] = 10,
-			[5] = 12,
-			[6] = 12,
-			[7] = 13,
-			[8] = 13,
-			[9] = 14,
-			[10] = 15
-		    }
-		},
-
-		{
-		    type = "resistance",
 		    name = "explosion",
 		    decrease = {
 			[1] = -7,
@@ -422,6 +393,7 @@ function nuclear.addFaction()
 	    attributes = {},
 	    attack = {
 		type = "projectile",
+		force = "enemy",
 		stickerAnimation = {
 		    filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
 		    priority = "extra-high",
@@ -457,16 +429,16 @@ function nuclear.addFaction()
 	    {    
 		type = "attack",
 		name = "stickerMovementModifier",
-		[1] = 1.2,
-		[2] = 1.2,
-		[3] = 1.3,
-		[4] = 1.3,
-		[5] = 1.4,
-		[6] = 1.4,
-		[7] = 1.5,
-		[8] = 1.5,
-		[9] = 1.6,
-		[10] = 1.6
+		[1] = 0.8,
+		[2] = 0.8,
+		[3] = 0.7,
+		[4] = 0.7,
+		[5] = 0.6,
+		[6] = 0.6,
+		[7] = 0.5,
+		[8] = 0.5,
+		[9] = 0.4,
+		[10] = 0.4
 	    },
 	    
 	    {    

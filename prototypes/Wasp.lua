@@ -505,23 +505,6 @@ buildUnitSpawner(
 
     {
 	unit = {	   
-
-	    {
-		type = "resistance",
-		name = "explosion",
-		percent = {
-		    [1] = 0,
-		    [2] = 0,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 20,
-		    [6] = 20,
-		    [7] = 30,
-		    [8] = 30,
-		    [9] = 40,
-		    [10] = 40
-		}
-	    }
 	   
 	},
 
