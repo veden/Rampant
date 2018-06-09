@@ -185,7 +185,7 @@ local function findEntityUpgrade(baseAlignment, evoIndex, natives, evolutionTabl
 	local entitySet = alignments[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
 	    entity = entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.5) then
+	    if (mRandom() > 0.65) then
 		break
 	    end
 	end
@@ -203,7 +203,7 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 	local entitySet = evolutionTable[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
 	    alignment =  entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.5) then
+	    if (mRandom() > 0.65) then
 		break
 	    end
 	end

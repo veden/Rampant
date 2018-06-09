@@ -104,6 +104,7 @@ local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
+local sSub = string.sub
 local mRandom = math.random
 
 -- local references to global
@@ -658,7 +659,8 @@ remote.add_interface("rampantTests",
 			 entityStats = tests.entityStats,
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 unitGroupBuild = tests.unitGroupBuild,
-			 exportAiState = tests.exportAiState(nil)
+			 exportAiState = tests.exportAiState(nil),
+			 createEnergyTest = tests.createEnergyTest
 		     }
 )
 

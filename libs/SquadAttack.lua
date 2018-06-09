@@ -9,6 +9,7 @@ local playerUtils = require("PlayerUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local chunkUtils = require("ChunkUtils")
 
 --local chunkUtils = require("ChunkUtils")
 

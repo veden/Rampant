@@ -113,7 +113,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	v.type = k
 	resistances[#resistances+1] = v
     end
-    
+--    print(name .. " " .. biterAttributes.health)
     return {
 	type = "unit",
 	name = name .. "-rampant",
@@ -153,7 +153,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	v.type = k
 	resistances[#resistances+1] = v
     end
-
+--    print(name .. " " .. biterAttributes.health)
     return {
 	type = "unit",
 	name = name .. "-rampant",
@@ -193,7 +193,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	v.type = k
 	resistances[#resistances+1] = v
     end
-
+--    print(name .. " " .. biterAttributes.health)
     local o = {
 	type = "unit-spawner",
 	name = name .. "-rampant",
@@ -265,7 +265,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	v.type = k
 	resistances[#resistances+1] = v
     end
-    
+--    print(name .. " " .. attributes.health)    
     local o = {
 	type = "turret",
 	name = name .. "-rampant",
