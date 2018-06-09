@@ -16,7 +16,7 @@ local troll = require("prototypes/Troll")
 local spawner = require("prototypes/Spawner")
 local wasp = require("prototypes/Wasp")
 local laser = require("prototypes/Laser")
-local energyThief = require("prototypes/EnergyThief")
+-- local energyThief = require("prototypes/EnergyThief")
 
 if settings.startup["rampant-newEnemies"].value then
     
@@ -36,7 +36,7 @@ if settings.startup["rampant-newEnemies"].value then
     spawner.addFaction()
     wasp.addFaction()
     laser.addFaction()
-    energyThief.addFaction()
+    -- energyThief.addFaction()
     
     for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
 	if (unitSpawner.name ~= "biter-spawner") then
