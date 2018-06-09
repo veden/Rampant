@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_63 = 63
+constants.VERSION_65 = 65
 
 -- misc
 
@@ -164,7 +164,7 @@ constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 -- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
 
 local electricPath = {
-    constants.BASE_ALIGNMENT_ENERGY_THIEF,
+    -- constants.BASE_ALIGNMENT_ENERGY_THIEF,
     constants.BASE_ALIGNMENT_LASER
 }
 
@@ -499,28 +499,5 @@ constants.NUCLEAR_WORM_TIERS = wormTiers
 constants.NUCLEAR_WORM_VARIATIONS = wormVariations
 constants.NUCLEAR_UNIT_TIERS = unitTiers
 constants.NUCLEAR_UNIT_VARIATIONS = unitVariations
-
-
--- energy thiefs
-
-constants.ENERGY_THIEF_CONVERSION_TABLE = {
-    ["generator"] = "crystal-drain-rampant",
-    ["pump"] = "crystal-drain-rampant",
-    ["reactor"] = "crystal-drain-rampant",
-    ["accumulator"] = "crystal-drain-rampant",
-    ["solar-panel"] = "crystal-drain-rampant",
-    ["boiler"] = "crystal-drain-rampant",
-    ["assembling-machine"] = "crystal-drain-rampant",
-    ["roboport"] = "crystal-drain-rampant",
-    ["beacon"] = "crystal-drain-rampant",
-    ["programmable-speaker"] = "crystal-drain-rampant",
-    ["mining-drill"] = "crystal-drain-rampant",
-    ["rocket-silo"] = "crystal-drain-rampant",
-    ["lamp"] = "crystal-drain-rampant",
-    ["radar"] = "crystal-drain-rampant",
-    ["lab"] = "crystal-drain-rampant",
-    ["electric-turret"] = "crystal-drain-rampant",
-    ["electric-pole"] = "crystal-drain-pole-rampant"
-}
 
 return constants

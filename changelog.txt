@@ -1,12 +1,11 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.16.28
-Date: 6. 1. 2018
-  Features:
-    - Added Energy Thief faction that when they destroy powered buildings or poles they will replace them with their draining crystals
+Version: 0.16.30
+Date: 6. 7. 2018
   Improvements:
     - Raiding AI state nows requires an evolution of 0.04 before it can trigger
   Bugfixes:
     - Fixed fire biter nest size
+    - Fixed Acid spitter resistances to be more inline with vanilla resistances
     - Fixed laser faction not having in-place evolution path from electric biters
     - Fixed range of unit levels being off by one, limiting the max units to level 9 only instead of 10
     - Fixed missing wasp worm drone locale entry
@@ -20,7 +19,6 @@ Date: 6. 1. 2018
   Framework:
     - Refactored new enemy modules
     - Created default attributes for all unit, unit spawner, worms
-
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.28
