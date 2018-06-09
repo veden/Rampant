@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_64 = 64
+constants.VERSION_65 = 65
 
 -- misc
 
@@ -116,7 +116,7 @@ constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 20
 
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
-constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 5480
+constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 7200
 
 constants.BASE_SPAWNER_UPGRADE = 300
 constants.BASE_WORM_UPGRADE = 250
@@ -163,9 +163,10 @@ constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 -- local decayingPath = {}
 -- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
 
--- local electricPath = {}
--- electricPath[constants.BASE_ALIGNMENT_ENERGY_THIEF] = true
--- electricPath[constants.BASE_ALIGNMENT_LASER] = true
+local electricPath = {
+    -- constants.BASE_ALIGNMENT_ENERGY_THIEF,
+    constants.BASE_ALIGNMENT_LASER
+}
 
 constants.BASE_ALIGNMENT_PATHS = {}
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
@@ -183,7 +184,7 @@ constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.B
 constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
+constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
 
 constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
     [constants.BASE_ALIGNMENT_NEUTRAL] = 0,
@@ -350,14 +351,15 @@ local tiers5 = {}
 local tierStart = settings.startup["rampant-tierStart"].value
 local tierEnd = settings.startup["rampant-tierEnd"].value
 
-local step5 = (tierEnd - tierStart) / 5
+
+local step5 = (tierEnd - tierStart) / 4
 for i=tierStart,tierEnd,step5 do
     tiers5[#tiers5+1] = roundToNearest(i, 1)
 end
 
 local tiers10 = {}
 
-local step10 = (tierEnd - tierStart) / 10
+local step10 = (tierEnd - tierStart) / 9
 for i=tierStart,tierEnd,step10 do
     tiers10[#tiers10+1] = roundToNearest(i, 1)
 end
@@ -468,6 +470,14 @@ constants.ELECTRIC_WORM_TIERS = wormTiers
 constants.ELECTRIC_WORM_VARIATIONS = wormVariations
 constants.ELECTRIC_UNIT_TIERS = unitTiers
 constants.ELECTRIC_UNIT_VARIATIONS = unitVariations
+
+constants.ENERGY_THIEF_NEST_TIERS = nestTiers
+constants.ENERGY_THIEF_NEST_VARIATIONS = nestVariations
+constants.ENERGY_THIEF_WORM_TIERS = wormTiers
+constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
+constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
+constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
+
 
 constants.LASER_NEST_TIERS = nestTiers
 constants.LASER_NEST_VARIATIONS = nestVariations
