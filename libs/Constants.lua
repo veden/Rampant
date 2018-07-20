@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_65 = 65
+constants.VERSION_66 = 66
 
 -- misc
 
@@ -347,22 +347,22 @@ local function roundToNearest(number, multiple)
 end
 
 local tiers5 = {}
+local tiers10 = {}
 
 local tierStart = settings.startup["rampant-tierStart"].value
 local tierEnd = settings.startup["rampant-tierEnd"].value
 
-
-local step5 = (tierEnd - tierStart) / 4
-for i=tierStart,tierEnd,step5 do
-    tiers5[#tiers5+1] = roundToNearest(i, 1)
+local function buildTier(size, tiers)
+    local step = (tierEnd - tierStart) / (size - 1)
+    local i = tierStart
+    for _=1,size do
+	tiers[#tiers+1] = roundToNearest(i, 1)
+	i = i + step
+    end
 end
 
-local tiers10 = {}
-
-local step10 = (tierEnd - tierStart) / 9
-for i=tierStart,tierEnd,step10 do
-    tiers10[#tiers10+1] = roundToNearest(i, 1)
-end
+buildTier(5, tiers5)
+buildTier(10, tiers10)
 
 constants.TIER_UPGRADE_SET_5 = tiers5
 constants.TIER_UPGRADE_SET_10 = tiers10

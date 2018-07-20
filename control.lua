@@ -219,7 +219,7 @@ local function rebuildMap()
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
-    map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, inverted = "true" }
+    map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, invert = true }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
     

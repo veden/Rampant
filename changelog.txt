@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.31
+Date: 7. 19. 2018
+  Bugfixes:
+    - MAJOR BUG: fixed typo in inverted filter for processing player buildings and enemy nests, which eventually lead to all aliens going inactive due to invalid targets [https://mods.factorio.com/mod/Rampant/discussion/5b48e84e1495c8000be8f961]
+    - For changing start and end enemy level in relation to scaling value error [https://mods.factorio.com/mod/Rampant/discussion/5b4e37227ffb42000a2dc40d]
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.30
 Date: 6. 7. 2018
   Improvements:
