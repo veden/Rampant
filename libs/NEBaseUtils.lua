@@ -33,20 +33,25 @@ end
 
 function ne.processNEUnitClass(natives, surface)	
     local position = { x = 0, y = 0 }
-    
-    local entity = surface.create_entity({
-	    name = "biter-spawner",
-	    position = position
-    })
-    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
-    entity.destroy()
 
-    entity = surface.create_entity({
-	    name = "spitter-spawner",
-	    position = position
-    })
-    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
-    entity.destroy()
+    if settings.startup["NE_Blue_Spawners"].value then    
+	local entity = surface.create_entity({
+		name = "ne-spawner-blue",
+		position = position
+	})
+	fileEntity(BASE_ALIGNMENT_NE_BLUE, entity, natives.evolutionTableUnitSpawner, 0.0)
+	entity.destroy()
+    end
+
+    if settings.startup["NE_Red_Spawners"].value then
+		local entity = surface.create_entity({
+		name = "ne-spawner-red",
+		position = position
+	})
+	fileEntity(BASE_ALIGNMENT_NE_RED, entity, natives.evolutionTableUnitSpawner, 0.0)
+	entity.destroy()
+    end
+
 
     if ENABLED_BOBS_UNITS then
 	entity = surface.create_entity({
