@@ -36,7 +36,7 @@ data:extend({
 	    order = "b[modifier]-a[trigger]",
 	    per_user = false
 	},
-
+	
 	{
 	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePlayerProximity",
@@ -377,6 +377,15 @@ data:extend({
 
 	{
 	    type = "bool-setting",
+	    name = "rampant-raidAIToggle",
+	    setting_type = "runtime-global",
+	    default_value = true,
+	    order = "m[total]-c[ai]",
+	    per_user = false
+	},
+	
+	{
+	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",
 	    description = "rampant-reduceBloodParticles",
 	    setting_type = "startup",
@@ -624,4 +633,5 @@ data:extend({
 	    order = "p[modifier]-r[unit]",
 	    per_user = false
 	}
+
 })

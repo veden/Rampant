@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.32
+Date: 7. 19. 2018
+  Improvements:
+    - Raiding AI Toggle - toggles the ai raiding parties from outside your pollution cloud
+  Bugfixes:
+    - Invalid surface index for creative mode blueprinted tiles
+    
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.31
 Date: 7. 19. 2018
   Bugfixes:
