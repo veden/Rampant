@@ -280,6 +280,7 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
+    upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
     
     upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
     upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
@@ -510,7 +511,7 @@ local function onEnemyBaseBuild(event)
 end
 
 local function onSurfaceTileChange(event)
-    local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
+    local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     if event.item and (event.item.name == "landfill") and (surfaceIndex == 1) then
 	local surface = game.surfaces[natives.activeSurface]
 	local chunks = {}
