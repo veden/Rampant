@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.32
+Date: 7. 19. 2018      
+  Tweaks:
+    - Lowered base alignment selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for factions
+    - Lowered upgrade entity selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for spawners and worms
+  Bugfixes:
+    - Surface tile change event wasn't correctly accounting active surface
+    - Normalized evolution requirements so when starting at a higher enemy level they are placed at the correct starting distances
+    - Fixed NEE compatibility
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.31
 Date: 7. 19. 2018
   Bugfixes:
