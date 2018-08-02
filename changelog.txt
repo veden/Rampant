@@ -3,9 +3,14 @@ Version: 0.16.32
 Date: 7. 19. 2018
   Improvements:
     - Raiding AI Toggle - toggles the ai raiding parties from outside your pollution cloud
+  Tweaks:
+    - Lowered base alignment selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for factions
+    - Lowered upgrade entity selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for spawners and worms
   Bugfixes:
-    - Invalid surface index for creative mode blueprinted tiles
-    
+    - Invalid surface index for creative mode blueprinted tiles    
+    - Surface tile change event wasn't correctly accounting active surface
+    - Normalized evolution requirements so when starting at a higher enemy level they are placed at the correct starting distances
+    - Fixed NEE compatibility
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.31

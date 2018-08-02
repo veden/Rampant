@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_66 = 66
+constants.VERSION_67 = 67
 
 -- misc
 
@@ -148,6 +148,11 @@ constants.BASE_ALIGNMENT_DEADZONE = 20
 constants.BASE_ALIGNMENT_NE = 21
 constants.BASE_ALIGNMENT_BOBS = 22
 constants.BASE_ALIGNMENT_SPAWNER = 23
+constants.BASE_ALIGNMENT_NE_BLUE = 24
+constants.BASE_ALIGNMENT_NE_RED = 25
+constants.BASE_ALIGNMENT_NE_YELLOW = 26
+constants.BASE_ALIGNMENT_NE_GREEN = 27
+constants.BASE_ALIGNMENT_NE_PINK = 28
 -- constants.BASE_ALIGNMENT_BURROW = 3
 
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
@@ -212,6 +217,22 @@ end
 
 if constants.ENABLED_NE_UNITS then
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
+
+    if settings.startup["NE_Blue_Spawners"].value then    
+	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_BLUE] = 0.1
+    end
+    if settings.startup["NE_Red_Spawners"].value then    
+	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_RED] = 0.1
+    end
+    if settings.startup["NE_Pink_Spawners"].value then    
+	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_PINK] = 0.1
+    end
+    if settings.startup["NE_Green_Spawners"].value then    
+	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_GREEN] = 0.1
+    end
+    if settings.startup["NE_Yellow_Spawners"].value then    
+	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_YELLOW] = 0.1
+    end
 end
 
 -- ai retreat
@@ -477,7 +498,6 @@ constants.ENERGY_THIEF_WORM_TIERS = wormTiers
 constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
 constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
 constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
-
 
 constants.LASER_NEST_TIERS = nestTiers
 constants.LASER_NEST_VARIATIONS = nestVariations
