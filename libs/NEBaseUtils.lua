@@ -54,10 +54,11 @@ function ne.processNEUnitClass(natives, surface)
 	    position = position
     })
     fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
+    entity.destroy()
 
     
     if settings.startup["NE_Blue_Spawners"].value then    
-	local entity = surface.create_entity({
+	entity = surface.create_entity({
 		name = "ne-spawner-blue",
 		position = position
 	})
@@ -67,7 +68,7 @@ function ne.processNEUnitClass(natives, surface)
     end
 
     if settings.startup["NE_Red_Spawners"].value then
-	local entity = surface.create_entity({
+	entity = surface.create_entity({
 		name = "ne-spawner-red",
 		position = position
 	})
@@ -77,7 +78,7 @@ function ne.processNEUnitClass(natives, surface)
     end
     
     if settings.startup["NE_Green_Spawners"].value then
-	local entity = surface.create_entity({
+	entity = surface.create_entity({
 		name = "ne-spawner-green",
 		position = position
 	})
@@ -88,7 +89,7 @@ function ne.processNEUnitClass(natives, surface)
 
     
     if settings.startup["NE_Yellow_Spawners"].value then
-	local entity = surface.create_entity({
+	entity = surface.create_entity({
 		name = "ne-spawner-yellow",
 		position = position
 	})
@@ -98,7 +99,7 @@ function ne.processNEUnitClass(natives, surface)
     end
     
     if settings.startup["NE_Pink_Spawners"].value then
-	local entity = surface.create_entity({
+	entity = surface.create_entity({
 		name = "ne-spawner-pink",
 		position = position
 	})

@@ -511,7 +511,7 @@ end
 
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface.index)
-    if event.item and (event.item.name == "landfill") and (surfaceIndex == 1) then
+    if event.item and (event.item.name == "landfill") and (surfaceIndex == natives.activeSurface) then
 	local surface = game.surfaces[natives.activeSurface]
 	local chunks = {}
 	local tiles = event.tiles
