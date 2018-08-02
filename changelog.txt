@@ -1,8 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.32
-Date: 7. 19. 2018
+Date: 8. 1. 2018
   Improvements:
     - Raiding AI Toggle - toggles the ai raiding parties from outside your pollution cloud
+    - Added a check for waterfill to trigger pass ability scan on affected chunks
   Tweaks:
     - Lowered base alignment selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for factions
     - Lowered upgrade entity selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for spawners and worms
@@ -11,6 +12,10 @@ Date: 7. 19. 2018
     - Surface tile change event wasn't correctly accounting active surface
     - Normalized evolution requirements so when starting at a higher enemy level they are placed at the correct starting distances
     - Fixed NEE compatibility
+    - Version upgrade map rebuild will no longer reapply deadzones
+    - Parenthesis in the wrong spot in pheromone dispersal algorithm
+    - Moved AI toggles to map settings instead of startup settings
+    - Changing new biter settings mid game no longer crashes the saves, still can cause entity loss
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.31

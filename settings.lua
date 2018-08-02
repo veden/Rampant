@@ -359,7 +359,7 @@ data:extend({
 	    type = "bool-setting",
 	    name = "rampant-disableVanillaAI",
 	    description = "rampant-disableVanillaAI",
-	    setting_type = 'startup',
+	    setting_type = 'runtime-global',
 	    default_value = true,
 	    order = "m[total]-a[ai]",
 	    per_user = false
@@ -369,7 +369,7 @@ data:extend({
 	    type = "bool-setting",
 	    name = "rampant-enableMigration",
 	    description = "rampant-enableMigration",
-	    setting_type = 'startup',
+	    setting_type = 'runtime-global',
 	    default_value = true,
 	    order = "m[total]-b[ai]",
 	    per_user = false

@@ -273,7 +273,7 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 		    setChunkBase(map, chunk, base)
 		end
 	    else
-		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)
+		base = createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
 	    end
 	    local alignment = base.alignment
 	    if (#nests > 0) then

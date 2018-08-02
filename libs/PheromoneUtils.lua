@@ -78,33 +78,37 @@ function pheromoneUtils.processPheromone(map, chunk)
     local baseTotal = 0
     local playerTotal = 0
     local resourceTotal = 0
-    
-    if not tempNeighbors[1].name then
-	movementTotal = (movementTotal + tempNeighbors[1][MOVEMENT_PHEROMONE] - chunkMovement)
-	baseTotal = baseTotal + (tempNeighbors[1][BASE_PHEROMONE] - chunkBase)
-	playerTotal = playerTotal + tempNeighbors[1][PLAYER_PHEROMONE] - chunkPlayer
-	resourceTotal = resourceTotal + (tempNeighbors[1][RESOURCE_PHEROMONE] - chunkResource)
+
+    local neighbor = tempNeighbors[1]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE] - chunkPlayer
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
 
-    if not tempNeighbors[2].name then
-	movementTotal = movementTotal + (tempNeighbors[2][MOVEMENT_PHEROMONE] - chunkMovement)
-	baseTotal = baseTotal + (tempNeighbors[2][BASE_PHEROMONE] - chunkBase)
-	playerTotal = playerTotal + (tempNeighbors[2][PLAYER_PHEROMONE] - chunkPlayer)
-	resourceTotal = resourceTotal + (tempNeighbors[2][RESOURCE_PHEROMONE] - chunkResource)
+    neighbor = tempNeighbors[2]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
 
-    if not tempNeighbors[3].name then
-	movementTotal = movementTotal + (tempNeighbors[3][MOVEMENT_PHEROMONE] - chunkMovement)
-	baseTotal = baseTotal + (tempNeighbors[3][BASE_PHEROMONE] - chunkBase)
-	playerTotal = playerTotal + (tempNeighbors[3][PLAYER_PHEROMONE] - chunkPlayer)
-	resourceTotal = resourceTotal + (tempNeighbors[3][RESOURCE_PHEROMONE] - chunkResource)
+    neighbor = tempNeighbors[3]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
     
-    if not tempNeighbors[4].name then
-	movementTotal = movementTotal + (tempNeighbors[4][MOVEMENT_PHEROMONE] - chunkMovement)
-	baseTotal = baseTotal + (tempNeighbors[4][BASE_PHEROMONE] - chunkBase)
-	playerTotal = playerTotal + (tempNeighbors[4][PLAYER_PHEROMONE] - chunkPlayer)
-	resourceTotal = resourceTotal + (tempNeighbors[4][RESOURCE_PHEROMONE] - chunkResource)
+    neighbor = tempNeighbors[4]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
     
     chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
