@@ -348,7 +348,7 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
     base.tick = tick
 end
 
-function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick)
+function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
@@ -360,7 +360,7 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
 
     
     local alignment
-    if (mRandom() < natives.deadZoneFrequency) then
+    if (not rebuilding) and (mRandom() < natives.deadZoneFrequency) then
 	alignment = BASE_ALIGNMENT_DEADZONE
     else
 	alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL

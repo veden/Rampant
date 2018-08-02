@@ -294,16 +294,16 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
-    upgrade.compareTable(natives, "disableVanillaAI", settings.startup["rampant-disableVanillaAI"].value)
+    upgrade.compareTable(natives, "disableVanillaAI", settings.global["rampant-disableVanillaAI"].value)
 
-    natives.enabledMigration = natives.expansion and settings.startup["rampant-enableMigration"].value
+    natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
     
     game.forces.enemy.ai_controllable = not natives.disableVanillaAI
 
     return true
 end
 
-local function onConfigChanged()
+local function prepWorld(rebuild)
     local upgraded
 
     if (game.surfaces["battle_surface_2"] ~= nil) then
@@ -316,6 +316,9 @@ local function onConfigChanged()
 
     upgraded, natives = upgrade.attempt(natives)
     onModSettingsChange(nil)
+    if natives.newEnemies then
+	rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
+    end
     if upgraded then
 	rebuildMap()
 
@@ -333,11 +336,12 @@ local function onConfigChanged()
 						     y = chunk.y * 32 }}})
 	end
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, true)
+	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
     end
-    if natives.newEnemies then
-	rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
-    end
+end
+
+local function onConfigChanged()
+    prepWorld(true)
 end
 
 script.on_nth_tick(INTERVAL_PROCESS,
@@ -512,7 +516,7 @@ end
 
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
-    if event.item and (event.item.name == "landfill") and (surfaceIndex == natives.activeSurface) then
+    if event.item and ((event.item.name == "landfill") or (event.item.name == "waterfill")) and (surfaceIndex == natives.activeSurface) then
 	local surface = game.surfaces[natives.activeSurface]
 	local chunks = {}
 	local tiles = event.tiles
@@ -601,7 +605,7 @@ local function onInit()
     natives = global.natives
     pendingChunks = global.pendingChunks
     
-    onConfigChanged()
+    prepWorld(false)
     hookEvents()
 end
 
