@@ -10,6 +10,8 @@ local bobsUnits = require("BobsBaseUtils")
 
 -- constants
 
+local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+
 local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
 local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
@@ -144,6 +146,39 @@ local mRandom = math.random
 
 -- module code
 
+local function normalizeProbabilities(probabilityTable)
+    local result = {}
+    
+    for alignment,probabilitySet in pairs(probabilityTable) do
+	local max = 0
+	local min = MAGIC_MAXIMUM_NUMBER
+
+	local alignmentResult = {}
+	result[alignment] = alignmentResult
+	
+	for probability, _ in pairs(probabilitySet) do
+	    if (probability > max) then
+		max = probability
+	    end
+	    if (probability < min) then
+		min = probability
+	    end
+	end
+
+	-- cap max evo requirement at 0.95
+	for probability, entities in pairs(probabilitySet) do
+	    if (max == 0) or (max == min) then
+		alignmentResult[0] = entities
+	    else
+		local normalizeProbability = ((probability - min) / (max - min)) * 0.95
+		alignmentResult[normalizeProbability] = entities
+	    end
+	end
+    end
+
+    return result
+end
+
 function baseUtils.findNearbyBase(map, chunk, natives)
     if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
 	return nil
@@ -185,7 +220,7 @@ local function findEntityUpgrade(baseAlignment, evoIndex, natives, evolutionTabl
 	local entitySet = alignments[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
 	    entity = entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.65) then
+	    if (mRandom() > 0.35) then
 		break
 	    end
 	end
@@ -203,7 +238,7 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 	local entitySet = evolutionTable[roundToFloor(evo, EVOLUTION_INCREMENTS)]
 	if entitySet and (#entitySet > 0) then
 	    alignment =  entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.65) then
+	    if (mRandom() > 0.35) then
 		break
 	    end
 	end
@@ -242,7 +277,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     local position = entity.position
     local entityType = entity.type
     entity.destroy()
-
+    
     if not baseAlignment or (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
 	return nil
     end
@@ -251,7 +286,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
 				       euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
 				  EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
-
+    
     local spawnerName = findEntityUpgrade(baseAlignment, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
 	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
@@ -616,6 +651,8 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     		     BASE_ALIGNMENT_SPAWNER,
     		     "spawner")
 
+    natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
+    natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
 end
 
 return baseUtils
