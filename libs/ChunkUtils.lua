@@ -37,9 +37,9 @@ local CHUNK_TICK = constants.CHUNK_TICK
 
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 
-local PATH_RATING = constants.PATH_RATING
+-- local PATH_RATING = constants.PATH_RATING
 
-local PASSABLE = constants.PASSABLE
+-- local PASSABLE = constants.PASSABLE
 
 -- imported functions
 
@@ -59,6 +59,8 @@ local createBase = baseUtils.createBase
 local upgradeEntity = baseUtils.upgradeEntity
 
 local setChunkBase = chunkPropertyUtils.setChunkBase
+local setPassable = chunkPropertyUtils.setPassable
+local setPathRating = chunkPropertyUtils.setPathRating
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local getChunkByXY = mapUtils.getChunkByXY
@@ -320,9 +322,8 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	setPlayerBaseGenerator(map, chunk, playerObjects)
 	setResourceGenerator(map, chunk, resources)
 	
-
-	chunk[PASSABLE] = pass
-	chunk[PATH_RATING] = passScore
+	setPassable(map, chunk, pass)
+	setPathRating(map, chunk, passScore)
 
 	return chunk
     end
@@ -344,8 +345,8 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
-	chunk[PASSABLE] = pass
-	chunk[PATH_RATING] = passScore
+	setPassable(map, chunk, pass)
+	setPathRating(map, chunk, passScore)
 
 	return chunk
     end
@@ -358,6 +359,10 @@ function chunkUtils.analyzeChunk(chunk, natives, surface, map)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
+    local nests = surface.count_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
+    setNestCount(map, chunk, nests)
+    local worms = surface.count_entities_filtered(map.filteredEntitiesWormQuery)
+    setWormCount(map, chunk, worms)
 end
 
 function chunkUtils.createChunk(topX, topY)
@@ -369,9 +374,9 @@ function chunkUtils.createChunk(topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[RESOURCE_PHEROMONE] = 0
-    chunk[PASSABLE] = 0
+    -- chunk[PASSABLE] = 0
     chunk[CHUNK_TICK] = 0
-    chunk[PATH_RATING] = 0
+    -- chunk[PATH_RATING] = 0
     
     return chunk
 end

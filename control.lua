@@ -169,6 +169,8 @@ local function rebuildMap()
     -- prevents queue adding duplicate chunks
     -- chunks are by key, so should overwrite old
 
+    -- game.forces.enemy.kill_all_units()
+    
     global.map = {}
     map = global.map
     map.processQueue = {}
@@ -188,6 +190,10 @@ local function rebuildMap()
     map.chunkToRallys = {}
     map.chunkToSpawner = {}
     map.chunkToSettler = {}
+
+    map.chunkToPassable = {}
+    map.chunkToPathRating = {}
+    map.chunkToDeathGenerator = {}
 
     map.queueSpawners = {}
     
@@ -433,9 +439,9 @@ local function onDeath(event)
 		
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
-		    deathScent(chunk)
+		    deathScent(map, chunk)
 		    
-		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold) then
+		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
 			local tick = event.tick
 			
 			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
@@ -647,7 +653,7 @@ remote.add_interface("rampantTests",
 			 dumpEnvironment = tests.dumpEnvironment,
 			 fillableDirtTest = tests.fillableDirtTest,
 			 tunnelTest = tests.tunnelTest,
-			 dumpNatives = tests.dumpNatives,
+			 dumpNatives = tests.dumpatives,
 			 createEnemy = tests.createEnemy,
 			 attackOrigin = tests.attackOrigin,
 			 cheatMode = tests.cheatMode,
@@ -665,7 +671,8 @@ remote.add_interface("rampantTests",
 			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
 			 unitGroupBuild = tests.unitGroupBuild,
 			 exportAiState = tests.exportAiState(nil),
-			 createEnergyTest = tests.createEnergyTest
+			 createEnergyTest = tests.createEnergyTest,
+			 killActiveSquads = tests.killActiveSquads
 		     }
 )
 

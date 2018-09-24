@@ -4,7 +4,7 @@ local aiAttackWave = {}
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local chunkPropetyUtils = require("ChunkPropertyUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
@@ -19,6 +19,7 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
 local INTERVAL_RALLY = constants.INTERVAL_RALLY
@@ -42,7 +43,7 @@ local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
-local PASSABLE = constants.PASSABLE
+-- local PASSABLE = constants.PASSABLE
 
 -- imported functions
 
@@ -50,11 +51,12 @@ local mRandom = math.random
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
-local getNestCount = chunkPropetyUtils.getNestCount
-local getChunkSettlerTick = chunkPropetyUtils.getChunkSettlerTick
-local setChunkSettlerTick = chunkPropetyUtils.setChunkSettlerTick
-local getRallyTick = chunkPropetyUtils.getRallyTick
-local setRallyTick = chunkPropetyUtils.setRallyTick
+local getPassable = chunkPropertyUtils.getPassable
+local getNestCount = chunkPropertyUtils.getNestCount
+local getChunkSettlerTick = chunkPropertyUtils.getChunkSettlerTick
+local setChunkSettlerTick = chunkPropertyUtils.setChunkSettlerTick
+local getRallyTick = chunkPropertyUtils.getRallyTick
+local setRallyTick = chunkPropertyUtils.setRallyTick
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
 
@@ -104,7 +106,7 @@ end
 
 local function validSettlerLocation(map, chunk, neighborChunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
-    return (neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * RESOURCE_MINIMUM_FORMATION_DELTA))
+    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * RESOURCE_MINIMUM_FORMATION_DELTA))
 end
 
 local function scoreUnitGroupLocation(neighborChunk)
@@ -112,7 +114,7 @@ local function scoreUnitGroupLocation(neighborChunk)
 end
 
 local function validUnitGroupLocation(map, neighborChunk)
-    return neighborChunk[PASSABLE] == CHUNK_ALL_DIRECTIONS and (getNestCount(map, neighborChunk) == 0)
+    return getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS and (getNestCount(map, neighborChunk) == 0)
 end
 
 function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
@@ -153,7 +155,7 @@ end
 
 function aiAttackWave.formSettlers(map, surface, natives, chunk, cost, tick)
 
-    if (mRandom() < natives.formSquadThreshold) then
+    if (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT) then
 	
 	local squadPath, squadDirection = scoreNeighborsForResource(chunk,
 								    getNeighborChunks(map, chunk.x, chunk.y),
@@ -201,7 +203,7 @@ end
 function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
     local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
 
-    if valid and (mRandom() < natives.formSquadThreshold) then
+    if valid and (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT) then
 	
 	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
 								     validUnitGroupLocation,
