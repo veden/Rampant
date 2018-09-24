@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_67 = 67
+constants.VERSION_68 = 68
 
 -- misc
 
@@ -29,8 +29,9 @@ constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-g
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 7500
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 1200000
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 12500
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 900000
+
 
 constants.PROCESS_QUEUE_SIZE = 400
 constants.SCAN_QUEUE_SIZE = 5
@@ -93,7 +94,7 @@ constants.RAIDING_MINIMUM_BASE_THRESHOLD = 250
 
 constants.AI_UNIT_REFUND = 3
 
--- constants.AI_MAX_SQUAD_COUNT = 30
+constants.AI_MAX_SQUAD_COUNT = 30
 constants.AI_MAX_BITER_GROUP_SIZE = 450
 
 constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
@@ -244,14 +245,14 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 3000
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 300
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
 
 -- pheromone diffusion amounts
 
-constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.99
+constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.999
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.99
@@ -263,11 +264,11 @@ constants.BASE_PHEROMONE = 2
 constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 
-constants.PASSABLE = 5
+-- constants.PASSABLE = 5
 
-constants.CHUNK_TICK = 6
+constants.CHUNK_TICK = 5
 
-constants.PATH_RATING = 7
+-- constants.PATH_RATING = 7
 
 -- Squad status
 
@@ -354,9 +355,9 @@ constants.SENTINEL_IMPASSABLE_CHUNK[constants.MOVEMENT_PHEROMONE] = constants.IM
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.BASE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.PLAYER_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.RESOURCE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
-constants.SENTINEL_IMPASSABLE_CHUNK[constants.PASSABLE] = constants.CHUNK_IMPASSABLE
+-- constants.SENTINEL_IMPASSABLE_CHUNK[constants.PASSABLE] = constants.CHUNK_IMPASSABLE
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.CHUNK_TICK] = 0
-constants.SENTINEL_IMPASSABLE_CHUNK[constants.PATH_RATING] = 0
+-- constants.SENTINEL_IMPASSABLE_CHUNK[constants.PATH_RATING] = 0
 constants.SENTINEL_IMPASSABLE_CHUNK.x = -1
 constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
@@ -400,6 +401,8 @@ local unitTiers = settings.startup["rampant-newEnemyUnitTiers"].value
 
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
 
+constants.DEATH_PHEROMONE_DECAY_AMOUNT = (constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * (constants.INTERVAL_SCAN / constants.TICKS_A_SECOND)) / 15
+
 constants.NEUTRAL_NEST_TIERS = nestTiers
 constants.NEUTRAL_NEST_VARIATIONS = nestVariations
 constants.NEUTRAL_WORM_TIERS = wormTiers
@@ -441,7 +444,6 @@ constants.SPAWNER_WORM_TIERS = wormTiers
 constants.SPAWNER_WORM_VARIATIONS = wormVariations
 constants.SPAWNER_UNIT_TIERS = unitTiers
 constants.SPAWNER_UNIT_VARIATIONS = unitVariations
-
 
 constants.FAST_NEST_TIERS = nestTiers
 constants.FAST_NEST_VARIATIONS = nestVariations

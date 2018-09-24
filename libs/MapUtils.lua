@@ -3,6 +3,7 @@ local mapUtils = {}
 -- imports
 
 local constants = require("Constants")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -11,7 +12,7 @@ local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
-local PASSABLE = constants.PASSABLE
+-- local PASSABLE = constants.PASSABLE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -22,6 +23,7 @@ local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 -- imported functions
 
 local mFloor = math.floor
+local getPassable = chunkPropertyUtils.getPassable
 
 -- module code
 
@@ -101,18 +103,38 @@ function mapUtils.getNeighborChunks(map, x, y)
     return neighbors
 end
 
-function mapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
+
+--[[
+    1 2 3
+    \|/
+    4- -5
+    /|\
+    6 7 8
+]]--
+function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local canMove = false
-    local startPassable = startChunk[PASSABLE]
-    local endPassable = endChunk[PASSABLE]
-    if (startPassable == CHUNK_ALL_DIRECTIONS) and (endPassable == CHUNK_ALL_DIRECTIONS) then
-	canMove = true
-    elseif ((direction == 2) or (direction == 7)) and (startPassable == CHUNK_NORTH_SOUTH) and (endPassable == CHUNK_NORTH_SOUTH) then
-	canMove = true
-    elseif ((direction == 4) or (direction == 5)) and (startPassable == CHUNK_EAST_WEST) and (endPassable == CHUNK_EAST_WEST) then
-	canMove = true
-    elseif (startChunk == SENTINEL_IMPASSABLE_CHUNK) and (endPassable == CHUNK_ALL_DIRECTIONS) then
-	canMove = true
+    local startPassable = getPassable(map, startChunk)
+    local endPassable = getPassable(map, endChunk)
+    if (startPassable == CHUNK_ALL_DIRECTIONS) then
+	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+	elseif (direction == 2) or (direction == 7) then
+	    canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
+	elseif (direction == 4) or (direction == 5) then
+	    canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
+	end
+    elseif (startPassable == CHUNK_NORTH_SOUTH) then
+	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+	elseif (direction == 2) or (direction == 7) then
+	    canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
+	end
+    elseif (startPassable == CHUNK_EAST_WEST) then
+	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+	elseif (direction == 4) or (direction == 5) then
+	    canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
+	end	
     end
     return canMove
 end

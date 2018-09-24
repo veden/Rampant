@@ -217,10 +217,10 @@ function upgrade.attempt(natives)
 	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.22")
 	global.version = constants.VERSION_57
     end
-    if (global.version < constants.VERSION_67) then
+    if (global.version < constants.VERSION_68) then
 	
-	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.32")
-	global.version = constants.VERSION_67
+	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.33")
+	global.version = constants.VERSION_68
     end
     
     return starting ~= global.version, natives

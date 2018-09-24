@@ -66,6 +66,7 @@ local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
 local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
+local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 -- module code
 
@@ -91,11 +92,12 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
-	local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
-								     getNeighborChunks(map, x, y),
-								     ((natives.state == AI_STATE_SIEGE) and scoreSiegeLocation) or
-									 scoreResourceLocation,
-								     squad)
+	local attackChunk, attackDirection = scoreNeighborsForSettling(map,
+								       chunk,
+								       getNeighborChunks(map, x, y),
+								       ((natives.state == AI_STATE_SIEGE) and scoreSiegeLocation) or
+									   scoreResourceLocation,
+								       squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
 	    addMovementPenalty(natives, squad, chunk)
@@ -148,7 +150,8 @@ local function attackMove(map, attackPosition, attackCmd, squad, group, natives,
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
-	local attackChunk, attackDirection = scoreNeighborsForAttack(chunk,
+	local attackChunk, attackDirection = scoreNeighborsForAttack(map,
+								     chunk,
 								     getNeighborChunks(map, x, y),
 								     scoreAttackLocation,
 								     squad)

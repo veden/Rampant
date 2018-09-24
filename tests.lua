@@ -47,6 +47,20 @@ function tests.pheromoneLevels(size)
     end
 end
 
+function tests.killActiveSquads()
+    print("--")
+    for i=1, #global.natives.squads do
+	local squad = global.natives.squads[i]
+	if (squad.group.valid) then
+	    local members = squad.group.members
+	    for x=1, #members do
+		local member = members[x]
+		local val = member.valid and member.die()
+	    end
+	end
+    end
+end
+
 function tests.activeSquads()
     print("--")
     for i=1, #global.natives.squads do
@@ -312,11 +326,11 @@ function tests.showMovementGrid()
     for i=1,#chunks do
 	local chunk = chunks[i]
 	local color = "concrete"
-	if (chunk[constants.PASSABLE] == constants.CHUNK_ALL_DIRECTIONS) then
+	if (chunkPropertyUtils.getPassable(global.map, chunk) == constants.CHUNK_ALL_DIRECTIONS) then
 	    color = "hazard-concrete-left"
-	elseif (chunk[constants.PASSABLE] == constants.CHUNK_NORTH_SOUTH) then
+	elseif (chunkPropertyUtils.getPassable(global.map, chunk) == constants.CHUNK_NORTH_SOUTH) then
 	    color = "deepwater"
-	elseif (chunk[constants.PASSABLE] == constants.CHUNK_EAST_WEST) then
+	elseif (chunkPropertyUtils.getPassable(global.map, chunk) == constants.CHUNK_EAST_WEST) then
 	    color = "water-green"
 	end
 	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[global.natives.activeSurface])
@@ -363,9 +377,9 @@ function tests.exportAiState()
 				   chunk[constants.BASE_PHEROMONE],
 				   chunk[constants.PLAYER_PHEROMONE],
 				   chunk[constants.RESOURCE_PHEROMONE],
-				   chunk[constants.PASSABLE],
+				   -- chunk[constants.PASSABLE],
 				   chunk[constants.CHUNK_TICK],
-				   chunk[constants.PATH_RATING],
+				   -- chunk[constants.PATH_RATING],
 				   chunk.x,
 				   chunk.y,
 				   chunkPropertyUtils.getNestCount(global.map, chunk),
@@ -412,15 +426,15 @@ function tests.createEnergyTest(x)
 	entity.connect_neighbour(entities[1])
     end
     
---     if wires then
--- 	for connectType,neighbourGroup in pairs(wires) do
--- 	    if connectType == "copper" then
--- 		for _,v in pairs(neighbourGroup) do
--- ;
--- 		end
--- 	    end
--- 	end
---     end
+    --     if wires then
+    -- 	for connectType,neighbourGroup in pairs(wires) do
+    -- 	    if connectType == "copper" then
+    -- 		for _,v in pairs(neighbourGroup) do
+    -- ;
+    -- 		end
+    -- 	    end
+    -- 	end
+    --     end
 end
 
 function tests.unitGroupBuild()
