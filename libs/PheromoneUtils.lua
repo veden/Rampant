@@ -22,9 +22,12 @@ local BASE_PHEROMONE_PERSISTANCE = constants.BASE_PHEROMONE_PERSISTANCE
 local PLAYER_PHEROMONE_PERSISTANCE = constants.PLAYER_PHEROMONE_PERSISTANCE
 local RESOURCE_PHEROMONE_PERSISTANCE = constants.RESOURCE_PHEROMONE_PERSISTANCE
 
+local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
+
 -- imported functions
 
 local getCardinalChunks = mapUtils.getCardinalChunks
+local getNeighborChunks = mapUtils.getNeighborChunks
 
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getPathRating = chunkPropertyUtils.getPathRating
@@ -40,25 +43,29 @@ local linearInterpolation = mathUtils.linearInterpolation
 -- module code
 
 function pheromoneUtils.scents(map, chunk)
-    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + getPlayerBaseGenerator(map, chunk)
+    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] + (getPlayerBaseGenerator(map, chunk))
     local resourceGenerator = getResourceGenerator(map, chunk)
     local enemyCount = getEnemyStructureCount(map, chunk)
-    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - getDeathGenerator(map, chunk)
-    decayDeathGenerator(map, chunk)
+    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - (getDeathGenerator(map, chunk))
+    
     if (resourceGenerator > 0) and (enemyCount == 0) then
-	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + linearInterpolation(resourceGenerator, 9000, 10000)
+	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 9000, 10000))
     end
 end
 
-function pheromoneUtils.victoryScent(chunk, entityType)
+function pheromoneUtils.victoryScent(map, chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
     if value then
-	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 1000)
+	-- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 1000)
+	addDeathGenerator(map, chunk, -value)
+	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value)
     end
 end
 
 function pheromoneUtils.deathScent(map, chunk)
-    addDeathGenerator(map, chunk)
+    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - (DEATH_PHEROMONE_GENERATOR_AMOUNT * 2)
+    addDeathGenerator(map, chunk, DEATH_PHEROMONE_GENERATOR_AMOUNT)
+    -- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
 end
 
 function pheromoneUtils.playerScent(playerChunk)
@@ -82,6 +89,8 @@ function pheromoneUtils.processPheromone(map, chunk)
     local playerTotal = 0
     local resourceTotal = 0
 
+    decayDeathGenerator(map, chunk)
+    
     local neighbor = tempNeighbors[1]
     if not neighbor.name then
 	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
@@ -114,7 +123,7 @@ function pheromoneUtils.processPheromone(map, chunk)
 	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
     
-    chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.35 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[BASE_PHEROMONE] = (chunkBase + (0.35 * baseTotal)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
     chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * playerTotal)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
     if clear then

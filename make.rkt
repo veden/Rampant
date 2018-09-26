@@ -78,6 +78,12 @@
       (copyDirectory "sounds" modFolder)
       (copyDirectory "graphics" modFolder)
       (copyDirectory "prototypes" modFolder)))
+
+  (define (copy)
+    (copyFiles modFolder))
+
+  (define (zipIt)
+    (makeZip modFolder))
   
   (define (run)
     (copyFiles modFolder)

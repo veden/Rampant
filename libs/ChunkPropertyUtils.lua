@@ -4,8 +4,7 @@ local constants = require("Constants")
 
 -- imported functions
 
-local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
-local DEATH_PHEROMONE_DECAY_AMOUNT = constants.DEATH_PHEROMONE_DECAY_AMOUNT
+local MOVEMENT_GENERATOR_PERSISTANCE = constants.MOVEMENT_GENERATOR_PERSISTANCE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 -- module code
@@ -134,20 +133,21 @@ function chunkPropertyUtils.setPathRating(map, chunk, value)
     end
 end
 
-function chunkPropertyUtils.addDeathGenerator(map, chunk)
-    map.chunkToDeathGenerator[chunk] = (map.chunkToDeathGenerator[chunk] or 0) + DEATH_PHEROMONE_GENERATOR_AMOUNT
+function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
+    map.chunkToDeathGenerator[chunk] = (map.chunkToDeathGenerator[chunk] or 0) + value
 end
 
 function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     local gen = map.chunkToDeathGenerator[chunk]
     if gen and (gen > 0) then
-	gen = gen - DEATH_PHEROMONE_DECAY_AMOUNT
-    end
-    if (gen == 0) then
-	map.chunkToDeathGenerator[chunk] = nil
-    else
-	map.chunkToDeathGenerator[chunk] = gen
-    end
+	gen = gen * MOVEMENT_GENERATOR_PERSISTANCE
+
+	if (gen >= -2) and (gen <= 2) then
+	    map.chunkToDeathGenerator[chunk] = nil
+	else
+	    map.chunkToDeathGenerator[chunk] = gen
+	end
+    end    
 end
 
 function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)

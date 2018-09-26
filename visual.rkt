@@ -7,7 +7,7 @@
 
   (define CHUNK_SIZE 32)
 
-  (define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0))
+  (define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
 
   (define windowX 500)
   (define windowY 0)
@@ -72,6 +72,10 @@
                          [parent panel]
                          [label ""]
                          [vert-margin 30]))
+    (define siteBox2 (new message%
+                          [parent panel]
+                          [label ""]
+                          [vert-margin 270]))
     
     (new button%
          [parent mainFrame]
@@ -132,7 +136,11 @@
                                 rally
                                 retreat
                                 resourceGen
-                                playerGen) chunkMinMaxes))      
+                                playerGen
+                                deathGen
+                                attackScore
+                                settleScore
+                                seigeScore) chunkMinMaxes))
         
         (set! activeChunkSet chunks)
         (set! activeChunkMinMaxSet chunkMinMaxes)
@@ -211,11 +219,14 @@
       (hash-ref activeChunkSetLookup (list x y) INVALID_CHUNK))
     
     (define (displayChunk x y)
-      (send siteBox set-label
-            (chunk->string (if (Chunk? activeHighlight)
-                               activeHighlight
-                               (findChunk (screenX->chunkX x)
-                                          (screenY->chunkY y))))))
+      (let ((chunk (if (Chunk? activeHighlight)
+                       activeHighlight
+                       (findChunk (screenX->chunkX x)
+                                  (screenY->chunkY y)))))
+        (send siteBox set-label
+              (chunk->string chunk))
+        (send siteBox2 set-label
+              (chunk->string2 chunk))))
 
     (define (displayHighlight x y)
       ;; (display (list (screenX->chunkX x)
@@ -253,7 +264,7 @@
     
     (new radio-box%
          [label "Show Layer"]
-         [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen")]
+         [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "seigeScore")]
          [selection 0]
          [parent mainFrame]
          (callback (lambda (radioButton event)

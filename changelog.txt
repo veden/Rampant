@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.33
+Date: 9. 25. 2018
+  Improvements:
+    - Reworked how death pheromone sticks to terrain and how long it is active for
+  Optimizations:
+    - Reduced in memory map footprint increasing save speed    
+  Bugfixes:
+    - Fix for unit groups getting stuck in random locations
+    - Fix for unit retreats causing excessive retreats due to inverted comparison
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.32
 Date: 8. 1. 2018
   Improvements:

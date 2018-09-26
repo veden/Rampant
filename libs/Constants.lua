@@ -29,9 +29,8 @@ constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-g
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 12500
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 900000
-
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 1500
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 20000
 
 constants.PROCESS_QUEUE_SIZE = 400
 constants.SCAN_QUEUE_SIZE = 5
@@ -245,14 +244,15 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 -- pheromone amounts
 
 constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 300
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 75
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
 
 -- pheromone diffusion amounts
 
-constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.999
+constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.875
+constants.MOVEMENT_PHEROMONE_PERSISTANCE = 0.99
 constants.BASE_PHEROMONE_PERSISTANCE = 0.99
 constants.PLAYER_PHEROMONE_PERSISTANCE = 0.98
 constants.RESOURCE_PHEROMONE_PERSISTANCE = 0.99
@@ -400,8 +400,6 @@ local unitVariations = settings.startup["rampant-newEnemyUnitVariations"].value
 local unitTiers = settings.startup["rampant-newEnemyUnitTiers"].value
 
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
-
-constants.DEATH_PHEROMONE_DECAY_AMOUNT = (constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * (constants.INTERVAL_SCAN / constants.TICKS_A_SECOND)) / 15
 
 constants.NEUTRAL_NEST_TIERS = nestTiers
 constants.NEUTRAL_NEST_VARIATIONS = nestVariations

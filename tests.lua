@@ -377,9 +377,9 @@ function tests.exportAiState()
 				   chunk[constants.BASE_PHEROMONE],
 				   chunk[constants.PLAYER_PHEROMONE],
 				   chunk[constants.RESOURCE_PHEROMONE],
-				   -- chunk[constants.PASSABLE],
+				   chunkPropertyUtils.getPassable(global.map, chunk),
 				   chunk[constants.CHUNK_TICK],
-				   -- chunk[constants.PATH_RATING],
+				   chunkPropertyUtils.getPathRating(global.map, chunk),
 				   chunk.x,
 				   chunk.y,
 				   chunkPropertyUtils.getNestCount(global.map, chunk),
@@ -387,7 +387,8 @@ function tests.exportAiState()
 				   chunkPropertyUtils.getRallyTick(global.map, chunk),
 				   chunkPropertyUtils.getRetreatTick(global.map, chunk),
 				   chunkPropertyUtils.getResourceGenerator(global.map, chunk),
-				   chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)}, ",") .. "\n"
+				   chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk),
+				   chunkPropertyUtils.getDeathGenerator(global.map, chunk)}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end
