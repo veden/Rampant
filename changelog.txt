@@ -8,6 +8,7 @@ Date: 9. 25. 2018
   Bugfixes:
     - Fix for unit groups getting stuck in random locations
     - Fix for unit retreats causing excessive retreats due to inverted comparison
+    - Fix for unit groups not creating new settlements
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.32
