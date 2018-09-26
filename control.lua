@@ -404,7 +404,6 @@ script.on_nth_tick(INTERVAL_SQUAD,
 		       
 		       squadsBeginAttack(natives, gameRef.players)
 		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
-
 end)
 
 local function onBuild(event)
@@ -486,7 +485,7 @@ local function onDeath(event)
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
 		creditNatives = true
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    victoryScent(chunk, entity.type)
+		    victoryScent(map, chunk, entity.type)
 		end
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then

@@ -118,6 +118,7 @@ function unitGroupUtils.createSquad(position, surface, natives, group)
 	originPosition = {x = 0,
 			  y = 0},
 	chunk = nil
+	
     }
     natives.squads[#natives.squads+1] = squad
     return squad
