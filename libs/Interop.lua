@@ -39,7 +39,7 @@ function interop.getNextStateTick()
 end
 
 function interop.getMaxWaveSize()
-    return global.natives.attackMaxWaveSize
+    return global.natives.attackWaveMaxSize
 end
 
 function interop.getThresholds()
@@ -47,7 +47,7 @@ function interop.getThresholds()
 end
 
 function interop.changeMaxWaveSize(waveSize)
-    global.natives.attackMaxWaveSize = waveSize
+    global.natives.attackWaveMaxSize = waveSize
 end
 
 function interop.changeThreshold(min, max)
