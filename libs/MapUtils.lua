@@ -9,7 +9,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
 local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
-
+local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 -- local PASSABLE = constants.PASSABLE
@@ -115,6 +115,7 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local canMove = false
     local startPassable = getPassable(map, startChunk)
     local endPassable = getPassable(map, endChunk)
+    -- print(direction, startPassable, endPassable)
     if (startPassable == CHUNK_ALL_DIRECTIONS) then
 	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
 	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
@@ -134,7 +135,9 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
 	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
 	elseif (direction == 4) or (direction == 5) then
 	    canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
-	end	
+	end
+    else
+	canMove = (endPassable ~= CHUNK_IMPASSABLE)
     end
     return canMove
 end
