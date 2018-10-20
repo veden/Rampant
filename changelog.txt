@@ -1,4 +1,23 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.34
+Date: 10. 19. 2018
+  Improvements:
+    - Reworked dispersion to process pheromone in two phases.
+    - Switch to all adjacent neighbors instead of cardinal neighbors for dispersion
+  Tweaks:
+    - Reduced chunks process per interval from 400 to 300
+    - Increased building pheromone generator by 10x
+    - Reduced Retreat pheromone max level from 20000 to 17000
+    - Reduced Retreat pheromone min level from 1500 to 1000
+    - Increased death generator from 75 to 125
+    - Increased movement persistance from 0.875 to 0.975
+    - Increased player persistance from 0.98 to 0.97
+    - Increased resource persistance from 0.99 to 0.97
+  Bugfixes:
+    - Fix for unit groups not being able to move off of impassable terrain
+    - Fix for incorrect variable name in interop
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.33
 Date: 9. 25. 2018
   Improvements:
