@@ -72,7 +72,16 @@ function pheromoneUtils.playerScent(playerChunk)
     playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
 end
 
-function pheromoneUtils.processPheromone(map, chunk)
+function pheromoneUtils.commitPheromone(map, chunk, staging)
+    chunk[MOVEMENT_PHEROMONE] = staging[MOVEMENT_PHEROMONE]
+    chunk[BASE_PHEROMONE] = staging[BASE_PHEROMONE]
+    chunk[PLAYER_PHEROMONE] = staging[PLAYER_PHEROMONE]
+    chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE]
+    
+    decayDeathGenerator(map, chunk)
+end
+
+function pheromoneUtils.processPheromone(map, chunk, staging)
     
     local chunkMovement = chunk[MOVEMENT_PHEROMONE]
     local chunkBase = chunk[BASE_PHEROMONE]
@@ -82,14 +91,12 @@ function pheromoneUtils.processPheromone(map, chunk)
 
     local clear = (getEnemyStructureCount(map, chunk) == 0)
     
-    local tempNeighbors = getCardinalChunks(map, chunk.x, chunk.y)
+    local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
     local movementTotal = 0
     local baseTotal = 0
     local playerTotal = 0
     local resourceTotal = 0
-
-    decayDeathGenerator(map, chunk)
     
     local neighbor = tempNeighbors[1]
     if not neighbor.name then
@@ -122,14 +129,46 @@ function pheromoneUtils.processPheromone(map, chunk)
 	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
 	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
     end
+
+    neighbor = tempNeighbors[5]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE] - chunkPlayer
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
+    end
+
+    neighbor = tempNeighbors[6]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
+    end
+
+    neighbor = tempNeighbors[7]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
+    end
     
-    chunk[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
-    chunk[BASE_PHEROMONE] = (chunkBase + (0.35 * baseTotal)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
-    chunk[PLAYER_PHEROMONE] = (chunkPlayer + (0.25 * playerTotal)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
+    neighbor = tempNeighbors[8]
+    if not neighbor.name then
+	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
+	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
+	playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
+	resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
+    end
+    
+    staging[MOVEMENT_PHEROMONE] = (chunkMovement + (0.125 * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
+    staging[BASE_PHEROMONE] = (chunkBase + (0.125 * baseTotal)) * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
+    staging[PLAYER_PHEROMONE] = (chunkPlayer + (0.125 * playerTotal)) * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
     if clear then
-	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
+	staging[RESOURCE_PHEROMONE] = (chunkResource + (0.125 * resourceTotal)) * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
     else
-	chunk[RESOURCE_PHEROMONE] = (chunkResource + (0.35 * resourceTotal)) * 0.01
+	staging[RESOURCE_PHEROMONE] = (chunkResource + (0.125 * resourceTotal)) * 0.01
     end
 end
 

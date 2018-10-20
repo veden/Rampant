@@ -29,6 +29,8 @@ local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
+local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
+
 local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
@@ -213,6 +215,13 @@ local function rebuildMap()
     map.position = {x=0,
 		    y=0}
 
+    map.scentStaging = {}
+
+
+    for x=1,PROCESS_QUEUE_SIZE+1 do
+	map.scentStaging[x] = {0,0,0,0}
+    end
+    
     map.position2Top = {0, 0}
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
@@ -356,9 +365,8 @@ script.on_nth_tick(INTERVAL_PROCESS,
 		       local tick = event.tick
 		       local gameRef = game
 		       local surface = gameRef.surfaces[natives.activeSurface]
-		       
+
 		       processPlayers(gameRef.players, map, surface, natives, tick)
-		       
 		       processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
 end)
 

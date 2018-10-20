@@ -110,7 +110,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
-            local score = scoreFunction(squad, neighborChunk)
+            local score = scoreFunction(squad, neighborChunk)	   
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
