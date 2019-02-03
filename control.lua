@@ -131,7 +131,7 @@ local function onIonCannonFired(event)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    rallyUnits(chunk, map, surface, natives, event.tick)
 	end
-    end    
+    end
 end
 
 local function hookEvents()
@@ -140,7 +140,7 @@ local function hookEvents()
 			onIonCannonFired)
 	-- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
 	-- 		    onIonCannonTargeted)
-    end    
+    end
 end
 
 local function onLoad()
@@ -153,7 +153,7 @@ local function onLoad()
     -- print(serpent.dump(natives))
     -- print(serpent.dump(natives.squads))
     -- print(serpent.dump(natives.bases))
-    
+
     hookEvents()
 end
 
@@ -172,7 +172,7 @@ local function rebuildMap()
     -- chunks are by key, so should overwrite old
 
     -- game.forces.enemy.kill_all_units()
-    
+
     global.map = {}
     map = global.map
     map.processQueue = {}
@@ -198,7 +198,7 @@ local function rebuildMap()
     map.chunkToDeathGenerator = {}
 
     map.queueSpawners = {}
-    
+
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
 		      SENTINEL_IMPASSABLE_CHUNK,
@@ -221,7 +221,7 @@ local function rebuildMap()
     for x=1,PROCESS_QUEUE_SIZE+1 do
 	map.scentStaging[x] = {0,0,0,0}
     end
-    
+
     map.position2Top = {0, 0}
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
@@ -237,7 +237,7 @@ local function rebuildMap()
     map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, invert = true }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
-    
+
     map.attackAreaCommand = {
 	type = DEFINES_COMMAND_ATTACK_AREA,
 	destination = map.position,
@@ -251,29 +251,29 @@ local function rebuildMap()
 	distraction = DEFINES_DISTRACTION_BY_ENEMY,
 	ignore_planner = true
     }
-    
+
     map.retreatCommand = { type = DEFINES_COMMAND_GROUP,
 			   group = nil,
 			   distraction = DEFINES_DISTRACTION_NONE }
-    
+
     -- switched over to tick event
     map.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
     map.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
     map.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
     map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
     map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
-    
-end    
+
+end
 
 
 local function onModSettingsChange(event)
-    
+
     if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or (string.sub(event.setting, 1, 18) == "rampant-arsenal")) then
 	return false
     end
-    
-    upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)   
-    
+
+    upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)
+
     upgrade.compareTable(natives.safeEntities, "curved-rail", settings.global["rampant-safeBuildings-curvedRail"].value)
     upgrade.compareTable(natives.safeEntities, "straight-rail", settings.global["rampant-safeBuildings-straightRail"].value)
     upgrade.compareTable(natives.safeEntities, "rail-signal", settings.global["rampant-safeBuildings-railSignals"].value)
@@ -290,13 +290,14 @@ local function onModSettingsChange(event)
 	natives.safeEntityName["big-electric-pole-3"] = newValue
 	natives.safeEntityName["big-electric-pole-4"] = newValue
     end
-    
+
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
     upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
-    
+    upgrade.compareTable(natives, "seigeAIToggle", settings.global["rampant-seigeAIToggle"].value)
+
     upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
     upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
     upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
@@ -305,14 +306,14 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
-    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)    
+    upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
     -- RE-ENABLE WHEN COMPLETE
     upgrade.compareTable(natives, "disableVanillaAI", settings.global["rampant-disableVanillaAI"].value)
 
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
-    
+
     game.forces.enemy.ai_controllable = not natives.disableVanillaAI
 
     return true
@@ -346,7 +347,7 @@ local function prepWorld(rebuild)
 	local tick = game.tick
 	for chunk in surface.get_chunks() do
 	    onChunkGenerated({ tick = tick,
-			       surface = surface, 
+			       surface = surface,
 			       area = { left_top = { x = chunk.x * 32,
 						     y = chunk.y * 32 }}})
 	end
@@ -381,7 +382,7 @@ script.on_nth_tick(INTERVAL_SCAN,
 		       scanMap(map, surface, natives, tick)
 
 		       map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
-		       
+
 		       map.chunkToPassScan = processScanChunks(map, surface)
 
 end)
@@ -391,7 +392,7 @@ script.on_nth_tick(INTERVAL_LOGIC,
 		       local tick = event.tick
 		       local gameRef = game
 		       local surface = gameRef.surfaces[natives.activeSurface]
-		       
+
 		       planning(natives,
 				gameRef.forces.enemy.evolution_factor,
 				tick,
@@ -406,10 +407,10 @@ end)
 script.on_nth_tick(INTERVAL_SQUAD,
 		   function (event)
 		       local gameRef = game
-		       
+
 		       cleanSquads(natives, map)
 		       regroupSquads(natives, map)
-		       
+
 		       squadsBeginAttack(natives, gameRef.players)
 		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
 end)
@@ -429,7 +430,7 @@ end
 local function onMine(event)
     local entity = event.entity
     local surface = entity.surface
-    if (surface.index == natives.activeSurface) then	
+    if (surface.index == natives.activeSurface) then
 	addRemovePlayerEntity(map, entity, natives, false, false)
     end
 end
@@ -443,38 +444,38 @@ local function onDeath(event)
 	local cause = event.cause
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
-		
+
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
 		    deathScent(map, chunk)
-		    
+
 		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
 			local tick = event.tick
-			
+
 			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-			
+
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
 				     map,
-				     surface, 
+				     surface,
 				     natives,
 				     tick,
 				     (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS,
 				     artilleryBlast)
-			
+
 			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
 			    rallyUnits(chunk, map, surface, natives, tick)
 			end
 		    end
                 end
-                
+
             elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
 		local tick = event.tick
 
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    unregisterEnemyBaseStructure(map, entity)
-		    
+
 		    rallyUnits(chunk, map, surface, natives, tick)
 
 		    retreatUnits(chunk,
@@ -534,7 +535,7 @@ local function onSurfaceTileChange(event)
 	local chunks = {}
 	local tiles = event.tiles
 	for i=1,#tiles do
-	    local position = tiles[i].position	    
+	    local position = tiles[i].position
 	    local chunk = getChunkByPosition(map, position, true)
 
 	    -- weird bug with table pointer equality using name instead of pointer comparison
@@ -606,18 +607,18 @@ local function onRocketLaunch(event)
 	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
 	    natives.points = AI_MAX_OVERFLOW_POINTS
 	end
-    end    
+    end
 end
 
 local function onInit()
     global.map = {}
     global.pendingChunks = {}
     global.natives = {}
-    
+
     map = global.map
     natives = global.natives
     pendingChunks = global.pendingChunks
-    
+
     prepWorld(false)
     hookEvents()
 end

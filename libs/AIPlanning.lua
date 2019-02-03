@@ -78,24 +78,24 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
     natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.66667)
     natives.attackWaveDeviation = (attackWaveMaxSize * 0.5) * 0.333
     natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
-    
+
     natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
     natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.5) * 0.333
     natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinTime, natives.expansionMaxTime))
-    
+
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
     local threshold = natives.attackThresholdRange
     natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
 
     local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
-    
+
     natives.baseIncrement = points
-    
+
     if (natives.points < maxPoints) then
 	natives.points = natives.points + points
     end
-    
+
     if (natives.temperamentTick == tick) then
 	natives.temperament = mRandom()
 	natives.temperamentTick = randomTickEvent(tick, AI_MIN_TEMPERAMENT_DURATION, AI_MAX_TEMPERAMENT_DURATION)
@@ -111,9 +111,9 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    roll = mRandom()
 	    if (roll < 0.70) then
 	    	natives.state = AI_STATE_AGGRESSIVE
-	    elseif (roll < 0.75) then
+	    elseif ((natives.enabledMigration) and (roll < 0.75)) then
 		natives.state = AI_STATE_MIGRATING
-	    elseif (roll < 0.80) then
+	    elseif ((natives.seigeAIToggle) and (roll < 0.80)) then
 		natives.state = AI_STATE_SIEGE
 	    elseif ((natives.raidAIToggle) and (evolution_factor >= 0.04)) then
 		natives.state = AI_STATE_RAIDING
@@ -137,7 +137,7 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    end
 	end
     end
-    
+
 end
 
 return aiPlanning

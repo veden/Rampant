@@ -1,4 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.35
+Date: 2. 1. 2019
+  Improvements:
+    - Added options to toggle new enemy factions
+    - Randomized base alignment array with map seed so faction distribution changes from map to map
+    - Added a setting to disable seige ai state, which may have been causing extra non pollution biter movements
+  Tweaks:
+    - Added upgrade path for neutral faction to laser resist faction
+    - Removed upgrade path from electric biters to laser resist faction
+    - Increased nest upgrade chance from 0.05% to 1.5%
+  Bugfixes:
+    - Fix for base upgrade framework to leveling nests correctly due to rounding errors in floating percision for lookup
+    - Fix for migration toggle setting not preventing the ai migration state
+    - Fix for entity upgrades allowing for a evolution decrease instead of start from current evolution requirement
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.34
 Date: 10. 19. 2018
   Improvements:
@@ -10,9 +26,9 @@ Date: 10. 19. 2018
     - Reduced Retreat pheromone max level from 20000 to 17000
     - Reduced Retreat pheromone min level from 1500 to 1000
     - Increased death generator from 75 to 125
-    - Increased movement persistance from 0.875 to 0.975
-    - Increased player persistance from 0.98 to 0.97
-    - Increased resource persistance from 0.99 to 0.97
+    - Increased movement persistence from 0.875 to 0.975
+    - Increased player persistence from 0.98 to 0.97
+    - Increased resource persistence from 0.99 to 0.97
   Bugfixes:
     - Fix for unit groups not being able to move off of impassable terrain
     - Fix for incorrect variable name in interop
@@ -23,7 +39,7 @@ Date: 9. 25. 2018
   Improvements:
     - Reworked how death pheromone sticks to terrain and how long it is active for
   Optimizations:
-    - Reduced in memory map footprint increasing save speed    
+    - Reduced in memory map footprint increasing save speed
   Bugfixes:
     - Fix for unit groups getting stuck in random locations
     - Fix for unit retreats causing excessive retreats due to inverted comparison
@@ -39,7 +55,7 @@ Date: 8. 1. 2018
     - Lowered base alignment selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for factions
     - Lowered upgrade entity selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for spawners and worms
   Bugfixes:
-    - Invalid surface index for creative mode blueprinted tiles    
+    - Invalid surface index for creative mode blueprinted tiles
     - Surface tile change event wasn't correctly accounting active surface
     - Normalized evolution requirements so when starting at a higher enemy level they are placed at the correct starting distances
     - Fixed NEE compatibility
@@ -72,7 +88,7 @@ Date: 6. 7. 2018
     - Increased the lower attribute bound from 0.7 to 0.85
     - Increased the base distance to evolution index ratio from (1 / 5480) to (1 / 7200)
     - Increased the chance that initial base alignment picks a lower tier alignment by 0.15
-    - Normalized all enemy faction attributes through the defaults, should be minor unit corrections    
+    - Normalized all enemy faction attributes through the defaults, should be minor unit corrections
   Framework:
     - Refactored new enemy modules
     - Created default attributes for all unit, unit spawner, worms
