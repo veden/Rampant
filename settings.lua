@@ -9,7 +9,7 @@ data:extend({
 	    order = "a[modifier]-a[projectiles]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-useNEUnitLaunchers",
@@ -27,7 +27,7 @@ data:extend({
 	    order = "a[modifier]-b[projectiles]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePollution",
@@ -36,7 +36,7 @@ data:extend({
 	    order = "b[modifier]-a[trigger]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePlayerProximity",
@@ -55,7 +55,7 @@ data:extend({
 	    order = "b[modifier]-c[threshold]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "double-setting",
 	    name = "rampant-attackWaveGenerationThresholdMax",
@@ -75,7 +75,7 @@ data:extend({
 	    order = "b[modifier]-e[threshold]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "int-setting",
 	    name = "rampant-attackWaveMaxSize",
@@ -127,7 +127,7 @@ data:extend({
 	    order = "c[modifier]-a[safe]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-curvedRail",
@@ -137,7 +137,7 @@ data:extend({
 	    per_user = false
 	},
 
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-straightRail",
@@ -164,7 +164,7 @@ data:extend({
 	    order = "c[modifier]-e[safe]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-railChainSignals",
@@ -191,7 +191,7 @@ data:extend({
 	    order = "c[modifier]-h[safe]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-addWallResistanceAcid",
@@ -210,7 +210,7 @@ data:extend({
 	    order = "c[modifier]-k[trigger]",
 	    per_user = false
 	},
-	
+
 
 	{
 	    type = "double-setting",
@@ -223,7 +223,7 @@ data:extend({
 	    order = "d[modifier]-a[ai]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-newEnemies",
@@ -232,7 +232,7 @@ data:extend({
 	    default_value = false,
 	    order = "e[modifier]-a[unit]",
 	    per_user = false
-	},	
+	},
 
 	{
 	    type = "int-setting",
@@ -323,7 +323,7 @@ data:extend({
 	    order = "l[modifier]-i[unit]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-enableNEUnits",
@@ -355,6 +355,114 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-acidEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-n[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-physicalEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-o[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-suicideEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-p[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-fireEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-q[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-electricEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-r[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-nuclearEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-s[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-infernoEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-t[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-fastEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-u[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-trollEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-v[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-spawnerEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-w[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-waspEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-x[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-laserEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-y[unit]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-disableVanillaAI",
@@ -383,7 +491,16 @@ data:extend({
 	    order = "m[total]-c[ai]",
 	    per_user = false
 	},
-	
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-seigeAIToggle",
+	    setting_type = "runtime-global",
+	    default_value = true,
+	    order = "m[total]-d[ai]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",
@@ -393,7 +510,7 @@ data:extend({
 	    order = "n[modifier]-a[optimize]",
 	    per_user = false
 	},
-	
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-attack-warning",
@@ -405,7 +522,7 @@ data:extend({
 	},
 
 
-	
+
 	{
 	    type = "double-setting",
 	    name = "rampant-unitBiterHealthScaler",

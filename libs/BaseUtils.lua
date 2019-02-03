@@ -148,14 +148,14 @@ local mRandom = math.random
 
 local function normalizeProbabilities(probabilityTable)
     local result = {}
-    
+
     for alignment,probabilitySet in pairs(probabilityTable) do
 	local max = 0
 	local min = MAGIC_MAXIMUM_NUMBER
 
 	local alignmentResult = {}
 	result[alignment] = alignmentResult
-	
+
 	for probability, _ in pairs(probabilitySet) do
 	    if (probability > max) then
 		max = probability
@@ -202,48 +202,72 @@ function baseUtils.findNearbyBase(map, chunk, natives)
 	    distanceThreshold = base.distanceThreshold
 	end
     end
-    
+
     return foundBase
 end
 
-local function findEntityUpgrade(baseAlignment, evoIndex, natives, evolutionTable)
-    
+local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, natives, evolutionTable)
+
     local alignments = evolutionTable[baseAlignment]
 
     if not alignments then
 	return nil
     end
-    
+
     local entity = nil
-    
-    for evo=evoIndex, 0, -EVOLUTION_INCREMENTS do
-	local entitySet = alignments[roundToFloor(evo, EVOLUTION_INCREMENTS)]
-	if entitySet and (#entitySet > 0) then
+
+    for evo,entitySet in pairs(alignments) do
+	if (currentEvo <= evo) and (evo <= evoIndex) and entitySet and (#entitySet > 0) then
 	    entity = entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.35) then
+	    if (mRandom() < 0.1) then
 		break
 	    end
 	end
     end
-    
+
     return entity
 end
 
 local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 
-    local evoTop = roundToFloor(gaussianRandomRange(evoIndex, evoIndex * 0.3, 0, evoIndex), EVOLUTION_INCREMENTS)
+    local evoTop = gaussianRandomRange(evoIndex, evoIndex * 0.3, 0, evoIndex)
 
+    local pickedEvo
     local alignment
-    for evo=evoTop, 0, -EVOLUTION_INCREMENTS do	
-	local entitySet = evolutionTable[roundToFloor(evo, EVOLUTION_INCREMENTS)]
-	if entitySet and (#entitySet > 0) then
-	    alignment =  entitySet[mRandom(#entitySet)]
-	    if (mRandom() > 0.35) then
-		break
-	    end
-	end
+    for _,evo in pairs(natives.evolutionTableAlignmentOrder) do
+
+        local entitySet = evolutionTable[evo]
+	if (evo <= evoTop) and entitySet and (#entitySet > 0) then
+	    if not pickedEvo then
+                alignment = entitySet[mRandom(#entitySet)]
+                pickedEvo = evo
+            else
+                local diff = pickedEvo - evo
+                if (diff > 0.2) then
+                    if (mRandom() < 0.10) then
+                        alignment = entitySet[mRandom(#entitySet)]
+                        break
+                    end
+                elseif (diff >= 0) then
+                    if (mRandom() < 0.15)then
+                        alignment = entitySet[mRandom(#entitySet)]
+                        break
+                    end
+                elseif (diff <= -0.2) then
+                    if (mRandom() < 0.35)then
+                        alignment = entitySet[mRandom(#entitySet)]
+                        break
+                    end
+                elseif (diff < 0) then
+                    if (mRandom() < 0.25)then
+                        alignment = entitySet[mRandom(#entitySet)]
+                        break
+                    end
+                end
+            end
+        end
     end
-    
+
     return alignment
 end
 
@@ -252,47 +276,48 @@ function baseUtils.recycleBases(natives, tick)
     local bases = natives.bases
 
     local removeMe = {}
-    
+
     local endIndex = mMin(baseIndex+BASE_QUEUE_SIZE, #bases)
     for index = baseIndex, endIndex do
         local base = bases[index]
 
-	if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
-	    removeMe[#removeMe+1] = index
-	end
+        if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
+            removeMe[#removeMe+1] = index
+        end
     end
     for i=#removeMe, 1, -1 do
-	tRemove(bases, i)
+        tRemove(bases, i)
     end
 
     if (endIndex == #bases) then
-	natives.baseIndex = 1
+        natives.baseIndex = 1
     else
-	natives.baseIndex = endIndex + 1
-    end    
+        natives.baseIndex = endIndex + 1
+    end
 end
 
 
 function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolutionFactor)
     local position = entity.position
     local entityType = entity.type
+    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
     entity.destroy()
-    
+
     if not baseAlignment or (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
-	return nil
+        return nil
     end
 
     local distance = roundToFloor(mMin(1,
-				       euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
-				  EVOLUTION_INCREMENTS)
-    local evoIndex = mMax(distance, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
-    
-    local spawnerName = findEntityUpgrade(baseAlignment, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
+                                       euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
+                                  EVOLUTION_INCREMENTS)
+    local evoIndex = mMax(distance, evolutionFactor)
+
+    local spawnerName = findEntityUpgrade(baseAlignment, currentEvo, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
-	local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
-	if newPosition then
-	    return surface.create_entity({name = spawnerName, position = newPosition})
-	end
+        local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
+        if newPosition then
+            return surface.create_entity({name = spawnerName, position = newPosition})
+        end
     end
 
     return nil
@@ -301,8 +326,8 @@ end
 local function upgradeBase(base)
     local paths = BASE_ALIGNMENT_PATHS[base.alignment]
     if paths and (#paths > 0) then
-	base.alignment = paths[mRandom(#paths)]
-	return true
+        base.alignment = paths[mRandom(#paths)]
+        return true
     end
     return false
 end
@@ -316,31 +341,31 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
 
     areaBottom[1] = chunk.x + CHUNK_SIZE
     areaBottom[2] = chunk.y + CHUNK_SIZE
-    
+
     local entity
     local cost
     local choice = mRandom()
     if (choice <= 0.3) then
-	if (base.points >= BASE_SPAWNER_UPGRADE) then
-	    entity = surface.find_entities_filtered(map.filteredEntitiesSpawnerQueryLimited)
-	    cost = BASE_SPAWNER_UPGRADE
-	end
+        if (base.points >= BASE_SPAWNER_UPGRADE) then
+            entity = surface.find_entities_filtered(map.filteredEntitiesSpawnerQueryLimited)
+            cost = BASE_SPAWNER_UPGRADE
+        end
     elseif (choice <= 0.6) then
-	if (base.points >= BASE_WORM_UPGRADE) then
-	    entity = surface.find_entities_filtered(map.filteredEntitiesWormQueryLimited)
-	    cost = BASE_WORM_UPGRADE
-	end
-    elseif (choice >= 0.995) then
-	if (base.points >= BASE_UPGRADE) then
-	    if upgradeBase(base) then
-		base.points = base.points - BASE_UPGRADE
-	    end
-	end
+        if (base.points >= BASE_WORM_UPGRADE) then
+            entity = surface.find_entities_filtered(map.filteredEntitiesWormQueryLimited)
+            cost = BASE_WORM_UPGRADE
+        end
+    elseif (choice >= 0.985) then
+        if (base.points >= BASE_UPGRADE) then
+            if upgradeBase(base) then
+                base.points = base.points - BASE_UPGRADE
+            end
+        end
     end
 
     if entity and (#entity > 0) then
-	baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment, natives, evolutionFactor)
-	base.points = base.points - cost
+        baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment, natives, evolutionFactor)
+        base.points = base.points - cost
     end
 
     base.points = base.points + natives.baseIncrement
@@ -355,103 +380,117 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
 
     local meanLevel = mFloor(distance / 200)
 
-    local distanceIndex = roundToFloor(mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX), EVOLUTION_INCREMENTS)
-    local evoIndex = mMax(distanceIndex, roundToFloor(evolutionFactor, EVOLUTION_INCREMENTS))
+    local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
+    local evoIndex = mMax(distanceIndex, evolutionFactor)
 
-    
+
     local alignment
     if (not rebuilding) and (mRandom() < natives.deadZoneFrequency) then
-	alignment = BASE_ALIGNMENT_DEADZONE
+        alignment = BASE_ALIGNMENT_DEADZONE
     else
-	alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL
+        alignment = findBaseInitialAlignment(evoIndex, natives, natives.evolutionTableAlignment) or BASE_ALIGNMENT_NEUTRAL
     end
-    
+
     local baseLevel = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
     local baseDistanceThreshold = gaussianRandomRange(BASE_DISTANCE_THRESHOLD, BASE_DISTANCE_THRESHOLD * 0.2, BASE_DISTANCE_THRESHOLD * 0.75, BASE_DISTANCE_THRESHOLD * 1.50)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
 
     local base = {
-	x = x,
-	y = y,
-	distanceThreshold = distanceThreshold,
-	tick = tick,
-	alignment = alignment,
-	points = 0
+        x = x,
+        y = y,
+        distanceThreshold = distanceThreshold,
+        tick = tick,
+        alignment = alignment,
+        points = 0
     }
 
     if (alignment ~= BASE_ALIGNMENT_DEADZONE) then
-	setChunkBase(map, chunk, base)
+        setChunkBase(map, chunk, base)
     end
-    
+
     -- if not buildHive(map, base, surface) then
     -- 	return nil
     -- end
 
     natives.bases[#natives.bases+1] = base
-    
+
     return base
 end
 
 local function fileEntity(baseAlignment, entity, evolutionTable)
-    local evoRequirement = mFloor(entity.prototype.build_base_evolution_requirement/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
+    local evoRequirement = mMin(entity.prototype.build_base_evolution_requirement, 1)
     local eTable = evolutionTable[baseAlignment]
     if not eTable then
-	eTable = {}
-	evolutionTable[baseAlignment] = eTable
+        eTable = {}
+        evolutionTable[baseAlignment] = eTable
     end
     local aTable = eTable[evoRequirement]
     if not aTable then
-	aTable = {}
-	eTable[evoRequirement] = aTable
+        aTable = {}
+        eTable[evoRequirement] = aTable
     end
     aTable[#aTable+1] = entity.name
 end
 
 local function fileAlignment(baseAlignment, evolution, evolutionTable)
-    local evoRequirement = mFloor(evolution/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
-    local eTable = evolutionTable[evoRequirement]
+    local evoRequirement = mMin(evolution, 1)
+    local eTable = evolutionTable[evolution]
     if not eTable then
-	eTable = {}
-	evolutionTable[evoRequirement] = eTable
+        eTable = {}
+        evolutionTable[evoRequirement] = eTable
     end
     eTable[#eTable+1] = baseAlignment
+end
+
+local function nonRepeatingRandom(evoTable, rg)
+    local ordering = {}
+    for evo in pairs(evoTable) do
+        ordering[#ordering+1] = evo
+    end
+    for i=#ordering,1,-1 do
+        local s = rg(i)
+        local t = ordering[i]
+        ordering[i] = ordering[s]
+        ordering[s] = t
+    end
+    return ordering
 end
 
 local function processUnitClass(biterVariation, biterTier, spitterVariation, spitterTier, wormVariation, wormTier, surface, natives, baseAlignment, baseAlignmentString)
     local position = { x = 0, y = 0 }
 
     for tier=1,biterTier do
-	local t = ((biterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-	for v=1,biterVariation do    	
-	    local entity = surface.create_entity({
-		    name= baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
-	    entity.destroy()
-    	end
+        local t = ((biterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+        for v=1,biterVariation do
+            local entity = surface.create_entity({
+                    name= baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
+                    position = position
+            })
+            fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
+            entity.destroy()
+        end
     end
     for tier=1,spitterTier do
-	local t = ((spitterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-    	for v=1,spitterVariation do
-	    local entity = surface.create_entity({
-		    name=baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
-	    entity.destroy()
-    	end
+        local t = ((spitterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+        for v=1,spitterVariation do
+            local entity = surface.create_entity({
+                    name=baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
+                    position = position
+            })
+            fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
+            entity.destroy()
+        end
     end
     for tier=1,wormTier do
-	local t = ((wormTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-    	for v=1,wormVariation do
-	    local entity = surface.create_entity({
-		    name=baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant",
-		    position = position
-	    })
-	    fileEntity(baseAlignment, entity, natives.evolutionTableWorm)
-	    entity.destroy()
-    	end
+        local t = ((wormTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+        for v=1,wormVariation do
+            local entity = surface.create_entity({
+                    name=baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant",
+                    position = position
+            })
+            fileEntity(baseAlignment, entity, natives.evolutionTableWorm)
+            entity.destroy()
+        end
     end
 end
 
@@ -462,128 +501,148 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     -- todo fill out alignment evolution levels
     for alignment,evo in pairs(BASE_ALIGNMENT_EVOLUTION_BASELINE) do
-	fileAlignment(alignment,
-		      gaussianRandomRangeRG(evo, evo * 0.2, evo * 0.5, evo * 1.5, rg),
-		      natives.evolutionTableAlignment)
+        fileAlignment(alignment,
+                      gaussianRandomRangeRG(evo, evo * 0.2, evo * 0.5, evo * 1.5, rg),
+                      natives.evolutionTableAlignment)
     end
 
+    natives.evolutionTableAlignmentOrder = nonRepeatingRandom(natives.evolutionTableAlignment, natives.randomGenerator)
+
     if ENABLED_NE_UNITS then
-	processNEUnitClass(natives, surface)
+        processNEUnitClass(natives, surface)
     end
 
     if ENABLED_BOBS_UNITS then
-	processBobsUnitClass(natives, surface)
+        processBobsUnitClass(natives, surface)
     end
-    
+
     processUnitClass(NEUTRAL_NEST_VARIATIONS,
-		     NEUTRAL_NEST_TIERS,
-		     NEUTRAL_NEST_VARIATIONS,
-		     NEUTRAL_NEST_TIERS,
-		     NEUTRAL_WORM_VARIATIONS,
-		     NEUTRAL_WORM_TIERS,
-		     surface,
-		     natives,
-		     BASE_ALIGNMENT_NEUTRAL,
-		     "neutral")
+                     NEUTRAL_NEST_TIERS,
+                     NEUTRAL_NEST_VARIATIONS,
+                     NEUTRAL_NEST_TIERS,
+                     NEUTRAL_WORM_VARIATIONS,
+                     NEUTRAL_WORM_TIERS,
+                     surface,
+                     natives,
+                     BASE_ALIGNMENT_NEUTRAL,
+                     "neutral")
 
-    processUnitClass(ACID_NEST_VARIATIONS,
-		     ACID_NEST_TIERS,
-		     ACID_NEST_VARIATIONS,
-		     ACID_NEST_TIERS,
-		     ACID_WORM_VARIATIONS,
-		     ACID_WORM_TIERS,
-		     surface,
-		     natives,
-		     BASE_ALIGNMENT_ACID,
-		     "acid")
+    if settings.startup["rampant-acidEnemy"].value then
+        processUnitClass(ACID_NEST_VARIATIONS,
+                         ACID_NEST_TIERS,
+                         ACID_NEST_VARIATIONS,
+                         ACID_NEST_TIERS,
+                         ACID_WORM_VARIATIONS,
+                         ACID_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_ACID,
+                         "acid")
+    end
 
-    processUnitClass(PHYSICAL_NEST_VARIATIONS,
-		     PHYSICAL_NEST_TIERS,
-		     0,
-		     0,
-		     PHYSICAL_WORM_VARIATIONS,
-		     PHYSICAL_WORM_TIERS,
-		     surface,
-		     natives,
-		     BASE_ALIGNMENT_PHYSICAL,
-		     "physical")
+    if settings.startup["rampant-physicalEnemy"].value then
+        processUnitClass(PHYSICAL_NEST_VARIATIONS,
+                         PHYSICAL_NEST_TIERS,
+                         0,
+                         0,
+                         PHYSICAL_WORM_VARIATIONS,
+                         PHYSICAL_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_PHYSICAL,
+                         "physical")
+    end
 
-    processUnitClass(FIRE_NEST_VARIATIONS,
-    		     FIRE_NEST_TIERS,
-    		     FIRE_NEST_VARIATIONS,
-    		     FIRE_NEST_TIERS,
-    		     FIRE_WORM_VARIATIONS,
-    		     FIRE_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_FIRE,
-    		     "fire")
+    if settings.startup["rampant-fireEnemy"].value then
+        processUnitClass(FIRE_NEST_VARIATIONS,
+                         FIRE_NEST_TIERS,
+                         FIRE_NEST_VARIATIONS,
+                         FIRE_NEST_TIERS,
+                         FIRE_WORM_VARIATIONS,
+                         FIRE_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_FIRE,
+                         "fire")
+    end
 
-    processUnitClass(ELECTRIC_NEST_VARIATIONS,
-		     ELECTRIC_NEST_TIERS,
-		     0,
-		     0,
-		     ELECTRIC_WORM_VARIATIONS,
-		     ELECTRIC_WORM_TIERS,
-		     surface,
-		     natives,
-		     BASE_ALIGNMENT_ELECTRIC,
-		     "electric")
+    if settings.startup["rampant-electricEnemy"].value then
+        processUnitClass(ELECTRIC_NEST_VARIATIONS,
+                         ELECTRIC_NEST_TIERS,
+                         0,
+                         0,
+                         ELECTRIC_WORM_VARIATIONS,
+                         ELECTRIC_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_ELECTRIC,
+                         "electric")
+    end
 
-    processUnitClass(SUICIDE_NEST_VARIATIONS,
-    		     SUICIDE_NEST_TIERS,
-		     0,
-		     0,
-    		     SUICIDE_WORM_VARIATIONS,
-    		     SUICIDE_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_SUICIDE,
-    		     "suicide")
+    if settings.startup["rampant-suicideEnemy"].value then
+        processUnitClass(SUICIDE_NEST_VARIATIONS,
+                         SUICIDE_NEST_TIERS,
+                         0,
+                         0,
+                         SUICIDE_WORM_VARIATIONS,
+                         SUICIDE_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_SUICIDE,
+                         "suicide")
+    end
 
-    processUnitClass(NUCLEAR_NEST_VARIATIONS,
-    		     NUCLEAR_NEST_TIERS,
-		     0,
-		     0,
-    		     NUCLEAR_WORM_VARIATIONS,
-    		     NUCLEAR_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_NUCLEAR,
-    		     "nuclear")
+    if settings.startup["rampant-nuclearEnemy"].value then
+        processUnitClass(NUCLEAR_NEST_VARIATIONS,
+                         NUCLEAR_NEST_TIERS,
+                         0,
+                         0,
+                         NUCLEAR_WORM_VARIATIONS,
+                         NUCLEAR_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_NUCLEAR,
+                         "nuclear")
+    end
 
-    processUnitClass(TROLL_NEST_VARIATIONS,
-    		     TROLL_NEST_TIERS,
-    		     TROLL_NEST_VARIATIONS,
-    		     TROLL_NEST_TIERS,
-    		     TROLL_WORM_VARIATIONS,
-    		     TROLL_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_TROLL,
-    		     "troll")
+    if settings.startup["rampant-trollEnemy"].value then
+        processUnitClass(TROLL_NEST_VARIATIONS,
+                         TROLL_NEST_TIERS,
+                         TROLL_NEST_VARIATIONS,
+                         TROLL_NEST_TIERS,
+                         TROLL_WORM_VARIATIONS,
+                         TROLL_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_TROLL,
+                         "troll")
+    end
 
-    processUnitClass(0,
-    		     0,
-    		     INFERNO_NEST_VARIATIONS,
-    		     INFERNO_NEST_TIERS,
-    		     INFERNO_WORM_VARIATIONS,
-    		     INFERNO_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_INFERNO,
-    		     "inferno")
+    if settings.startup["rampant-infernoEnemy"].value then
+        processUnitClass(0,
+                         0,
+                         INFERNO_NEST_VARIATIONS,
+                         INFERNO_NEST_TIERS,
+                         INFERNO_WORM_VARIATIONS,
+                         INFERNO_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_INFERNO,
+                         "inferno")
+    end
 
-    processUnitClass(FAST_NEST_VARIATIONS,
-    		     FAST_NEST_TIERS,
-    		     FAST_NEST_VARIATIONS,
-    		     FAST_NEST_TIERS,
-    		     FAST_WORM_VARIATIONS,
-    		     FAST_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_FAST,
-    		     "fast")
+    if settings.startup["rampant-fastEnemy"].value then
+        processUnitClass(FAST_NEST_VARIATIONS,
+                         FAST_NEST_TIERS,
+                         FAST_NEST_VARIATIONS,
+                         FAST_NEST_TIERS,
+                         FAST_WORM_VARIATIONS,
+                         FAST_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_FAST,
+                         "fast")
+    end
 
     -- processUnitClass(DECAYING_NEST_VARIATIONS,
     -- 		     DECAYING_NEST_TIERS,
@@ -618,42 +677,48 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     -- 		     BASE_ALIGNMENT_POSION,
     -- 		     "posion")
 
-    processUnitClass(LASER_NEST_VARIATIONS,
-    		     LASER_NEST_TIERS,
-    		     LASER_NEST_VARIATIONS,
-    		     LASER_NEST_TIERS,
-    		     LASER_WORM_VARIATIONS,
-    		     LASER_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_LASER,
-    		     "laser")
 
-    processUnitClass(0,
-    		     0,
-    		     WASP_NEST_VARIATIONS,
-    		     WASP_NEST_TIERS,
-    		     WASP_WORM_VARIATIONS,
-    		     WASP_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_WASP,
-    		     "wasp")
+    if settings.startup["rampant-laserEnemy"].value then
+        processUnitClass(LASER_NEST_VARIATIONS,
+                         LASER_NEST_TIERS,
+                         LASER_NEST_VARIATIONS,
+                         LASER_NEST_TIERS,
+                         LASER_WORM_VARIATIONS,
+                         LASER_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_LASER,
+                         "laser")
+    end
 
-    processUnitClass(0,
-    		     0,
-    		     SPAWNER_NEST_VARIATIONS,
-    		     SPAWNER_NEST_TIERS,
-    		     SPAWNER_WORM_VARIATIONS,
-    		     SPAWNER_WORM_TIERS,
-    		     surface,
-    		     natives,
-    		     BASE_ALIGNMENT_SPAWNER,
-    		     "spawner")
+    if settings.startup["rampant-waspEnemy"].value then
+        processUnitClass(0,
+                         0,
+                         WASP_NEST_VARIATIONS,
+                         WASP_NEST_TIERS,
+                         WASP_WORM_VARIATIONS,
+                         WASP_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_WASP,
+                         "wasp")
+    end
+
+    if settings.startup["rampant-spawnerEnemy"].value then
+        processUnitClass(0,
+                         0,
+                         SPAWNER_NEST_VARIATIONS,
+                         SPAWNER_NEST_TIERS,
+                         SPAWNER_WORM_VARIATIONS,
+                         SPAWNER_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_SPAWNER,
+                         "spawner")
+    end
 
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
 end
 
 return baseUtils
-

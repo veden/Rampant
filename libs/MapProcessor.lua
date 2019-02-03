@@ -92,7 +92,7 @@ end
     processing is not consistant as it depends on the number of chunks that have been generated
     so if we process 400 chunks an iteration and 200 chunks have been generated than these are
     processed 3 times a second and 1200 generated chunks would be processed once a second
-    In theory, this might be fine as smaller bases have less surface to attack and need to have 
+    In theory, this might be fine as smaller bases have less surface to attack and need to have
     pheromone dissipate at a faster rate.
 --]]
 function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
@@ -100,7 +100,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local index = map.processIndex
 
     local chunkToBase = map.chunkToBase
-    
+
     if (index == 1) then
         roll = mRandom()
         map.processRoll = roll
@@ -108,7 +108,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 
     local newEnemies = natives.newEnemies
     local scentStaging = map.scentStaging
-    
+
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
     local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
 
@@ -116,8 +116,8 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
     local i = 1
     for x=index,endIndex do
-        local chunk = processQueue[x]	
-	
+        local chunk = processQueue[x]
+
 	if (chunk[CHUNK_TICK] ~= tick) then
 	    processPheromone(map, chunk, scentStaging[i])
 
@@ -125,7 +125,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		if squads then
 		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
 		end
-		if natives.enabledMigration and settlers then
+		if settlers then
 		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST, tick)
 		end
 	    end
@@ -135,24 +135,24 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 		if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (mRandom() < 0.10) then
 		    processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
 		end
-	    end	   	    
+	    end
 	end
 	i = i + 1
     end
 
     i = 1
-    
+
     for x=index,endIndex do
 	local chunk = processQueue[x]
 	if (chunk[CHUNK_TICK] ~= tick) then
 	    chunk[CHUNK_TICK] = tick
-	    
+
 	    commitPheromone(map, chunk, scentStaging[i])
 	    scents(map, chunk)
 	end
 	i = i + 1
     end
-    
+
     if (endIndex == #processQueue) then
         map.processIndex = 1
     else
@@ -163,7 +163,7 @@ end
 --[[
     Localized player radius were processing takes place in realtime, doesn't store state
     between calls.
-    vs 
+    vs
     the slower passive version processing the entire map in multiple passes.
 --]]
 function mapProcessor.processPlayers(players, map, surface, natives, tick)
@@ -178,12 +178,12 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     local scentStaging = map.scentStaging
 
     local squads = allowingAttacks and (0.11 <= roll) and (roll <= 0.20) and (natives.points >= AI_SQUAD_COST)
-    
+
     for i=1,#playerOrdering do
 	local player = players[playerOrdering[i]]
-	if validPlayer(player, natives) then 
+	if validPlayer(player, natives) then
 	    local playerChunk = getChunkByPosition(map, player.character.position)
-	    
+
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		playerScent(playerChunk)
 	    end
@@ -191,22 +191,22 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     end
 
     local i = 1
-    
+
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#playerOrdering > 0) then
 	local player = players[playerOrdering[1]]
-	if validPlayer(player, natives) then 
+	if validPlayer(player, natives) then
 	    local playerChunk = getChunkByPosition(map, player.character.position)
-	    
+
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local vengence = (allowingAttacks and
 				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
 				      ((getEnemyStructureCount(map, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
-		
+
 		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
-			local chunk = getChunkByXY(map, x, y)			
-			
+			local chunk = getChunkByXY(map, x, y)
+
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    processPheromone(map, chunk, scentStaging[i])
 
@@ -217,17 +217,17 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 				if vengence then
 				    vengence = formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
 				end
-			    end			   			    
+			    end
 			end
 			i = i + 1
 		    end
 		end
 
-		i = 1		
+		i = 1
 		for x=playerChunk.x + PROCESS_PLAYER_BOUND, playerChunk.x - PROCESS_PLAYER_BOUND, -32 do
 		    for y=playerChunk.y + PROCESS_PLAYER_BOUND, playerChunk.y - PROCESS_PLAYER_BOUND, -32 do
 			local chunk = getChunkByXY(map, x, y)
-			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then			   			    
+			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick
 			    commitPheromone(map, chunk, scentStaging[i])
 			    scents(map, chunk)
@@ -257,13 +257,13 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
-    
+
     for x=index,endIndex do
 	local chunk = processQueue[x]
 
 	chunkBox[1] = chunk.x
 	chunkBox[2] = chunk.y
-	
+
 	offset[1] = chunk.x + CHUNK_SIZE
 	offset[2] = chunk.y + CHUNK_SIZE
 
@@ -291,7 +291,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 
 	if closeBy then
 	    local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
-	    
+
 	    if deadGroup then
 		recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
 	    end

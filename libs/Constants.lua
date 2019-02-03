@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_69 = 69
+constants.VERSION_70 = 70
 
 -- misc
 
@@ -50,7 +50,7 @@ constants.INTERVAL_SPAWNER = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RALLY = constants.TICKS_A_SECOND * 10
 constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
 
-constants.RESOURCE_NORMALIZER = 1 / 1024 
+constants.RESOURCE_NORMALIZER = 1 / 1024
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 500
 
@@ -168,44 +168,127 @@ constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 -- local decayingPath = {}
 -- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
 
-local electricPath = {
-    -- constants.BASE_ALIGNMENT_ENERGY_THIEF,
-    constants.BASE_ALIGNMENT_LASER
+constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
+    [constants.BASE_ALIGNMENT_NEUTRAL] = 0
 }
 
 constants.BASE_ALIGNMENT_PATHS = {}
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
-    constants.BASE_ALIGNMENT_ACID,
-    constants.BASE_ALIGNMENT_FIRE,
-    constants.BASE_ALIGNMENT_WASP,
-    constants.BASE_ALIGNMENT_PHYSICAL,
-    constants.BASE_ALIGNMENT_ELECTRIC,
-    constants.BASE_ALIGNMENT_SUICIDE,
-    constants.BASE_ALIGNMENT_TROLL,
-    constants.BASE_ALIGNMENT_FAST
-}
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
+--     constants.BASE_ALIGNMENT_ACID,
+--     constants.BASE_ALIGNMENT_FIRE,
+--     constants.BASE_ALIGNMENT_WASP,
+--     constants.BASE_ALIGNMENT_PHYSICAL,
+--     constants.BASE_ALIGNMENT_ELECTRIC,
+--     constants.BASE_ALIGNMENT_SUICIDE,
+--     constants.BASE_ALIGNMENT_TROLL,
+--     constants.BASE_ALIGNMENT_FAST
+-- }
+
+local function pushBasePath(x)
+    local tbl = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
+    if not tbl then
+        tbl = {}
+        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = tbl
+    end
+    tbl[#tbl+1] = x
+end
+
+if settings.startup["rampant-acidEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_ACID)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_ACID] = 0.1
+end
+
+if settings.startup["rampant-physicalEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_PHYSICAL)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_PHYSICAL] = 0.4
+end
+
+if settings.startup["rampant-suicideEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_SUICIDE)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_SUICIDE] = 0.3
+end
+
+if settings.startup["rampant-fireEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_FIRE)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_FIRE] = 0.4
+end
+
+if settings.startup["rampant-electricEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_ELECTRIC)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_ELECTRIC] = 0.2
+end
+
+if settings.startup["rampant-nuclearEnemy"].value then
+    if settings.startup["rampant-suicideEnemy"].value then
+        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
+    end
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
+end
+
+if settings.startup["rampant-fastEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_FAST)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_FAST] = 0.5
+end
+
+if settings.startup["rampant-trollEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_TROLL)
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_TROLL] = 0.5
+end
+
+if settings.startup["rampant-laserEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_LASER)
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_LASER] = 0.4
+end
+
+if settings.startup["rampant-waspEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_WASP)
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_WASP] = 0.5
+end
+
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
-constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = electricPath
+-- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = { constants.BASE_ALIGNMENT_LASER }
 
-constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
-    [constants.BASE_ALIGNMENT_NEUTRAL] = 0,
-    [constants.BASE_ALIGNMENT_ACID] = 0.1,
-    [constants.BASE_ALIGNMENT_ELECTRIC] = 0.2,
-    [constants.BASE_ALIGNMENT_SUICIDE] = 0.3,
-    [constants.BASE_ALIGNMENT_PHYSICAL] = 0.4,
-    [constants.BASE_ALIGNMENT_LASER] = 0.4,
-    [constants.BASE_ALIGNMENT_WASP] = 0.5,
-    [constants.BASE_ALIGNMENT_FIRE] = 0.4,
-    [constants.BASE_ALIGNMENT_FAST] = 0.5,
-    [constants.BASE_ALIGNMENT_TROLL] = 0.5,
-    [constants.BASE_ALIGNMENT_SPAWNER] = 0.7,
-    [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
-    [constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
-}
+-- [constants.BASE_ALIGNMENT_WASP] = 0.5,
+--     [constants.BASE_ALIGNMENT_SPAWNER] = 0.7,
+--     [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
+
+if settings.startup["rampant-infernoEnemy"].value then
+    if settings.startup["rampant-fireEnemy"].value then
+        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
+    end
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_INFERNO] = 0.6
+end
+
+if settings.startup["rampant-spawnerEnemy"].value then
+    if settings.startup["rampant-waspEnemy"].value then
+        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
+    end
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_SPAWNER] = 0.7
+end
+
+
+
 
 constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and (settings.startup["NE_Difficulty"] ~= nil)
 
@@ -218,19 +301,19 @@ end
 if constants.ENABLED_NE_UNITS then
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
 
-    if settings.startup["NE_Blue_Spawners"].value then    
+    if settings.startup["NE_Blue_Spawners"].value then
 	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_BLUE] = 0.1
     end
-    if settings.startup["NE_Red_Spawners"].value then    
+    if settings.startup["NE_Red_Spawners"].value then
 	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_RED] = 0.1
     end
-    if settings.startup["NE_Pink_Spawners"].value then    
+    if settings.startup["NE_Pink_Spawners"].value then
 	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_PINK] = 0.1
     end
-    if settings.startup["NE_Green_Spawners"].value then    
+    if settings.startup["NE_Green_Spawners"].value then
 	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_GREEN] = 0.1
     end
-    if settings.startup["NE_Yellow_Spawners"].value then    
+    if settings.startup["NE_Yellow_Spawners"].value then
 	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_YELLOW] = 0.1
     end
 end
