@@ -21,7 +21,7 @@ constants.VERSION_41 = 41
 constants.VERSION_44 = 44
 constants.VERSION_51 = 51
 constants.VERSION_57 = 57
-constants.VERSION_70 = 70
+constants.VERSION_71 = 71
 
 -- misc
 
@@ -326,8 +326,8 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 
 -- pheromone amounts
 
-constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = 500
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 125
+constants.MOVEMENT_PENALTY_AMOUNT = 4000
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 100
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
@@ -375,7 +375,7 @@ constants.SETTLER_DISTANCE = 224
 
 constants.GROUP_MERGE_DISTANCE = 28
 
-constants.MAX_PENALTY_BEFORE_PURGE = 20000
+constants.MAX_PENALTY_BEFORE_PURGE = 36000
 
 -- player building pheromones
 

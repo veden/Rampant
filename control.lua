@@ -296,7 +296,7 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
-    upgrade.compareTable(natives, "seigeAIToggle", settings.global["rampant-seigeAIToggle"].value)
+    upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
 
     upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
     upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)

@@ -1,9 +1,9 @@
 (module Visualizer racket
   (provide (all-defined-out))
-  
+
   (require "parseState.rkt")
   (require racket/gui/base)
-  (require plot)  
+  (require plot)
 
   (define CHUNK_SIZE 32)
 
@@ -28,7 +28,7 @@
 
   (define (roundTo x digits)
     (* (floor (/ x digits))
-       digits))    
+       digits))
 
   (define (runIt)
     (define frameWithEvents% (class frame%
@@ -45,7 +45,7 @@
            [height height]
            [x x]
            [y y]))
-    
+
     (define templates (list '(250 750 0 0 "controls")
                             (list windowWidth windowHeight windowX windowY "map")))
     (define frames (map (lambda (frame)
@@ -76,7 +76,7 @@
                           [parent panel]
                           [label ""]
                           [vert-margin 270]))
-    
+
     (new button%
          [parent mainFrame]
          [label "Quit"]
@@ -90,7 +90,7 @@
     (define maxX 0)
     (define minY 0)
     (define maxY 0)
-    
+
     (define canvasWithEvents% (class canvas%
                                 (define/override (on-event event)
                                   (match (send event get-event-type)
@@ -107,7 +107,7 @@
 
     (define drawFrame (lambda (context)
                         null))
-    
+
     (define canvass (map (lambda (frame)
                            (let ((c (new canvasWithEvents%
                                          [parent frame]
@@ -140,8 +140,8 @@
                                 deathGen
                                 attackScore
                                 settleScore
-                                seigeScore) chunkMinMaxes))
-        
+                                siegeScore) chunkMinMaxes))
+
         (set! activeChunkSet chunks)
         (set! activeChunkMinMaxSet chunkMinMaxes)
         (set! activeChunkSetLookup chunkLookups)
@@ -157,13 +157,13 @@
 
         ;; (display (list minX minY maxX maxY))
         ;;       (display "\n")
-        
+
         (set! tileWidth (ceiling (/ windowWidth (+ (abs (/ (- maxX minX) CHUNK_SIZE)) 3))))
         (set! tileHeight (ceiling (/ windowHeight (+ (abs (/ (- maxY minY) CHUNK_SIZE)) 3))))
 
         ;; (display (list tileWidth tileHeight))
         ;;       (display "\n")
-        
+
         (refresh dc)
 
         (thread (lambda ()
@@ -173,7 +173,7 @@
     (define dcMap (first dcs))
 
     (showVisual dcMap (readState "/data/games/factorio/script-output/rampantState.txt"))
-    
+
     (define (chunkX->screenX x)
       (roundTo (* (normalize x minX maxX)
                   windowWidth)
@@ -189,7 +189,7 @@
                               minX
                               maxX)
                CHUNK_SIZE))
-    
+
     (define (screenY->chunkY y)
       (roundTo (fromNormalize (/ y windowHeight)
                               minY
@@ -217,7 +217,7 @@
 
     (define (findChunk x y)
       (hash-ref activeChunkSetLookup (list x y) INVALID_CHUNK))
-    
+
     (define (displayChunk x y)
       (let ((chunk (if (Chunk? activeHighlight)
                        activeHighlight
@@ -261,10 +261,10 @@
                          0)
             'solid))
 
-    
+
     (new radio-box%
          [label "Show Layer"]
-         [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "seigeScore")]
+         [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "siegeScore")]
          [selection 0]
          [parent mainFrame]
          (callback (lambda (radioButton event)
