@@ -9,7 +9,7 @@ local mathUtils = require("MathUtils")
 
 -- constants
 
-local MOVEMENT_PHEROMONE_GENERATOR_AMOUNT = constants.MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
+local MOVEMENT_PENALTY_AMOUNT = constants.MOVEMENT_PENALTY_AMOUNT
 local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
@@ -44,7 +44,7 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
     for i=1,#penalties do
         local penalty = penalties[i]
         if (penalty.c == chunk) then
-            penalty.v = penalty.v + MOVEMENT_PHEROMONE_GENERATOR_AMOUNT
+            penalty.v = penalty.v + MOVEMENT_PENALTY_AMOUNT
 	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
 	    	tableRemove(penalties, i)
 	    end
@@ -56,7 +56,7 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
     end
     tableInsert(penalties,
 		1,
-		{ v = MOVEMENT_PHEROMONE_GENERATOR_AMOUNT,
+		{ v = MOVEMENT_PENALTY_AMOUNT,
 		  c = chunk })
 end
 
@@ -75,13 +75,13 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction, squad) 
+function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction, squad)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection    
+    local highestDirection
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-	
+
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
             local score = scoreFunction(squad, neighborChunk)
             if (score > highestScore) then
@@ -91,11 +91,11 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
             end
         end
     end
-    
+
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (scoreFunction(squad, chunk) > highestScore) then
 	return SENTINEL_IMPASSABLE_CHUNK, -1
     end
-    
+
     return highestChunk, highestDirection
 end
 
@@ -106,11 +106,11 @@ end
 function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction, squad)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection    
+    local highestDirection
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
-            local score = scoreFunction(squad, neighborChunk)	   
+            local score = scoreFunction(squad, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -122,17 +122,17 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (scoreFunction(squad, chunk) > highestScore) then
 	return chunk, -1
     end
-    
+
     return highestChunk, highestDirection
 end
 
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, validFunction, scoreFunction, map) 
+function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, validFunction, scoreFunction, map)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection    
+    local highestDirection
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) and validFunction(map, chunk, neighborChunk) then
@@ -148,17 +148,17 @@ function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks,
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (scoreFunction(chunk) > highestScore) then
 	return SENTINEL_IMPASSABLE_CHUNK, -1
     end
-    
+
     return highestChunk, highestDirection
 end
 
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFunction, map) 
+function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFunction, map)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection    
+    local highestDirection
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
@@ -170,7 +170,7 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
             end
         end
     end
-    
+
     return highestChunk, highestDirection
 end
 
@@ -178,7 +178,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction, scoreFunction, map) 
+function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction, scoreFunction, map)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection

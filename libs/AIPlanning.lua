@@ -80,7 +80,8 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
     natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
 
     natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
-    natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.5) * 0.333
+    natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.50)
+
     natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinTime, natives.expansionMaxTime))
 
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
@@ -105,15 +106,13 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	local roll = mRandom() * mMax(1 - evolution_factor, 0.15)
 	if (roll > natives.temperament) then
 	    natives.state = AI_STATE_PEACEFUL
-	elseif natives.aiNocturnalMode then
-	    natives.state = AI_STATE_NOCTURNAL
 	else
 	    roll = mRandom()
 	    if (roll < 0.70) then
 	    	natives.state = AI_STATE_AGGRESSIVE
 	    elseif ((natives.enabledMigration) and (roll < 0.75)) then
 		natives.state = AI_STATE_MIGRATING
-	    elseif ((natives.seigeAIToggle) and (roll < 0.80)) then
+	    elseif ((natives.siegeAIToggle) and (roll < 0.80)) then
 		natives.state = AI_STATE_SIEGE
 	    elseif ((natives.raidAIToggle) and (evolution_factor >= 0.04)) then
 		natives.state = AI_STATE_RAIDING

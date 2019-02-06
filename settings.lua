@@ -494,7 +494,7 @@ data:extend({
 
         {
 	    type = "bool-setting",
-	    name = "rampant-seigeAIToggle",
+	    name = "rampant-siegeAIToggle",
 	    setting_type = "runtime-global",
 	    default_value = true,
 	    order = "m[total]-d[ai]",

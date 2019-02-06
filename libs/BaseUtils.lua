@@ -355,7 +355,7 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
             entity = surface.find_entities_filtered(map.filteredEntitiesWormQueryLimited)
             cost = BASE_WORM_UPGRADE
         end
-    elseif (choice >= 0.985) then
+    elseif (choice >= 0.995) then
         if (base.points >= BASE_UPGRADE) then
             if upgradeBase(base) then
                 base.points = base.points - BASE_UPGRADE

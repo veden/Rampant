@@ -73,7 +73,7 @@ local mFloor = math.floor
 local function fullScan(chunk, can_place_entity, canPlaceQuery)
     local x = chunk.x
     local y = chunk.y
-    
+
     local passableNorthSouth = false
     local passableEastWest = false
 
@@ -81,7 +81,7 @@ local function fullScan(chunk, can_place_entity, canPlaceQuery)
 
     local position = canPlaceQuery.position
     position[2] = y
-    
+
     for xi=x, x + 32 do
 	position[1] = xi
 	if can_place_entity(canPlaceQuery) then
@@ -92,7 +92,7 @@ local function fullScan(chunk, can_place_entity, canPlaceQuery)
 
     position[1] = x
     canPlaceQuery.name = "chunk-scanner-ew-rampant"
-    
+
     for yi=y, y + 32 do
 	position[2] = yi
 	if can_place_entity(canPlaceQuery) then
@@ -112,15 +112,15 @@ local function addEnemyStructureToChunk(map, chunk, entity, base)
     else
 	return
     end
-    
+
     local entityCollection = lookup[chunk]
     if not entityCollection then
 	lookup[chunk] = 0
     end
-    
+
     lookup[chunk] = lookup[chunk] + 1
 
-    setChunkBase(map, chunk, base)    
+    setChunkBase(map, chunk, base)
 end
 
 local function removeEnemyStructureFromChunk(map, chunk, entity)
@@ -136,7 +136,7 @@ local function removeEnemyStructureFromChunk(map, chunk, entity)
     if (getEnemyStructureCount(map, chunk) == 0) then
 	setChunkBase(map, chunk, nil)
     end
-    
+
     if lookup[chunk] then
 	if ((lookup[chunk] - 1) <= 0) then
 	    lookup[chunk] = nil
@@ -148,20 +148,20 @@ end
 
 local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
-    
+
     local leftTopChunk = SENTINEL_IMPASSABLE_CHUNK
     local rightTopChunk = SENTINEL_IMPASSABLE_CHUNK
     local leftBottomChunk = SENTINEL_IMPASSABLE_CHUNK
     local rightBottomChunk = SENTINEL_IMPASSABLE_CHUNK
-    
+
     if boundingBox then
         local center = entity.position
         local topXOffset
         local topYOffset
-        
+
         local bottomXOffset
         local bottomYOffset
-        
+
         -- if (entity.direction == DEFINES_DIRECTION_EAST) then
         --     topXOffset = boundingBox.left_top.y
         --     topYOffset = boundingBox.left_top.x
@@ -173,13 +173,13 @@ local function getEntityOverlapChunks(map, entity)
             bottomXOffset = boundingBox.right_bottom.x
             bottomYOffset = boundingBox.right_bottom.y
         -- end
-        
-        local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE 
+
+        local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         local leftTopChunkY = mFloor((center.y + topYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-        
-        local rightTopChunkX = mFloor((center.x + bottomXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE	
+
+        local rightTopChunkX = mFloor((center.x + bottomXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         local leftBottomChunkY = mFloor((center.y + bottomYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-	
+
         leftTopChunk = getChunkByXY(map, leftTopChunkX, leftTopChunkY)
         if (leftTopChunkX ~= rightTopChunkX) then
             rightTopChunk = getChunkByXY(map, rightTopChunkX, leftTopChunkY)
@@ -206,7 +206,7 @@ function chunkUtils.scanChunkPaths(chunk, surface, map)
     local passableNorthSouth, passableEastWest = fullScan(chunk,
 							  surface.can_place_entity,
 							  map.canPlaceQuery)
-    
+
     if passableEastWest and passableNorthSouth then
 	pass = CHUNK_ALL_DIRECTIONS
     elseif passableEastWest then
@@ -255,13 +255,13 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 
     if (passScore >= 0.40) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
-	
+
 	local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
 
 	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, map)
 
 	local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
-	
+
 	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
@@ -318,10 +318,10 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	    setNestCount(map, chunk, #nests)
 	    setWormCount(map, chunk, #worms)
 	end
-	
+
 	setPlayerBaseGenerator(map, chunk, playerObjects)
 	setResourceGenerator(map, chunk, resources)
-	
+
 	setPassable(map, chunk, pass)
 	setPathRating(map, chunk, passScore)
 
@@ -336,7 +336,7 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
 
     if (passScore >= 0.40) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
-	
+
 	local playerObjects = getPlayerBaseGenerator(map, chunk)
 
 	local nests = getNestCount(map, chunk)
@@ -354,7 +354,7 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function chunkUtils.analyzeChunk(chunk, natives, surface, map)    
+function chunkUtils.analyzeChunk(chunk, natives, surface, map)
     local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
@@ -377,7 +377,7 @@ function chunkUtils.createChunk(topX, topY)
     -- chunk[PASSABLE] = 0
     chunk[CHUNK_TICK] = 0
     -- chunk[PATH_RATING] = 0
-    
+
     return chunk
 end
 
@@ -408,7 +408,7 @@ function chunkUtils.entityForPassScan(map, entity)
     end
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, tick)    
+function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, tick)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
 	local chunk = getChunkByPosition(map, entity.position)
@@ -421,7 +421,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFa
 	end
 
 	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
-	
+
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addEnemyStructureToChunk(map, leftTop, entity, base)
 	end
@@ -433,9 +433,9 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFa
 	end
 	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addEnemyStructureToChunk(map, rightBottom, entity, base)
-	end	
+	end
     end
-    
+
     return entity
 end
 
@@ -443,7 +443,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
 	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
-	
+
 	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    removeEnemyStructureFromChunk(map, leftTop, entity)
 	end
@@ -462,14 +462,14 @@ end
 function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, creditNatives)
     local leftTop, rightTop, leftBottom, rightBottom
     local entityValue
-    
+
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         entityValue = BUILDING_PHEROMONES[entity.type]
 
         leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
         if not addObject then
     	    if creditNatives then
-    		natives.points = natives.points + entityValue
+    		natives.points = natives.points + (entityValue * 0.10)
     	    end
     	    entityValue = -entityValue
     	end
@@ -494,7 +494,7 @@ function chunkUtils.unregisterResource(entity, map)
 	return
     end
     local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
-    
+
     if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
 	addResourceGenerator(map, leftTop, -RESOURCE_NORMALIZER)
     end

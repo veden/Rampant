@@ -27,10 +27,10 @@
                       deathGen
                       attackScore
                       settleScore
-                      seigeScore)
+                      siegeScore)
     #:transparent)
-  
-  (struct Chunk (seigeScore
+
+  (struct Chunk (siegeScore
                  settleScore
                  attackScore
                  x
@@ -50,7 +50,7 @@
                  playerGen
                  deathGen)
     #:transparent)
-  
+
   (require threading)
 
   (define (getFile filePath)
@@ -96,7 +96,7 @@
                    "dGen: " (~v (Chunk-deathGen chunk)) "\n"
                    "aSco: " (~v (Chunk-attackScore chunk)) "\n"
                    "sSco: " (~v (Chunk-settleScore chunk)) "\n"
-                   "sSei: " (~v (Chunk-seigeScore chunk)) "\n"))
+                   "sSei: " (~v (Chunk-siegeScore chunk)) "\n"))
 
   (define (findChunkPropertiesMinMax chunks)
     (let ((xs (map Chunk-x chunks))
@@ -117,7 +117,7 @@
           (dGens (map Chunk-deathGen chunks))
           (aSco (map Chunk-attackScore chunks))
           (sSco (map Chunk-settleScore chunks))
-          (sSei (map Chunk-seigeScore chunks)))
+          (sSei (map Chunk-siegeScore chunks)))
       (ChunkRange (MinMax (apply min xs) (apply max xs))
                   (MinMax (apply min ys) (apply max ys))
                   (MinMax (apply min movements) (apply max movements))
