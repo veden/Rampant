@@ -469,7 +469,7 @@ function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, credi
         leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
         if not addObject then
     	    if creditNatives then
-    		natives.points = natives.points + (entityValue * 0.10)
+    		natives.points = natives.points + (entityValue * 0.12)
     	    end
     	    entityValue = -entityValue
     	end
