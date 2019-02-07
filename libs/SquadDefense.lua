@@ -46,14 +46,14 @@ local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
-    return -(neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * 100) + (getPlayerBaseGenerator(map, neighborChunk) * 20))
+    return -(neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + -(neighborChunk[PLAYER_PHEROMONE] * 100) + -(getPlayerBaseGenerator(map, neighborChunk) * 200))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
     if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast or force) then
 	local performRetreat = false
 	local enemiesToSquad = nil
-	
+
 	if not squad then
 	    enemiesToSquad = surface.find_enemy_units(position, radius)
 	    performRetreat = #enemiesToSquad > 0
@@ -64,7 +64,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 	elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
 	    performRetreat = #squad.group.members > 1
 	end
-	
+
 	if performRetreat then
 	    setRetreatTick(map, chunk, tick)
 	    local exitPath,exitDirection  = scoreNeighborsForRetreat(chunk,
@@ -75,14 +75,14 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		local retreatPosition = findMovementPosition(surface,
 							     positionFromDirectionAndChunk(exitDirection, position, map.position, 0.98),
 							     false)
-		
+
 		if not retreatPosition then
 		    return
 		end
 
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
-                
+
 		local newSquad = findNearbySquadFiltered(map, exitPath, retreatPosition)
 
 		if not newSquad then
