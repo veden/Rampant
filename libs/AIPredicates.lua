@@ -27,7 +27,7 @@ end
 function aiPredicates.canMigrate(natives, surface)
     return ((natives.state == AI_STATE_MIGRATING) or
 	    (natives.state == AI_STATE_SIEGE))
-        -- and natives.expansion
+        and natives.expansion
         and ((not natives.aiNocturnalMode) or
                 (natives.aiNocturnalMode and surface.darkness > 0.65))
 end
