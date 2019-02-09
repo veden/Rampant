@@ -4,11 +4,12 @@ Date: 2. 5. 2019
   Improvements:
     - Integrated nocturnal mode with siege, migration, and raiding states so they work together now.
     - Swapped scoring function when in siege mode causing the biter lines to actually advance now.
+    - Added Onslaught AI state where ai gets 2x credits per logic cycle
   Tweaks:
     - Reverted nest upgrade chance to 0.05%
     - Increased Biter credits per destroyed building by 10% after fixing 10x credit bug
     - Increased settler unit groups standard deviation by roughly 30%
-    - Decreased death generator from 125 to 100
+    - Increased death pheromone persistance from 0.975 to 0.995
   Bugfixes:
     - Fix for squad movement penalties not be boosted alongside building pheromone causes units to repeat movement into chunks more frequently than needed
     - Fix for biter getting 10x credits for destroying buildings causing relentless onslaughts.

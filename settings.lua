@@ -501,6 +501,15 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-onslaughtAIToggle",
+	    setting_type = "runtime-global",
+	    default_value = true,
+	    order = "m[total]-e[ai]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",

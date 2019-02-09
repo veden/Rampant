@@ -51,6 +51,7 @@ Configure Options not in game menu:
 - Raiding AI state - The AI will periodically send attack waves based on building proximity and not just pollution  
 - Migration AI State - Where the ai looks for resources patches to setup new bases  
 - Sieging AI state - Where the ai does a migration event but also builds towards the player and their base  
+- Onslaught AI state - Where the ai gains 2x credits per logic cycle that can be used on units and buildings  
 - Vanilla AI Replacement - The default expansion and attack waves can be completely turned off and allow Rampant to work its magic  
 
 # Planned Features

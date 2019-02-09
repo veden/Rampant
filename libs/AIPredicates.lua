@@ -10,6 +10,7 @@ local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
+local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 -- local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
 
 -- imported functions
@@ -18,7 +19,7 @@ local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
 function aiPredicates.canAttack(natives, surface)
 
-    return ((natives.state == AI_STATE_AGGRESSIVE) or (natives.state == AI_STATE_RAIDING))
+    return ((natives.state == AI_STATE_AGGRESSIVE) or (natives.state == AI_STATE_RAIDING) or (natives.state == AI_STATE_ONSLAUGHT))
         and not surface.peaceful_mode
         and ((not natives.aiNocturnalMode) or
                 (natives.aiNocturnalMode and surface.darkness > 0.65))

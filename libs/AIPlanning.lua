@@ -15,7 +15,7 @@ local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
-local AI_STATE_NOCTURNAL = constants.AI_STATE_NOCTURNAL
+local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
 
@@ -91,6 +91,10 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 
     local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
 
+    if (natives.state == AI_STATE_ONSLAUGHT) then
+        points = points * 2
+    end
+
     natives.baseIncrement = points
 
     if (natives.points < maxPoints) then
@@ -114,6 +118,8 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 		natives.state = AI_STATE_MIGRATING
 	    elseif ((natives.siegeAIToggle) and (roll < 0.80)) then
 		natives.state = AI_STATE_SIEGE
+            elseif ((natives.onslaughtAIToggle) and (roll < 0.85)) then
+		natives.state = AI_STATE_ONSLAUGHT
 	    elseif ((natives.raidAIToggle) and (evolution_factor >= 0.04)) then
 		natives.state = AI_STATE_RAIDING
 
