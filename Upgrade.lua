@@ -10,6 +10,8 @@ local mathUtils = require("libs/MathUtils")
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
+local SQUAD_GUARDING = constants.SQUAD_GUARDING
+
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -217,10 +219,17 @@ function upgrade.attempt(natives)
 	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.22")
 	global.version = constants.VERSION_57
     end
-    if (global.version < constants.VERSION_71) then
+    if (global.version < constants.VERSION_72) then
 
-	game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.36")
-	global.version = constants.VERSION_71
+	for _,squad in pairs(natives.squads) do
+	    squad.status = SQUAD_GUARDING
+            squad.cycles = 0
+    	end
+
+        natives.nextChunkSort = 0
+
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.37")
+	global.version = constants.VERSION_72
     end
 
     return starting ~= global.version, natives

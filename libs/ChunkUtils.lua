@@ -16,6 +16,8 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
+local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
+
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
@@ -469,7 +471,11 @@ function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, credi
         leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
         if not addObject then
     	    if creditNatives then
-    		natives.points = natives.points + (entityValue * 0.12)
+                if (natives.state == AI_STATE_ONSLAUGHT) then
+                    natives.points = natives.points + entityValue
+                else
+                    natives.points = natives.points + (entityValue * 0.12)
+                end
     	    end
     	    entityValue = -entityValue
     	end

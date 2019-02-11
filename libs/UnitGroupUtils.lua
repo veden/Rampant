@@ -96,15 +96,15 @@ function unitGroupUtils.findNearbySquad(map, chunk, position)
 	    end
 	end
     end
-    
+
     return nil
 end
 
 function unitGroupUtils.createSquad(position, surface, natives, group)
     local unitGroup = group or surface.create_unit_group({position=position})
-    
+
     local squad = {
-	group = unitGroup, 
+	group = unitGroup,
 	status = SQUAD_GUARDING,
 	penalties = {},
 	settlers = false,
@@ -118,7 +118,7 @@ function unitGroupUtils.createSquad(position, surface, natives, group)
 	originPosition = {x = 0,
 			  y = 0},
 	chunk = nil
-	
+
     }
     natives.squads[#natives.squads+1] = squad
     return squad
@@ -142,7 +142,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
     local squads = natives.squads
     for i=1,#squads do
 	local squad = squads[i]
-	if (squad.group == unitGroup) then  
+	if (squad.group == unitGroup) then
 	    return squad
 	end
     end
@@ -200,7 +200,7 @@ function unitGroupUtils.cleanSquads(natives, map)
 	    removeSquadFromChunk(map, squad)
 	end
     end
-    
+
     natives.squads = cleanSquads
 end
 
@@ -228,9 +228,6 @@ local function mergeGroups(squads, squad, group, status, position, memberCount)
 		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
 		    for memberIndex=1, mergeCount do
 			group.add_member(mergeMembers[memberIndex])
-		    end
-		    if mergeSquad.kamikaze then
-			squad.kamikaze = true
 		    end
 		    merge = true
 		    mergeGroup.destroy()
@@ -261,7 +258,7 @@ function unitGroupUtils.regroupSquads(natives, map)
 	    if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
 		local status = squad.status
 		local squadPosition = group.position
-	        local mergedSquads
+	        local mergedSquads = false
 		local maxed
 		local chunk = squad.chunk
 
@@ -272,34 +269,35 @@ function unitGroupUtils.regroupSquads(natives, map)
 								   status,
 								   squadPosition,
 								   memberCount)
-		    
+
 		    if not maxed then
 			local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
 			for x=1,#neighbors do
-			    mergedSquads, memberCount, maxed = mergeGroups(getSquadsOnChunk(map, neighbors[x]),
+                            local maybeMerge
+			    maybeMerge, memberCount, maxed = mergeGroups(getSquadsOnChunk(map, neighbors[x]),
 									   squad,
 									   group,
 									   status,
 									   squadPosition,
 									   memberCount)
+                            if maybeMerge then
+                                mergedSquads = true
+                            end
 			    if maxed then
 				break
 			    end
 			end
 		    end
 		end
-		
-	        if mergedSquads and not squad.kamikaze then
-	    	    local kamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold(#squad.group.members, natives)
-	    	    if (mRandom() < kamikazeThreshold) then
-	    		squad.kamikaze = true
-	    	    end
-	        end
+
+                if mergedSquads then
+                    squad.status = SQUAD_GUARDING
+                end
 	    end
 	end
     end
-    
+
     if (maxSquadIndex == squadCount) then
 	natives.regroupIndex = 1
     else

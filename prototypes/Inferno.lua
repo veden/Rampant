@@ -61,7 +61,7 @@ function inferno.addFaction()
 		    smokeWithGlowName = smokeGlow,
 		    smokeWithoutGlowName = smokeWithoutGlow,
 		    smokeAddingFuelName = smokeFuel,
-		    stickerAnimation = { 
+		    stickerAnimation = {
 			filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
 			line_length = 8,
 			width = 60,
@@ -92,14 +92,14 @@ function inferno.addFaction()
 		loot = spawnerLoot,
 		attributes = {},
 		resistances = {},
-		
+
 		tint = {r=0.99, g=0.09, b=0.09, a=1}
 	    }
 	},
 
 	{
 	    unit = {
-		
+
 		{
 		    type = "attack",
 		    name = "stickerDamagePerTick",
@@ -174,7 +174,7 @@ function inferno.addFaction()
 		    [9] = 1.1,
 		    [10] = 1.1
 		},
-		
+
 		{
 		    type = "attack",
 		    name = "fireSpreadCooldown",
@@ -189,7 +189,7 @@ function inferno.addFaction()
 		    [9] = 25,
 		    [10] = 25
 		},
-		
+
 		{
 		    type = "attack",
 		    name = "stickerDuration",
@@ -205,7 +205,7 @@ function inferno.addFaction()
 		    [10] = 2200
 		},
 
-		{    
+		{
 		    type = "attack",
 		    name = "damage",
 		    [1] = 4,
@@ -220,35 +220,35 @@ function inferno.addFaction()
 		    [10] = 7
 		},
 
-		{		
-		type = "resistance",
-		name = "acid",
-		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
-		},
-		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
-		}		
-	    },
-		
+		{
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
+                },
+
 		{
 		    type = "resistance",
 		    name = "fire",
@@ -279,36 +279,36 @@ function inferno.addFaction()
 		}
 
 	    },
-	    
+
 	    unitSpawner = {
-{		
-		type = "resistance",
-		name = "acid",
-		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
-		},
-		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
-		}		
-},
+                {
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -337,7 +337,7 @@ function inferno.addFaction()
 			[9] = 95,
 			[10] = 97
 		    }
-		}	    
+		}
 	    }
 	},
 
@@ -347,7 +347,7 @@ function inferno.addFaction()
 				      spitterattackanimation(attributes.scale,
 							     attributes.tint))
 	end,
-	
+
 	{
 	    unit = INFERNO_UNIT_VARIATIONS,
 	    unitSpawner = INFERNO_NEST_VARIATIONS
@@ -374,7 +374,7 @@ function inferno.addFaction()
 		smokeWithGlowName = smokeGlow,
 		smokeWithoutGlowName = smokeWithoutGlow,
 		smokeAddingFuelName = smokeFuel,
-		stickerAnimation = { 
+		stickerAnimation = {
 		    filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
 		    line_length = 8,
 		    width = 60,
@@ -398,7 +398,7 @@ function inferno.addFaction()
 	    sTint = {r=1, g=1, b=1, a=0.5}
 	},
 
-	{	    
+	{
 
 	    {
 		type = "attack",
@@ -474,7 +474,7 @@ function inferno.addFaction()
 		[9] = 1.1,
 		[10] = 1.1
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "fireSpreadCooldown",
@@ -489,7 +489,7 @@ function inferno.addFaction()
 		[9] = 25,
 		[10] = 25
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "stickerDuration",
@@ -504,8 +504,8 @@ function inferno.addFaction()
 		[9] = 2200,
 		[10] = 2200
 	    },
-	    
-	    {    
+
+	    {
 		type = "attack",
 		name = "damage",
 		[1] = 4,
@@ -520,7 +520,7 @@ function inferno.addFaction()
 		[10] = 7
 	    },
 
-{		
+            {
 		type = "resistance",
 		name = "acid",
 		decrease = {
@@ -546,9 +546,9 @@ function inferno.addFaction()
 		    [8] = 85,
 		    [9] = 90,
 		    [10] = 90
-		}		
+		}
 	    },
-	    
+
 	    {
 		type = "resistance",
 		name = "fire",
