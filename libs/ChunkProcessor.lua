@@ -3,6 +3,7 @@ local chunkProcessor = {}
 -- imports
 
 local chunkUtils = require("ChunkUtils")
+local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local squadDefense = require("SquadDefense")
 local unitGroupUtils = require("UnitGroupUtils")
@@ -24,16 +25,39 @@ local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
 
+local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
+
+local tSort = table.sort
+
+local abs = math.abs
+
 -- module code
+
+local origin = {x=0,y=0}
+
+local function sorter(a, b)
+    local aDistance = euclideanDistanceNamed(a, origin)
+    local bDistance = euclideanDistanceNamed(b, origin)
+
+    if (aDistance == bDistance) then
+        if (a.x == b.x) then
+            return (abs(a.y) < abs(b.y))
+        else
+            return (abs(a.x) < abs(b.x))
+        end
+    end
+
+    return (aDistance < bDistance)
+end
 
 function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack, tick, evolutionFactor, rebuilding)
     local processQueue = map.processQueue
 
     local area = map.area
-    
+
     local topOffset = area[1]
     local bottomOffset = area[2]
-    
+
     for i=#pendingStack, 1, -1 do
         local event = pendingStack[i]
         pendingStack[i] = nil
@@ -52,7 +76,7 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local chunkX = chunk.x
-	    
+
 	    if map[chunkX] == nil then
 		map[chunkX] = {}
 	    end
@@ -61,11 +85,16 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 	    processQueue[#processQueue+1] = chunk
 	end
     end
+
+    if (#processQueue > natives.nextChunkSort) then
+        natives.nextChunkSort = #processQueue + 75
+        tSort(processQueue, sorter)
+    end
 end
 
 function chunkProcessor.processScanChunks(map, surface)
     local area = map.area
-    
+
     local topOffset = area[1]
     local bottomOffset = area[2]
 
@@ -74,7 +103,7 @@ function chunkProcessor.processScanChunks(map, surface)
     for chunk,_ in pairs(map.chunkToPassScan) do
 	local x = chunk.x
 	local y = chunk.y
-	
+
 	topOffset[1] = x
 	topOffset[2] = y
 	bottomOffset[1] = x + CHUNK_SIZE
@@ -92,7 +121,7 @@ function chunkProcessor.processScanChunks(map, surface)
     for i=#removals,1,-1 do
 	table.remove(map.processQueue, i)
     end
-   
+
     return {}
 end
 
@@ -100,18 +129,18 @@ function chunkProcessor.processSpawnerChunks(map, surface, natives, tick)
     local queue = map.queueSpawners
 
     local result = {}
-    
+
     for i=1, #queue do
 	local o = queue[i]
 	if ((tick - o[1]) > SPAWNER_EGG_TIMEOUT) then
 	    local chunk = o[2]
 	    local position = o[3]
-	    
+
 	    retreatUnits(chunk,
 			 position,
 			 nil,
 			 map,
-			 surface, 
+			 surface,
 			 natives,
 			 tick,
 			 RETREAT_GRAB_RADIUS,
@@ -121,7 +150,7 @@ function chunkProcessor.processSpawnerChunks(map, surface, natives, tick)
 	    result[#result+1] = o
 	end
     end
-    
+
     return result
 end
 

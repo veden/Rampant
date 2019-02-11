@@ -51,7 +51,7 @@ data:extend({
 	    name = "rampant-attackPlayerThreshold",
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
-	    default_value = 7,
+	    default_value = 18,
 	    order = "b[modifier]-c[threshold]",
 	    per_user = false
 	},

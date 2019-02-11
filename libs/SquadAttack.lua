@@ -40,6 +40,8 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
+
 -- imported functions
 
 local mRandom = math.random
@@ -71,19 +73,33 @@ local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 -- module code
 
 local function scoreResourceLocation(squad, neighborChunk)
-    local settle = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[RESOURCE_PHEROMONE]
+    local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE]
     return settle - lookupMovementPenalty(squad, neighborChunk) - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(squad, neighborChunk)
-    local settle = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return settle - lookupMovementPenalty(squad, neighborChunk)
 end
 
-local function scoreAttackLocation(squad, neighborChunk)
-    local damage = (2*neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+local function scoreAttackLocation(natives, squad, neighborChunk)
+    local damage
+
+    if (neighborChunk[MOVEMENT_PHEROMONE] >= 0) then
+        damage = neighborChunk[MOVEMENT_PHEROMONE] + (neighborChunk[BASE_PHEROMONE] ) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    else
+        damage = (neighborChunk[BASE_PHEROMONE] * (1 - (neighborChunk[MOVEMENT_PHEROMONE] / -natives.retreatThreshold))) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    end
+
+    -- (neighborChunk[BASE_PHEROMONE] ) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage - lookupMovementPenalty(squad, neighborChunk)
 end
+
+local function scoreAttackKamikazeLocation(natives, squad, neighborChunk)
+    local damage = neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    return damage - lookupMovementPenalty(squad, neighborChunk)
+end
+
 
 local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, group, natives, surface)
     local groupState = group.state
@@ -114,9 +130,9 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 		if position then
 		    attackPosition.x = position.x
 		    attackPosition.y = position.y
-		    
+
 		    squad.status = SQUAD_BUILDING
-		    
+
 		    group.set_command(settleCmd)
 		    group.start_moving()
 		else
@@ -126,7 +142,7 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
 		attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-		
+
 		local position = findMovementPosition(surface, positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35))
 		if position then
 		    attackPosition.x = position.x
@@ -145,15 +161,16 @@ end
 
 local function attackMove(map, attackPosition, attackCmd, squad, group, natives, surface)
     local groupState = group.state
-    
+
     if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles == 0)) then
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
 	local attackChunk, attackDirection = scoreNeighborsForAttack(map,
+                                                                     natives,
 								     chunk,
 								     getNeighborChunks(map, x, y),
-								     scoreAttackLocation,
+								     squad.attackScoreFunction,
 								     squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
@@ -165,12 +182,12 @@ local function attackMove(map, attackPosition, attackCmd, squad, group, natives,
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local playerBaseGenerator = getPlayerBaseGenerator(map, attackChunk)
 	    if (playerBaseGenerator == 0) or ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING)) then
-		
+
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
 		local moreFrenzy = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100)
 		squad.frenzy = moreFrenzy
-		
+
 		if squad.rabid or squad.frenzy then
 		    attackCmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
 		else
@@ -203,7 +220,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     local attackPosition = map.position
     local attackCmd = map.attackAreaCommand
     local settleCmd = map.settleCommand
-    
+
     for i=1,#squads do
         local squad = squads[i]
         local group = squad.group
@@ -231,16 +248,23 @@ function squadAttack.squadsBeginAttack(natives, players)
 	    end
 	else
 	    if (squad.status == SQUAD_GUARDING) and group and group.valid then
-		local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
-
-		local groupPosition = group.position	    
+		local groupPosition = group.position
 		if playersWithinProximityToPosition(players, groupPosition, 100, natives) then
 		    squad.frenzy = true
 		    squad.frenzyPosition.x = groupPosition.x
 		    squad.frenzyPosition.y = groupPosition.y
 		end
-		
-		squad.kamikaze = mRandom() < kamikazeThreshold
+
+                local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+                if not squad.kamikaze then
+                    squad.kamikaze = (mRandom() < kamikazeThreshold)
+                end
+
+                if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
+                    squad.attackScoreFunction = scoreAttackKamikazeLocation
+                else
+                    squad.attackScoreFunction = scoreAttackLocation
+                end
 		squad.status = SQUAD_RAIDING
 	    end
 	end

@@ -114,9 +114,9 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    roll = mRandom()
 	    if (roll < 0.70) then
 	    	natives.state = AI_STATE_AGGRESSIVE
-	    elseif ((natives.enabledMigration) and (roll < 0.75)) then
+	    elseif ((natives.enabledMigration) and (natives.expansion) and (roll < 0.75)) then
 		natives.state = AI_STATE_MIGRATING
-	    elseif ((natives.siegeAIToggle) and (roll < 0.80)) then
+	    elseif ((natives.siegeAIToggle) and (natives.expansion) and (roll < 0.80)) then
 		natives.state = AI_STATE_SIEGE
             elseif ((natives.onslaughtAIToggle) and (roll < 0.85)) then
 		natives.state = AI_STATE_ONSLAUGHT

@@ -15,6 +15,8 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
+local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
+
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
 local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
@@ -46,7 +48,7 @@ local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
-    return -(neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + -(neighborChunk[PLAYER_PHEROMONE] * 100) + -(getPlayerBaseGenerator(map, neighborChunk) * 200))
+    return -(neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) + -(getPlayerBaseGenerator(map, neighborChunk)))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)

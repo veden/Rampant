@@ -1,6 +1,8 @@
 (module AiState racket
   (provide (all-defined-out))
 
+  (require math/statistics)
+
   (struct AiState (chunks
                    chunksLookup
                    minMaxes)
@@ -27,10 +29,14 @@
                       deathGen
                       attackScore
                       settleScore
-                      siegeScore)
+                      siegeScore
+                      retreatScore
+                      kamikazeScore)
     #:transparent)
 
-  (struct Chunk (siegeScore
+  (struct Chunk (kamikazeScore
+                 retreatScore
+                 siegeScore
                  settleScore
                  attackScore
                  x
@@ -62,18 +68,28 @@
     (match-let (((list movement base player resource passable tick rating x y nest
                        worms rally retreat resourceGen playerGen deathGen) (string-split str ",")))
       (apply Chunk
-             (cons (+ (* 2 (string->number movement))
-                      (string->number resource)
-                      (string->number base)
-                      (* (string->number player) 500))
-                   (cons (+ (* 2 (string->number movement))
-                            (string->number resource))
-                         (cons (+ (* 2 (string->number movement))
+             (cons (+ (string->number base)
+                      (* (string->number player) 2500))
+                   (cons (+ (- (string->number base))
+                            (string->number movement)
+                            (- (string->number playerGen))
+                            (- (* (string->number player) 2500)))
+                         (cons (+ (string->number movement)
+                                  (string->number resource)
                                   (string->number base)
-                                  (* (string->number player) 500))
-                               (map string->number
-                                    (list x y movement base player resource passable tick rating nest
-                                          worms rally retreat resourceGen playerGen deathGen))))))))
+                                  (* (string->number player) 2500))
+                               (cons (+ (string->number movement)
+                                        (string->number resource))
+                                     (cons (+ ;; (* 2 (string->number movement))
+                                              (* (string->number base)
+                                                 (if (< (string->number movement) 0)
+                                                     (- 1 (/ (string->number movement)
+                                                             -100000))
+                                                     1))
+                                              (* (string->number player) 2500))
+                                           (map string->number
+                                                (list x y movement base player resource passable tick rating nest
+                                                      worms rally retreat resourceGen playerGen deathGen))))))))))
 
   (define (chunk->string chunk)
     (string-append "x: " (~v (Chunk-x chunk)) "\n"
@@ -96,7 +112,18 @@
                    "dGen: " (~v (Chunk-deathGen chunk)) "\n"
                    "aSco: " (~v (Chunk-attackScore chunk)) "\n"
                    "sSco: " (~v (Chunk-settleScore chunk)) "\n"
-                   "sSei: " (~v (Chunk-siegeScore chunk)) "\n"))
+                   "sSei: " (~v (Chunk-siegeScore chunk)) "\n"
+                   "sRet: " (~v (Chunk-retreatScore chunk)) "\n"))
+
+  (define (normalizeRange xs)
+    (let* ((sDev (stddev xs))
+           (sMean (mean xs))
+           (target (* 2.5 sDev))
+           (cleanXs (filter (lambda (x)
+                              (<= (abs (- x sMean)) target))
+                            xs)))
+      (MinMax (apply min cleanXs)
+              (apply max cleanXs))))
 
   (define (findChunkPropertiesMinMax chunks)
     (let ((xs (map Chunk-x chunks))
@@ -117,16 +144,41 @@
           (dGens (map Chunk-deathGen chunks))
           (aSco (map Chunk-attackScore chunks))
           (sSco (map Chunk-settleScore chunks))
-          (sSei (map Chunk-siegeScore chunks)))
+          (sSei (map Chunk-siegeScore chunks))
+          (sRet (map Chunk-retreatScore chunks))
+          (sKam (map Chunk-kamikazeScore chunks)))
+
+      ;; (ChunkRange (MinMax (apply min xs) (apply max xs))
+      ;;             (MinMax (apply min ys) (apply max ys))
+      ;;             (MinMax (apply min movements) (apply max movements))
+      ;;             (MinMax (apply min bases) (apply max bases))
+      ;;             (MinMax (apply min players) (apply max players))
+      ;;             (MinMax (apply min resources) (apply max resources))
+      ;;             (MinMax (apply min passables) (apply max passables))
+      ;;             (MinMax (apply min ticks) (apply max ticks))
+      ;;             (MinMax (apply min ratings) (apply max ratings))
+      ;;             (MinMax (apply min nests) (apply max nests))
+      ;;             (MinMax (apply min worms) (apply max worms))
+      ;;             (MinMax (apply min rallys) (apply max rallys))
+      ;;             (MinMax (apply min retreats) (apply max retreats))
+      ;;             (MinMax (apply min rGens) (apply max rGens))
+      ;;             (MinMax (apply min pGens) (apply max pGens))
+      ;;             (MinMax (apply min dGens) (apply max dGens))
+      ;;             (MinMax (apply min aSco) (apply max aSco))
+      ;;             (MinMax (apply min sSco) (apply max sSco))
+      ;;             (MinMax (apply min sSei) (apply max sSei))
+      ;;             (MinMax (apply min sRet) (apply max sRet))
+      ;;             (MinMax (apply min sKam) (apply max sKam)))
+
       (ChunkRange (MinMax (apply min xs) (apply max xs))
                   (MinMax (apply min ys) (apply max ys))
-                  (MinMax (apply min movements) (apply max movements))
-                  (MinMax (apply min bases) (apply max bases))
-                  (MinMax (apply min players) (apply max players))
-                  (MinMax (apply min resources) (apply max resources))
-                  (MinMax (apply min passables) (apply max passables))
-                  (MinMax (apply min ticks) (apply max ticks))
-                  (MinMax (apply min ratings) (apply max ratings))
+                  (normalizeRange movements)
+                  (normalizeRange bases)
+                  (normalizeRange players)
+                  (normalizeRange resources)
+                  (normalizeRange passables)
+                  (normalizeRange ticks)
+                  (normalizeRange ratings)
                   (MinMax (apply min nests) (apply max nests))
                   (MinMax (apply min worms) (apply max worms))
                   (MinMax (apply min rallys) (apply max rallys))
@@ -134,9 +186,13 @@
                   (MinMax (apply min rGens) (apply max rGens))
                   (MinMax (apply min pGens) (apply max pGens))
                   (MinMax (apply min dGens) (apply max dGens))
-                  (MinMax (apply min aSco) (apply max aSco))
-                  (MinMax (apply min sSco) (apply max sSco))
-                  (MinMax (apply min sSei) (apply max sSei)))))
+                  (normalizeRange aSco)
+                  (normalizeRange sSco)
+                  (normalizeRange sSei)
+                  (normalizeRange sRet)
+                  (normalizeRange sKam))
+
+      ))
 
   (define (readState filePath)
     (let* ((replayChunks (getFile filePath))
@@ -153,4 +209,4 @@
                minMaxes)))
 
   (define (test)
-    (readState "/data/games/factorio/script-output/rampantState.txt")))
+    (AiState-minMaxes (readState "/data/games/factorio/script-output/rampantState.txt"))))
