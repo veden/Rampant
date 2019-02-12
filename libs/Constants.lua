@@ -76,6 +76,8 @@ constants.EVOLUTION_INCREMENTS = 0.05
 
 -- ai
 
+constants.MAX_TICKS_BEFORE_SORT_CHUNKS = 60 * 60 * 30 -- 1 tick = 1/60 sec * 60 = 1 second
+
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
 constants.AI_POINT_GENERATOR_AMOUNT = 6

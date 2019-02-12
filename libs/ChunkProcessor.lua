@@ -17,6 +17,8 @@ local SPAWNER_EGG_TIMEOUT = constants.SPAWNER_EGG_TIMEOUT
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
+local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
+
 -- imported functions
 
 local retreatUnits = squadDefense.retreatUnits
@@ -86,8 +88,10 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 	end
     end
 
-    if (#processQueue > natives.nextChunkSort) then
+    if (#processQueue > natives.nextChunkSort) or
+    (((tick - natives.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((natives.nextChunkSort - 75) ~= #processQueue)) then
         natives.nextChunkSort = #processQueue + 75
+        natives.nextChunkSortTick = tick
         tSort(processQueue, sorter)
     end
 end
