@@ -12,6 +12,13 @@ local bobsUnits = require("BobsBaseUtils")
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
+local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
+local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
+local BASE_AI_STATE_WORMS = constants.BASE_AI_STATE_WORMS
+local BASE_AI_STATE_NESTS = constants.BASE_AI_STATE_NESTS
+local BASE_AI_STATE_OVERDRIVE = constants.BASE_AI_STATE_OVERDRIVE
+local BASE_AI_STATE_MUTATE = constants.BASE_AI_STATE_MUTATE
+
 local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
 local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
@@ -98,7 +105,10 @@ local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 
-
+local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
+local BASE_AI_MIN_TEMPERAMENT_DURATION = constants.BASE_AI_MIN_TEMPERAMENT_DURATION
+local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
+local BASE_AI_MAX_TEMPERAMENT_DURATION = constants.BASE_AI_MAX_TEMPERAMENT_DURATION
 
 local BASE_WORM_UPGRADE = constants.BASE_WORM_UPGRADE
 local BASE_SPAWNER_UPGRADE = constants.BASE_SPAWNER_UPGRADE
@@ -123,6 +133,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
+local roundToNearest = mathUtils.roundToNearest
+local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 local roundToFloor = mathUtils.roundToFloor
 
@@ -323,12 +335,34 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     return nil
 end
 
-local function upgradeBase(base)
-    local paths = BASE_ALIGNMENT_PATHS[base.alignment]
-    if paths and (#paths > 0) then
-        base.alignment = paths[mRandom(#paths)]
+local function findMutation(natives, evolutionFactor)
+    natives.evolutionTableAlignmentOrder
+end
+
+local function upgradeBase(natives, evolutionFactor, base)
+    print("currentAlignment", serpent.dump(base.alignment))
+
+    local alignmentCount = #base.alignment
+
+    local roll = mRandom()
+    if alignmentCount == 2 then
+        if (roll < 0.05) then
+            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[1])}
+        elseif (roll < 0.4) then
+            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[2]), base.alignment[2]}
+        else
+            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor, base.alignment[1])}
+        end
+        return true
+    elseif alignmentCount == 1 then
+        if (roll < 0.85) then
+            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[1])}
+        else
+            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor, base.alignment[1])}
+        end
         return true
     end
+
     return false
 end
 
@@ -345,30 +379,70 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
     local entity
     local cost
     local choice = mRandom()
-    if (choice <= 0.3) then
+    print(base, choice, base.points, base.state)
+
+    if (base.state == BASE_AI_STATE_NESTS) or ((base.state == BASE_AI_STATE_ACTIVE) and (choice < 0.5)) then
         if (base.points >= BASE_SPAWNER_UPGRADE) then
+            print("new nest")
             entity = surface.find_entities_filtered(map.filteredEntitiesSpawnerQueryLimited)
             cost = BASE_SPAWNER_UPGRADE
         end
-    elseif (choice <= 0.6) then
+    elseif (base.state == BASE_AI_STATE_WORMS) or (base.state == BASE_AI_STATE_ACTIVE) then
         if (base.points >= BASE_WORM_UPGRADE) then
+            print("new worm")
             entity = surface.find_entities_filtered(map.filteredEntitiesWormQueryLimited)
             cost = BASE_WORM_UPGRADE
         end
-    elseif (choice >= 0.995) then
+    elseif (base.state == BASE_AI_STATE_MUTATE) then
         if (base.points >= BASE_UPGRADE) then
-            if upgradeBase(base) then
+            print("new mutation")
+            if upgradeBase(natives, evolutionFactor, base) then
                 base.points = base.points - BASE_UPGRADE
             end
         end
     end
 
     if entity and (#entity > 0) then
-        baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment, natives, evolutionFactor)
+        print("upgrading")
+        baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment[mRandom(#base.alignment)], natives, evolutionFactor)
         base.points = base.points - cost
     end
 
-    base.points = base.points + natives.baseIncrement
+    if (base.state == BASE_AI_STATE_OVERDRIVE) then
+        base.points = base.points + (natives.baseIncrement * 5)
+    elseif (base.state ~= BASE_AI_STATE_DORMANT) then
+        base.points = base.points + natives.baseIncrement
+    end
+
+    if (base.temperamentTick <= tick) then
+	base.temperament = mRandom()
+	base.temperamentTick = randomTickEvent(tick, BASE_AI_MIN_TEMPERAMENT_DURATION, BASE_AI_MAX_TEMPERAMENT_DURATION)
+    end
+
+    if (base.stateTick <= tick) then
+	local roll = mRandom() * mMax(1 - evolutionFactor, 0.15)
+	if (roll > natives.temperament) then
+	    base.state = BASE_AI_STATE_DORMANT
+	else
+	    roll = mRandom()
+	    if (roll < 0.70) then
+	    	base.state = BASE_AI_STATE_ACTIVE
+	    elseif (roll < 0.80) then
+		base.state = BASE_AI_STATE_NESTS
+            elseif (roll < 0.90) then
+		base.state = BASE_AI_STATE_WORMS
+            elseif (roll < 0.975) then
+		base.state = BASE_AI_STATE_OVERDRIVE
+            else
+		base.state = BASE_AI_STATE_MUTATE
+	    end
+	end
+	base.stateTick = randomTickEvent(tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
+    end
+
+    if (base.alignment[0] == BASE_ALIGNMENT_DEADZONE) then
+        base.state = BASE_AI_STATE_DORMANT
+    end
 
     base.tick = tick
 end
@@ -400,7 +474,11 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
         y = y,
         distanceThreshold = distanceThreshold,
         tick = tick,
-        alignment = alignment,
+        alignment = {alignment},
+        state = BASE_AI_STATE_DORMANT,
+        stateTick = 0,
+        temperamentTick = 0,
+        temperament = 0,
         points = 0
     }
 
