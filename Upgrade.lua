@@ -7,6 +7,8 @@ local mathUtils = require("libs/MathUtils")
 
 -- constants
 
+local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
+
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -225,6 +227,14 @@ function upgrade.attempt(natives)
 	    squad.status = SQUAD_GUARDING
             squad.cycles = 0
     	end
+
+        for _,base in pairs(natives.bases) do
+            base.temperament = 0
+            base.temperamentTick = 0
+            base.state = BASE_AI_STATE_DORMANT
+            base.stateTick = 0
+            base.alignment = {base.alignment}
+        end
 
         natives.nextChunkSort = 0
         natives.nextChunkSortTick = 0
