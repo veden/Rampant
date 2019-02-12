@@ -74,7 +74,7 @@ function electric.addFaction()
 		name = "electric-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		tint = {r=0, g=0.25, b=0.83, a=0.65}
 	    }
@@ -82,7 +82,7 @@ function electric.addFaction()
 
 	{
 	    unit = {
-		{		
+		{
 		    type = "attribute",
 		    name = "health",
 		    [1] = 10,
@@ -141,7 +141,7 @@ function electric.addFaction()
 		    [9] = 24,
 		    [10] = 24
 		},
-		
+
 		{
 		    type = "resistance",
 		    name = "electric",
@@ -171,6 +171,35 @@ function electric.addFaction()
 		    }
 		},
 
+                {
+		    type = "resistance",
+		    name = "laser",
+		    decrease = {
+			[1] = 3,
+			[2] = 3,
+			[3] = 7,
+			[4] = 7,
+			[5] = 10,
+			[6] = 10,
+			[7] = 13,
+			[8] = 13,
+			[9] = 16,
+			[10] = 18
+		    },
+		    percent = {
+			[1] = 35,
+			[2] = 35,
+			[3] = 40,
+			[4] = 40,
+			[5] = 45,
+			[6] = 45,
+			[7] = 50,
+			[8] = 55,
+			[9] = 55,
+			[10] = 60
+		    }
+		},
+
 		{
 		    type = "attack",
 		    name = "range",
@@ -186,7 +215,7 @@ function electric.addFaction()
 		    [10] = 15
 		}
 	    },
-	    
+
 	    unitSpawner = {
 
 		{
@@ -216,7 +245,36 @@ function electric.addFaction()
 			[9] = 90,
 			[10] = 90
 		    }
-		}
+		},
+
+                {
+		    type = "resistance",
+		    name = "laser",
+		    decrease = {
+			[1] = 3,
+			[2] = 3,
+			[3] = 7,
+			[4] = 7,
+			[5] = 10,
+			[6] = 10,
+			[7] = 13,
+			[8] = 13,
+			[9] = 16,
+			[10] = 18
+		    },
+		    percent = {
+			[1] = 35,
+			[2] = 35,
+			[3] = 40,
+			[4] = 40,
+			[5] = 45,
+			[6] = 45,
+			[7] = 50,
+			[8] = 55,
+			[9] = 55,
+			[10] = 60
+		    }
+		},
 	    }
 	},
 
@@ -250,7 +308,7 @@ function electric.addFaction()
 		damageType = "electric",
 		softSmokeName = softSmoke,
 		pointEffects = function(attributes)
-		    return 
+		    return
 			{
 			    {
 				type="nested-result",
@@ -299,7 +357,7 @@ function electric.addFaction()
 		[9] = 0.33,
 		[10] = 0.33
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusterDistance",
@@ -314,7 +372,7 @@ function electric.addFaction()
 		[9] = 7,
 		[10] = 7
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusters",
@@ -329,7 +387,7 @@ function electric.addFaction()
 		[8] = 8,
 		[9] = 9,
 		[10] = 9
-	    },	    	   	  	    
+	    },
 
 	    {
 		type = "resistance",
@@ -358,9 +416,38 @@ function electric.addFaction()
 		    [9] = 90,
 		    [10] = 90
 		}
-	    }	    
+	    },
+
+            {
+                type = "resistance",
+                name = "laser",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            }
 	},
-	
+
 	function (attributes)
 	    attributes.laserName = makeLaser(attributes)
 	    return createRangedAttack(attributes,

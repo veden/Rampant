@@ -74,7 +74,7 @@ function troll.addFaction()
 		name = "troll-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		scales = {
 		    [1] = 0.7,
@@ -109,7 +109,7 @@ function troll.addFaction()
 		    [10] = 20000
 		},
 
-		{    
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.3,
@@ -123,8 +123,37 @@ function troll.addFaction()
 		    [9] = 2.5,
 		    [10] = 3
 		},
-		
-		{		
+
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "movement",
 		    [1] = 0.16,
@@ -138,6 +167,35 @@ function troll.addFaction()
 		    [9] = 0.15,
 		    [10] = 0.15
 		},
+
+                {
+                    type = "resistance",
+                    name = "physical",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -168,10 +226,10 @@ function troll.addFaction()
 		    }
 		}
 	    },
-	    
+
 	    unitSpawner = {
 
-		{		
+		{
 		    type = "attribute",
 		    name = "health",
 		    [1] = 700,
@@ -186,7 +244,36 @@ function troll.addFaction()
 		    [10] = 30000
 		},
 
-		{    
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.6,
@@ -200,8 +287,8 @@ function troll.addFaction()
 		    [9] = 6,
 		    [10] = 7
 		},
-		
-		{		
+
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -215,6 +302,35 @@ function troll.addFaction()
 		    [9] = 0.82,
 		    [10] = 0.92
 		},
+
+                {
+                    type = "resistance",
+                    name = "physical",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -301,7 +417,7 @@ function troll.addFaction()
 		loot = spawnerLoot,
 		attributes = {},
 		resistances = {},
-		
+
 		scales = {
 		    [1] = 0.7,
 		    [2] = 0.8,
@@ -320,7 +436,7 @@ function troll.addFaction()
 
 	{
 	    unit = {
-		{		
+		{
 		    type = "attribute",
 		    name = "health",
 		    [1] = 20,
@@ -335,7 +451,36 @@ function troll.addFaction()
 		    [10] = 9000
 		},
 
-		{    
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.3,
@@ -364,6 +509,35 @@ function troll.addFaction()
 		    [9] = 0.13,
 		    [10] = 0.12
 		},
+
+                {
+                    type = "resistance",
+                    name = "physical",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -395,10 +569,10 @@ function troll.addFaction()
 		}
 
 	    },
-	    
+
 	    unitSpawner = {
-		
-		{		
+
+		{
 		    type = "attribute",
 		    name = "health",
 		    [1] = 700,
@@ -413,7 +587,7 @@ function troll.addFaction()
 		    [10] = 30000
 		},
 
-		{    
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.6,
@@ -427,6 +601,64 @@ function troll.addFaction()
 		    [9] = 6,
 		    [10] = 7
 		},
+
+                {
+                    type = "resistance",
+                    name = "physical",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -460,13 +692,13 @@ function troll.addFaction()
 	},
 
 	function (attributes)
-	    
+
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
 							     attributes.tint))
 	end,
-	
+
 	{
 	    unit = TROLL_UNIT_VARIATIONS,
 	    unitSpawner = TROLL_NEST_VARIATIONS
@@ -510,7 +742,7 @@ function troll.addFaction()
 	},
 
 	{
-	    {    
+	    {
 		type = "attribute",
 		name = "health",
 		[1] = 400,
@@ -525,7 +757,7 @@ function troll.addFaction()
 		[10] = 12500
 	    },
 
-	    {    
+	    {
 		type = "attribute",
 		name = "healing",
 		[1] = 0.6,
@@ -539,6 +771,64 @@ function troll.addFaction()
 		[9] = 6,
 		[10] = 7
 	    },
+
+            {
+                type = "resistance",
+                name = "explosion",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            },
+
+            {
+                type = "resistance",
+                name = "physical",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            },
 
 	    {
 		type = "resistance",

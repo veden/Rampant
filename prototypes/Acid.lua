@@ -64,7 +64,7 @@ function acid.addFaction()
 		name = "acid-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		tint = {r=0, g=0.85, b=0.13, a=0.65}
 	    }
@@ -72,7 +72,7 @@ function acid.addFaction()
 
 	{
 	    unit = {
-				
+
 		{
 		    type = "resistance",
 		    name = "acid",
@@ -100,9 +100,38 @@ function acid.addFaction()
 			[9] = 90,
 			[10] = 90
 		    }
-		}
+		},
+
+                {
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                }
 	    },
-	    
+
 	    unitSpawner = {
 
 		{
@@ -147,8 +176,36 @@ function acid.addFaction()
 			[9] = 90,
 			[10] = 90
 		    }
-		}
-		
+		},
+
+                {
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                }
 	    }
 	},
 
@@ -202,8 +259,8 @@ function acid.addFaction()
 
 	{
 	    unit = {
-				
-		{		    
+
+		{
 		    type = "resistance",
 		    name = "acid",
 		    decrease = {
@@ -230,11 +287,40 @@ function acid.addFaction()
 			[9] = 90,
 			[10] = 90
 		    }
-		    
-		}
+
+		},
+
+                {
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                }
 
 	    },
-	    
+
 	    unitSpawner = {
 
 		{
@@ -251,7 +337,7 @@ function acid.addFaction()
 		    [9] = 0.8,
 		    [10] = 0.9
 		},
-		
+
 		{
 		    type = "resistance",
 		    name = "acid",
@@ -279,11 +365,40 @@ function acid.addFaction()
 			[9] = 90,
 			[10] = 90
 		    }
-		}
-		
+		},
+
+                {
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                }
+
 	    }
 
-	    
+
 	},
 
 	function (attributes)
@@ -292,7 +407,7 @@ function acid.addFaction()
 				      spitterattackanimation(attributes.scale,
 							     attributes.tint))
 	end,
-	
+
 	{
 	    unit = ACID_UNIT_VARIATIONS,
 	    unitSpawner = ACID_NEST_VARIATIONS
@@ -324,7 +439,7 @@ function acid.addFaction()
 	},
 
 	{
-	    
+
 	    {
 		type = "resistance",
 		name = "acid",
@@ -352,10 +467,38 @@ function acid.addFaction()
 		    [9] = 90,
 		    [10] = 90
 		}
-	    }
-	    
+	    },
+
+            {
+                type = "resistance",
+                name = "poison",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            }
 	},
-	
+
 	function (attributes)
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes))

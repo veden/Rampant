@@ -55,7 +55,7 @@ end
 local function pushUpgrade(upgrades, upgrade)
     if not isMember(upgrade.type, upgrade.name, upgrades) then
 	upgrades[#upgrades+1] = upgrade
-    end    
+    end
 end
 
 local function addDefaultScales(template)
@@ -95,7 +95,7 @@ end
 
 local function addDefaultHoizontalSpeed(upgrades)
     pushUpgrade(upgrades,
-		{	      
+		{
 		    type = "attack",
 		    name = "particleHoizontalSpeed",
 		    [1] = 0.6,
@@ -113,7 +113,7 @@ end
 
 local function addDefaultHoizontalSpeedDeviation(upgrades)
     pushUpgrade(upgrades,
-		{	    
+		{
 		    type = "attack",
 		    name = "particleHoizontalSpeedDeviation",
 		    [1] = 0.0025,
@@ -134,10 +134,10 @@ local function addUnitDefaults(template, upgrades)
 
     addDefaultVerticalAcceleration(upgrades)
     addDefaultHoizontalSpeed(upgrades)
-    addDefaultHoizontalSpeedDeviation(upgrades)    
+    addDefaultHoizontalSpeedDeviation(upgrades)
 
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.01,
@@ -151,9 +151,9 @@ local function addUnitDefaults(template, upgrades)
 		    [9] = 0.14,
 		    [10] = 0.16
     })
-    
+
     if (template.type == "biter") then
-	
+
 	pushUpgrade(upgrades,
 		    {
 			type = "attack",
@@ -167,9 +167,9 @@ local function addUnitDefaults(template, upgrades)
 			[7] = 1.25,
 			[8] = 1.50,
 			[9] = 1.75,
-			[10] = 2.0		
+			[10] = 2.0
 	})
-	
+
 	pushUpgrade(upgrades,
 		    {
 			type = "attribute",
@@ -197,10 +197,10 @@ local function addUnitDefaults(template, upgrades)
 			    [4] = 5,
 			    [5] = 6,
 			    [6] = 8,
-			    [7] = 10,
-			    [8] = 12,
-			    [9] = 14,
-			    [10] = 15
+			    [7] = 11,
+			    [8] = 13,
+			    [9] = 16,
+			    [10] = 17
 			},
 			percent = {
 			    [1] = 0,
@@ -209,13 +209,13 @@ local function addUnitDefaults(template, upgrades)
 			    [4] = 10,
 			    [5] = 12,
 			    [6] = 12,
-			    [7] = 13,
-			    [8] = 13,
-			    [9] = 14,
-			    [10] = 15
+			    [7] = 14,
+			    [8] = 16,
+			    [9] = 18,
+			    [10] = 20
 			}
 	})
-	
+
 	pushUpgrade(upgrades,
 		    {
 			type = "resistance",
@@ -226,11 +226,11 @@ local function addUnitDefaults(template, upgrades)
 			    [3] = 0,
 			    [4] = 0,
 			    [5] = 0,
-			    [6] = 0,
-			    [7] = 10,
-			    [8] = 12,
-			    [9] = 14,
-			    [10] = 15
+			    [6] = 10,
+			    [7] = 12,
+			    [8] = 14,
+			    [9] = 16,
+			    [10] = 20
 			},
 			percent = {
 			    [1] = 0,
@@ -238,16 +238,16 @@ local function addUnitDefaults(template, upgrades)
 			    [3] = 0,
 			    [4] = 10,
 			    [5] = 12,
-			    [6] = 12,
-			    [7] = 13,
-			    [8] = 13,
-			    [9] = 14,
-			    [10] = 15
+			    [6] = 13,
+			    [7] = 15,
+			    [8] = 16,
+			    [9] = 17,
+			    [10] = 20
 			}
 	})
-	
+
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attribute",
 			name = "movement",
 			[1] = 0.2,
@@ -261,9 +261,9 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 0.17,
 			[10] = 0.17
 	})
-	
+
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attack",
 			name = "cooldown",
 			[1] = 35,
@@ -309,9 +309,9 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 55,
 			[10] = 57
 	})
-	
+
 	pushUpgrade(upgrades,
-		    {		    
+		    {
 			type = "attribute",
 			name = "pollutionToAttack",
 			[1] = 200,
@@ -323,11 +323,11 @@ local function addUnitDefaults(template, upgrades)
 			[7] = 10000,
 			[8] = 12500,
 			[9] = 15000,
-			[10] = 20000		    
+			[10] = 20000
 	})
 
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attack",
 			name = "damage",
 			[1] = 7,
@@ -341,9 +341,9 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 150,
 			[10] = 200
 	})
-	
+
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attribute",
 			name = "spawningTimeModifer",
 			[1] = 0,
@@ -357,10 +357,10 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 12,
 			[10] = 12
 	})
-	
+
     elseif (template.type == "spitter") then
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attribute",
 			name = "health",
 			[1] = 10,
@@ -375,7 +375,7 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 7000
 	})
 
-	pushUpgrade(upgrades,		    
+	pushUpgrade(upgrades,
 		    {
 			type = "resistance",
 			name = "explosion",
@@ -392,9 +392,39 @@ local function addUnitDefaults(template, upgrades)
 			    [10] = 40
 			}
 	})
-	
+
+        pushUpgrade(upgrades,
+		    {
+			type = "resistance",
+			name = "physical",
+			decrease = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 0,
+			    [4] = 0,
+			    [5] = 2,
+			    [6] = 4,
+			    [7] = 6,
+			    [8] = 8,
+			    [9] = 10,
+			    [10] = 12
+			},
+			percent = {
+			    [1] = 0,
+			    [2] = 0,
+			    [3] = 0,
+			    [4] = 10,
+			    [5] = 12,
+			    [6] = 12,
+			    [7] = 14,
+			    [8] = 14,
+			    [9] = 15,
+			    [10] = 15
+			}
+	})
+
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attack",
 			name = "cooldown",
 			[1] = 100,
@@ -408,7 +438,7 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 90,
 			[10] = 90
 	})
-	
+
 	pushUpgrade(upgrades,
 		    {
 			type = "attribute",
@@ -425,9 +455,9 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 0.084
 	})
 
-	
+
 	pushUpgrade(upgrades,
-		    {	
+		    {
 			type = "attack",
 			name = "range",
 			[1] = 13,
@@ -458,8 +488,8 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 2.5
 	})
 
-	pushUpgrade(upgrades,		    
-		    {		
+	pushUpgrade(upgrades,
+		    {
 			type = "attack",
 			name = "damage",
 			[1] = 4,
@@ -472,8 +502,8 @@ local function addUnitDefaults(template, upgrades)
 			[8] = 57,
 			[9] = 70,
 			[10] = 80
-	})	
-	
+	})
+
 	pushUpgrade(upgrades,
 		    {
 			type = "attribute",
@@ -489,9 +519,9 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 0.15,
 			[10] = 0.14
 	})
-	
+
 	pushUpgrade(upgrades,
-		    {	
+		    {
 			type = "attribute",
 			name = "spawningTimeModifer",
 			[1] = 0,
@@ -503,12 +533,12 @@ local function addUnitDefaults(template, upgrades)
 			[7] = 8,
 			[8] = 8,
 			[9] = 10,
-			[10] = 10	
+			[10] = 10
 	})
-	
+
     elseif (template.type == "drone") then
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attribute",
 			name = "health",
 			[1] = 100,
@@ -524,7 +554,7 @@ local function addUnitDefaults(template, upgrades)
 	})
 
 	pushUpgrade(upgrades,
-		    {		
+		    {
 			type = "attack",
 			name = "cooldown",
 			[1] = 100,
@@ -543,9 +573,9 @@ end
 
 local function addUnitSpawnerDefaults(template, upgrades)
     addDefaultScales(template)
-    
+
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "health",
 		    [1] = 350,
@@ -561,7 +591,7 @@ local function addUnitSpawnerDefaults(template, upgrades)
     })
 
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.02,
@@ -575,9 +605,9 @@ local function addUnitSpawnerDefaults(template, upgrades)
 		    [9] = 0.034,
 		    [10] = 0.036
     })
-    
+
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "spawingCooldownStart",
 		    [1] = 360,
@@ -593,7 +623,7 @@ local function addUnitSpawnerDefaults(template, upgrades)
     })
 
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "spawingCooldownEnd",
 		    [1] = 150,
@@ -607,9 +637,9 @@ local function addUnitSpawnerDefaults(template, upgrades)
 		    [9] = 130,
 		    [10] = 130
     })
-    
+
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "unitsToSpawn",
 		    [1] = 5,
@@ -623,7 +653,7 @@ local function addUnitSpawnerDefaults(template, upgrades)
 		    [9] = 9,
 		    [10] = 9
     })
-    
+
     pushUpgrade(upgrades,
 		{
 		    type = "attribute",
@@ -669,7 +699,7 @@ local function addUnitSpawnerDefaults(template, upgrades)
 			[10] = 20
 		    }
     })
-    
+
     pushUpgrade(upgrades,
 		{
 		    type = "resistance",
@@ -699,7 +729,7 @@ local function addUnitSpawnerDefaults(template, upgrades)
 			[10] = 20
 		    }
     })
-    
+
     pushUpgrade(upgrades,
 		{
 		    type = "resistance",
@@ -728,10 +758,10 @@ local function addUnitSpawnerDefaults(template, upgrades)
 			[9] = 65,
 			[10] = 65
 		    }
-    })    
-    
+    })
+
     pushUpgrade(upgrades,
-		{		
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0.08,
@@ -753,9 +783,9 @@ local function addWormDefaults(template, upgrades)
     addDefaultVerticalAcceleration(upgrades)
     addDefaultHoizontalSpeed(upgrades)
     addDefaultHoizontalSpeedDeviation(upgrades)
-    
+
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attribute",
 		    name = "foldingSpeed",
 		    [1] = 0.15,
@@ -771,7 +801,7 @@ local function addWormDefaults(template, upgrades)
     })
 
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attribute",
 		    name = "preparingSpeed",
 		    [1] = 0.025,
@@ -786,8 +816,8 @@ local function addWormDefaults(template, upgrades)
 		    [10] = 0.029
     })
 
-    pushUpgrade(upgrades,    
-		{    
+    pushUpgrade(upgrades,
+		{
 		    type = "attribute",
 		    name = "prepareRange",
 		    [1] = 30,
@@ -802,7 +832,7 @@ local function addWormDefaults(template, upgrades)
 		    [10] = 34
     })
 
-    pushUpgrade(upgrades,    
+    pushUpgrade(upgrades,
 		{
 		    type = "attack",
 		    name = "range",
@@ -895,9 +925,9 @@ local function addWormDefaults(template, upgrades)
 			[10] = 75
 		    }
     })
-    
+
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attack",
 		    name = "damage",
 		    [1] = 12,
@@ -927,9 +957,9 @@ local function addWormDefaults(template, upgrades)
 		    [9] = 2.5,
 		    [10] = 3.0
     })
-    
+
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attribute",
 		    name = "healing",
 		    [1] = 0.01,
@@ -943,9 +973,9 @@ local function addWormDefaults(template, upgrades)
 		    [9] = 0.14,
 		    [10] = 0.16
     })
-    
+
     pushUpgrade(upgrades,
-		{    
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -975,7 +1005,7 @@ local function addWormDefaults(template, upgrades)
 		    [9] = 30,
 		    [10] = 30
     })
-    
+
     pushUpgrade(upgrades,
 		{
 		    type = "attribute",
@@ -996,7 +1026,7 @@ end
 
 local function unitSetToProbabilityTable(upgradeTable, unitSet)
     local dividers = {}
-    
+
     for i=1,#unitSet do
 	dividers[i] = 1
     end
@@ -1010,7 +1040,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
 	    dividers[index] = dividers[index] + upgrade
 	end
     end
-    
+
     local total = 0
     for i=1,#dividers do
 	total = total + dividers[i]
@@ -1023,7 +1053,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     end
 
     local stepUnit = 1 / (#unitSet[1] + 1)
-    
+
     local probabilityTable = {}
 
     for i=1,#unitSet do
@@ -1078,7 +1108,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
 	    result[#result+1] = {unitSet[i][x], probability}
 	end
     end
-    
+
     return result
 end
 
@@ -1094,7 +1124,7 @@ local function scaleAttributes (upgrade, entity)
 	    if (upgrade.name == "distancePerFrame") then
 		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitBiterSpeedScaler"].value
 	    end
-	    
+
 	elseif (entity.type == "spitter") then
 	    if (upgrade.name == "health") then
 		entity.attributes[upgrade.name] = entity.attributes[upgrade.name] * settings.startup["rampant-unitSpitterHealthScaler"].value
@@ -1172,15 +1202,15 @@ local function scaleAttributes (upgrade, entity)
 	    if (upgrade.name == "range") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitWormRangeScaler"].value
 	    end
-	end	
-    end    
+	end
+    end
 end
 
 local function upgradeEntity(entity, upgradeTable, tier)
     if upgradeTable then
 	for upgradeIndex=1, #upgradeTable do
 	    local upgrade = upgradeTable[upgradeIndex]
-	    
+
 	    if (upgrade.type == "attribute") then
 		if upgrade.mapping then
 		    entity.attributes[upgrade.mapping] = upgrade[tier]
@@ -1255,13 +1285,13 @@ local function calculateRGBa(tint, tier)
     local g = gaussianRandomRangeRG(tint.g, tint.g * 0.10 + (0.005 * tier), mMax(tint.g * 0.85 - (0.005 * tier), 0), mMin(tint.g * 1.15, 1), xorRandom)
     local b = gaussianRandomRangeRG(tint.b, tint.b * 0.10 + (0.005 * tier), mMax(tint.b * 0.85 - (0.005 * tier), 0), mMin(tint.b * 1.15, 1), xorRandom)
     local a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
-    
+
     return { r=r, g=g, b=b, a=a }
 end
 
 local function generateApperance(unit, tier)
     local scale
-    
+
     if unit.scales then
 	local scaleValue = unit.scales[tier]
 	scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.12, scaleValue * 0.60, scaleValue * 1.40, xorRandom)
@@ -1271,7 +1301,7 @@ local function generateApperance(unit, tier)
     end
     if unit.tint then
 	local tint = calculateRGBa(unit.tint, tier)
-	
+
 	unit.attributes.tint = tint
 
 	if unit.attack then
@@ -1284,7 +1314,7 @@ local function generateApperance(unit, tier)
     if unit.tint1 and unit.tint2 then
 	local tint1 = calculateRGBa(unit.tint1, tier)
 	local tint2 = calculateRGBa(unit.tint2, tier)
-	
+
 	unit.attributes.tint1 = tint1
 	unit.attributes.tint2 = tint2
 
@@ -1314,28 +1344,28 @@ end
 
 function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
     addUnitDefaults(template, upgradeTable)
-    
+
     local unitSet = {}
-    
+
     for tier=1, tiers do
 	local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
 	local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
 	local result = {}
-	
+
 	for i=1,variations do
 	    local unit = deepcopy(template)
 	    unit.name = unit.name .. "-v" .. i .. "-t" .. t
 	    unit.attributes.tier = "-v" .. i .. "-t" .. t
 	    generateApperance(unit, ut)
 	    upgradeEntity(unit, upgradeTable,  ut)
-	    
+
 	    if unit.attackName then
 		unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
 	    end
 
 	    if unit.loot then
 		unit.attributes.loot = { unit.loot[ut] }
-	    end	    
+	    end
 
 	    local entity
 	    if (unit.type == "spitter") then
@@ -1359,20 +1389,20 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 	    end
 
 	    result[#result+1] = entity.name
-	    
+
 	    data:extend({entity})
 	end
-	
+
 	unitSet[#unitSet+1] = result
     end
-    
+
     return unitSet
 end
 
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
-    addUnitDefaults(templates.unit, upgradeTable.unit)   
-    addUnitSpawnerDefaults(templates.unitSpawner, upgradeTable.unitSpawner)    
-    
+    addUnitDefaults(templates.unit, upgradeTable.unit)
+    addUnitSpawnerDefaults(templates.unitSpawner, upgradeTable.unitSpawner)
+
     if (not upgradeTable.probabilityTable) then
 	upgradeTable.probabilityTable = {
 	    [1] = 1,
@@ -1387,14 +1417,14 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    [10] = 1,
 	}
     end
-    
+
     local unitSet = swarmUtils.buildUnits(templates.unit,
 					  attackGenerator,
 					  upgradeTable.unit,
 					  variations.unit,
 					  tiers.unit)
 
-    for tier=1, tiers.unitSpawner do	
+    for tier=1, tiers.unitSpawner do
 	local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
 	local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
 	-- print(tier,t,ut)
@@ -1410,7 +1440,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    if unitSpawner.loot then
 		unitSpawner.attributes.loot = { unitSpawner.loot[ut] }
 	    end
-	    
+
 	    if unitSpawner.autoplace then
 		unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[ut]
 	    end
@@ -1423,12 +1453,12 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    })
 	end
     end
-    
+
 end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
     addWormDefaults(template, upgradeTable)
-    
+
     for tier=1, tiers do
 	local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
 	local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
@@ -1446,7 +1476,7 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 	    if worm.loot then
 		worm.attributes.loot = { worm.loot[ut] }
 	    end
-	    
+
 	    if worm.autoplace then
 		worm.attributes["autoplace"] = worm.autoplace[ut]
 	    end

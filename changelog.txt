@@ -20,6 +20,23 @@ Date: 2. 10. 2019
     - Decreased death pheromone persistance from 0.99 to 0.975
     - Removed arbitrary player gen multipler in retreat scoring function
     - Increased default setting of player score attack contribution from 7 to 16
+    - Added minor resistance to poison to acid faction
+    - Added minor resistance to laser to electric faction
+    - Added minor resistance to explosion to fast faction
+    - Added minor resistance to electric to laser faction
+    - Added major resistance to explosion to physical faction
+    - Added minor resistance to poison to suicide faction
+    - Added minor resistance to physical to troll faction
+    - Added minor resistance to explosion to troll faction
+    - Added minor weakness to poison to inferno faction
+    - Added minor weakness to laser to physical faction
+    - Added minor weakness to electric to physical faction
+    - Increased general biters physical decrease for levels 7 - 10, (10->11,12->13,14->16,15->17)
+    - Increased general biters physical percent for levels 7 - 10, (13->14,13->16,14->18,15->20)
+    - Increased general biters explosion decrease for levels 6 - 10, (0->10,10->12,12->14,14->16,15->20)
+    - Increased general biters explosion percent for levels 6 - 10, (12->13,13->15,13->16,14->17,15->20)
+    - Added general spitters physical decrease for levels 1 - 10, (0,0,0,0,2,4,6,8,10,12)
+    - Added general spitters physical percent for levels 1 - 10, (0,0,0,10,12,12,14,14,15,15)
   Bugfixes:
     - Fixed pheromone dispersion when non-cardinal directions receiving pheromone when it shouldn't
     - Fixed ai states of migrating and seige when expansion is disabled on the map instead onslaught state happens 10% more in place
