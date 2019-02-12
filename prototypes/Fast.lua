@@ -61,7 +61,7 @@ function fast.addFaction()
 		name = "fast-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		tint = {r=0.26, g=0.76, b=0.72, a=0.65}
 	    }
@@ -69,8 +69,8 @@ function fast.addFaction()
 
 	{
 	    unit = {
-		
-		{		    
+
+		{
 		    type = "attack",
 		    name = "cooldown",
 		    [1] = 35,
@@ -82,10 +82,39 @@ function fast.addFaction()
 		    [7] = 42,
 		    [8] = 43,
 		    [9] = 43,
-		    [10] = 45		    
-		},		
+		    [10] = 45
+		},
 
-		{		    
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "movement",
 		    [1] = 0.22,
@@ -114,12 +143,12 @@ function fast.addFaction()
 		    [9] = 0.24,
 		    [10] = 0.26
 		}
-		
+
 	    },
-	    
+
 	    unitSpawner = {
 
-		{		    
+		{
 		    type = "attribute",
 		    name = "spawingCooldownStart",
 		    [1] = 330,
@@ -131,10 +160,10 @@ function fast.addFaction()
 		    [7] = 315,
 		    [8] = 315,
 		    [9] = 310,
-		    [10] = 310		    
+		    [10] = 310
 		},
 
-		{		    
+		{
 		    type = "attribute",
 		    name = "spawingCooldownEnd",
 		    [1] = 120,
@@ -146,10 +175,39 @@ function fast.addFaction()
 		    [7] = 115,
 		    [8] = 115,
 		    [9] = 110,
-		    [10] = 110		    
+		    [10] = 110
 		},
 
-		{		    
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -161,8 +219,8 @@ function fast.addFaction()
 		    [7] = 0.62,
 		    [8] = 0.72,
 		    [9] = 0.82,
-		    [10] = 0.92		    
-		}		
+		    [10] = 0.92
+		}
 	    }
 	},
 
@@ -209,7 +267,7 @@ function fast.addFaction()
 		loot = spawnerLoot,
 		attributes = {},
 		resistances = {},
-		
+
 		tint = {r=0.26, g=0.76, b=0.72, a=1}
 	    }
 	},
@@ -217,7 +275,7 @@ function fast.addFaction()
 	{
 	    unit = {
 
-		{		    
+		{
 		    type = "attack",
 		    name = "cooldown",
 		    [1] = 80,
@@ -229,9 +287,9 @@ function fast.addFaction()
 		    [7] = 73,
 		    [8] = 73,
 		    [9] = 70,
-		    [10] = 70		    
+		    [10] = 70
 		},
-				
+
 		{
 		    type = "attribute",
 		    name = "movement",
@@ -247,6 +305,35 @@ function fast.addFaction()
 		    [10] = 0.24
 		},
 
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
 		{
 		    type = "attribute",
 		    name = "distancePerFrame",
@@ -261,13 +348,13 @@ function fast.addFaction()
 		    [9] = 0.10,
 		    [10] = 0.104
 		}
-		
+
 	    },
-	    
+
 	    unitSpawner = {
 
 		{
-		    
+
 		    type = "attribute",
 		    name = "spawingCooldownStart",
 		    [1] = 330,
@@ -279,10 +366,10 @@ function fast.addFaction()
 		    [7] = 315,
 		    [8] = 315,
 		    [9] = 310,
-		    [10] = 310		    
+		    [10] = 310
 		},
 
-		{		    
+		{
 		    type = "attribute",
 		    name = "spawingCooldownEnd",
 		    [1] = 120,
@@ -294,10 +381,39 @@ function fast.addFaction()
 		    [7] = 105,
 		    [8] = 105,
 		    [9] = 100,
-		    [10] = 100		    
+		    [10] = 100
 		},
 
-		{		    
+                {
+                    type = "resistance",
+                    name = "explosion",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
+
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -309,9 +425,9 @@ function fast.addFaction()
 		    [7] = 0.62,
 		    [8] = 0.72,
 		    [9] = 0.82,
-		    [10] = 0.92		    
+		    [10] = 0.92
 		}
-		
+
 	    }
 	},
 
@@ -321,7 +437,7 @@ function fast.addFaction()
 				      spitterattackanimation(attributes.scale,
 							     attributes.tint))
 	end,
-	
+
 	{
 	    unit = FAST_UNIT_VARIATIONS,
 	    unitSpawner = FAST_NEST_VARIATIONS
@@ -352,8 +468,8 @@ function fast.addFaction()
 	    sTint = {r=0, g=1, b=1, a=0.5}
 	},
 
-	{	    
-	    {    
+	{
+	    {
 		type = "attack",
 		name = "cooldown",
 		[1] = 50,
@@ -367,8 +483,8 @@ function fast.addFaction()
 		[9] = 30,
 		[10] = 30
 	    },
-	    
-	    {    
+
+	    {
 		type = "attribute",
 		name = "foldingSpeed",
 		[1] = 0.17,
@@ -382,8 +498,8 @@ function fast.addFaction()
 		[9] = 0.20,
 		[10] = 0.21
 	    },
-	    
-	    {    
+
+	    {
 		type = "attribute",
 		name = "preparingSpeed",
 		[1] = 0.027,
@@ -398,7 +514,36 @@ function fast.addFaction()
 		[10] = 0.031
 	    },
 
-	    {	      
+            {
+                type = "resistance",
+                name = "explosion",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            },
+
+	    {
 		type = "attack",
 		name = "particleHoizontalSpeed",
 		[1] = 0.8,

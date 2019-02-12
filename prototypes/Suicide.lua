@@ -68,7 +68,7 @@ function suicide.addFaction()
 		name = "suicide-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		tint = {r=0.56, g=0.46, b=0, a=0.65}
 	    }
@@ -90,8 +90,8 @@ function suicide.addFaction()
 		    [9] = 3000,
 		    [10] = 5000
 		},
-		
-		{		
+
+		{
 		    type = "attribute",
 		    name = "spawningTimeModifer",
 		    [1] = 0,
@@ -103,10 +103,10 @@ function suicide.addFaction()
 		    [7] = 6,
 		    [8] = 6,
 		    [9] = 8,
-		    [10] = 8		    
+		    [10] = 8
 		},
 
-		{		    
+		{
 		    type = "attack",
 		    mapping = "explosion",
 		    [1] = "explosion",
@@ -118,10 +118,10 @@ function suicide.addFaction()
 		    [7] = "massive-explosion",
 		    [8] = "massive-explosion",
 		    [9] = "massive-explosion",
-		    [10] = "massive-explosion"		
+		    [10] = "massive-explosion"
 		},
 
-		{		    
+		{
 		    type = "attack",
 		    name = "radius",
 		    [1] = 3.5,
@@ -133,10 +133,10 @@ function suicide.addFaction()
 		    [7] = 7,
 		    [8] = 7,
 		    [9] = 7.5,
-		    [10] = 8		    
+		    [10] = 8
 		},
-		
-		{		    
+
+		{
 		    type = "attack",
 		    name = "explosionDistance",
 		    [1] = 2,
@@ -148,10 +148,10 @@ function suicide.addFaction()
 		    [7] = 2.5,
 		    [8] = 2.5,
 		    [9] = 3,
-		    [10] = 3		    
+		    [10] = 3
 		},
 
-		{		    
+		{
 		    type = "attack",
 		    name = "explosionCount",
 		    min = 2,
@@ -164,10 +164,10 @@ function suicide.addFaction()
 		    [7] = 10,
 		    [8] = 12,
 		    [9] = 13,
-		    [10] = 14		    
+		    [10] = 14
 		},
-		
-		{		    
+
+		{
 		    type = "attack",
 		    name = "damage",
 		    [1] = 20,
@@ -179,10 +179,10 @@ function suicide.addFaction()
 		    [7] = 75,
 		    [8] = 80,
 		    [9] = 100,
-		    [10] = 150		    
+		    [10] = 150
 		},
-		
-		{		   
+
+		{
 		    type = "attribute",
 		    name = "movement",
 		    [1] = 0.23,
@@ -238,12 +238,41 @@ function suicide.addFaction()
 			[9] = -90,
 			[10] = -90
 		    }
-		}
+		},
+
+                {
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                }
 	    },
-	    
+
 	    unitSpawner = {
-	
-		{		    
+
+		{
 		    type = "attribute",
 		    name = "spawingCooldownStart",
 		    [1] = 330,
@@ -255,10 +284,10 @@ function suicide.addFaction()
 		    [7] = 315,
 		    [8] = 315,
 		    [9] = 310,
-		    [10] = 310		
+		    [10] = 310
 		},
 
-		{		    
+		{
 		    type = "attribute",
 		    name = "spawingCooldownEnd",
 		    [1] = 120,
@@ -273,7 +302,7 @@ function suicide.addFaction()
 		    [10] = 100
 		},
 
-		{		
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -285,10 +314,10 @@ function suicide.addFaction()
 		    [7] = 0.6,
 		    [8] = 0.7,
 		    [9] = 0.8,
-		    [10] = 0.9		
+		    [10] = 0.9
 		},
 
-		{				
+		{
 		    type = "attribute",
 		    name = "unitsOwned",
 		    [1] = 6,
@@ -300,10 +329,10 @@ function suicide.addFaction()
 		    [7] = 9,
 		    [8] = 9,
 		    [9] = 10,
-		    [10] = 10		
+		    [10] = 10
 		},
 
-		{		
+		{
 		    type = "attribute",
 		    name = "unitsToSpawn",
 		    [1] = 3,
@@ -317,6 +346,35 @@ function suicide.addFaction()
 		    [9] = 7,
 		    [10] = 8
 		},
+
+{
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 		{
 		    type = "resistance",
@@ -419,7 +477,7 @@ function suicide.addFaction()
 			    type = "create-sticker",
 			    sticker = attributes.name .. "-sticker-rampant"
 			}
-		    }    
+		    }
 		end,
 		softSmokeName = softSmoke
 	    },
@@ -431,9 +489,9 @@ function suicide.addFaction()
 	    sTint = {r=0, g=1, b=1, a=0.5}
 	},
 
-	{	   
+	{
 
-	    {    
+	    {
 		type = "attack",
 		name = "stickerMovementModifier",
 		[1] = 0.8,
@@ -447,8 +505,8 @@ function suicide.addFaction()
 		[9] = 0.4,
 		[10] = 0.4
 	    },
-	    
-	    {    
+
+	    {
 		type = "attack",
 		name = "stickerDuration",
 		[1] = 1800,
@@ -461,7 +519,36 @@ function suicide.addFaction()
 		[8] = 2100,
 		[9] = 2200,
 		[10] = 2200
-	    },	    
+	    },
+
+{
+                    type = "resistance",
+                    name = "poison",
+                    decrease = {
+                        [1] = 3,
+                        [2] = 3,
+                        [3] = 7,
+                        [4] = 7,
+                        [5] = 10,
+                        [6] = 10,
+                        [7] = 13,
+                        [8] = 13,
+                        [9] = 16,
+                        [10] = 18
+                    },
+                    percent = {
+                        [1] = 35,
+                        [2] = 35,
+                        [3] = 40,
+                        [4] = 40,
+                        [5] = 45,
+                        [6] = 45,
+                        [7] = 50,
+                        [8] = 55,
+                        [9] = 55,
+                        [10] = 60
+                    }
+                },
 
 	    {
 		type = "resistance",
