@@ -2,21 +2,24 @@
 Version: 0.16.37
 Date: 2. 10. 2019
   Improvements:
-    - During onslaught ai state player building destroyed credits x10 to the biters
+    - During onslaught ai state player building destroyed by biters credits x10 to the biters
     - Increased dispersion projection of pheromone by 20% allowing for further pathing
     - Reworked squad attack scoring to better account for death pheromone
     - Squads that kamikaze may now occasionally disregard death pheromone
     - Maintain sorted chunk array for processing in a radial pattern from origin
   Tweaks:
+    - Increased resource pheromone min from 9000 to 15000
+    - Increased resource pheromone max from 10000 to 20000
     - Increased retreat pheromone min from 1000 to 10000
     - Increased retreat pheromone max from 17000 to 170000
     - Increased player pheromone multipler from 500 to 2500
     - Increased bad squad movement penalty from 4000 to 10000
     - Increased death pheromone generator from 125 to 750
+    - Increased victory pheromone by x3
     - Decreased death pheromone generator persistance from 0.995 to 0.9
     - Decreased death pheromone persistance from 0.99 to 0.975
     - Removed arbitrary player gen multipler in retreat scoring function
-    - Increased default setting of player score attack contribution from 7 to 18
+    - Increased default setting of player score attack contribution from 7 to 16
   Bugfixes:
     - Fixed pheromone dispersion when non-cardinal directions receiving pheromone when it shouldn't
     - Fixed ai states of migrating and seige when expansion is disabled on the map instead onslaught state happens 10% more in place

@@ -49,24 +49,22 @@ function pheromoneUtils.scents(map, chunk)
     chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - (getDeathGenerator(map, chunk))
 
     if (resourceGenerator > 0) and (enemyCount == 0) then
-	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 9000, 10000))
+	chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 15000, 20000))
     end
 end
 
 function pheromoneUtils.victoryScent(map, chunk, entityType)
     local value = BUILDING_PHEROMONES[entityType]
     if value then
-	-- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + (value * 1000)
-        -- FIX ME
-	addDeathGenerator(map, chunk, -(value * 3))
-	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + value
+        local scaledVal = (value * 3)
+	addDeathGenerator(map, chunk, -scaledVal)
+	chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + scaledVal
     end
 end
 
 function pheromoneUtils.deathScent(map, chunk)
     chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - (DEATH_PHEROMONE_GENERATOR_AMOUNT * 2)
     addDeathGenerator(map, chunk, DEATH_PHEROMONE_GENERATOR_AMOUNT)
-    -- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DEATH_PHEROMONE_GENERATOR_AMOUNT
 end
 
 function pheromoneUtils.playerScent(playerChunk)

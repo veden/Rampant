@@ -227,6 +227,7 @@ function upgrade.attempt(natives)
     	end
 
         natives.nextChunkSort = 0
+        natives.nextChunkSortTick = 0
 
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.37")
 	global.version = constants.VERSION_72
