@@ -123,7 +123,7 @@ function spawner.addFaction()
 	    }
 	end,
 	{
-	    {		
+	    {
 		type = "attribute",
 		name = "health",
 		[1] = 100,
@@ -152,7 +152,7 @@ function spawner.addFaction()
 		[9] = 0.33,
 		[10] = 0.33
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusterDistance",
@@ -167,7 +167,7 @@ function spawner.addFaction()
 		[9] = 7,
 		[10] = 7
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusters",
@@ -182,9 +182,9 @@ function spawner.addFaction()
 		[8] = 8,
 		[9] = 9,
 		[10] = 9
-	    },	   	    
+	    },
 
-	    {		
+	    {
 		type = "attribute",
 		name = "ttl",
 		[1] = 400,
@@ -198,8 +198,8 @@ function spawner.addFaction()
 		[9] = 600,
 		[10] = 600
 	    },
-	    
-	    {		
+
+	    {
 		type = "attack",
 		name = "damage",
 		[1] = 2,
@@ -213,7 +213,7 @@ function spawner.addFaction()
 		[9] = 35,
 		[10] = 40
 	    },
-	   
+
 	    {
 		type = "attribute",
 		name = "movement",
@@ -257,7 +257,7 @@ function spawner.addFaction()
 		[9] = 14,
 		[10] = 14
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "range",
@@ -287,7 +287,7 @@ function spawner.addFaction()
 		[9] = 2.0,
 		[10] = 2.5
 	    }
-	    
+
 	},
 	SPAWNER_UNIT_VARIATIONS,
 	SPAWNER_UNIT_TIERS
@@ -371,7 +371,7 @@ function spawner.addFaction()
 	    }
 	end,
 	{
-	    {		
+	    {
 		type = "attribute",
 		name = "health",
 		[1] = 100,
@@ -400,7 +400,7 @@ function spawner.addFaction()
 		[9] = 0.33,
 		[10] = 0.33
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusterDistance",
@@ -415,7 +415,7 @@ function spawner.addFaction()
 		[9] = 7,
 		[10] = 7
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "clusters",
@@ -432,7 +432,7 @@ function spawner.addFaction()
 		[10] = 9
 	    },
 
-	    {		
+	    {
 		type = "attribute",
 		name = "ttl",
 		[1] = 400,
@@ -446,8 +446,8 @@ function spawner.addFaction()
 		[9] = 600,
 		[10] = 600
 	    },
-	    
-	    {		
+
+	    {
 		type = "attack",
 		name = "damage",
 		[1] = 2,
@@ -461,7 +461,7 @@ function spawner.addFaction()
 		[9] = 35,
 		[10] = 40
 	    },
-	    
+
 	    {
 		type = "attribute",
 		name = "movement",
@@ -505,7 +505,7 @@ function spawner.addFaction()
 		[9] = 14,
 		[10] = 14
 	    },
-	    
+
 	    {
 		type = "attack",
 		name = "range",
@@ -535,7 +535,7 @@ function spawner.addFaction()
 		[9] = 2.0,
 		[10] = 2.5
 	    }
-	    
+
 	},
 	SPAWNER_WORM_VARIATIONS,
 	SPAWNER_WORM_TIERS
@@ -585,7 +585,7 @@ function spawner.addFaction()
 		[9] = 165,
 		[10] = 180
 	    }
-	    	    
+
 	},
 	math.max(SPAWNER_UNIT_VARIATIONS,SPAWNER_WORM_VARIATIONS),
 	math.max(SPAWNER_UNIT_TIERS,SPAWNER_WORM_TIERS)
@@ -605,10 +605,10 @@ function spawner.addFaction()
 		attack = {
 		    type = "projectile",
 		    softSmokeName = softSmoke,
-		    triggerCreated = true,
+		    triggerCreated = false,
 		    directionOnly = true,
 		    sourceEffect = function (attributes)
-			return 
+			return
 			    {
 				{
 				    type = "damage",
@@ -641,7 +641,7 @@ function spawner.addFaction()
 	{
 	    unit = {
 
-		{		
+		{
 		    type = "attack",
 		    name = "cooldown",
 		    [1] = 180,
@@ -655,11 +655,11 @@ function spawner.addFaction()
 		    [9] = 170,
 		    [10] = 170
 		}
-		
+
 	    },
 
 	    unitSpawner = {
-				
+
 	    }
 
 	},
@@ -695,12 +695,12 @@ function spawner.addFaction()
 	{
 	    name = "spawner-worm",
 
-	    loot = wormLoot,	    
+	    loot = wormLoot,
 	    attributes = {
 	    },
 	    attack = {
 		type = "projectile",
-		triggerCreated = true,
+		triggerCreated = false,
 		softSmokeName = softSmoke
 	    },
 	    resistances = {},

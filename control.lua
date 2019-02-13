@@ -1,5 +1,6 @@
 -- imports
 
+local unitUtils = require("libs/UnitUtils")
 local baseUtils = require("libs/BaseUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
@@ -27,7 +28,7 @@ local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
 local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
-local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
+-- local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
@@ -52,7 +53,15 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 
+local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
+local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
+
+local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
+local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
+
 -- imported functions
+
+local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
 
 local squadsDispatch = squadAttack.squadsDispatch
 
@@ -66,7 +75,7 @@ local entityForPassScan = chunkUtils.entityForPassScan
 
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
-local processSpawnerChunks = chunkProcessor.processSpawnerChunks
+-- local processSpawnerChunks = chunkProcessor.processSpawnerChunks
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -93,7 +102,7 @@ local retreatUnits = squadDefense.retreatUnits
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
 
-local isSpawner = stringUtils.isSpawner
+local isSpawnerEgg = stringUtils.isSpawnerEgg
 
 local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
@@ -106,7 +115,7 @@ local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
-local sSub = string.sub
+local sFind = string.find
 local mRandom = math.random
 
 -- local references to global
@@ -197,7 +206,7 @@ local function rebuildMap()
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
 
-    map.queueSpawners = {}
+    -- map.queueSpawners = {}
 
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
@@ -382,7 +391,7 @@ script.on_nth_tick(INTERVAL_SCAN,
 
 		       scanMap(map, surface, natives, tick)
 
-		       map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
+		       -- map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
 
 		       map.chunkToPassScan = processScanChunks(map, surface)
 
@@ -497,6 +506,35 @@ local function onDeath(event)
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    victoryScent(map, chunk, entity.type)
 		end
+
+                if (cause ~= nil) then
+                    if (ENERGY_THIEF_LOOKUP[cause.name]) then
+			local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
+			if conversion then
+			    local newEntity = surface.create_entity({position=entity.position,
+								     name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+								     direction=entity.direction,
+								     force="enemy"})
+			    if (conversion == "pole") then
+				local wires = entity.neighbours
+				if wires then
+                                    for _,v in pairs(wires.copper) do
+                                        newEntity.connect_neighbour(v);
+                                    end
+                                    for _,v in pairs(wires.red) do
+                                        newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+                                    end
+                                    for _,v in pairs(wires.green) do
+                                        newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+                                    end
+				end
+                            elseif newEntity.backer_name then
+                                newEntity.backer_name = ""
+			    end
+			end
+		    end
+		end
+
 	    end
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
@@ -570,24 +608,25 @@ local function onResourceDepleted(event)
     end
 end
 
-local function onTriggerEntityCreated(event)
-    local entity = event.entity
-    if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
-	local name = event.entity.name
-	if isSpawner(name) then
-	    local tick = event.tick
-	    local chunk = getChunkByPosition(map, entity.position)
-	    if chunk and ((tick - getChunkSpawnerEggTick(map, chunk)) > INTERVAL_SPAWNER) then
-		setChunkSpawnerEggTick(map, chunk, tick)
-		map.queueSpawners[#map.queueSpawners+1] = {
-		    tick,
-		    chunk,
-		    entity.position
-		}
-	    end
-	end
-    end
-end
+-- local function onTriggerEntityCreated(event)
+--     local entity = event.entity
+--     if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
+-- 	local name = event.entity.name
+--         print(name)
+-- 	if isSpawnerEgg(name) then
+-- 	    local tick = event.tick
+-- 	    local chunk = getChunkByPosition(map, entity.position)
+-- 	    if chunk and ((tick - getChunkSpawnerEggTick(map, chunk)) > INTERVAL_SPAWNER) then
+-- 		setChunkSpawnerEggTick(map, chunk, tick)
+-- 		map.queueSpawners[#map.queueSpawners+1] = {
+-- 		    tick,
+-- 		    chunk,
+-- 		    entity.position
+-- 		}
+-- 	    end
+-- 	end
+--     end
+-- end
 
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
@@ -643,7 +682,7 @@ script.on_event({defines.events.on_player_mined_entity,
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, onBuild)
 
-script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
+-- script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 

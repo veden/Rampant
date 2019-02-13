@@ -1,8 +1,8 @@
 -- module code
 
-local function generateLocal() 
+function generateLocal()
     --    local names = {"Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
-    local names = {"Neutral", "Acid", "Physical", "Electric", "Suicide", "Nuclear", "Fire", "Inferno", "Troll", "Fast", "Laser", "Wasp", "Spawner", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
+    local names = {"Neutral", "Acid", "Physical", "Electric", "Suicide", "Nuclear", "Fire", "Inferno", "Troll", "Fast", "Laser", "Wasp", "Spawner", "Energy Thief", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
     local sizes = {"Larva", "Pupae", "Worker", "Grunt", "Soldier", "General", "Overlord", "Titan", "Leviathan", "Juggernaut"}
 
     print("[entity-name]")
@@ -21,11 +21,11 @@ local function generateLocal()
     end
 
     name = names[2]
-    
+
     for t = 1, 10 do
 	local size = sizes[t]
 	for v = 1, 20 do
-	    
+
 	    print("acid-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
 	    print("acid-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
 	    print("acid-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
@@ -35,12 +35,12 @@ local function generateLocal()
     end
 
     name = names[3]
-    
+
     for t = 1, 10 do
 	local size = sizes[t]
 	for v = 1, 20 do
-	    
-	    print("physical-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class") 
+
+	    print("physical-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
 	    print("physical-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
 	    print("physical-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
 	end
@@ -51,8 +51,8 @@ local function generateLocal()
     for t = 1, 10 do
 	local size = sizes[t]
 	for v = 1, 20 do
-	    
-	    print("electric-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class") 
+
+	    print("electric-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
 	    print("electric-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
 	    print("electric-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
 
@@ -64,8 +64,8 @@ local function generateLocal()
     for t = 1, 10 do
 	local size = sizes[t]
 	for v = 1, 20 do
-	    
-	    print("suicide-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class") 
+
+	    print("suicide-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
 	    print("suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
 	    print("suicide-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
 
@@ -78,7 +78,7 @@ local function generateLocal()
 	local size = sizes[t]
 	for v = 1, 20 do
 
-	    print("nuclear-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class") 
+	    print("nuclear-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
 	    print("nuclear-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
 	    print("nuclear-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
 
@@ -162,7 +162,7 @@ local function generateLocal()
     end
 
     name = names[13]
-    
+
     for t = 1, 10 do
 	local size = sizes[t]
 	for v = 1, 20 do
@@ -175,5 +175,16 @@ local function generateLocal()
 	end
     end
 
-    
+    name = names[14]
+
+    for t = 1, 10 do
+	local size = sizes[t]
+	for v = 1, 20 do
+	    print("energy-thief-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
+            print("energy-thief-biter-nest-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
+	    print("energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+	end
+    end
+
+
 end

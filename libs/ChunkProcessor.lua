@@ -129,34 +129,34 @@ function chunkProcessor.processScanChunks(map, surface)
     return {}
 end
 
-function chunkProcessor.processSpawnerChunks(map, surface, natives, tick)
-    local queue = map.queueSpawners
+-- function chunkProcessor.processSpawnerChunks(map, surface, natives, tick)
+--     local queue = map.queueSpawners
 
-    local result = {}
+--     local result = {}
 
-    for i=1, #queue do
-	local o = queue[i]
-	if ((tick - o[1]) > SPAWNER_EGG_TIMEOUT) then
-	    local chunk = o[2]
-	    local position = o[3]
+--     for i=1, #queue do
+-- 	local o = queue[i]
+-- 	if ((tick - o[1]) > SPAWNER_EGG_TIMEOUT) then
+-- 	    local chunk = o[2]
+-- 	    local position = o[3]
 
-	    retreatUnits(chunk,
-			 position,
-			 nil,
-			 map,
-			 surface,
-			 natives,
-			 tick,
-			 RETREAT_GRAB_RADIUS,
-			 false,
-			 true)
-	else
-	    result[#result+1] = o
-	end
-    end
+-- 	    retreatUnits(chunk,
+-- 			 position,
+-- 			 nil,
+-- 			 map,
+-- 			 surface,
+-- 			 natives,
+-- 			 tick,
+-- 			 RETREAT_GRAB_RADIUS,
+-- 			 false,
+-- 			 true)
+-- 	else
+-- 	    result[#result+1] = o
+-- 	end
+--     end
 
-    return result
-end
+--     return result
+-- end
 
 
 return chunkProcessor

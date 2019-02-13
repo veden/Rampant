@@ -90,6 +90,11 @@ local SPAWNER_WORM_VARIATIONS = constants.SPAWNER_WORM_VARIATIONS
 local SPAWNER_NEST_TIERS = constants.SPAWNER_NEST_TIERS
 local SPAWNER_NEST_VARIATIONS = constants.SPAWNER_NEST_VARIATIONS
 
+local ENERGY_THIEF_WORM_TIERS = constants.ENERGY_THIEF_WORM_TIERS
+local ENERGY_THIEF_WORM_VARIATIONS = constants.ENERGY_THIEF_WORM_VARIATIONS
+local ENERGY_THIEF_NEST_TIERS = constants.ENERGY_THIEF_NEST_TIERS
+local ENERGY_THIEF_NEST_VARIATIONS = constants.ENERGY_THIEF_NEST_VARIATIONS
+
 local BASE_ALIGNMENT_SPAWNER = constants.BASE_ALIGNMENT_SPAWNER
 local BASE_ALIGNMENT_WASP = constants.BASE_ALIGNMENT_WASP
 local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
@@ -103,6 +108,7 @@ local BASE_ALIGNMENT_FIRE = constants.BASE_ALIGNMENT_FIRE
 local BASE_ALIGNMENT_FAST = constants.BASE_ALIGNMENT_FAST
 local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
+local BASE_ALIGNMENT_ENERGY_THIEF = constants.BASE_ALIGNMENT_ENERGY_THIEF
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
 
 local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
@@ -801,18 +807,18 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
                          "spawner")
     end
 
-    -- if settings.startup["rampant-energyEnemy"].value then
-    --     processUnitClass(0,
-    --                      0,
-    --                      SPAWNER_NEST_VARIATIONS,
-    --                      SPAWNER_NEST_TIERS,
-    --                      SPAWNER_WORM_VARIATIONS,
-    --                      SPAWNER_WORM_TIERS,
-    --                      surface,
-    --                      natives,
-    --                      BASE_ALIGNMENT_SPAWNER,
-    --                      "spawner")
-    -- end
+    if settings.startup["rampant-energyThiefEnemy"].value then
+        processUnitClass(0,
+                         0,
+                         ENERGY_THIEF_NEST_VARIATIONS,
+                         ENERGY_THIEF_NEST_TIERS,
+                         ENERGY_THIEF_WORM_VARIATIONS,
+                         ENERGY_THIEF_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_ENERGY_THIEF,
+                         "spawner")
+    end
 
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)

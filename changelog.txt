@@ -2,6 +2,8 @@
 Version: 0.16.37
 Date: 2. 10. 2019
   Improvements:
+    - Added the energy thief faction that will convert powered player structure into electric draining crystals
+    - Removed unnecessary grouping mechanism when spawner eggs produce units
     - Added individual base faction ai to manage base development
     - During onslaught ai state player building destroyed by biters credits x10 to the biters
     - Increased dispersion projection of pheromone by 20% allowing for further pathing
