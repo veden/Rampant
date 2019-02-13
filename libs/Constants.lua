@@ -275,6 +275,13 @@ if settings.startup["rampant-waspEnemy"].value then
     tbl[constants.BASE_ALIGNMENT_WASP] = 0.5
 end
 
+if settings.startup["rampant-energyThiefEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_ENERGY_THIEF)
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_ENERGY_THIEF] = 0.4
+end
+
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
