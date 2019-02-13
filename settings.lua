@@ -463,6 +463,15 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-energyThiefEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-x[unit]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-disableVanillaAI",

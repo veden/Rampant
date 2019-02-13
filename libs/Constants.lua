@@ -461,6 +461,40 @@ constants.SENTINEL_IMPASSABLE_CHUNK[constants.CHUNK_TICK] = 0
 constants.SENTINEL_IMPASSABLE_CHUNK.x = -1
 constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
+constants.ENERGY_THIEF_CONVERSION_TABLE = {
+    ["generator"] = "unit",
+    ["pump"] = "smallUnit",
+    ["inserter"] = "smallUnit",
+    ["reactor"] = "bigUnit",
+    ["accumulator"] = "unit",
+    ["solar-panel"] = "unit",
+    ["assembling-machine"] = "unit",
+    ["roboport"] = "bigUnit",
+    ["beacon"] = "bigUnit",
+    ["programmable-speaker"] = "unit",
+    ["mining-drill"] = "unit",
+    ["rocket-silo"] = "bigUnit",
+    ["lamp"] = "smallUnit",
+    ["radar"] = "bigUnit",
+    ["lab"] = "unit",
+    ["electric-turret"] = "unit",
+    ["electric-pole"] = "pole"
+}
+
+constants.ENERGY_THIEF_DRAIN_CRYSTALS = {
+    "crystal-v1-drain-rampant",
+    "crystal-v2-drain-rampant",
+    "crystal-v3-drain-rampant",
+    "crystal-v4-drain-rampant",
+    "crystal-v5-drain-rampant",
+    "crystal-v6-drain-rampant",
+    "crystal-v7-drain-rampant",
+    "crystal-v8-drain-rampant",
+    "crystal-v9-drain-rampant",
+    "crystal-v10-drain-rampant"
+}
+
+
 -- unit spawners
 
 local function roundToNearest(number, multiple)
@@ -498,6 +532,22 @@ local wormVariations = settings.startup["rampant-newEnemyWormVariations"].value
 local wormTiers = settings.startup["rampant-newEnemyWormTiers"].value
 local unitVariations = settings.startup["rampant-newEnemyUnitVariations"].value
 local unitTiers = settings.startup["rampant-newEnemyUnitTiers"].value
+
+constants.ENERGY_THIEF_LOOKUP = {}
+
+for tier=1, wormTiers do
+    local t = ((wormTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+    for i=1,wormVariations do
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-worm" .. "-v" .. i .. "-t" .. t .. "-rampant"] = true
+    end
+end
+
+for tier=1, wormTiers do
+    local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+    for i=1,wormVariations do
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-biter" .. "-v" .. i .. "-t" .. t .. "-rampant"] = true
+    end
+end
 
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
 
@@ -619,5 +669,12 @@ constants.NUCLEAR_WORM_TIERS = wormTiers
 constants.NUCLEAR_WORM_VARIATIONS = wormVariations
 constants.NUCLEAR_UNIT_TIERS = unitTiers
 constants.NUCLEAR_UNIT_VARIATIONS = unitVariations
+
+constants.ENERGY_THIEF_NEST_TIERS = nestTiers
+constants.ENERGY_THIEF_NEST_VARIATIONS = nestVariations
+constants.ENERGY_THIEF_WORM_TIERS = wormTiers
+constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
+constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
+constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
 
 return constants

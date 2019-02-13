@@ -1,19 +1,13 @@
 local stringUtils = {}
 
+local sFind = string.find
+
 function stringUtils.isRampant(str)
-    return stringUtils.ends(str, "rampant")
+    return sFind(str, "rampant", -#"rampant")
 end
 
-function stringUtils.isSpawner(str)
-    return stringUtils.starts(str, "spawner")
-end
-
-function stringUtils.starts(str, start)
-    return (string.sub(str,1,string.len(start)) == start)
-end
-
-function stringUtils.ends(str, tail)
-    return (tail == '') or (string.sub(str, -string.len(tail)) == tail)
+function stringUtils.isSpawnerEgg(str)
+    return sFind(str, "spawner", -#"spawner")
 end
 
 return stringUtils

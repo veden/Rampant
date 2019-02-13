@@ -70,6 +70,8 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local mFloor = math.floor
 
+local mRandom = math.random
+
 -- module code
 
 local function fullScan(chunk, can_place_entity, canPlaceQuery)
@@ -170,10 +172,10 @@ local function getEntityOverlapChunks(map, entity)
         --     bottomXOffset = boundingBox.right_bottom.y
         --     bottomYOffset = boundingBox.right_bottom.x
         -- else
-            topXOffset = boundingBox.left_top.x
-            topYOffset = boundingBox.left_top.y
-            bottomXOffset = boundingBox.right_bottom.x
-            bottomYOffset = boundingBox.right_bottom.y
+        topXOffset = boundingBox.left_top.x
+        topYOffset = boundingBox.left_top.y
+        bottomXOffset = boundingBox.right_bottom.x
+        bottomYOffset = boundingBox.right_bottom.y
         -- end
 
         local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -273,7 +275,7 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 	    local wormCount = 0
 	    local base = findNearbyBase(map, chunk, natives)
 	    if base then
-		if (base.alignment ~= BASE_ALIGNMENT_DEADZONE) then
+		if (base.alignment[1] ~= BASE_ALIGNMENT_DEADZONE) then
 		    setChunkBase(map, chunk, base)
 		end
 	    else
@@ -284,14 +286,14 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 		for i = 1, #nests do
 		    if rebuilding then
 			if not isRampant(nests[i].name) then
-			    if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
+			    if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
 				nestCount = nestCount + 1
 			    end
 			else
 			    nestCount = nestCount + 1
 			end
 		    else
-			if upgradeEntity(nests[i], surface, alignment, natives, evolutionFactor) then
+			if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
 			    nestCount = nestCount + 1
 			end
 		    end
@@ -301,14 +303,14 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 		for i = 1, #worms do
 		    if rebuilding then
 			if not isRampant(worms[i].name) then
-			    if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
+			    if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
 				wormCount = wormCount + 1
 			    end
 			else
 			    wormCount = wormCount + 1
 			end
 		    else
-			if upgradeEntity(worms[i], surface, alignment, natives, evolutionFactor) then
+			if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
 			    wormCount = wormCount + 1
 			end
 		    end
@@ -531,21 +533,15 @@ function chunkUtils.makeImmortalEntity(surface, entity)
 					     direction=repairDirection,
 					     force=repairForce})
     if wires then
-	for connectType,neighbourGroup in pairs(wires) do
-	    if connectType == "copper" then
-		for _,v in pairs(neighbourGroup) do
-		    newEntity.connect_neighbour(v);
-		end
-	    elseif connectType == "red" then
-		for _,v in pairs(neighbourGroup) do
-		    newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
-		end
-	    elseif connectType == "green" then
-		for _,v in pairs(neighbourGroup) do
-		    newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
-		end
-	    end
-	end
+	for _,v in pairs(wires.copper) do
+            newEntity.connect_neighbour(v);
+        end
+        for _,v in pairs(wires.red) do
+            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+        end
+        for _,v in pairs(wires.green) do
+            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+        end
     end
 
     newEntity.destructible = false
