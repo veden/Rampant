@@ -158,6 +158,20 @@ local mRandom = math.random
 
 -- module code
 
+local function nonRepeatingRandom(evoTable, rg)
+    local ordering = {}
+    for evo in pairs(evoTable) do
+        ordering[#ordering+1] = evo
+    end
+    for i=#ordering,1,-1 do
+        local s = rg(i)
+        local t = ordering[i]
+        ordering[i] = ordering[s]
+        ordering[s] = t
+    end
+    return ordering
+end
+
 local function normalizeProbabilities(probabilityTable)
     local result = {}
 
@@ -246,8 +260,8 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 
     local pickedEvo
     local alignment
-    for _,evo in pairs(natives.evolutionTableAlignmentOrder) do
-
+    for i=1,#natives.evolutionTableAlignmentOrder do
+        local evo = natives.evolutionTableAlignmentOrder[i]
         local entitySet = evolutionTable[evo]
 	if (evo <= evoTop) and entitySet and (#entitySet > 0) then
 	    if not pickedEvo then
@@ -336,12 +350,23 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
 end
 
 local function findMutation(natives, evolutionFactor)
-    natives.evolutionTableAlignmentOrder
+    local shuffled = nonRepeatingRandom(natives.evolutionTableAlignment, natives.randomGenerator)
+    local evoTable = natives.evolutionTableAlignment
+    local alignment
+
+    for i=1,#shuffled do
+        local evo = shuffled[i]
+        if (evo <= evolutionFactor) then
+            local alignmentSet = evoTable[evo]
+            alignment = alignmentSet[mRandom(#alignmentSet)]
+            break
+        end
+    end
+
+    return alignment
 end
 
 local function upgradeBase(natives, evolutionFactor, base)
-    print("currentAlignment", serpent.dump(base.alignment))
-
     local alignmentCount = #base.alignment
 
     local roll = mRandom()
@@ -379,23 +404,19 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
     local entity
     local cost
     local choice = mRandom()
-    print(base, choice, base.points, base.state)
 
     if (base.state == BASE_AI_STATE_NESTS) or ((base.state == BASE_AI_STATE_ACTIVE) and (choice < 0.5)) then
         if (base.points >= BASE_SPAWNER_UPGRADE) then
-            print("new nest")
             entity = surface.find_entities_filtered(map.filteredEntitiesSpawnerQueryLimited)
             cost = BASE_SPAWNER_UPGRADE
         end
     elseif (base.state == BASE_AI_STATE_WORMS) or (base.state == BASE_AI_STATE_ACTIVE) then
         if (base.points >= BASE_WORM_UPGRADE) then
-            print("new worm")
             entity = surface.find_entities_filtered(map.filteredEntitiesWormQueryLimited)
             cost = BASE_WORM_UPGRADE
         end
     elseif (base.state == BASE_AI_STATE_MUTATE) then
         if (base.points >= BASE_UPGRADE) then
-            print("new mutation")
             if upgradeBase(natives, evolutionFactor, base) then
                 base.points = base.points - BASE_UPGRADE
             end
@@ -403,7 +424,6 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
     end
 
     if entity and (#entity > 0) then
-        print("upgrading")
         baseUtils.upgradeEntity(entity[mRandom(#entity)], surface, base.alignment[mRandom(#base.alignment)], natives, evolutionFactor)
         base.points = base.points - cost
     end
@@ -518,20 +538,6 @@ local function fileAlignment(baseAlignment, evolution, evolutionTable)
         evolutionTable[evoRequirement] = eTable
     end
     eTable[#eTable+1] = baseAlignment
-end
-
-local function nonRepeatingRandom(evoTable, rg)
-    local ordering = {}
-    for evo in pairs(evoTable) do
-        ordering[#ordering+1] = evo
-    end
-    for i=#ordering,1,-1 do
-        local s = rg(i)
-        local t = ordering[i]
-        ordering[i] = ordering[s]
-        ordering[s] = t
-    end
-    return ordering
 end
 
 local function processUnitClass(biterVariation, biterTier, spitterVariation, spitterTier, wormVariation, wormTier, surface, natives, baseAlignment, baseAlignmentString)
@@ -794,6 +800,19 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
                          BASE_ALIGNMENT_SPAWNER,
                          "spawner")
     end
+
+    -- if settings.startup["rampant-energyEnemy"].value then
+    --     processUnitClass(0,
+    --                      0,
+    --                      SPAWNER_NEST_VARIATIONS,
+    --                      SPAWNER_NEST_TIERS,
+    --                      SPAWNER_WORM_VARIATIONS,
+    --                      SPAWNER_WORM_TIERS,
+    --                      surface,
+    --                      natives,
+    --                      BASE_ALIGNMENT_SPAWNER,
+    --                      "spawner")
+    -- end
 
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
