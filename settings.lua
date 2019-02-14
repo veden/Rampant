@@ -468,7 +468,16 @@ data:extend({
 	    name = "rampant-energyThiefEnemy",
 	    setting_type = "startup",
 	    default_value = true,
-	    order = "l[modifier]-x[unit]",
+	    order = "l[modifier]-z[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-poisonEnemy",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-za[unit]",
 	    per_user = false
 	},
 

@@ -152,7 +152,7 @@ constants.BASE_ALIGNMENT_FIRE = 7
 constants.BASE_ALIGNMENT_PHYSICAL = 8
 constants.BASE_ALIGNMENT_LASER = 9
 constants.BASE_ALIGNMENT_INFERNO = 10
-constants.BASE_ALIGNMENT_POSION = 11
+constants.BASE_ALIGNMENT_POISON = 11
 constants.BASE_ALIGNMENT_TROLL = 12
 constants.BASE_ALIGNMENT_FAST = 13
 constants.BASE_ALIGNMENT_WEB = 14
@@ -179,7 +179,7 @@ constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 -- neutralPath[constants.BASE_ALIGNMENT_WASP] = true
 
 -- local acidPath = {}
--- acidPath[constants.BASE_ALIGNMENT_POSION] = true
+-- acidPath[constants.BASE_ALIGNMENT_POISON] = true
 -- acidPath[constants.BASE_ALIGNMENT_INFEST] = true
 
 -- local decayingPath = {}
@@ -280,6 +280,13 @@ if settings.startup["rampant-energyThiefEnemy"].value then
 
     local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
     tbl[constants.BASE_ALIGNMENT_ENERGY_THIEF] = 0.4
+end
+
+if settings.startup["rampant-poisonEnemy"].value then
+    pushBasePath(constants.BASE_ALIGNMENT_POISON)
+
+    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
+    tbl[constants.BASE_ALIGNMENT_POISON] = 0.4
 end
 
 -- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
@@ -545,16 +552,26 @@ constants.ENERGY_THIEF_LOOKUP = {}
 for tier=1, wormTiers do
     local t = ((wormTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
     for i=1,wormVariations do
-        constants.ENERGY_THIEF_LOOKUP["energy-thief-worm" .. "-v" .. i .. "-t" .. t .. "-rampant"] = true
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-worm-v" .. i .. "-t" .. t .. "-rampant"] = true
     end
 end
 
-for tier=1, wormTiers do
+for tier=1, unitTiers do
     local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
-    for i=1,wormVariations do
-        constants.ENERGY_THIEF_LOOKUP["energy-thief-biter" .. "-v" .. i .. "-t" .. t .. "-rampant"] = true
+    for i=1,unitVariations do
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-biter-v" .. i .. "-t" .. t .. "-rampant"] = true
     end
 end
+
+constants.POISON_LOOKUP = {}
+
+for tier=1, unitTiers do
+    local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+    for i=1,unitVariations do
+        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. t .. "-rampant"] = "poison-cloud-v" .. i .. "-cloud-rampant"
+    end
+end
+
 
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
 
@@ -683,5 +700,13 @@ constants.ENERGY_THIEF_WORM_TIERS = wormTiers
 constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
 constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
 constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
+
+constants.POISON_NEST_TIERS = nestTiers
+constants.POISON_NEST_VARIATIONS = nestVariations
+constants.POISON_WORM_TIERS = wormTiers
+constants.POISON_WORM_VARIATIONS = wormVariations
+constants.POISON_UNIT_TIERS = unitTiers
+constants.POISON_UNIT_VARIATIONS = unitVariations
+
 
 return constants

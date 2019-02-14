@@ -3,6 +3,7 @@ Version: 0.16.37
 Date: 2. 10. 2019
   Improvements:
     - Added the energy thief faction that will convert powered player structure into electric draining crystals
+    - Added the poison faction that when killed creates a damaging toxic cloud
     - Removed unnecessary grouping mechanism when spawner eggs produce units
     - Added individual base faction ai to manage base development
     - During onslaught ai state player building destroyed by biters credits x10 to the biters
@@ -10,6 +11,7 @@ Date: 2. 10. 2019
     - Reworked squad attack scoring to better account for death pheromone
     - Squads that kamikaze may now occasionally disregard death pheromone
     - Maintain sorted chunk array for processing in a radial pattern from origin
+    - Hide spawner drones from the bonus gui screen
   Tweaks:
     - Increased resource pheromone min from 9000 to 15000
     - Increased resource pheromone max from 10000 to 20000
@@ -42,6 +44,7 @@ Date: 2. 10. 2019
     - Added general spitters physical percent for levels 1 - 10, (0,0,0,10,12,12,14,14,15,15)
     - Decreased base spawner upgrade from 300 to 250
     - Decreased base worm upgrade from 250 to 200
+    - Removed evolution requirement rounding for bobs spawners and ne spawners
   Bugfixes:
     - Fixed pheromone dispersion when non-cardinal directions receiving pheromone when it shouldn't
     - Fixed ai states of migrating and seige when expansion is disabled on the map instead onslaught state happens 10% more in place

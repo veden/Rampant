@@ -10,13 +10,13 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
 	resistances[#resistances+1] = v
     end
     attributes.name = name
-    
+
     local drone = {
 	type = "combat-robot",
 	name = n,
 	icon = "__base__/graphics/icons/defender.png",
 	icon_size = 32,
-	flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air"},
+	flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hide-from-bonus-gui"},
 	subgroup="capsule",
 	order="e-a-a",
 	max_health = attributes.health or 60,
@@ -187,7 +187,7 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
 		}
 	    }
     }
-    
+
     return drone
 end
 
@@ -222,7 +222,7 @@ function droneUtils.createCapsuleProjectile(name, attributes, entityName)
     -- if attributes.sourceEffect then
     -- 	actions[#actions+1] = attributes.sourceEffect(attributes)
     -- end
-    
+
     local cap = {
 	type = "projectile",
 	name = n,
