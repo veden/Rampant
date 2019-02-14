@@ -10,13 +10,13 @@ local nuclear = require("prototypes/Nuclear")
 local inferno = require("prototypes/Inferno")
 local fast = require("prototypes/Fast")
 local troll = require("prototypes/Troll")
--- require("prototypes/Decaying")
--- require("prototypes/Poison")
--- require("prototypes/Undying")
+local poison = require("prototypes/Poison")
 local spawner = require("prototypes/Spawner")
 local wasp = require("prototypes/Wasp")
 local laser = require("prototypes/Laser")
 local energyThief = require("prototypes/EnergyThief")
+-- require("prototypes/Decaying")
+-- require("prototypes/Undying")
 
 if settings.startup["rampant-newEnemies"].value then
 
@@ -57,15 +57,15 @@ if settings.startup["rampant-newEnemies"].value then
     if settings.startup["rampant-laserEnemy"].value then
         laser.addFaction()
     end
-    -- if settings.startup["rampant-energyEnemy"].value then
-    --     laser.addFaction()
-    -- end
-    -- require("prototypes/Decaying")
-    -- require("prototypes/Poison")
-    -- require("prototypes/Undying")
     if settings.startup["rampant-energyThiefEnemy"].value then
         energyThief.addFaction()
     end
+    if settings.startup["rampant-poisonEnemy"].value then
+        poison.addFaction()
+    end
+    -- require("prototypes/Decaying")
+    -- require("prototypes/Undying")
+
 
     for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
 	if (unitSpawner.name ~= "biter-spawner") then
@@ -78,14 +78,6 @@ if settings.startup["rampant-newEnemies"].value then
 	end
     end
 end
-
--- for k, wall in pairs(data.raw["wall"]) do
---     if not wall.collision_mask then
--- 	wall.collision_mask = {"player-layer", "item-layer", "object-layer" }
---     end
---     wall.collision_mask[#wall.collision_mask+1] = "layer-11"
---     print(serpent.dump(wall.collision_mask))
--- end
 
 if settings.startup["rampant-enableSwarm"] then
     for k, unit in pairs(data.raw["unit"]) do

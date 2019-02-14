@@ -6,7 +6,6 @@ local constants = require("Constants")
 
 -- imported constants
 
-local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 local BASE_ALIGNMENT_NE = constants.BASE_ALIGNMENT_NE
 local ENABLED_BOBS_UNITS = constants.ENABLED_BOBS_UNITS
 
@@ -18,12 +17,12 @@ local BASE_ALIGNMENT_NE_YELLOW = constants.BASE_ALIGNMENT_NE_YELLOW
 
 -- imported functions
 
-local mFloor = math.floor
+local mMin = math.min
 
 -- module code
 
 local function fileEntity(baseAlignment, entity, evolutionTable, evo)
-    local evoRequirement = mFloor((evo or entity.prototype.build_base_evolution_requirement)/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
+    local evoRequirement = mMin(evo or entity.prototype.build_base_evolution_requirement, 1)
     local eTable = evolutionTable[baseAlignment]
     if not eTable then
 	eTable = {}
@@ -37,18 +36,18 @@ local function fileEntity(baseAlignment, entity, evolutionTable, evo)
     aTable[#aTable+1] = entity.name
 end
 
-function ne.processNEUnitClass(natives, surface)	
+function ne.processNEUnitClass(natives, surface)
     local position = { x = 0, y = 0 }
 
     local factionSet = {}
-    
+
     local entity = surface.create_entity({
 	    name = "biter-spawner",
 	    position = position
     })
     fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
     entity.destroy()
-    
+
     entity = surface.create_entity({
 	    name = "spitter-spawner",
 	    position = position
@@ -56,8 +55,8 @@ function ne.processNEUnitClass(natives, surface)
     fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
     entity.destroy()
 
-    
-    if settings.startup["NE_Blue_Spawners"].value then    
+
+    if settings.startup["NE_Blue_Spawners"].value then
 	entity = surface.create_entity({
 		name = "ne-spawner-blue",
 		position = position
@@ -76,7 +75,7 @@ function ne.processNEUnitClass(natives, surface)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_RED
 	entity.destroy()
     end
-    
+
     if settings.startup["NE_Green_Spawners"].value then
 	entity = surface.create_entity({
 		name = "ne-spawner-green",
@@ -87,7 +86,7 @@ function ne.processNEUnitClass(natives, surface)
 	entity.destroy()
     end
 
-    
+
     if settings.startup["NE_Yellow_Spawners"].value then
 	entity = surface.create_entity({
 		name = "ne-spawner-yellow",
@@ -97,7 +96,7 @@ function ne.processNEUnitClass(natives, surface)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_YELLOW
 	entity.destroy()
     end
-    
+
     if settings.startup["NE_Pink_Spawners"].value then
 	entity = surface.create_entity({
 		name = "ne-spawner-pink",
@@ -109,7 +108,7 @@ function ne.processNEUnitClass(natives, surface)
     end
 
     factionSet[#factionSet+1] = BASE_ALIGNMENT_NE
-    
+
     if ENABLED_BOBS_UNITS then
 	entity = surface.create_entity({
 		name = "bob-biter-spawner",
@@ -123,9 +122,9 @@ function ne.processNEUnitClass(natives, surface)
 		position = position
 	})
 	fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
-	entity.destroy()	
+	entity.destroy()
 
-	for _,alignment in ipairs(factionSet) do	    
+	for _,alignment in ipairs(factionSet) do
 	    entity = surface.create_entity({
 		    name = "bob-big-fire-worm-turret",
 		    position = position

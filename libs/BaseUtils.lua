@@ -90,6 +90,11 @@ local SPAWNER_WORM_VARIATIONS = constants.SPAWNER_WORM_VARIATIONS
 local SPAWNER_NEST_TIERS = constants.SPAWNER_NEST_TIERS
 local SPAWNER_NEST_VARIATIONS = constants.SPAWNER_NEST_VARIATIONS
 
+local POISON_WORM_TIERS = constants.POISON_WORM_TIERS
+local POISON_WORM_VARIATIONS = constants.POISON_WORM_VARIATIONS
+local POISON_NEST_TIERS = constants.POISON_NEST_TIERS
+local POISON_NEST_VARIATIONS = constants.POISON_NEST_VARIATIONS
+
 local ENERGY_THIEF_WORM_TIERS = constants.ENERGY_THIEF_WORM_TIERS
 local ENERGY_THIEF_WORM_VARIATIONS = constants.ENERGY_THIEF_WORM_VARIATIONS
 local ENERGY_THIEF_NEST_TIERS = constants.ENERGY_THIEF_NEST_TIERS
@@ -110,6 +115,7 @@ local BASE_ALIGNMENT_LASER = constants.BASE_ALIGNMENT_LASER
 local BASE_ALIGNMENT_TROLL = constants.BASE_ALIGNMENT_TROLL
 local BASE_ALIGNMENT_ENERGY_THIEF = constants.BASE_ALIGNMENT_ENERGY_THIEF
 local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
+local BASE_ALIGNMENT_POISON = constants.BASE_ALIGNMENT_POISON
 
 local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
 local BASE_AI_MIN_TEMPERAMENT_DURATION = constants.BASE_AI_MIN_TEMPERAMENT_DURATION
@@ -131,15 +137,12 @@ local BASE_COLLECTION_THRESHOLD = constants.BASE_COLLECTION_THRESHOLD
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
-local BASE_ALIGNMENT_PATHS = constants.BASE_ALIGNMENT_PATHS
-
 local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 -- imported functions
 
-local roundToNearest = mathUtils.roundToNearest
 local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 local roundToFloor = mathUtils.roundToFloor
@@ -734,40 +737,6 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
                          "fast")
     end
 
-    -- processUnitClass(DECAYING_NEST_VARIATIONS,
-    -- 		     DECAYING_NEST_TIERS,
-    -- 		     DECAYING_NEST_VARIATIONS,
-    -- 		     DECAYING_NEST_TIERS,
-    -- 		     DECAYING_WORM_VARIATIONS,
-    -- 		     DECAYING_WORM_TIERS,
-    -- 		     surface,
-    -- 		     natives,
-    -- 		     BASE_ALIGNMENT_DECAYING,
-    -- 		     "decaying")
-
-    -- processUnitClass(UNDYING_NEST_VARIATIONS,
-    -- 		     UNDYING_NEST_TIERS,
-    -- 		     UNDYING_NEST_VARIATIONS,
-    -- 		     UNDYING_NEST_TIERS,
-    -- 		     UNDYING_WORM_VARIATIONS,
-    -- 		     UNDYING_WORM_TIERS,
-    -- 		     surface,
-    -- 		     natives,
-    -- 		     BASE_ALIGNMENT_UNDYING,
-    -- 		     "undying")
-
-    -- processUnitClass(POSION_NEST_VARIATIONS,
-    -- 		     POSION_NEST_TIERS,
-    -- 		     POSION_NEST_VARIATIONS,
-    -- 		     POSION_NEST_TIERS,
-    -- 		     POSION_WORM_VARIATIONS,
-    -- 		     POSION_WORM_TIERS,
-    -- 		     surface,
-    -- 		     natives,
-    -- 		     BASE_ALIGNMENT_POSION,
-    -- 		     "posion")
-
-
     if settings.startup["rampant-laserEnemy"].value then
         processUnitClass(LASER_NEST_VARIATIONS,
                          LASER_NEST_TIERS,
@@ -808,17 +777,52 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     end
 
     if settings.startup["rampant-energyThiefEnemy"].value then
-        processUnitClass(0,
-                         0,
-                         ENERGY_THIEF_NEST_VARIATIONS,
+        processUnitClass(ENERGY_THIEF_NEST_VARIATIONS,
                          ENERGY_THIEF_NEST_TIERS,
+                         0,
+                         0,
                          ENERGY_THIEF_WORM_VARIATIONS,
                          ENERGY_THIEF_WORM_TIERS,
                          surface,
                          natives,
                          BASE_ALIGNMENT_ENERGY_THIEF,
-                         "spawner")
+                         "energy-thief")
     end
+
+    if settings.startup["rampant-poisonEnemy"].value then
+        processUnitClass(POISON_NEST_VARIATIONS,
+                         POISON_NEST_TIERS,
+                         0,
+                         0,
+                         POISON_WORM_VARIATIONS,
+                         POISON_WORM_TIERS,
+                         surface,
+                         natives,
+                         BASE_ALIGNMENT_POISON,
+                         "poison")
+    end
+
+    -- processUnitClass(DECAYING_NEST_VARIATIONS,
+    -- 		     DECAYING_NEST_TIERS,
+    -- 		     DECAYING_NEST_VARIATIONS,
+    -- 		     DECAYING_NEST_TIERS,
+    -- 		     DECAYING_WORM_VARIATIONS,
+    -- 		     DECAYING_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_DECAYING,
+    -- 		     "decaying")
+
+    -- processUnitClass(UNDYING_NEST_VARIATIONS,
+    -- 		     UNDYING_NEST_TIERS,
+    -- 		     UNDYING_NEST_VARIATIONS,
+    -- 		     UNDYING_NEST_TIERS,
+    -- 		     UNDYING_WORM_VARIATIONS,
+    -- 		     UNDYING_WORM_TIERS,
+    -- 		     surface,
+    -- 		     natives,
+    -- 		     BASE_ALIGNMENT_UNDYING,
+    -- 		     "undying")
 
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)

@@ -6,17 +6,16 @@ local constants = require("Constants")
 
 -- imported constants
 
-local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 local BASE_ALIGNMENT_BOBS = constants.BASE_ALIGNMENT_BOBS
 
 -- imported functions
 
-local mFloor = math.floor
+local mMin = math.min
 
 -- module code
 
 local function fileEntity(baseAlignment, entity, evolutionTable, evo)
-    local evoRequirement = mFloor((evo or entity.prototype.build_base_evolution_requirement)/EVOLUTION_INCREMENTS) * EVOLUTION_INCREMENTS
+    local evoRequirement = mMin(evo or entity.prototype.build_base_evolution_requirement, 1)
     local eTable = evolutionTable[baseAlignment]
     if not eTable then
 	eTable = {}
@@ -32,14 +31,14 @@ end
 
 function bobs.processBobsUnitClass(natives, surface)
     local position = { x = 0, y = 0 }
-    
+
     local entity = surface.create_entity({
 	    name = "bob-biter-spawner",
 	    position = position
     })
     fileEntity(BASE_ALIGNMENT_BOBS, entity, natives.evolutionTableUnitSpawner, 0.0)
     entity.destroy()
-    
+
     entity = surface.create_entity({
 	    name = "bob-spitter-spawner",
 	    position = position
@@ -116,7 +115,7 @@ function bobs.processBobsUnitClass(natives, surface)
     })
     fileEntity(BASE_ALIGNMENT_BOBS, entity, natives.evolutionTableWorm)
     entity.destroy()
-    
+
 end
 
 return bobs

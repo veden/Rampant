@@ -59,6 +59,8 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
 local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
+local POISON_LOOKUP = constants.POISON_LOOKUP
+
 -- imported functions
 
 local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
@@ -480,6 +482,13 @@ local function onDeath(event)
 		    end
                 end
 
+                local cloudName = POISON_LOOKUP[entity.name]
+
+                if cloudName then
+                    surface.create_entity({position=entity.position,
+                                           name=cloudName})
+                end
+
             elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
 		local tick = event.tick
 
@@ -513,8 +522,7 @@ local function onDeath(event)
 			if conversion then
 			    local newEntity = surface.create_entity({position=entity.position,
 								     name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
-								     direction=entity.direction,
-								     force="enemy"})
+								     direction=entity.direction})
 			    if (conversion == "pole") then
 				local wires = entity.neighbours
 				if wires then
@@ -608,26 +616,6 @@ local function onResourceDepleted(event)
     end
 end
 
--- local function onTriggerEntityCreated(event)
---     local entity = event.entity
---     if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
--- 	local name = event.entity.name
---         print(name)
--- 	if isSpawnerEgg(name) then
--- 	    local tick = event.tick
--- 	    local chunk = getChunkByPosition(map, entity.position)
--- 	    if chunk and ((tick - getChunkSpawnerEggTick(map, chunk)) > INTERVAL_SPAWNER) then
--- 		setChunkSpawnerEggTick(map, chunk, tick)
--- 		map.queueSpawners[#map.queueSpawners+1] = {
--- 		    tick,
--- 		    chunk,
--- 		    entity.position
--- 		}
--- 	    end
--- 	end
---     end
--- end
-
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
     if (event.item.name == "cliff-explosives") and (surface.index == natives.activeSurface) then
@@ -682,12 +670,8 @@ script.on_event({defines.events.on_player_mined_entity,
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity}, onBuild)
 
--- script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
-
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
-
 script.on_event(defines.events.on_entity_died, onDeath)
---script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 
 remote.add_interface("rampantTests",

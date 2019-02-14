@@ -1372,20 +1372,20 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 		unit.attributes.corpse = makeSpitterCorpse(unit)
 		entity = makeSpitter(unit.name,
 				     unit.attributes,
-				     attackGenerator(unit.attack, unit.attributes),
+				     attackGenerator(unit.attack, unit.attributes, t),
 				     unit.resistances)
 	    elseif (unit.type == "biter") then
 		unit.attributes.corpse = makeBiterCorpse(unit)
 		entity = makeBiter(unit.name,
 				   unit.attributes,
-				   attackGenerator(unit.attack, unit.attributes),
+				   attackGenerator(unit.attack, unit.attributes, t),
 				   unit.resistances)
 	    elseif (unit.type == "drone") then
 		entity = makeDrone(unit.name,
 				   unit.attributes,
 				   unit.resistances,
 				   attackGenerator(unit.attack),
-				   unit.death(unit.attack, unit.attributes))
+				   unit.death(unit.attack, unit.attributes, t))
 	    end
 
 	    result[#result+1] = entity.name
@@ -1484,7 +1484,7 @@ function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variation
 	    data:extend({
 		    makeWorm(worm.name,
 			     worm.attributes,
-			     attackGenerator(worm.attack),
+			     attackGenerator(worm.attack, worm.attributes, t),
 			     worm.resistances)
 	    })
 	end
