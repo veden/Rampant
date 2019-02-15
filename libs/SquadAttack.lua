@@ -40,8 +40,6 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
-local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
-
 -- imported functions
 
 local mRandom = math.random
@@ -82,7 +80,7 @@ local function scoreSiegeLocation(squad, neighborChunk)
     return settle - lookupMovementPenalty(squad, neighborChunk)
 end
 
-local function scoreAttackLocation(natives, squad, neighborChunk)
+function squadAttack.scoreAttackLocation(natives, squad, neighborChunk)
     local damage
 
     if (neighborChunk[MOVEMENT_PHEROMONE] >= 0) then
@@ -91,7 +89,6 @@ local function scoreAttackLocation(natives, squad, neighborChunk)
         damage = (neighborChunk[BASE_PHEROMONE] * (1 - (neighborChunk[MOVEMENT_PHEROMONE] / -natives.retreatThreshold))) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     end
 
-    -- (neighborChunk[BASE_PHEROMONE] ) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage - lookupMovementPenalty(squad, neighborChunk)
 end
 
@@ -263,7 +260,7 @@ function squadAttack.squadsBeginAttack(natives, players)
                 if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
                     squad.attackScoreFunction = scoreAttackKamikazeLocation
                 else
-                    squad.attackScoreFunction = scoreAttackLocation
+                    squad.attackScoreFunction = squadAttack.scoreAttackLocation
                 end
 		squad.status = SQUAD_RAIDING
 	    end
