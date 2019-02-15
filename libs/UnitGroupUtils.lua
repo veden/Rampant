@@ -276,11 +276,11 @@ function unitGroupUtils.regroupSquads(natives, map)
 			for x=1,#neighbors do
                             local maybeMerge
 			    maybeMerge, memberCount, maxed = mergeGroups(getSquadsOnChunk(map, neighbors[x]),
-									   squad,
-									   group,
-									   status,
-									   squadPosition,
-									   memberCount)
+                                                                         squad,
+                                                                         group,
+                                                                         status,
+                                                                         squadPosition,
+                                                                         memberCount)
                             if maybeMerge then
                                 mergedSquads = true
                             end

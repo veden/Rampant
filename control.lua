@@ -393,10 +393,7 @@ script.on_nth_tick(INTERVAL_SCAN,
 
 		       scanMap(map, surface, natives, tick)
 
-		       -- map.queueSpawners = processSpawnerChunks(map, surface, natives, tick)
-
 		       map.chunkToPassScan = processScanChunks(map, surface)
-
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,

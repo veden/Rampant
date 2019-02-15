@@ -2,6 +2,7 @@ local upgrade = {}
 
 -- imports
 
+local squadAttack = require("libs/SquadAttack")
 local constants = require("libs/Constants")
 local mathUtils = require("libs/MathUtils")
 
@@ -15,6 +16,8 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 -- imported functions
+
+local scoreAttackLocation = squadAttack.scoreAttackLocation
 
 local roundToNearest = mathUtils.roundToNearest
 
@@ -241,6 +244,15 @@ function upgrade.attempt(natives)
 
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.37")
 	global.version = constants.VERSION_72
+    end
+    if (global.version < constants.VERSION_73) then
+
+	for _,squad in pairs(natives.squads) do
+	    squad.attackScoreFunction = scoreAttackLocation
+    	end
+
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.38")
+	global.version = constants.VERSION_73
     end
 
     return starting ~= global.version, natives
