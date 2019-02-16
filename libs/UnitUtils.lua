@@ -1,3 +1,6 @@
+if (unitUtilsG) then
+    return unitUtilsG
+end
 local unitUtils = {}
 
 -- imports
@@ -50,4 +53,5 @@ function unitUtils.convertTypeToDrainCrystal(evolutionFactor, entity)
     end
 end
 
+unitUtilsG = unitUtils
 return unitUtils

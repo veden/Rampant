@@ -582,8 +582,7 @@ local function onSurfaceTileChange(event)
 	    local position = tiles[i].position
 	    local chunk = getChunkByPosition(map, position, true)
 
-	    -- weird bug with table pointer equality using name instead of pointer comparison
-	    if not chunk.name then
+	    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		map.chunkToPassScan[chunk] = true
 	    else
 		local x,y = positionToChunkXY(position)

@@ -1,3 +1,6 @@
+if chunkPropertyUtilsG then
+    return chunkPropertyUtilsG
+end
 local chunkPropertyUtils = {}
 
 local constants = require("Constants")
@@ -74,7 +77,7 @@ function chunkPropertyUtils.getRallyTick(map, chunk)
 end
 
 function chunkPropertyUtils.setRallyTick(map, chunk, tick)
-    map.chunkToRallys[chunk] = tick 
+    map.chunkToRallys[chunk] = tick
 end
 
 function chunkPropertyUtils.setRetreatTick(map, chunk, tick)
@@ -147,7 +150,7 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
 	else
 	    map.chunkToDeathGenerator[chunk] = gen
 	end
-    end    
+    end
 end
 
 function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
@@ -160,12 +163,12 @@ function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     if squad.chunk ~= chunk then
 	chunkPropertyUtils.removeSquadFromChunk(map, squad)
     end
-    
+
     if not chunkToSquad[chunk] then
 	chunkToSquad[chunk] = {}
     end
     chunkToSquad[chunk][squad] = squad
-    
+
     squad.chunk = chunk
 end
 
@@ -204,4 +207,5 @@ function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
     map.chunkToPlayerBase[chunk] = (map.chunkToPlayerBase[chunk] or 0) + playerGenerator
 end
 
+chunkPropertyUtilsG = chunkPropertyUtils
 return chunkPropertyUtils

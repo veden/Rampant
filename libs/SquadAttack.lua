@@ -1,3 +1,6 @@
+if (squadAttackG) then
+    return squadAttackG
+end
 local squadAttack = {}
 
 -- imports
@@ -9,9 +12,6 @@ local playerUtils = require("PlayerUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
-local chunkUtils = require("ChunkUtils")
-
---local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -80,7 +80,7 @@ local function scoreSiegeLocation(squad, neighborChunk)
     return settle - lookupMovementPenalty(squad, neighborChunk)
 end
 
-function squadAttack.scoreAttackLocation(natives, squad, neighborChunk)
+local function scoreAttackLocation(natives, squad, neighborChunk)
     local damage
 
     if (neighborChunk[MOVEMENT_PHEROMONE] >= 0) then
@@ -167,7 +167,7 @@ local function attackMove(map, attackPosition, attackCmd, squad, group, natives,
                                                                      natives,
 								     chunk,
 								     getNeighborChunks(map, x, y),
-								     squad.attackScoreFunction,
+								     squad.attackScoreFunction or scoreAttackLocation,
 								     squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
@@ -260,7 +260,7 @@ function squadAttack.squadsBeginAttack(natives, players)
                 if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
                     squad.attackScoreFunction = scoreAttackKamikazeLocation
                 else
-                    squad.attackScoreFunction = squadAttack.scoreAttackLocation
+                    squad.attackScoreFunction = scoreAttackLocation
                 end
 		squad.status = SQUAD_RAIDING
 	    end
@@ -268,4 +268,5 @@ function squadAttack.squadsBeginAttack(natives, players)
     end
 end
 
+squadAttackG = squadAttack
 return squadAttack

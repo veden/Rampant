@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.39
+Date: 2. 15. 2019
+  Bugfixes:
+    - Reset squad scoring functions and set default scoring function
+    - Switched to single instance require statements causing multiple sentinel memory objects
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.38
 Date: 2. 14. 2019
   Bugfixes:

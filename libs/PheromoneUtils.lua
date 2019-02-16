@@ -1,3 +1,6 @@
+if pheromoneUtilsG then
+    return pheromoneUtilsG
+end
 local pheromoneUtils = {}
 
 -- imports
@@ -203,4 +206,5 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 end
 
+pheromoneUtilsG = pheromoneUtils
 return pheromoneUtils

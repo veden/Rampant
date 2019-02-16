@@ -1,3 +1,6 @@
+if interopG then
+    return interopG
+end
 local interop = {}
 
 local unitGroupUtils = require("UnitGroupUtils")
@@ -84,4 +87,5 @@ function interop.registerUnitGroup(unitGroup)
     unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, global.natives, unitGroup)
 end
 
+interopG = interop
 return interop

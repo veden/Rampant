@@ -1,3 +1,6 @@
+if (chunkProcessorG) then
+    return chunkProcessorG
+end
 local chunkProcessor = {}
 
 -- imports
@@ -159,4 +162,5 @@ end
 -- end
 
 
+chunkProcessorG = chunkProcessor
 return chunkProcessor

@@ -1,3 +1,6 @@
+if aiPlanningG then
+    return aiPlanningG
+end
 local aiPlanning = {}
 
 -- imports
@@ -145,4 +148,5 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 
 end
 
+aiPlanningG = aiPlanning
 return aiPlanning
