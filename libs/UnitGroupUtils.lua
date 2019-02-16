@@ -103,25 +103,25 @@ function unitGroupUtils.findNearbySquad(map, chunk, position)
     return nil
 end
 
-function unitGroupUtils.createSquad(position, surface, natives, group)
+function unitGroupUtils.createSquad(position, surface, natives, group, settlers)
     local unitGroup = group or surface.create_unit_group({position=position})
 
     local squad = {
 	group = unitGroup,
 	status = SQUAD_GUARDING,
 	penalties = {},
-	settlers = false,
 	rabid = false,
 	frenzy = false,
+        settlers = settlers or false,
 	kamikaze = false,
 	frenzyPosition = {x = 0,
 			  y = 0},
 	cycles = 0,
 	maxDistance = 0,
+        attackScoreFunction = 1,
 	originPosition = {x = 0,
 			  y = 0},
 	chunk = nil
-
     }
     natives.squads[#natives.squads+1] = squad
     return squad

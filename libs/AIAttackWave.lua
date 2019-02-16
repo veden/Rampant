@@ -194,9 +194,8 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost, tick)
 								      CHUNK_SIZE,
 								      4)
 	    if squadPosition then
-		local squad = createSquad(squadPosition, surface, natives)
+		local squad = createSquad(squadPosition, surface, natives, nil, true)
 
-		squad.settlers = true
 		squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance,
 							natives.expansionMaxDistanceDerivation,
 							CHUNK_SIZE * 1,
