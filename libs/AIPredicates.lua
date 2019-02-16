@@ -1,3 +1,6 @@
+if (aiPredicatesG) then
+    return aiPredicatesG
+end
 local aiPredicates = {}
 
 -- imports
@@ -33,4 +36,5 @@ function aiPredicates.canMigrate(natives, surface)
                 (natives.aiNocturnalMode and surface.darkness > 0.65))
 end
 
+aiPredicatesG = aiPredicates
 return aiPredicates

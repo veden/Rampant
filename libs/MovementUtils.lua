@@ -1,3 +1,6 @@
+if movementUtilsG then
+    return movementUtilsG
+end
 local movementUtils = {}
 
 -- imports
@@ -197,4 +200,5 @@ function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction,
     return highestChunk, highestDirection
 end
 
+movementUtilsG = movementUtils
 return movementUtils

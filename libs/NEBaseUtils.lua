@@ -1,3 +1,6 @@
+if neBaseUtilsG then
+    return neBaseUtilsG
+end
 local ne = {}
 
 -- imports
@@ -200,4 +203,5 @@ function ne.processNEUnitClass(natives, surface)
     end
 end
 
+neBaseUtilsG = ne
 return ne

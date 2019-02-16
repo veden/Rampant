@@ -1,3 +1,6 @@
+if constantsG then
+    return constantsG
+end
 local constants = {}
 
 -- versions
@@ -23,6 +26,7 @@ constants.VERSION_51 = 51
 constants.VERSION_57 = 57
 constants.VERSION_72 = 72
 constants.VERSION_73 = 73
+constants.VERSION_74 = 74
 
 -- misc
 
@@ -710,4 +714,5 @@ constants.POISON_UNIT_TIERS = unitTiers
 constants.POISON_UNIT_VARIATIONS = unitVariations
 
 
+constantsG =  constants
 return constants

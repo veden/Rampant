@@ -1,3 +1,6 @@
+if chunkUtilsG then
+    return chunkUtilsG
+end
 local chunkUtils = {}
 
 -- imports
@@ -547,4 +550,5 @@ function chunkUtils.makeImmortalEntity(surface, entity)
     newEntity.destructible = false
 end
 
+chunkUtilsG = chunkUtils
 return chunkUtils

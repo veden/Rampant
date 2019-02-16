@@ -1,3 +1,6 @@
+if bobsBaseUnits then
+    return bobsBaseUnits
+end
 local bobs = {}
 
 -- imports
@@ -118,4 +121,5 @@ function bobs.processBobsUnitClass(natives, surface)
 
 end
 
+bobsBaseUnits = bobs
 return bobs

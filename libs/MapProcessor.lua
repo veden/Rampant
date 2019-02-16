@@ -1,3 +1,6 @@
+if mapProcessorG then
+    return mapProcessorG
+end
 local mapProcessor = {}
 
 -- imports
@@ -307,4 +310,5 @@ function mapProcessor.scanMap(map, surface, natives, tick)
     end
 end
 
+mapProcessorG = mapProcessor
 return mapProcessor

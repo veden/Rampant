@@ -1,3 +1,6 @@
+if (aiAttackWaveG) then
+    return aiAttackWaveG
+end
 local aiAttackWave = {}
 
 -- imports
@@ -256,4 +259,5 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
     return (natives.points - cost) > 0
 end
 
+aiAttackWaveG = aiAttackWave
 return aiAttackWave

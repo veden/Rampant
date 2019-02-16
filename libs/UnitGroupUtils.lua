@@ -1,3 +1,6 @@
+if unitGroupUtilsG then
+    return unitGroupUtilsG
+end
 local unitGroupUtils = {}
 
 -- imports
@@ -305,4 +308,5 @@ function unitGroupUtils.regroupSquads(natives, map)
     end
 end
 
+unitGroupUtilsG = unitGroupUtils
 return unitGroupUtils

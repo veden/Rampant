@@ -1,3 +1,6 @@
+if playerUtilsG then
+    return playerUtilsG
+end
 local playerUtils = {}
 
 -- imports
@@ -25,4 +28,5 @@ function playerUtils.playersWithinProximityToPosition(players, position, distanc
     return false
 end
 
+playerUtilsG = playerUtils
 return playerUtils

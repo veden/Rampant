@@ -1,3 +1,6 @@
+if stringUtilsG then
+    return stringUtilsG
+end
 local stringUtils = {}
 
 local sFind = string.find
@@ -10,4 +13,5 @@ function stringUtils.isSpawnerEgg(str)
     return sFind(str, "spawner", -#"spawner")
 end
 
+stringUtilsG = stringUtils
 return stringUtils

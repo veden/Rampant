@@ -1,3 +1,6 @@
+if mathUtilsG then
+    return mathUtilsG
+end
 local mathUtils = {}
 
 -- imports
@@ -8,7 +11,7 @@ local constants = require("Constants")
 
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
-local INTERVAL_LOGIC = constants.INTERVAL_LOGIC 
+local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 
 -- imported functions
 
@@ -45,7 +48,7 @@ function mathUtils.xorRandom(state)
     local xor = bit32.bxor
     local lshift = bit32.lshift
     local rshift = bit32.rshift
-    
+
     state = state + 21594771
 
     return function()
@@ -66,9 +69,9 @@ end
 --]]
 function mathUtils.gaussianRandom(mean, std_dev)
     -- marsagliaPolarMethod
-    local iid1 
-    local iid2 
-    local q 
+    local iid1
+    local iid2
+    local q
     repeat
 	iid1 = 2 * mRandom() + -1
 	iid2 = 2 * mRandom() + -1
@@ -76,7 +79,7 @@ function mathUtils.gaussianRandom(mean, std_dev)
     until (q ~= 0) and (q < 1)
     local s = mSqrt((-2 * mLog10(q)) / q)
     local v = iid1 * s
-    
+
     return mean + (v * std_dev)
 end
 
@@ -86,9 +89,9 @@ function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
     end
     local r
     repeat
-	local iid1 
-	local iid2 
-	local q 
+	local iid1
+	local iid2
+	local q
 	repeat
 	    iid1 = 2 * mRandom() + -1
 	    iid2 = 2 * mRandom() + -1
@@ -96,17 +99,17 @@ function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
 	until (q ~= 0) and (q < 1)
 	local s = mSqrt((-2 * mLog10(q)) / q)
 	local v = iid1 * s
-	
+
 	r = mean + (v * std_dev)
     until (r >= min) and (r <= max)
     return r
 end
 
-function mathUtils.gaussianRandomRG(mean, std_dev, rg) 
+function mathUtils.gaussianRandomRG(mean, std_dev, rg)
     -- marsagliaPolarMethod
-    local iid1 
-    local iid2 
-    local q 
+    local iid1
+    local iid2
+    local q
     repeat
 	iid1 = 2 * rg() + -1
 	iid2 = 2 * rg() + -1
@@ -114,7 +117,7 @@ function mathUtils.gaussianRandomRG(mean, std_dev, rg)
     until (q ~= 0) and (q < 1)
     local s = mSqrt((-2 * mLog10(q)) / q)
     local v = iid1 * s
-    
+
     return mean + (v * std_dev)
 end
 
@@ -124,13 +127,13 @@ function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
 	return min
     end
     repeat
-	local iid1 
-	local iid2 
-	local q 
+	local iid1
+	local iid2
+	local q
 	repeat
 	    iid1 = 2 * rg() + -1
 	    iid2 = 2 * rg() + -1
-	    q = (iid1 * iid1) + (iid2 * iid2)	    
+	    q = (iid1 * iid1) + (iid2 * iid2)
 	until (q ~= 0) and (q < 1)
 	local s = mSqrt((-2 * mLog10(q)) / q)
 	local v = iid1 * s
@@ -170,4 +173,5 @@ function mathUtils.distortPosition(position)
     position.y = position.y + (yDistort * 48)
 end
 
+mathUtilsG = mathUtils
 return mathUtils

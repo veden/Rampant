@@ -1,3 +1,6 @@
+if mapUtilsG then
+    return mapUtilsG
+end
 local mapUtils = {}
 
 -- imports
@@ -87,11 +90,11 @@ function mapUtils.getNeighborChunks(map, x, y)
         neighbors[5] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[8] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK 
+	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
 	neighbors[5] = SENTINEL_IMPASSABLE_CHUNK
 	neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
     end
-    
+
     xChunks = map[x]
     if xChunks then
         neighbors[2] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
@@ -152,14 +155,14 @@ function mapUtils.getCardinalChunks(map, x, y)
 	neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
 	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
     end
-    
+
     xChunks = map[x-CHUNK_SIZE]
     if xChunks then
 	neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
 	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
     end
-    
+
     xChunks = map[x+CHUNK_SIZE]
     if xChunks then
 	neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
@@ -186,7 +189,7 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
 	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
 	endPosition.y = startPosition.y
     elseif (direction == 6) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * scaling 
+	endPosition.x = startPosition.x - CHUNK_SIZE * scaling
 	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
     elseif (direction == 7) then
 	endPosition.x = startPosition.x
@@ -198,4 +201,5 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
     return endPosition
 end
 
+mapUtilsG = mapUtils
 return mapUtils

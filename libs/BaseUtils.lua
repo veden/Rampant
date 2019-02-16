@@ -1,3 +1,6 @@
+if baseUtilsG then
+    return baseUtilsG
+end
 local baseUtils = {}
 
 -- imports
@@ -828,4 +831,5 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
 end
 
+baseUtilsG = baseUtils
 return baseUtils

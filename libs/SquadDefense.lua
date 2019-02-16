@@ -1,3 +1,6 @@
+if aiDefenseG then
+    return aiDefenseG
+end
 local aiDefense = {}
 
 -- imports
@@ -113,4 +116,5 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
     end
 end
 
+aiDefenseG = aiDefense
 return aiDefense
