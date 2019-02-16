@@ -26,7 +26,7 @@ constants.VERSION_51 = 51
 constants.VERSION_57 = 57
 constants.VERSION_72 = 72
 constants.VERSION_73 = 73
-constants.VERSION_74 = 74
+constants.VERSION_75 = 75
 
 -- misc
 
@@ -399,6 +399,9 @@ constants.SQUAD_SETTLING = 5
 constants.SQUAD_BUILDING = 6
 
 -- Squad Related
+
+constants.ATTACK_SCORE = 1
+constants.ATTACK_SCORE_KAMIKAZE = 2
 
 constants.RETREAT_GRAB_RADIUS = 24
 constants.RETREAT_SPAWNER_GRAB_RADIUS = 75

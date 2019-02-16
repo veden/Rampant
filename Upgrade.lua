@@ -12,6 +12,8 @@ local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
+local ATTACK_SCORE = constants.ATTACK_SCORE
+
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 -- imported functions
@@ -242,16 +244,14 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.37")
 	global.version = constants.VERSION_72
     end
-    if (global.version < constants.VERSION_74) then
+    if (global.version < constants.VERSION_75) then
 
         for _,squad in pairs(natives.squads) do
-	    squad.status = SQUAD_GUARDING
-            squad.cycles = 0
-            squad.attackScoreFunction = nil
+            squad.attackScoreFunction = ATTACK_SCORE
     	end
 
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.39")
-	global.version = constants.VERSION_74
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.40")
+	global.version = constants.VERSION_75
     end
 
     return starting ~= global.version, natives

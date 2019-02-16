@@ -20,6 +20,9 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
+local ATTACK_SCORE = constants.ATTACK_SCORE
+local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
+
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
 
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
@@ -163,11 +166,15 @@ local function attackMove(map, attackPosition, attackCmd, squad, group, natives,
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
+        local attackScorer = scoreAttackLocation
+        if (squad.attackScoreFunction == ATTACK_SCORE_KAMIKAZE) then
+            attackScorer = scoreAttackKamikazeLocation
+        end
 	local attackChunk, attackDirection = scoreNeighborsForAttack(map,
                                                                      natives,
 								     chunk,
 								     getNeighborChunks(map, x, y),
-								     squad.attackScoreFunction or scoreAttackLocation,
+								     attackScorer,
 								     squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
@@ -258,9 +265,7 @@ function squadAttack.squadsBeginAttack(natives, players)
                 end
 
                 if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
-                    squad.attackScoreFunction = scoreAttackKamikazeLocation
-                else
-                    squad.attackScoreFunction = scoreAttackLocation
+                    squad.attackScoreFunction = ATTACK_SCORE_KAMIKAZE
                 end
 		squad.status = SQUAD_RAIDING
 	    end
