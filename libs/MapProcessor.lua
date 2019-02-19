@@ -257,6 +257,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
     local rallys = map.chunkToRallys
     local spawners = map.chunkToSpawner
     local settlers = map.chunkToSettler
+    local drained = map.chunkToDrained
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
@@ -288,6 +289,11 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	local settlerTick = spawners[chunk]
 	if settlerTick and ((tick - settlerTick) > 0) then
 	    settlers[chunk] = nil
+	end
+
+        local drainTick = drained[chunk]
+	if drainTick and ((tick - drainTick) > 0) then
+	    drained[chunk] = nil
 	end
 
 	local closeBy = findNearbySquad(map, chunk, chunk)

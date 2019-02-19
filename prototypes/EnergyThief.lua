@@ -62,7 +62,26 @@ function energyThief.addFaction()
 		},
 		loot = biterLoot,
 		attack = {
-		    damageType = "electric"
+		    damageType = "electric",
+                    actions = function(attributes, electricBeam)
+                        return
+                            {
+                                {
+                                    type = "instant",
+                                    target_effects =
+                                        {
+                                            type = "create-entity",
+                                            trigger_created_entity = true,
+                                            entity_name = "drain-trigger-rampant"
+                                        }
+                                },
+                                {
+				    type = "beam",
+				    beam = electricBeam or "electric-beam",
+				    duration = attributes.duration or 20
+				}
+                            }
+                    end
 		},
 		resistances = {},
 
@@ -85,33 +104,33 @@ function energyThief.addFaction()
 	{
 	    unit = {
 		{
-		    type = "attribute",
-		    name = "health",
-		    [1] = 10,
-		    [2] = 50,
-		    [3] = 200,
-		    [4] = 350,
-		    [5] = 750,
-		    [6] = 1000,
-		    [7] = 1500,
-		    [8] = 2500,
-		    [9] = 4500,
-		    [10] = 7000
-		},
+			type = "attribute",
+			name = "health",
+			[1] = 10,
+			[2] = 50,
+			[3] = 200,
+			[4] = 350,
+			[5] = 1250,
+			[6] = 2250,
+			[7] = 3250,
+			[8] = 6500,
+			[9] = 12500,
+			[10] = 25000
+	},
 
 		{
 		    type = "attack",
 		    name = "width",
-		    [1] = 1.5,
-		    [2] = 1.5,
-		    [3] = 1.6,
-		    [4] = 1.6,
-		    [5] = 1.7,
-		    [6] = 1.7,
-		    [7] = 1.8,
-		    [8] = 1.8,
-		    [9] = 1.9,
-		    [10] = 1.9
+		    [1] = 1,
+		    [2] = 1,
+		    [3] = 1.2,
+		    [4] = 1.2,
+		    [5] = 1.3,
+		    [6] = 1.3,
+		    [7] = 1.4,
+		    [8] = 1.4,
+		    [9] = 1.5,
+		    [10] = 1.5
 		},
 
 		{
@@ -128,6 +147,21 @@ function energyThief.addFaction()
 		    [9] = 24,
 		    [10] = 24
 		},
+
+                {
+                    type = "attack",
+                    name = "damage",
+                    [1] = 4,
+                    [2] = 8,
+                    [3] = 15,
+                    [4] = 20,
+                    [5] = 25,
+                    [6] = 35,
+                    [7] = 50,
+                    [8] = 65,
+                    [9] = 80,
+                    [10] = 140
+                },
 
 		{
 		    type = "attack",
@@ -205,16 +239,16 @@ function energyThief.addFaction()
 		{
 		    type = "attack",
 		    name = "range",
-		    [1] = 11,
-		    [2] = 11,
-		    [3] = 12,
-		    [4] = 12,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 14,
-		    [8] = 14,
-		    [9] = 15,
-		    [10] = 15
+		    [1] = 9,
+		    [2] = 9,
+		    [3] = 10,
+		    [4] = 10,
+		    [5] = 11,
+		    [6] = 11,
+		    [7] = 12,
+		    [8] = 12,
+		    [9] = 13,
+		    [10] = 13
 		}
 	    },
 
@@ -462,6 +496,43 @@ function energyThief.addFaction()
 
     data:extend({
             {
+                type = "simple-entity-with-force",
+                name = "drain-trigger-rampant",
+                render_layer = "object",
+                icon = "__base__/graphics/icons/steel-chest.png",
+                icon_size = 32,
+                flags = {"placeable-neutral", "player-creation"},
+                order = "s-e-w-f",
+                minable = {mining_time = 1, result = "drain-trigger-rampant"},
+                max_health = 100,
+                selectable_in_game = false,
+                corpse = "small-remnants",
+                collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
+                selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+                picture =
+                    {
+                        filename = "__core__/graphics/empty.png",
+                        priority = "extra-high",
+                        width = 46,
+                        height = 33,
+                        shift = {0.25, 0.015625}
+                    }
+            },
+
+            {
+                type = "item",
+                name = "drain-trigger-rampant",
+                icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+                icon_size = 32,
+                hidden = true,
+                flags = {"goes-to-quickbar"},
+                subgroup = "energy",
+                order = "e[accumulator]-a[accumulator]",
+                place_result = "drain-trigger-rampant",
+                stack_size = 50
+            },
+
+            {
                 type = "item",
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
@@ -479,23 +550,28 @@ function energyThief.addFaction()
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
                 flags = {},
+                selectable_in_game = false,
                 minable = {hardness = 0.2, mining_time = 0.5, result = "big-electric-pole"},
-                max_health = 150,
+                max_health = 750,
                 healing_per_tick = 0.02,
                 corpse = "medium-remnants",
                 resistances =
                     {
                         {
+                            type = "physical",
+                            percent = 25
+                        },
+                        {
                             type = "fire",
-                            percent = 100
+                            percent = 85
                         },
                         {
                             type = "electric",
-                            percent = 100
+                            percent = 95
                         },
                         {
                             type = "laser",
-                            percent = 100
+                            percent = 90
                         }
                     },
                 collision_box = {{-0.55, -0.55}, {0.55, 0.55}},
@@ -582,12 +658,80 @@ function energyThief.addFaction()
             }
     })
 
+    local chest = util.table.deepcopy(data.raw["radar"]["radar"])
+    chest.name = "pylon-target-rampant"
+    chest.icon = "__Rampant__/graphics/icons/thief/crystal-drain.png"
+    chest.flags = {"not-repairable", "not-on-map"}
+    chest.pictures = {
+        layers={
+            {
+                filename = "__core__/graphics/empty.png",
+                priority = "low",
+                width = 46,
+                height = 49,
+                direction_count = 1,
+                line_length = 1,
+                shift = {0.1875, -0.2}
+            }
+    }}
+    chest.max_health = 750
+    chest.resistances =
+        {
+            {
+                type = "physical",
+                percent = 25
+            },
+            {
+                type = "fire",
+                percent = 85
+            },
+            {
+                type = "electric",
+                percent = 95
+            },
+            {
+                type = "laser",
+                percent = 90
+            }
+        }
+    chest.energy_usage = "500kW"
+    -- chest.collision_mask = {}
+    chest.collision_box = nil
+    chest.selection_box = {{-0.55, -0.55}, {0.55, 0.55}}
+    chest.minable.result = "pylon-target-rampant"
+    chest.working_sound = {
+        sound = {
+            {
+                filename = "__base__/sound/accumulator-working.ogg"
+            }
+        },
+        apparent_volume = 2,
+    }
+
+    data:extend({
+            chest,
+
+            {
+                type = "item",
+                name = "pylon-target-rampant",
+                icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
+                icon_size = 32,
+                flags = {"goes-to-quickbar"},
+                subgroup = "storage",
+                hidden = true,
+                order = "a[items]-h[steel-collector]",
+                place_result = "pylon-target-rampant",
+                stack_size = 50
+            }
+    })
+
+
     for i=1,10 do
         local drainCrystalAttributes = {
             name = "crystal-v" .. i,
-            drain = i * 300 .. "kW",
+            drain = i * 1.3 .. "MW",
             scale = (i * 0.1) + 0.5,
-            health = 100 * i
+            health = 400 * i
         }
 
         makeDrainCrystal(drainCrystalAttributes)

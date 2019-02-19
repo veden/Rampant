@@ -125,11 +125,11 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	subgroup="enemies",
 	healing_per_tick = biterAttributes.healing,
 	resistances = resistances,
-	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale}, 
+	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
 	    {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
-	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale}, 
+	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
 	    {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}},
-	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale}, 
+	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
 	    {0.6 * biterAttributes.scale, 0}},
 	attack_parameters = biterAttack,
 	vision_distance = biterAttributes.vision or 30,
@@ -165,11 +165,11 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	subgroup="enemies",
 	healing_per_tick = biterAttributes.healing,
 	resistances = resistances,
-	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale}, 
+	collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
 	    {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
-	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale}, 
+	selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
 	    {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}},
-	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale}, 
+	sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
 	    {0.6 * biterAttributes.scale, 0}},
 	attack_parameters = biterAttack,
 	loot = biterAttributes.loot,
@@ -265,7 +265,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	v.type = k
 	resistances[#resistances+1] = v
     end
---    print(name .. " " .. attributes.health)    
+--    print(name .. " " .. attributes.health)
     local o = {
 	type = "turret",
 	name = name .. "-rampant",
@@ -318,13 +318,13 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 	range = attributes.range or 0.5,
 	cooldown = attributes.cooldown or 35,
 	ammo_category = "melee",
-	ammo_type = { 
+	ammo_type = {
 	    category = "biological"
 	},
 	sound = make_biter_roars(0.5),
 	animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
     }
-    
+
     if attributes.nuclear then
 	o.ammo_type.action = {
 	    type = "direct",
@@ -402,7 +402,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 					    {
 						type = "damage",
 						damage = {
-						    amount = attributes.damage, 
+						    amount = attributes.damage,
 						    type = attributes.damageType or "explosion"
 						}
 					    },
@@ -416,7 +416,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 				check_buildability = true
 			    }
 			}
-		    
+
 		},
 	    },
 	    {
@@ -449,7 +449,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 					    {
 						type = "damage",
 						damage = {
-						    amount = attributes.damage, 
+						    amount = attributes.damage,
 						    type = attributes.damageType or "explosion"
 						}
 					    }
@@ -460,9 +460,9 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 			}
 		    }
 	    }
-	    
+
 	}
-	
+
     end
     return o
 end
@@ -476,7 +476,7 @@ function biterFunctions.makeWormAlienLootTable(name)
     local artifacts = (a and a.value) or (b and b.value) or d
     local c = settings.startup["bobmods-enemies-enablenewartifacts"]
     local newArtifacts = c and c.value
-    
+
     if newArtifacts and name then
 	biterLoot = {
 	    [1] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.5 },
@@ -504,7 +504,7 @@ function biterFunctions.makeWormAlienLootTable(name)
 	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 4,  probability = 0.75 }
 	}
     end
-    
+
     return biterLoot
 end
 
@@ -516,7 +516,7 @@ function biterFunctions.makeSpawnerAlienLootTable(name)
     local artifacts = (a and a.value) or (b and b.value) or d
     local c = settings.startup["bobmods-enemies-enablenewartifacts"]
     local newArtifacts = c and c.value
-    
+
     if newArtifacts and name then
 	biterLoot = {
 	    [1] = {  item = "alien-artifact-" .. name,  count_min = 1,  count_max = 1,  probability = 0.5 },
@@ -544,7 +544,7 @@ function biterFunctions.makeSpawnerAlienLootTable(name)
 	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 }
 	}
     end
-    
+
     return biterLoot
 end
 
@@ -598,7 +598,7 @@ function biterFunctions.makeUnitAlienLootTable(name)
 	    [10] = {  item = "alien-artifact",  count_min = 3,  count_max = 7,  probability = 0.75 }
 	}
     end
-    
+
     return biterLoot
 end
 
@@ -655,7 +655,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
 			    type = "line",
 			    range = (attributes.range and (attributes.range + 2)) or 15,
 			    width = attributes.width or 0.5,
-			    action_delivery =
+			    action_delivery = (attributes.actions and attributes.actions(attributes, electricBeam)) or
 				{
 				    type = "beam",
 				    beam = electricBeam or "electric-beam",
@@ -775,14 +775,14 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 	cooldown = attributes.cooldown,
 	range = attributes.range,
 	min_range = attributes.minRange,
-	
+
 	turn_range = attributes.turnRange,
 	fire_penalty = attributes.firePenalty,
 
 	warmup = attributes.warmup or 0,
-	
+
 	damage_modifier = attributes.damageModifier or 1.0,
-	
+
 	gun_barrel_length = 2 * attributes.scale,
 	gun_center_shift = {
 	    north = {0, -0.65 * attributes.scale},
@@ -804,7 +804,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 			    }
 		    }
 	    },
-	
+
 	cyclic_sound =
 	    {
                 begin_sound = biterFunctions.biterAttackSounds(),
@@ -824,7 +824,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 		    }
 	    },
 	animation = animation
-    } 
+    }
 
     return attack
 end

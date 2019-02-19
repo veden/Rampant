@@ -537,13 +537,19 @@ function chunkUtils.makeImmortalEntity(surface, entity)
 					     force=repairForce})
     if wires then
 	for _,v in pairs(wires.copper) do
-            newEntity.connect_neighbour(v);
+            if (v.valid) then
+                newEntity.connect_neighbour(v);
+            end
         end
         for _,v in pairs(wires.red) do
-            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+            if (v.valid) then
+                newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+            end
         end
         for _,v in pairs(wires.green) do
-            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+            if (v.valid) then
+                newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+            end
         end
     end
 

@@ -27,6 +27,7 @@ constants.VERSION_57 = 57
 constants.VERSION_72 = 72
 constants.VERSION_73 = 73
 constants.VERSION_75 = 75
+constants.VERSION_76 = 76
 
 -- misc
 

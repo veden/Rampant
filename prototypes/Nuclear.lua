@@ -70,7 +70,7 @@ function nuclear.addFaction()
 		name = "nuclear-biter-nest",
 
 		loot = spawnerLoot,
-		attributes = {},	    
+		attributes = {},
 		resistances = {},
 		tint = {r=0.76, g=0.76, b=0, a=0.65}
 	    }
@@ -90,11 +90,11 @@ function nuclear.addFaction()
 		    [6] = 350,
 		    [7] = 750,
 		    [8] = 1500,
-		    [9] = 3000,
-		    [10] = 5000
+		    [9] = 5000,
+		    [10] = 10000
 		},
-		
-		{		
+
+		{
 		    type = "attribute",
 		    name = "spawningTimeModifer",
 		    [1] = 0,
@@ -106,10 +106,10 @@ function nuclear.addFaction()
 		    [7] = 6,
 		    [8] = 6,
 		    [9] = 8,
-		    [10] = 8		    
+		    [10] = 8
 		},
 
-		{		
+		{
 		    type = "attack",
 		    mapping = "explosion",
 		    [1] = "explosion",
@@ -121,10 +121,10 @@ function nuclear.addFaction()
 		    [7] = "massive-explosion",
 		    [8] = "massive-explosion",
 		    [9] = "massive-explosion",
-		    [10] = "massive-explosion"		
+		    [10] = "massive-explosion"
 		},
 
-		{		
+		{
 		    type = "attack",
 		    name = "radius",
 		    [1] = 5,
@@ -136,10 +136,10 @@ function nuclear.addFaction()
 		    [7] = 16,
 		    [8] = 18,
 		    [9] = 18,
-		    [10] = 20		
+		    [10] = 20
 		},
 
-		{		
+		{
 		    type = "attack",
 		    name = "repeatCount",
 		    [1] = 150,
@@ -153,8 +153,8 @@ function nuclear.addFaction()
 		    [9] = 550,
 		    [10] = 600
 		},
-		
-		{		
+
+		{
 		    type = "attack",
 		    name = "damage",
 		    [1] = 50,
@@ -166,10 +166,10 @@ function nuclear.addFaction()
 		    [7] = 140,
 		    [8] = 150,
 		    [9] = 180,
-		    [10] = 200		
-		},		
+		    [10] = 200
+		},
 
-		{		
+		{
 		    type = "attribute",
 		    name = "movement",
 		    [1] = 0.23,
@@ -228,11 +228,11 @@ function nuclear.addFaction()
 		    }
 		}
 	    },
-	    
-	    unitSpawner = {		
+
+	    unitSpawner = {
 
 		{
-		    
+
 		    type = "attribute",
 		    name = "spawingCooldownStart",
 		    [1] = 330,
@@ -244,11 +244,11 @@ function nuclear.addFaction()
 		    [7] = 315,
 		    [8] = 315,
 		    [9] = 310,
-		    [10] = 310		
+		    [10] = 310
 		},
 
 		{
-		    
+
 		    type = "attribute",
 		    name = "spawingCooldownEnd",
 		    [1] = 120,
@@ -263,7 +263,7 @@ function nuclear.addFaction()
 		    [10] = 100
 		},
 
-		{		
+		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
 		    [1] = 0,
@@ -275,10 +275,10 @@ function nuclear.addFaction()
 		    [7] = 0.6,
 		    [8] = 0.7,
 		    [9] = 0.8,
-		    [10] = 0.9		
+		    [10] = 0.9
 		},
 
-		{				
+		{
 		    type = "attribute",
 		    name = "unitsOwned",
 		    [1] = 1,
@@ -290,10 +290,10 @@ function nuclear.addFaction()
 		    [7] = 5,
 		    [8] = 6,
 		    [9] = 6,
-		    [10] = 6		
+		    [10] = 6
 		},
 
-		{		
+		{
 		    type = "attribute",
 		    name = "unitsToSpawn",
 		    [1] = 1,
@@ -412,7 +412,7 @@ function nuclear.addFaction()
 			    type = "create-sticker",
 			    sticker = attributes.name .. "-sticker-rampant"
 			}
-		    }    
+		    }
 		end,
 		softSmokeName = softSmoke
 	    },
@@ -425,8 +425,8 @@ function nuclear.addFaction()
 	},
 
 	{
-	    	    
-	    {    
+
+	    {
 		type = "attack",
 		name = "stickerMovementModifier",
 		[1] = 0.8,
@@ -440,8 +440,8 @@ function nuclear.addFaction()
 		[9] = 0.4,
 		[10] = 0.4
 	    },
-	    
-	    {    
+
+	    {
 		type = "attack",
 		name = "stickerDuration",
 		[1] = 1800,
@@ -454,7 +454,7 @@ function nuclear.addFaction()
 		[8] = 2100,
 		[9] = 2200,
 		[10] = 2200
-	    },	   
+	    },
 
 	    {
 		type = "resistance",
