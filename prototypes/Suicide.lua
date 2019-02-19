@@ -77,6 +77,7 @@ function suicide.addFaction()
 	{
 	    unit = {
 		{
+
 		    type = "attribute",
 		    name = "health",
 		    [1] = 7,
@@ -87,8 +88,8 @@ function suicide.addFaction()
 		    [6] = 350,
 		    [7] = 750,
 		    [8] = 1500,
-		    [9] = 3000,
-		    [10] = 5000
+		    [9] = 5000,
+		    [10] = 10000
 		},
 
 		{

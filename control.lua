@@ -207,6 +207,7 @@ local function rebuildMap()
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
+    map.chunkToDrained = {}
 
     -- map.queueSpawners = {}
 
@@ -451,6 +452,7 @@ local function onDeath(event)
 	local entityPosition = entity.position
 	local chunk = getChunkByPosition(map, entityPosition)
 	local cause = event.cause
+        local tick = event.tick
         if (entity.force.name == "enemy") then
             if (entity.type == "unit") then
 
@@ -459,7 +461,6 @@ local function onDeath(event)
 		    deathScent(map, chunk)
 
 		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
-			local tick = event.tick
 
 			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
@@ -487,7 +488,6 @@ local function onDeath(event)
                 end
 
             elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
-		local tick = event.tick
 
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    unregisterEnemyBaseStructure(map, entity)
@@ -505,6 +505,25 @@ local function onDeath(event)
 				 (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
 		end
             end
+
+            local pair = natives.drainPylons[entity.unit_number]
+            if pair then
+                local target = pair[1]
+                local pole = pair[2]
+                if target == entity then
+                    natives.drainPylons[entity.unit_number] = nil
+                    if pole.valid then
+                        natives.drainPylons[pole.unit_number] = nil
+                        pole.die()
+                    end
+                elseif (pole == entity) then
+                    natives.drainPylons[entity.unit_number] = nil
+                    if target.valid then
+                        natives.drainPylons[target.unit_number] = nil
+                        target.destroy()
+                    end
+                end
+            end
         elseif (entity.force.name ~= "enemy") then
 	    local creditNatives = false
 	    if (event.force ~= nil) and (event.force.name == "enemy") then
@@ -513,24 +532,38 @@ local function onDeath(event)
 		    victoryScent(map, chunk, entity.type)
 		end
 
-                if (cause ~= nil) then
-                    if (ENERGY_THIEF_LOOKUP[cause.name]) then
+                local drained = (entity.type == "electric-turret") and map.chunkToDrained[chunk]
+                if (cause ~= nil) or (drained and (drained - tick) > 0) then
+                    if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
 			local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
 			if conversion then
 			    local newEntity = surface.create_entity({position=entity.position,
 								     name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
 								     direction=entity.direction})
 			    if (conversion == "pole") then
+                                local targetEntity = surface.create_entity({position=entity.position,
+                                                                            name="pylon-target-rampant",
+                                                                            direction=entity.direction})
+                                targetEntity.backer_name = ""
+                                local pair = {targetEntity, newEntity}
+                                natives.drainPylons[targetEntity.unit_number] = pair
+                                natives.drainPylons[newEntity.unit_number] = pair
 				local wires = entity.neighbours
 				if wires then
                                     for _,v in pairs(wires.copper) do
-                                        newEntity.connect_neighbour(v);
+                                        if (v.valid) then
+                                            newEntity.connect_neighbour(v);
+                                        end
                                     end
                                     for _,v in pairs(wires.red) do
-                                        newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+                                        if (v.valid) then
+                                            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+                                        end
                                     end
                                     for _,v in pairs(wires.green) do
-                                        newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+                                        if (v.valid) then
+                                            newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+                                        end
                                     end
 				end
                             elseif newEntity.backer_name then
@@ -634,6 +667,18 @@ local function onRocketLaunch(event)
     end
 end
 
+local function onTriggerEntityCreated(event)
+    local entity = event.entity
+    if entity.valid and (entity.name  == "drain-trigger-rampant") then
+        local chunk = getChunkByPosition(map, entity.position)
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            map.chunkToDrained[chunk] = event.tick + 60
+        end
+        entity.destroy()
+    end
+
+end
+
 local function onInit()
     global.map = {}
     global.pendingChunks = {}
@@ -659,6 +704,8 @@ script.on_event({defines.events.on_player_built_tile,
 		 defines.events.on_robot_built_tile}, onSurfaceTileChange)
 
 script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
+
+script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
 
 script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
