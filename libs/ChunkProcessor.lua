@@ -92,7 +92,8 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
     end
 
     if (#processQueue > natives.nextChunkSort) or
-    (((tick - natives.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((natives.nextChunkSort - 75) ~= #processQueue)) then
+        (((tick - natives.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((natives.nextChunkSort - 75) ~= #processQueue))
+    then
         natives.nextChunkSort = #processQueue + 75
         natives.nextChunkSortTick = tick
         tSort(processQueue, sorter)

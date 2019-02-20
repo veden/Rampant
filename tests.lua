@@ -8,7 +8,7 @@ local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
 -- local tendrilUtils = require("libs/TendrilUtils")
 
-function tests.pheromoneLevels(size) 
+function tests.pheromoneLevels(size)
     local player = game.player.character
     local playerChunkX = math.floor(player.position.x / 32) * constants.CHUNK_SIZE
     local playerChunkY = math.floor(player.position.y / 32) * constants.CHUNK_SIZE
@@ -158,7 +158,7 @@ function tests.fillableDirtTest()
     game.surfaces[global.natives.activeSurface].set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
 	    {name="fillableDirt", position={chunkX, chunkY-1}},
 	    {name="fillableDirt", position={chunkX-1, chunkY}},
-	    {name="fillableDirt", position={chunkX, chunkY}}}, 
+	    {name="fillableDirt", position={chunkX, chunkY}}},
 	false)
 end
 
@@ -284,7 +284,7 @@ function tests.clearBases()
 		pos = pos + slice
 	    end
 	else
-	    table.remove(global.natives.bases, x)	    
+	    table.remove(global.natives.bases, x)
 	end
     end
 end
@@ -350,7 +350,7 @@ function tests.colorResourcePoints()
 	    color = "water-green"
 	end
 	chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[global.natives.activeSurface])
-    end    
+    end
 end
 
 function tests.entityStats(name, d)
@@ -372,7 +372,7 @@ function tests.exportAiState()
 	local s = ""
 	for i=1,#chunks do
 	    local chunk = chunks[i]
-	    
+
 	    s = s .. table.concat({chunk[constants.MOVEMENT_PHEROMONE],
 				   chunk[constants.BASE_PHEROMONE],
 				   chunk[constants.PLAYER_PHEROMONE],
@@ -388,11 +388,14 @@ function tests.exportAiState()
 				   chunkPropertyUtils.getRetreatTick(global.map, chunk),
 				   chunkPropertyUtils.getResourceGenerator(global.map, chunk),
 				   chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk),
-				   chunkPropertyUtils.getDeathGenerator(global.map, chunk)}, ",") .. "\n"
+				   chunkPropertyUtils.getDeathGenerator(global.map, chunk),
+                                   game.surfaces[global.natives.activeSurface].get_pollution(chunk),
+                                   chunkPropertyUtils.getNestActiveness(global.map, chunk),
+                                   chunkPropertyUtils.getRaidNestActiveness(global.map, chunk)}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end
-    
+
     return function(interval)
 	if not interval then
 	    interval = 0
@@ -401,7 +404,7 @@ function tests.exportAiState()
 	end
 
 	printState()
-	
+
 	if (interval > 0) then
 	    script.on_nth_tick(interval, printState)
 	end
@@ -422,11 +425,11 @@ function tests.createEnergyTest(x)
     --     print(entities[i].name)
     -- end
     local wires
-    
+
     if #entities > 0 then
 	entity.connect_neighbour(entities[1])
     end
-    
+
     --     if wires then
     -- 	for connectType,neighbourGroup in pairs(wires) do
     -- 	    if connectType == "copper" then
@@ -441,7 +444,7 @@ end
 function tests.unitGroupBuild()
     local surface = game.surfaces[global.natives.activeSurface]
     local group = surface.create_unit_group({position={-32, -32}})
-    
+
     for i=1,10 do
 	group.add_member(surface.create_entity({name="small-biter", position={-32, -32}}))
     end

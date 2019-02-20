@@ -193,7 +193,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     if neighborCount == 0 then
         neighborDiv = 0
     else
-        neighborDiv = ((1/neighborCount) * 1.20)
+        neighborDiv = (1/neighborCount)
     end
 
     staging[MOVEMENT_PHEROMONE] = (chunkMovement + (neighborDiv * movementTotal)) * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating

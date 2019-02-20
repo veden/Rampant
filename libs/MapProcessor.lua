@@ -34,7 +34,11 @@ local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
+local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
+
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
 local INTERVAL_RALLY = constants.INTERVAL_RALLY
 local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
@@ -51,6 +55,7 @@ local playerScent = pheromoneUtils.playerScent
 
 local formSquads = aiAttackWave.formSquads
 local formSettlers = aiAttackWave.formSettlers
+local formVengenceSquad = aiAttackWave.formVengenceSquad
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getChunkByXY = mapUtils.getChunkByXY
@@ -63,6 +68,11 @@ local analyzeChunk = chunkUtils.analyzeChunk
 
 local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getNestActiveness = chunkPropertyUtils.getNestActiveness
+local setNestActiveness = chunkPropertyUtils.setNestActiveness
+local getRaidNestActiveness = chunkPropertyUtils.getRaidNestActiveness
+local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
+
 
 local canAttack = aiPredicates.canAttack
 local canMigrate = aiPredicates.canMigrate
@@ -72,6 +82,7 @@ local findNearbySquad = unitGroupUtils.findNearbySquad
 local processBase = baseUtils.processBase
 
 local mMin = math.min
+local mMax = math.max
 
 local mRandom = math.random
 
@@ -124,14 +135,12 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	if (chunk[CHUNK_TICK] ~= tick) then
 	    processPheromone(map, chunk, scentStaging[i])
 
-	    if (getNestCount(map, chunk) > 0) then
-		if squads then
-		    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-		end
-		if settlers then
-		    settlers = formSettlers(map, surface, natives, chunk, AI_SETTLER_COST, tick)
-		end
-	    end
+            if squads then
+                squads = formSquads(map, surface, natives, chunk)
+            end
+            if settlers and (getNestCount(map, chunk) > 0) then
+                settlers = formSettlers(map, surface, natives, chunk, tick)
+            end
 
 	    if newEnemies then
 		local base = chunkToBase[chunk]
@@ -204,7 +213,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local vengence = (allowingAttacks and
 				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
-				      ((getEnemyStructureCount(map, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < natives.retreatThreshold)))
+				      ((getEnemyStructureCount(map, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold)))
 
 		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -213,14 +222,38 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    processPheromone(map, chunk, scentStaging[i])
 
-			    if (getNestCount(map, chunk) > 0) then
-				if squads then
-				    squads = formSquads(map, surface, natives, chunk, AI_SQUAD_COST)
-				end
-				if vengence then
-				    vengence = formSquads(map, surface, natives, chunk, AI_VENGENCE_SQUAD_COST)
-				end
-			    end
+                            local nests = getNestCount(map, chunk)
+                            if (nests > 0) then
+                                local activeness = getNestActiveness(map, chunk)
+                                local raidActiveness = getRaidNestActiveness(map, chunk)
+                                if natives.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > natives.attackPlayerThreshold) then
+                                    setNestActiveness(map, chunk, mMin((activeness or 0) + 5, 20))
+                                elseif (chunk[BASE_PHEROMONE] > 0) then
+                                    if (surface.get_pollution(chunk) > 0) then
+                                        setNestActiveness(map, chunk, mMin((activeness or 0) + 5, 20))
+                                    else
+                                        setNestActiveness(map, chunk, activeness - 2)
+                                        if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
+                                            setRaidNestActiveness(map, chunk, mMin((raidActiveness or 0) + 3, 20))
+                                        else
+                                            setRaidNestActiveness(map, chunk, raidActiveness - 1)
+                                        end
+                                    end
+                                else
+                                    setNestActiveness(map, chunk, activeness - 5)
+                                    setRaidNestActiveness(map, chunk, raidActiveness - 5)
+                                end
+                            else
+                                setNestActiveness(map, chunk, 0)
+                                setRaidNestActiveness(map, chunk, 0)
+                            end
+
+                            if squads then
+                                squads = formSquads(map, surface, natives, chunk)
+                            end
+                            if vengence and (getNestCount(map, chunk) > 0) then
+                                vengence = formVengenceSquad(map, surface, natives, chunk)
+                            end
 			end
 			i = i + 1
 		    end
@@ -307,12 +340,38 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	end
 
 	analyzeChunk(chunk, natives, surface, map)
+        local nests = getNestCount(map, chunk)
+        if (nests > 0) then
+            local activeness = getNestActiveness(map, chunk)
+            local raidActiveness = getRaidNestActiveness(map, chunk)
+            if natives.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > natives.attackPlayerThreshold) then
+                setNestActiveness(map, chunk, mMin((activeness or 0) + 5, 20))
+            elseif (chunk[BASE_PHEROMONE] > 0) then
+                if (surface.get_pollution(chunk) > 0) then
+                    setNestActiveness(map, chunk, mMin((activeness or 0) + 5, 20))
+                else
+                    setNestActiveness(map, chunk, activeness - 2)
+                    if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
+                        setRaidNestActiveness(map, chunk, mMin((raidActiveness or 0) + 3, 20))
+                    else
+                        setRaidNestActiveness(map, chunk, raidActiveness - 1)
+                    end
+                end
+            else
+                setNestActiveness(map, chunk, activeness - 5)
+                setRaidNestActiveness(map, chunk, raidActiveness - 5)
+            end
+        else
+            setNestActiveness(map, chunk, 0)
+            setRaidNestActiveness(map, chunk, 0)
+        end
+
     end
 
     if (endIndex == #processQueue) then
-	map.scanIndex = 1
+        map.scanIndex = 1
     else
-	map.scanIndex = endIndex + 1
+        map.scanIndex = endIndex + 1
     end
 end
 

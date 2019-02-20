@@ -208,6 +208,8 @@ local function rebuildMap()
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
     map.chunkToDrained = {}
+    map.chunkToActiveNest = {}
+    map.chunkToActiveRaidNest = {}
 
     -- map.queueSpawners = {}
 
@@ -304,16 +306,16 @@ local function onModSettingsChange(event)
     end
 
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
-    upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
+    -- upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
     upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
     upgrade.compareTable(natives, "onslaughtAIToggle", settings.global["rampant-onslaughtAIToggle"].value)
 
-    upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
-    upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
-    upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
+    -- upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
+    -- upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
+    -- upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
     upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
@@ -358,6 +360,7 @@ local function prepWorld(rebuild)
 	-- queue all current chunks that wont be generated during play
 	local surface = game.surfaces[natives.activeSurface]
 	local tick = game.tick
+        natives.nextChunkSort = 0
 	for chunk in surface.get_chunks() do
 	    onChunkGenerated({ tick = tick,
 			       surface = surface,

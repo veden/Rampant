@@ -117,7 +117,7 @@ function upgrade.attempt(natives)
 	natives.attackWaveDeviation = 0
 	natives.attackWaveUpperBound = 0
 	natives.unitRefundAmount = 0
-	natives.attackWaveThreshold = 0
+	-- natives.attackWaveThreshold = 0
 
 	game.map_settings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
 	game.map_settings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
@@ -259,6 +259,14 @@ function upgrade.attempt(natives)
 
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.41")
 	global.version = constants.VERSION_76
+    end
+    if (global.version < constants.VERSION_77) then
+
+        natives.attackWaveThreshold = nil
+        natives.attackWav = nil
+
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.16.42")
+        global.version = constants.VERSION_77
     end
 
     return starting ~= global.version, natives
