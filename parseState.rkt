@@ -31,7 +31,10 @@
                       settleScore
                       siegeScore
                       retreatScore
-                      kamikazeScore)
+                      kamikazeScore
+                      pollution
+                      aNe
+                      aRNe)
     #:transparent)
 
   (struct Chunk (kamikazeScore
@@ -54,7 +57,10 @@
                  retreat
                  resourceGen
                  playerGen
-                 deathGen)
+                 deathGen
+                 pollution
+                 aNe
+                 aRNe)
     #:transparent)
 
   (require threading)
@@ -66,7 +72,7 @@
 
   (define (stringToChunk str)
     (match-let (((list movement base player resource passable tick rating x y nest
-                       worms rally retreat resourceGen playerGen deathGen) (string-split str ",")))
+                       worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe) (string-split str ",")))
       (apply Chunk
              (cons (+ (string->number base)
                       (* (string->number player) 2500))
@@ -81,15 +87,15 @@
                                (cons (+ (string->number movement)
                                         (string->number resource))
                                      (cons (+ ;; (* 2 (string->number movement))
-                                              (* (string->number base)
-                                                 (if (< (string->number movement) 0)
-                                                     (- 1 (/ (string->number movement)
-                                                             -100000))
-                                                     1))
-                                              (* (string->number player) 2500))
+                                            (* (string->number base)
+                                               (if (< (string->number movement) 0)
+                                                   (- 1 (/ (string->number movement)
+                                                           -100000))
+                                                   1))
+                                            (* (string->number player) 2500))
                                            (map string->number
                                                 (list x y movement base player resource passable tick rating nest
-                                                      worms rally retreat resourceGen playerGen deathGen))))))))))
+                                                      worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe))))))))))
 
   (define (chunk->string chunk)
     (string-append "x: " (~v (Chunk-x chunk)) "\n"
@@ -113,7 +119,10 @@
                    "aSco: " (~v (Chunk-attackScore chunk)) "\n"
                    "sSco: " (~v (Chunk-settleScore chunk)) "\n"
                    "sSei: " (~v (Chunk-siegeScore chunk)) "\n"
-                   "sRet: " (~v (Chunk-retreatScore chunk)) "\n"))
+                   "sRet: " (~v (Chunk-retreatScore chunk)) "\n"
+                   "pol: " (~v (Chunk-pollution chunk)) "\n"
+                   "aNe: " (~v (Chunk-aNe chunk)) "\n"
+                   "aRNe: " (~v (Chunk-aRNe chunk)) "\n"))
 
   (define (normalizeRange xs)
     (let* ((sDev (stddev xs))
@@ -146,7 +155,10 @@
           (sSco (map Chunk-settleScore chunks))
           (sSei (map Chunk-siegeScore chunks))
           (sRet (map Chunk-retreatScore chunks))
-          (sKam (map Chunk-kamikazeScore chunks)))
+          (sKam (map Chunk-kamikazeScore chunks))
+          (pol (map Chunk-pollution chunks))
+          (aNe (map Chunk-aNe chunks))
+          (aRNe (map Chunk-aRNe chunks)))
 
       ;; (ChunkRange (MinMax (apply min xs) (apply max xs))
       ;;             (MinMax (apply min ys) (apply max ys))
@@ -190,7 +202,10 @@
                   (normalizeRange sSco)
                   (normalizeRange sSei)
                   (normalizeRange sRet)
-                  (normalizeRange sKam))
+                  (normalizeRange sKam)
+                  (normalizeRange pol)
+                  (MinMax (apply min aNe) (apply max aNe))
+                  (MinMax (apply min aRNe) (apply max aRNe)))
 
       ))
 

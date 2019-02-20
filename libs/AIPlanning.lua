@@ -89,8 +89,8 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-    local threshold = natives.attackThresholdRange
-    natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
+    -- local threshold = natives.attackThresholdRange
+    -- natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
 
     local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
 

@@ -57,6 +57,8 @@ local addResourceGenerator = chunkPropertyUtils.addResourceGenerator
 local setWormCount = chunkPropertyUtils.setWormCount
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getNestCount = chunkPropertyUtils.getNestCount
+local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
+local setNestActiveness = chunkPropertyUtils.setNestActiveness
 
 local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
@@ -132,7 +134,8 @@ end
 
 local function removeEnemyStructureFromChunk(map, chunk, entity)
     local lookup
-    if (entity.type == "unit-spawner") then
+    local entityType = entity.type
+    if (entityType == "unit-spawner") then
 	lookup = map.chunkToNests
     elseif (entity.type == "turret") then
 	lookup = map.chunkToWorms
@@ -146,6 +149,10 @@ local function removeEnemyStructureFromChunk(map, chunk, entity)
 
     if lookup[chunk] then
 	if ((lookup[chunk] - 1) <= 0) then
+            if (entityType == "unit-spawner") then
+                setRaidNestActiveness(map, chunk, 0)
+                setNestActiveness(map, chunk, 0)
+            end
 	    lookup[chunk] = nil
 	else
 	    lookup[chunk] = lookup[chunk] - 1

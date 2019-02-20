@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.16.42
+Date: 2. 18. 2019
+  Improvements:
+    - Reworked how nests are activated by pollution, player, and base pheromone for better nest tracking
+    - Removed use pollution map setting
+    - Removed min and max attack threshold settings
+  Tweaks:
+    - Increased max squad count from 30 to 40
+  Bugfixes:
+    - Reverted pheromone projection
+    - Reverted settings default player threshold to 7
+    - Fixed radial pattern sort not being trigger on map rebuild
+
+---------------------------------------------------------------------------------------------------
 Version: 0.16.41
 Date: 2. 18. 2019
   Note:
@@ -6,7 +20,7 @@ Date: 2. 18. 2019
   Tweaks:
     - Added energy thief crystal and pylon physical resistance 25%
     - Increased crystal pylon health from 150 to 750
-    - Decreased electric faction damages (7->6, 15->10, 22.5->15, 35->20, 45->30, 60->45, 75->60, 90->75, 150->90, 200->150)
+    - Decreased electric and energy thiefs faction damages (7->6, 15->10, 22.5->15, 35->20, 45->30, 60->45, 75->60, 90->75, 150->90, 200->150)
     - Decreased energy thief beam width (1.5->1, 1.5->1, 1.6->1.2, 1.6->1.2, 1.7->1.3, 1.7->1.3, 1.8->1.4, 1.8->1.4, 1.9->1.5, 1.9->1.5)
     - Decreased energy thief range (11->9, 11->9, 12->10, 12->10, 13->11, 13->11, 14->12, 14->12, 15->13, 15->13)
     - Decreased crystal pylon resistances for fire, electric, laser from 100, 100, 100 to 85, 95, 90

@@ -22,6 +22,7 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
@@ -42,8 +43,6 @@ local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_DISTRACTION_NONE  = defines.distraction.none
 
-local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
-
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
@@ -59,6 +58,8 @@ local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local getPassable = chunkPropertyUtils.getPassable
 local getNestCount = chunkPropertyUtils.getNestCount
 local getChunkSettlerTick = chunkPropertyUtils.getChunkSettlerTick
+local getRaidNestActiveness = chunkPropertyUtils.getRaidNestActiveness
+local getNestActiveness = chunkPropertyUtils.getNestActiveness
 local setChunkSettlerTick = chunkPropertyUtils.setChunkSettlerTick
 local getRallyTick = chunkPropertyUtils.getRallyTick
 local setRallyTick = chunkPropertyUtils.setRallyTick
@@ -75,34 +76,12 @@ local settlerWaveScaling = config.settlerWaveScaling
 
 -- module code
 
-local function attackWaveValidCandidate(chunk, natives, surface)
-    local total = 0;
-
-    local hasPlayerPheromone = false
-    if natives.attackUsePlayer then
-	local playerPheromone = chunk[PLAYER_PHEROMONE]
-	if (playerPheromone > natives.attackPlayerThreshold) then
-	    total = total + chunk[PLAYER_PHEROMONE]
-	    hasPlayerPheromone = true
-	elseif (playerPheromone > 0) then
-	    hasPlayerPheromone = true
-	end
+local function attackWaveValidCandidate(chunk, natives, map)
+    local isValid = getNestActiveness(map, chunk)
+    if natives.state == AI_STATE_RAIDING then
+        isValid = isValid + getRaidNestActiveness(map, chunk)
     end
-    local hasBasePheromone = false
-    local basePheromone = chunk[BASE_PHEROMONE]
-    if (basePheromone > 0) then
-	hasBasePheromone = true
-	if (natives.state == AI_STATE_RAIDING) then
-	    if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
-		total = total + basePheromone
-	    end
-	end
-    end
-    if natives.attackUsePollution then
-	total = total + surface.get_pollution(chunk)
-    end
-
-    return (total > natives.attackWaveThreshold) and (hasBasePheromone or hasPlayerPheromone)
+    return (isValid > 0)
 end
 
 local function scoreSettlerLocation(neighborChunk)
@@ -141,7 +120,7 @@ function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
 		if (x ~= cX) and (y ~= cY) then
 		    local rallyChunk = getChunkByXY(map, x, y)
 		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
-			if not aiAttackWave.formSquads(map, surface, natives, rallyChunk, AI_VENGENCE_SQUAD_COST) then
+			if not aiAttackWave.formVengenceSquad(map, surface, natives, rallyChunk) then
 			    return
 			end
 		    end
@@ -167,8 +146,7 @@ local function noNearbySettlers(map, chunk, tick)
     return true
 end
 
-function aiAttackWave.formSettlers(map, surface, natives, chunk, cost, tick)
-
+function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
     if (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT) then
 
         local squadPath, squadDirection
@@ -211,19 +189,18 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, cost, tick)
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
 		    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
-		    natives.points = natives.points - cost
+		    natives.points = natives.points - AI_SETTLER_COST
 		end
 	    end
 	end
     end
 
-    return (natives.points - cost) > 0
+    return (natives.points - AI_SETTLER_COST) > 0
 end
 
-function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
-    local valid = (cost == AI_VENGENCE_SQUAD_COST) or ((cost == AI_SQUAD_COST) and attackWaveValidCandidate(chunk, natives, surface))
-
-    if valid and (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT) then
+function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
+    if (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT)
+    then
 
 	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
 								     validUnitGroupLocation,
@@ -249,14 +226,53 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, cost)
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
-		    natives.points = natives.points - cost
+		    natives.points = natives.points - AI_VENGENCE_SQUAD_COST
 		end
 	    end
 	end
     end
 
-    return (natives.points - cost) > 0
+    return (natives.points - AI_VENGENCE_SQUAD_COST) > 0
 end
+
+function aiAttackWave.formSquads(map, surface, natives, chunk)
+    if attackWaveValidCandidate(chunk, natives, map) and
+        (mRandom() < natives.formSquadThreshold) and
+        (#natives.squads < AI_MAX_SQUAD_COUNT)
+    then
+	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
+								     validUnitGroupLocation,
+								     scoreUnitGroupLocation,
+								     map)
+	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+								      positionFromDirectionAndChunk(squadDirection,
+												    chunk,
+												    map.position,
+												    0.98),
+								      CHUNK_SIZE,
+								      4)
+	    if squadPosition then
+		local squad = createSquad(squadPosition, surface, natives)
+
+		squad.rabid = mRandom() < 0.03
+
+		local scaledWaveSize = attackWaveScaling(natives)
+		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
+									   group = squad.group,
+									   distraction = DEFINES_DISTRACTION_NONE },
+							       unit_count = scaledWaveSize,
+							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+		if (foundUnits > 0) then
+		    natives.points = natives.points - AI_SQUAD_COST
+		end
+	    end
+	end
+    end
+
+    return (natives.points - AI_SQUAD_COST) > 0
+end
+
 
 aiAttackWaveG = aiAttackWave
 return aiAttackWave

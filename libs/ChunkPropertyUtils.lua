@@ -116,6 +116,31 @@ function chunkPropertyUtils.getPassable(map, chunk)
     return map.chunkToPassable[chunk] or CHUNK_ALL_DIRECTIONS
 end
 
+
+function chunkPropertyUtils.getRaidNestActiveness(map, chunk)
+    return map.chunkToActiveRaidNest[chunk] or 0
+end
+
+function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
+    if (value <= 0) then
+        map.chunkToActiveRaidNest[chunk] = nil
+    else
+        map.chunkToActiveRaidNest[chunk] = value
+    end
+end
+
+function chunkPropertyUtils.getNestActiveness(map, chunk)
+    return map.chunkToActiveNest[chunk] or 0
+end
+
+function chunkPropertyUtils.setNestActiveness(map, chunk, value)
+    if (value <= 0) then
+        map.chunkToActiveNest[chunk] = nil
+    else
+        map.chunkToActiveNest[chunk] = value
+    end
+end
+
 function chunkPropertyUtils.setPassable(map, chunk, value)
     if (value == CHUNK_ALL_DIRECTIONS) then
 	map.chunkToPassable[chunk] = nil

@@ -28,14 +28,14 @@ data:extend({
 	    per_user = false
 	},
 
-	{
-	    type = "bool-setting",
-	    name = "rampant-attackWaveGenerationUsePollution",
-	    setting_type = "runtime-global",
-	    default_value = true,
-	    order = "b[modifier]-a[trigger]",
-	    per_user = false
-	},
+	-- {
+	--     type = "bool-setting",
+	--     name = "rampant-attackWaveGenerationUsePollution",
+	--     setting_type = "runtime-global",
+	--     default_value = true,
+	--     order = "b[modifier]-a[trigger]",
+	--     per_user = false
+	-- },
 
 	{
 	    type = "bool-setting",
@@ -51,30 +51,30 @@ data:extend({
 	    name = "rampant-attackPlayerThreshold",
 	    setting_type = "runtime-global",
 	    minimum_value = 0,
-	    default_value = 16,
+	    default_value = 7,
 	    order = "b[modifier]-c[threshold]",
 	    per_user = false
 	},
 
-	{
-	    type = "double-setting",
-	    name = "rampant-attackWaveGenerationThresholdMax",
-	    setting_type = "runtime-global",
-	    minimum_value = 0,
-	    default_value = 20,
-	    order = "b[modifier]-d[threshold]",
-	    per_user = false
-	},
+	-- {
+	--     type = "double-setting",
+	--     name = "rampant-attackWaveGenerationThresholdMax",
+	--     setting_type = "runtime-global",
+	--     minimum_value = 0,
+	--     default_value = 20,
+	--     order = "b[modifier]-d[threshold]",
+	--     per_user = false
+	-- },
 
-	{
-	    type = "double-setting",
-	    name = "rampant-attackWaveGenerationThresholdMin",
-	    setting_type = "runtime-global",
-	    minimum_value = 0,
-	    default_value = 0,
-	    order = "b[modifier]-e[threshold]",
-	    per_user = false
-	},
+	-- {
+	--     type = "double-setting",
+	--     name = "rampant-attackWaveGenerationThresholdMin",
+	--     setting_type = "runtime-global",
+	--     minimum_value = 0,
+	--     default_value = 0,
+	--     order = "b[modifier]-e[threshold]",
+	--     per_user = false
+	-- },
 
 	{
 	    type = "int-setting",
