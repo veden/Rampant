@@ -153,7 +153,6 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     end
 
     i = 1
-
     for x=index,endIndex do
 	local chunk = processQueue[x]
 	if (chunk[CHUNK_TICK] ~= tick) then
@@ -202,8 +201,6 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 	end
     end
 
-    local i = 1
-
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#playerOrdering > 0) then
 	local player = players[playerOrdering[1]]
@@ -211,6 +208,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 	    local playerChunk = getChunkByPosition(map, player.character.position)
 
 	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                local i = 1
 		local vengence = (allowingAttacks and
 				      (natives.points >= AI_VENGENCE_SQUAD_COST) and
 				      ((getEnemyStructureCount(map, playerChunk) > 0) or (playerChunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold)))
@@ -260,8 +258,8 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 		end
 
 		i = 1
-		for x=playerChunk.x + PROCESS_PLAYER_BOUND, playerChunk.x - PROCESS_PLAYER_BOUND, -32 do
-		    for y=playerChunk.y + PROCESS_PLAYER_BOUND, playerChunk.y - PROCESS_PLAYER_BOUND, -32 do
+		for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
+		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
 			local chunk = getChunkByXY(map, x, y)
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
 			    chunk[CHUNK_TICK] = tick

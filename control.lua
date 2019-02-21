@@ -231,7 +231,6 @@ local function rebuildMap()
 
     map.scentStaging = {}
 
-
     for x=1,PROCESS_QUEUE_SIZE+1 do
 	map.scentStaging[x] = {0,0,0,0}
     end
@@ -240,6 +239,7 @@ local function rebuildMap()
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
     map.area = {{0, 0}, {0, 0}}
+    map.testArea = {{0, 0}, {0, 0}}
     map.area2 = {map.position2Top, map.position2Bottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
@@ -249,6 +249,9 @@ local function rebuildMap()
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
     map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, invert = true }
+    local sharedArea = {{0,0},{0,0}}
+    map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
+    map.filteredTilesPathQuery = { area=sharedArea, name=WATER_TILE_NAMES, limit = 1 }
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
 
@@ -750,7 +753,8 @@ remote.add_interface("rampantTests",
 			 unitGroupBuild = tests.unitGroupBuild,
 			 exportAiState = tests.exportAiState(nil),
 			 createEnergyTest = tests.createEnergyTest,
-			 killActiveSquads = tests.killActiveSquads
+			 killActiveSquads = tests.killActiveSquads,
+                         scanChunkPaths = tests.scanChunkPaths
 		     }
 )
 

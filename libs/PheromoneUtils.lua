@@ -17,6 +17,7 @@ local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
+local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 
@@ -110,7 +111,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     local neighbor
 
     neighbor = tempNeighbors[2]
-    if not neighbor.name then
+    if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
         neighborFlagNW = neighborFlagNW + 1
         neighborFlagNE = neighborFlagNE + 1
@@ -121,7 +122,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[4]
-    if not neighbor.name then
+    if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
         neighborFlagNW = neighborFlagNW + 1
         neighborFlagSW = neighborFlagSW + 1
@@ -132,7 +133,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[5]
-    if not neighbor.name then
+    if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
         neighborFlagNE = neighborFlagNE + 1
         neighborFlagSE = neighborFlagSE + 1
@@ -143,7 +144,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[7]
-    if not neighbor.name then
+    if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
         neighborFlagSW = neighborFlagSW + 1
         neighborFlagSE = neighborFlagSE + 1
@@ -154,7 +155,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[1]
-    if (neighborFlagNW == 2) and not neighbor.name then
+    if (neighborFlagNW == 2) and neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
 	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
 	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
@@ -163,7 +164,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[3]
-    if (neighborFlagNE == 2) and not neighbor.name then
+    if (neighborFlagNE == 2) and neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
 	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
 	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
@@ -172,7 +173,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[6]
-    if (neighborFlagSW == 2) and not neighbor.name then
+    if (neighborFlagSW == 2) and neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
 	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
 	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
@@ -181,7 +182,7 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
     end
 
     neighbor = tempNeighbors[8]
-    if (neighborFlagSE == 2) and not neighbor.name then
+    if (neighborFlagSE == 2) and neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
         neighborCount = neighborCount + 1
 	movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
 	baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
