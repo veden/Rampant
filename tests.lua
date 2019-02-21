@@ -461,6 +461,15 @@ function tests.dumpEnvironment(x)
     print (serpent.dump(global[x]))
 end
 
+function tests.scanChunkPaths()
+    local surface = game.surfaces[global.natives.activeSurface]
+    local playerPosition = game.players[1].position
+    local chunk = mapUtils.getChunkByPosition(global.map, playerPosition)
+    print("------")
+    print(chunkUtils.scanChunkPaths(chunk, surface, global.map))
+    print("------")
+end
+
 function tests.stepAdvanceTendrils()
     -- for _, base in pairs(global.natives.bases) do
     -- 	tendrilUtils.advanceTendrils(global.map, base, game.surfaces[global.natives.activeSurface], {nil,nil,nil,nil,nil,nil,nil,nil})

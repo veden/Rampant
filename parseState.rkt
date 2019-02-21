@@ -188,7 +188,7 @@
                   (normalizeRange bases)
                   (normalizeRange players)
                   (normalizeRange resources)
-                  (normalizeRange passables)
+                  (MinMax (apply min passables) (apply max passables))
                   (normalizeRange ticks)
                   (normalizeRange ratings)
                   (MinMax (apply min nests) (apply max nests))

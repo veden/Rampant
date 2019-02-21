@@ -79,32 +79,42 @@ local mRandom = math.random
 
 -- module code
 
-local function fullScan(chunk, can_place_entity, canPlaceQuery)
+function chunkUtils.fullScan(chunk,
+                             count_entities_filtered,
+                             count_tiles_filtered,
+                             filteredEntitiesCliffQuery,
+                             filteredTilesPathQuery)
     local x = chunk.x
     local y = chunk.y
 
     local passableNorthSouth = false
     local passableEastWest = false
 
-    canPlaceQuery.name = "chunk-scanner-ns-rampant"
-
-    local position = canPlaceQuery.position
-    position[2] = y
+    local topPosition = filteredEntitiesCliffQuery.area[1]
+    local bottomPosition = filteredEntitiesCliffQuery.area[2]
+    topPosition[2] = y
+    bottomPosition[2] = y + 32
 
     for xi=x, x + 32 do
-	position[1] = xi
-	if can_place_entity(canPlaceQuery) then
+	topPosition[1] = xi
+        bottomPosition[1] = xi + 1
+	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+            (count_tiles_filtered(filteredTilesPathQuery) == 0)
+        then
 	    passableNorthSouth = true
 	    break
 	end
     end
 
-    position[1] = x
-    canPlaceQuery.name = "chunk-scanner-ew-rampant"
+    topPosition[1] = x
+    bottomPosition[1] = x + 32
 
     for yi=y, y + 32 do
-	position[2] = yi
-	if can_place_entity(canPlaceQuery) then
+	topPosition[2] = yi
+        bottomPosition[2] = yi + 1
+	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+            (count_tiles_filtered(filteredTilesPathQuery) == 0)
+        then
 	    passableEastWest = true
 	    break
 	end
@@ -217,9 +227,11 @@ end
 
 function chunkUtils.scanChunkPaths(chunk, surface, map)
     local pass = CHUNK_IMPASSABLE
-    local passableNorthSouth, passableEastWest = fullScan(chunk,
-							  surface.can_place_entity,
-							  map.canPlaceQuery)
+    local passableNorthSouth, passableEastWest = chunkUtils.fullScan(chunk,
+                                                                     surface.count_entities_filtered,
+                                                                     surface.count_tiles_filtered,
+                                                                     map.filteredEntitiesCliffQuery,
+                                                                     map.filteredTilesPathQuery)
 
     if passableEastWest and passableNorthSouth then
 	pass = CHUNK_ALL_DIRECTIONS
@@ -274,72 +286,74 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 
 	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, map)
 
-	local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
-
 	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
-	if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
-	    local nestCount = 0
-	    local wormCount = 0
-	    local base = findNearbyBase(map, chunk, natives)
-	    if base then
-		if (base.alignment[1] ~= BASE_ALIGNMENT_DEADZONE) then
-		    setChunkBase(map, chunk, base)
-		end
-	    else
-		base = createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
-	    end
-	    local alignment = base.alignment
-	    if (#nests > 0) then
-		for i = 1, #nests do
-		    if rebuilding then
-			if not isRampant(nests[i].name) then
-			    if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-				nestCount = nestCount + 1
-			    end
-			else
-			    nestCount = nestCount + 1
-			end
-		    else
-			if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-			    nestCount = nestCount + 1
-			end
-		    end
-		end
-	    end
-	    if (#worms > 0) then
-		for i = 1, #worms do
-		    if rebuilding then
-			if not isRampant(worms[i].name) then
-			    if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-				wormCount = wormCount + 1
-			    end
-			else
-			    wormCount = wormCount + 1
-			end
-		    else
-			if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-			    wormCount = wormCount + 1
-			end
-		    end
-		end
-	    end
-	    setNestCount(map, chunk, nestCount)
-	    setWormCount(map, chunk, wormCount)
-	else
-	    setNestCount(map, chunk, #nests)
-	    setWormCount(map, chunk, #worms)
-	end
+        if (pass ~= CHUNK_IMPASSABLE) then
+            local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
 
-	setPlayerBaseGenerator(map, chunk, playerObjects)
-	setResourceGenerator(map, chunk, resources)
+            if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
+                local nestCount = 0
+                local wormCount = 0
+                local base = findNearbyBase(map, chunk, natives)
+                if base then
+                    if (base.alignment[1] ~= BASE_ALIGNMENT_DEADZONE) then
+                        setChunkBase(map, chunk, base)
+                    end
+                else
+                    base = createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
+                end
+                local alignment = base.alignment
+                if (#nests > 0) then
+                    for i = 1, #nests do
+                        if rebuilding then
+                            if not isRampant(nests[i].name) then
+                                if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
+                                    nestCount = nestCount + 1
+                                end
+                            else
+                                nestCount = nestCount + 1
+                            end
+                        else
+                            if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
+                                nestCount = nestCount + 1
+                            end
+                        end
+                    end
+                end
+                if (#worms > 0) then
+                    for i = 1, #worms do
+                        if rebuilding then
+                            if not isRampant(worms[i].name) then
+                                if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
+                                    wormCount = wormCount + 1
+                                end
+                            else
+                                wormCount = wormCount + 1
+                            end
+                        else
+                            if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
+                                wormCount = wormCount + 1
+                            end
+                        end
+                    end
+                end
+                setNestCount(map, chunk, nestCount)
+                setWormCount(map, chunk, wormCount)
+            else
+                setNestCount(map, chunk, #nests)
+                setWormCount(map, chunk, #worms)
+            end
 
-	setPassable(map, chunk, pass)
-	setPathRating(map, chunk, passScore)
+            setPlayerBaseGenerator(map, chunk, playerObjects)
+            setResourceGenerator(map, chunk, resources)
 
-	return chunk
+            setPassable(map, chunk, pass)
+            setPathRating(map, chunk, passScore)
+
+            return chunk
+        end
     end
 
     return SENTINEL_IMPASSABLE_CHUNK

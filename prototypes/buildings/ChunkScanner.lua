@@ -28,7 +28,7 @@ data:extend({
 	    circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
 	    circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
 	    circuit_wire_max_distance = default_circuit_wire_max_distance
-},
+        },
 
 	{
 	    type = "container",
@@ -38,11 +38,12 @@ data:extend({
 	    flags = {},
 	    collision_mask = {"player-layer", "object-layer", "water-tile"},
 	    collision_box = {{-0.5, 0}, {0, 32}},
-	    minable = {mining_time = 1, result = "wooden-chest"},
+	    -- minable = {mining_time = 1, result = "chunk-scanner-ns-rampant"},
+            minable = {mining_time = 1, result = "wooden-chest"},
 	    max_health = 100,
 	    corpse = "small-remnants",
 	    fast_replaceable_group = "container",
-	    selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+	    selection_box = {{-0.5, 0}, {0, 32}},
 	    inventory_size = 16,
 	    open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
 	    close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
@@ -68,11 +69,12 @@ data:extend({
 	    flags = {},
 	    collision_box = {{0, -0.5}, {32, 0}},
 	    collision_mask = {"player-layer", "object-layer", "water-tile"},
-	    minable = {mining_time = 1, result = "wooden-chest"},
+	    -- minable = {mining_time = 1, result = "chunk-scanner-ew-rampant"},
+            minable = {mining_time = 1, result = "wooden-chest"},
 	    max_health = 100,
 	    corpse = "small-remnants",
 	    fast_replaceable_group = "container",
-	    selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+	    selection_box = {{0, -0.5}, {32, 0}},
 	    inventory_size = 16,
 	    open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
 	    close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
@@ -91,3 +93,21 @@ data:extend({
 	}
 
 })
+
+-- local d = table.deepcopy(data.raw["item"]["wooden-chest"])
+-- d.name = "chunk-scanner-ew-rampant"
+-- d.hidden = true
+-- d.place_result = "chunk-scanner-ew-rampant"
+
+-- data:extend({
+--         d
+-- })
+
+-- d = table.deepcopy(data.raw["item"]["wooden-chest"])
+-- d.name = "chunk-scanner-ns-rampant"
+-- d.hidden = true
+-- d.place_result = "chunk-scanner-ns-rampant"
+
+-- data:extend({
+--         d
+-- })

@@ -3,6 +3,7 @@ Version: 0.16.42
 Date: 2. 18. 2019
   Improvements:
     - Reworked how nests are activated by pollution, player, and base pheromone for better nest tracking
+    - Reworked chunk passability to only look for water or cliffs for impassable terrain
     - Removed use pollution map setting
     - Removed min and max attack threshold settings
   Tweaks:
