@@ -6,8 +6,7 @@ local biterUtils = require("utils/BiterUtils")
 local beamUtils = require("utils/BeamUtils")
 local attackBall = require("utils/AttackBall")
 local swarmUtils = require("SwarmUtils")
-package.path = "../libs/?.lua;" .. package.path
-local constants = require("Constants")
+local constants = require("__Rampant__/libs/Constants")
 
 -- constants
 
@@ -513,9 +512,9 @@ function energyThief.addFaction()
                     {
                         filename = "__core__/graphics/empty.png",
                         priority = "extra-high",
-                        width = 46,
-                        height = 33,
-                        shift = {0.25, 0.015625}
+                        width = 1,
+                        height = 1,
+                        shift = {0, 0}
                     }
             },
 
@@ -525,7 +524,7 @@ function energyThief.addFaction()
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
                 hidden = true,
-                flags = {"goes-to-quickbar"},
+                flags = {},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
                 place_result = "drain-trigger-rampant",
@@ -537,7 +536,7 @@ function energyThief.addFaction()
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {"goes-to-quickbar"},
+                flags = {},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
                 place_result = "crystal-drain-pole-rampant",
@@ -667,11 +666,11 @@ function energyThief.addFaction()
             {
                 filename = "__core__/graphics/empty.png",
                 priority = "low",
-                width = 46,
-                height = 49,
+                width = 1,
+                height = 1,
                 direction_count = 1,
                 line_length = 1,
-                shift = {0.1875, -0.2}
+                shift = {0, 0}
             }
     }}
     chest.max_health = 750
@@ -716,7 +715,7 @@ function energyThief.addFaction()
                 name = "pylon-target-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {"goes-to-quickbar"},
+                flags = {},
                 subgroup = "storage",
                 hidden = true,
                 order = "a[items]-h[steel-collector]",

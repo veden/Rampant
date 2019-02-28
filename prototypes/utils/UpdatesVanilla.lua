@@ -49,6 +49,19 @@ function vanillaUpdates.useDumbProjectiles()
 	},
 	"acid-ball-4-" .. attackType .. "-rampant")
 
+    turrets["behemoth-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
+	{
+	    cooldown = 60,
+	    range = 26,
+	    min_range = 3,
+	    type = "projectile",
+	    turn_range = 1,
+	    fire_penalty = 0,
+	    scale = 1.2
+	},
+	"acid-ball-5-" .. attackType .. "-rampant")
+
+
     local units = data.raw["unit"];
 
     local unit = units["small-spitter"]

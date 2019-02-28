@@ -4,8 +4,7 @@ local biterUtils = require("utils/BiterUtils")
 local beamUtils = require("utils/BeamUtils")
 local attackBall = require("utils/AttackBall")
 local swarmUtils = require("SwarmUtils")
-package.path = "../libs/?.lua;" .. package.path
-local constants = require("Constants")
+local constants = require("__Rampant__/libs/Constants")
 
 -- constants
 

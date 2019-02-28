@@ -543,7 +543,7 @@ data:extend({
 	    name = "rampant-attack-warning",
 	    description = "rampant-attack-warning",
 	    setting_type = "runtime-per-user",
-	    default_value = true,
+	    default_value = false,
 	    order = "o[modifer]-a[message]",
 	    per_user = true
 	},

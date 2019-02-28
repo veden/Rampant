@@ -16,7 +16,7 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
 	name = n,
 	icon = "__base__/graphics/icons/defender.png",
 	icon_size = 32,
-	flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hide-from-bonus-gui"},
+	flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hidden"},
 	subgroup="capsule",
 	order="e-a-a",
 	max_health = attributes.health or 60,

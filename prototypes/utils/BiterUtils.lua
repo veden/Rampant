@@ -1,57 +1,145 @@
 local biterFunctions = {}
 
 local unitSpawnerUtils = require("UnitSpawnerUtils")
-
+local unitUtils = require("UnitUtils")
 
 local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
-
+local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
+local spawner_integration = unitSpawnerUtils.spawner_integration
 local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
 local spawner_die_animation = unitSpawnerUtils.spawner_die_animation
 
 
-
 function biterFunctions.makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
+
+    local corpse = {
+        type = "corpse",
+        name = name,
+        icon = "__base__/graphics/icons/big-biter-corpse.png",
+        icon_size = 32,
+        selectable_in_game = false,
+        selection_box = {{-1, -1}, {1, 1}},
+        subgroup="corpses",
+        order = "c[corpse]-b[spitter]-a[small]",
+        flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
+    }
+
+    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint1, attributes.tint2)
+    corpse.dying_speed = 0.04
+    corpse.time_before_removed = 15 * 60 * 60
+    corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
+    corpse.shuffle_directions_at_frame = 4
+    corpse.final_render_layer = "lower-object-above-shadow"
+
+    corpse.ground_patch_render_layer = "decals" -- "transport-belt-integration"
+    corpse.ground_patch_fade_in_delay = 1 / 0.02 --  in ticks; 1/dying_speed to delay the animation until dying animation finishes
+    corpse.ground_patch_fade_in_speed = 0.002
+    corpse.ground_patch_fade_out_start = 50 * 60
+    corpse.ground_patch_fade_out_duration = 20 * 60
+
+    local a = 1
+    local d = 0.9
+    corpse.ground_patch =
+        {
+            sheet =
+                {
+                    filename = "__base__/graphics/entity/biter/blood-puddle-var-main.png",
+                    flags = { "low-object" },
+                    line_length = 4,
+                    variation_count = 4,
+                    frame_count = 1,
+                    width = 84,
+                    height = 68,
+                    shift = util.by_pixel(1, 0),
+                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    scale = attributes.scale * 2,
+                    hr_version =
+                        {
+                            filename = "__base__/graphics/entity/biter/hr-blood-puddle-var-main.png",
+                            flags = { "low-object" },
+                            line_length = 4,
+                            variation_count = 4,
+                            frame_count = 1,
+                            width = 164,
+                            height = 134,
+                            shift = util.by_pixel(-0.5,-0.5),
+                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            scale = attributes.scale
+                        }
+                }
+        }
+    
     data:extend(
 	{
-	    {
-		type = "corpse",
-		name = name,
-		icon = "__base__/graphics/icons/big-biter-corpse.png",
-		icon_size = 32,
-		selectable_in_game = false,
-		selection_box = {{-1, -1}, {1, 1}},
-		subgroup="corpses",
-		order = "c[corpse]-b[spitter]-a[small]",
-		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
-		dying_speed = 0.04,
-		time_before_removed = 15 * 60 * 60,
-		final_render_layer = "corpse",
-		animation = spitterdyinganimation(attributes.scale, attributes.tint)
-	    }
+	    corpse
     })
     return name
 end
 
 function biterFunctions.makeBiterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
+
+    local corpse = {
+        type = "corpse",
+        name = name,
+        icon = "__base__/graphics/icons/small-biter-corpse.png",
+        icon_size = 32,
+        selection_box = {{-0.8, -0.8}, {0.8, 0.8}},
+        selectable_in_game = false,
+        subgroup="corpses",
+        order = "c[corpse]-a[biter]-a[small]",
+        flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
+    }
+    
+    corpse.animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
+    corpse.dying_speed = 0.04
+    corpse.time_before_removed = 15 * 60 * 60
+    corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
+    corpse.shuffle_directions_at_frame = 7
+    corpse.final_render_layer = "lower-object-above-shadow"
+
+    corpse.ground_patch_render_layer = "decals" -- "transport-belt-integration"
+    corpse.ground_patch_fade_in_delay = 1 / 0.02 --  in ticks; 1/dying_speed to delay the animation until dying animation finishes
+    corpse.ground_patch_fade_in_speed = 0.002
+    corpse.ground_patch_fade_out_start = 50 * 60
+    corpse.ground_patch_fade_out_duration = 20 * 60
+
+    local a = 1
+    local d = 0.9
+    corpse.ground_patch =
+        {
+            sheet =
+                {
+                    filename = "__base__/graphics/entity/biter/blood-puddle-var-main.png",
+                    flags = { "low-object" },
+                    line_length = 4,
+                    variation_count = 4,
+                    frame_count = 1,
+                    width = 84,
+                    height = 68,
+                    shift = util.by_pixel(1, 0),
+                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    scale = attributes.scale * 2,
+                    hr_version =
+                        {
+                            filename = "__base__/graphics/entity/biter/hr-blood-puddle-var-main.png",
+                            flags = { "low-object" },
+                            line_length = 4,
+                            variation_count = 4,
+                            frame_count = 1,
+                            width = 164,
+                            height = 134,
+                            shift = util.by_pixel(-0.5,-0.5),
+                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            scale = attributes.scale
+                        }
+                }
+        }
+    
     data:extend({
-	    {
-		type = "corpse",
-		name = name,
-		icon = "__base__/graphics/icons/big-biter-corpse.png",
-		icon_size = 32,
-		selectable_in_game = false,
-		selection_box = {{-1, -1}, {1, 1}},
-		subgroup="corpses",
-		order = "c[corpse]-b[spitter]-a[small]",
-		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
-		dying_speed = 0.04,
-		time_before_removed = 15 * 60 * 60,
-		final_render_layer = "corpse",
-		animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
-	    }
+	    corpse
     })
     return name
 end
@@ -100,8 +188,12 @@ function biterFunctions.makeWormCorpse(attributes)
 		flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"},
 		dying_speed = 0.01,
 		time_before_removed = 15 * 60 * 60,
-		final_render_layer = "corpse",
-		animation = worm_die_animation(attributes.scale, attributes.tint)
+		final_render_layer = "lower-object-above-shadow",
+		animation = worm_die_animation(attributes.scale, attributes.tint),
+                ground_patch =
+                    {
+                        sheet = worm_integration(attributes.scale)
+                    }
 	    }
     })
     return name
@@ -113,7 +205,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	v.type = k
 	resistances[#resistances+1] = v
     end
---    print(name .. " " .. biterAttributes.health)
+    --    print(name .. " " .. biterAttributes.health)
     return {
 	type = "unit",
 	name = name .. "-rampant",
@@ -153,7 +245,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	v.type = k
 	resistances[#resistances+1] = v
     end
---    print(name .. " " .. biterAttributes.health)
+    --    print(name .. " " .. biterAttributes.health)
     return {
 	type = "unit",
 	name = name .. "-rampant",
@@ -179,6 +271,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	distance_per_frame = biterAttributes.distancePerFrame or 0.1,
 	pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
 	distraction_cooldown = biterAttributes.distractionCooldown or 300,
+        alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
 	corpse = biterAttributes.corpse,
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_spitter_dying_sounds(0.8),
@@ -193,7 +286,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 	v.type = k
 	resistances[#resistances+1] = v
     end
---    print(name .. " " .. biterAttributes.health)
+    --    print(name .. " " .. biterAttributes.health)
     local o = {
 	type = "unit-spawner",
 	name = name .. "-rampant",
@@ -243,6 +336,10 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
 		spawner_idle_animation(2, biterAttributes.tint, biterAttributes.scale),
 		spawner_idle_animation(3, biterAttributes.tint, biterAttributes.scale)
 	    },
+        integration =
+            {
+                sheet = spawner_integration(biterAttributes.scale)
+            },
 	result_units = unitSet,
 	-- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
 	spawning_cooldown = biterAttributes.spawningCooldown or {360, 150},
@@ -265,7 +362,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	v.type = k
 	resistances[#resistances+1] = v
     end
---    print(name .. " " .. attributes.health)
+    --    print(name .. " " .. attributes.health)
     local o = {
 	type = "turret",
 	name = name .. "-rampant",
@@ -276,6 +373,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	subgroup="enemies",
 	max_health = attributes.health,
 	loot = attributes.loot,
+        shooting_cursor_size = 3.5 * attributes.scale,
 	resistances = resistances,
 	healing_per_tick = attributes.healing or 0.01,
 	collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
@@ -287,22 +385,39 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	inventory_size = attributes.inventorySize,
 	dying_sound = make_worm_dying_sounds(0.9),
 	folded_speed = 0.01,
-	folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
-	preparing_speed = attributes.preparingSpeed or 0.025,
+	folded_speed_secondary = 0.024,
+        folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
+	preparing_speed = attributes.preparingSpeed or 0.024,
 	preparing_animation = worm_preparing_animation(attributes.scale, attributes.tint, "forward"),
-	prepared_speed = 0.015,
-	prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
-	starting_attack_speed = 0.03,
-	starting_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "forward"),
+        preparing_sound = make_worm_standup_sounds(1),
+	prepared_speed = 0.024,
+        prepared_speed_secondary = 0.012,
+        prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
+	prepared_sound = make_worm_breath(0.8),
+        prepared_alternative_speed = 0.014,
+        prepared_alternative_speed_secondary = 0.010,
+        prepared_alternative_chance = 0.2,
+        prepared_alternative_animation = worm_prepared_alternative_animation(attributes.scale, attributes.tint),
+        prepared_alternative_sound = make_worm_roar_alternative(0.8),
+        
+	starting_attack_speed = 0.034,
+	starting_attack_animation = worm_start_attack_animation(attributes.scale, attributes.tint),
 	starting_attack_sound = make_worm_roars(0.8),
-	ending_attack_speed = 0.03,
-	ending_attack_animation = worm_attack_animation(attributes.scale, attributes.tint, "backward"),
+	ending_attack_speed = 0.016,
+        ending_attack_animation = worm_end_attack_animation(attributes.scale, attributes.tint),
 	folding_speed = attributes.foldingSpeed or 0.015,
 	folding_animation =  worm_preparing_animation(attributes.scale, attributes.tint, "backward"),
+        folding_sound = make_worm_fold_sounds(1),
 	prepare_range = attributes.prepareRange or 30,
-	attack_parameters = attack,
+        integration = worm_integration(attributes.scale),
+        attack_parameters = attack,
+        secondary_animation = true,
+        random_animation_offset = true,
+        attack_from_start_frame = true,
+        
+        allow_turning_when_starting_attack = true,
 	build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
-	call_for_help_radius = 40
+	call_for_help_radius = 60
     }
 
     if attributes.autoplace then
