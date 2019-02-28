@@ -164,7 +164,7 @@ function ne.processNEUnitClass(natives, surface)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
-		    name = "bob-behemoth-worm-turret",
+		    name = "behemoth-worm-turret",
 		    position = position
 	    })
 	    fileEntity(alignment, entity, natives.evolutionTableWorm)

@@ -113,7 +113,7 @@ function bobs.processBobsUnitClass(natives, surface)
     entity.destroy()
 
     entity = surface.create_entity({
-	    name = "bob-behemoth-worm-turret",
+	    name = "behemoth-worm-turret",
 	    position = position
     })
     fileEntity(BASE_ALIGNMENT_BOBS, entity, natives.evolutionTableWorm)

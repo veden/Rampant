@@ -82,18 +82,6 @@ function bobsUpdates.useDumbProjectiles()
     	},
     	"acid-ball-5-" .. attackType .. "-rampant")
 
-    turrets["bob-behemoth-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
-    	{
-    	    cooldown = 60,
-    	    range = 30,
-    	    min_range = 3,
-    	    turn_range = 1,
-    	    fire_penalty = 0,
-	    type = "projectile",
-    	    scale = 2
-    	},
-    	"acid-ball-6-" .. attackType .. "-rampant")
-
     local units = data.raw["unit"]
 
     local unit = units["behemoth-spitter"]
