@@ -25,7 +25,7 @@ stickerUtils.makeSticker({
 function AttackBall.createAttackBall(attributes)
 
     if (attributes.type == "stream") or FORCE_OLD_PROJECTILES then
-
+        
     elseif attributes.damage and (attributes.type == "projectile") then
 	attributes.damage = attributes.damage * 2.7
     end
@@ -59,9 +59,10 @@ function AttackBall.createAttackBall(attributes)
 		type = "instant",
 		target_effects = (attributes.pointEffects and attributes.pointEffects(attributes)) or
 		    {
+                        --FIXME
 			{
                             type= "create-entity",
-                            entity_name = attributes.crater or "acid-splash-purple"
+                            entity_name = attributes.crater or "small-scorchmark"
 			},
 			{
                             type = "damage",

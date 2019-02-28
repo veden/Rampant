@@ -3,8 +3,8 @@
 local attackFlame = require("utils/AttackFlame")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
-package.path = "../libs/?.lua;" .. package.path
-local constants = require("Constants")
+
+local constants = require("__Rampant__/libs/Constants")
 local math3d = require("math3d")
 
 -- constants

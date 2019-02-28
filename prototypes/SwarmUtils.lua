@@ -3,9 +3,9 @@ local swarmUtils = {}
 
 local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
-package.path = "../?.lua;" .. package.path
-local mathUtils = require("libs/MathUtils")
-local constants = require("libs/Constants")
+
+local constants = require("__Rampant__/libs/Constants")
+local mathUtils = require("__Rampant__/libs/MathUtils")
 
 -- imported functions
 

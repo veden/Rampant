@@ -11,8 +11,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
-package.path = "../?.lua;" .. package.path
-local config = require("config")
+local config = require("__Rampant__/config")
 
 -- constants
 

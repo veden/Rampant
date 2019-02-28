@@ -81,8 +81,9 @@ function attacks.addAttacks()
 			sticker = "slowdown-sticker",
 		    },
 		    {
-			type = "create-entity",
-			entity_name = "acid-splash-purple"
+		        type = "create-entity",
+                        --FIXME
+		        entity_name = "explosion"
 		    }
 		}
 	    end,
@@ -184,8 +185,9 @@ function attacks.addAttacks()
 	    pointEffects = function (attributes)
 		return {
 		    {
-			type = "create-entity",
-			entity_name = "acid-splash-purple"
+                        --FIXME
+		        type = "create-entity",
+		        entity_name = "explosion"
 		    }
 		}
 	    end,
@@ -218,8 +220,9 @@ function attacks.addAttacks()
 		pointEffects = function (attributes)
 		    return {
 			{
+                            --FIXME
 			    type = "create-entity",
-			    entity_name = "acid-splash-purple"
+			    entity_name = "explosion"
 			}
 		    }
 		end,

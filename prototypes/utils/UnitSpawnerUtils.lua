@@ -1,103 +1,154 @@
 
 local unitSpawnerUtils = {}
 
+function unitSpawnerUtils.spawner_integration(scale)
+    return
+        {
+            filename = "__base__/graphics/entity/spawner/spawner-idle-integration.png",
+            variation_count = 4,
+            width = 258,
+            height = 188,
+            shift = util.by_pixel(2, -2),
+            frame_count = 1,
+            scale = scale,
+            line_length = 1,
+            hr_version =
+                {
+                    filename = "__base__/graphics/entity/spawner/hr-spawner-idle-integration.png",
+                    variation_count = 4,
+                    width = 522,
+                    height = 380,
+                    shift = util.by_pixel(3, -3),
+                    frame_count = 1,
+                    line_length = 1,
+                    scale = scale * 0.5
+                }
+        }
+end
+
 function unitSpawnerUtils.spawner_idle_animation(variation, tint, scale)
     return
-	{
-	    layers =
-		{
-		    {
-			filename = "__base__/graphics/entity/spawner/spawner-idle.png",
-			line_length = 8,
-			width = 243,
-			height = 181,
-			frame_count = 8,
-			animation_speed = 0.18,
-			direction_count = 1,
-			scale = scale,
-			run_mode = "forward-then-backward",
-			shift = {0.140625 - 0.65, -0.234375},
-			y = variation * 181
-		    },
-		    {
-			filename = "__base__/graphics/entity/spawner/spawner-idle-mask.png",
-			flags = { "mask" },
-			width = 166,
-			height = 148,
-			frame_count = 8,
-			scale = scale,
-			animation_speed = 0.18,
-			run_mode = "forward-then-backward",
-			shift = {-0.34375 - 0.65, -0.375},
-			line_length = 8,
-			tint = tint,
-			y = variation * 148
-		    }
-		}
-	}
+        {
+            layers =
+                {
+                    {
+                        filename = "__base__/graphics/entity/spawner/spawner-idle.png",
+                        line_length = 4,
+                        width = 248,
+                        height = 180,
+                        frame_count = 8,
+                        animation_speed = 0.18,
+                        direction_count = 1,
+                        scale = scale,        
+                        run_mode = "forward-then-backward",
+                        shift = util.by_pixel(2, -4),
+                        y = variation * 180 * 2,
+                        hr_version =
+                            {
+                                filename = "__base__/graphics/entity/spawner/hr-spawner-idle.png",
+                                line_length = 4,
+                                width = 490,
+                                height = 354,
+                                frame_count = 8,
+                                animation_speed = 0.18,
+                                direction_count = 1,
+                                scale = scale * 0.5,
+                                run_mode = "forward-then-backward",
+                                shift = util.by_pixel(3, -2),
+                                y = variation * 354 * 2,
+                            }
+                    },
+                    {
+                        filename = "__base__/graphics/entity/spawner/spawner-idle-mask.png",
+                        flags = { "mask" },
+                        width = 140,
+                        height = 118,
+                        frame_count = 8,
+                        animation_speed = 0.18,
+                        run_mode = "forward-then-backward",
+                        shift = util.by_pixel(-2, -14),
+                        line_length = 4,
+                        tint = tint,
+                        scale = scale,
+                        y = variation * 118 * 2,
+                        hr_version =
+                            {
+                                filename = "__base__/graphics/entity/spawner/hr-spawner-idle-mask.png",
+                                flags = { "mask" },
+                                width = 276,
+                                height = 234,
+                                frame_count = 8,
+                                animation_speed = 0.18,
+                                run_mode = "forward-then-backward",
+                                shift = util.by_pixel(-1, -14),
+                                line_length = 4,
+                                tint = tint,
+                                y = variation * 234 * 2,
+                                scale = scale * 0.5
+                            }
+                    }
+                }
+        }
 end
 
 function unitSpawnerUtils.spawner_die_animation(variation, tint, scale)
     return
 	{
-	    layers =
-		{
-		    {
-			width = 255,
-			height = 184,
-			frame_count = 20,
-			direction_count = 1,
-			scale = scale,
-			shift = {-0.015625 - 0.65, -0.28125},
-			stripes =
-			    {
-				{
-				    filename = "__base__/graphics/entity/spawner/spawner-die-01.png",
-				    width_in_frames = 7,
-				    height_in_frames = 4,
-				    y = variation * 184
-				},
-				{
-				    filename = "__base__/graphics/entity/spawner/spawner-die-02.png",
-				    width_in_frames = 7,
-				    height_in_frames = 4,
-				    y = variation * 184
-				},
-				{
-				    filename = "__base__/graphics/entity/spawner/spawner-die-03.png",
-				    width_in_frames = 6,
-				    height_in_frames = 4,
-				    y = variation * 184
-				}
-			    }
-		    },
-		    {
-			flags = { "mask" },
-			width = 166,
-			height = 148,
-			frame_count = 20,
-			direction_count = 1,
-			scale = scale,
-			shift = {-0.34375 - 0.65, -0.375},
-			tint = tint,
-			stripes =
-			    {
-				{
-				    filename = "__base__/graphics/entity/spawner/spawner-die-mask-01.png",
-				    width_in_frames = 10,
-				    height_in_frames = 4,
-				    y = variation * 148
-				},
-				{
-				    filename = "__base__/graphics/entity/spawner/spawner-die-mask-02.png",
-				    width_in_frames = 10,
-				    height_in_frames = 4,
-				    y = variation * 148
-				}
-			    }
-		    }
-		}
-	}
+            layers =
+                {
+                    {
+                        filename = "__base__/graphics/entity/spawner/spawner-die.png",
+                        line_length = 8,
+                        width = 248,
+                        height = 178,
+                        frame_count = 8,
+                        direction_count = 1,
+                        shift = util.by_pixel(2, -2),
+                        y = variation * 178,
+                        scale = scale,
+                        hr_version =
+                            {
+                                filename = "__base__/graphics/entity/spawner/hr-spawner-die.png",
+                                line_length = 8,
+                                width = 490,
+                                height = 354,
+                                frame_count = 8,
+                                direction_count = 1,
+                                shift = util.by_pixel(3, -2),
+                                y = variation * 354,
+                                scale = scale * 0.5
+                            }
+                    },
+                    {
+                        filename = "__base__/graphics/entity/spawner/spawner-die-mask.png",
+                        flags = { "mask" },
+                        width = 140,
+                        height = 118,
+                        frame_count = 8,
+                        direction_count = 1,
+                        shift = util.by_pixel(-2, -14),
+
+                        scale = scale,
+                        line_length = 8,
+                        tint = tint,
+                        y = variation * 118,
+                        he_version =
+                            {
+                                filename = "__base__/graphics/entity/spawner/hr-spawner-die-mask.png",
+                                flags = { "mask" },
+                                width = 276,
+                                height = 234,
+                                frame_count = 8,
+                                direction_count = 1,
+                                shift = util.by_pixel(-1, -14),
+                                line_length = 8,
+                                tint = tint,
+                                y = variation * 234,
+                                scale = scale * 0.5
+                            }
+                    }
+                }
+        }
 end
 
 return unitSpawnerUtils
