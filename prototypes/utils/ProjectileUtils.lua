@@ -15,7 +15,7 @@ function projectileUtils.makeProjectile(name, attributes, attack)
 		action = attack,
 		animation =
 		    {
-			filename = "__base__/graphics/entity/acid-projectile-purple/acid-projectile-purple.png",
+			filename = "__Rampant__/graphics/acid-projectile-purple/acid-projectile-purple.png",
 			line_length = 5,
 			tint = attributes.pTint,
 			width = 16,
@@ -25,7 +25,7 @@ function projectileUtils.makeProjectile(name, attributes, attack)
 		    },
 		shadow =
 		    {
-			filename = "__base__/graphics/entity/acid-projectile-purple/acid-projectile-purple-shadow.png",
+			filename = "__Rampant__/graphics/acid-projectile-purple/acid-projectile-purple-shadow.png",
 			line_length = 5,
 			tint = attributes.pTint,
 			width = 28,

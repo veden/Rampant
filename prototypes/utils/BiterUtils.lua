@@ -841,35 +841,43 @@ end
 function biterFunctions.biterAttackSounds()
     return {
 	{
-	    filename = "__base__/sound/creatures/spitter-1.ogg",
+	    filename = "__base__/sound/creatures/Spiters_1_1.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-2.ogg",
+	    filename = "__base__/sound/creatures/Spiters_1_2.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-3.ogg",
+	    filename = "__base__/sound/creatures/Spiters_2_1.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-4.ogg",
+	    filename = "__base__/sound/creatures/Spiters_2_2.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-5.ogg",
+	    filename = "__base__/sound/creatures/Spiters_3_1.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-6.ogg",
+	    filename = "__base__/sound/creatures/Spiters_3_2.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-7.ogg",
+	    filename = "__base__/sound/creatures/Spiters_4_1.ogg",
 	    volume = 0.7
 	},
 	{
-	    filename = "__base__/sound/creatures/spitter-8.ogg",
+	    filename = "__base__/sound/creatures/Spiters_4_2.ogg",
+	    volume = 0.7
+	},
+        {
+	    filename = "__base__/sound/creatures/Spiters_5_1.ogg",
+	    volume = 0.7
+	},
+        {
+	    filename = "__base__/sound/creatures/Spiters_5_2.ogg",
 	    volume = 0.7
 	}
     }
