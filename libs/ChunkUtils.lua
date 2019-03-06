@@ -243,7 +243,7 @@ function chunkUtils.scanChunkPaths(chunk, surface, map)
     return pass
 end
 
-function chunkUtils.scorePlayerBuildings(surface, map, natives)
+local function scorePlayerBuildings(surface, map, natives)
     local entities = surface.find_entities_filtered(map.filteredEntitiesPlayerQuery)
 
     local playerObjects = 0
@@ -269,12 +269,12 @@ function chunkUtils.scorePlayerBuildings(surface, map, natives)
     return playerObjects
 end
 
-function chunkUtils.scoreEnemyBuildings(surface, map)
-    local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
-    local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
+-- function chunkUtils.scoreEnemyBuildings(surface, map)
+--     local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
+--     local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
 
-    return nests, worms
-end
+--     return nests, worms
+-- end
 
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
     local passScore = chunkUtils.calculatePassScore(surface, map)
@@ -282,9 +282,10 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
     if (passScore >= 0.40) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 
-	local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
+	local playerObjects = scorePlayerBuildings(surface, map, natives)
 
-	local nests, worms = chunkUtils.scoreEnemyBuildings(surface, map)
+        local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
+        local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
 
 	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
@@ -383,7 +384,7 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
 end
 
 function chunkUtils.analyzeChunk(chunk, natives, surface, map)
-    local playerObjects = chunkUtils.scorePlayerBuildings(surface, map, natives)
+    local playerObjects = scorePlayerBuildings(surface, map, natives)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)

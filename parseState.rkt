@@ -34,7 +34,8 @@
                       kamikazeScore
                       pollution
                       aNe
-                      aRNe)
+                      aRNe
+                      squads)
     #:transparent)
 
   (struct Chunk (kamikazeScore
@@ -60,7 +61,8 @@
                  deathGen
                  pollution
                  aNe
-                 aRNe)
+                 aRNe
+                 squads)
     #:transparent)
 
   (require threading)
@@ -72,7 +74,7 @@
 
   (define (stringToChunk str)
     (match-let (((list movement base player resource passable tick rating x y nest
-                       worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe) (string-split str ",")))
+                       worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe squads) (string-split str ",")))
       (apply Chunk
              (cons (+ (string->number base)
                       (* (string->number player) 2500))
@@ -95,8 +97,9 @@
                                             (* (string->number player) 2500))
                                            (map string->number
                                                 (list x y movement base player resource passable tick rating nest
-                                                      worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe))))))))))
-
+                                                      worms rally retreat resourceGen playerGen deathGen pollution aNe
+                                                      aRNe squads))))))))))
+  
   (define (chunk->string chunk)
     (string-append "x: " (~v (Chunk-x chunk)) "\n"
                    "y: " (~v (Chunk-y chunk)) "\n"
@@ -122,7 +125,8 @@
                    "sRet: " (~v (Chunk-retreatScore chunk)) "\n"
                    "pol: " (~v (Chunk-pollution chunk)) "\n"
                    "aNe: " (~v (Chunk-aNe chunk)) "\n"
-                   "aRNe: " (~v (Chunk-aRNe chunk)) "\n"))
+                   "aRNe: " (~v (Chunk-aRNe chunk)) "\n"
+                   "sqs: " (~v (Chunk-squads chunk)) "\n"))
 
   (define (normalizeRange xs)
     (let* ((sDev (stddev xs))
@@ -158,7 +162,8 @@
           (sKam (map Chunk-kamikazeScore chunks))
           (pol (map Chunk-pollution chunks))
           (aNe (map Chunk-aNe chunks))
-          (aRNe (map Chunk-aRNe chunks)))
+          (aRNe (map Chunk-aRNe chunks))
+          (sqs (map Chunk-squads chunks)))
 
       ;; (ChunkRange (MinMax (apply min xs) (apply max xs))
       ;;             (MinMax (apply min ys) (apply max ys))
@@ -205,8 +210,8 @@
                   (normalizeRange sKam)
                   (normalizeRange pol)
                   (MinMax (apply min aNe) (apply max aNe))
-                  (MinMax (apply min aRNe) (apply max aRNe)))
-
+                  (MinMax (apply min aRNe) (apply max aRNe))
+                  (MinMax (apply min sqs) (apply max sqs)))
       ))
 
   (define (readState filePath)

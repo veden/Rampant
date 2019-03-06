@@ -94,9 +94,9 @@ function upgrade.attempt(natives)
 	    For making changes to maps that haven't had Rampant loaded and aren't starting from a brand new map
 	    Was causing desyncs when client connected before having the below settings saved into the map 0.15.15 factorio
 	--]]
-	game.map_settings.path_finder.short_request_ratio = constants.PATH_FINDER_SHORT_REQUEST_RATIO
-	game.map_settings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
-	game.map_settings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
+	-- game.map_settings.path_finder.short_request_ratio = constants.PATH_FINDER_SHORT_REQUEST_RATIO
+	-- game.map_settings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
+	-- game.map_settings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
 
 	game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
 	game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
