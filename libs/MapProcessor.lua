@@ -156,10 +156,10 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     for x=index,endIndex do
 	local chunk = processQueue[x]
 	if (chunk[CHUNK_TICK] ~= tick) then
-	    chunk[CHUNK_TICK] = tick
+	    -- chunk[CHUNK_TICK] = tick
 
-	    commitPheromone(map, chunk, scentStaging[i])
-	    scents(map, chunk)
+	    commitPheromone(map, chunk, scentStaging[i], tick)
+	    -- scents(map, chunk)
 	end
 	i = i + 1
     end
@@ -189,17 +189,6 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     local scentStaging = map.scentStaging
 
     local squads = allowingAttacks and (0.11 <= roll) and (roll <= 0.20) and (natives.points >= AI_SQUAD_COST)
-
-    for i=1,#playerOrdering do
-	local player = players[playerOrdering[i]]
-	if validPlayer(player, natives) then
-	    local playerChunk = getChunkByPosition(map, player.character.position)
-
-	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		playerScent(playerChunk)
-	    end
-	end
-    end
 
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#playerOrdering > 0) then
@@ -262,13 +251,24 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
 			local chunk = getChunkByXY(map, x, y)
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
-			    chunk[CHUNK_TICK] = tick
+			    -- chunk[CHUNK_TICK] = tick
 			    commitPheromone(map, chunk, scentStaging[i])
-			    scents(map, chunk)
+			    -- scents(map, chunk)
 			end
 			i = i + 1
 		    end
 		end
+	    end
+	end
+    end
+
+    for i=1,#playerOrdering do
+	local player = players[playerOrdering[i]]
+	if validPlayer(player, natives) then
+	    local playerChunk = getChunkByPosition(map, player.character.position)
+
+	    if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+		playerScent(playerChunk)
 	    end
 	end
     end

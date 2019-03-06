@@ -24,8 +24,9 @@ local stringUtils = require("StringUtils")
 -- constants
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
-local INTERVAL_PROCESS = constants.INTERVAL_PROCESS
-local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
+local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
+local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
+-- local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 -- local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
@@ -69,7 +70,7 @@ local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
-local roundToNearest = mathUtils.roundToNearest
+-- local roundToNearest = mathUtils.roundToNearest
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -104,20 +105,19 @@ local retreatUnits = squadDefense.retreatUnits
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
 
-local isSpawnerEgg = stringUtils.isSpawnerEgg
+-- local isSpawnerEgg = stringUtils.isSpawnerEgg
 
 local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
-local getChunkSpawnerEggTick = chunkPropertyUtils.getChunkSpawnerEggTick
-local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
+-- local getChunkSpawnerEggTick = chunkPropertyUtils.getChunkSpawnerEggTick
+-- local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
-local sFind = string.find
 local mRandom = math.random
 
 -- local references to global
@@ -274,11 +274,11 @@ local function rebuildMap()
 			   distraction = DEFINES_DISTRACTION_NONE }
 
     -- switched over to tick event
-    map.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-    map.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
-    map.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
-    map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
-    map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
+    -- map.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
+    -- map.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
+    -- map.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
+    -- map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
+    -- map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
 
 end
 
@@ -379,16 +379,33 @@ local function onConfigChanged()
     prepWorld(true)
 end
 
-script.on_nth_tick(INTERVAL_PROCESS,
+script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
 		   function (event)
 
-		       local tick = event.tick
 		       local gameRef = game
 		       local surface = gameRef.surfaces[natives.activeSurface]
 
-		       processPlayers(gameRef.players, map, surface, natives, tick)
-		       processMap(map, surface, natives, tick, gameRef.forces.enemy.evolution_factor)
+		       processPlayers(gameRef.players,
+                                      map,
+                                      surface,
+                                      natives,
+                                      event.tick)
 end)
+
+script.on_nth_tick(INTERVAL_MAP_PROCESS,
+		   function (event)
+
+		       -- local tick = event.tick
+		       local gameRef = game
+		       local surface = gameRef.surfaces[natives.activeSurface]
+
+		       processMap(map,
+                                  surface,
+                                  natives,
+                                  event.tick,
+                                  gameRef.forces.enemy.evolution_factor)
+end)
+
 
 script.on_nth_tick(INTERVAL_SCAN,
 		   function (event)

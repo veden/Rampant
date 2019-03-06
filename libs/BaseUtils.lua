@@ -352,7 +352,13 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
 
     local spawnerName = findEntityUpgrade(baseAlignment, currentEvo, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
     if spawnerName then
-        local newPosition = surface.find_non_colliding_position(spawnerName, position, CHUNK_SIZE, 4)
+        local newPosition = surface.find_non_colliding_position(
+            ((entityType == "unit-spawner") and "chunk-scanner-nest-rampant") or "chunk-scanner-worm-rampant",
+            position,
+            CHUNK_SIZE,
+            4,
+            true
+        )
         if newPosition then
             return surface.create_entity({name = spawnerName, position = newPosition})
         end
@@ -384,18 +390,18 @@ local function upgradeBase(natives, evolutionFactor, base)
     local roll = mRandom()
     if alignmentCount == 2 then
         if (roll < 0.05) then
-            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[1])}
+            base.alignment = {findMutation(natives, evolutionFactor)}
         elseif (roll < 0.4) then
-            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[2]), base.alignment[2]}
+            base.alignment = {findMutation(natives, evolutionFactor), base.alignment[2]}
         else
-            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor, base.alignment[1])}
+            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor)}
         end
         return true
     elseif alignmentCount == 1 then
         if (roll < 0.85) then
-            base.alignment = {findMutation(natives, evolutionFactor, base.alignment[1])}
+            base.alignment = {findMutation(natives, evolutionFactor)}
         else
-            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor, base.alignment[1])}
+            base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor)}
         end
         return true
     end

@@ -40,7 +40,7 @@ constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 10000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 170000
 
-constants.PROCESS_QUEUE_SIZE = 275
+constants.PROCESS_QUEUE_SIZE = 85
 constants.SCAN_QUEUE_SIZE = 10
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
@@ -49,7 +49,8 @@ constants.PROCESS_PLAYER_BOUND = 128
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
-constants.INTERVAL_PROCESS = 19
+constants.INTERVAL_PLAYER_PROCESS = 19
+constants.INTERVAL_MAP_PROCESS = 5
 constants.INTERVAL_SCAN = 21
 constants.INTERVAL_CHUNK = 17
 constants.INTERVAL_LOGIC = 61
@@ -90,8 +91,6 @@ constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SQUAD_COST = 175
-constants.AI_NEST_COST = 10
-constants.AI_WORM_COST = 2
 constants.AI_VENGENCE_SQUAD_COST = 45
 constants.AI_SETTLER_COST = 200
 constants.AI_BASE_BUILDING_COST = 500
@@ -369,7 +368,7 @@ constants.MOVEMENT_PENALTY_AMOUNT = 10000
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 750
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
-constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = -0.1
+constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = 0
 
 -- pheromone diffusion amounts
 
@@ -451,8 +450,8 @@ constants.BUILDING_PHEROMONES["fluid-turret"] = 2800
 constants.BUILDING_PHEROMONES["turret"] = 1000
 constants.BUILDING_PHEROMONES["artillery-turret"] = 10000
 
-constants.RETREAT_FILTER = {}
-constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
+-- constants.RETREAT_FILTER = {}
+-- constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
 
 -- map settings tweaks
 

@@ -9,11 +9,11 @@ function vanillaUpdates.useDumbProjectiles()
 
     local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
     local unitPrefix = (FORCE_OLD_PROJECTILES and "") or "direction-"
-    
+
     turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
 	{
 	    cooldown = 60,
-	    range = 21,
+	    range = 25,
 	    min_range = 5,
 	    turn_range = 1,
 	    type = "projectile",
@@ -26,7 +26,7 @@ function vanillaUpdates.useDumbProjectiles()
     turrets["medium-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
 	{
 	    cooldown = 60,
-	    range = 25,
+	    range = 30,
 	    min_range = 3,
 	    turn_range = 1,
 	    type = "projectile",
@@ -40,7 +40,7 @@ function vanillaUpdates.useDumbProjectiles()
     turrets["big-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
 	{
 	    cooldown = 60,
-	    range = 26,
+	    range = 38,
 	    min_range = 3,
 	    type = "projectile",
 	    turn_range = 1,
@@ -52,15 +52,14 @@ function vanillaUpdates.useDumbProjectiles()
     turrets["behemoth-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
 	{
 	    cooldown = 60,
-	    range = 26,
+	    range = 48,
 	    min_range = 3,
 	    type = "projectile",
 	    turn_range = 1,
 	    fire_penalty = 0,
-	    scale = 1.2
+	    scale = 1.5
 	},
-	"acid-ball-5-" .. attackType .. "-rampant")
-
+	"acid-ball-5-" .. attackType .. "-rampant")   
 
     local units = data.raw["unit"];
 

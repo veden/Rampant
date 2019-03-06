@@ -169,7 +169,8 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 												    map.position,
 												    0.98),
 								      CHUNK_SIZE,
-								      4)
+								      4,
+                                                                      true)
 	    if squadPosition then
 		local squad = createSquad(squadPosition, surface, natives, nil, true)
 
@@ -212,7 +213,8 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
 												    map.position,
 												    0.98),
 								      CHUNK_SIZE,
-								      4)
+								      4,
+                                                                      true)
 	    if squadPosition then
 		local squad = createSquad(squadPosition, surface, natives)
 
@@ -250,7 +252,8 @@ function aiAttackWave.formSquads(map, surface, natives, chunk)
 												    map.position,
 												    0.98),
 								      CHUNK_SIZE,
-								      4)
+								      4,
+                                                                      true)
 	    if squadPosition then
 		local squad = createSquad(squadPosition, surface, natives)
 

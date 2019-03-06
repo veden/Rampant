@@ -20,7 +20,7 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
-local ATTACK_SCORE = constants.ATTACK_SCORE
+-- local ATTACK_SCORE = constants.ATTACK_SCORE
 local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
 
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
@@ -108,21 +108,24 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	local groupPosition = group.position
 	local x, y = positionToChunkXY(groupPosition)
 	local chunk = getChunkByXY(map, x, y)
+        local scoreFunction = scoreResourceLocation
+        if (natives.state == AI_STATE_SIEGE) then
+            scoreFunction = scoreSiegeLocation
+        end
 	local attackChunk, attackDirection = scoreNeighborsForSettling(map,
 								       chunk,
 								       getNeighborChunks(map, x, y),
-								       ((natives.state == AI_STATE_SIEGE) and scoreSiegeLocation) or
-									   scoreResourceLocation,
+								       scoreFunction,
 								       squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
 	    addMovementPenalty(natives, squad, chunk)
-	elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addSquadToChunk(map, attackChunk, squad)
-	    addMovementPenalty(natives, squad, attackChunk)
+	-- elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	--     addSquadToChunk(map, attackChunk, squad)
+	--     addMovementPenalty(natives, squad, attackChunk)
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local resourceGenerator = getResourceGenerator(map, groupPosition)
+	    local resourceGenerator = getResourceGenerator(map, attackChunk)
 	    local distance = euclideanDistancePoints(groupPosition.x, groupPosition.y, squad.originPosition.x, squad.originPosition.y)
 
 	    if (distance >= squad.maxDistance) or ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0)) then
@@ -179,9 +182,9 @@ local function attackMove(map, attackPosition, attackCmd, squad, group, natives,
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
 	    addMovementPenalty(natives, squad, chunk)
-	elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addSquadToChunk(map, attackChunk, squad)
-	    addMovementPenalty(natives, squad, attackChunk)
+	-- elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+	--     addSquadToChunk(map, attackChunk, squad)
+	--     addMovementPenalty(natives, squad, attackChunk)
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local playerBaseGenerator = getPlayerBaseGenerator(map, attackChunk)
@@ -244,10 +247,14 @@ function squadAttack.squadsBeginAttack(natives, players)
     for i=1,#squads do
         local squad = squads[i]
 	local group = squad.group
+        local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+        if not squad.kamikaze then
+            squad.kamikaze = (mRandom() < kamikazeThreshold)
+        end        
         if squad.settlers then
 	    if (squad.status == SQUAD_GUARDING) and group and group.valid then
-		local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
-		squad.kamikaze = mRandom() < kamikazeThreshold
+		-- local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+		-- squad.kamikaze = mRandom() < kamikazeThreshold
 		squad.status = SQUAD_SETTLING
 	    end
 	else
@@ -259,10 +266,10 @@ function squadAttack.squadsBeginAttack(natives, players)
 		    squad.frenzyPosition.y = groupPosition.y
 		end
 
-                local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
-                if not squad.kamikaze then
-                    squad.kamikaze = (mRandom() < kamikazeThreshold)
-                end
+                -- local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
+                -- if not squad.kamikaze then
+                --     squad.kamikaze = (mRandom() < kamikazeThreshold)
+                -- end
 
                 if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
                     squad.attackScoreFunction = ATTACK_SCORE_KAMIKAZE

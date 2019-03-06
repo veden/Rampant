@@ -391,7 +391,8 @@ function tests.exportAiState()
 				   chunkPropertyUtils.getDeathGenerator(global.map, chunk),
                                    game.surfaces[global.natives.activeSurface].get_pollution(chunk),
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
-                                   chunkPropertyUtils.getRaidNestActiveness(global.map, chunk)}, ",") .. "\n"
+                                   chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
+                                   #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk)}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end

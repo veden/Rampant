@@ -1,5 +1,5 @@
 (module BuildScript racket
-  (provide run)
+  (provide all-defined-out)
 
   (require file/zip)
   (require json)
@@ -87,8 +87,8 @@
   (define (zipIt)
     (makeZip modFolder))
 
-  (define (run)
-    ;; (copyFiles modFolder)
+  (define (runStart)
+    (copyFiles modFolder)
     ;;(copyFiles zipModFolder)
-    (makeZip modFolder)
+    ;; (makeZip modFolder)
     (system*/exit-code "/data/games/factorio/bin/x64/factorio")))

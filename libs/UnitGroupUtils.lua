@@ -54,7 +54,7 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
     for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
 	local unitGroup = squad.group
-	if unitGroup and unitGroup.valid and RETREAT_FILTER[squad.status] then
+	if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
 	    if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
 		return squad
 	    end
@@ -66,7 +66,7 @@ function unitGroupUtils.findNearbySquadFiltered(map, chunk, position)
     for i=1,#neighbors do
 	for _,squad in pairs(getSquadsOnChunk(map, neighbors[i])) do
 	    local unitGroup = squad.group
-	    if unitGroup and unitGroup.valid and RETREAT_FILTER[squad.status] then
+	    if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
 		if (euclideanDistanceNamed(unitGroup.position, position) <= HALF_CHUNK_SIZE) then
 		    return squad
 		end

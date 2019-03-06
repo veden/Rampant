@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.4
+Date: 3. 5. 2019
+  Improvements:
+    - Increased the size of nest and worm template when looking for place to build, increases nest and worm spacing
+    - Increased chunk processing from 825 to 1020 chunks
+  Tweaks:
+    - Removed old map path finder settings
+    - Added new find position centered flag to positions searches
+    - Adjusted new enemy worm ranges to vanilla levels
+  Bugfixes:
+    - Fixed player pheromone not having highest value on chunk player was on
+    - Fixed settlers not being able to see chunks with resources on them
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.3
 Date: 2. 28. 2019
   Bugfixes:
