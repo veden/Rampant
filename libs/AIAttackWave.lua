@@ -146,7 +146,7 @@ local function noNearbySettlers(map, chunk, tick)
 end
 
 function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
-    if (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT) then
+    if (mRandom() < natives.formSquadThreshold) and ((#natives.squads + #natives.building) < AI_MAX_SQUAD_COUNT) then
 
         local squadPath, squadDirection
         if (natives.state == AI_STATE_SIEGE) then
@@ -172,7 +172,7 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 								      4,
                                                                       true)
 	    if squadPosition then
-		local squad = createSquad(squadPosition, surface, natives, nil, true)
+		local squad = createSquad(squadPosition, surface, nil, true)
 
 		squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance,
 							natives.expansionMaxDistanceDerivation,
@@ -189,10 +189,15 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
 		    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
+                    natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_SETTLER_COST
-		end
-	    end
-	end
+                else
+                    if (squad.group.valid) then
+                        squad.group.destroy()
+                    end
+                end
+            end
+        end
     end
 
     return (natives.points - AI_SETTLER_COST) > 0
@@ -216,7 +221,7 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
 								      4,
                                                                       true)
 	    if squadPosition then
-		local squad = createSquad(squadPosition, surface, natives)
+		local squad = createSquad(squadPosition, surface)
 
 		squad.rabid = mRandom() < 0.03
 
@@ -227,7 +232,12 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
+                    natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_VENGENCE_SQUAD_COST
+                else
+                    if (squad.group.valid) then
+                        squad.group.destroy()
+                    end
 		end
 	    end
 	end
@@ -255,7 +265,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk)
 								      4,
                                                                       true)
 	    if squadPosition then
-		local squad = createSquad(squadPosition, surface, natives)
+		local squad = createSquad(squadPosition, surface)
 
 		squad.rabid = mRandom() < 0.03
 
@@ -266,10 +276,15 @@ function aiAttackWave.formSquads(map, surface, natives, chunk)
 							       unit_count = scaledWaveSize,
 							       unit_search_distance = TRIPLE_CHUNK_SIZE })
 		if (foundUnits > 0) then
+                    natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_SQUAD_COST
+                else
+                    if (squad.group.valid) then
+                        squad.group.destroy()
+                    end
 		end
-	    end
-	end
+            end
+        end
     end
 
     return (natives.points - AI_SQUAD_COST) > 0

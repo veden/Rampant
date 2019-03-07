@@ -91,12 +91,19 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		local newSquad = findNearbySquadFiltered(map, exitPath, retreatPosition)
 
 		if not newSquad then
-		    newSquad = createSquad(retreatPosition, surface, natives)
-		    newSquad.status = SQUAD_RETREATING
-		    newSquad.cycles = 4
+		    newSquad = createSquad(retreatPosition, surface)
+                    natives.squads[#natives.squads+1] = newSquad
 		end
 
 		if newSquad then
+                    newSquad.status = SQUAD_RETREATING
+		    newSquad.cycles = 4
+                    
+                    squad.frenzy = true
+		    local squadPosition = newSquad.group.position
+		    squad.frenzyPosition.x = squadPosition.x
+		    squad.frenzyPosition.y = squadPosition.y
+                    
 		    local cmd = map.retreatCommand
 		    cmd.group = newSquad.group
 		    if enemiesToSquad then
