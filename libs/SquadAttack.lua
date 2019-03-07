@@ -38,6 +38,7 @@ local DEFINES_GROUP_GATHERING = defines.group_state.gathering
 local DEFINES_GROUP_MOVING = defines.group_state.moving
 local DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 local DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
+local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
@@ -125,7 +126,7 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	--     addMovementPenalty(natives, squad, attackChunk)
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local resourceGenerator = getResourceGenerator(map, attackChunk)
+	    local resourceGenerator = getResourceGenerator(map, chunk)
 	    local distance = euclideanDistancePoints(groupPosition.x, groupPosition.y, squad.originPosition.x, squad.originPosition.y)
 
 	    if (distance >= squad.maxDistance) or ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0)) then
@@ -134,6 +135,12 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 		    attackPosition.x = position.x
 		    attackPosition.y = position.y
 
+                    if squad.kamikaze then
+                        settleCmd.distraction = DEFINES_DISTRACTION_NONE
+                    else
+                        settleCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+                    end
+                    
 		    squad.status = SQUAD_BUILDING
 
 		    group.set_command(settleCmd)
@@ -144,7 +151,11 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 	    elseif (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) then
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
-		attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+                if squad.kamikaze then
+                    attackCmd.distraction = DEFINES_DISTRACTION_NONE
+                else
+                    attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+                end
 
 		local position = findMovementPosition(surface, positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35))
 		if position then

@@ -4,6 +4,7 @@ Date: 3. 5. 2019
   Improvements:
     - Increased the size of nest and worm template when looking for place to build, increases nest and worm spacing
     - Increased chunk processing from 825 to 1020 chunks
+    - Settler groups now occasionally disregard everything to reach a spot to build a base, instead of attacking player or buildings
   Tweaks:
     - Removed old map path finder settings
     - Added new find position centered flag to positions searches

@@ -23,6 +23,7 @@ local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_SETTLING = constants.SQUAD_SETTLING
+local SQUAD_BUILDING = constants.SQUAD_BUILDING
 local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
 
 local RETREAT_FILTER = constants.RETREAT_FILTER
@@ -225,7 +226,13 @@ local function mergeGroups(squads, squad, group, status, position, memberCount)
     for _,mergeSquad in pairs(squads) do
 	if (mergeSquad ~= squad) then
 	    local mergeGroup = mergeSquad.group
-	    if mergeGroup and mergeGroup.valid and (euclideanDistanceNamed(position, mergeGroup.position) < GROUP_MERGE_DISTANCE) and (mergeSquad.status == status) and not isAttacking(mergeGroup) then
+	    if mergeGroup and
+                mergeGroup.valid and
+                (squad.status ~= SQUAD_BUILDING) and
+                (mergeSquad.status == status) and
+                not isAttacking(mergeGroup) and
+                (euclideanDistanceNamed(position, mergeGroup.position) < GROUP_MERGE_DISTANCE)
+            then
 		local mergeMembers = mergeGroup.members
 		local mergeCount = #mergeMembers
 		if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
@@ -256,7 +263,7 @@ function unitGroupUtils.regroupSquads(natives, map)
     for i=startIndex,maxSquadIndex do
 	local squad = squads[i]
 	local group = squad.group
-	if group and group.valid and not isAttacking(group) then
+	if group and group.valid and not isAttacking(group) and (squad.status ~= SQUAD_BUILDING) then
 	    local memberCount = #group.members
 	    if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
 		local status = squad.status
