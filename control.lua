@@ -93,7 +93,7 @@ local recycleBases = baseUtils.recycleBases
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
-local cleanSquads = unitGroupUtils.cleanSquads
+local cleanBuilders = unitGroupUtils.cleanBuilders
 local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
@@ -269,16 +269,12 @@ local function rebuildMap()
 	ignore_planner = true
     }
 
-    map.retreatCommand = { type = DEFINES_COMMAND_GROUP,
-			   group = nil,
-			   distraction = DEFINES_DISTRACTION_NONE }
-
-    -- switched over to tick event
-    -- map.logicTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-    -- map.scanTick = roundToNearest(game.tick + INTERVAL_SCAN, INTERVAL_SCAN)
-    -- map.processTick = roundToNearest(game.tick + INTERVAL_PROCESS, INTERVAL_PROCESS)
-    -- map.chunkTick = roundToNearest(game.tick + INTERVAL_CHUNK, INTERVAL_CHUNK)
-    -- map.squadTick = roundToNearest(game.tick + INTERVAL_SQUAD, INTERVAL_SQUAD)
+    map.retreatCommand = {
+        type = DEFINES_COMMAND_GROUP,
+        group = nil,
+        distraction = DEFINES_DISTRACTION_NONE,
+        use_group_distraction = false
+    }
 
 end
 
@@ -441,9 +437,11 @@ script.on_nth_tick(INTERVAL_SQUAD,
 		   function (event)
 		       local gameRef = game
 
-		       cleanSquads(natives, map)
+		       -- cleanSquads(natives, map)
 		       regroupSquads(natives, map)
 
+                       cleanBuilders(natives)
+                       
 		       squadsBeginAttack(natives, gameRef.players)
 		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
 end)

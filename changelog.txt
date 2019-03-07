@@ -9,9 +9,12 @@ Date: 3. 5. 2019
     - Removed old map path finder settings
     - Added new find position centered flag to positions searches
     - Adjusted new enemy worm ranges to vanilla levels
+  Optimizations:
+    - Improved squad processing and squad cleanup
   Bugfixes:
     - Fixed player pheromone not having highest value on chunk player was on
     - Fixed settlers not being able to see chunks with resources on them
+    - Fixed retreat command not disengaging biters
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.3

@@ -84,7 +84,7 @@ function interop.getAttackUsePlayer()
 end
 
 function interop.registerUnitGroup(unitGroup)
-    unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, global.natives, unitGroup)
+    unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, unitGroup)
 end
 
 interopG = interop
