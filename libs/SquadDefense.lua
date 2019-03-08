@@ -51,7 +51,10 @@ local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
-    return -(neighborChunk[BASE_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) + -(getPlayerBaseGenerator(map, neighborChunk)))
+    return -(neighborChunk[BASE_PHEROMONE] +
+                 neighborChunk[MOVEMENT_PHEROMONE] +
+                 -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
+                 -(getPlayerBaseGenerator(map, neighborChunk)))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
@@ -64,10 +67,10 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 	    performRetreat = #enemiesToSquad > 0
 	    if (mRandom() < calculateKamikazeThreshold(#enemiesToSquad, natives)) then
 		setRetreatTick(map, chunk, tick)
-		performRetreat = false
+                return
 	    end
 	elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-	    performRetreat = #squad.group.members > 1
+	    performRetreat = #squad.group.members > 3
 	end
 
 	if performRetreat then
@@ -78,8 +81,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 								     map)
 	    if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local retreatPosition = findMovementPosition(surface,
-							     positionFromDirectionAndChunk(exitDirection, position, map.position, 0.98),
-							     false)
+							     positionFromDirectionAndChunk(exitDirection, position, map.position, 0.98))
 
 		if not retreatPosition then
 		    return
@@ -88,7 +90,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
 
-		local newSquad = findNearbySquadFiltered(map, exitPath, retreatPosition)
+		local newSquad = findNearbySquadFiltered(map, exitPath)
 
 		if not newSquad then
 		    newSquad = createSquad(retreatPosition, surface)
@@ -97,12 +99,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 
 		if newSquad then
                     newSquad.status = SQUAD_RETREATING
-		    newSquad.cycles = 4
-                    
-                    squad.frenzy = true
-		    local squadPosition = newSquad.group.position
-		    squad.frenzyPosition.x = squadPosition.x
-		    squad.frenzyPosition.y = squadPosition.y
+		    newSquad.cycles = 4                                       
                     
 		    local cmd = map.retreatCommand
 		    cmd.group = newSquad.group
@@ -115,6 +112,13 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 			    newSquad.rabid = true
 			end
 		    end
+
+                    if not newSquad.rapid then
+                        newSquad.frenzy = true
+                        local squadPosition = newSquad.group.position
+                        newSquad.frenzyPosition.x = squadPosition.x
+                        newSquad.frenzyPosition.y = squadPosition.y
+                    end
 		    addSquadToChunk(map, chunk, newSquad)
 		    addMovementPenalty(natives, newSquad, chunk)
 		end

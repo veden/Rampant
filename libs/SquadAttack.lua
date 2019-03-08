@@ -179,66 +179,71 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 end
 
 
-local function attackMove(map, attackPosition, attackCmd, squad, group, natives, surface)
-    local groupState = group.state
+local function attackMove(map, squad, natives, surface)
+    local attackPosition = map.position
+    local group = squad.group
 
-    if (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) or ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles <= 0)) then
-	local groupPosition = group.position
-	local x, y = positionToChunkXY(groupPosition)
-	local chunk = getChunkByXY(map, x, y)
-        local attackScorer = scoreAttackLocation
-        if (squad.attackScoreFunction == ATTACK_SCORE_KAMIKAZE) then
-            attackScorer = scoreAttackKamikazeLocation
+    local groupPosition = group.position
+    local x, y = positionToChunkXY(groupPosition)
+    local chunk = getChunkByXY(map, x, y)
+    local attackScorer = scoreAttackLocation
+    if (squad.attackScoreFunction == ATTACK_SCORE_KAMIKAZE) then
+        attackScorer = scoreAttackKamikazeLocation
+    end
+    local attackChunk, attackDirection = scoreNeighborsForAttack(map,
+                                                                 natives,
+                                                                 chunk,
+                                                                 getNeighborChunks(map, x, y),
+                                                                 attackScorer,
+                                                                 squad)
+    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        addSquadToChunk(map, chunk, squad)
+        addMovementPenalty(natives, squad, chunk)
+    end
+    if (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        local playerBaseGenerator = getPlayerBaseGenerator(map, attackChunk)
+        local playerPheromone = attackChunk[PLAYER_PHEROMONE]
+        local cmd
+        local position
+        if (playerBaseGenerator == 0) and (playerPheromone < natives.attackPlayerThreshold) then
+            squad.cycles = ((#squad.group.members > 80) and 6) or 4
+
+            squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
+            
+            cmd = map.moveCommand
+            if squad.rabid or squad.frenzy then
+                cmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
+            else
+                cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+            end		
+        else
+            squad.cycles = ((#squad.group.members > 80) and 6) or 4       
+            cmd = map.attackCommand
+            
+            if not squad.rabid then
+                squad.frenzy = true
+                squad.frenzyPosition.x = groupPosition.x
+                squad.frenzyPosition.y = groupPosition.y
+            end           
         end
-	local attackChunk, attackDirection = scoreNeighborsForAttack(map,
-                                                                     natives,
-								     chunk,
-								     getNeighborChunks(map, x, y),
-								     attackScorer,
-								     squad)
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addSquadToChunk(map, chunk, squad)
-	    addMovementPenalty(natives, squad, chunk)
-            -- elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-            --     addSquadToChunk(map, attackChunk, squad)
-            --     addMovementPenalty(natives, squad, attackChunk)
-	end
-	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local playerBaseGenerator = getPlayerBaseGenerator(map, attackChunk)
-            -- local playerPheromone = attackChunk[PLAYER_PHEROMONE]
-	    if (playerBaseGenerator == 0) or
-                ((groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING))--  or
-            -- (playerPheromone < natives.attackPlayerThreshold)
-            then
-		squad.cycles = ((#squad.group.members > 80) and 6) or 4
 
-		local moreFrenzy = not squad.rabid and squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100)
-		squad.frenzy = moreFrenzy
+        position = findMovementPosition(surface,
+                                        positionFromDirectionAndChunk(attackDirection,
+                                                                      groupPosition,
+                                                                      attackPosition,
+                                                                      1.35))
+        
+        if position then
+            attackPosition.x = position.x
+            attackPosition.y = position.y
 
-		if squad.rabid or squad.frenzy then
-		    attackCmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
-		else
-		    attackCmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-		end
-
-		local position = findMovementPosition(surface, positionFromDirectionAndChunk(attackDirection, groupPosition, attackPosition, 1.35))
-		if position then
-		    attackPosition.x = position.x
-		    attackPosition.y = position.y
-
-		    group.set_command(attackCmd)
-		    group.start_moving()
-		else
-		    addMovementPenalty(natives, squad, attackChunk)
-		end
-	    elseif not squad.frenzy and not squad.rabid and
-		((groupState == DEFINES_GROUP_ATTACKING_DISTRACTION) or (groupState == DEFINES_GROUP_ATTACKING_TARGET) or
-		    (playerBaseGenerator ~= 0)) then
-		    squad.frenzy = true
-		    squad.frenzyPosition.x = groupPosition.x
-		    squad.frenzyPosition.y = groupPosition.y
-	    end
-	end
+            group.set_command(cmd)
+            group.start_moving()
+        else
+            addMovementPenalty(natives, squad, attackChunk)
+        end
+    else
+        print("attack: bad attack chunk", squad.group.group_number)
     end
 end
 
@@ -267,9 +272,15 @@ function squadAttack.squadsDispatch(map, surface, natives)
 	    else
 		local status = squad.status
 		local cycles = squad.cycles
+                local groupState = group.state
 
                 if (status == SQUAD_RAIDING) then
-                    attackMove(map, attackPosition, attackCmd, squad, group, natives, surface)
+                    if (groupState == DEFINES_GROUP_FINISHED) or
+                        (groupState == DEFINES_GROUP_GATHERING) or
+                        ((groupState == DEFINES_GROUP_MOVING) and (cycles <= 0))
+                    then
+                        attackMove(map, squad, natives, surface)
+                    end
                 elseif (status == SQUAD_SETTLING) then
                     settleMove(map, attackPosition, attackCmd, settleCmd, squad, group, natives, surface)
                 elseif (status == SQUAD_RETREATING) and (cycles == 0) then
@@ -292,7 +303,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     end
 end
 
-function squadAttack.squadsBeginAttack(natives, players)
+function squadAttack.squadsBeginAttack(natives)
     local squads = natives.pendingAttack
     for i=1,#squads do
         local squad = squads[i]
@@ -303,25 +314,15 @@ function squadAttack.squadsBeginAttack(natives, players)
                 squad.kamikaze = (mRandom() < kamikazeThreshold)
             end
             if squad.settlers then
-                -- if (squad.status == SQUAD_GUARDING) then
                 squad.status = SQUAD_SETTLING
                 natives.squads[#natives.squads+1] = squad
-            else
-                -- if (squad.status == SQUAD_GUARDING) then
-                local groupPosition = group.position
-                if playersWithinProximityToPosition(players, groupPosition, 100, natives) then
-                    squad.frenzy = true
-                    squad.frenzyPosition.x = groupPosition.x
-                    squad.frenzyPosition.y = groupPosition.y
-                end
-
+            else              
                 if squad.kamikaze and (mRandom() < (kamikazeThreshold * 0.75)) then
                     squad.attackScoreFunction = ATTACK_SCORE_KAMIKAZE
                 end
                 squad.status = SQUAD_RAIDING
                 natives.squads[#natives.squads+1] = squad                    
             end
-            -- end
         end
     end
     natives.pendingAttack = {}

@@ -577,8 +577,9 @@ constants.POISON_LOOKUP = {}
 
 for tier=1, unitTiers do
     local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+    local ct = ((unitTiers == 5) and constants.TIER_UPGRADE_SET_5[tier]) or constants.TIER_UPGRADE_SET_10[tier]
     for i=1,unitVariations do
-        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. t .. "-rampant"] = "poison-cloud-v" .. i .. "-cloud-rampant"
+        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. t .. "-rampant"] = "poison-cloud-v" .. ct .. "-cloud-rampant"
     end
 end
 

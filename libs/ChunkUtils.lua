@@ -79,49 +79,6 @@ local mRandom = math.random
 
 -- module code
 
-function chunkUtils.fullScan(chunk,
-                             count_entities_filtered,
-                             count_tiles_filtered,
-                             filteredEntitiesCliffQuery,
-                             filteredTilesPathQuery)
-    local x = chunk.x
-    local y = chunk.y
-
-    local passableNorthSouth = false
-    local passableEastWest = false
-
-    local topPosition = filteredEntitiesCliffQuery.area[1]
-    local bottomPosition = filteredEntitiesCliffQuery.area[2]
-    topPosition[2] = y
-    bottomPosition[2] = y + 32
-
-    for xi=x, x + 32 do
-	topPosition[1] = xi
-        bottomPosition[1] = xi + 1
-	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
-            (count_tiles_filtered(filteredTilesPathQuery) == 0)
-        then
-	    passableNorthSouth = true
-	    break
-	end
-    end
-
-    topPosition[1] = x
-    bottomPosition[1] = x + 32
-
-    for yi=y, y + 32 do
-	topPosition[2] = yi
-        bottomPosition[2] = yi + 1
-	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
-            (count_tiles_filtered(filteredTilesPathQuery) == 0)
-        then
-	    passableEastWest = true
-	    break
-	end
-    end
-    return passableNorthSouth, passableEastWest
-end
-
 local function addEnemyStructureToChunk(map, chunk, entity, base)
     local lookup
     if (entity.type == "unit-spawner") then
@@ -227,12 +184,48 @@ end
 
 function chunkUtils.scanChunkPaths(chunk, surface, map)
     local pass = CHUNK_IMPASSABLE
-    local passableNorthSouth, passableEastWest = chunkUtils.fullScan(chunk,
-                                                                     surface.count_entities_filtered,
-                                                                     surface.count_tiles_filtered,
-                                                                     map.filteredEntitiesCliffQuery,
-                                                                     map.filteredTilesPathQuery)
 
+    local x = chunk.x
+    local y = chunk.y
+
+    local filteredEntitiesCliffQuery = map.filteredEntitiesCliffQuery
+    local filteredTilesPathQuery = map.filteredTilesPathQuery
+    local count_entities_filtered = surface.count_entities_filtered
+    local count_tiles_filtered = surface.count_tiles_filtered
+
+    local passableNorthSouth = false
+    local passableEastWest = false
+
+    local topPosition = filteredEntitiesCliffQuery.area[1]
+    local bottomPosition = filteredEntitiesCliffQuery.area[2]
+    topPosition[2] = y
+    bottomPosition[2] = y + 32
+
+    for xi=x, x + 32 do
+	topPosition[1] = xi
+        bottomPosition[1] = xi + 1
+	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+            (count_tiles_filtered(filteredTilesPathQuery) == 0)
+        then
+	    passableNorthSouth = true
+	    break
+	end
+    end
+
+    topPosition[1] = x
+    bottomPosition[1] = x + 32
+
+    for yi=y, y + 32 do
+	topPosition[2] = yi
+        bottomPosition[2] = yi + 1
+	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+            (count_tiles_filtered(filteredTilesPathQuery) == 0)
+        then
+	    passableEastWest = true
+	    break
+	end
+    end
+    
     if passableEastWest and passableNorthSouth then
 	pass = CHUNK_ALL_DIRECTIONS
     elseif passableEastWest then
@@ -279,11 +272,11 @@ end
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
-    if (passScore >= 0.40) then
+    if (passScore >= 0.25) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 
 	local playerObjects = scorePlayerBuildings(surface, map, natives)
-
+        
         local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
         local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
 
@@ -363,7 +356,7 @@ end
 function chunkUtils.chunkPassScan(chunk, surface, map)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
-    if (passScore >= 0.40) then
+    if (passScore >= 0.25) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 
 	local playerObjects = getPlayerBaseGenerator(map, chunk)
@@ -403,9 +396,7 @@ function chunkUtils.createChunk(topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[RESOURCE_PHEROMONE] = 0
-    -- chunk[PASSABLE] = 0
     chunk[CHUNK_TICK] = 0
-    -- chunk[PATH_RATING] = 0
 
     return chunk
 end
