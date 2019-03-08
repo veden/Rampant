@@ -48,11 +48,13 @@ local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
+local DEFINES_COMMAND_GO_TO_LOCATION = defines.command.go_to_location
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
+local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -255,10 +257,18 @@ local function rebuildMap()
     map.canPlaceQuery = { name="", position={0,0} }
     map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
 
-    map.attackAreaCommand = {
+    map.attackCommand = {
 	type = DEFINES_COMMAND_ATTACK_AREA,
 	destination = map.position,
 	radius = CHUNK_SIZE,
+	distraction = DEFINES_DISTRACTION_BY_ANYTHING
+    }
+
+    map.moveCommand = {
+	type = DEFINES_COMMAND_GO_TO_LOCATION,
+	destination = map.position,
+	radius = 2,
+        pathfind_flags = { prefer_straight_paths = true },
 	distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
@@ -367,6 +377,8 @@ local function prepWorld(rebuild)
 						     y = chunk.y * 32 }}})
 	end
 
+        game.forces.enemy.kill_all_units()
+        
 	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
     end
 end
@@ -436,14 +448,13 @@ end)
 script.on_nth_tick(INTERVAL_SQUAD,
 		   function (event)
 		       local gameRef = game
+                       
+		       squadsBeginAttack(natives)
+		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
 
-		       -- cleanSquads(natives, map)
-		       regroupSquads(natives, map)
+                       regroupSquads(natives, map)
 
                        cleanBuilders(natives)
-                       
-		       squadsBeginAttack(natives, gameRef.players)
-		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
 end)
 
 local function onBuild(event)

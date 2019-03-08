@@ -6,6 +6,7 @@ Date: 3. 5. 2019
     - Increased chunk processing from 825 to 1020 chunks
     - Settler groups now occasionally disregard everything to reach a spot to build a base, instead of attacking player or buildings
   Tweaks:
+    - Reduced full chunk scan threshold for water from 0.4 to 0.25
     - Removed old map path finder settings
     - Added new find position centered flag to positions searches
     - Adjusted new enemy worm ranges to vanilla levels
@@ -15,6 +16,7 @@ Date: 3. 5. 2019
     - Fixed player pheromone not having highest value on chunk player was on
     - Fixed settlers not being able to see chunks with resources on them
     - Fixed retreat command not disengaging biters
+    - Fixed Poison faction poison death cloud crash
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.3

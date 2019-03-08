@@ -5,6 +5,8 @@ local chunkPropertyUtils = {}
 
 local constants = require("Constants")
 
+local tRemove = table.remove
+
 -- imported functions
 
 local MOVEMENT_GENERATOR_PERSISTANCE = constants.MOVEMENT_GENERATOR_PERSISTANCE
@@ -189,10 +191,12 @@ function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
 	chunkPropertyUtils.removeSquadFromChunk(map, squad)
     end
 
-    if not chunkToSquad[chunk] then
-	chunkToSquad[chunk] = {}
+    local squads = chunkToSquad[chunk]
+    if not squads then
+        squads = {}
+	chunkToSquad[chunk] = squads
     end
-    chunkToSquad[chunk][squad] = squad
+    squads[#squads+1] = squad
 
     squad.chunk = chunk
 end
@@ -203,13 +207,13 @@ function chunkPropertyUtils.removeSquadFromChunk(map, squad)
     if chunk then
 	local squads = chunkToSquad[chunk]
 	if squads then
-	    squads[squad] = nil
-	    local i = 0
-	    for _,_ in pairs(squads) do
-		i = i + 1
-		break
+	    for i=1,#squads do
+                if (squads[i] == squad) then
+                    tRemove(squads, i)
+                    break                  
+                end
 	    end
-	    if (i == 0) then
+	    if (#squads == 0) then
 	    	chunkToSquad[chunk] = nil
 	    end
 	end
