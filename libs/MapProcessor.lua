@@ -324,7 +324,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 
 	local closeBy = findNearbySquad(map, chunk, chunk)
 
-	if closeBy then
+	if not closeBy then
 	    local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
 
 	    if deadGroup then
@@ -333,6 +333,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	end
 
 	mapScanChunk(chunk, natives, surface, map)
+        
         local nests = getNestCount(map, chunk)
         if (nests > 0) then
             local activeness = getNestActiveness(map, chunk)

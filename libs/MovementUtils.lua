@@ -6,18 +6,14 @@ local movementUtils = {}
 -- imports
 
 local constants = require("Constants")
--- local unitGroupUtils = require("UnitGroupUtils")
 local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
 
 -- constants
 
 local MOVEMENT_PENALTY_AMOUNT = constants.MOVEMENT_PENALTY_AMOUNT
--- local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
-
--- local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
@@ -92,10 +88,6 @@ function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDire
             end
         end
     end
-
-    -- if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (scoreFunction(natives, squad, chunk) > highestScore) then
-    --     return SENTINEL_IMPASSABLE_CHUNK, -1
-    -- end
 
     return highestChunk, highestDirection
 end

@@ -13,7 +13,6 @@ local chunkPropetyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
--- local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -58,7 +57,9 @@ local function scoreRetreatLocation(map, neighborChunk)
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
-    if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast or force) then
+    if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and
+        ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast or force)
+    then
 	local performRetreat = false
 	local enemiesToSquad = nil
 
@@ -81,7 +82,10 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 								     map)
 	    if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
 		local retreatPosition = findMovementPosition(surface,
-							     positionFromDirectionAndChunk(exitDirection, position, map.position, 0.98))
+							     positionFromDirectionAndChunk(exitDirection,
+                                                                                           position,
+                                                                                           map.position,
+                                                                                           0.98))
 
 		if not retreatPosition then
 		    return
@@ -107,7 +111,6 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 			membersToSquad(cmd, enemiesToSquad, artilleryBlast)
 		    else                        
 			membersToSquad(cmd, squad.group.members, true)
-			-- newSquad.penalties = squad.penalties
 			if squad.rabid then
 			    newSquad.rabid = true
 			end
