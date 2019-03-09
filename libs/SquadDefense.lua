@@ -35,7 +35,7 @@ local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local getNeighborChunks = mapUtils.getNeighborChunks
-local findNearbySquadFiltered = unitGroupUtils.findNearbySquadFiltered
+local findNearbyRetreatingSquad = unitGroupUtils.findNearbyRetreatingSquad
 local addMovementPenalty = movementUtils.addMovementPenalty
 local createSquad = unitGroupUtils.createSquad
 local membersToSquad = unitGroupUtils.membersToSquad
@@ -94,7 +94,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		-- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
 		-- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
 
-		local newSquad = findNearbySquadFiltered(map, exitPath)
+		local newSquad = findNearbyRetreatingSquad(map, exitPath)
 
 		if not newSquad then
 		    newSquad = createSquad(retreatPosition, surface)
