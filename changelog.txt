@@ -17,6 +17,7 @@ Date: 3. 5. 2019
     - Fixed settlers not being able to see chunks with resources on them
     - Fixed retreat command not disengaging biters
     - Fixed Poison faction poison death cloud crash
+    - Fixed new enemies newly built settlements not creating nests or worms
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.3

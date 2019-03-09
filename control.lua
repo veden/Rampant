@@ -624,7 +624,7 @@ local function onEnemyBaseBuild(event)
 		if not base then
 		    base = createBase(map, natives, evolutionFactor, chunk, surface, event.tick)
 		end
-		entity = upgradeEntity(entity, surface, base.alignment, natives, evolutionFactor)
+		entity = upgradeEntity(entity, surface, base.alignment[mRandom(#base.alignment)], natives, evolutionFactor)
 	    end
 	    if entity and entity.valid then
 		event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
