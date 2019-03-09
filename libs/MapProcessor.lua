@@ -156,10 +156,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     for x=index,endIndex do
 	local chunk = processQueue[x]
 	if (chunk[CHUNK_TICK] ~= tick) then
-	    -- chunk[CHUNK_TICK] = tick
-
 	    commitPheromone(map, chunk, scentStaging[i], tick)
-	    -- scents(map, chunk)
 	end
 	i = i + 1
     end
@@ -251,9 +248,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
 			local chunk = getChunkByXY(map, x, y)
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
-			    -- chunk[CHUNK_TICK] = tick
 			    commitPheromone(map, chunk, scentStaging[i])
-			    -- scents(map, chunk)
 			end
 			i = i + 1
 		    end

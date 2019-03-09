@@ -356,7 +356,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
             ((entityType == "unit-spawner") and "chunk-scanner-nest-rampant") or "chunk-scanner-worm-rampant",
             position,
             CHUNK_SIZE,
-            4,
+            2,
             true
         )
         if newPosition then

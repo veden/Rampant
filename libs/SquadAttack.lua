@@ -157,7 +157,6 @@ local function settleMove(map, squad, natives, surface)
             end
             
             squad.status = SQUAD_BUILDING
-            
         elseif (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
             (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
         then    
