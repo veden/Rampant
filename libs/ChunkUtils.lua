@@ -13,7 +13,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
--- local DEFINES_DIRECTION_EAST = defines.direction.east
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
@@ -42,12 +41,6 @@ local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
-local BASE_ALIGNMENT_DEADZONE = constants.BASE_ALIGNMENT_DEADZONE
-
--- local PATH_RATING = constants.PATH_RATING
-
--- local PASSABLE = constants.PASSABLE
-
 -- imported functions
 
 local isRampant = stringUtils.isRampant
@@ -70,10 +63,8 @@ local upgradeEntity = baseUtils.upgradeEntity
 local setChunkBase = chunkPropertyUtils.setChunkBase
 local setPassable = chunkPropertyUtils.setPassable
 local setPathRating = chunkPropertyUtils.setPathRating
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local getChunkByXY = mapUtils.getChunkByXY
-local getChunkByPosition = mapUtils.getChunkByPosition
 
 local mFloor = math.floor
 
@@ -81,61 +72,14 @@ local mRandom = math.random
 
 -- module code
 
-local function addEnemyStructureToChunk(map, chunk, entity, base)
-    local lookup
-    if (entity.type == "unit-spawner") then
-	lookup = map.chunkToNests
-    elseif (entity.type == "turret") then
-	lookup = map.chunkToWorms
-    else
-	return
-    end
-
-    local entityCollection = lookup[chunk]
-    if not entityCollection then
-	lookup[chunk] = 0
-    end
-
-    lookup[chunk] = lookup[chunk] + 1
-
-    setChunkBase(map, chunk, base)
-end
-
-local function removeEnemyStructureFromChunk(map, chunk, entity)
-    local lookup
-    local entityType = entity.type
-    if (entityType == "unit-spawner") then
-	lookup = map.chunkToNests
-    elseif (entity.type == "turret") then
-	lookup = map.chunkToWorms
-    else
-	return
-    end
-
-    if (getEnemyStructureCount(map, chunk) == 0) then
-	setChunkBase(map, chunk, nil)
-    end
-
-    if lookup[chunk] then
-	if ((lookup[chunk] - 1) <= 0) then
-            if (entityType == "unit-spawner") then
-                setRaidNestActiveness(map, chunk, 0)
-                setNestActiveness(map, chunk, 0)
-            end
-	    lookup[chunk] = nil
-	else
-	    lookup[chunk] = lookup[chunk] - 1
-	end
-    end
-end
-
 local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
+    local overlapArray = map.chunkOverlapArray
 
-    local leftTopChunk = SENTINEL_IMPASSABLE_CHUNK
-    local rightTopChunk = SENTINEL_IMPASSABLE_CHUNK
-    local leftBottomChunk = SENTINEL_IMPASSABLE_CHUNK
-    local rightBottomChunk = SENTINEL_IMPASSABLE_CHUNK
+    overlapArray[1] = SENTINEL_IMPASSABLE_CHUNK --LeftTop
+    overlapArray[2] = SENTINEL_IMPASSABLE_CHUNK --RightTop
+    overlapArray[3] = SENTINEL_IMPASSABLE_CHUNK --LeftBottom
+    overlapArray[4] = SENTINEL_IMPASSABLE_CHUNK --RightBottom
 
     if boundingBox then
         local center = entity.position
@@ -145,17 +89,10 @@ local function getEntityOverlapChunks(map, entity)
         local bottomXOffset
         local bottomYOffset
 
-        -- if (entity.direction == DEFINES_DIRECTION_EAST) then
-        --     topXOffset = boundingBox.left_top.y
-        --     topYOffset = boundingBox.left_top.x
-        --     bottomXOffset = boundingBox.right_bottom.y
-        --     bottomYOffset = boundingBox.right_bottom.x
-        -- else
         topXOffset = boundingBox.left_top.x
         topYOffset = boundingBox.left_top.y
         bottomXOffset = boundingBox.right_bottom.x
         bottomYOffset = boundingBox.right_bottom.y
-        -- end
 
         local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         local leftTopChunkY = mFloor((center.y + topYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -163,28 +100,21 @@ local function getEntityOverlapChunks(map, entity)
         local rightTopChunkX = mFloor((center.x + bottomXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         local leftBottomChunkY = mFloor((center.y + bottomYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 
-        leftTopChunk = getChunkByXY(map, leftTopChunkX, leftTopChunkY)
+        overlapArray[1] = getChunkByXY(map, leftTopChunkX, leftTopChunkY) -- LeftTop
         if (leftTopChunkX ~= rightTopChunkX) then
-            rightTopChunk = getChunkByXY(map, rightTopChunkX, leftTopChunkY)
+            overlapArray[2] = getChunkByXY(map, rightTopChunkX, leftTopChunkY) -- RightTop
         end
         if (leftTopChunkY ~= leftBottomChunkY) then
-            leftBottomChunk = getChunkByXY(map, leftTopChunkX, leftBottomChunkY)
+            overlapArray[3] = getChunkByXY(map, leftTopChunkX, leftBottomChunkY) -- LeftBottom
         end
         if (leftTopChunkX ~= rightTopChunkX) and (leftTopChunkY ~= leftBottomChunkY) then
-            rightBottomChunk = getChunkByXY(map, rightTopChunkX, leftBottomChunkY)
+            overlapArray[4] = getChunkByXY(map, rightTopChunkX, leftBottomChunkY) -- RightBottom
         end
     end
-    return leftTopChunk, rightTopChunk, leftBottomChunk, rightBottomChunk
+    return overlapArray
 end
 
--- external functions
-
-function chunkUtils.calculatePassScore(surface, map)
-    local passScore = surface.count_tiles_filtered(map.filteredTilesQuery)
-    return 1 - (passScore * 0.0009765625)
-end
-
-function chunkUtils.scanChunkPaths(chunk, surface, map)
+local function scanPaths(chunk, surface, map)
     local pass = CHUNK_IMPASSABLE
 
     local x = chunk.x
@@ -264,18 +194,11 @@ local function scorePlayerBuildings(surface, map, natives)
     return playerObjects
 end
 
--- function chunkUtils.scoreEnemyBuildings(surface, map)
---     local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
---     local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
-
---     return nests, worms
--- end
-
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
-    local passScore = chunkUtils.calculatePassScore(surface, map)
+    local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
 
     if (passScore >= CHUNK_PASS_THRESHOLD) then
-	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
+	local pass = scanPaths(chunk, surface, map)
 
 	local playerObjects = scorePlayerBuildings(surface, map, natives)
         
@@ -294,11 +217,9 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
                 local wormCount = 0
                 local base = findNearbyBase(map, chunk, natives)
                 if base then
-                    if (base.alignment[1] ~= BASE_ALIGNMENT_DEADZONE) then
-                        setChunkBase(map, chunk, base)
-                    end
+                    setChunkBase(map, chunk, base)
                 else
-                    base = createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
+                    base = createBase(map, natives, evolutionFactor, chunk, tick, rebuilding)
                 end
                 local alignment = base.alignment
                 if (#nests > 0) then
@@ -356,10 +277,10 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 end
 
 function chunkUtils.chunkPassScan(chunk, surface, map)
-    local passScore = chunkUtils.calculatePassScore(surface, map)
+    local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
 
     if (passScore >= CHUNK_PASS_THRESHOLD) then
-	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
+	local pass = scanPaths(chunk, surface, map)
 
 	local playerObjects = getPlayerBaseGenerator(map, chunk)
 
@@ -378,7 +299,7 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function chunkUtils.analyzeChunk(chunk, natives, surface, map)
+function chunkUtils.mapScanChunk(chunk, natives, surface, map)
     local playerObjects = scorePlayerBuildings(surface, map, natives)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
@@ -413,49 +334,25 @@ function chunkUtils.colorChunk(x, y, tileType, surface)
     surface.set_tiles(tiles, false)
 end
 
-function chunkUtils.entityForPassScan(map, entity)
-    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
-
-    if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	map.chunkToPassScan[leftTop] = true
-    end
-    if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	map.chunkToPassScan[rightTop] = true
-    end
-    if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	map.chunkToPassScan[leftBottom] = true
-    end
-    if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	map.chunkToPassScan[rightBottom] = true
-    end
-end
-
-function chunkUtils.registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, tick)
+function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local chunk = getChunkByPosition(map, entity.position)
-	local base
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and natives.newEnemies then
-	    base = findNearbyBase(map, chunk, natives)
-	    if not base then
-		base = createBase(map, natives, evolutionFactor, chunk, surface, tick)
-	    end
-	end
+	local overlapArray = getEntityOverlapChunks(map, entity)
 
-	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
+        local lookup
+        if (entityType == "unit-spawner") then
+            lookup = map.chunkToNests
+        elseif (entityType == "turret") then
+            lookup = map.chunkToWorms
+        end      
 
-	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, leftTop, entity, base)
-	end
-	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, rightTop, entity, base)
-	end
-	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, leftBottom, entity, base)
-	end
-	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addEnemyStructureToChunk(map, rightBottom, entity, base)
-	end
+        for i=1,#overlapArray do
+            local chunk = overlapArray[i]
+            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                lookup[chunk] = (lookup[chunk] or 0) + 1
+                setChunkBase(map, chunk, base)
+            end
+        end
     end
 
     return entity
@@ -464,76 +361,83 @@ end
 function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
+	local overlapArray = getEntityOverlapChunks(map, entity)
 
-	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(map, leftTop, entity)
-	end
-	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(map, rightTop, entity)
-	end
-	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(map, leftBottom, entity)
-	end
-	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    removeEnemyStructureFromChunk(map, rightBottom, entity)
-	end
+        local mainLookup
+        local secondaryLookup
+        if (entityType == "unit-spawner") then
+            mainLookup = map.chunkToNests
+            secondaryLookup = map.chunkToWorms
+        elseif (entity.type == "turret") then
+            mainLookup = map.chunkToWorms
+            secondaryLookup = map.chunkToNests            
+        end
+
+        for i=1,#overlapArray do
+            local chunk = overlapArray[i]
+            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                local count = mainLookup[chunk]
+                if count then
+                    if (count <= 1) then
+                        if (entityType == "unit-spawner") then
+                            setRaidNestActiveness(map, chunk, 0)
+                            setNestActiveness(map, chunk, 0)
+                        end
+                        mainLookup[chunk] = nil
+                        if not secondaryLookup[chunk] then
+                            setChunkBase(map, chunk, nil)
+                        end
+                    else
+                        mainLookup[chunk] = count - 1
+                    end
+                end
+            end
+        end
+        
     end
 end
 
-function chunkUtils.addRemovePlayerEntity(map, entity, natives, addObject, creditNatives)
-    local leftTop, rightTop, leftBottom, rightBottom
-    local entityValue
+function chunkUtils.accountPlayerEntity(map, entity, natives, addObject, creditNatives)
 
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
-        entityValue = BUILDING_PHEROMONES[entity.type]
+        local entityValue = BUILDING_PHEROMONES[entity.type]
 
-        leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
+        local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
-    	    if creditNatives then
+            if creditNatives then
                 if (natives.state == AI_STATE_ONSLAUGHT) then
                     natives.points = natives.points + entityValue
                 else
                     natives.points = natives.points + (entityValue * 0.12)
                 end
-    	    end
-    	    entityValue = -entityValue
-    	end
-    	if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addPlayerBaseGenerator(map, leftTop, entityValue)
-    	end
-    	if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addPlayerBaseGenerator(map, rightTop, entityValue)
-    	end
-    	if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addPlayerBaseGenerator(map, leftBottom, entityValue)
-    	end
-    	if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    addPlayerBaseGenerator(map, rightBottom, entityValue)
-    	end
+            end
+            entityValue = -entityValue
+        end
+
+        for i=1,#overlapArray do
+            local chunk = overlapArray[i]
+            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                addPlayerBaseGenerator(map, chunk, entityValue)
+            end
+        end
     end
     return entity
 end
 
 function chunkUtils.unregisterResource(entity, map)
     if entity.prototype.infinite_resource then
-	return
+        return
     end
-    local leftTop, rightTop, leftBottom, rightBottom = getEntityOverlapChunks(map, entity)
+    local overlapArray = getEntityOverlapChunks(map, entity)
 
-    if (leftTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, leftTop, -RESOURCE_NORMALIZER)
-    end
-    if (rightTop ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, rightTop, -RESOURCE_NORMALIZER)
-    end
-    if (leftBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, leftBottom, -RESOURCE_NORMALIZER)
-    end
-    if (rightBottom ~= SENTINEL_IMPASSABLE_CHUNK) then
-	addResourceGenerator(map, rightBottom, -RESOURCE_NORMALIZER)
-    end
+    for i=1,#overlapArray do
+        local chunk = overlapArray[i]
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            addResourceGenerator(map, chunk, -RESOURCE_NORMALIZER)
+        end
+    end        
 end
+
 
 function chunkUtils.makeImmortalEntity(surface, entity)
     local repairPosition = entity.position
@@ -543,15 +447,15 @@ function chunkUtils.makeImmortalEntity(surface, entity)
 
     local wires
     if (entity.type == "electric-pole") then
-	wires = entity.neighbours
+        wires = entity.neighbours
     end
     entity.destroy()
     local newEntity = surface.create_entity({position=repairPosition,
-					     name=repairName,
-					     direction=repairDirection,
-					     force=repairForce})
+                                             name=repairName,
+                                             direction=repairDirection,
+                                             force=repairForce})
     if wires then
-	for _,v in pairs(wires.copper) do
+        for _,v in pairs(wires.copper) do
             if (v.valid) then
                 newEntity.connect_neighbour(v);
             end

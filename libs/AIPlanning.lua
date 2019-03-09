@@ -7,7 +7,7 @@ local aiPlanning = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
-local aiPredicates = require("AIPredicates")
+-- local aiPredicates = require("AIPredicates")
 
 -- constants
 
@@ -34,19 +34,13 @@ local AI_MIN_TEMPERAMENT_DURATION = constants.AI_MIN_TEMPERAMENT_DURATION
 local AI_MAX_STATE_DURATION = constants.AI_MAX_STATE_DURATION
 local AI_MAX_TEMPERAMENT_DURATION = constants.AI_MAX_TEMPERAMENT_DURATION
 
--- local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
-
 local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
 local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
 
-local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
-
 -- imported functions
-
-local canAttack = aiPredicates.canAttack
 
 local randomTickEvent = mathUtils.randomTickEvent
 
@@ -60,13 +54,7 @@ local mMax = math.max
 
 -- module code
 
-local function isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints)
-    return canAttack(natives, surface) and
-	(tick - natives.lastShakeMessage > TICKS_A_MINUTE * 5) and
-	((evolution_factor > 0.7) and (natives.points > maxPoints * 0.85) and (#natives.squads > 20))
-end
-
-function aiPlanning.planning(natives, evolution_factor, tick, surface, connectedPlayers)
+function aiPlanning.planning(natives, evolution_factor, tick)
     local maxPoints = AI_MAX_POINTS * evolution_factor
 
     if natives.aiNocturnalMode then
@@ -89,8 +77,6 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-    -- local threshold = natives.attackThresholdRange
-    -- natives.attackWaveThreshold = (threshold - (threshold * evolution_factor)) + natives.attackThresholdMin
 
     local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
 
@@ -135,15 +121,6 @@ function aiPlanning.planning(natives, evolution_factor, tick, surface, connected
 	    end
 	end
 	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
-    end
-
-    if isShockwaveReady(evolution_factor, natives, surface, tick, maxPoints) then
-	natives.lastShakeMessage = tick
-	for _, player in pairs(connectedPlayers) do
-	    if player.mod_settings["rampant-attack-warning"].value then
-		player.print("Rampant: The ground begins to shake")
-	    end
-	end
     end
 
 end

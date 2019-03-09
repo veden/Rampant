@@ -17,12 +17,13 @@ local interop = require("libs/Interop")
 local tests = require("tests")
 local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
-local mathUtils = require("libs/MathUtils")
+-- local mathUtils = require("libs/MathUtils")
 local config = require("config")
-local stringUtils = require("StringUtils")
+-- local stringUtils = require("StringUtils")
 
 -- constants
 
+local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
 local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
@@ -72,7 +73,6 @@ local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
--- local roundToNearest = mathUtils.roundToNearest
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -80,7 +80,6 @@ local entityForPassScan = chunkUtils.entityForPassScan
 
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
--- local processSpawnerChunks = chunkProcessor.processSpawnerChunks
 
 local processMap = mapProcessor.processMap
 local processPlayers = mapProcessor.processPlayers
@@ -100,6 +99,7 @@ local regroupSquads = unitGroupUtils.regroupSquads
 local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
 
 local createBase = baseUtils.createBase
+local findNearbyBase = baseUtils.findNearbyBase
 
 local squadsBeginAttack = squadAttack.squadsBeginAttack
 
@@ -109,7 +109,7 @@ local getChunkBase = chunkPropertyUtils.getChunkBase
 
 -- local isSpawnerEgg = stringUtils.isSpawnerEgg
 
-local addRemovePlayerEntity = chunkUtils.addRemovePlayerEntity
+local accountPlayerEntity = chunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
@@ -216,20 +216,26 @@ local function rebuildMap()
     -- map.queueSpawners = {}
 
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
-    map.neighbors = { SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK,
-		      SENTINEL_IMPASSABLE_CHUNK }
-    map.cardinalNeighbors = { SENTINEL_IMPASSABLE_CHUNK,
-			      SENTINEL_IMPASSABLE_CHUNK,
-			      SENTINEL_IMPASSABLE_CHUNK,
-			      SENTINEL_IMPASSABLE_CHUNK }
-    map.position = {x=0,
-		    y=0}
+    map.neighbors = {
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK
+    }
+    map.cardinalNeighbors = {
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK
+    }
+    map.position = {
+        x=0,
+        y=0
+    }
 
     map.scentStaging = {}
 
@@ -237,6 +243,13 @@ local function rebuildMap()
 	map.scentStaging[x] = {0,0,0,0}
     end
 
+    map.chunkOverlapArray = {
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK,
+        SENTINEL_IMPASSABLE_CHUNK
+    }
+    
     map.position2Top = {0, 0}
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
@@ -286,6 +299,13 @@ local function rebuildMap()
         use_group_distraction = false
     }
 
+    map.formGroupCommand = { type = DEFINES_COMMAND_GROUP,
+                             group = nil,
+                             distraction = DEFINES_DISTRACTION_NONE }
+    
+    map.formCommand = { command = map.formGroupCommand,
+                        unit_count = 0,
+                        unit_search_distance = TRIPLE_CHUNK_SIZE }
 end
 
 
@@ -427,14 +447,10 @@ end)
 script.on_nth_tick(INTERVAL_LOGIC,
 		   function (event)
 		       local tick = event.tick
-		       local gameRef = game
-		       local surface = gameRef.surfaces[natives.activeSurface]
 
 		       planning(natives,
-				gameRef.forces.enemy.evolution_factor,
-				tick,
-				surface,
-				gameRef.connected_players)
+				game.forces.enemy.evolution_factor,
+				tick)
 
 		       if natives.newEnemies then
 			   recycleBases(natives, tick)
@@ -442,11 +458,9 @@ script.on_nth_tick(INTERVAL_LOGIC,
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
-		   function (event)
-		       local gameRef = game
-                       
+		   function ()                       
 		       squadsBeginAttack(natives)
-		       squadsDispatch(map, gameRef.surfaces[natives.activeSurface], natives)
+		       squadsDispatch(map, game.surfaces[natives.activeSurface], natives)
 
                        regroupSquads(natives, map)
 
@@ -456,7 +470,7 @@ end)
 local function onBuild(event)
     local entity = event.created_entity
     if (entity.surface.index == natives.activeSurface) then
-	addRemovePlayerEntity(map, entity, natives, true, false)
+	accountPlayerEntity(map, entity, natives, true, false)
 	if natives.safeBuildings then
 	    if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
 		entity.destructible = false
@@ -469,7 +483,7 @@ local function onMine(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == natives.activeSurface) then
-	addRemovePlayerEntity(map, entity, natives, false, false)
+	accountPlayerEntity(map, entity, natives, false, false)
     end
 end
 
@@ -605,7 +619,7 @@ local function onDeath(event)
 	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
 		makeImmortalEntity(surface, entity)
 	    else
-		addRemovePlayerEntity(map, entity, natives, false, creditNatives)
+		accountPlayerEntity(map, entity, natives, false, creditNatives)
 	    end
         end
     end
@@ -616,26 +630,44 @@ local function onEnemyBaseBuild(event)
     local surface = entity.surface
 
     if entity.valid and (surface.index == natives.activeSurface) then
+        print("built", entity.type, entity.name)
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local evolutionFactor = entity.force.evolution_factor
-	    if natives.newEnemies then
-		local base = getChunkBase(map, chunk)
-		if not base then
-		    base = createBase(map, natives, evolutionFactor, chunk, surface, event.tick)
-		end
-		entity = upgradeEntity(entity, surface, base.alignment[mRandom(#base.alignment)], natives, evolutionFactor)
-	    end
-	    if entity and entity.valid then
-		event.entity = registerEnemyBaseStructure(map, entity, natives, evolutionFactor, surface, event.tick)
-	    end
-	end
+            print("valid", chunk.x, chunk.y)
+            local evolutionFactor = entity.force.evolution_factor
+            local base
+            if natives.newEnemies then
+                base = findNearbyBase(map, chunk, natives)
+                if not base then
+                    print("no base")
+                    base = createBase(map,
+                                      natives,
+                                      evolutionFactor,
+                                      chunk,
+                                      event.tick)
+                else
+                    print("base")
+                end                
+                entity = upgradeEntity(entity,
+                                       surface,
+                                       base.alignment[mRandom(#base.alignment)],
+                                       natives,
+                                       evolutionFactor)                
+            end
+            if entity and entity.valid then
+                print("registering")
+                event.entity = registerEnemyBaseStructure(map, entity, base)
+            end
+        end
     end
 end
 
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
-    if event.item and ((event.item.name == "landfill") or (event.item.name == "waterfill")) and (surfaceIndex == natives.activeSurface) then
+    if event.item and
+        ((event.item.name == "landfill") or (event.item.name == "waterfill")) and
+        (surfaceIndex == natives.activeSurface)
+    then
 	local surface = game.surfaces[natives.activeSurface]
 	local chunks = {}
 	local tiles = event.tiles

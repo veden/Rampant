@@ -48,9 +48,6 @@ function movementUtils.addMovementPenalty(units, chunk)
         local penalty = penalties[i]
         if (penalty.c == chunk) then
             penalty.v = (2 * penalty.v) + MOVEMENT_PENALTY_AMOUNT
-	    -- if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
-	    -- 	tableRemove(penalties, i)
-	    -- end
             return
         end
     end

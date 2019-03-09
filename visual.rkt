@@ -4,7 +4,7 @@
 
 (define CHUNK_SIZE 32)
 
-(define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
+(define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
 
 (define windowX 500)
 (define windowY 0)
@@ -143,8 +143,9 @@
                               pollution
                               aNe
                               aRNe
-                              squads) chunkMinMaxes))
-
+                              squads
+                              baseCreated) chunkMinMaxes))
+      
       (set! activeChunkSet chunks)
       (set! activeChunkMinMaxSet chunkMinMaxes)
       (set! activeChunkSetLookup chunkLookups)
@@ -268,7 +269,7 @@
 
   (new radio-box%
        [label "Show Layer"]
-       [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "siegeScore" "retreatScore" "kamikazeScore" "pollution" "aNe" "aRNe" "squads")]
+       [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "siegeScore" "retreatScore" "kamikazeScore" "pollution" "aNe" "aRNe" "squads" "baseCreated")]
        [selection 0]
        [parent mainFrame]
        (callback (lambda (radioButton event)

@@ -179,7 +179,7 @@ local function settleMove(map, squad, natives, surface)
         end
         
         if position then
-            squad.cycles = (largeGroup and 7) or 5            
+            squad.cycles = (largeGroup and 6) or 4            
             attackPosition.x = position.x
             attackPosition.y = position.y
 
@@ -246,7 +246,7 @@ local function attackMove(map, squad, natives, surface)
                                                                       (largeGroup and 1.1) or 0.9))
         
         if position then
-            squad.cycles = (largeGroup and 7) or 5                   
+            squad.cycles = (largeGroup and 6) or 4
             attackPosition.x = position.x
             attackPosition.y = position.y
 
@@ -298,7 +298,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                 elseif (status == SQUAD_SETTLING) then
                     if (groupState == DEFINES_GROUP_FINISHED) or
                         (groupState == DEFINES_GROUP_GATHERING) or
-                        ((groupState == DEFINES_GROUP_MOVING) and (squad.cycles <= 0))
+                        ((groupState == DEFINES_GROUP_MOVING) and (cycles <= 0))
                     then
                         settleMove(map, squad, natives, surface)
                     end

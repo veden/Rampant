@@ -105,7 +105,7 @@ constants.RAIDING_MINIMUM_BASE_THRESHOLD = 250
 
 constants.AI_UNIT_REFUND = 3
 
-constants.AI_MAX_SQUAD_COUNT = 40
+constants.AI_MAX_SQUAD_COUNT = 35
 constants.AI_MAX_BITER_GROUP_SIZE = 450
 
 constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
@@ -139,7 +139,7 @@ constants.BASE_AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
-constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 20
+constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 18
 
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
