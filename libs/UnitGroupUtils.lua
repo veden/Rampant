@@ -6,27 +6,18 @@ local unitGroupUtils = {}
 -- imports
 
 local mapUtils = require("MapUtils")
--- local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
--- local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
-
 local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
 
--- local DEFINES_GROUP_STATE_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
--- local SQUAD_SETTLING = constants.SQUAD_SETTLING
--- local SQUAD_BUILDING = constants.SQUAD_BUILDING
--- local GROUP_MERGE_DISTANCE = constants.GROUP_MERGE_DISTANCE
-
--- local RETREAT_FILTER = constants.RETREAT_FILTER
 
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
@@ -45,20 +36,15 @@ local mRandom = math.random
 
 local mLog = math.log10
 
--- local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
-
 local mMin = math.min
 
 local getSquadsOnChunk = chunkPropertyUtils.getSquadsOnChunk
--- local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 
--- local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
-
 -- module code
 
-function unitGroupUtils.findNearbySquadFiltered(map, chunk)
+function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
     local squads = getSquadsOnChunk(map, chunk)
     for i=1,#squads do
@@ -98,7 +84,6 @@ function unitGroupUtils.findNearbySquad(map, chunk)
         end
     end
     
-
     local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
     for i=1,#neighbors do
