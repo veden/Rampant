@@ -101,7 +101,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 	    natives.state = AI_STATE_PEACEFUL
 	else
 	    roll = mRandom()
-	    if (roll < 0.70) then
+	    if (roll < 0.65) then
 	    	natives.state = AI_STATE_AGGRESSIVE
 	    elseif ((natives.enabledMigration) and (natives.expansion) and (roll < 0.75)) then
 		natives.state = AI_STATE_MIGRATING
