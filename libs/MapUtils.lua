@@ -174,14 +174,14 @@ end
 
 function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPosition, scaling)
     if (direction == 1) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * scaling
-	endPosition.y = startPosition.y - CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
+	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 2) then
 	endPosition.x = startPosition.x
 	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling + 0.2)
     elseif (direction == 3) then
-	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
-	endPosition.y = startPosition.y - CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
+	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 4) then
 	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling + 0.2)
 	endPosition.y = startPosition.y
@@ -189,14 +189,14 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
 	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling + 0.2)
 	endPosition.y = startPosition.y
     elseif (direction == 6) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * scaling
-	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
+	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 7) then
 	endPosition.x = startPosition.x
 	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling + 0.2)
     elseif (direction == 8) then
-	endPosition.x = startPosition.x + CHUNK_SIZE * scaling
-	endPosition.y = startPosition.y + CHUNK_SIZE * scaling
+	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
+	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
     end
     return endPosition
 end

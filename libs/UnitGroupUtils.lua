@@ -134,10 +134,18 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         cycles = 0,
         maxDistance = 0,
         attackScoreFunction = 1,
-        originPosition = {x = position.x,
-                          y = position.y},
+        originPosition = {x = 0,
+                          y = 0},
         chunk = nil
     }
+
+    if position then
+        squad.originPosition.x = position.x
+        squad.originPosition.y = position.y
+    elseif group then
+        squad.originPosition.x = group.position.x
+        squad.originPosition.y = group.position.y
+    end
 
     return squad
 end

@@ -54,7 +54,7 @@ local function scoreRetreatLocation(map, neighborChunk)
     return -(neighborChunk[BASE_PHEROMONE] +
                  neighborChunk[MOVEMENT_PHEROMONE] +
                  -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-                 -(getPlayerBaseGenerator(map, neighborChunk)))
+                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
@@ -107,7 +107,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 			membersToSquad(cmd, enemiesToSquad, artilleryBlast)
 		    else
 			membersToSquad(cmd, squad.group.members, true)
-			newSquad.penalties = squad.penalties
+			-- newSquad.penalties = squad.penalties
 			if squad.rabid then
 			    newSquad.rabid = true
 			end
@@ -120,7 +120,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
                         newSquad.frenzyPosition.y = squadPosition.y
                     end
 		    addSquadToChunk(map, chunk, newSquad)
-		    addMovementPenalty(natives, newSquad, chunk)
+		    addMovementPenalty(newSquad, chunk)
 		end
 	    end
 	end

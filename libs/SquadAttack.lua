@@ -32,7 +32,6 @@ local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
 local ATTACK_QUEUE_SIZE = constants.ATTACK_QUEUE_SIZE
 
-
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
@@ -130,10 +129,10 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 								       squad)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    addSquadToChunk(map, chunk, squad)
-	    addMovementPenalty(natives, squad, chunk)
+	    addMovementPenalty(squad, chunk)
             -- elseif (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             --     addSquadToChunk(map, attackChunk, squad)
-            --     addMovementPenalty(natives, squad, attackChunk)
+            --     addMovementPenalty(squad, attackChunk)
 	end
 	if group.valid and (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 	    local resourceGenerator = getResourceGenerator(map, chunk)
@@ -156,7 +155,7 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 		    group.set_command(settleCmd)
 		    group.start_moving()
 		else
-		    addMovementPenalty(natives, squad, attackChunk)
+		    addMovementPenalty(squad, attackChunk)
 		end
 	    elseif (groupState == DEFINES_GROUP_FINISHED) or (groupState == DEFINES_GROUP_GATHERING) then
 		squad.cycles = ((#squad.group.members > 80) and 6) or 4
@@ -175,7 +174,7 @@ local function settleMove(map, attackPosition, attackCmd, settleCmd, squad, grou
 		    group.set_command(attackCmd)
 		    group.start_moving()
 		else
-		    addMovementPenalty(natives, squad, attackChunk)
+		    addMovementPenalty(squad, attackChunk)
 		end
 	    end
 	end
@@ -184,7 +183,8 @@ end
 
 
 local function attackMove(map, squad, natives, surface)
-    local attackPosition = map.position
+    print("attackMove", squad.group.group_number)
+    local attackPosition = map.position    
     local group = squad.group
 
     local groupPosition = group.position
@@ -195,7 +195,7 @@ local function attackMove(map, squad, natives, surface)
         attackScorer = scoreAttackKamikazeLocation
     end
     if squad.chunk and (squad.chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (squad.chunk ~= chunk) then
-        addMovementPenalty(natives, squad, squad.chunk)
+        addMovementPenalty(squad, squad.chunk)
     end    
     local attackChunk, attackDirection = scoreNeighborsForAttack(map,
                                                                  natives,
@@ -205,7 +205,7 @@ local function attackMove(map, squad, natives, surface)
                                                                  squad)
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK)then
         addSquadToChunk(map, chunk, squad)
-    end
+    end    
     if (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
         local playerBaseGenerator = getPlayerBaseGenerator(map, attackChunk)
         local playerPheromone = attackChunk[PLAYER_PHEROMONE]
@@ -213,7 +213,7 @@ local function attackMove(map, squad, natives, surface)
         local position
         local largeGroup = (#squad.group.members > 80)
         if (playerBaseGenerator == 0) and (playerPheromone < natives.attackPlayerThreshold) then
-            squad.cycles = (largeGroup and 6) or 4
+            squad.cycles = (largeGroup and 7) or 5
 
             squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
             
@@ -224,7 +224,7 @@ local function attackMove(map, squad, natives, surface)
                 cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
             end		
         else
-            squad.cycles = (largeGroup and 6) or 4       
+            squad.cycles = (largeGroup and 7) or 5       
             cmd = map.attackCommand
             
             if not squad.rabid then
@@ -238,9 +238,7 @@ local function attackMove(map, squad, natives, surface)
                                         positionFromDirectionAndChunk(attackDirection,
                                                                       groupPosition,
                                                                       attackPosition,
-                                                                      (largeGroup and 1.35) or 1.1))
-
-        addMovementPenalty(natives, squad, attackChunk)
+                                                                      (largeGroup and 1.1) or 0.9))
         
         if position then
             attackPosition.x = position.x
@@ -249,8 +247,6 @@ local function attackMove(map, squad, natives, surface)
             group.set_command(cmd)
             group.start_moving()
         end
-        -- else
-        --     print("attack: bad attack chunk", squad.group.group_number)
     end
 end
 
@@ -260,6 +256,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     local attackCmd = map.attackAreaCommand
     local settleCmd = map.settleCommand
 
+    -- print("start dispatch")
     -- local startIndex = natives.attackIndex
 
     -- local maxSquadIndex = mMin(startIndex + ATTACK_QUEUE_SIZE, #squads)
@@ -294,7 +291,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                     end
                 elseif (status == SQUAD_SETTLING) then
                     settleMove(map, attackPosition, attackCmd, settleCmd, squad, group, natives, surface)
-                elseif (status == SQUAD_RETREATING) and (cycles == 0) then
+                elseif (status == SQUAD_RETREATING) and (cycles <= 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
                     squad.status = SQUAD_GUARDING                    
                 elseif (status == SQUAD_BUILDING) then
@@ -316,6 +313,8 @@ function squadAttack.squadsDispatch(map, surface, natives)
         end        
     end
 
+
+    -- print("end dispatch")
     -- if (maxSquadIndex >= #squads) then
     --     natives.attackIndex = 1
     -- else
