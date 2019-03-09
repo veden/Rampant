@@ -112,7 +112,7 @@ function tests.activeSquads()
     print("building", #global.natives.building)
     for i=1, #global.natives.building do
 	print("-")
-        local squad = global.natives.pendingAttack[i]
+        local squad = global.natives.building[i]
 	local squadHealth = 0
 	local squadMakeup = {}
         if squad.group.valid then

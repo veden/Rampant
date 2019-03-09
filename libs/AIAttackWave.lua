@@ -178,8 +178,8 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 							natives.expansionMaxDistanceDerivation,
 							CHUNK_SIZE * 1,
 							natives.expansionMaxDistance)
-		squad.originPosition.x = squadPosition.x
-		squad.originPosition.y = squadPosition.y
+		-- squad.originPosition.x = squadPosition.x
+		-- squad.originPosition.y = squadPosition.y
 
 		local scaledWaveSize = settlerWaveScaling(natives)
 		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
