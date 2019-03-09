@@ -6,14 +6,14 @@ local movementUtils = {}
 -- imports
 
 local constants = require("Constants")
-local unitGroupUtils = require("UnitGroupUtils")
+-- local unitGroupUtils = require("UnitGroupUtils")
 local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
 
 -- constants
 
 local MOVEMENT_PENALTY_AMOUNT = constants.MOVEMENT_PENALTY_AMOUNT
-local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
+-- local MAX_PENALTY_BEFORE_PURGE = constants.MAX_PENALTY_BEFORE_PURGE
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
@@ -36,21 +36,21 @@ local distortPosition = mathUtils.distortPosition
 
 function movementUtils.findMovementPosition(surface, position, distort)
     local pos = position
-    if not surface.can_place_entity({name="behemoth-biter", position=position}) then
-	pos = surface.find_non_colliding_position("behemoth-biter", position, 5, 2, true)
+    if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=position}) then
+	pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", position, 15, 2, true)
     end
     return (distort and distortPosition(pos)) or pos
 end
 
-function movementUtils.addMovementPenalty(natives, units, chunk)
+function movementUtils.addMovementPenalty(units, chunk)
     local penalties = units.penalties
     for i=1,#penalties do
         local penalty = penalties[i]
         if (penalty.c == chunk) then
-            penalty.v = penalty.v + MOVEMENT_PENALTY_AMOUNT
-	    if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
-	    	tableRemove(penalties, i)
-	    end
+            penalty.v = (2 * penalty.v) + MOVEMENT_PENALTY_AMOUNT
+	    -- if (penalty.v > MAX_PENALTY_BEFORE_PURGE) then
+	    -- 	tableRemove(penalties, i)
+	    -- end
             return
         end
     end
@@ -63,11 +63,11 @@ function movementUtils.addMovementPenalty(natives, units, chunk)
 		  c = chunk })
 end
 
-function movementUtils.lookupMovementPenalty(squad, x, y)
+function movementUtils.lookupMovementPenalty(squad, chunk)
     local penalties = squad.penalties
     for i=1,#penalties do
         local penalty = penalties[i]
-        if (penalty.x == x) and (penalty.y == y) then
+        if (penalty.c == chunk) then
             return penalty.v
         end
     end
@@ -82,6 +82,7 @@ function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDire
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
+
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
 

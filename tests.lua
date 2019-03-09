@@ -79,7 +79,7 @@ function tests.activeSquads()
 		squadHealth = squadHealth + member.max_health
 		squadMakeup[member.name] = squadMakeup[member.name] + 1
 	    end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth)
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth, squad.group.group_number)
 	    -- print(serpent.dump(squadResistances))
 	    print(serpent.dump(squadMakeup))
             print(serpent.dump(squad))
@@ -102,7 +102,7 @@ function tests.activeSquads()
 		squadHealth = squadHealth + member.max_health
 		squadMakeup[member.name] = squadMakeup[member.name] + 1
 	    end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth)
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth, squad.group.group_number)
 	    -- print(serpent.dump(squadResistances))
 	    print(serpent.dump(squadMakeup))
             print(serpent.dump(squad))
@@ -125,7 +125,7 @@ function tests.activeSquads()
 		squadHealth = squadHealth + member.max_health
 		squadMakeup[member.name] = squadMakeup[member.name] + 1
 	    end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth)
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth, squad.group.group_number)
 	    -- print(serpent.dump(squadResistances))
 	    print(serpent.dump(squadMakeup))
             print(serpent.dump(squad))
