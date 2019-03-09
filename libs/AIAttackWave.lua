@@ -84,29 +84,39 @@ local function attackWaveValidCandidate(chunk, natives, map)
 end
 
 local function scoreSettlerLocation(neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
+    return neighborChunk[RESOURCE_PHEROMONE] +
+        neighborChunk[MOVEMENT_PHEROMONE] +
+        -neighborChunk[PLAYER_PHEROMONE]
 end
 
 local function scoreSiegeSettlerLocation(neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + -neighborChunk[MOVEMENT_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
-end
-
-local function validSiegeSettlerLocation(map, neighborChunk)
-    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0)
-end
-
-
-local function validSettlerLocation(map, chunk, neighborChunk)
-    local chunkResource = chunk[RESOURCE_PHEROMONE]
-    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and (getNestCount(map, neighborChunk) == 0) and (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * RESOURCE_MINIMUM_FORMATION_DELTA))
+    return neighborChunk[RESOURCE_PHEROMONE] +
+        neighborChunk[BASE_PHEROMONE] +
+        neighborChunk[MOVEMENT_PHEROMONE] +
+        -neighborChunk[PLAYER_PHEROMONE]
 end
 
 local function scoreUnitGroupLocation(neighborChunk)
-    return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
+    return neighborChunk[PLAYER_PHEROMONE] +
+        neighborChunk[MOVEMENT_PHEROMONE] +
+        neighborChunk[BASE_PHEROMONE]
+end
+
+local function validSiegeSettlerLocation(map, neighborChunk)
+    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and
+        (getNestCount(map, neighborChunk) == 0)
+end
+
+local function validSettlerLocation(map, chunk, neighborChunk)
+    local chunkResource = chunk[RESOURCE_PHEROMONE]
+    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and
+        (getNestCount(map, neighborChunk) == 0) and
+        (neighborChunk[RESOURCE_PHEROMONE] >= (chunkResource * RESOURCE_MINIMUM_FORMATION_DELTA))
 end
 
 local function validUnitGroupLocation(map, neighborChunk)
-    return getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS and (getNestCount(map, neighborChunk) == 0)
+    return getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS and
+        (getNestCount(map, neighborChunk) == 0)
 end
 
 function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
@@ -178,15 +188,11 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 							natives.expansionMaxDistanceDerivation,
 							CHUNK_SIZE * 1,
 							natives.expansionMaxDistance)
-		-- squad.originPosition.x = squadPosition.x
-		-- squad.originPosition.y = squadPosition.y
 
 		local scaledWaveSize = settlerWaveScaling(natives)
-		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
-									   group = squad.group,
-									   distraction = DEFINES_DISTRACTION_NONE },
-							       unit_count = scaledWaveSize,
-							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+                map.formGroupCommand.group = squad.group
+                map.formCommand.unit_count = scaledWaveSize
+		local foundUnits = surface.set_multi_command(map.formCommand)
 		if (foundUnits > 0) then
 		    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
@@ -226,11 +232,9 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
 		squad.rabid = mRandom() < 0.03
 
 		local scaledWaveSize = attackWaveScaling(natives)
-		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
-									   group = squad.group,
-									   distraction = DEFINES_DISTRACTION_NONE },
-							       unit_count = scaledWaveSize,
-							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+                map.formGroupCommand.group = squad.group
+                map.formCommand.unit_count = scaledWaveSize
+		local foundUnits = surface.set_multi_command(map.formCommand)
 		if (foundUnits > 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_VENGENCE_SQUAD_COST
@@ -270,11 +274,9 @@ function aiAttackWave.formSquads(map, surface, natives, chunk)
 		squad.rabid = mRandom() < 0.03
 
 		local scaledWaveSize = attackWaveScaling(natives)
-		local foundUnits = surface.set_multi_command({ command = { type = DEFINES_COMMAND_GROUP,
-									   group = squad.group,
-									   distraction = DEFINES_DISTRACTION_NONE },
-							       unit_count = scaledWaveSize,
-							       unit_search_distance = TRIPLE_CHUNK_SIZE })
+                map.formGroupCommand.group = squad.group
+                map.formCommand.unit_count = scaledWaveSize
+		local foundUnits = surface.set_multi_command(map.formCommand)
 		if (foundUnits > 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_SQUAD_COST

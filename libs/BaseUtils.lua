@@ -22,6 +22,8 @@ local BASE_AI_STATE_NESTS = constants.BASE_AI_STATE_NESTS
 local BASE_AI_STATE_OVERDRIVE = constants.BASE_AI_STATE_OVERDRIVE
 local BASE_AI_STATE_MUTATE = constants.BASE_AI_STATE_MUTATE
 
+local BASE_DEADZONE_TTL = constants.BASE_DEADZONE_TTL
+
 local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
 local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
@@ -206,7 +208,7 @@ local function normalizeProbabilities(probabilityTable)
 	-- cap max evo requirement at 0.95
 	for probability, entities in pairs(probabilitySet) do
 	    if (max == 0) or (max == min) then
-		alignmentResult[0] = entities
+		alignmentResult[1] = entities
 	    else
 		local normalizeProbability = ((probability - min) / (max - min)) * 0.95
 		alignmentResult[normalizeProbability] = entities
@@ -218,10 +220,6 @@ local function normalizeProbabilities(probabilityTable)
 end
 
 function baseUtils.findNearbyBase(map, chunk, natives)
-    if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
-	return nil
-    end
-
     local x = chunk.x
     local y = chunk.y
 
@@ -231,20 +229,20 @@ function baseUtils.findNearbyBase(map, chunk, natives)
     end
 
     local bases = natives.bases
-    local distanceThreshold = -1
+    local closet = MAGIC_MAXIMUM_NUMBER
     for i=1, #bases do
 	local base = bases[i]
 	local distance = euclideanDistancePoints(base.x, base.y, x, y)
-	if (distance <= base.distanceThreshold) and (base.distanceThreshold >= distanceThreshold) then
+	if (distance <= base.distanceThreshold) and (distance < closet) then
+            closet = distance
 	    foundBase = base
-	    distanceThreshold = base.distanceThreshold
 	end
     end
 
     return foundBase
 end
 
-local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, natives, evolutionTable)
+local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, evolutionTable)
 
     local alignments = evolutionTable[baseAlignment]
 
@@ -313,18 +311,13 @@ function baseUtils.recycleBases(natives, tick)
     local baseIndex = natives.baseIndex
     local bases = natives.bases
 
-    local removeMe = {}
-
     local endIndex = mMin(baseIndex+BASE_QUEUE_SIZE, #bases)
-    for index = baseIndex, endIndex do
+    for index = endIndex, baseIndex, -1 do
         local base = bases[index]
 
         if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
-            removeMe[#removeMe+1] = index
+            tRemove(bases, index)
         end
-    end
-    for i=#removeMe, 1, -1 do
-        tRemove(bases, i)
     end
 
     if (endIndex == #bases) then
@@ -350,10 +343,14 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
                                   EVOLUTION_INCREMENTS)
     local evoIndex = mMax(distance, evolutionFactor)
 
-    local spawnerName = findEntityUpgrade(baseAlignment, currentEvo, evoIndex, natives, ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or natives.evolutionTableWorm)
+    local spawnerName = findEntityUpgrade(baseAlignment,
+                                          currentEvo,
+                                          evoIndex,                                         
+                                          ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or
+                                              natives.evolutionTableWorm)
     if spawnerName then
         local newPosition = surface.find_non_colliding_position(
-            ((entityType == "unit-spawner") and "chunk-scanner-nest-rampant") or "chunk-scanner-worm-rampant",
+            spawnerName,
             position,
             CHUNK_SIZE,
             2,
@@ -410,6 +407,12 @@ local function upgradeBase(natives, evolutionFactor, base)
 end
 
 function baseUtils.processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
+
+    if (base.alignment[1] == BASE_ALIGNMENT_DEADZONE) then
+        base.state = BASE_AI_STATE_DORMANT
+        return
+    end
+    
     local areaTop = map.position2Top
     local areaBottom = map.position2Bottom
 
@@ -478,14 +481,10 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
 	base.stateTick = randomTickEvent(tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
     end
 
-    if (base.alignment[0] == BASE_ALIGNMENT_DEADZONE) then
-        base.state = BASE_AI_STATE_DORMANT
-    end
-
-    base.tick = tick
+    base.tick = tick    
 end
 
-function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tick, rebuilding)
+function baseUtils.createBase(map, natives, evolutionFactor, chunk, tick, rebuilding)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
@@ -511,22 +510,17 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, surface, tic
         x = x,
         y = y,
         distanceThreshold = distanceThreshold,
-        tick = tick,
+        tick = ((alignment == BASE_ALIGNMENT_DEADZONE) and BASE_DEADZONE_TTL) or tick,
         alignment = {alignment},
         state = BASE_AI_STATE_DORMANT,
         stateTick = 0,
         temperamentTick = 0,
+        createdTick = tick,
         temperament = 0,
         points = 0
     }
 
-    if (alignment ~= BASE_ALIGNMENT_DEADZONE) then
-        setChunkBase(map, chunk, base)
-    end
-
-    -- if not buildHive(map, base, surface) then
-    -- 	return nil
-    -- end
+    setChunkBase(map, chunk, base)
 
     natives.bases[#natives.bases+1] = base
 

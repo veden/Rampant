@@ -538,15 +538,15 @@ data:extend({
 	    per_user = false
 	},
 
-	{
-	    type = "bool-setting",
-	    name = "rampant-attack-warning",
-	    description = "rampant-attack-warning",
-	    setting_type = "runtime-per-user",
-	    default_value = false,
-	    order = "o[modifer]-a[message]",
-	    per_user = true
-	},
+	-- {
+	--     type = "bool-setting",
+	--     name = "rampant-attack-warning",
+	--     description = "rampant-attack-warning",
+	--     setting_type = "runtime-per-user",
+	--     default_value = false,
+	--     order = "o[modifer]-a[message]",
+	--     per_user = true
+	-- },
 
 
 

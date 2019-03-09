@@ -9,14 +9,14 @@ local chunkUtils = require("ChunkUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local squadDefense = require("SquadDefense")
-local unitGroupUtils = require("UnitGroupUtils")
+-- local unitGroupUtils = require("UnitGroupUtils")
 
 -- constants
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
-local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
-local SPAWNER_EGG_TIMEOUT = constants.SPAWNER_EGG_TIMEOUT
+-- local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
+-- local SPAWNER_EGG_TIMEOUT = constants.SPAWNER_EGG_TIMEOUT
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
@@ -24,7 +24,7 @@ local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
 
 -- imported functions
 
-local retreatUnits = squadDefense.retreatUnits
+-- local retreatUnits = squadDefense.retreatUnits
 
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan

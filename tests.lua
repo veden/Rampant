@@ -253,27 +253,19 @@ end
 
 function tests.baseStats()
     local natives = global.natives
-    print ("cX", "cY", "pX", "pY", "created", "align", "str", "upgradePoints", "#nest", "#worms", "#eggs", "hive")
+    print ("x", "y", "distanceThreshold", "tick", "points", "temperament", "temperamentTick", "state", "stateTick", "alignments")
     for i=1, #natives.bases do
 	local base = natives.bases[i]
-	local nestCount = 0
-	local wormCount = 0
-	local eggCount = 0
-	local hiveCount = 0
-	for _,_ in pairs(base.nests) do
-	    nestCount = nestCount + 1
-	end
-	for _,_ in pairs(base.worms) do
-	    wormCount = wormCount + 1
-	end
-	for _,_ in pairs(base.eggs) do
-	    eggCount = eggCount + 1
-	end
-	for _,_ in pairs(base.hives) do
-	    hiveCount = hiveCount + 1
-	end
-	print(base.x, base.y, base.created, base.alignment, base.strength, base.upgradePoints, nestCount, wormCount, eggCount, hiveCount)
-	print(serpent.dump(base.tendrils))
+	print(base.x,
+              base.y,
+              base.distanceThreshold,              
+              base.tick,
+              base.points,
+              base.temperament,
+              base.temperamentTick,
+              base.state,
+              base.stateTick,
+              serpent.dump(base.alignment))
 	print("---")
     end
 end
@@ -397,6 +389,16 @@ function tests.exportAiState()
 	for i=1,#chunks do
 	    local chunk = chunks[i]
 
+            local base = chunkPropertyUtils.getChunkBase(global.map, chunk)
+            local alignmentCount = 0
+            if base then
+                if (#base.alignment == 2) then
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (base.alignment[1] * 100) + base.alignment[2]
+                else
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + base.alignment[1]
+                end
+            end
+            
 	    s = s .. table.concat({chunk[constants.MOVEMENT_PHEROMONE],
 				   chunk[constants.BASE_PHEROMONE],
 				   chunk[constants.PLAYER_PHEROMONE],
@@ -416,7 +418,8 @@ function tests.exportAiState()
                                    game.surfaces[global.natives.activeSurface].get_pollution(chunk),
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
-                                   #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk)}, ",") .. "\n"
+                                   #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk),
+                                   alignmentCount}, ",") .. "\n"
 	end
 	game.write_file("rampantState.txt", s, false)
     end
@@ -486,14 +489,14 @@ function tests.dumpEnvironment(x)
     print (serpent.dump(global[x]))
 end
 
-function tests.scanChunkPaths()
-    local surface = game.surfaces[global.natives.activeSurface]
-    local playerPosition = game.players[1].position
-    local chunk = mapUtils.getChunkByPosition(global.map, playerPosition)
-    print("------")
-    print(chunkUtils.scanChunkPaths(chunk, surface, global.map))
-    print("------")
-end
+-- function tests.scanChunkPaths()
+--     local surface = game.surfaces[global.natives.activeSurface]
+--     local playerPosition = game.players[1].position
+--     local chunk = mapUtils.getChunkByPosition(global.map, playerPosition)
+--     print("------")
+--     print(chunkUtils.scanChunkPaths(chunk, surface, global.map))
+--     print("------")
+-- end
 
 function tests.stepAdvanceTendrils()
     -- for _, base in pairs(global.natives.bases) do

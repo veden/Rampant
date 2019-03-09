@@ -48,7 +48,7 @@ local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
 
 -- imported functions
 
-local scents = pheromoneUtils.scents
+-- local scents = pheromoneUtils.scents
 local processPheromone = pheromoneUtils.processPheromone
 local commitPheromone = pheromoneUtils.commitPheromone
 local playerScent = pheromoneUtils.playerScent
@@ -64,7 +64,7 @@ local recycleBiters = unitGroupUtils.recycleBiters
 
 local validPlayer = playerUtils.validPlayer
 
-local analyzeChunk = chunkUtils.analyzeChunk
+local mapScanChunk = chunkUtils.mapScanChunk
 
 local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
@@ -82,7 +82,7 @@ local findNearbySquad = unitGroupUtils.findNearbySquad
 local processBase = baseUtils.processBase
 
 local mMin = math.min
-local mMax = math.max
+-- local mMax = math.max
 
 local mRandom = math.random
 
@@ -248,7 +248,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
 		    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
 			local chunk = getChunkByXY(map, x, y)
 			if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
-			    commitPheromone(map, chunk, scentStaging[i])
+			    commitPheromone(map, chunk, scentStaging[i], tick)
 			end
 			i = i + 1
 		    end
@@ -332,7 +332,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    end
 	end
 
-	analyzeChunk(chunk, natives, surface, map)
+	mapScanChunk(chunk, natives, surface, map)
         local nests = getNestCount(map, chunk)
         if (nests > 0) then
             local activeness = getNestActiveness(map, chunk)
