@@ -276,6 +276,7 @@ function upgrade.attempt(natives)
         natives.pendingAttack = {}
 
         natives.cleanBuildingIndex = 1
+        natives.attackIndex = 1
         
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.4")
         global.version = constants.VERSION_85

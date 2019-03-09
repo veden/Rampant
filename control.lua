@@ -315,16 +315,12 @@ local function onModSettingsChange(event)
     end
 
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
-    -- upgrade.compareTable(natives, "attackUsePollution", settings.global["rampant-attackWaveGenerationUsePollution"].value)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
     upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
     upgrade.compareTable(natives, "onslaughtAIToggle", settings.global["rampant-onslaughtAIToggle"].value)
 
-    -- upgrade.compareTable(natives, "attackThresholdMin", settings.global["rampant-attackWaveGenerationThresholdMin"].value)
-    -- upgrade.compareTable(natives, "attackThresholdMax", settings.global["rampant-attackWaveGenerationThresholdMax"].value)
-    -- upgrade.compareTable(natives, "attackThresholdRange", natives.attackThresholdMax - natives.attackThresholdMin)
     upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
@@ -332,8 +328,7 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
-
-    -- RE-ENABLE WHEN COMPLETE
+    
     upgrade.compareTable(natives, "disableVanillaAI", settings.global["rampant-disableVanillaAI"].value)
 
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
@@ -377,7 +372,9 @@ local function prepWorld(rebuild)
 						     y = chunk.y * 32 }}})
 	end
 
-        game.forces.enemy.kill_all_units()
+        if natives.newEnemies and rebuild then
+            game.forces.enemy.kill_all_units()
+        end
         
 	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
     end
@@ -403,7 +400,6 @@ end)
 script.on_nth_tick(INTERVAL_MAP_PROCESS,
 		   function (event)
 
-		       -- local tick = event.tick
 		       local gameRef = game
 		       local surface = gameRef.surfaces[natives.activeSurface]
 
