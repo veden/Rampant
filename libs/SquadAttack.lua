@@ -8,7 +8,6 @@ local squadAttack = {}
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
-local playerUtils = require("PlayerUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
@@ -20,7 +19,6 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
--- local ATTACK_SCORE = constants.ATTACK_SCORE
 local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
 
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
@@ -29,8 +27,6 @@ local SQUAD_RAIDING = constants.SQUAD_RAIDING
 local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
-
-local ATTACK_QUEUE_SIZE = constants.ATTACK_QUEUE_SIZE
 
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 
@@ -41,8 +37,6 @@ local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 local DEFINES_GROUP_GATHERING = defines.group_state.gathering
 local DEFINES_GROUP_MOVING = defines.group_state.moving
--- local DEFINES_GROUP_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
--- local DEFINES_GROUP_ATTACKING_TARGET = defines.group_state.attacking_target
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
@@ -53,7 +47,6 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
 local mRandom = math.random
 local tRemove = table.remove
-local mMin = math.min
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -74,7 +67,6 @@ local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
--- local playersWithinProximityToPosition = playerUtils.playersWithinProximityToPosition
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
