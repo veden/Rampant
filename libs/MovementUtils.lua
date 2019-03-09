@@ -37,7 +37,7 @@ local distortPosition = mathUtils.distortPosition
 function movementUtils.findMovementPosition(surface, position, distort)
     local pos = position
     if not surface.can_place_entity({name="behemoth-biter", position=position}) then
-	pos = surface.find_non_colliding_position("behemoth-biter", position, 5, 1, true)
+	pos = surface.find_non_colliding_position("behemoth-biter", position, 5, 2, true)
     end
     return (distort and distortPosition(pos)) or pos
 end

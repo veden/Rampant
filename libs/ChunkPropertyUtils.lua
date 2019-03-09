@@ -184,21 +184,56 @@ function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
     return map.chunkToPlayerBase[chunk] or 0
 end
 
+
+-- function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
+--     local chunkToSquad = map.chunkToSquad
+
+--     if squad.chunk ~= chunk then
+-- 	chunkPropertyUtils.removeSquadFromChunk(map, squad)
+--     end
+
+--     if not chunkToSquad[chunk] then
+-- 	chunkToSquad[chunk] = {}
+--     end
+--     chunkToSquad[chunk][squad] = squad
+
+--     squad.chunk = chunk
+-- end
+
+-- function chunkPropertyUtils.removeSquadFromChunk(map, squad)
+--     local chunkToSquad = map.chunkToSquad
+--     local chunk = squad.chunk
+--     if chunk then
+-- 	local squads = chunkToSquad[chunk]
+-- 	if squads then
+-- 	    squads[squad] = nil
+-- 	    local moreSquads = false
+-- 	    for _,_ in pairs(squads) do
+-- 		moreSquads = true
+-- 		break
+-- 	    end
+-- 	    if moreSquads then
+-- 	    	chunkToSquad[chunk] = nil
+-- 	    end
+-- 	end
+--     end
+-- end
+
+
 function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     local chunkToSquad = map.chunkToSquad
 
     if squad.chunk ~= chunk then
 	chunkPropertyUtils.removeSquadFromChunk(map, squad)
-    end
+        local squads = chunkToSquad[chunk]
+        if not squads then
+            squads = {}
+            chunkToSquad[chunk] = squads
+        end
+        squads[#squads+1] = squad
 
-    local squads = chunkToSquad[chunk]
-    if not squads then
-        squads = {}
-	chunkToSquad[chunk] = squads
-    end
-    squads[#squads+1] = squad
-
-    squad.chunk = chunk
+        squad.chunk = chunk
+    end    
 end
 
 function chunkPropertyUtils.removeSquadFromChunk(map, squad)
@@ -207,10 +242,9 @@ function chunkPropertyUtils.removeSquadFromChunk(map, squad)
     if chunk then
 	local squads = chunkToSquad[chunk]
 	if squads then
-	    for i=1,#squads do
+	    for i=#squads,1,-1 do
                 if (squads[i] == squad) then
                     tRemove(squads, i)
-                    break                  
                 end
 	    end
 	    if (#squads == 0) then

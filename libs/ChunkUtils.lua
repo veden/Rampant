@@ -13,9 +13,11 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
-local DEFINES_DIRECTION_EAST = defines.direction.east
+-- local DEFINES_DIRECTION_EAST = defines.direction.east
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
+
+local CHUNK_PASS_THRESHOLD = constants.CHUNK_PASS_THRESHOLD
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
@@ -272,7 +274,7 @@ end
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
-    if (passScore >= 0.25) then
+    if (passScore >= CHUNK_PASS_THRESHOLD) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 
 	local playerObjects = scorePlayerBuildings(surface, map, natives)
@@ -356,7 +358,7 @@ end
 function chunkUtils.chunkPassScan(chunk, surface, map)
     local passScore = chunkUtils.calculatePassScore(surface, map)
 
-    if (passScore >= 0.25) then
+    if (passScore >= CHUNK_PASS_THRESHOLD) then
 	local pass = chunkUtils.scanChunkPaths(chunk, surface, map)
 
 	local playerObjects = getPlayerBaseGenerator(map, chunk)
