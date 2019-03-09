@@ -183,7 +183,7 @@ end
 
 
 local function attackMove(map, squad, natives, surface)
-    print("attackMove", squad.group.group_number)
+    -- print("attackMove", squad.group.group_number)
     local attackPosition = map.position    
     local group = squad.group
 

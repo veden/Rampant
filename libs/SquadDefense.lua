@@ -51,10 +51,10 @@ local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
-    return -(neighborChunk[BASE_PHEROMONE] +
-                 neighborChunk[MOVEMENT_PHEROMONE] +
-                 -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
+    return (-neighborChunk[BASE_PHEROMONE] +
+                neighborChunk[MOVEMENT_PHEROMONE] +
+                -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
+                -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
 function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
@@ -105,7 +105,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 		    cmd.group = newSquad.group
 		    if enemiesToSquad then
 			membersToSquad(cmd, enemiesToSquad, artilleryBlast)
-		    else
+		    else                        
 			membersToSquad(cmd, squad.group.members, true)
 			-- newSquad.penalties = squad.penalties
 			if squad.rabid then
