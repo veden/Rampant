@@ -630,23 +630,18 @@ local function onEnemyBaseBuild(event)
     local surface = entity.surface
 
     if entity.valid and (surface.index == natives.activeSurface) then
-        print("built", entity.type, entity.name)
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-            print("valid", chunk.x, chunk.y)
             local evolutionFactor = entity.force.evolution_factor
             local base
             if natives.newEnemies then
                 base = findNearbyBase(map, chunk, natives)
                 if not base then
-                    print("no base")
                     base = createBase(map,
                                       natives,
                                       evolutionFactor,
                                       chunk,
                                       event.tick)
-                else
-                    print("base")
                 end                
                 entity = upgradeEntity(entity,
                                        surface,
@@ -655,7 +650,6 @@ local function onEnemyBaseBuild(event)
                                        evolutionFactor)                
             end
             if entity and entity.valid then
-                print("registering")
                 event.entity = registerEnemyBaseStructure(map, entity, base)
             end
         end
