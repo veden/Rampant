@@ -56,9 +56,9 @@ local function scoreRetreatLocation(map, neighborChunk)
                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast, force)
+function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast)
     if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and
-        ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast or force)
+        ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast)
     then
 	local performRetreat = false
 	local enemiesToSquad = nil

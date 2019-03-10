@@ -17,9 +17,7 @@ local interop = require("libs/Interop")
 local tests = require("tests")
 local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
--- local mathUtils = require("libs/MathUtils")
 local config = require("config")
--- local stringUtils = require("StringUtils")
 
 -- constants
 
@@ -27,10 +25,8 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
 local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
--- local INTERVAL_CHUNK = constants.INTERVAL_CHUNK
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
--- local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
@@ -50,6 +46,10 @@ local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_COMMAND_GO_TO_LOCATION = defines.command.go_to_location
+local DEFINES_COMMMAD_COMPOUND = defines.command.compound
+local DEFINES_COMMAND_FLEE = defines.command.flee
+
+local DEFINES_COMPOUND_COMMAND_RETURN_LAST = defines.compound_command.return_last
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -105,17 +105,10 @@ local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local retreatUnits = squadDefense.retreatUnits
 
-local getChunkBase = chunkPropertyUtils.getChunkBase
-
--- local isSpawnerEgg = stringUtils.isSpawnerEgg
-
 local accountPlayerEntity = chunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
-
--- local getChunkSpawnerEggTick = chunkPropertyUtils.getChunkSpawnerEggTick
--- local setChunkSpawnerEggTick = chunkPropertyUtils.setChunkSpawnerEggTick
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
@@ -297,6 +290,21 @@ local function rebuildMap()
         group = nil,
         distraction = DEFINES_DISTRACTION_NONE,
         use_group_distraction = false
+    }
+
+    map.fleeCommand = {
+        type = DEFINES_COMMAND_FLEE,
+        from = nil,
+        distraction = DEFINES_DISTRACTION_NONE
+    }
+    
+    map.compoundRetreatCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.fleeCommand,
+            map.retreatCommand
+        }
     }
 
     map.formGroupCommand = { type = DEFINES_COMMAND_GROUP,
