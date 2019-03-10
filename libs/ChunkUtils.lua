@@ -310,6 +310,17 @@ function chunkUtils.mapScanChunk(chunk, natives, surface, map)
     setWormCount(map, chunk, worms)
 end
 
+function chunkUtils.entityForPassScan(map, entity)
+    local overlapArray = getEntityOverlapChunks(map, entity)
+
+    for i=1,#overlapArray do
+        local chunk = overlapArray[i]
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            map.chunkToPassScan[chunk] = true
+        end
+    end
+end
+
 function chunkUtils.createChunk(topX, topY)
     local chunk = {
 	x = topX,

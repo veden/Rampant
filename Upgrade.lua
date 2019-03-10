@@ -270,8 +270,6 @@ function upgrade.attempt(natives)
     end
     if (global.version < constants.VERSION_85) then
 
-        --REMOVE ME
-        natives.expansion = true
         natives.building = {}
         natives.pendingAttack = {}
 
@@ -281,6 +279,15 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.4")
         global.version = constants.VERSION_85
     end
+    if (global.version < constants.VERSION_86) then
+
+        natives.expansion = game.map_settings.enemy_expansion.enabled
+        natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
+        
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.5")
+        global.version = constants.VERSION_86
+    end
+
     
     return starting ~= global.version, natives
 end
