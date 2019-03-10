@@ -504,16 +504,16 @@ local function onDeath(event)
 	local cause = event.cause
         local tick = event.tick
         if (entity.force.name == "enemy") then
-            if (entity.type == "unit") then
 
+            local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+            
+            if (entity.type == "unit") then               
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
 		    deathScent(map, chunk)
 
 		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
-
-			local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-
+		
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
@@ -556,6 +556,15 @@ local function onDeath(event)
 		end
             end
 
+            -- if (cause and not artilleryBlast) then
+            --     local causeChunk = getChunkByPosition(map, cause.position)
+            --     if (causeChunk ~= SENTINEL_IMPASSABLE_CHUNK) and
+            --         (causeChunk ~= chunk)
+            --     then
+            --         deathScent(map, causeChunk)
+            --     end
+            -- end
+            
             local pair = natives.drainPylons[entity.unit_number]
             if pair then
                 local target = pair[1]
