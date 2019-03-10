@@ -2,7 +2,6 @@
 
 local unitUtils = require("libs/UnitUtils")
 local baseUtils = require("libs/BaseUtils")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -513,7 +512,7 @@ local function onDeath(event)
 		    deathScent(map, chunk)
 
 		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
-		
+                        
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
@@ -684,7 +683,7 @@ local function onSurfaceTileChange(event)
 	local tiles = event.tiles
 	for i=1,#tiles do
 	    local position = tiles[i].position
-	    local chunk = getChunkByPosition(map, position, true)
+	    local chunk = getChunkByPosition(map, position)
 
 	    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		map.chunkToPassScan[chunk] = true
@@ -713,6 +712,14 @@ local function onResourceDepleted(event)
     local entity = event.entity
     if (entity.surface.index == natives.activeSurface) then
 	chunkUtils.unregisterResource(entity, map)
+    end
+end
+
+local function onRobotCliff(event)
+    
+    local surface = event.robot.surface
+    if (event.item.name == "cliff-explosives") and (surface.index == natives.activeSurface) then
+        entityForPassScan(map, event.cliff)
     end
 end
 
@@ -777,6 +784,8 @@ script.on_event({defines.events.on_player_built_tile,
 script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 
 script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
+
+script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
 
 script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,

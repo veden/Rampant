@@ -95,7 +95,7 @@ end
 
 function chunkProcessor.processScanChunks(map, surface)
     local area = map.area
-
+    
     local topOffset = area[1]
     local bottomOffset = area[2]
 
@@ -119,8 +119,17 @@ function chunkProcessor.processScanChunks(map, surface)
 	end
     end
 
-    for i=#removals,1,-1 do
-	table.remove(map.processQueue, i)
+    if (#removals > 0) then
+        local processQueue = map.processQueue
+        for i=#processQueue,1,-1 do
+            for ri=#removals,1,-1 do
+                if (removals[ri] == processQueue[i]) then
+                    table.remove(processQueue, i)
+                    table.remove(removals, ri)
+                    break
+                end
+            end
+        end
     end
 
     return {}

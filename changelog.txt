@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.5
+Date: 3. 10. 2019
+  Improvements:
+    - Added robot on pre cliff destroy to invoke a passability scan on the chunk
+  Bugfixes:
+    - Fixed cliff explosive error due to removed code fragment
+    - Fixed expansion being forced on for testing
+    - Fixed process scan chunk process removing potentially incorrect chunk from processing
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.4
 Date: 3. 5. 2019
   Improvements:
