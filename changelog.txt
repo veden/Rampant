@@ -2,22 +2,38 @@
 Version: 0.17.4
 Date: 3. 5. 2019
   Improvements:
-    - Increased the size of nest and worm template when looking for place to build, increases nest and worm spacing
     - Increased chunk processing from 825 to 1020 chunks
     - Settler groups now occasionally disregard everything to reach a spot to build a base, instead of attacking player or buildings
+    - Reworked attack move commands and settle move commands
   Tweaks:
     - Reduced full chunk scan threshold for water from 0.4 to 0.25
     - Removed old map path finder settings
     - Added new find position centered flag to positions searches
     - Adjusted new enemy worm ranges to vanilla levels
+    - Added kill_all_units on first add with new enemies for nest and worm space
+    - Increased migration ai state to 10%
+    - Removed attack wave message
+    - Decreased max squads from 40 to 35
+    - Increased squad movement penalty from 10000 to 300000
+    - Balanced squad movement distance between straight and diagonals
+    - Increased find path location entity size to 2x2 for better position resolution
+    - Added exponential growth to squad movement penalties    
   Optimizations:
     - Improved squad processing and squad cleanup
+    - Refactored chunk utilities
+    - Refactored unit group utilities
   Bugfixes:
     - Fixed player pheromone not having highest value on chunk player was on
     - Fixed settlers not being able to see chunks with resources on them
     - Fixed retreat command not disengaging biters
     - Fixed Poison faction poison death cloud crash
     - Fixed new enemies newly built settlements not creating nests or worms
+    - Fixed find new enemy faction base by distance
+    - Fixed base recycling
+    - Fixed base alignment deadzone ttl and usage
+    - Fixed squad movement penalty lookup
+    - Fixed orphaned unit group recycling
+    - Fixed retreat scoring causing retreat location to be on player buildings
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.3
