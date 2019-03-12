@@ -262,7 +262,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlig
     local alignments = evolutionTable[baseAlignment]
 
     local adjCurrentEvo = mMax(
-        ((baseAlignment ~= entityAlignment) and currentEvo - 15) or currentEvo,
+        ((baseAlignment ~= entityAlignment) and 0) or currentEvo,
         0
     )
     
@@ -302,11 +302,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlig
                 end
             end
         end        
-    end
-    
-    if not entity then
-        print("missing entity", baseAlignment, adjCurrentEvo, evoIndex, entityAlignment)
-    end
+    end   
 
     return entity
 end
@@ -544,8 +540,6 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, tick, rebuil
 
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distanceIndex, evolutionFactor)
-
-    print("create base", evoIndex)
     
     local alignment
     if (not rebuilding) and (mRandom() < natives.deadZoneFrequency) then
@@ -888,8 +882,6 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
 
-    -- print(serpent.dump(natives.evolutionTableUnitSpawner))
-    -- print(serpent.dump(natives.evolutionTableWorm))
 end
 
 baseUtilsG = baseUtils
