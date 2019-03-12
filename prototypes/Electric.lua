@@ -82,19 +82,19 @@ function electric.addFaction()
 	{
 	    unit = {
 		{
-			type = "attribute",
-			name = "health",
-			[1] = 10,
-			[2] = 50,
-			[3] = 200,
-			[4] = 350,
-			[5] = 1250,
-			[6] = 2250,
-			[7] = 3250,
-			[8] = 6500,
-			[9] = 12500,
-			[10] = 25000
-	},
+                    type = "attribute",
+                    name = "health",
+                    [1] = 10,
+                    [2] = 50,
+                    [3] = 200,
+                    [4] = 350,
+                    [5] = 1250,
+                    [6] = 2250,
+                    [7] = 3250,
+                    [8] = 6500,
+                    [9] = 12500,
+                    [10] = 25000
+                },
 
 		{
 		    type = "attack",
@@ -262,6 +262,21 @@ function electric.addFaction()
 		},
 
                 {
+		    type = "attribute",
+		    name = "evolutionRequirement",
+                    [1] = 0,
+		    [2] = 0.12,
+		    [3] = 0.17,
+		    [4] = 0.32,
+		    [5] = 0.42,
+		    [6] = 0.57,
+		    [7] = 0.72,
+		    [8] = 0.82,
+		    [9] = 0.87,
+		    [10] = 0.92
+		},
+                
+                {
 		    type = "resistance",
 		    name = "laser",
 		    decrease = {
@@ -372,6 +387,21 @@ function electric.addFaction()
 		[10] = 0.33
 	    },
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.12,
+                [3] = 0.17,
+                [4] = 0.32,
+                [5] = 0.42,
+                [6] = 0.57,
+                [7] = 0.72,
+                [8] = 0.82,
+                [9] = 0.87,
+                [10] = 0.92
+            },
+            
 	    {
 		type = "attack",
 		name = "clusterDistance",

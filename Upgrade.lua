@@ -287,7 +287,13 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.5")
         global.version = constants.VERSION_86
     end
+    if (global.version < constants.VERSION_87) then
 
+        natives.enemyAlignmentLookup = {}
+        
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.6")
+        global.version = constants.VERSION_87
+    end
     
     return starting ~= global.version, natives
 end

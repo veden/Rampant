@@ -562,6 +562,21 @@ function laser.addFaction()
                 }
             },
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.12,
+                [3] = 0.22,
+                [4] = 0.32,
+                [5] = 0.42,
+                [6] = 0.52,
+                [7] = 0.62,
+                [8] = 0.72,
+                [9] = 0.82,
+                [10] = 0.92
+            },
+            
 	    {
 		type = "attack",
 		name = "startingSpeed",
