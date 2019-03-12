@@ -658,7 +658,20 @@ function spawner.addFaction()
 	    },
 
 	    unitSpawner = {
-
+                {
+                    type = "attribute",
+                    name = "evolutionRequirement",
+                    [1] = 0,
+                    [2] = 0.17,
+                    [3] = 0.27,
+                    [4] = 0.37,
+                    [5] = 0.47,
+                    [6] = 0.57,
+                    [7] = 0.67,
+                    [8] = 0.77,
+                    [9] = 0.87,
+                    [10] = 0.97
+                }
 	    }
 
 	},
@@ -712,6 +725,21 @@ function spawner.addFaction()
 
 	{
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.17,
+                [3] = 0.27,
+                [4] = 0.37,
+                [5] = 0.47,
+                [6] = 0.57,
+                [7] = 0.67,
+                [8] = 0.77,
+                [9] = 0.87,
+                [10] = 0.97
+            }
+            
 	},
 
 	function (attributes)

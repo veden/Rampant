@@ -288,19 +288,19 @@ function troll.addFaction()
 		},
 
 		{
-		    type = "attribute",
-		    name = "evolutionRequirement",
-		    [1] = 0,
-		    [2] = 0.12,
-		    [3] = 0.22,
-		    [4] = 0.32,
-		    [5] = 0.42,
-		    [6] = 0.52,
-		    [7] = 0.62,
-		    [8] = 0.72,
-		    [9] = 0.82,
-		    [10] = 0.92
-		},
+                    type = "attribute",
+                    name = "evolutionRequirement",
+                    [1] = 0,
+                    [2] = 0.15,
+                    [3] = 0.25,
+                    [4] = 0.35,
+                    [5] = 0.45,
+                    [6] = 0.55,
+                    [7] = 0.65,
+                    [8] = 0.70,
+                    [9] = 0.75,
+                    [10] = 0.95
+                },
 
                 {
                     type = "resistance",
@@ -771,6 +771,21 @@ function troll.addFaction()
 		[10] = 7
 	    },
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.15,
+                [3] = 0.25,
+                [4] = 0.35,
+                [5] = 0.45,
+                [6] = 0.55,
+                [7] = 0.65,
+                [8] = 0.70,
+                [9] = 0.75,
+                [10] = 0.95
+            },
+            
             {
                 type = "resistance",
                 name = "explosion",

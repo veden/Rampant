@@ -341,6 +341,21 @@ function inferno.addFaction()
                 },
 
                 {
+                    type = "attribute",
+                    name = "evolutionRequirement",
+                    [1] = 0,
+                    [2] = 0.15,
+                    [3] = 0.25,
+                    [4] = 0.35,
+                    [5] = 0.45,
+                    [6] = 0.55,
+                    [7] = 0.65,
+                    [8] = 0.70,
+                    [9] = 0.75,
+                    [10] = 0.95
+                },
+                
+                {
                     type = "resistance",
                     name = "poison",
                     decrease = {
@@ -474,6 +489,21 @@ function inferno.addFaction()
 		[10] = 2.5
 	    },
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.15,
+                [3] = 0.25,
+                [4] = 0.35,
+                [5] = 0.45,
+                [6] = 0.55,
+                [7] = 0.65,
+                [8] = 0.70,
+                [9] = 0.75,
+                [10] = 0.95
+            },
+            
 	    {
 		type = "attack",
 		name = "particleTimeout",

@@ -24,7 +24,7 @@ local mMin = math.min
 
 -- module code
 
-local function fileEntity(baseAlignment, entity, evolutionTable, evo)
+local function fileEntity(baseAlignment, entity, evolutionTable, natives, evo)
     local evoRequirement = mMin(evo or entity.prototype.build_base_evolution_requirement, 1)
     local eTable = evolutionTable[baseAlignment]
     if not eTable then
@@ -37,6 +37,8 @@ local function fileEntity(baseAlignment, entity, evolutionTable, evo)
 	eTable[evoRequirement] = aTable
     end
     aTable[#aTable+1] = entity.name
+
+    -- natives.enemyAlignmentLookup[entity.name] = baseAlignment
 end
 
 function ne.processNEUnitClass(natives, surface)
@@ -48,14 +50,14 @@ function ne.processNEUnitClass(natives, surface)
 	    name = "biter-spawner",
 	    position = position
     })
-    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
+    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
     entity.destroy()
 
     entity = surface.create_entity({
 	    name = "spitter-spawner",
 	    position = position
     })
-    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
+    fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
     entity.destroy()
 
 
@@ -64,7 +66,7 @@ function ne.processNEUnitClass(natives, surface)
 		name = "ne-spawner-blue",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE_BLUE, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE_BLUE, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_BLUE
 	entity.destroy()
     end
@@ -74,7 +76,7 @@ function ne.processNEUnitClass(natives, surface)
 		name = "ne-spawner-red",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE_RED, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE_RED, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_RED
 	entity.destroy()
     end
@@ -84,7 +86,7 @@ function ne.processNEUnitClass(natives, surface)
 		name = "ne-spawner-green",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE_GREEN, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE_GREEN, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_GREEN
 	entity.destroy()
     end
@@ -95,7 +97,7 @@ function ne.processNEUnitClass(natives, surface)
 		name = "ne-spawner-yellow",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE_YELLOW, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE_YELLOW, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_YELLOW
 	entity.destroy()
     end
@@ -105,7 +107,7 @@ function ne.processNEUnitClass(natives, surface)
 		name = "ne-spawner-pink",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE_PINK, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE_PINK, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	factionSet[#factionSet+1] = BASE_ALIGNMENT_NE_PINK
 	entity.destroy()
     end
@@ -117,88 +119,88 @@ function ne.processNEUnitClass(natives, surface)
 		name = "bob-biter-spawner",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	entity.destroy()
 
 	entity = surface.create_entity({
 		name = "bob-spitter-spawner",
 		position = position
 	})
-	fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, 0.0)
+	fileEntity(BASE_ALIGNMENT_NE, entity, natives.evolutionTableUnitSpawner, natives, 0.0)
 	entity.destroy()
 
-	for _,alignment in ipairs(factionSet) do
+	for _,alignment in pairs(factionSet) do
 	    entity = surface.create_entity({
 		    name = "bob-big-fire-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "bob-big-poison-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "bob-big-piercing-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "bob-big-electric-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "bob-giant-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "behemoth-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 
 	    entity = surface.create_entity({
 		    name = "bob-big-explosive-worm-turret",
 		    position = position
 	    })
-	    fileEntity(alignment, entity, natives.evolutionTableWorm)
+	    fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	    entity.destroy()
 	end
     end
 
-    for _,alignment in ipairs(factionSet) do
+    for _,alignment in pairs(factionSet) do
 	entity = surface.create_entity({
 		name = "small-worm-turret",
 		position = position
 	})
-	fileEntity(alignment, entity, natives.evolutionTableWorm)
+	fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	entity.destroy()
 
 	entity = surface.create_entity({
 		name = "medium-worm-turret",
 		position = position
 	})
-	fileEntity(alignment, entity, natives.evolutionTableWorm)
+	fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	entity.destroy()
 
 	entity = surface.create_entity({
 		name = "big-worm-turret",
 		position = position
 	})
-	fileEntity(alignment, entity, natives.evolutionTableWorm)
+	fileEntity(alignment, entity, natives.evolutionTableWorm, natives)
 	entity.destroy()
     end
 end

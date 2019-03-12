@@ -103,19 +103,19 @@ function energyThief.addFaction()
 	{
 	    unit = {
 		{
-			type = "attribute",
-			name = "health",
-			[1] = 10,
-			[2] = 50,
-			[3] = 200,
-			[4] = 350,
-			[5] = 1250,
-			[6] = 2250,
-			[7] = 3250,
-			[8] = 6500,
-			[9] = 12500,
-			[10] = 25000
-	},
+                    type = "attribute",
+                    name = "health",
+                    [1] = 10,
+                    [2] = 50,
+                    [3] = 200,
+                    [4] = 350,
+                    [5] = 1250,
+                    [6] = 2250,
+                    [7] = 3250,
+                    [8] = 6500,
+                    [9] = 12500,
+                    [10] = 25000
+                },
 
 		{
 		    type = "attack",
@@ -282,6 +282,21 @@ function energyThief.addFaction()
                     }
                 },
 
+                {
+		    type = "attribute",
+		    name = "evolutionRequirement",
+		    [1] = 0,
+		    [2] = 0.15,
+		    [3] = 0.25,
+		    [4] = 0.35,
+		    [5] = 0.45,
+		    [6] = 0.55,
+		    [7] = 0.65,
+		    [8] = 0.70,
+		    [9] = 0.75,
+		    [10] = 0.95
+		},
+                
 		{
 		    type = "resistance",
 		    name = "electric",
@@ -407,6 +422,21 @@ function energyThief.addFaction()
 		[10] = 7
 	    },
 
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.15,
+                [3] = 0.25,
+                [4] = 0.35,
+                [5] = 0.45,
+                [6] = 0.55,
+                [7] = 0.65,
+                [8] = 0.70,
+                [9] = 0.75,
+                [10] = 0.95
+            },
+            
 	    {
 		type = "attack",
 		name = "clusters",

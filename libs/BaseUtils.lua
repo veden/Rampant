@@ -186,15 +186,16 @@ local function nonRepeatingRandom(evoTable, rg)
     return ordering
 end
 
+local function sortNormals(a, b)   
+    return a[1] < b[1]    
+end
+
 local function normalizeProbabilities(probabilityTable)
     local result = {}
 
     for alignment,probabilitySet in pairs(probabilityTable) do
 	local max = 0
 	local min = MAGIC_MAXIMUM_NUMBER
-
-	local alignmentResult = {}
-	result[alignment] = alignmentResult
 
 	for probability, _ in pairs(probabilitySet) do
 	    if (probability > max) then
@@ -205,17 +206,31 @@ local function normalizeProbabilities(probabilityTable)
 	    end
 	end
 
-	-- cap max evo requirement at 0.95
+        local alignmentResult = {}
 	for probability, entities in pairs(probabilitySet) do
-	    if (max == 0) or (max == min) then
-		alignmentResult[1] = entities
-	    else
-		local normalizeProbability = ((probability - min) / (max - min)) * 0.95
-		alignmentResult[normalizeProbability] = entities
-	    end
+            local normalizeProbability = 0
+            if (probability ~= 0) then
+                normalizeProbability = mMin(mFloor(((probability - min) / (max - min)) * 100), 97)
+            end
+            local set = alignmentResult[normalizeProbability]
+            if (not set) then
+                set = {}
+                alignmentResult[normalizeProbability] = set
+            end
+            for i=1,#entities do
+                set[#set+1] = entities[i]
+            end
 	end
-    end
 
+        local paired = {}
+        for probability, entities in pairs(alignmentResult) do
+            paired[#paired+1] = {probability, entities}
+        end
+        result[alignment] = paired
+
+        table.sort(paired, sortNormals)
+    end
+    
     return result
 end
 
@@ -242,23 +257,55 @@ function baseUtils.findNearbyBase(map, chunk, natives)
     return foundBase
 end
 
-local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, evolutionTable)
+local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlignment, evolutionTable)
 
     local alignments = evolutionTable[baseAlignment]
 
-    if not alignments then
+    local adjCurrentEvo = mMax(
+        ((baseAlignment ~= entityAlignment) and currentEvo - 15) or currentEvo,
+        0
+    )
+    
+    if not alignments or (adjCurrentEvo > evoIndex) then
 	return nil
     end
 
     local entity = nil
 
-    for evo,entitySet in pairs(alignments) do
-	if (currentEvo <= evo) and (evo <= evoIndex) and entitySet and (#entitySet > 0) then
-	    entity = entitySet[mRandom(#entitySet)]
-	    if (mRandom() < 0.1) then
-		break
-	    end
-	end
+    if (evoIndex >= 0.5) then
+        for i=#alignments,1,-1 do
+            local pair = alignments[i]
+            local evo = pair[1]
+            local entitySet = pair[2]
+            if (evo <= evoIndex) then
+                if (evo < adjCurrentEvo) then
+                    break
+                end
+                entity = entitySet[mRandom(#entitySet)]
+                if (mRandom() < 0.25) then
+                    break
+                end
+            end
+        end    
+    else
+        for i=1,#alignments do
+            local pair = alignments[i]
+            local evo = pair[1]
+            local entitySet = pair[2]
+            if (adjCurrentEvo <= evo) then
+                if (evo > evoIndex) then
+                    break
+                end
+                entity = entitySet[mRandom(#entitySet)]
+                if (mRandom() < 0.25) then
+                    break
+                end
+            end
+        end        
+    end
+    
+    if not entity then
+        print("missing entity", baseAlignment, adjCurrentEvo, evoIndex, entityAlignment)
     end
 
     return entity
@@ -331,26 +378,30 @@ end
 function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolutionFactor)
     local position = entity.position
     local entityType = entity.type
-    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
-    entity.destroy()
+    -- local entityName = entity.name
+    local currentEvo = entity.prototype.build_base_evolution_requirement or 0    
 
     if not baseAlignment or (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
+        entity.destroy()
         return nil
     end
 
-    local distance = roundToFloor(mMin(1,
-                                       euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX),
-                                  EVOLUTION_INCREMENTS)
+    local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distance, evolutionFactor)
 
     local spawnerName = findEntityUpgrade(baseAlignment,
-                                          currentEvo,
-                                          evoIndex,                                         
+                                          mFloor(currentEvo * 100),
+                                          mFloor(evoIndex * 100),
+                                          natives.enemyAlignmentLookup[entity.name],
                                           ((entityType == "unit-spawner") and natives.evolutionTableUnitSpawner) or
                                               natives.evolutionTableWorm)
+
     if spawnerName then
+        entity.destroy()
         local newPosition = surface.find_non_colliding_position(
             spawnerName,
+            -- ((entityType == "unit-spawner") and "chunk-scanner-nest-rampant") or
+            --     "chunk-scanner-worm-rampant",
             position,
             CHUNK_SIZE,
             2,
@@ -489,12 +540,13 @@ function baseUtils.createBase(map, natives, evolutionFactor, chunk, tick, rebuil
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
 
-    local meanLevel = mFloor(distance / 200)
+    local meanLevel = mFloor(distance * 0.005) -- / 200
 
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distanceIndex, evolutionFactor)
 
-
+    print("create base", evoIndex)
+    
     local alignment
     if (not rebuilding) and (mRandom() < natives.deadZoneFrequency) then
         alignment = BASE_ALIGNMENT_DEADZONE
@@ -558,10 +610,12 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     for tier=1,biterTier do
         local t = ((biterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
         for v=1,biterVariation do
+            local entityName = baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant"
             local entity = surface.create_entity({
-                    name= baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant",
+                    name= entityName,
                     position = position
             })
+            natives.enemyAlignmentLookup[entityName] = baseAlignment
             fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
             entity.destroy()
         end
@@ -569,10 +623,12 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     for tier=1,spitterTier do
         local t = ((spitterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
         for v=1,spitterVariation do
+            local entityName = baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"
             local entity = surface.create_entity({
-                    name=baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant",
+                    name = entityName,
                     position = position
             })
+            natives.enemyAlignmentLookup[entityName] = baseAlignment
             fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
             entity.destroy()
         end
@@ -580,10 +636,12 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     for tier=1,wormTier do
         local t = ((wormTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
         for v=1,wormVariation do
+            local entityName = baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant"
             local entity = surface.create_entity({
-                    name=baseAlignmentString .. "-worm-v" .. v .. "-t" .. t .. "-rampant",
+                    name=entityName,
                     position = position
             })
+            natives.enemyAlignmentLookup[entityName] = baseAlignment            
             fileEntity(baseAlignment, entity, natives.evolutionTableWorm)
             entity.destroy()
         end
@@ -829,6 +887,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
+
+    -- print(serpent.dump(natives.evolutionTableUnitSpawner))
+    -- print(serpent.dump(natives.evolutionTableWorm))
 end
 
 baseUtilsG = baseUtils

@@ -31,6 +31,7 @@ constants.VERSION_76 = 76
 constants.VERSION_77 = 77
 constants.VERSION_85 = 85
 constants.VERSION_86 = 86
+constants.VERSION_87 = 87
 
 -- misc
 
@@ -145,6 +146,7 @@ constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 18
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
 constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 7200
+-- constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 32000
 
 constants.BASE_SPAWNER_UPGRADE = 250
 constants.BASE_WORM_UPGRADE = 200

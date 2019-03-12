@@ -764,15 +764,15 @@ local function addUnitSpawnerDefaults(template, upgrades)
 		{
 		    type = "attribute",
 		    name = "evolutionRequirement",
-		    [1] = 0.08,
-		    [2] = 0.16,
-		    [3] = 0.24,
-		    [4] = 0.35,
-		    [5] = 0.40,
-		    [6] = 0.45,
-		    [7] = 0.55,
-		    [8] = 0.65,
-		    [9] = 0.75,
+		    [1] = 0,
+		    [2] = 0.1,
+		    [3] = 0.2,
+		    [4] = 0.3,
+		    [5] = 0.4,
+		    [6] = 0.5,
+		    [7] = 0.6,
+		    [8] = 0.7,
+		    [9] = 0.8,
 		    [10] = 0.9
     })
 end
