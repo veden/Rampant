@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.6
+Date: 3. 12. 2019
+  Improvements:
+    - Reworked base upgrade system
+  Bugfixes:
+    - Fixed nest and worms incorrectly being upgraded resulting in lost entities
+    - Fixed NE and Bobs faction alignments being correctly selected
+    - Fixed process scan chunk process removing potentially incorrect chunk from processing
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.5
 Date: 3. 10. 2019
   Improvements:
