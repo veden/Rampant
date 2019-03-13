@@ -63,9 +63,8 @@ function wasp.addFaction()
                             type = "instant",
                             target_effects =
                                 {
-                                    --FIXME
                                     type = "create-entity",
-                                    entity_name = "explosion"
+                                    entity_name = "acid-splash-purple"
                                 }
                         }
                 }
@@ -274,9 +273,8 @@ function wasp.addFaction()
                             type = "instant",
                             target_effects =
                                 {
-                                    --FIXME
                                     type = "create-entity",
-                                    entity_name = "explosion"
+                                    entity_name = "acid-splash-purple"
                                 }
                         }
                 }

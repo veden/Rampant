@@ -75,7 +75,7 @@ data:extend({
 	    circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
 	    circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
 	    circuit_wire_max_distance = default_circuit_wire_max_distance
-        },
+        }-- ,
         -- {
 	--     type = "container",
 	--     name = "chunk-scanner-nest-rampant",
