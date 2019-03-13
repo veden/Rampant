@@ -26,7 +26,7 @@ data:extend({
 	    default_value = false,
 	    order = "a[modifier]-b[projectiles]",
 	    per_user = false
-	},
+	},       
 
 	-- {
 	--     type = "bool-setting",
@@ -222,8 +222,8 @@ data:extend({
 	    maximum_value = 1.0,
 	    order = "d[modifier]-a[ai]",
 	    per_user = false
-	},
-
+	},        
+        
 	{
 	    type = "bool-setting",
 	    name = "rampant-newEnemies",
@@ -478,6 +478,15 @@ data:extend({
 	    setting_type = "startup",
 	    default_value = true,
 	    order = "l[modifier]-za[unit]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-unitSpawnerBreath",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "l[modifier]-zb[unit]",
 	    per_user = false
 	},
 
