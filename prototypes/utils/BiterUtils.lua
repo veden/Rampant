@@ -206,7 +206,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	resistances[#resistances+1] = v
     end
     --    print(name .. " " .. biterAttributes.health)
-    return {
+    local entity = {
 	type = "unit",
 	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/small-biter.png",
@@ -235,8 +235,13 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_biter_dying_sounds(1.0),
 	working_sound =  make_biter_calls(0.7),
-	run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint1, biterAttributes.tint2)
+	run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint1, biterAttributes.tint2),
+        biter_ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true }
     }
+    if biterAttributes.collisionMask then
+        entity.collision_mask = biterAttributes.collisionMask
+    end
+    return entity
 end
 
 function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterResistances)
@@ -246,7 +251,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	resistances[#resistances+1] = v
     end
     --    print(name .. " " .. biterAttributes.health)
-    return {
+    local entity = {
 	type = "unit",
 	name = name .. "-rampant",
 	icon = "__base__/graphics/icons/small-spitter.png",
@@ -276,8 +281,13 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_spitter_dying_sounds(0.8),
 	working_sound =  make_biter_calls(0.7),
-	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint)
+	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint),
+        biter_ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true }
     }
+    if biterAttributes.collisionMask then
+        entity.collision_mask = biterAttributes.collisionMask
+    end
+    return entity    
 end
 
 function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances, unitSet)
