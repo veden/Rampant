@@ -59,10 +59,9 @@ function AttackBall.createAttackBall(attributes)
 		type = "instant",
 		target_effects = (attributes.pointEffects and attributes.pointEffects(attributes)) or
 		    {
-                        --FIXME
 			{
                             type= "create-entity",
-                            entity_name = attributes.crater or "small-scorchmark"
+                            entity_name = attributes.crater or "acid-splash-purple"
 			},
 			{
                             type = "damage",

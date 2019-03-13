@@ -1,10 +1,9 @@
 local vanillaUpdates = require("prototypes/utils/UpdatesVanilla")
 local bobsUpdates = require("prototypes/utils/UpdatesBobs")
-local NEUpdates = require("prototypes/utils/UpdatesNE")
 local constants = require("libs/Constants")
 
 local attackBobs = require("prototypes/utils/AttackBobs")
-local attackNE = require("prototypes/utils/AttackNE")
+
 
 if settings.startup["rampant-removeBloodParticles"].value then
     local explosions = data.raw["explosion"]
@@ -21,15 +20,6 @@ if settings.startup["rampant-useDumbProjectiles"].value then
     if option then
 	attackBobs.addAttacks()
     	bobsUpdates.useDumbProjectiles()
-    end
-
-    option = settings.startup["NE_Difficulty"]
-    if option then
-	attackNE.addAttacks()
-	NEUpdates.useDumbProjectiles()
-    	if settings.startup["rampant-useNEUnitLaunchers"].value then
-    	    NEUpdates.useNEUnitLaunchers()
-    	end
     end
 end
 
@@ -59,11 +49,6 @@ end
     done because seeing desync issues with dynamic map-settings changes before re-saving the map.
 --]]
 local mapSettings = data.raw["map-settings"]["map-settings"]
-
--- mapSettings.path_finder.short_request_ratio = constants.PATH_FINDER_SHORT_REQUEST_RATIO
--- mapSettings.path_finder.short_cache_size = constants.PATH_FINDER_SHORT_CACHE_SIZE
--- mapSettings.path_finder.long_cache_size = constants.PATH_FINDER_LONG_REQUEST_RATIO
--- mapSettings.path_finder.min_steps_to_check_path_find_termination = constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 
 mapSettings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
 

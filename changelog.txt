@@ -3,6 +3,14 @@ Version: 0.17.6
 Date: 3. 12. 2019
   Improvements:
     - Reworked base upgrade system
+  Tweaks:
+    - Increased max evolution level for new biters from 95% to 97%
+    - Decreased distance to evolution from 1/7200 to 1/9600
+    - Normalized evolution requirement for Neutral faction 1-9 (0.08->0, 0.16->0.1, 0.24->0.2, 0.35->0.3, 0.4->0.4, 0.45->0.5, 0.55->0.6, 0.65->0.7, 0.75->0.8)
+    - Increased evolution requirement for levels 2+ by 2% per tier on Acid, Electric, Fire, Laser, Physical
+    - Increased evolution requirement for levels 2+ by 5% per tier on Energy Thief, Inferno, Poison, Troll, Wasp
+    - Increased evolution requirement for levels 2+ by 7% per tier on Nuclear, Spawner, Suicide
+    - readded acid splash purple for spitter attacks
   Bugfixes:
     - Fixed nest and worms incorrectly being upgraded resulting in lost entities
     - Fixed NE and Bobs faction alignments being correctly selected
@@ -108,7 +116,7 @@ Date: 2. 18. 2019
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.41
 Date: 2. 18. 2019
-  Note:
+Note:
     - Enemy level maxes have changed what was 10 is now roughly equal to 8
   Tweaks:
     - Added energy thief crystal and pylon physical resistance 25%
@@ -189,12 +197,12 @@ Date: 2. 10. 2019
     - Added minor weakness to poison to inferno faction
     - Added minor weakness to laser to physical faction
     - Added minor weakness to electric to physical faction
-    - Increased general biters physical decrease for levels 7 - 10, (10->11,12->13,14->16,15->17)
-    - Increased general biters physical percent for levels 7 - 10, (13->14,13->16,14->18,15->20)
-    - Increased general biters explosion decrease for levels 6 - 10, (0->10,10->12,12->14,14->16,15->20)
-    - Increased general biters explosion percent for levels 6 - 10, (12->13,13->15,13->16,14->17,15->20)
-    - Added general spitters physical decrease for levels 1 - 10, (0,0,0,0,2,4,6,8,10,12)
-    - Added general spitters physical percent for levels 1 - 10, (0,0,0,10,12,12,14,14,15,15)
+    - Increased general biters physical decrease for levels 7     - 10, (10->11,12->13,14->16,15->17)
+    - Increased general biters physical percent for levels 7     - 10, (13->14,13->16,14->18,15->20)
+    - Increased general biters explosion decrease for levels 6     - 10, (0->10,10->12,12->14,14->16,15->20)
+    - Increased general biters explosion percent for levels 6     - 10, (12->13,13->15,13->16,14->17,15->20)
+    - Added general spitters physical decrease for levels 1     - 10, (0,0,0,0,2,4,6,8,10,12)
+    - Added general spitters physical percent for levels 1     - 10, (0,0,0,10,12,12,14,14,15,15)
     - Decreased base spawner upgrade from 300 to 250
     - Decreased base worm upgrade from 250 to 200
     - Removed evolution requirement rounding for bobs spawners and ne spawners
@@ -273,7 +281,7 @@ Date: 9. 25. 2018
 Version: 0.16.32
 Date: 8. 1. 2018
   Improvements:
-    - Raiding AI Toggle - toggles the ai raiding parties from outside your pollution cloud
+    - Raiding AI Toggle     - toggles the ai raiding parties from outside your pollution cloud
     - Added a check for waterfill to trigger pass ability scan on affected chunks
   Tweaks:
     - Lowered base alignment selection threshold from 0.65 to 0.35, causing more variation in the later stages of the game for factions
