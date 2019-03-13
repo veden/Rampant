@@ -116,7 +116,7 @@ Date: 2. 18. 2019
 ---------------------------------------------------------------------------------------------------
 Version: 0.16.41
 Date: 2. 18. 2019
-Note:
+  Note:
     - Enemy level maxes have changed what was 10 is now roughly equal to 8
   Tweaks:
     - Added energy thief crystal and pylon physical resistance 25%
