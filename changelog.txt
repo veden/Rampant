@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.7
+Date: 3. 12. 2019
+  Improvements:
+    - Added setting for unit spawners breathing air to allow poison capsules to affect them
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.6
 Date: 3. 12. 2019
   Improvements:

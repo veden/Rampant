@@ -71,6 +71,12 @@ if settings.startup["rampant-newEnemies"].value then
 	if (unitSpawner.name ~= "biter-spawner") then
 	    unitSpawner.autoplace = nil
 	end
+        if settings.startup["rampant-unitSpawnerBreath"] then
+            if not unitSpawner.flags then
+                unitSpawner.flags = {}
+            end
+            unitSpawner.flags[#unitSpawner.flags+1] = "breaths-air"
+        end
     end
     for _, unitSpawner in pairs(data.raw["turret"]) do
 	if (unitSpawner.name ~= "small-worm-turret") then
