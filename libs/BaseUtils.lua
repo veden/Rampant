@@ -380,8 +380,8 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     if not baseAlignment or (baseAlignment == BASE_ALIGNMENT_DEADZONE) then
         entity.destroy()
         return nil
-    end
-
+    end   
+    
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distance, evolutionFactor)
 
@@ -402,7 +402,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
             CHUNK_SIZE,
             2,
             true
-        )
+        )        
         if newPosition then
             return surface.create_entity({name = spawnerName, position = newPosition})
         end

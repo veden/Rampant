@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.8
+Date: 3. 14. 2019
+  Improvements:
+    - Added some basic description of the faction to the mod settings description for each faction
+    - Added rough approximation of health per tier to mod settings start and end tiers
+    - Updated enemy variations description to better describe what it does for randomness per tier
+  Tweaks:
+    - Increased spawner egg life 2-10 (100->120, 110->120, 110->170, 120->170, 120->200, 130->200, 130->250, 140->300, 140->350)
+  Bugfixes:
+    - Fixed spelling from 0.17.12 factorio
+    - Fixed upcoming emissions_per_tick to emissions_per_second
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.7
 Date: 3. 12. 2019
   Improvements:
