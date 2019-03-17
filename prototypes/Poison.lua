@@ -27,8 +27,6 @@ local createAttackBall = physicalBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeCloud = smokeUtils.makeCloud
 
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
@@ -119,8 +117,7 @@ function poison.addFaction()
                 resistances = {},
 
                 type = "biter",
-                tint1 = {r=0.1, g=0.8, b=0.1, a=1},
-                tint2 = {r=0.1, g=0.8, b=0.1, a=1}
+                tint = {r=0.1, g=0.8, b=0.1, a=1}
             },
 
             unitSpawner = {
@@ -472,7 +469,6 @@ function poison.addFaction()
             attack = {
                 type = "projectile",
                 damageType = "poison",
-                softSmokeName =  softSmoke,
                 pointEffects = function(attributes)
 		    return
 			{
@@ -486,9 +482,7 @@ function poison.addFaction()
             resistances = {},
 
             attackName = "poison-worm",
-            tint = {r=0.15, g=0.85, b=0.15, a=0.65},
-            pTint = {r=0, g=0.85, b=0, a=1},
-            sTint = {r=0, g=0, b=0, a=1}
+            tint = {r=0.15, g=0.85, b=0.15, a=0.65}
         },
 
         {

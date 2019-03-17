@@ -1,4 +1,34 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.9
+Date: 3. 16. 2019
+  Improvements:
+    - Updated spit graphics to 0.17 version
+    - Updated spit effects and damages to 0.17 vanilla
+    - Allow mod settings toggle between blockable and unblockable projectiles for vanilla
+    - Switched wasp drones to blockable projectiles
+    - Added AOE to melee attacks based on size
+    - Switch new enemies over to acid splash from vanilla
+    - Updated stickers to work on vehicles
+    - Added lead targeting to inferno biters
+    - Added acid puddle slowdown from vanilla as default spitter attack effect
+    - Added damaging acid puddle slowdown from vanilla as default worm attack effect
+    - Added damaging acid puddle slowdown from vanilla on acid faction
+  Tweaks:
+    - Removed bob blockable projectile logic
+    - Removed force old projectiles setting option
+    - Changed color of spawner egg and wasp drone
+    - Added better explosion effect to troll and physical worms
+    - Increased on wasp range from spitter by 6
+  Bugfixes:
+    - Fixed troll spitters having a homing projectile
+    - Fixed spitters changing color when attacking
+    - Fixed biter attacks getting bonuses from player research    
+    - Fixed suicide biter level 9 and 10 wouldn't die when they attacked
+    - Fixed physical and troll worm turrets having incorrect health values
+    - Fixed physical and troll nests having incorrect health values
+    - Fixed more damage then expected on enemy projectiles
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.8
 Date: 3. 14. 2019
   Improvements:

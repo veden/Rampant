@@ -29,8 +29,6 @@ local createProjectileAttack = biterUtils.createProjectileAttack
 
 local biterAttackSounds = biterUtils.biterAttackSounds
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local createCapsuleProjectile = droneUtils.createCapsuleProjectile
 
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
@@ -52,8 +50,7 @@ function spawner.addFaction()
 		followsPlayer = false
 	    },
 	    attack = {
-		checkBuildability = true,
-		softSmokeName = softSmoke
+		checkBuildability = true
 	    },
 	    death = function (attack, attributes)
 		return {
@@ -92,10 +89,7 @@ function spawner.addFaction()
 
 	    type = "drone",
 	    attackName = "spawner-drone",
-	    tint = {r=1, g=0, b=1, a=1},
-	    pTint = {r=1, g=0, b=1, a=1},
-	    sTint = {r=1, g=0, b=1, a=1},
-	    dTint = {r=1, g=0, b=1, a=1}
+	    tint = {r=1, g=0, b=1, a=1}
 	},
 	function (attack)
 	    return {
@@ -300,8 +294,7 @@ function spawner.addFaction()
 		followsPlayer = false
 	    },
 	    attack = {
-		checkBuildability = true,
-		softSmokeName = softSmoke
+		checkBuildability = true
 	    },
 	    death = function (attack, attributes)
 		return {
@@ -340,10 +333,7 @@ function spawner.addFaction()
 
 	    type = "drone",
 	    attackName = "spawner-drone",
-	    tint = {r=1, g=0, b=1, a=1},
-	    pTint = {r=1, g=0, b=1, a=1},
-	    sTint = {r=1, g=0, b=1, a=1},
-	    dTint = {r=1, g=0, b=1, a=1}
+	    tint = {r=1, g=0, b=1, a=1}
 	},
 	function (attack)
 	    return {
@@ -565,8 +555,7 @@ function spawner.addFaction()
 	    resistances = {},
 
 	    type = "biter",
-	    tint1 = {r=1, g=0, b=1, a=1},
-	    tint2 = {r=1, g=0.63, b=0, a=0.4}
+	    tint = {r=1, g=0, b=1, a=1}
 	},
 	createMeleeAttack,
 	{
@@ -603,9 +592,8 @@ function spawner.addFaction()
 		},
 		attack = {
 		    type = "projectile",
-		    softSmokeName = softSmoke,
 		    triggerCreated = false,
-		    directionOnly = true,
+                    directionOnly = true,
 		    sourceEffect = function (attributes)
 			return
 			    {
@@ -621,9 +609,7 @@ function spawner.addFaction()
 
 		type = "spitter",
 		attackName = "spawner-drone",
-		tint = {r=1, g=0, b=1, a=1},
-		pTint = {r=1, g=0, b=1, a=1},
-		sTint = {r=1, g=0, b=1, a=1}
+		tint = {r=1, g=0, b=1, a=1}
 	    },
 
 	    unitSpawner = {
@@ -688,7 +674,7 @@ function spawner.addFaction()
 					  createCapsuleProjectile(attack.name,
 								  attack,
 								  attack.name .. "-drone-rampant"),
-					  spitterattackanimation(attack.scale, attack.tint))
+					  spitterattackanimation(attack.scale, attack.tint, attack.tint))
 	end,
 
 	{
@@ -712,15 +698,12 @@ function spawner.addFaction()
 	    },
 	    attack = {
 		type = "projectile",
-		triggerCreated = false,
-		softSmokeName = softSmoke
+		triggerCreated = false
 	    },
 	    resistances = {},
 
 	    attackName = "spawner-worm-drone",
-	    tint = {r=1, g=0, b=1, a=1},
-	    pTint = {r=1, g=0, b=1, a=1},
-	    sTint = {r=1, g=0, b=1, a=1}
+	    tint = {r=1, g=0, b=1, a=1}
 	},
 
 	{

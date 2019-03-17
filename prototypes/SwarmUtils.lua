@@ -358,6 +358,22 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 12
 	})
 
+        pushUpgrade(upgrades,
+		    {
+			type = "attack",
+			name = "radius",
+			[1] = 0.5,
+			[2] = 0.65,
+			[3] = 0.75,
+			[4] = 0.85,
+			[5] = 0.95,
+			[6] = 1.1,
+			[7] = 1.2,
+			[8] = 1.3,
+			[9] = 1.4,
+			[10] = 1.5
+	})
+        
     elseif (template.type == "spitter") then
 	pushUpgrade(upgrades,
 		    {
@@ -392,6 +408,54 @@ local function addUnitDefaults(template, upgrades)
 			    [10] = 40
 			}
 	})
+
+        pushUpgrade(upgrades,
+                    {
+                        type = "attack",
+                        name = "stickerDuration",
+                        [1] = 600,
+                        [2] = 650,
+                        [3] = 700,
+                        [4] = 750,
+                        [5] = 800,
+                        [6] = 850,
+                        [7] = 900,
+                        [8] = 950,
+                        [9] = 1000,
+                        [10] = 1050
+        })
+
+        pushUpgrade(upgrades,
+                    {
+                        type = "attack",
+                        name = "stickerMovementModifier",
+                        [1] = 0.8,
+                        [2] = 0.7,
+                        [3] = 0.6,
+                        [4] = 0.55,
+                        [5] = 0.50,
+                        [6] = 0.45,
+                        [7] = 0.40,
+                        [8] = 0.35,
+                        [9] = 0.30,
+                        [10] = 0.25
+        })
+
+        -- pushUpgrade(upgrades,
+        --             {
+        --                 type = "attack",
+        --                 name = "damagePerTick",
+        --                 [1] = 0.1,
+        --                 [2] = 0.2,
+        --                 [3] = 0.6,
+        --                 [4] = 1.2,
+        --                 [5] = 1.2,
+        --                 [6] = 1.3,
+        --                 [7] = 1.3,
+        --                 [8] = 1.3,
+        --                 [9] = 1.4,
+        --                 [10] = 1.4
+        -- })
 
         pushUpgrade(upgrades,
 		    {
@@ -492,16 +556,16 @@ local function addUnitDefaults(template, upgrades)
 		    {
 			type = "attack",
 			name = "damage",
-			[1] = 4,
-			[2] = 9,
-			[3] = 14,
-			[4] = 23,
-			[5] = 30,
-			[6] = 37,
-			[7] = 45,
-			[8] = 57,
-			[9] = 70,
-			[10] = 80
+			[1] = 16,
+			[2] = 30,
+			[3] = 45,
+			[4] = 60,
+			[5] = 90,
+			[6] = 110,
+			[7] = 130,
+			[8] = 150,
+			[9] = 170,
+			[10] = 190
 	})
 
 	pushUpgrade(upgrades,
@@ -552,6 +616,54 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 140,
 			[10] = 140
 	})
+
+        pushUpgrade(upgrades,
+                    {
+                        type = "attack",
+                        name = "stickerDuration",
+                        [1] = 600,
+                        [2] = 650,
+                        [3] = 700,
+                        [4] = 750,
+                        [5] = 800,
+                        [6] = 850,
+                        [7] = 900,
+                        [8] = 950,
+                        [9] = 1000,
+                        [10] = 1050
+        })
+
+        pushUpgrade(upgrades,
+                    {
+                        type = "attack",
+                        name = "stickerMovementModifier",
+                        [1] = 0.8,
+                        [2] = 0.7,
+                        [3] = 0.6,
+                        [4] = 0.55,
+                        [5] = 0.50,
+                        [6] = 0.45,
+                        [7] = 0.40,
+                        [8] = 0.35,
+                        [9] = 0.30,
+                        [10] = 0.25
+        })
+
+        pushUpgrade(upgrades,
+                    {
+                        type = "attack",
+                        name = "damagePerTick",
+                        [1] = 0.1,
+                        [2] = 0.2,
+                        [3] = 0.6,
+                        [4] = 1.2,
+                        [5] = 1.2,
+                        [6] = 1.3,
+                        [7] = 1.3,
+                        [8] = 1.3,
+                        [9] = 1.4,
+                        [10] = 1.4
+        })
 
 	pushUpgrade(upgrades,
 		    {
@@ -817,6 +929,54 @@ local function addWormDefaults(template, upgrades)
     })
 
     pushUpgrade(upgrades,
+                {
+                    type = "attack",
+                    name = "stickerDuration",
+                    [1] = 1200,
+                    [2] = 1250,
+                    [3] = 1300,
+                    [4] = 1350,
+                    [5] = 1400,
+                    [6] = 1450,
+                    [7] = 1500,
+                    [8] = 1550,
+                    [9] = 1600,
+                    [10] = 1650
+    })
+
+    pushUpgrade(upgrades,
+                {
+                    type = "attack",
+                    name = "stickerMovementModifier",
+                    [1] = 0.8,
+                    [2] = 0.7,
+                    [3] = 0.6,
+                    [4] = 0.55,
+                    [5] = 0.50,
+                    [6] = 0.45,
+                    [7] = 0.40,
+                    [8] = 0.35,
+                    [9] = 0.30,
+                    [10] = 0.25
+    })
+
+    pushUpgrade(upgrades,
+                {
+                    type = "attack",
+                    name = "damagePerTick",
+                    [1] = 0.1,
+                    [2] = 0.2,
+                    [3] = 0.6,
+                    [4] = 1.2,
+                    [5] = 1.2,
+                    [6] = 1.3,
+                    [7] = 1.3,
+                    [8] = 1.3,
+                    [9] = 1.4,
+                    [10] = 1.4
+    })   
+    
+    pushUpgrade(upgrades,
 		{
 		    type = "attribute",
 		    name = "prepareRange",
@@ -930,16 +1090,16 @@ local function addWormDefaults(template, upgrades)
 		{
 		    type = "attack",
 		    name = "damage",
-		    [1] = 12,
-		    [2] = 20,
-		    [3] = 25,
-		    [4] = 30,
-		    [5] = 35,
-		    [6] = 40,
-		    [7] = 50,
-		    [8] = 60,
-		    [9] = 70,
-		    [10] = 80
+		    [1] = 36,
+		    [2] = 45,
+		    [3] = 85,
+		    [4] = 135,
+		    [5] = 155,
+		    [6] = 175,
+		    [7] = 195,
+		    [8] = 215,
+		    [9] = 235,
+		    [10] = 255
     })
 
     pushUpgrade(upgrades,
@@ -1185,6 +1345,9 @@ local function scaleAttributes (upgrade, entity)
 	    if (upgrade.name == "stickerDamagePerTick") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterDamageScaler"].value
 	    end
+            if (upgrade.name == "damagePerTick") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterDamageScaler"].value
+	    end
 	    if (upgrade.name == "range") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitSpitterRangeScaler"].value
 	    end
@@ -1192,11 +1355,17 @@ local function scaleAttributes (upgrade, entity)
 	    if (upgrade.name == "damage") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneDamageScaler"].value
 	    end
+            if (upgrade.name == "damagePerTick") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneDamageScaler"].value
+	    end            
 	    if (upgrade.name == "range") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneRangeScaler"].value
 	    end
 	elseif (entity.type == "worm") then
 	    if (upgrade.name == "damage") then
+		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitWormDamageScaler"].value
+	    end
+            if (upgrade.name == "damagePerTick") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitWormDamageScaler"].value
 	    end
 	    if (upgrade.name == "range") then
@@ -1311,35 +1480,6 @@ local function generateApperance(unit, tier)
 	    unit.attack.tint = tint
 	end
     end
-    if unit.tint1 and unit.tint2 then
-	local tint1 = calculateRGBa(unit.tint1, tier)
-	local tint2 = calculateRGBa(unit.tint2, tier)
-
-	unit.attributes.tint1 = tint1
-	unit.attributes.tint2 = tint2
-
-	if unit.attack then
-	    if scale then
-		unit.attack.scale = scale
-	    end
-	    unit.attack.tint1 = tint1
-	    unit.attack.tint2 = tint2
-	end
-    end
-    if unit.attack then
-	if unit.pTint then
-	    unit.attack.pTint = calculateRGBa(unit.pTint, tier)
-	end
-	if unit.lTint then
-	    unit.attack.lTint = calculateRGBa(unit.lTint, tier)
-	end
-	if unit.sTint then
-	    unit.attack.sTint = calculateRGBa(unit.sTint, tier)
-	end
-	if unit.smTint then
-	    unit.attack.smTint = calculateRGBa(unit.smTint, tier)
-	end
-    end
 end
 
 function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
@@ -1380,11 +1520,11 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 				   unit.attributes,
 				   attackGenerator(unit.attack, unit.attributes, t),
 				   unit.resistances)
-	    elseif (unit.type == "drone") then
+	    elseif (unit.type == "drone") then                
 		entity = makeDrone(unit.name,
 				   unit.attributes,
 				   unit.resistances,
-				   attackGenerator(unit.attack),
+				   attackGenerator(unit.attack, unit.attributes, t),
 				   unit.death(unit.attack, unit.attributes, t))
 	    end
 

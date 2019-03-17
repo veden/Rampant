@@ -25,15 +25,12 @@ function attackFlame.createAttackFlame(attributes)
     
     local spawnEntityName = makeSpreadEffect({
 	    name = attributes.name,
-	    smokeWithoutGlowName = attributes.smokeWithoutGlowName,
 	    fireDamagePerTick = attributes.fireDamagePerTick,
 	    fireDamagePerTickType = attributes.fireDamagePerTickType,
     })
     local fireName = makeFire({
 	    name = attributes.name,
-	    fireTint = attributes.fTint or {r=0, g=0.9, b=0, a=0.5},
-	    smokeWithGlowName = attributes.smokeWithGlowName,
-	    smokeAddingFuelName = attributes.smokeAddingFuelName,
+	    fireTint = attributes.tint or {r=0, g=0.9, b=0, a=0.5},
 	    spawnEntityName = spawnEntityName,
 	    fireDamagePerTick = attributes.fireDamagePerTick,
 	    fireDamagePerTickType = attributes.fireDamagePerTickType,
@@ -44,23 +41,18 @@ function attackFlame.createAttackFlame(attributes)
     local stickerName = makeSticker({
 	    name = attributes.name,
 	    spawnEntityName = spawnEntityName,
-	    stickerAnimation = attributes.stickerAnimation,
 	    stickerDuration = attributes.stickerDuration,
 	    stickerDamagePerTick = attributes.stickerDamagePerTick,
-	    stickerDamagePerTick2 = attributes.stickerDamagePerTick2,
 	    stickerDamagePerTickType = attributes.stickerDamagePerTickType,
-	    stickerDamagePerTickType2 = attributes.stickerDamagePerTickType2,
 	    stickerMovementModifier = attributes.stickerMovementModifier,
 	    fireSpreadRadius = attributes.fireSpreadRadius
     })
     
     return makeStream({
 	    name = attributes.name,
-	    particleTint = attributes.pTint or {r=0, g=1, b=1, a=0.5},
-	    spineAnimationTint = attributes.sTint or {r=0, g=1, b=1, a=0.5},
-	    softSmokeTint = attributes.smTint or makeColor(0.3, 0.75, 0.3, 0.1),
-	    softSmokeName = attributes.softSmokeName,
+	    tint = attributes.tint or {r=0, g=1, b=1, a=0.5},
 	    particleTimeout = attributes.particleTimeout,
+            scale = attributes.scale,
 	    actions = {
 		{
 		    type = "area",

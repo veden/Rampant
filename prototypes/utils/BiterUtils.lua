@@ -3,7 +3,7 @@ local biterFunctions = {}
 local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
 
-local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
+-- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
 local spawner_integration = unitSpawnerUtils.spawner_integration
@@ -26,7 +26,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
     }
 
-    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint1, attributes.tint2)
+    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -93,7 +93,7 @@ function biterFunctions.makeBiterCorpse(attributes)
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
     }
     
-    corpse.animation = biterdieanimation(attributes.scale, attributes.tint1, attributes.tint2)
+    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -233,9 +233,9 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
 	distraction_cooldown = biterAttributes.distractionCooldown or 300,
 	corpse = biterAttributes.corpse,
 	dying_explosion = biterAttributes.explosion,
-	dying_sound =  make_biter_dying_sounds(1.0),
-	working_sound =  make_biter_calls(0.7),
-	run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint1, biterAttributes.tint2),
+	dying_sound =  make_biter_dying_sounds(biterAttributes.scale),
+	working_sound =  make_biter_calls(biterAttributes.scale),
+	run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
         biter_ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true }
     }
     if biterAttributes.collisionMask then
@@ -281,7 +281,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
 	dying_explosion = biterAttributes.explosion,
 	dying_sound =  make_spitter_dying_sounds(0.8),
 	working_sound =  make_biter_calls(0.7),
-	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint),
+	run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
         biter_ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true }
     }
     if biterAttributes.collisionMask then
@@ -383,7 +383,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 	subgroup="enemies",
 	max_health = attributes.health,
 	loot = attributes.loot,
-        shooting_cursor_size = 3.5 * attributes.scale,
+        shooting_cursor_size = 3.5 * attributes.scale,        
 	resistances = resistances,
 	healing_per_tick = attributes.healing or 0.01,
 	collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
@@ -447,7 +447,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
 	    category = "biological"
 	},
 	sound = make_biter_roars(0.5),
-	animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
     }
 
     if attributes.nuclear then
@@ -727,16 +727,29 @@ function biterFunctions.makeUnitAlienLootTable(name)
     return biterLoot
 end
 
-function biterFunctions.findRunScale(entity)
-    return entity.run_animation.layers[1].scale
-end
-
 function biterFunctions.findRange(entity)
     return entity.attack_parameters.range
 end
 
+local function findKey(key, obj)
+    for k,v in pairs(obj) do
+        if (k == key) and v then
+            return v
+        elseif (type(v) == "table") then
+            local val = findKey(key, v)
+            if val then
+                return val
+            end
+        end
+    end
+end
+
+function biterFunctions.findRunScale(entity)
+    return findKey("scale", entity.run_animation.layers)
+end
+
 function biterFunctions.findTint(entity)
-    return entity.run_animation.layers[2].tint
+    return findKey("tint", entity.run_animation.layers)
 end
 
 function biterFunctions.acidSplashSounds()
@@ -768,13 +781,13 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
     return
 	{
 	    type = "beam",
-	    ammo_category = "combat-robot-beam",
+	    ammo_category = "biological",
 	    cooldown = attributes.cooldown or 20,
 	    min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
 	    range = (attributes.range and (attributes.range + 2)) or 15,
 	    ammo_type =
 		{
-		    category = "combat-robot-beam",
+		    category = "biological",
 		    action =
 			{
 			    type = "line",
@@ -795,13 +808,13 @@ end
 function biterFunctions.createProjectileAttack(attributes, projectile, animation)
     return {
         type = "projectile",
-        ammo_category = "rocket",
+        ammo_category = "biological",
         cooldown = attributes.cooldown or 15,
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
         ammo_type =
 	    {
-		category = "rocket",
+		category = "biological",
 		clamp_position = true,
 		target_type = "position",
 		action =
@@ -831,7 +844,10 @@ function biterFunctions.createMeleeAttack(attributes)
 	    target_type = "entity",
 	    action =
 		{
-		    type = "direct",
+		    type = "area",
+                    radius = attributes.radius,
+                    force = "enemy",
+                    ignore_collision_condition = true,
 		    action_delivery =
 			{
 			    type = "instant",
@@ -843,8 +859,8 @@ function biterFunctions.createMeleeAttack(attributes)
 			}
 		}
 	},
-	sound = make_biter_roars(0.4),
-	animation = biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2)
+	sound = make_biter_roars(0.7),
+	animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
     }
 end
 
@@ -894,7 +910,8 @@ function biterFunctions.biterAttackSounds()
 end
 
 function biterFunctions.createRangedAttack(attributes, attack, animation)
-    if (attributes.type == "stream") or FORCE_OLD_PROJECTILES then
+    if (attributes.type == "stream") -- or FORCE_OLD_PROJECTILES
+    then
 	return biterFunctions.createStreamAttack(attributes, attack, animation)
     elseif (attributes.type == "projectile") then
 	return biterFunctions.createProjectileAttack(attributes, attack, animation)
@@ -904,7 +921,7 @@ end
 function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
     local attack = {
 	type = "stream",
-	ammo_category = "flamethrower",
+	ammo_category = "biological",
 	cooldown = attributes.cooldown,
 	range = attributes.range,
 	min_range = attributes.minRange,
@@ -916,6 +933,12 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 
 	damage_modifier = attributes.damageModifier or 1.0,
 
+        lead_target_for_projectile_speed = attributes.particleHoizontalSpeed or 0.6,
+        
+        projectile_creation_parameters = spitter_shoot_shiftings(attributes.scale, attributes.scale * 20),
+        
+        use_shooter_direction = true,
+        
 	gun_barrel_length = 2 * attributes.scale,
 	gun_center_shift = {
 	    north = {0, -0.65 * attributes.scale},
@@ -925,7 +948,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 	},
 	ammo_type =
 	    {
-                category = "flamethrower",
+                category = "biological",
                 action =
 		    {
 			type = "direct",

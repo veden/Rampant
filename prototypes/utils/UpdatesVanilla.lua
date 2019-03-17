@@ -1,14 +1,11 @@
 local vanillaUpdates = {}
 
-local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
-
 local biterUtils = require("BiterUtils")
 
 function vanillaUpdates.useDumbProjectiles()
     local turrets = data.raw["turret"];
 
-    local attackType = (FORCE_OLD_PROJECTILES and "stream") or "projectile"
-    local unitPrefix = (FORCE_OLD_PROJECTILES and "") or "direction-"
+    local attackType = "projectile"
 
     turrets["small-worm-turret"]["attack_parameters"] = biterUtils.createRangedAttack(
 	{
@@ -65,20 +62,21 @@ function vanillaUpdates.useDumbProjectiles()
 
     local unit = units["small-spitter"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
-	{
-	    cooldown = 100,
-	    range = 13,
-	    warmup = 30,
-	    min_range = 3,
-	    turn_range = 1,
-	    type = "projectile",
-	    fire_penalty = 15,
-	    scale = biterUtils.findRunScale(unit)
-	},
-	"acid-ball-" .. unitPrefix .. attackType .. "-rampant",
-	spitterattackanimation(biterUtils.findRunScale(unit),
-			       biterUtils.findTint(unit)))
-
+        {
+            cooldown = 100,
+            range = 13,
+            warmup = 30,
+            min_range = 3,
+            turn_range = 1,
+            type = "projectile",
+            fire_penalty = 15,
+            scale = biterUtils.findRunScale(unit)
+        },
+        "acid-ball-" .. attackType .. "-rampant",        
+        spitterattackanimation(biterUtils.findRunScale(unit),
+        		       tint_1_spitter_small,
+                               tint_2_spitter_small))
+    
     unit = units["medium-spitter"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
 	{
@@ -91,9 +89,10 @@ function vanillaUpdates.useDumbProjectiles()
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"acid-ball-1-" .. unitPrefix .. attackType .. "-rampant",
+	"acid-ball-1-" .. attackType .. "-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
-			       biterUtils.findTint(unit)))
+			       tint_1_spitter_medium,
+                               tint_2_spitter_medium))
 
     unit = units["big-spitter"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
@@ -107,9 +106,10 @@ function vanillaUpdates.useDumbProjectiles()
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"acid-ball-2-" .. unitPrefix .. attackType .. "-rampant",
+	"acid-ball-2-direction-" .. attackType .. "-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
-			       biterUtils.findTint(unit)))
+			       tint_1_spitter_big,
+                               tint_2_spitter_big))
 
     unit = units["behemoth-spitter"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
@@ -123,9 +123,78 @@ function vanillaUpdates.useDumbProjectiles()
 	    fire_penalty = 15,
 	    scale = biterUtils.findRunScale(unit)
 	},
-	"acid-ball-3-" .. unitPrefix .. attackType .. "-rampant",
+	"acid-ball-3-direction-" .. attackType .. "-rampant",
 	spitterattackanimation(biterUtils.findRunScale(unit),
-			       biterUtils.findTint(unit)))
+			       tint_1_spitter_behemoth,
+                               tint_2_spitter_behemoth))
+
+    unit = units["small-biter"]
+    unit["attack_parameters"]["ammo_type"]["action"] = {
+        type = "area",
+        radius = 0.2,
+        force = "enemy",
+        ignore_collision_condition = true,
+        action_delivery =
+            {
+                type = "instant",
+                target_effects =
+                    {
+                        type = "damage",
+                        damage = { amount = 7, type = "physical" }
+                    }
+            }
+    }
+
+    unit = units["medium-biter"]
+    unit["attack_parameters"]["ammo_type"]["action"] = {
+        type = "area",
+        radius = 0.6,
+        force = "enemy",
+        ignore_collision_condition = true,
+        action_delivery =
+            {
+                type = "instant",
+                target_effects =
+                    {
+                        type = "damage",
+                        damage = { amount = 15, type = "physical" }
+                    }
+            }
+    }
+
+    unit = units["big-biter"]
+    unit["attack_parameters"]["ammo_type"]["action"] = {
+        type = "area",
+        radius = 0.9,
+        force = "enemy",
+        ignore_collision_condition = true,
+        action_delivery =
+            {
+                type = "instant",
+                target_effects =
+                    {
+                        type = "damage",
+                        damage = { amount = 30, type = "physical" }
+                    }
+            }
+    }
+
+    unit = units["behemoth-biter"]
+    unit["attack_parameters"]["ammo_type"]["action"] = {
+        type = "area",
+        radius = 1.2,
+        force = "enemy",
+        ignore_collision_condition = true,
+        action_delivery =
+            {
+                type = "instant",
+                target_effects =
+                    {
+                        type = "damage",
+                        damage = { amount = 90, type = "physical" }
+                    }
+            }
+    }
 end
 
 return vanillaUpdates

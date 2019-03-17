@@ -30,8 +30,6 @@ local makeBubble = beamUtils.makeBubble
 
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -44,7 +42,7 @@ function laser.addFaction()
 
     local laserBubble = makeBubble({
 	    name = "laser-worm",
-	    lTint = {r=0, g=0, b=0.42, a=0.65}
+	    tint = {r=0, g=0, b=0.42, a=0.65}
     })
 
 
@@ -63,8 +61,7 @@ function laser.addFaction()
 
 		loot = biterLoot,
 		type = "biter",
-		tint1 = {r=0, g=0, b=0.42, a=0.65},
-		tint2 = {r=0, g=0, b=0.42, a=0.4}
+		tint = {r=0, g=0, b=0.42, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -243,9 +240,8 @@ function laser.addFaction()
 		attack = {
 		    type = "projectile",
 		    bubble = laserBubble,
-		    softSmokeName = softSmoke,
 		    damageType = "laser",
-		    directionOnly = true,
+                    directionOnly = true,
 		    pointEffects = function(attributes)
 			return
 			    {
@@ -277,9 +273,7 @@ function laser.addFaction()
 
 		type = "spitter",
 		attackName = "laser-spitter",
-		tint = {r=0, g=0, b=0.42, a=0.65},
-		pTint = {r=0, g=0, b=1, a=0.5},
-		sTint = {r=0, g=0, b=1, a=0.5}
+		tint = {r=0, g=0, b=0.42, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -440,7 +434,8 @@ function laser.addFaction()
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 
 	{
@@ -464,7 +459,6 @@ function laser.addFaction()
 	    attack = {
 		type = "projectile",
 		bubble = laserBubble,
-		softSmokeName = softSmoke,
 		damageType = "laser",
 		pointEffects = function(attributes)
 		    return
@@ -496,10 +490,7 @@ function laser.addFaction()
 	    resistances = {},
 
 	    attackName = "laser-worm",
-	    tint = {r=0, g=0, b=0.42, a=0.65},
-	    pTint = {r=0, g=0, b=1, a=0.5},
-	    sTint = {r=0, g=0, b=1, a=0.5},
-	    lTint = {r=0, g=0, b=1, a=0.5}
+	    tint = {r=0, g=0, b=0.42, a=0.65}
 	},
 
 	{

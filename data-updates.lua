@@ -1,9 +1,6 @@
 local vanillaUpdates = require("prototypes/utils/UpdatesVanilla")
-local bobsUpdates = require("prototypes/utils/UpdatesBobs")
+local attackBall = require("prototypes/utils/AttackBall")
 local constants = require("libs/Constants")
-
-local attackBobs = require("prototypes/utils/AttackBobs")
-
 
 if settings.startup["rampant-removeBloodParticles"].value then
     local explosions = data.raw["explosion"]
@@ -13,14 +10,9 @@ if settings.startup["rampant-removeBloodParticles"].value then
     explosions["blood-explosion-huge"]["created_effect"] = nil
 end
 
-if settings.startup["rampant-useDumbProjectiles"].value then
+if settings.startup["rampant-useDumbProjectiles"].value or settings.startup["rampant-newEnemies"].value then
+    attackBall.generateVanilla()
     vanillaUpdates.useDumbProjectiles()
-
-    local option = settings.startup["bobmods-enemies-enableartifacts"]
-    if option then
-	attackBobs.addAttacks()
-    	bobsUpdates.useDumbProjectiles()
-    end
 end
 
 for _, robot in pairs(data.raw["logistic-robot"]) do

@@ -25,12 +25,7 @@ local INFERNO_WORM_VARIATIONS = constants.INFERNO_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackFlame = attackFlame.createAttackFlame
-local createRangedAttack = biterUtils.createRangedAttack
-
-local softSmoke = "the-soft-smoke-rampant"
-local smokeGlow = "the-glow-smoke-rampant"
-local smokeWithoutGlow = "the-without-glow-smoke-rampant"
-local smokeFuel = "the-adding-fuel-rampant"
+local createStreamAttack = biterUtils.createStreamAttack
 
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
@@ -54,36 +49,15 @@ function inferno.addFaction()
 		    explosion = "blood-explosion-small"
 		},
 		attack = {
-		    type = "stream",
 		    damageType = "acid",
 		    fireDamagePerTickType = "acid",
-		    softSmokeName = softSmoke,
-		    smokeWithGlowName = smokeGlow,
-		    smokeWithoutGlowName = smokeWithoutGlow,
-		    smokeAddingFuelName = smokeFuel,
-		    stickerAnimation = {
-			filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
-			line_length = 8,
-			width = 60,
-			height = 118,
-			frame_count = 25,
-			axially_symmetrical = false,
-			direction_count = 1,
-			blend_mode = "normal",
-			animation_speed = 1,
-			scale = 0.2,
-			tint = { r = 1, g = 1, b = 1, a = 0.35 },
-			shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
-		    },
 		    stickerDamagePerTickType = "acid"
 		},
 		resistances = {},
 
 		type = "spitter",
 		attackName = "spitter-inferno",
-		tint = {r=0.65, g=0, b=0, a=1},
-		pTint = {r=1, g=1, b=1, a=0.5},
-		sTint = {r=1, g=1, b=1, a=0.5}
+		tint = {r=0.65, g=0, b=0, a=1}
 	    },
 
 	    unitSpawner = {
@@ -416,10 +390,11 @@ function inferno.addFaction()
 	},
 
 	function (attributes)
-	    return createRangedAttack(attributes,
+	    return createStreamAttack(attributes,
 				      createAttackFlame(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 
 	{
@@ -441,35 +416,14 @@ function inferno.addFaction()
 	    loot = wormLoot,
 	    attributes = {},
 	    attack = {
-		type = "stream",
 		damageType = "acid",
 		fireDamagePerTickType = "acid",
-		softSmokeName = softSmoke,
-		smokeWithGlowName = smokeGlow,
-		smokeWithoutGlowName = smokeWithoutGlow,
-		smokeAddingFuelName = smokeFuel,
-		stickerAnimation = {
-		    filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
-		    line_length = 8,
-		    width = 60,
-		    height = 118,
-		    frame_count = 25,
-		    axially_symmetrical = false,
-		    direction_count = 1,
-		    blend_mode = "normal",
-		    animation_speed = 1,
-		    scale = 0.2,
-		    tint = { r = 1, g = 1, b = 1, a = 0.35 },
-		    shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
-		},
 		stickerDamagePerTickType = "acid"
 	    },
 	    resistances = {},
 
 	    attackName = "worm-inferno",
-	    tint = {r=0.65, g=0, b=0, a=0.65},
-	    pTint = {r=1, g=1, b=1, a=0.5},
-	    sTint = {r=1, g=1, b=1, a=0.5}
+	    tint = {r=0.65, g=0, b=0, a=0.65}
 	},
 
 	{
@@ -698,7 +652,7 @@ function inferno.addFaction()
 	},
 
 	function (attributes)
-	    return createRangedAttack(attributes,
+	    return createStreamAttack(attributes,
 				      createAttackFlame(attributes))
 	end,
 
