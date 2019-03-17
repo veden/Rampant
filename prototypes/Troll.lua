@@ -26,9 +26,6 @@ local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -65,8 +62,7 @@ function troll.addFaction()
 		    [9] = 1.5,
 		    [10] = 1.6
 		},
-		tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
-		tint2 = {r=1, g=0.63, b=0, a=0.4}
+		tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -235,13 +231,13 @@ function troll.addFaction()
 		    [2] = 1000,
 		    [3] = 1500,
 		    [4] = 3000,
-		    [5] = 5000,
-		    [6] = 7000,
-		    [7] = 10000,
-		    [8] = 14000,
-		    [9] = 20000,
-		    [10] = 30000
-		},
+		    [5] = 7000,
+		    [6] = 15000,
+		    [7] = 22000,
+		    [8] = 40000,
+		    [9] = 60000,
+		    [10] = 70000
+                },
 
                 {
                     type = "resistance",
@@ -387,7 +383,7 @@ function troll.addFaction()
 		},
 		attack = {
 		    type = "projectile",
-		    softSmokeName = softSmoke
+                    directionOnly = true
 		},
 		resistances = {},
 
@@ -405,9 +401,7 @@ function troll.addFaction()
 		    [10] = 1.6
 		},
 		attackName = "troll-spitter",
-		tint = {r=0.56, g=0.46, b=0.42, a=0.65},
-		pTint = {r=0, g=1, b=1, a=0.5},
-		sTint = {r=0, g=1, b=1, a=0.5}
+		tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -438,17 +432,17 @@ function troll.addFaction()
 		{
 		    type = "attribute",
 		    name = "health",
-		    [1] = 20,
-		    [2] = 100,
-		    [3] = 400,
-		    [4] = 700,
-		    [5] = 1500,
-		    [6] = 2000,
-		    [7] = 3000,
-		    [8] = 6000,
-		    [9] = 5000,
-		    [10] = 9000
-		},
+		    [1] = 700,
+		    [2] = 1000,
+		    [3] = 1500,
+		    [4] = 3000,
+		    [5] = 7000,
+		    [6] = 15000,
+		    [7] = 22000,
+		    [8] = 40000,
+		    [9] = 60000,
+		    [10] = 70000
+                },
 
                 {
                     type = "resistance",
@@ -695,7 +689,8 @@ function troll.addFaction()
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 
 	{
@@ -718,7 +713,19 @@ function troll.addFaction()
 	    attributes = {},
 	    attack = {
 		type = "projectile",
-		softSmokeName = softSmoke
+		damageType = "physical",
+		pointEffects = function (attributes)
+		    return {
+			{
+			    type= "create-entity",
+			    entity_name = "small-scorchmark"
+			},
+			{
+			    type= "create-entity",
+			    entity_name = attributes.explosion
+			}
+		    }
+		end
 	    },
 	    resistances = {},
 
@@ -735,26 +742,40 @@ function troll.addFaction()
 		[10] = 1.6
 	    },
 	    attackName = "troll-worm",
-	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5}
+	    tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	},
 
 	{
+
+            {
+                type = "attack",
+                mapping = "explosion",
+                [1] = "explosion",
+                [2] = "explosion",
+                [3] = "big-explosion",
+                [4] = "big-explosion",
+                [5] = "big-explosion",
+                [6] = "big-explosion",
+                [7] = "massive-explosion",
+                [8] = "massive-explosion",
+                [9] = "massive-explosion",
+                [10] = "massive-explosion"
+            },
+            
 	    {
-		type = "attribute",
-		name = "health",
-		[1] = 400,
-		[2] = 700,
-		[3] = 1000,
-		[4] = 1500,
-		[5] = 1800,
-		[6] = 2000,
-		[7] = 3000,
-		[8] = 6000,
-		[9] = 9500,
-		[10] = 12500
-	    },
+                type = "attribute",
+                name = "health",
+                [1] = 400,
+                [2] = 700,
+                [3] = 1000,
+                [4] = 1500,
+                [5] = 4000,
+                [6] = 7000,
+                [7] = 15000,
+                [8] = 24000,
+                [9] = 40000,
+                [10] = 50000
+            },
 
 	    {
 		type = "attribute",

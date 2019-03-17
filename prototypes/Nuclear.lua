@@ -30,8 +30,6 @@ local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createSuicideAttack = biterUtils.createSuicideAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -61,8 +59,7 @@ function nuclear.addFaction()
 
 		attackName = "nuclear-biter",
 		type = "biter",
-		tint1 = {r=0.76, g=0.76, b=0, a=0.65},
-		tint2 = {r=0.76, g=0.76, b=0, a=0.65}
+		tint = {r=0.76, g=0.76, b=0, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -412,15 +409,12 @@ function nuclear.addFaction()
 			    sticker = attributes.name .. "-sticker-rampant"
 			}
 		    }
-		end,
-		softSmokeName = softSmoke
+		end
 	    },
 	    resistances = {},
 
 	    attackName = "nuclear-worm",
-	    tint = {r=0.76, g=0.76, b=0, a=0.65},
-	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5}
+	    tint = {r=0.76, g=0.76, b=0, a=0.65}
 	},
 
 	{

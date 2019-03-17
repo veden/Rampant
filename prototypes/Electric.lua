@@ -42,11 +42,8 @@ function electric.addFaction()
 
     local electricBubble = makeBubble({
 	    name = "electric-worm",
-	    lTint = {r=0, g=0.1, b=1, a=1}
+	    tint = {r=0, g=0.1, b=1, a=1}
     })
-
-
-    local softSmoke = "the-soft-smoke-rampant"
 
     -- electric biters
     buildUnitSpawner(
@@ -65,8 +62,7 @@ function electric.addFaction()
 
 		type = "biter",
 		attackName = "biter-electric",
-		tint1 = {r=0, g=0.25, b=0.83, a=0.65},
-		tint2 = {r=0, g=0.25, b=0.63, a=0.65}
+		tint = {r=0, g=0.25, b=0.83, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -310,7 +306,7 @@ function electric.addFaction()
 	function (attributes)
 	    return createElectricAttack(attributes,
 					makeBeam(attributes),
-					biterattackanimation(attributes.scale, attributes.tint1, attributes.tint2))
+					biterattackanimation(attributes.scale, attributes.tint, attributes.tint))
 	end,
 
 	{
@@ -335,7 +331,6 @@ function electric.addFaction()
 		type = "projectile",
 		bubble = electricBubble,
 		damageType = "electric",
-		softSmokeName = softSmoke,
 		pointEffects = function(attributes)
 		    return
 			{
@@ -365,10 +360,7 @@ function electric.addFaction()
 	    resistances = {},
 
 	    attackName = "worm-electric",
-	    tint = {r=0, g=0.25, b=0.83, a=0.65},
-	    pTint = {r=0, g=0.1, b=1, a=1},
-	    sTint = {r=0, g=0.1, b=1, a=1},
-	    lTint = {r=0, g=0.1, b=1, a=1}
+	    tint = {r=0, g=0.25, b=0.83, a=0.65}
 	},
 
 	{

@@ -17,7 +17,7 @@ function beamUtils.makeBubble(attributes)
 			    frame_count = 5
 			}
 		    },
-		light = {intensity = 1, size = 10, color = attributes.lTint or {r = 1.0, g = 1.0, b = 1.0}},
+		light = {intensity = 1, size = 10, color = attributes.tint or {r = 1.0, g = 1.0, b = 1.0}},
 		smoke = "smoke-fast",
 		smoke_count = 2,
 		smoke_slow_down_factor = 1
@@ -56,7 +56,7 @@ function beamUtils.makeLaser(attributes)
 		animation =
 		    {
 			filename = "__base__/graphics/entity/laser/laser-to-tint-medium.png",
-			tint = attributes.lTint or {r=1.0, g=0.0, b=0.0},
+			tint = attributes.tint or {r=1.0, g=0.0, b=0.0},
 			frame_count = 1,
 			width = 12,
 			height = 33,

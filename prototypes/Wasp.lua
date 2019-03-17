@@ -1,6 +1,7 @@
 -- imports
 
-local acidBall = require("utils/AttackBall")
+local attackBall = require("utils/AttackBall")
+local streamUtils = require("utils/StreamUtils")
 local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
@@ -24,12 +25,11 @@ local WASP_WORM_VARIATIONS = constants.WASP_WORM_VARIATIONS
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
-local createAttackBall = acidBall.createAttackBall
+local createAttackBall = attackBall.createAttackBall
+local makeAcidStream = streamUtils.makeAcidStream
 local createProjectileAttack = biterUtils.createProjectileAttack
 
 local biterAttackSounds = biterUtils.biterAttackSounds
-
-local softSmoke = "the-soft-smoke-rampant"
 
 local createCapsuleProjectile = droneUtils.createCapsuleProjectile
 
@@ -52,8 +52,7 @@ function wasp.addFaction()
                 followsPlayer = true
             },
             attack = {
-                type = "stream",
-                softSmokeName = softSmoke
+
             },
             death = function (attributes)
                 return {
@@ -85,35 +84,11 @@ function wasp.addFaction()
 
             type = "drone",
             attackName = "wasp-drone",
-            tint = {r=1, g=1, b=0, a=1},
-            pTint = {r=0, g=1, b=1, a=0.5},
-            sTint = {r=0, g=1, b=1, a=0.5},
-            dTint = {r=0, g=0, b=1, a=1}
+            tint = {r=1, g=1, b=0, a=1}           
         },
-        function (attack)
-            return {
-                type = "projectile",
-                ammo_category = "biological",
-                cooldown = attack.cooldown or 20,
-                projectile_center = {0, 1},
-                projectile_creation_distance = 0.6,
-                range = attack.range or 15,
-                sound = biterAttackSounds(),
-                ammo_type =
-                    {
-                        category = "biological",
-                        action =
-                            {
-                                type = "direct",
-                                action_delivery =
-                                    {
-                                        type = "stream",
-                                        stream = createAttackBall(attack),
-                                        duration = 160
-                                    }
-                            }
-                    }
-            }
+        function (attack, attributes, tier)
+            return createProjectileAttack(attack,
+                                          createAttackBall(attack))
         end,
         {
             {		
@@ -208,16 +183,16 @@ function wasp.addFaction()
             {
                 type = "attack",
                 name = "rangeFromPlayer",
-                [1] = 18,
-                [2] = 18,
-                [3] = 19,
-                [4] = 19,
-                [5] = 20,
-                [6] = 20,
-                [7] = 21,
-                [8] = 21,
-                [9] = 22,
-                [10] = 22
+                [1] = 24,
+                [2] = 24,
+                [3] = 25,
+                [4] = 25,
+                [5] = 26,
+                [6] = 26,
+                [7] = 27,
+                [8] = 27,
+                [9] = 28,
+                [10] = 28
             },
             
             {
@@ -262,8 +237,7 @@ function wasp.addFaction()
             attributes = {	    
             },
             attack = {
-                type = "stream",
-                softSmokeName = softSmoke
+
             },
             death = function (attributes)
                 return {
@@ -295,10 +269,7 @@ function wasp.addFaction()
 
             type = "drone",
             attackName = "wasp-worm-drone",
-            tint = {r=1, g=1, b=0, a=1},
-            pTint = {r=0, g=1, b=1, a=0.5},
-            sTint = {r=0, g=1, b=1, a=0.5},
-            dTint = {r=0, g=0, b=1, a=1}
+            tint = {r=1, g=1, b=0, a=1}
         },
         function (attack)
             return {
@@ -318,7 +289,7 @@ function wasp.addFaction()
                                 action_delivery =
                                     {
                                         type = "stream",
-                                        stream = createAttackBall(attack),
+                                        stream = makeAcidStream(attack),
                                         duration = 160
                                     }
                             }
@@ -479,16 +450,13 @@ function wasp.addFaction()
                 attack = {
                     type = "projectile",
                     directionOnly = true,
-                    collisionBox = {{0,0}, {0,0}},
-                    softSmokeName = softSmoke
+                    collisionBox = {{0,0}, {0,0}}
                 },
                 resistances = {},
 
                 type = "spitter",
                 attackName = "wasp-drone",
-                tint = {r=1, g=1, b=0, a=1},
-                pTint = {r=0, g=1, b=1, a=0.5},
-                sTint = {r=0, g=1, b=1, a=0.5}
+                tint = {r=1, g=1, b=0, a=1}
             },
 
             unitSpawner = {
@@ -530,7 +498,7 @@ function wasp.addFaction()
                                           createCapsuleProjectile(attributes.name,
                                                                   attributes,
                                                                   attributes.name .. "-drone-rampant"),
-                                          spitterattackanimation(attributes.scale, attributes.tint))
+                                          spitterattackanimation(attributes.scale, attributes.tint, attributes.tint))
         end,
 
         {
@@ -554,15 +522,12 @@ function wasp.addFaction()
             },
             attack = {
                 type = "projectile",
-                collisionBox = {{0,0}, {0,0}},
-                softSmokeName = softSmoke
+                collisionBox = {{0,0}, {0,0}}
             },
             resistances = {},
 
             attackName = "wasp-worm-drone",
-            tint = {r=1, g=1, b=0, a=1},
-            pTint = {r=0, g=1, b=1, a=0.5},
-            sTint = {r=0, g=1, b=1, a=0.5}
+            tint = {r=1, g=1, b=0, a=1}
         },
 
         {	

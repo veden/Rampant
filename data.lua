@@ -1,8 +1,7 @@
 -- import
 
-local acidBall = require("prototypes/utils/AttackBall")
 local colorUtils = require("prototypes/utils/ColorUtils")
-local smokeUtils = require("SmokeUtils")
+local smokeUtils = require("prototypes/utils/SmokeUtils")
 
 -- imported functions
 
@@ -20,11 +19,9 @@ makeSmokeWithGlow({name="the", smokeWithGlowTint=makeColor(0.3, 0.75, 0.3, 0.1)}
 makeSmokeWithoutGlow({name="the", smokeWithoutGlowTint=makeColor(0.3, 0.75, 0.3, 0.1)})
 makeSmokeAddingFuel({name="the"})
 
-if settings.startup["rampant-useDumbProjectiles"].value then
-    acidBall.generateLegacy()
-end
-
 require("prototypes/buildings/ChunkScanner")
+
+local attributes = {}
 
 if not data.raw["corpse"]["acid-splash-purple"] then
     data:extend({
@@ -37,36 +34,92 @@ if not data.raw["corpse"]["acid-splash-purple"] then
                 splash =
                     {
                         {
-                            filename = "__Rampant__/graphics/acid-splash-purple/splash-1.png",
-                            line_length = 5,
-                            width = 199,
-                            height = 159,
-                            frame_count = 20,
-                            shift = {0.484375, -0.171875}
+                            filename = "__base__/graphics/entity/acid-splash/acid-splash-1.png",
+                            line_length = 8,
+                            direction_count = 1,
+                            width = 106,
+                            height = 116,
+                            frame_count = 26,
+                            shift = util.mul_shift(util.by_pixel(-12, -10), attributes.scale or 1),
+                            tint = attributes.tint,
+                            scale = (attributes.scale or 1),
+                            hr_version = {
+                                filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-1.png",
+                                line_length = 8,
+                                direction_count = 1,
+                                width = 210,
+                                height = 224,
+                                frame_count = 26,
+                                shift = util.mul_shift(util.by_pixel(-12, -8), attributes.scale or 1),
+                                tint = attributes.tint,
+                                scale = 0.5 * (attributes.scale or 1),
+                            }
                         },
                         {
-                            filename = "__Rampant__/graphics/acid-splash-purple/splash-2.png",
-                            line_length = 5,
-                            width = 238,
-                            height = 157,
-                            frame_count = 20,
-                            shift = {0.8125, -0.15625}
+                            filename = "__base__/graphics/entity/acid-splash/acid-splash-2.png",
+                            line_length = 8,
+                            direction_count = 1,
+                            width = 88,
+                            height = 76,
+                            frame_count = 29,
+                            shift = util.mul_shift(util.by_pixel(-10, -18), attributes.scale or 1),
+                            tint = attributes.tint,
+                            scale = (attributes.scale or 1),
+                            hr_version = {
+                                filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-2.png",
+                                line_length = 8,
+                                direction_count = 1,
+                                width = 174,
+                                height = 150,
+                                frame_count = 29,
+                                shift = util.mul_shift(util.by_pixel(-9, -17), attributes.scale or 1),
+                                tint = attributes.tint,
+                                scale = 0.5 * (attributes.scale or 1),
+                            }
                         },
                         {
-                            filename = "__Rampant__/graphics/acid-splash-purple/splash-3.png",
-                            line_length = 5,
-                            width = 240,
-                            height = 162,
-                            frame_count = 20,
-                            shift = {0.71875, -0.09375}
+                            filename = "__base__/graphics/entity/acid-splash/acid-splash-3.png",
+                            line_length = 8,
+                            direction_count = 1,
+                            width = 118,
+                            height = 104,
+                            frame_count = 29,
+                            shift = util.mul_shift(util.by_pixel(22, -16), attributes.scale or 1),
+                            tint = attributes.tint,
+                            scale = (attributes.scale or 1),
+                            hr_version = {
+                                filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-3.png",
+                                line_length = 8,
+                                direction_count = 1,
+                                width = 236,
+                                height = 208,
+                                frame_count = 29,
+                                shift = util.mul_shift(util.by_pixel(22, -16), attributes.scale or 1),
+                                tint = attributes.tint,
+                                scale = 0.5 * (attributes.scale or 1),
+                            }
                         },
                         {
-                            filename = "__Rampant__/graphics/acid-splash-purple/splash-4.png",
-                            line_length = 5,
-                            width = 241,
-                            height = 146,
-                            frame_count = 20,
-                            shift = {0.703125, -0.375}
+                            filename = "__base__/graphics/entity/acid-splash/acid-splash-4.png",
+                            line_length = 8,
+                            direction_count = 1,
+                            width = 128,
+                            height = 80,
+                            frame_count = 24,
+                            shift = util.mul_shift(util.by_pixel(16, -20), attributes.scale or 1),
+                            tint = attributes.tint,
+                            scale = (attributes.scale or 1),
+                            hr_version = {
+                                filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-4.png",
+                                line_length = 8,
+                                direction_count = 1,
+                                width = 252,
+                                height = 154,
+                                frame_count = 24,
+                                shift = util.mul_shift(util.by_pixel(17, -19), attributes.scale or 1),
+                                tint = attributes.tint,
+                                scale = 0.5 * (attributes.scale or 1),
+                            }
                         }
                     },
                 splash_speed = 0.03

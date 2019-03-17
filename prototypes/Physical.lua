@@ -26,8 +26,6 @@ local createAttackBall = physicalBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -68,8 +66,7 @@ function physical.addFaction()
 		    [9] = 1.5,
 		    [10] = 1.6
 		},
-		tint1 = {r=0.1, g=0.1, b=0.1, a=1},
-		tint2 = {r=0.1, g=0.1, b=0.1, a=1}
+		tint = {r=0.1, g=0.1, b=0.1, a=1}
 	    },
 
 	    unitSpawner = {
@@ -268,13 +265,13 @@ function physical.addFaction()
 		    [2] = 1000,
 		    [3] = 1500,
 		    [4] = 3000,
-		    [5] = 5000,
-		    [6] = 7000,
-		    [7] = 10000,
-		    [8] = 14000,
-		    [9] = 20000,
-		    [10] = 30000
-		},
+		    [5] = 7000,
+		    [6] = 15000,
+		    [7] = 22000,
+		    [8] = 40000,
+		    [9] = 60000,
+		    [10] = 70000
+                },
 
 		{
 		    type = "attribute",
@@ -442,11 +439,10 @@ function physical.addFaction()
 			},
 			{
 			    type= "create-entity",
-			    entity_name = "explosion"
+			    entity_name = attributes.explosion
 			}
 		    }
-		end,
-		softSmokeName =  softSmoke
+		end
 	    },
 	    resistances = {},
 
@@ -463,27 +459,40 @@ function physical.addFaction()
 		[10] = 1.6
 	    },
 	    attackName = "physical-worm",
-	    tint = {r=0.85, g=0.85, b=0.83, a=0.65},
-	    pTint = {r=0, g=0, b=0, a=1},
-	    sTint = {r=0, g=0, b=0, a=1}
+	    tint = {r=0.85, g=0.85, b=0.83, a=0.65}
 	},
 
 	{
 
+            {
+                type = "attack",
+                mapping = "explosion",
+                [1] = "explosion",
+                [2] = "explosion",
+                [3] = "big-explosion",
+                [4] = "big-explosion",
+                [5] = "big-explosion",
+                [6] = "big-explosion",
+                [7] = "massive-explosion",
+                [8] = "massive-explosion",
+                [9] = "massive-explosion",
+                [10] = "massive-explosion"
+            },
+            
 	    {
-		type = "attribute",
-		name = "health",
-		[1] = 400,
-		[2] = 700,
-		[3] = 1200,
-		[4] = 1700,
-		[5] = 2000,
-		[6] = 3000,
-		[7] = 4000,
-		[8] = 5000,
-		[9] = 7500,
-		[10] = 12000
-	    },
+                type = "attribute",
+                name = "health",
+                [1] = 400,
+                [2] = 700,
+                [3] = 1000,
+                [4] = 1500,
+                [5] = 4000,
+                [6] = 7000,
+                [7] = 15000,
+                [8] = 24000,
+                [9] = 40000,
+                [10] = 50000
+            },
 
             {
                 type = "resistance",

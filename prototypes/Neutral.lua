@@ -28,8 +28,6 @@ local createRangedAttack = biterUtils.createRangedAttack
 
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -54,8 +52,7 @@ function neutral.addFaction()
 		resistances = {},
 
 		type = "biter",
-		tint1 = {r=0.56, g=0.46, b=0.42, a=0.65},
-		tint2 = {r=1, g=0.63, b=0, a=0.4}
+		tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -103,16 +100,13 @@ function neutral.addFaction()
 		},
 		attack = {
 		    type = "projectile",
-		    directionOnly = true,
-		    softSmokeName = softSmoke
+                    directionOnly = true
 		},
 		resistances = {},
 
 		type = "spitter",
 		attackName = "neutral-spitter",
-		tint = {r=0.56, g=0.46, b=0.42, a=1},
-		pTint = {r=0, g=1, b=1, a=0.5},
-		sTint = {r=0, g=1, b=1, a=0.5}
+		tint = {r=0.56, g=0.46, b=0.42, a=1}
 	    },
 
 	    unitSpawner = {
@@ -140,7 +134,8 @@ function neutral.addFaction()
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 	
 	{
@@ -162,15 +157,12 @@ function neutral.addFaction()
 	    loot = wormLoot,	    
 	    attributes = {},
 	    attack = {
-		type = "projectile",
-		softSmokeName = softSmoke
+		type = "projectile"
 	    },
 	    resistances = {},
 
 	    attackName = "neutral-worm",
-	    tint = {r=0.56, g=0.46, b=0.42, a=0.65},
-	    pTint = {r=0, g=1, b=1, a=0.5},
-	    sTint = {r=0, g=1, b=1, a=0.5}
+	    tint = {r=0.56, g=0.46, b=0.42, a=0.65}
 	},
 
 	{	    	    

@@ -12,33 +12,6 @@ data:extend({
 
 	{
 	    type = "bool-setting",
-	    name = "rampant-useNEUnitLaunchers",
-	    setting_type = "startup",
-	    default_value = true,
-	    order = "a[modifier]-b[projectiles]",
-	    per_user = false
-	},
-
-	{
-	    type = "bool-setting",
-	    name = "rampant-forceOldProjectiles",
-	    setting_type = "startup",
-	    default_value = false,
-	    order = "a[modifier]-b[projectiles]",
-	    per_user = false
-	},       
-
-	-- {
-	--     type = "bool-setting",
-	--     name = "rampant-attackWaveGenerationUsePollution",
-	--     setting_type = "runtime-global",
-	--     default_value = true,
-	--     order = "b[modifier]-a[trigger]",
-	--     per_user = false
-	-- },
-
-	{
-	    type = "bool-setting",
 	    name = "rampant-attackWaveGenerationUsePlayerProximity",
 	    setting_type = "runtime-global",
 	    default_value = true,
@@ -55,26 +28,6 @@ data:extend({
 	    order = "b[modifier]-c[threshold]",
 	    per_user = false
 	},
-
-	-- {
-	--     type = "double-setting",
-	--     name = "rampant-attackWaveGenerationThresholdMax",
-	--     setting_type = "runtime-global",
-	--     minimum_value = 0,
-	--     default_value = 20,
-	--     order = "b[modifier]-d[threshold]",
-	--     per_user = false
-	-- },
-
-	-- {
-	--     type = "double-setting",
-	--     name = "rampant-attackWaveGenerationThresholdMin",
-	--     setting_type = "runtime-global",
-	--     minimum_value = 0,
-	--     default_value = 0,
-	--     order = "b[modifier]-e[threshold]",
-	--     per_user = false
-	-- },
 
 	{
 	    type = "int-setting",
@@ -546,18 +499,6 @@ data:extend({
 	    order = "n[modifier]-a[optimize]",
 	    per_user = false
 	},
-
-	-- {
-	--     type = "bool-setting",
-	--     name = "rampant-attack-warning",
-	--     description = "rampant-attack-warning",
-	--     setting_type = "runtime-per-user",
-	--     default_value = false,
-	--     order = "o[modifer]-a[message]",
-	--     per_user = true
-	-- },
-
-
 
 	{
 	    type = "double-setting",

@@ -27,8 +27,6 @@ local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -55,8 +53,7 @@ function acid.addFaction()
 
 		type = "biter",
 		loot = biterLoot,
-		tint1 = {r=0, g=0.85, b=0.13, a=0.65},
-		tint2 = {r=0, g=0.85, b=0.13, a=0.65}
+		tint = {r=0, g=0.85, b=0.13, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -70,8 +67,8 @@ function acid.addFaction()
 	},
 
 	{
-	    unit = {
-
+	    unit = {               
+                
 		{
 		    type = "resistance",
 		    name = "acid",
@@ -233,16 +230,13 @@ function acid.addFaction()
 		},
 		attack = {
 		    type = "projectile",
-		    directionOnly = true,
-		    softSmokeName = softSmoke
+                    directionOnly = true
 		},
 		resistances = {},
 
 		type = "spitter",
 		attackName = "acid-spitter",
-		tint = {r=0, g=0.85, b=0.1, a=0.65},
-		pTint = {r=0, g=1, b=0.1, a=0.5},
-		sTint = {r=0, g=1, b=0.1, a=0.5}
+		tint = {r=0, g=0.85, b=0.1, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -259,6 +253,22 @@ function acid.addFaction()
 	{
 	    unit = {
 
+
+                {
+                    type = "attack",
+                    name = "damagePerTick",
+                    [1] = 0.1,
+                    [2] = 0.2,
+                    [3] = 0.6,
+                    [4] = 1.2,
+                    [5] = 1.2,
+                    [6] = 1.3,
+                    [7] = 1.3,
+                    [8] = 1.3,
+                    [9] = 1.4,
+                    [10] = 1.4
+                },
+                
 		{
 		    type = "resistance",
 		    name = "acid",
@@ -404,7 +414,8 @@ function acid.addFaction()
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 
 	{
@@ -426,19 +437,16 @@ function acid.addFaction()
 	    loot = wormLoot,
 	    attributes = {},
 	    attack = {
-		type = "projectile",
-		softSmokeName = softSmoke
+		type = "projectile"
 	    },
 	    resistances = {},
 
 	    attackName = "acid-worm",
-	    tint = {r=0, g=0.85, b=0.1, a=0.65},
-	    pTint = {r=0, g=1, b=0.1, a=0.5},
-	    sTint = {r=0, g=1, b=0.1, a=0.5}
+	    tint = {r=0, g=0.85, b=0.1, a=0.65}
 	},
 
 	{
-
+           
 	    {
 		type = "resistance",
 		name = "acid",

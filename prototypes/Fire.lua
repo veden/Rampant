@@ -26,8 +26,6 @@ local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 
-local softSmoke = "the-soft-smoke-rampant"
-
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -54,8 +52,7 @@ function fire.addFaction()
 		resistances = {},
 
 		type = "biter",
-		tint1 = {r=0.65, g=0, b=0, a=0.65},
-		tint2 = {r=1, g=1, b=1, a=0.4}
+		tint = {r=0.65, g=0, b=0, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -235,16 +232,13 @@ function fire.addFaction()
 		attack = {
 		    type = "projectile",
 		    damageType = "acid",
-		    directionOnly = true,
-		    softSmokeName = softSmoke
+                    directionOnly = true
 		},
 		resistances = {},
 
 		type = "spitter",
 		attackName = "fire-spitter",
-		tint = {r=0.65, g=0, b=0, a=0.65},
-		pTint = {r=1, g=1, b=1, a=0.5},
-		sTint = {r=1, g=1, b=1, a=0.5}
+		tint = {r=0.65, g=0, b=0, a=0.65}
 	    },
 
 	    unitSpawner = {
@@ -388,7 +382,8 @@ function fire.addFaction()
 	    return createRangedAttack(attributes,
 				      createAttackBall(attributes),
 				      spitterattackanimation(attributes.scale,
-							     attributes.tint))
+							     attributes.tint,
+                                                             attributes.tint))
 	end,
 	
 	{
@@ -411,15 +406,12 @@ function fire.addFaction()
 	    loot = wormLoot,
 	    attack = {
 		type = "projectile",
-		damageType = "acid",
-		softSmokeName = softSmoke
+		damageType = "acid"
 	    },
 	    resistances = {},
 
 	    attackName = "fire-worm",
-	    tint = {r=0.65, g=0, b=0, a=0.65},
-	    pTint = {r=1, g=1, b=1, a=0.5},
-	    sTint = {r=1, g=1, b=1, a=0.5}
+	    tint = {r=0.65, g=0, b=0, a=0.65}
 	},
 
 	{
