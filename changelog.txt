@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.10
+Date: 3. 17. 2019
+  Bugfixes:
+    - Fixed vanilla spawner autoplace requirement
+    - Fixed unit spawner breath setting only working if new enemies is checked
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.9
 Date: 3. 16. 2019
   Improvements:

@@ -66,22 +66,14 @@ if settings.startup["rampant-newEnemies"].value then
     -- require("prototypes/Decaying")
     -- require("prototypes/Undying")
 
+end
 
-    for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
-	if (unitSpawner.name ~= "biter-spawner") then
-	    unitSpawner.autoplace = nil
-	end
-        if settings.startup["rampant-unitSpawnerBreath"] then
-            if not unitSpawner.flags then
-                unitSpawner.flags = {}
-            end
-            unitSpawner.flags[#unitSpawner.flags+1] = "breaths-air"
+for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
+    if settings.startup["rampant-unitSpawnerBreath"] then
+        if not unitSpawner.flags then
+            unitSpawner.flags = {}
         end
-    end
-    for _, unitSpawner in pairs(data.raw["turret"]) do
-	if (unitSpawner.name ~= "small-worm-turret") then
-	    unitSpawner.autoplace = nil
-	end
+        unitSpawner.flags[#unitSpawner.flags+1] = "breaths-air"
     end
 end
 
