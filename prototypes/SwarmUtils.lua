@@ -570,6 +570,22 @@ local function addUnitDefaults(template, upgrades)
 			[10] = 190
 	})
 
+        pushUpgrade(upgrades,
+		    {
+			type = "attribute",
+			name = "pollutionToAttack",
+			[1] = 200,
+			[2] = 750,
+			[3] = 1200,
+			[4] = 1750,
+			[5] = 2500,
+			[6] = 5000,
+			[7] = 10000,
+			[8] = 12500,
+			[9] = 15000,
+			[10] = 20000
+	})
+
 	pushUpgrade(upgrades,
 		    {
 			type = "attribute",
@@ -1193,7 +1209,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet, tier)
 	dividers[i] = 1
     end
 
-    if upgradeTable then
+    -- if upgradeTable then
 	local points = #unitSet * 2
 	for _=1,points do
             local index
@@ -1201,16 +1217,16 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet, tier)
             if (tier == 1) then
                 index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
             else
-                index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.5, mMin(tier * 1.4, #unitSet), xorRandom)+1)
+                index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
             end
 	    -- local index = mFloor(xorRandom() * #unitSet)+1
-	    local upgrade = upgradeTable[index]
+	    -- local upgrade = upgradeTable[index]
 
             -- print(tier, index)
             
-	    dividers[index] = dividers[index] + upgrade
+	    dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
 	end
-    end
+    -- end
 
     local total = 0
     for i=1,#dividers do
@@ -1254,7 +1270,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet, tier)
     	else
     	    result = {
     		{
-    		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1] * 0.3),
+    		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1] * 0.4),
     		    0
     		},
     		{
