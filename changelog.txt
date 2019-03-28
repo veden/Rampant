@@ -1,11 +1,13 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.17.11
+Version: 0.17.12
 Date: 3. 27. 2019
   Improvements:
     - Changed new enemy unit spawning probabilities to follow a gaussian distribution over the level of the nest, so lower level nest spawn lower level enemies longer.
     - Increased new enemy building spacing
   Tweaks:
     - Added a collision box reduction to all nests and worm turrets of 50% on the mod setting Enable the Swarm.
+  Bugfixes:
+    - Fixed spitter pollution to attack numbers
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.10
