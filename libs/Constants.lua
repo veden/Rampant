@@ -71,6 +71,7 @@ constants.PLAYER_PHEROMONE_MULTIPLER = 2500
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
+constants.CHUNK_AND_HALF_SIZE = constants.CHUNK_SIZE * 1.5
 constants.DOUBLE_CHUNK_SIZE = constants.CHUNK_SIZE * 2
 constants.TRIPLE_CHUNK_SIZE = constants.CHUNK_SIZE * 3
 constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
@@ -725,6 +726,64 @@ constants.POISON_WORM_VARIATIONS = wormVariations
 constants.POISON_UNIT_TIERS = unitTiers
 constants.POISON_UNIT_VARIATIONS = unitVariations
 
+constants.BUILDING_SPACE_LOOKUP = {}
+
+for t = 1, 10 do
+    local wormTier = t + 1
+    for v = 1, 20 do
+        constants.BUILDING_SPACE_LOOKUP["neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["neutral-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+        
+        constants.BUILDING_SPACE_LOOKUP["acid-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["acid-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["acid-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["physical-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["physical-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["electric-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["electric-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["suicide-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["nuclear-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["nuclear-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["fire-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fire-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fire-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["inferno-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["inferno-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["troll-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["troll-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["troll-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["fast-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fast-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fast-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["laser-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["laser-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["laser-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["wasp-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["wasp-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["spawner-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["spawner-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["energy-thief-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+        constants.BUILDING_SPACE_LOOKUP["poison-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["poison-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+
+    end
+end
 
 constantsG =  constants
 return constants
