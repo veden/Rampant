@@ -13,6 +13,8 @@ local bobsUnits = require("BobsBaseUtils")
 
 -- constants
 
+local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
+
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
@@ -141,6 +143,7 @@ local BASE_QUEUE_SIZE = constants.BASE_QUEUE_SIZE
 local BASE_COLLECTION_THRESHOLD = constants.BASE_COLLECTION_THRESHOLD
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
+local CHUNK_AND_HALF_SIZE = constants.CHUNK_AND_HALF_SIZE
 
 local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
@@ -395,12 +398,10 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     if spawnerName then
         entity.destroy()
         local newPosition = surface.find_non_colliding_position(
-            spawnerName,
-            -- ((entityType == "unit-spawner") and "chunk-scanner-nest-rampant") or
-            --     "chunk-scanner-worm-rampant",
+            BUILDING_SPACE_LOOKUP[spawnerName],            
             position,
             CHUNK_SIZE,
-            2,
+            1,
             true
         )        
         if newPosition then

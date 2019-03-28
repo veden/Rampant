@@ -28,6 +28,8 @@ local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
+local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
+
 local makeBiterCorpse = biterUtils.makeBiterCorpse
 local makeUnitSpawnerCorpse = biterUtils.makeUnitSpawnerCorpse
 local makeWormCorpse = biterUtils.makeWormCorpse
@@ -1184,7 +1186,7 @@ local function addWormDefaults(template, upgrades)
 end
 
 
-local function unitSetToProbabilityTable(upgradeTable, unitSet)
+local function unitSetToProbabilityTable(upgradeTable, unitSet, tier)
     local dividers = {}
 
     for i=1,#unitSet do
@@ -1194,9 +1196,18 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     if upgradeTable then
 	local points = #unitSet * 2
 	for _=1,points do
-	    local index = mFloor(xorRandom() * #unitSet)+1
+            local index
+
+            if (tier == 1) then
+                index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
+            else
+                index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.5, mMin(tier * 1.4, #unitSet), xorRandom)+1)
+            end
+	    -- local index = mFloor(xorRandom() * #unitSet)+1
 	    local upgrade = upgradeTable[index]
 
+            -- print(tier, index)
+            
 	    dividers[index] = dividers[index] + upgrade
 	end
     end
@@ -1243,7 +1254,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
     	else
     	    result = {
     		{
-    		    ((i - 2) > 0 and dividers[i-2]) or 0,
+    		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1] * 0.3),
     		    0
     		},
     		{
@@ -1268,7 +1279,7 @@ local function unitSetToProbabilityTable(upgradeTable, unitSet)
 	    result[#result+1] = {unitSet[i][x], probability}
 	end
     end
-
+    
     return result
 end
 
@@ -1572,7 +1583,8 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
 	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
-							unitSet)
+							unitSet,
+                                                        tier)
 	    generateApperance(unitSpawner, ut)
 	    unitSpawner.type = "spawner"
 	    upgradeEntity(unitSpawner, upgradeTable.unitSpawner, ut)
@@ -1594,6 +1606,8 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	end
     end
 
+    -- ent()
+    
 end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
