@@ -9,8 +9,6 @@ local mathUtils = require("__Rampant__/libs/MathUtils")
 
 -- imported functions
 
-local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
-
 local roundToNearest = mathUtils.roundToNearest
 
 local mMax = math.max
@@ -1202,31 +1200,25 @@ local function addWormDefaults(template, upgrades)
 end
 
 
-local function unitSetToProbabilityTable(upgradeTable, unitSet, tier)
+local function unitSetToProbabilityTable(unitSet, tier)
     local dividers = {}
 
     for i=1,#unitSet do
 	dividers[i] = 1
     end
 
-    -- if upgradeTable then
-	local points = #unitSet * 2
-	for _=1,points do
-            local index
+    local points = #unitSet * 2
+    for _=1,points do
+        local index
 
-            if (tier == 1) then
-                index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
-            else
-                index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
-            end
-	    -- local index = mFloor(xorRandom() * #unitSet)+1
-	    -- local upgrade = upgradeTable[index]
-
-            -- print(tier, index)
-            
-	    dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
-	end
-    -- end
+        if (tier == 1) then
+            index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
+        else
+            index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
+        end
+        
+        dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
+    end
 
     local total = 0
     for i=1,#dividers do
@@ -1598,8 +1590,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
 	for i=1,variations.unitSpawner do
 	    local unitSpawner = deepcopy(templates.unitSpawner)
 	    unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
-	    local unitTable = unitSetToProbabilityTable(upgradeTable.probabilityTable,
-							unitSet,
+	    local unitTable = unitSetToProbabilityTable(unitSet,
                                                         tier)
 	    generateApperance(unitSpawner, ut)
 	    unitSpawner.type = "spawner"
