@@ -398,7 +398,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
     if spawnerName then
         entity.destroy()
         local newPosition = surface.find_non_colliding_position(
-            BUILDING_SPACE_LOOKUP[spawnerName],            
+            BUILDING_SPACE_LOOKUP[spawnerName] or spawnerName,
             position,
             CHUNK_SIZE,
             1,
