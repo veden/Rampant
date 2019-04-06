@@ -488,8 +488,20 @@ data:extend({
 	    default_value = true,
 	    order = "m[total]-e[ai]",
 	    per_user = false
-	},
+	},                      
 
+        {
+	    type = "double-setting",
+	    name = "rampant-aiAggressiveness",
+	    description = "rampant-aiAggressiveness",
+	    setting_type = "runtime-global",
+	    default_value = 1.0,
+	    minimum_value = 0.0,
+	    maximum_value = 2.0,
+	    order = "m[total]-f[ai]",
+	    per_user = false
+	},
+        
 	{
 	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",
@@ -500,6 +512,24 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-unkillableLogisticRobots",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "n[modifier]-b[optimize]",
+	    per_user = false
+	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-unkillableConstructionRobots",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "n[modifier]-c[optimize]",
+	    per_user = false
+	},
+        
 	{
 	    type = "double-setting",
 	    name = "rampant-unitBiterHealthScaler",

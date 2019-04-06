@@ -96,7 +96,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     end
 
     if (natives.stateTick == tick) then
-	local roll = mRandom() * mMax(1 - evolution_factor, 0.15)
+	local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * natives.aiAggressiveness
 	if (roll > natives.temperament) then
 	    natives.state = AI_STATE_PEACEFUL
 	else

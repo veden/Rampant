@@ -20,6 +20,16 @@ for _, robot in pairs(data.raw["logistic-robot"]) do
 	robot.collision_mask = {}
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+
+    if (settings.startup["rampant-unkillableLogisticRobots"].value) then
+        robot.resistances = {}
+        for damageType, _ in pairs(data.raw["damage-type"]) do
+            robot.resistances[damageType] = {
+                type = damageType,
+                percent = 100
+            }
+        end
+    end
 end
 
 for _, robot in pairs(data.raw["construction-robot"]) do
@@ -27,6 +37,15 @@ for _, robot in pairs(data.raw["construction-robot"]) do
 	robot.collision_mask = {}
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+
+    if (settings.startup["rampant-unkillableConstructionRobots"].value) then    
+        for damageType, _ in pairs(data.raw["damage-type"]) do
+            robot.resistances[damageType] = {
+                type = damageType,
+                percent = 100
+            }
+        end
+    end
 end
 
 for _, robot in pairs(data.raw["combat-robot"]) do
