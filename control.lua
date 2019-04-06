@@ -27,6 +27,10 @@ local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 
+local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
+local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
+
+
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
 local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
@@ -353,6 +357,8 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 
+    upgrade.compareTable(natives, "aiAggressiveness", settings.global["rampant-aiAggressiveness"].value)
+
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
     
@@ -538,6 +544,11 @@ local function onDeath(event)
 
             elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
 
+                natives.points = natives.points + (((entity.type == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
+                if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+                    natives.points = AI_MAX_OVERFLOW_POINTS
+                end                
+                
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    unregisterEnemyBaseStructure(map, entity)
 

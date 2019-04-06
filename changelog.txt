@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.14
+Date: 4. 05. 2019
+  Improvements:
+    - Added mod setting to directly affect ai aggressiveness
+    - Added mod setting to toggle construction bot and logistic being immune to all damage
+    - Killing spawners cause the ai to gain points to spawn up to 1 squads per nest
+    - Killing worms cause the ai to gain points to spawn up to 0.5 squads per worm
+  Tweaks:
+    - Increased new enemies default scale for levels 7+ by 0.2
+    - Increased new enemies troll and physical scale for levels 6+ by 0.2
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.13
 Date: 3. 28. 2019
   Bugfixes:
