@@ -130,23 +130,38 @@ function vanillaUpdates.useDumbProjectiles()
 
     unit = units["small-biter"]
     unit["attack_parameters"]["ammo_type"]["action"] = {
-        type = "area",
-        radius = 0.2,
-        force = "enemy",
-        ignore_collision_condition = true,
-        action_delivery =
-            {
-                type = "instant",
-                target_effects =
-                    {
-                        type = "damage",
-                        damage = { amount = 7, type = "physical" }
-                    }
-            }
+        {
+            type = "area",
+            radius = 0.2,
+            force = "enemy",
+            ignore_collision_condition = true,
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 7 * 0.75, type = "physical" }
+                        }
+                }
+        },
+        {
+            type = "direct",
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 7 * 0.25, type = "physical" }
+                        }
+                }
+        }
     }
 
     unit = units["medium-biter"]
     unit["attack_parameters"]["ammo_type"]["action"] = {
+        {
         type = "area",
         radius = 0.6,
         force = "enemy",
@@ -157,13 +172,27 @@ function vanillaUpdates.useDumbProjectiles()
                 target_effects =
                     {
                         type = "damage",
-                        damage = { amount = 15, type = "physical" }
+                        damage = { amount = 15 * 0.75, type = "physical" }
                     }
             }
+        },
+        {
+            type = "direct",
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 15 * 0.25, type = "physical" }
+                        }
+                }
+        }
     }
 
     unit = units["big-biter"]
     unit["attack_parameters"]["ammo_type"]["action"] = {
+        {
         type = "area",
         radius = 0.9,
         force = "enemy",
@@ -174,26 +203,53 @@ function vanillaUpdates.useDumbProjectiles()
                 target_effects =
                     {
                         type = "damage",
-                        damage = { amount = 30, type = "physical" }
+                        damage = { amount = 30 * 0.75, type = "physical" }
                     }
             }
+        },
+        {
+            type = "direct",
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 30 * 0.25, type = "physical" }
+                        }
+                }
+        }
     }
 
     unit = units["behemoth-biter"]
     unit["attack_parameters"]["ammo_type"]["action"] = {
-        type = "area",
-        radius = 1.2,
-        force = "enemy",
-        ignore_collision_condition = true,
-        action_delivery =
-            {
-                type = "instant",
-                target_effects =
-                    {
-                        type = "damage",
-                        damage = { amount = 90, type = "physical" }
-                    }
-            }
+        {
+            type = "area",
+            radius = 1.2,
+            force = "enemy",
+            ignore_collision_condition = true,
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 90 * 0.75, type = "physical" }
+                        }
+                }
+        },
+        {
+            type = "direct",
+            action_delivery =
+                {
+                    type = "instant",
+                    target_effects =
+                        {
+                            type = "damage",
+                            damage = { amount = 90 * 0.25, type = "physical" }
+                        }
+                }
+        }
     }
 end
 
