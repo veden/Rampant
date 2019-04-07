@@ -69,7 +69,7 @@ if settings.startup["rampant-newEnemies"].value then
 end
 
 for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
-    if settings.startup["rampant-unitSpawnerBreath"] then
+    if settings.startup["rampant-unitSpawnerBreath"].value then
         if not unitSpawner.flags then
             unitSpawner.flags = {}
         end
@@ -77,7 +77,7 @@ for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
     end
 end
 
-if settings.startup["rampant-enableSwarm"] then
+if settings.startup["rampant-enableSwarm"].value then
     for k, unit in pairs(data.raw["unit"]) do
 	if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
 	    unit.collision_box = {
@@ -86,7 +86,9 @@ if settings.startup["rampant-enableSwarm"] then
 	    }
 	end
     end
+end
 
+if settings.startup["rampant-enableShrinkNestsAndWorms"].value then    
     for k, unit in pairs(data.raw["unit-spawner"]) do
 	if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
 	    unit.collision_box = {
@@ -104,18 +106,6 @@ if settings.startup["rampant-enableSwarm"] then
 	    }
 	end
     end    
-
-    -- local obj = data.raw["container"]["chunk-scanner-nest-rampant"]
-    -- obj.collision_box = {        
-    --     {obj.collision_box[1][1] * 0.70, obj.collision_box[1][2] * 0.70},
-    --     {obj.collision_box[2][1] * 0.70, obj.collision_box[2][2] * 0.70}
-    -- }
-
-    -- obj = data.raw["container"]["chunk-scanner-worm-rampant"]
-    -- obj.collision_box = {        
-    --     {obj.collision_box[1][1] * 0.70, obj.collision_box[1][2] * 0.70},
-    --     {obj.collision_box[2][1] * 0.70, obj.collision_box[2][2] * 0.70}
-    -- }
 end
 
 

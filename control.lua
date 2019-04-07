@@ -253,7 +253,7 @@ local function rebuildMap()
     map.testArea = {{0, 0}, {0, 0}}
     map.area2 = {map.position2Top, map.position2Bottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
-    map.filteredEntitiesEnemyQuery = { area=map.area, force="enemy" }
+    map.filteredEntitiesUnitQuery = { area=map.area, force="enemy",type="unit" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
     map.filteredEntitiesUnitSpawnereQuery = { area=map.area, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }

@@ -72,6 +72,16 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-enableShrinkNestsAndWorms",
+	    description = "rampant-enableShrinkNestsAndWorms",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-j[unit]",
+	    per_user = false
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings",
