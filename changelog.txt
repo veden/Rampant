@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.15
+Date: 4. 06. 2019
+  Tweaks:
+    - Split enable swarm setting and shrink nest + worm
+  Bugfixes:
+    - Fixed mod setting breathing and enable swarm not using correct valueu
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.14
 Date: 4. 05. 2019
   Improvements:

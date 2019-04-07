@@ -222,6 +222,13 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
                     base = createBase(map, natives, evolutionFactor, chunk, tick, rebuilding)
                 end
                 local alignment = base.alignment
+
+                -- for _, unit in pairs(surface.find_entities_filtered(map.filteredEntitiesUnitQuery)) do                    
+                --     if (unit.valid) then
+                --         unit.destroy()
+                --     end
+                -- end
+                
                 if (#nests > 0) then
                     for i = 1, #nests do
                         if rebuilding then
