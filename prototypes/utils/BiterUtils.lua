@@ -844,20 +844,34 @@ function biterFunctions.createMeleeAttack(attributes)
 	    target_type = "entity",
 	    action =
 		{
-		    type = "area",
-                    radius = attributes.radius,
-                    force = "enemy",
-                    ignore_collision_condition = true,
-		    action_delivery =
-			{
-			    type = "instant",
-			    target_effects =
-				{
-				    type = "damage",
-				    damage = { amount = attributes.damage, type = attributes.damageType or "physical" }
-				}
-			}
-		}
+                    {
+                        type = "area",
+                        radius = attributes.radius,
+                        force = "enemy",
+                        ignore_collision_condition = true,
+                        action_delivery =
+                            {
+                                type = "instant",
+                                target_effects =
+                                    {
+                                        type = "damage",
+                                        damage = { amount = attributes.damage * 0.75, type = attributes.damageType or "physical" }
+                                    }
+                            }
+                    },
+                    {
+                        type = "direct",
+                        action_delivery =
+                            {
+                                type = "instant",
+                                target_effects =
+                                    {
+                                        type = "damage",
+                                        damage = { amount = attributes.damage * 0.25, type = attributes.damageType or "physical" }
+                                    }
+                            }
+                    }
+                }
 	},
 	sound = make_biter_roars(0.7),
 	animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
