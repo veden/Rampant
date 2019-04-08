@@ -256,10 +256,10 @@ local function rebuildMap()
     map.area2 = {map.position2Top, map.position2Bottom}
     map.buildPositionTop = {0, 0}
     map.buildPositionBottom = {0, 0}    
-    map.builArea = {map.buildPositionTop, map.buildPositionBottom}
+    map.buildArea = {map.buildPositionTop, map.buildPositionBottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesUnitQuery = { area=map.area, force="enemy",type="unit" }
-    map.filteredEntitiesClearBuildingQuery = { area=map.builArea, force="neutral",collision_mask="player-layer" }
+    map.filteredEntitiesClearBuildingQuery = { area=map.buildArea, force="neutral",collision_mask="player-layer" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
     map.filteredEntitiesUnitSpawnereQuery = { area=map.area, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }

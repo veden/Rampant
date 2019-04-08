@@ -32,6 +32,7 @@ constants.VERSION_77 = 77
 constants.VERSION_85 = 85
 constants.VERSION_86 = 86
 constants.VERSION_87 = 87
+constants.VERSION_88 = 88
 
 -- misc
 

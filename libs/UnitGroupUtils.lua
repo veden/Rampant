@@ -206,6 +206,11 @@ function unitGroupUtils.cleanBuilders(map, natives, surface)
             if (group.state == DEFINES_GROUP_FINISHED) or (squad.cycles <= 0) then
                 if (#group.members > 0) then
                     local groupPosition = findMovementPosition(surface, group.position)
+
+                    if not groupPosition then
+                        groupPosition = group.position
+                    end
+                    
                     position.x = groupPosition.x
                     position.y = groupPosition.y
 
