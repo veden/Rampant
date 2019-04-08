@@ -144,6 +144,8 @@ constants.BASE_AI_MAX_TEMPERAMENT_DURATION = 15
 
 -- ai base
 
+constants.BASE_CLEAN_DISTANCE = 13
+
 constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 18
 
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2

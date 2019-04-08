@@ -8,8 +8,11 @@ local unitGroupUtils = {}
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local movementUtils = require("MovementUtils")
 
 -- constants
+
+local DEFINES_GROUP_FINISHED = defines.group_state.finished
 
 local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
 
@@ -33,6 +36,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 local tRemove = table.remove
 
 local mRandom = math.random
+
+local findMovementPosition = movementUtils.findMovementPosition
 
 local mLog = math.log10
 
@@ -116,7 +121,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         kamikaze = false,
         frenzyPosition = {x = 0,
                           y = 0},
-        cycles = 0,
+        cycles = 60,
         maxDistance = 0,
         attackScoreFunction = 1,
         originPosition = {x = 0,
@@ -179,11 +184,13 @@ function unitGroupUtils.recycleBiters(natives, biters)
     end
 end
 
-function unitGroupUtils.cleanBuilders(natives)
+function unitGroupUtils.cleanBuilders(map, natives, surface)
     local squads = natives.building
     local squadCount = #squads
 
     local startIndex = natives.cleanBuildingIndex
+    local position = map.position
+    local cmd = map.compoundSettleCommand
 
     local maxSquadIndex = mMin(startIndex + SQUAD_QUEUE_SIZE, squadCount)
     for i=maxSquadIndex,startIndex,-1 do
@@ -191,6 +198,26 @@ function unitGroupUtils.cleanBuilders(natives)
         local group = squad.group
         if not (group and group.valid) then
             tRemove(squads, i)
+        else
+            if (squad.cycles > 0) then
+                squad.cycles = squad.cycles - 1
+            end
+            
+            if (group.state == DEFINES_GROUP_FINISHED) or (squad.cycles <= 0) then
+                if (#group.members > 0) then
+                    local groupPosition = findMovementPosition(surface, group.position)
+                    position.x = groupPosition.x
+                    position.y = groupPosition.y
+
+                    squad.cycles = 400
+                    
+                    group.set_command(cmd)
+                    group.start_moving()
+                else
+                    tRemove(squads, i)
+                    group.destroy()
+                end
+            end
         end
     end
 

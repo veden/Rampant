@@ -30,6 +30,7 @@ local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
 
+local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
@@ -46,6 +47,7 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 local DEFINES_COMMAND_GROUP = defines.command.group
+local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
 local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_COMMAND_GO_TO_LOCATION = defines.command.go_to_location
@@ -252,8 +254,12 @@ local function rebuildMap()
     map.area = {{0, 0}, {0, 0}}
     map.testArea = {{0, 0}, {0, 0}}
     map.area2 = {map.position2Top, map.position2Bottom}
+    map.buildPositionTop = {0, 0}
+    map.buildPositionBottom = {0, 0}    
+    map.builArea = {map.buildPositionTop, map.buildPositionBottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesUnitQuery = { area=map.area, force="enemy",type="unit" }
+    map.filteredEntitiesClearBuildingQuery = { area=map.builArea, force="neutral",collision_mask="player-layer" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
     map.filteredEntitiesUnitSpawnereQuery = { area=map.area, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
@@ -286,8 +292,24 @@ local function rebuildMap()
 	destination = map.position,
 	distraction = DEFINES_DISTRACTION_BY_ENEMY,
 	ignore_planner = true
-    }
+    }    
 
+    map.wonderCommand = {
+        type = DEFINES_COMMAND_WANDER,
+        wander_in_group = false,
+        radius = DOUBLE_CHUNK_SIZE,
+        ticks_to_wait = 360
+    }
+    
+    map.compoundSettleCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.wonderCommand,
+            map.settleCommand
+        }
+    }
+    
     map.retreatCommand = {
         type = DEFINES_COMMAND_GROUP,
         group = nil,
@@ -471,13 +493,14 @@ script.on_nth_tick(INTERVAL_LOGIC,
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
-		   function ()                       
+		   function ()
+                       local surface = game.surfaces[natives.activeSurface]
 		       squadsBeginAttack(natives)
-		       squadsDispatch(map, game.surfaces[natives.activeSurface], natives)
+		       squadsDispatch(map, surface, natives)
 
                        regroupSquads(natives, map)
 
-                       cleanBuilders(natives)
+                       cleanBuilders(map, natives, surface)
 end)
 
 local function onBuild(event)
@@ -657,8 +680,10 @@ local function onEnemyBaseBuild(event)
     local surface = entity.surface
 
     if entity.valid and (surface.index == natives.activeSurface) then
+        
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            -- print(entity.name)
             local evolutionFactor = entity.force.evolution_factor
             local base
             if natives.newEnemies then

@@ -21,6 +21,8 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
 
+local BASE_CLEAN_DISTANCE = constants.BASE_CLEAN_DISTANCE
+
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
 
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
@@ -125,31 +127,56 @@ local function settleMove(map, squad, natives, surface)
     if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
         addSquadToChunk(map, chunk, squad)
     end
-    if (attackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-        local resourceGenerator = getResourceGenerator(map, chunk)
-        local distance = euclideanDistancePoints(groupPosition.x,
-                                                 groupPosition.y,
-                                                 squad.originPosition.x,
-                                                 squad.originPosition.y)
 
-        local largeGroup = (#squad.group.members > 80)        
-        local cmd
-        local position
+    local resourceGenerator = getResourceGenerator(map, chunk)
+    local distance = euclideanDistancePoints(groupPosition.x,
+                                             groupPosition.y,
+                                             squad.originPosition.x,
+                                             squad.originPosition.y)
+
+    local largeGroup = (#squad.group.members > 80)        
+    local cmd
+    local position
+    
+    if (distance >= squad.maxDistance) or
+        ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0))
+    then
+        if not ((group.state == DEFINES_GROUP_FINISHED) or ((group.state == DEFINES_GROUP_GATHERING) and (squad.cycles <= 0))) then
+        -- if (group.state ~= DEFINES_GROUP_FINISHED) then
+            return
+        end
         
-        if (distance >= squad.maxDistance) or
-            ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0))
-        then
-            position = findMovementPosition(surface, groupPosition)
-            
-            cmd = map.settleCommand
-            if squad.kamikaze then
-                cmd.distraction = DEFINES_DISTRACTION_NONE
-            else
-                cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+        position = findMovementPosition(surface, groupPosition)
+        
+        cmd = map.settleCommand
+        if squad.kamikaze then
+            cmd.distraction = DEFINES_DISTRACTION_NONE
+        else
+            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+        end
+        
+        squad.status = SQUAD_BUILDING
+
+        map.buildPositionTop.x = position.x - BASE_CLEAN_DISTANCE
+        map.buildPositionTop.y = position.y - BASE_CLEAN_DISTANCE
+        map.buildPositionBottom.x = position.x + BASE_CLEAN_DISTANCE
+        map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE
+
+        squad.cycles = 400
+        
+        local entities = surface.find_entities_filtered(map.filteredEntitiesClearBuildingQuery)
+        for i=1,#entities do
+            local entity = entities[i]
+            if entity.valid and (entity.type ~= "cliff") then
+                entity.die()
             end
-            
-            squad.status = SQUAD_BUILDING
-        elseif (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
+        end                       
+    else
+        if (attackChunk == SENTINEL_IMPASSABLE_CHUNK) then
+            return
+        end
+        
+        if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
             (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
         then    
             cmd = map.attackCommand            
@@ -161,23 +188,23 @@ local function settleMove(map, squad, natives, surface)
                 cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
             end		
         end
+    end
 
-        if squad.status ~= SQUAD_BUILDING then
-            position = findMovementPosition(surface,
-                                            positionFromDirectionAndChunk(attackDirection,
-                                                                          groupPosition,
-                                                                          attackPosition,
-                                                                          (largeGroup and 1.1) or 0.9))
-        end
-        
-        if position then
-            squad.cycles = (largeGroup and 6) or 4            
-            attackPosition.x = position.x
-            attackPosition.y = position.y
+    if squad.status ~= SQUAD_BUILDING then
+        position = findMovementPosition(surface,
+                                        positionFromDirectionAndChunk(attackDirection,
+                                                                      groupPosition,
+                                                                      attackPosition,
+                                                                      (largeGroup and 1.1) or 0.9))
+    end
+    
+    if position then
+        squad.cycles = (largeGroup and 6) or 4            
+        attackPosition.x = position.x
+        attackPosition.y = position.y
 
-            group.set_command(cmd)
-            group.start_moving()
-        end
+        group.set_command(cmd)
+        group.start_moving()
     end
 end
 
