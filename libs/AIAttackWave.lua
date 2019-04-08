@@ -186,7 +186,7 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
 
 		squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance * 0.5,
 							natives.expansionMaxDistanceDerivation,
-							CHUNK_SIZE * 1,
+							10,
 							natives.expansionMaxDistance)
 
 		local scaledWaveSize = settlerWaveScaling(natives)

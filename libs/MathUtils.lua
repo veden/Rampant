@@ -169,8 +169,9 @@ end
 function mathUtils.distortPosition(position)
     local xDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
     local yDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
-    position.x = position.x + (xDistort * 48)
-    position.y = position.y + (yDistort * 48)
+    position.x = position.x + (xDistort * 16)
+    position.y = position.y + (yDistort * 16)
+    return position
 end
 
 mathUtilsG = mathUtils

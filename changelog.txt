@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.17
+Date: 4. 07. 2019
+  Improvements:
+    - When settlers start building they will clear the immediate area of colliding neutral objects
+    - Added initial pause when forming squads allowing members time to group
+  Bugfixes:
+    - Fixed settlers groups being in a finished state when building
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.16
 Date: 4. 07. 2019
   Tweaks:
