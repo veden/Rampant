@@ -546,8 +546,7 @@ function energyThief.addFaction()
                 name = "drain-trigger-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                hidden = true,
-                flags = {},
+                flags = {"hidden"},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
                 place_result = "drain-trigger-rampant",
@@ -559,7 +558,7 @@ function energyThief.addFaction()
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {},
+                flags = {"hidden"},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
                 place_result = "crystal-drain-pole-rampant",
@@ -571,7 +570,7 @@ function energyThief.addFaction()
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {},
+                flags = {"hidden"},
                 selectable_in_game = false,
                 minable = {hardness = 0.2, mining_time = 0.5, result = "big-electric-pole"},
                 max_health = 750,
@@ -683,7 +682,8 @@ function energyThief.addFaction()
     local chest = util.table.deepcopy(data.raw["radar"]["radar"])
     chest.name = "pylon-target-rampant"
     chest.icon = "__Rampant__/graphics/icons/thief/crystal-drain.png"
-    chest.flags = {"not-repairable", "not-on-map"}
+    chest.flags = {"not-repairable", "not-on-map", "hidden"}
+    chest.subgroup = "enemies"
     chest.pictures = {
         layers={
             {
@@ -738,9 +738,8 @@ function energyThief.addFaction()
                 name = "pylon-target-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {},
-                subgroup = "storage",
-                hidden = true,
+                flags = {"hidden"},
+                subgroup = "enemies",
                 order = "a[items]-h[steel-collector]",
                 place_result = "pylon-target-rampant",
                 stack_size = 50
