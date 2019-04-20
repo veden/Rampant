@@ -19,6 +19,15 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-disableCollidingProjectiles",
+	    setting_type = "startup",
+	    default_value = true,
+	    order = "b[modifier]-b[trigger]",
+	    per_user = false
+	},
+        
 	{
 	    type = "double-setting",
 	    name = "rampant-attackPlayerThreshold",

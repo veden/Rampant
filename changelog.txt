@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.20
+Date: 4. 19. 2019
+  Improvements:
+    - Spawner faction spit spawned biters now lose life over time
+    - Added mod setting that causes biter projectiles to no longer collide with other biters but still collides everything else
+  Tweaks:
+    - Doubled all spawner faction spit spawned biters health (30,60,90,120,150,180,220,500,1000,2000)
+  Bugfixes:
+    - Fixed unkillable construction robot settings not clearing and setting new resistance table
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.19
 Date: 4. 08. 2019
   Bugfixes:

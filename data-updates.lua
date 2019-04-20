@@ -38,7 +38,8 @@ for _, robot in pairs(data.raw["construction-robot"]) do
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
 
-    if (settings.startup["rampant-unkillableConstructionRobots"].value) then    
+    if (settings.startup["rampant-unkillableConstructionRobots"].value) then
+        robot.resistances = {}        
         for damageType, _ in pairs(data.raw["damage-type"]) do
             robot.resistances[damageType] = {
                 type = damageType,
