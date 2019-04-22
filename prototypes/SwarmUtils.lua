@@ -346,8 +346,8 @@ local function addUnitDefaults(template, upgrades)
 		    {
 			type = "attribute",
 			name = "spawningTimeModifer",
-			[1] = 0,
-			[2] = 0,
+			[1] = 1,
+			[2] = 1,
 			[3] = 1,
 			[4] = 2,
 			[5] = 3,
@@ -604,8 +604,8 @@ local function addUnitDefaults(template, upgrades)
 		    {
 			type = "attribute",
 			name = "spawningTimeModifer",
-			[1] = 0,
-			[2] = 0,
+			[1] = 1,
+			[2] = 1,
 			[3] = 1,
 			[4] = 2,
 			[5] = 2,
