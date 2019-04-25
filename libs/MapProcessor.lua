@@ -33,6 +33,7 @@ local SENTINEL_IMPASSABLE_CHUNK  = constants.SENTINEL_IMPASSABLE_CHUNK
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
+local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
 
@@ -124,6 +125,9 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
     local scentStaging = map.scentStaging
 
     local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
+    if squads and (natives.state == AI_STATE_AGGRESSIVE) and (tick < natives.canAttackTick) then
+        squads = false
+    end
     local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
 
     local processQueue = map.processQueue
@@ -136,7 +140,7 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
 	    processPheromone(map, chunk, scentStaging[i])
 
             if squads then
-                squads = formSquads(map, surface, natives, chunk)
+                squads = formSquads(map, surface, natives, chunk, tick)
             end
             if settlers and (getNestCount(map, chunk) > 0) then
                 settlers = formSettlers(map, surface, natives, chunk, tick)

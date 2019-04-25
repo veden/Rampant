@@ -20,10 +20,15 @@ local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
+local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
+local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
+
+
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local INTERVAL_RALLY = constants.INTERVAL_RALLY
 
@@ -49,6 +54,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- local PASSABLE = constants.PASSABLE
 
 -- imported functions
+
+local randomTickEvent = mathUtils.randomTickEvent
 
 local mRandom = math.random
 
@@ -250,7 +257,7 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
     return (natives.points - AI_VENGENCE_SQUAD_COST) > 0
 end
 
-function aiAttackWave.formSquads(map, surface, natives, chunk)
+function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
     if attackWaveValidCandidate(chunk, natives, map) and
         (mRandom() < natives.formSquadThreshold) and
         (#natives.squads < AI_MAX_SQUAD_COUNT)
@@ -280,6 +287,12 @@ function aiAttackWave.formSquads(map, surface, natives, chunk)
 		if (foundUnits > 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
 		    natives.points = natives.points - AI_SQUAD_COST
+                    if tick and (natives.state == AI_STATE_AGGRESSIVE) then
+                        natives.canAttackTick = randomTickEvent(tick,
+                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
+                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
+                        return false
+                    end
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()

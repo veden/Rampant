@@ -109,7 +109,6 @@ data:extend({
 	    per_user = false
 	},
 
-
 	{
 	    type = "bool-setting",
 	    name = "rampant-safeBuildings-straightRail",
@@ -269,7 +268,7 @@ data:extend({
 	    name = "rampant-newEnemyUnitTiers",
 	    description = "rampant-newEnemyUnitTiers",
 	    setting_type = "startup",
-	    default_value = 5,
+	    default_value = 10,
 	    allowed_values = { 5, 10 },
 	    order = "l[modifer]-g[unit]",
 	    per_user = false

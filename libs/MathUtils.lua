@@ -35,7 +35,8 @@ function mathUtils.roundToNearest(number, multiple)
 end
 
 function mathUtils.randomTickEvent(tick, low, high)
-    local minutesToTick = mMax(high * mRandom(), low)
+    local range = high - low
+    local minutesToTick = (range * mRandom()) + low
     local nextTick = mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, INTERVAL_LOGIC)
     return tick + nextTick
 end

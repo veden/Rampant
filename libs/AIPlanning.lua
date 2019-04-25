@@ -21,6 +21,8 @@ local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
+local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
+local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
@@ -103,6 +105,9 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 	    roll = mRandom()
 	    if (roll < 0.65) then
 	    	natives.state = AI_STATE_AGGRESSIVE
+                natives.canAttackTick = randomTickEvent(tick,
+                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
+                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
 	    elseif ((natives.enabledMigration) and (natives.expansion) and (roll < 0.75)) then
 		natives.state = AI_STATE_MIGRATING
 	    elseif ((natives.siegeAIToggle) and (natives.expansion) and (roll < 0.80)) then
