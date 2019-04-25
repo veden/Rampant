@@ -373,7 +373,7 @@ local function addUnitDefaults(template, upgrades)
 			[9] = 1.4,
 			[10] = 1.5
 	})
-        
+
     elseif (template.type == "spitter") then
 	pushUpgrade(upgrades,
 		    {
@@ -803,14 +803,14 @@ local function addUnitSpawnerDefaults(template, upgrades)
 		    type = "resistance",
 		    name = "physical",
 		    decrease = {
-			[1] = 2,
+			[1] = 1,
 			[2] = 2,
-			[3] = 4,
+			[3] = 3,
 			[4] = 4,
 			[5] = 6,
 			[6] = 6,
-			[7] = 10,
-			[8] = 12,
+			[7] = 8,
+			[8] = 10,
 			[9] = 12,
 			[10] = 14
 		    },
@@ -990,8 +990,8 @@ local function addWormDefaults(template, upgrades)
                     [8] = 1.3,
                     [9] = 1.4,
                     [10] = 1.4
-    })   
-    
+    })
+
     pushUpgrade(upgrades,
 		{
 		    type = "attribute",
@@ -1023,7 +1023,7 @@ local function addWormDefaults(template, upgrades)
 		    [9] = 39,
 		    [10] = 40
     })
-    
+
     pushUpgrade(upgrades,
 		{
 		    type = "resistance",
@@ -1199,95 +1199,138 @@ local function addWormDefaults(template, upgrades)
     })
 end
 
+local function fillUnitTable(result, unitSet, tier, probability)
+    for x=1,#unitSet[tier] do
+        result[#result+1] = {unitSet[tier][x], probability}
+    end
+end
 
 local function unitSetToProbabilityTable(unitSet, tier)
-    local dividers = {}
+    -- local dividers = {}
 
-    for i=1,#unitSet do
-	dividers[i] = 1
-    end
-
-    local points = #unitSet * 2
-    for _=1,points do
-        local index
-
-        if (tier == 1) then
-            index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
-        else
-            index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
-        end
-        
-        dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
-    end
-
-    local total = 0
-    for i=1,#dividers do
-	total = total + dividers[i]
-    end
-
-    local runningTotal = 0
-    for i=1,#dividers do
-	runningTotal = runningTotal + (dividers[i] / total)
-	dividers[i] = runningTotal
-    end
-
-    local stepUnit = 1 / (#unitSet[1] + 1)
-
-    local probabilityTable = {}
-
-    for i=1,#unitSet do
-	local result
-    	if (i == 1) then
-    	    result = {
-    		{
-    		    0,
-    		    stepUnit
-    		},
-    		{
-    		    dividers[i],
-    		    0
-    		}
-    	    }
-    	elseif (i == #unitSet) then
-    	    result = {
-    		{
-    		    dividers[i-2],
-    		    0
-    		},
-    		{
-    		    1,
-    		    stepUnit
-    		}
-    	    }
-    	else
-    	    result = {
-    		{
-    		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1] * 0.4),
-    		    0
-    		},
-    		{
-    		    dividers[i-1],
-    		    stepUnit
-    		},
-    		{
-    		    dividers[i],
-    		    0
-    		}
-    	    }
-    	end
-
-	probabilityTable[i] = result
-    end
+    -- for i=#unitSet,1,-1 do
+    --     dividers[i] = 0.
+    -- end
 
     local result = {}
 
-    for i=1, #probabilityTable do
-	local probability = probabilityTable[i]
-	for x=1, #unitSet[i] do
-	    result[#result+1] = {unitSet[i][x], probability}
-	end
+    if (#unitSet == 10) then
+        -- dividers[10] = 0.05
+        -- dividers[9] = 0.05
+        -- dividers[8] = 0.05
+        -- dividers[7] = 0.05
+        -- dividers[6] = 0.10
+        -- dividers[5] = 0.10
+        -- dividers[4] = 0.10
+        -- dividers[3] = 0.10
+        -- dividers[2] = 0.10
+        -- dividers[1] = 0.30
+
+        fillUnitTable(result, unitSet, 1, {{0, 1}, {0.35, 0.0}})
+        fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}})
+        fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}})
+        fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}})
+        fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}})
+        fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}})
+        fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}})
+        fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}})
+        fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
+        fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
+    else
+        -- dividers[5] = 0.15
+        -- dividers[4] = 0.15
+        -- dividers[3] = 0.20
+        -- dividers[2] = 0.20
+        -- dividers[1] = 0.40
+
+        fillUnitTable(result, unitSet, 1, {{0, 1}, {0.45, 0.0}})
+        fillUnitTable(result, unitSet, 2, {{0.4, 0}, {0.5, 0.5}, {0.65, 0.0}})
+        fillUnitTable(result, unitSet, 3, {{0.6, 0}, {0.7, 0.5}, {0.75, 0.0}})
+        fillUnitTable(result, unitSet, 4, {{0.70, 0}, {0.775, 0.5}, {0.95, 0.0}})
+        fillUnitTable(result, unitSet, 5, {{0.9, 0}, {1, 1}})
     end
-    
+
+    -- local points = #unitSet * 2
+    -- for _=1,points do
+    --     local index
+
+    --     if (tier == 1) then
+    --         index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
+    --     else
+    --         index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
+    --     end
+
+    --     dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
+    -- end
+
+    -- local total = 0
+    -- for i=1,#dividers do
+    --     total = total + dividers[i]
+    -- end
+
+    -- local runningTotal = 0
+    -- for i=1,#dividers do
+    --     runningTotal = runningTotal + (dividers[i] / total)
+    --     dividers[i] = runningTotal
+    -- end
+
+    -- local stepUnit = 1 / (#unitSet[1] + 1)
+
+    -- local probabilityTable = {}
+
+    -- for i=1,#unitSet do
+    --     local result
+    -- 	if (i == 1) then
+    -- 	    result = {
+    -- 		{
+    -- 		    0,
+    -- 		    stepUnit
+    -- 		},
+    -- 		{
+    -- 		    dividers[i],
+    -- 		    0
+    -- 		}
+    -- 	    }
+    -- 	elseif (i == #unitSet) then
+    -- 	    result = {
+    -- 		{
+    -- 		    dividers[i-2],
+    -- 		    0
+    -- 		},
+    -- 		{
+    -- 		    1,
+    -- 		    stepUnit
+    -- 		}
+    -- 	    }
+    -- 	else
+    -- 	    result = {
+    -- 		{
+    -- 		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1]) * 0.95,
+    -- 		    0
+    -- 		},
+    -- 		{
+    -- 		    dividers[i-1],
+    -- 		    stepUnit
+    -- 		},
+    -- 		{
+    -- 		    dividers[i],
+    -- 		    0
+    -- 		}
+    -- 	    }
+    -- 	end
+
+    --     probabilityTable[i] = result
+    -- end
+
+    -- local result = {}
+
+    -- for i=1, #probabilityTable do
+    --     local probability = probabilityTable[i]
+    --     for x=1, #unitSet[i] do
+    --         result[#result+1] = {unitSet[i][x], probability}
+    --     end
+    -- end
+
     return result
 end
 
@@ -1376,7 +1419,7 @@ local function scaleAttributes (upgrade, entity)
 	    end
             if (upgrade.name == "damagePerTick") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneDamageScaler"].value
-	    end            
+	    end
 	    if (upgrade.name == "range") then
 		entity.attack[upgrade.name] = entity.attack[upgrade.name] * settings.startup["rampant-unitDroneRangeScaler"].value
 	    end
@@ -1539,7 +1582,7 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 				   unit.attributes,
 				   attackGenerator(unit.attack, unit.attributes, t),
 				   unit.resistances)
-	    elseif (unit.type == "drone") then                
+	    elseif (unit.type == "drone") then
 		entity = makeDrone(unit.name,
 				   unit.attributes,
 				   unit.resistances,
@@ -1614,7 +1657,7 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
     end
 
     -- ent()
-    
+
 end
 
 function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)

@@ -9,6 +9,8 @@ local mathUtils = require("libs/MathUtils")
 
 local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 
+local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -298,7 +300,14 @@ function upgrade.attempt(natives)
         
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.18")
         global.version = constants.VERSION_88
-    end    
+    end
+    if (global.version < 89) then
+
+        natives.canAttackTick = 0
+            
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.22")
+        global.version = 89
+    end
     
     return starting ~= global.version, natives
 end
