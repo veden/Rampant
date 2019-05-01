@@ -83,8 +83,9 @@ function interop.getAttackUsePlayer()
     return global.natives.attackUsePlayer
 end
 
-function interop.registerUnitGroup(unitGroup)
-    unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, unitGroup)
+function interop.registerUnitGroup(unitGroup, isSettler)
+    local squad = unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, unitGroup, isSettler)
+    global.natives.pendingAttack[#global.natives.pendingAttack+1] = squad
 end
 
 interopG = interop
