@@ -1,8 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.23
 Date: 4. 30. 2019
+  Tweaks:
+    - Added support for lighted-big-poles for safety
   Bugfixes:
-    - Fixed interop register unit group not actually registering new squad
+    - Fixed interop register unit group not actually registering new squad    
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.22
