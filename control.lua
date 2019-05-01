@@ -247,7 +247,7 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK,
         SENTINEL_IMPASSABLE_CHUNK
     }
-    
+
     map.position2Top = {0, 0}
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
@@ -255,7 +255,7 @@ local function rebuildMap()
     map.testArea = {{0, 0}, {0, 0}}
     map.area2 = {map.position2Top, map.position2Bottom}
     map.buildPositionTop = {0, 0}
-    map.buildPositionBottom = {0, 0}    
+    map.buildPositionBottom = {0, 0}
     map.buildArea = {map.buildPositionTop, map.buildPositionBottom}
     map.countResourcesQuery = { area=map.area, type="resource" }
     map.filteredEntitiesUnitQuery = { area=map.area, force="enemy",type="unit" }
@@ -292,7 +292,7 @@ local function rebuildMap()
 	destination = map.position,
 	distraction = DEFINES_DISTRACTION_BY_ENEMY,
 	ignore_planner = true
-    }    
+    }
 
     map.wonderCommand = {
         type = DEFINES_COMMAND_WANDER,
@@ -300,7 +300,7 @@ local function rebuildMap()
         radius = DOUBLE_CHUNK_SIZE,
         ticks_to_wait = 360
     }
-    
+
     map.compoundSettleCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
@@ -309,7 +309,7 @@ local function rebuildMap()
             map.settleCommand
         }
     }
-    
+
     map.retreatCommand = {
         type = DEFINES_COMMAND_GROUP,
         group = nil,
@@ -322,7 +322,7 @@ local function rebuildMap()
         from = nil,
         distraction = DEFINES_DISTRACTION_NONE
     }
-    
+
     map.compoundRetreatCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
@@ -335,7 +335,7 @@ local function rebuildMap()
     map.formGroupCommand = { type = DEFINES_COMMAND_GROUP,
                              group = nil,
                              distraction = DEFINES_DISTRACTION_NONE }
-    
+
     map.formCommand = { command = map.formGroupCommand,
                         unit_count = 0,
                         unit_search_distance = TRIPLE_CHUNK_SIZE }
@@ -365,6 +365,10 @@ local function onModSettingsChange(event)
 	natives.safeEntityName["big-electric-pole-2"] = newValue
 	natives.safeEntityName["big-electric-pole-3"] = newValue
 	natives.safeEntityName["big-electric-pole-4"] = newValue
+        natives.safeEntityName["lighted-big-electric-pole-4"] = newValue
+        natives.safeEntityName["lighted-big-electric-pole-3"] = newValue
+        natives.safeEntityName["lighted-big-electric-pole-2"] = newValue
+        natives.safeEntityName["lighted-big-electric-pole"] = newValue
     end
 
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
@@ -383,7 +387,7 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
-    
+
     upgrade.compareTable(natives, "disableVanillaAI", settings.global["rampant-disableVanillaAI"].value)
 
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
@@ -430,7 +434,7 @@ local function prepWorld(rebuild)
         if natives.newEnemies and rebuild then
             game.forces.enemy.kill_all_units()
         end
-        
+
 	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
     end
 end
@@ -534,14 +538,14 @@ local function onDeath(event)
         if (entity.force.name == "enemy") then
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-            
-            if (entity.type == "unit") then               
+
+            if (entity.type == "unit") then
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    -- drop death pheromone where unit died
 		    deathScent(map, chunk)
 
 		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
-                        
+
 			retreatUnits(chunk,
 				     entityPosition,
 				     convertUnitGroupToSquad(natives, entity.unit_group),
@@ -570,8 +574,8 @@ local function onDeath(event)
                 natives.points = natives.points + (((entity.type == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
                 if (natives.points > AI_MAX_OVERFLOW_POINTS) then
                     natives.points = AI_MAX_OVERFLOW_POINTS
-                end                
-                
+                end
+
 		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
 		    unregisterEnemyBaseStructure(map, entity)
 
@@ -597,7 +601,7 @@ local function onDeath(event)
             --         deathScent(map, causeChunk)
             --     end
             -- end
-            
+
             local pair = natives.drainPylons[entity.unit_number]
             if pair then
                 local target = pair[1]
@@ -680,7 +684,7 @@ local function onEnemyBaseBuild(event)
     local surface = entity.surface
 
     if entity.valid and (surface.index == natives.activeSurface) then
-        
+
 	local chunk = getChunkByPosition(map, entity.position)
 	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             -- print(entity.name)
@@ -694,12 +698,12 @@ local function onEnemyBaseBuild(event)
                                       evolutionFactor,
                                       chunk,
                                       event.tick)
-                end                
+                end
                 entity = upgradeEntity(entity,
                                        surface,
                                        base.alignment[mRandom(#base.alignment)],
                                        natives,
-                                       evolutionFactor)                
+                                       evolutionFactor)
             end
             if entity and entity.valid then
                 event.entity = registerEnemyBaseStructure(map, entity, base)
@@ -752,7 +756,7 @@ local function onResourceDepleted(event)
 end
 
 local function onRobotCliff(event)
-    
+
     local surface = event.robot.surface
     if (event.item.name == "cliff-explosives") and (surface.index == natives.activeSurface) then
         entityForPassScan(map, event.cliff)
