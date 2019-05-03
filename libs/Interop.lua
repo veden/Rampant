@@ -53,6 +53,14 @@ function interop.changeMaxWaveSize(waveSize)
     global.natives.attackWaveMaxSize = waveSize
 end
 
+function interop.getSettlerCooldown()
+    return global.natives.settlerCooldown
+end
+
+function interop.getSettlerWaveSize()
+    return global.natives.settlerWaveSize
+end
+
 function interop.changeThreshold(min, max)
     global.natives.attackThresholdMin = min
     global.natives.attackThresholdMax = max

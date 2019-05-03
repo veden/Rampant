@@ -73,9 +73,9 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
 
     natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
-    natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.50)
+    natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.33)
 
-    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinTime, natives.expansionMaxTime))
+    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMaxTime, natives.expansionMinTime))
 
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
