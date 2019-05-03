@@ -812,6 +812,8 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
         cooldown = attributes.cooldown or 15,
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
+        lead_target_for_projectile_speed = 0.6,
+        use_shooter_direction = true,
         ammo_type =
 	    {
 		category = "biological",
@@ -824,7 +826,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
 			    {
 				type = "projectile",
 				projectile = projectile or "defender-bullet",
-				starting_speed = attributes.startingSpeed or 0.3,
+				starting_speed = attributes.startingSpeed or 0.6,
 				max_range = attributes.maxRange or attributes.range or 20
 			    }
 		    }

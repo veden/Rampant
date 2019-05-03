@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.24
+Date: 5. 3. 2019
+  Improvements:
+    - Added interop functions for getSettlerCooldown and getSettlerWaveSize
+  Tweaks:
+    - Increased spitter projectile acceleration to 0.02
+    - Increased spitter projectile starting speed to 0.6
+    - Added projectile lead with default spitter and worm projectiles
+    - Switched to water-tile collision mask in chunk scanning for surface queries
+    - Added checks to spitter puddles on water so they dont happen
+    - Reduced the settler standard deviation to 1/3 of the wave size
+  Bugfixes:
+    - Fixed settler cooldown increasing with evolution as opposed to decreasing
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.23
 Date: 4. 30. 2019
   Tweaks:

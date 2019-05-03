@@ -36,7 +36,7 @@ constants.VERSION_88 = 88
 
 -- misc
 
-constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-green" }
+-- constants.WATER_TILE_NAMES = { "water", "deepwater", "water-green", "deepwater-green" }
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000

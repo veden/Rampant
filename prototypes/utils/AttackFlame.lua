@@ -65,8 +65,14 @@ function attackFlame.createAttackFlame(attributes)
 				{
 				    {
 					type = "create-sticker",
-					sticker = stickerName
+					sticker = stickerName,
+                                        check_buildability = true
 				    },
+                                    {
+                                        type = "create-entity",
+                                        entity_name = "water-splash",
+                                        tile_collision_mask = { "ground-tile" }
+                                    },
 				    {
 					type = "damage",
 					damage = { amount = attributes.damage, type = attributes.damageType or "fire" }
@@ -80,7 +86,8 @@ function attackFlame.createAttackFlame(attributes)
 			type = "instant",
 			target_effects = {
 			    type= "create-fire",
-			    entity_name = fireName
+			    entity_name = fireName,
+                            check_buildability = true
 			}
 		    }
 		}

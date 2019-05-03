@@ -268,9 +268,9 @@ local function rebuildMap()
     map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, invert = true }
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
-    map.filteredTilesPathQuery = { area=sharedArea, name=WATER_TILE_NAMES, limit = 1 }
+    map.filteredTilesPathQuery = { area=sharedArea, collision_mask="water-tile", limit = 1 }
     map.canPlaceQuery = { name="", position={0,0} }
-    map.filteredTilesQuery = { name=WATER_TILE_NAMES, area=map.area }
+    map.filteredTilesQuery = { collision_mask="water-tile", area=map.area }
 
     map.attackCommand = {
 	type = DEFINES_COMMAND_ATTACK_AREA,

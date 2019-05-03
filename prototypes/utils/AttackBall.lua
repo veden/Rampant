@@ -53,7 +53,13 @@ function AttackBall.createAttackBall(attributes)
                         {
                             type="create-fire",
                             entity_name = makeAcidSplashFire(attributes, attributes.stickerName or makeSticker(attributes)),
+                            check_buildability = true,
                             initial_ground_flame_count = 1
+                        },
+                        {
+                            type = "create-entity",
+                            entity_name = "water-splash",
+                            tile_collision_mask = { "ground-tile" }
                         },
                         {
                             type = "play-sound",

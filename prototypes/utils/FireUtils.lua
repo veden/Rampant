@@ -246,6 +246,8 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
         damage_multiplier_increase_per_added_fuel = 1,
         damage_multiplier_decrease_per_tick = 0.005,
 
+        collision_mask = { "water-tile" },
+
         --spawn_entity = "fire-flame-on-tree",
         uses_alternative_behavior = true,
         limit_overlapping_particles = true,
