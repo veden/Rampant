@@ -605,7 +605,7 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     for tier=1,biterTier do
         local t = ((biterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
         for v=1,biterVariation do
-            local entityName = baseAlignmentString .. "-biter-nest-v" .. v .. "-t" .. t .. "-rampant"
+            local entityName = baseAlignmentString .. "-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"
             local entity = surface.create_entity({
                     name= entityName,
                     position = position
@@ -618,7 +618,7 @@ local function processUnitClass(biterVariation, biterTier, spitterVariation, spi
     for tier=1,spitterTier do
         local t = ((spitterTier == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
         for v=1,spitterVariation do
-            local entityName = baseAlignmentString .. "-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"
+            local entityName = baseAlignmentString .. "-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"
             local entity = surface.create_entity({
                     name = entityName,
                     position = position

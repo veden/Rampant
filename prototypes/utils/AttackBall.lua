@@ -21,7 +21,8 @@ local AttackBall = {}
 
 function AttackBall.createAttackBall(attributes)
 
-    local templateDamage = { amount = attributes.damage, type = attributes.damageType or "acid" }
+    local templateAOEDamage = { amount = attributes.damage * 0.75, type = attributes.damageType or "acid" }
+    local templateDirectDamage = { amount = attributes.damage * 0.25, type = attributes.damageType or "acid" }
     local templateArea = {
 	type = "area",
 	radius = attributes.radius,
@@ -35,7 +36,7 @@ function AttackBall.createAttackBall(attributes)
 			{
 			    {
 				type = "damage",
-				damage = templateDamage
+				damage = templateAOEDamage
 			    }
 			}
 		}
@@ -55,6 +56,10 @@ function AttackBall.createAttackBall(attributes)
                             entity_name = makeAcidSplashFire(attributes, attributes.stickerName or makeSticker(attributes)),
                             check_buildability = true,
                             initial_ground_flame_count = 1
+                        },
+                        {
+                            type = "damage",
+                            damage = templateDirectDamage
                         },
                         {
                             type = "create-entity",

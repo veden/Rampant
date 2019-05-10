@@ -60,7 +60,7 @@ function suicide.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "suicide-biter-nest",
+		name = "suicide-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

@@ -59,6 +59,15 @@ data:extend({
 	    per_user = false
 	},
 
+        {
+	    type = "bool-setting",
+	    name = "rampant-liteMode",
+	    setting_type = "startup",
+	    default_value = false,
+	    order = "b[modifier]-g[ai]",
+	    per_user = false
+	},
+
 	{
 	    type = "double-setting",
 	    name = "rampant-aiPointsScaler",
@@ -272,7 +281,7 @@ data:extend({
 	    allowed_values = { 5, 10 },
 	    order = "l[modifer]-g[unit]",
 	    per_user = false
-	},
+	},        
 
 	{
 	    type = "int-setting",

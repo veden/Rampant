@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.25
+Date: 5. 8. 2019
+  Improvements:
+    - Added lite mode which causes the mod to run with a lower UPS cost by making the ai scan and process the game map slower
+  Tweaks:
+    - Reduced default spitter projectile AOE damage by 25%
+    - Added default spitter projectile direct damage for 1/3 damage of AOE, spitters don't get stopped by trees now with friendly fire disabled
+    - Renamed nest to spawner in unit-spawner prototypes
+    - Normalized player building pheromone generation into six groups 50, 200, 1000, 2000, 3500, 12000
+    - Increased player process tick interval to 63
+  Optimizations:
+    - Refactored player building scoring
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.24
 Date: 5. 3. 2019
   Improvements:

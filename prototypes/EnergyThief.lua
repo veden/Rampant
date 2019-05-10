@@ -88,7 +88,7 @@ function energyThief.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "energy-thief-biter-nest",
+		name = "energy-thief-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

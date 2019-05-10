@@ -336,7 +336,7 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    end
 	end
 
-	mapScanChunk(chunk, natives, surface, map)
+	mapScanChunk(chunk, surface, map)
         
         local nests = getNestCount(map, chunk)
         if (nests > 0) then

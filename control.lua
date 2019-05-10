@@ -120,6 +120,8 @@ local rebuildNativeTables = baseUtils.rebuildNativeTables
 
 local mRandom = math.random
 
+local tRemove = table.remove
+
 -- local references to global
 
 local map -- manages the chunks that make up the game world
@@ -265,7 +267,33 @@ local function rebuildMap()
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
-    map.filteredEntitiesPlayerQuery = { area=map.area, force={"enemy", "neutral"}, invert = true }
+
+    map.activePlayerForces = {"player"}
+
+    for _,force in pairs(game.forces) do
+        local add = true
+
+        if (force.name ~= "neutral") and (force.name ~= "enemy") then
+            for i=1,#map.activePlayerForces do
+                if (map.activePlayerForces[i] == force.name) then
+                    add = false
+                    break
+                end
+            end
+
+            if add then
+                map.activePlayerForces[#map.activePlayerForces+1] = force.name
+            end
+        end
+    end
+
+    map.filteredEntitiesPlayerQuery50 = { area=map.area, force=map.activePlayerForces, type={"wall","transport-belt"}}
+    map.filteredEntitiesPlayerQuery200 = { area=map.area, force=map.activePlayerForces, type={"splitter","pump","offshore-pump"}}
+    map.filteredEntitiesPlayerQuery1000 = { area=map.area, force=map.activePlayerForces, type={"lamp","generator","solar-panel", "programmable-speaker", "accumulator", "assembling-machine", "turret", "roboport", "beacon", "ammo-turret"}}
+    map.filteredEntitiesPlayerQuery2000 = { area=map.area, force=map.activePlayerForces, type={"boiler", "furnace", "lab", "reactor", "radar","electric-turret"}}
+    map.filteredEntitiesPlayerQuery3500 = { area=map.area, force=map.activePlayerForces, type={"fluid-turret", "mining-drill"}}
+    map.filteredEntitiesPlayerQuery12000 = { area=map.area, force=map.activePlayerForces, type={"artillery-turret", "rocket-silo"}}
+
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
     map.filteredTilesPathQuery = { area=sharedArea, collision_mask="water-tile", limit = 1 }
@@ -810,6 +838,19 @@ local function onInit()
     hookEvents()
 end
 
+local function onForceCreated(event)
+    map.activePlayerForces[#map.activePlayerForces+1] = event.force.name
+end
+
+local function onForceMerged(event)
+    for i=#map.activePlayerForces,1,-1 do
+        if (map.activePlayerForces[i] == event.source_name) then
+            tRemove(map.activePlayerForces, i)
+            break
+        end
+    end   
+end
+
 -- hooks
 
 script.on_init(onInit)
@@ -836,6 +877,8 @@ script.on_event({defines.events.on_built_entity,
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
+script.on_event(defines.events.on_force_created, onForceCreated)
+script.on_event(defines.events.on_forces_merged, onForceMerged)
 
 remote.add_interface("rampantTests",
 		     {

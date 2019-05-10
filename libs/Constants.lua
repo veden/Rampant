@@ -55,9 +55,9 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
 constants.CHUNK_PASS_THRESHOLD = 0.25
 
-constants.INTERVAL_PLAYER_PROCESS = 19
-constants.INTERVAL_MAP_PROCESS = 5
-constants.INTERVAL_SCAN = 21
+constants.INTERVAL_PLAYER_PROCESS = (settings.startup["rampant-liteMode"].value and 124) or 62
+constants.INTERVAL_MAP_PROCESS = (settings.startup["rampant-liteMode"].value and 8) or 5
+constants.INTERVAL_SCAN = (settings.startup["rampant-liteMode"].value and 42) or 21
 constants.INTERVAL_CHUNK = 17
 constants.INTERVAL_LOGIC = 61
 constants.INTERVAL_SQUAD = 41
@@ -436,34 +436,32 @@ constants.MAX_PENALTY_BEFORE_PURGE = 36000
 -- player building pheromones
 
 constants.BUILDING_PHEROMONES = {}
-constants.BUILDING_PHEROMONES["generator"] = 800
-constants.BUILDING_PHEROMONES["pump"] = 200
-constants.BUILDING_PHEROMONES["reactor"] = 1600
-constants.BUILDING_PHEROMONES["offshore-pump"] = 200
-constants.BUILDING_PHEROMONES["transport-belt"] = 100
+constants.BUILDING_PHEROMONES["wall"] = 50
+constants.BUILDING_PHEROMONES["transport-belt"] = 50 -- 1
+constants.BUILDING_PHEROMONES["splitter"] = 200 
+constants.BUILDING_PHEROMONES["pump"] = 200 
+constants.BUILDING_PHEROMONES["offshore-pump"] = 200 -- 2
+constants.BUILDING_PHEROMONES["lamp"] = 1000
+constants.BUILDING_PHEROMONES["generator"] = 1000 
+constants.BUILDING_PHEROMONES["solar-panel"] = 1000
+constants.BUILDING_PHEROMONES["programmable-speaker"] = 1000
 constants.BUILDING_PHEROMONES["accumulator"] = 1000
-constants.BUILDING_PHEROMONES["solar-panel"] = 800
-constants.BUILDING_PHEROMONES["boiler"] = 1200
 constants.BUILDING_PHEROMONES["assembling-machine"] = 1000
+constants.BUILDING_PHEROMONES["turret"] = 1000
 constants.BUILDING_PHEROMONES["roboport"] = 1000
 constants.BUILDING_PHEROMONES["beacon"] = 1000
-constants.BUILDING_PHEROMONES["furnace"] = 1200
-constants.BUILDING_PHEROMONES["programmable-speaker"] = 800
-constants.BUILDING_PHEROMONES["mining-drill"] = 3500
-constants.BUILDING_PHEROMONES["rocket-silo"] = 12000
-constants.BUILDING_PHEROMONES["lamp"] = 400
-constants.BUILDING_PHEROMONES["radar"] = 2000
-constants.BUILDING_PHEROMONES["lab"] = 1500
-constants.BUILDING_PHEROMONES["splitter"] = 150
+constants.BUILDING_PHEROMONES["ammo-turret"] = 1000 -- 3
+constants.BUILDING_PHEROMONES["boiler"] = 2000
+constants.BUILDING_PHEROMONES["furnace"] = 2000 
+constants.BUILDING_PHEROMONES["lab"] = 2000 
+constants.BUILDING_PHEROMONES["reactor"] = 2000 
+constants.BUILDING_PHEROMONES["radar"] = 2000 
+constants.BUILDING_PHEROMONES["electric-turret"] = 2000 -- 4
+constants.BUILDING_PHEROMONES["fluid-turret"] = 3500 
+constants.BUILDING_PHEROMONES["mining-drill"] = 3500 -- 5
+constants.BUILDING_PHEROMONES["artillery-turret"] = 12000
+constants.BUILDING_PHEROMONES["rocket-silo"] = 12000 -- 6
 
--- player defense pheromones
-
-constants.BUILDING_PHEROMONES["ammo-turret"] = 1000
-constants.BUILDING_PHEROMONES["wall"] = 50
-constants.BUILDING_PHEROMONES["electric-turret"] = 2000
-constants.BUILDING_PHEROMONES["fluid-turret"] = 2800
-constants.BUILDING_PHEROMONES["turret"] = 1000
-constants.BUILDING_PHEROMONES["artillery-turret"] = 10000
 
 -- constants.RETREAT_FILTER = {}
 -- constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
@@ -739,55 +737,55 @@ constants.BUILDING_SPACE_LOOKUP = {}
 for t = 1, 10 do
     local wormTier = t + 1
     for v = 1, 20 do
-        constants.BUILDING_SPACE_LOOKUP["neutral-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["neutral-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["neutral-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["neutral-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["neutral-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
         
-        constants.BUILDING_SPACE_LOOKUP["acid-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["acid-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["acid-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["physical-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["physical-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["physical-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["electric-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["electric-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["electric-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["suicide-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["suicide-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["suicide-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["nuclear-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["nuclear-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["nuclear-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["fire-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fire-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fire-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fire-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["fire-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["inferno-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["inferno-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["inferno-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["troll-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["troll-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["troll-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["troll-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["troll-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["fast-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fast-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fast-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["fast-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["fast-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["laser-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["laser-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["laser-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["laser-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["laser-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["wasp-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["wasp-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["wasp-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["spawner-spitter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["spawner-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["spawner-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["energy-thief-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["energy-thief-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
-        constants.BUILDING_SPACE_LOOKUP["poison-biter-nest-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["poison-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["poison-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
     end

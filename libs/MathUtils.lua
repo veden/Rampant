@@ -37,8 +37,8 @@ end
 function mathUtils.randomTickEvent(tick, low, high)
     local range = high - low
     local minutesToTick = (range * mRandom()) + low
-    local nextTick = mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, INTERVAL_LOGIC)
-    return tick + nextTick
+    -- local nextTick = mathUtils.roundToNearest(, INTERVAL_LOGIC)
+    return tick + (TICKS_A_MINUTE * minutesToTick)
 end
 
 function mathUtils.linearInterpolation(percent, min, max)

@@ -121,7 +121,7 @@ function poison.addFaction()
             },
 
             unitSpawner = {
-                name = "poison-biter-nest",
+                name = "poison-biter-spawner",
 
                 loot = spawnerLoot,
                 attributes = {},

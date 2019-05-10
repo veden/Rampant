@@ -57,7 +57,7 @@ function acid.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "acid-biter-nest",
+		name = "acid-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},
@@ -240,7 +240,7 @@ function acid.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "acid-spitter-nest",
+		name = "acid-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

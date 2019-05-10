@@ -460,7 +460,7 @@ function wasp.addFaction()
             },
 
             unitSpawner = {
-                name = "wasp-spitter-nest",
+                name = "wasp-spitter-spawner",
 
                 loot = spawnerLoot,
                 attributes = {},

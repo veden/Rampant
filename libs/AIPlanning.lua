@@ -92,12 +92,12 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 	natives.points = natives.points + points
     end
 
-    if (natives.temperamentTick == tick) then
+    if (natives.temperamentTick <= tick) then
 	natives.temperament = mRandom()
 	natives.temperamentTick = randomTickEvent(tick, AI_MIN_TEMPERAMENT_DURATION, AI_MAX_TEMPERAMENT_DURATION)
     end
 
-    if (natives.stateTick == tick) then
+    if (natives.stateTick <= tick) then
 	local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * natives.aiAggressiveness
 	if (roll > natives.temperament) then
 	    natives.state = AI_STATE_PEACEFUL
