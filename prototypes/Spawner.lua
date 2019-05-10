@@ -628,7 +628,7 @@ function spawner.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "spawner-spitter-nest",
+		name = "spawner-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

@@ -70,7 +70,7 @@ function physical.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "physical-biter-nest",
+		name = "physical-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

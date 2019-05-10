@@ -56,7 +56,7 @@ function neutral.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "neutral-biter-nest",
+		name = "neutral-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},	    
@@ -110,7 +110,7 @@ function neutral.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "neutral-spitter-nest",
+		name = "neutral-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

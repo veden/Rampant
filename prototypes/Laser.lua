@@ -65,7 +65,7 @@ function laser.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "laser-biter-nest",
+		name = "laser-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},
@@ -277,7 +277,7 @@ function laser.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "laser-spitter-nest",
+		name = "laser-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

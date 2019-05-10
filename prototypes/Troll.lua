@@ -66,7 +66,7 @@ function troll.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "troll-biter-nest",
+		name = "troll-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},
@@ -405,7 +405,7 @@ function troll.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "troll-spitter-nest",
+		name = "troll-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

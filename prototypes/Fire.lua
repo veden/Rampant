@@ -56,7 +56,7 @@ function fire.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "fire-biter-nest",
+		name = "fire-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},	    
@@ -242,7 +242,7 @@ function fire.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "fire-spitter-nest",
+		name = "fire-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

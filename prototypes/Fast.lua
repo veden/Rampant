@@ -54,7 +54,7 @@ function fast.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "fast-biter-nest",
+		name = "fast-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},
@@ -255,7 +255,7 @@ function fast.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "fast-spitter-nest",
+		name = "fast-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

@@ -168,30 +168,13 @@ local function scanPaths(chunk, surface, map)
     return pass
 end
 
-local function scorePlayerBuildings(surface, map, natives)
-    local entities = surface.find_entities_filtered(map.filteredEntitiesPlayerQuery)
-
-    local playerObjects = 0
-    local safeEntities = natives.safeEntities
-    local safeEntityName = natives.safeEntityName
-    if natives.safeBuildings then
-	for i=1, #entities do
-	    local entity = entities[i]
-	    local entityType = entity.type
-
-	    if safeEntities[entityType] or safeEntityName[entity.name] then
-		entity.destructible = false
-	    end
-
-	    playerObjects = playerObjects + (BUILDING_PHEROMONES[entityType] or 0)
-	end
-    else
-	for i=1, #entities do
-	    playerObjects = playerObjects + (BUILDING_PHEROMONES[entities[i].type] or 0)
-	end
-    end
-
-    return playerObjects
+local function scorePlayerBuildings(surface, map)
+    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * 50) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * 200) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * 1000) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * 2000) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * 3500) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * 12000)
 end
 
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
@@ -200,16 +183,16 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
     if (passScore >= CHUNK_PASS_THRESHOLD) then
 	local pass = scanPaths(chunk, surface, map)
 
-	local playerObjects = scorePlayerBuildings(surface, map, natives)
+	local playerObjects = scorePlayerBuildings(surface, map)
         
         local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
-        local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
 
 	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
 	    pass = CHUNK_ALL_DIRECTIONS
 	end
 
         if (pass ~= CHUNK_IMPASSABLE) then
+            local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
             local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
 
             if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
@@ -306,8 +289,8 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     return SENTINEL_IMPASSABLE_CHUNK
 end
 
-function chunkUtils.mapScanChunk(chunk, natives, surface, map)
-    local playerObjects = scorePlayerBuildings(surface, map, natives)
+function chunkUtils.mapScanChunk(chunk, surface, map)
+    local playerObjects = scorePlayerBuildings(surface, map)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)

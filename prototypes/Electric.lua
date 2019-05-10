@@ -66,7 +66,7 @@ function electric.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "electric-biter-nest",
+		name = "electric-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

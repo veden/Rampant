@@ -61,7 +61,7 @@ function inferno.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "inferno-spitter-nest",
+		name = "inferno-spitter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},

@@ -63,7 +63,7 @@ function nuclear.addFaction()
 	    },
 
 	    unitSpawner = {
-		name = "nuclear-biter-nest",
+		name = "nuclear-biter-spawner",
 
 		loot = spawnerLoot,
 		attributes = {},
