@@ -536,7 +536,7 @@ script.on_nth_tick(INTERVAL_SQUAD,
 end)
 
 local function onBuild(event)
-    local entity = event.created_entity
+    local entity = event.created_entity or event.entity
     if (entity.surface.index == natives.activeSurface) then
 	accountPlayerEntity(map, entity, natives, true, false)
 	if natives.safeBuildings then
@@ -870,9 +870,11 @@ script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
 
 script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
-                 defines.events.on_robot_mined_entity}, onMine)
+                 defines.events.on_robot_mined_entity,
+                 defines.events.script_raised_destroy}, onMine)
 script.on_event({defines.events.on_built_entity,
-                 defines.events.on_robot_built_entity}, onBuild)
+                 defines.events.on_robot_built_entity,
+                 defines.events.script_raised_built}, onBuild)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)
