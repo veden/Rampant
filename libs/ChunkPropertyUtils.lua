@@ -23,7 +23,7 @@ function chunkPropertyUtils.getWormCount(map, chunk)
 end
 
 function chunkPropertyUtils.setWormCount(map, chunk, count)
-    if (count == 0) then
+    if (count <= 0) then
 	map.chunkToWorms[chunk] = nil
     else
 	map.chunkToWorms[chunk] = count
@@ -31,7 +31,7 @@ function chunkPropertyUtils.setWormCount(map, chunk, count)
 end
 
 function chunkPropertyUtils.setNestCount(map, chunk, count)
-    if (count == 0) then
+    if (count <= 0) then
 	map.chunkToNests[chunk] = nil
     else
 	map.chunkToNests[chunk] = count
@@ -43,7 +43,7 @@ function chunkPropertyUtils.getChunkSettlerTick(map, chunk)
 end
 
 function chunkPropertyUtils.setChunkSettlerTick(map, chunk, tick)
-    if (tick == 0) then
+    if (tick <= 0) then
 	map.chunkToSettler[chunk] = nil
     else
 	map.chunkToSettler[chunk] = tick
@@ -87,19 +87,11 @@ function chunkPropertyUtils.setRetreatTick(map, chunk, tick)
 end
 
 function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
-    if (resourceGenerator == 0) then
+    if (resourceGenerator <= 0) then
 	map.chunkToResource[chunk] = nil
     else
 	map.chunkToResource[chunk] = resourceGenerator
     end
-end
-
-function chunkPropertyUtils.setChunkSpawnerEggTick(map, chunk, tick)
-    map.chunkToSpawner[chunk] = tick
-end
-
-function chunkPropertyUtils.getChunkSpawnerEggTick(map, chunk)
-    return map.chunkToSpawner[chunk] or 0
 end
 
 function chunkPropertyUtils.getResourceGenerator(map, chunk)
@@ -223,7 +215,7 @@ function chunkPropertyUtils.getSquadsOnChunk(map, chunk)
 end
 
 function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
-    if (playerGenerator == 0) then
+    if (playerGenerator <= 0) then
 	map.chunkToPlayerBase[chunk] = nil
     else
 	map.chunkToPlayerBase[chunk] = playerGenerator

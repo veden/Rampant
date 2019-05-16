@@ -21,6 +21,8 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
 
+local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
+
 local BASE_CLEAN_DISTANCE = constants.BASE_CLEAN_DISTANCE
 
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
@@ -48,6 +50,7 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 -- imported functions
 
 local mRandom = math.random
+local mMin = math.min
 local tRemove = table.remove
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
@@ -55,6 +58,8 @@ local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
+local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
 local getNestCount = chunkPropertyUtils.getNestCount
 
@@ -295,6 +300,13 @@ function squadAttack.squadsDispatch(map, surface, natives)
             if (memberCount == 0) then
                 tRemove(squads, i)
                 removeSquadFromChunk(map, squad)
+                local deathGen = getDeathGenerator(map, squad.chunk)
+                local penalties = squad.penalties
+                for x=1,mMin(#squad.penalties,5) do
+                    addDeathGenerator(map,
+                                      penalties[x].c,
+                                      deathGen * DIVISOR_DEATH_TRAIL_TABLE[x])
+                end
                 group.destroy()                
             elseif (memberCount > AI_MAX_BITER_GROUP_SIZE) then
                 local members = group.members

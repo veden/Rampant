@@ -169,12 +169,12 @@ local function scanPaths(chunk, surface, map)
 end
 
 local function scorePlayerBuildings(surface, map)
-    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * 50) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * 200) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * 1000) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * 2000) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * 3500) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * 12000)
+    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * 25) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * 100) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * 500) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * 1000) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * 1750) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * 6000)
 end
 
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
@@ -399,11 +399,11 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
 end
 
 function chunkUtils.accountPlayerEntity(map, entity, natives, addObject, creditNatives)
-
+   
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         local entityValue = BUILDING_PHEROMONES[entity.type]
-
-        local overlapArray = getEntityOverlapChunks(map, entity)
+        
+        local overlapArray = getEntityOverlapChunks(map, entity)       
         if not addObject then
             if creditNatives then
                 if (natives.state == AI_STATE_ONSLAUGHT) then
@@ -439,6 +439,16 @@ function chunkUtils.unregisterResource(entity, map)
     end        
 end
 
+function chunkUtils.registerResource(entity, map)
+    local overlapArray = getEntityOverlapChunks(map, entity)
+
+    for i=1,#overlapArray do
+        local chunk = overlapArray[i]
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            addResourceGenerator(map, chunk, RESOURCE_NORMALIZER)
+        end
+    end        
+end
 
 function chunkUtils.makeImmortalEntity(surface, entity)
     local repairPosition = entity.position

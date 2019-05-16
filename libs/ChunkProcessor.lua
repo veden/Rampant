@@ -20,6 +20,7 @@ local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
 -- imported functions
 
 local createChunk = chunkUtils.createChunk
+local mapScanChunk = chunkUtils.mapScanChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
 
@@ -63,25 +64,28 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 	local topLeft = event.area.left_top
 	local x = topLeft.x
 	local y = topLeft.y
-        local chunk = createChunk(x, y)
 
 	topOffset[1] = x
 	topOffset[2] = y
 	bottomOffset[1] = x + CHUNK_SIZE
 	bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
+        if map[x] and map[x][y] then           
+            mapScanChunk(map[x][y], surface, map)
+        else
+            if map[x] == nil then
+                map[x] = {}
+            end
 
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local chunkX = chunk.x
+            local chunk = createChunk(x, y)
+            
+            chunk = initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
 
-	    if map[chunkX] == nil then
-		map[chunkX] = {}
-	    end
-	    map[chunkX][chunk.y] = chunk
-
-	    processQueue[#processQueue+1] = chunk
-	end
+            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                map[x][y] = chunk
+                processQueue[#processQueue+1] = chunk
+            end
+        end       
     end
 
     if (#processQueue > natives.nextChunkSort) or

@@ -115,6 +115,9 @@ local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
+local registerResource = chunkUtils.registerResource
+local unregisterResource = chunkUtils.unregisterResource
+
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
@@ -203,7 +206,7 @@ local function rebuildMap()
 
     map.chunkToRetreats = {}
     map.chunkToRallys = {}
-    map.chunkToSpawner = {}
+    -- map.chunkToSpawner = {}
     map.chunkToSettler = {}
 
     map.chunkToPassable = {}
@@ -538,12 +541,18 @@ end)
 local function onBuild(event)
     local entity = event.created_entity or event.entity
     if (entity.surface.index == natives.activeSurface) then
-	accountPlayerEntity(map, entity, natives, true, false)
-	if natives.safeBuildings then
-	    if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
-		entity.destructible = false
-	    end
-	end
+        if (entity.type == "resource") and (entity.force.name == "neutral") then
+            -- print("registering resource", entity.name)
+            registerResource(entity, map)
+        else
+            -- print("registering entity", entity.name)
+            accountPlayerEntity(map, entity, natives, true, false)
+            if natives.safeBuildings then
+                if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
+                    entity.destructible = false
+                end
+            end
+        end	
     end
 end
 
@@ -551,7 +560,11 @@ local function onMine(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == natives.activeSurface) then
-	accountPlayerEntity(map, entity, natives, false, false)
+        if (entity.type == "resource") and (entity.force.name == "neutral") then
+            unregisterResource(entity, map)
+        else        
+            accountPlayerEntity(map, entity, natives, false, false)
+        end
     end
 end
 
@@ -779,7 +792,7 @@ end
 local function onResourceDepleted(event)
     local entity = event.entity
     if (entity.surface.index == natives.activeSurface) then
-	chunkUtils.unregisterResource(entity, map)
+	unregisterResource(entity, map)
     end
 end
 

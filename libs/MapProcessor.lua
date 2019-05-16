@@ -285,13 +285,15 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
-    local spawners = map.chunkToSpawner
+    -- local spawners = map.chunkToSpawner
     local settlers = map.chunkToSettler
     local drained = map.chunkToDrained
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
 
+    local isFullMapScan = settings.global["rampant-enableFullMapScan"].value
+    
     for x=index,endIndex do
 	local chunk = processQueue[x]
 
@@ -311,12 +313,12 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    rallys[chunk] = nil
 	end
 
-	local spawnerTick = spawners[chunk]
-	if spawnerTick and ((tick - spawnerTick) > INTERVAL_SPAWNER) then
-	    spawners[chunk] = nil
-	end
+	-- local spawnerTick = spawners[chunk]
+	-- if spawnerTick and ((tick - spawnerTick) > INTERVAL_SPAWNER) then
+	--     spawners[chunk] = nil
+	-- end
 
-	local settlerTick = spawners[chunk]
+	local settlerTick = settlers[chunk]
 	if settlerTick and ((tick - settlerTick) > 0) then
 	    settlers[chunk] = nil
 	end
@@ -336,7 +338,9 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    end
 	end
 
-	mapScanChunk(chunk, surface, map)
+        if isFullMapScan then
+            mapScanChunk(chunk, surface, map)
+	end
         
         local nests = getNestCount(map, chunk)
         if (nests > 0) then

@@ -1,4 +1,26 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.26
+Date: 5. 14. 2019
+  Contributions:
+    - Choumiko - Added event hooks for script_built and script_destroyed events
+  Optimizations:
+    - Disabled full map scan by default in favor of script_built and script_destroyed events. If a mod does not use these events and creates or destroys entities through scripts, you may need to re-enable this feature in the mod map settings under Compatibility: enable full map scan.
+  Improvements:
+    - Added a check for script created resources in the script_built and script_destroyed events
+    - When a squad is destroyed its last few chunk moves now receive a portion of the death generator pheromone from the chunk they died on
+  Tweaks:
+    - Removed unused mapping tables
+    - Chunk properties now use <= instead of == when checking for minimum allowed values
+    - Increased death pheromone generator amount to 1300
+    - Increased retreat levels by 30%
+    - Increased raiding base activition threshold to 550
+    - Decreased minimum cooldown time for attack waves in aggressive state to 30 seconds
+    - Reduced all player generator values by half
+  Bugfixes:
+    - Memory leak with settlers last tick map
+    - Multiple version of chunks where in the processing queue causing double processing issues with a duplicate context
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.25
 Date: 5. 8. 2019
   Improvements:

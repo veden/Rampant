@@ -17,7 +17,7 @@ data:extend({
 	    default_value = true,
 	    order = "b[modifier]-b[trigger]",
 	    per_user = false
-	},
+	},       
 
         {
 	    type = "bool-setting",
@@ -538,6 +538,15 @@ data:extend({
 	    order = "n[modifier]-a[optimize]",
 	    per_user = false
 	},
+
+        {
+	    type = "bool-setting",
+	    name = "rampant-enableFullMapScan",
+	    setting_type = "runtime-global",
+	    default_value = false,
+	    order = "n[modifier]-a[optimize]",
+	    per_user = false
+	},        
 
         {
 	    type = "bool-setting",
