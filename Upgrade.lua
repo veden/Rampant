@@ -9,8 +9,6 @@ local mathUtils = require("libs/MathUtils")
 
 local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 
-local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
-
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -127,7 +125,7 @@ function upgrade.attempt(natives)
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 
-	natives.randomGenerator = game.create_random_generator(natives.enemySeed+1024)
+	natives.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
 
 	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.11")
 	global.version = constants.VERSION_23
@@ -308,12 +306,12 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.22")
         global.version = 89
     end
-    if (global.version < 94) then
+    if (global.version < 95) then
 
-        natives.randomGenerator = game.create_random_generator(natives.enemySeed+1024)
+        natives.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
 
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.27")
-        global.version = 94
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.28")
+        global.version = 95
     end
     
     return starting ~= global.version, natives
