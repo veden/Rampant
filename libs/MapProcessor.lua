@@ -313,11 +313,6 @@ function mapProcessor.scanMap(map, surface, natives, tick)
 	    rallys[chunk] = nil
 	end
 
-	-- local spawnerTick = spawners[chunk]
-	-- if spawnerTick and ((tick - spawnerTick) > INTERVAL_SPAWNER) then
-	--     spawners[chunk] = nil
-	-- end
-
 	local settlerTick = settlers[chunk]
 	if settlerTick and ((tick - settlerTick) > 0) then
 	    settlers[chunk] = nil

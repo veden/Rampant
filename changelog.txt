@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.27
+Date: 8. 16. 2019
+  Bugfixes:
+    - Fixed settle move position error
+    - Fixed gaussianRandom having min greater than max causing hangs
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.26
 Date: 5. 14. 2019
   Contributions:

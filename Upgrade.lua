@@ -127,7 +127,7 @@ function upgrade.attempt(natives)
 	-- used for breaking up how many squads are processing per logic cycle
 	natives.regroupIndex = 1
 
-	natives.randomGenerator = game.create_random_generator()
+	natives.randomGenerator = game.create_random_generator(natives.enemySeed+1024)
 
 	game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.11")
 	global.version = constants.VERSION_23
@@ -308,10 +308,12 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.22")
         global.version = 89
     end
-    if (global.version < 92) then
+    if (global.version < 94) then
 
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.26")
-        global.version = 92
+        natives.randomGenerator = game.create_random_generator(natives.enemySeed+1024)
+
+        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.27")
+        global.version = 94
     end
     
     return starting ~= global.version, natives

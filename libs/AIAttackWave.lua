@@ -32,7 +32,6 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local INTERVAL_RALLY = constants.INTERVAL_RALLY
 
-local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -44,14 +43,9 @@ local RESOURCE_MINIMUM_FORMATION_DELTA = constants.RESOURCE_MINIMUM_FORMATION_DE
 
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
-local DEFINES_COMMAND_GROUP = defines.command.group
-local DEFINES_DISTRACTION_NONE  = defines.distraction.none
-
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
--- local PASSABLE = constants.PASSABLE
 
 -- imported functions
 

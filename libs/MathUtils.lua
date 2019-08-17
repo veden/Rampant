@@ -11,11 +11,8 @@ local constants = require("Constants")
 
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
-local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
-
 -- imported functions
 
-local mMax = math.max
 local mSqrt = math.sqrt
 local mLog10 = math.log10
 
@@ -37,7 +34,6 @@ end
 function mathUtils.randomTickEvent(tick, low, high)
     local range = high - low
     local minutesToTick = (range * mRandom()) + low
-    -- local nextTick = mathUtils.roundToNearest(, INTERVAL_LOGIC)
     return tick + (TICKS_A_MINUTE * minutesToTick)
 end
 
@@ -85,7 +81,7 @@ function mathUtils.gaussianRandom(mean, std_dev)
 end
 
 function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
-    if (min == max) then
+    if (min >= max) then
 	return min
     end
     local r
@@ -124,7 +120,7 @@ end
 
 function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
     local r
-    if (min == max) then
+    if (min >= max) then
 	return min
     end
     repeat

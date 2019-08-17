@@ -147,11 +147,14 @@ local function settleMove(map, squad, natives, surface)
         ((resourceGenerator ~= 0) and (getNestCount(map, chunk) == 0))
     then
         if not ((group.state == DEFINES_GROUP_FINISHED) or ((group.state == DEFINES_GROUP_GATHERING) and (squad.cycles <= 0))) then
-        -- if (group.state ~= DEFINES_GROUP_FINISHED) then
             return
         end
         
         position = findMovementPosition(surface, groupPosition)
+
+        if not position then
+            position = groupPosition
+        end
         
         cmd = map.settleCommand
         if squad.kamikaze then
