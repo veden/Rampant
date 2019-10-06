@@ -53,6 +53,7 @@ local DEFINES_COMMAND_ATTACK_AREA = defines.command.attack_area
 local DEFINES_COMMAND_GO_TO_LOCATION = defines.command.go_to_location
 local DEFINES_COMMMAD_COMPOUND = defines.command.compound
 local DEFINES_COMMAND_FLEE = defines.command.flee
+local DEFINES_COMMAND_STOP = defines.command.stop
 
 local DEFINES_COMPOUND_COMMAND_RETURN_LAST = defines.compound_command.return_last
 
@@ -313,7 +314,7 @@ local function rebuildMap()
     map.moveCommand = {
 	type = DEFINES_COMMAND_GO_TO_LOCATION,
 	destination = map.position,
-	radius = 2,
+	radius = 6,
         pathfind_flags = { prefer_straight_paths = true },
 	distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
@@ -330,6 +331,10 @@ local function rebuildMap()
         wander_in_group = false,
         radius = DOUBLE_CHUNK_SIZE,
         ticks_to_wait = 360
+    }
+
+    map.stopCommand = {
+        type = DEFINES_COMMAND_STOP
     }
 
     map.compoundSettleCommand = {

@@ -73,4 +73,7 @@ mapSettings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX
 mapSettings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
 
+data.raw["utility-constants"]["default"].unit_group_pathfinding_resolution = -8
+data.raw["utility-constants"]["default"].unit_group_collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
+
 
