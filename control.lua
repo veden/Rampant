@@ -136,27 +136,27 @@ local pendingChunks -- chunks that have yet to be processed by the mod
 
 local function onIonCannonFired(event)
     --[[
-	event.force, event.surface, event.player_index, event.position, event.radius
+        event.force, event.surface, event.player_index, event.position, event.radius
     --]]
     local surface = event.surface
     if (surface.index == natives.activeSurface) then
-	natives.points = natives.points + 3000
-	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-	    natives.points = AI_MAX_OVERFLOW_POINTS
-	end
-	local chunk = getChunkByPosition(map, event.position)
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    rallyUnits(chunk, map, surface, natives, event.tick)
-	end
+        natives.points = natives.points + 3000
+        if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+            natives.points = AI_MAX_OVERFLOW_POINTS
+        end
+        local chunk = getChunkByPosition(map, event.position)
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            rallyUnits(chunk, map, surface, natives, event.tick)
+        end
     end
 end
 
 local function hookEvents()
     if config.ionCannonPresent then
-	script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
-			onIonCannonFired)
-	-- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
-	-- 		    onIonCannonTargeted)
+        script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
+                        onIonCannonFired)
+        -- script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_targeted"),
+        -- 		    onIonCannonTargeted)
     end
 end
 
@@ -244,7 +244,7 @@ local function rebuildMap()
     map.scentStaging = {}
 
     for x=1,PROCESS_QUEUE_SIZE+1 do
-	map.scentStaging[x] = {0,0,0,0}
+        map.scentStaging[x] = {0,0,0,0}
     end
 
     map.chunkOverlapArray = {
@@ -305,25 +305,25 @@ local function rebuildMap()
     map.filteredTilesQuery = { collision_mask="water-tile", area=map.area }
 
     map.attackCommand = {
-	type = DEFINES_COMMAND_ATTACK_AREA,
-	destination = map.position,
-	radius = CHUNK_SIZE,
-	distraction = DEFINES_DISTRACTION_BY_ANYTHING
+        type = DEFINES_COMMAND_ATTACK_AREA,
+        destination = map.position,
+        radius = CHUNK_SIZE,
+        distraction = DEFINES_DISTRACTION_BY_ANYTHING
     }
 
     map.moveCommand = {
-	type = DEFINES_COMMAND_GO_TO_LOCATION,
-	destination = map.position,
-	radius = 6,
+        type = DEFINES_COMMAND_GO_TO_LOCATION,
+        destination = map.position,
+        radius = 6,
         pathfind_flags = { prefer_straight_paths = true },
-	distraction = DEFINES_DISTRACTION_BY_ENEMY
+        distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
     map.settleCommand = {
-	type = DEFINES_COMMAND_BUILD_BASE,
-	destination = map.position,
-	distraction = DEFINES_DISTRACTION_BY_ENEMY,
-	ignore_planner = true
+        type = DEFINES_COMMAND_BUILD_BASE,
+        destination = map.position,
+        distraction = DEFINES_DISTRACTION_BY_ENEMY,
+        ignore_planner = true
     }
 
     map.wonderCommand = {
@@ -381,7 +381,7 @@ end
 local function onModSettingsChange(event)
 
     if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or (string.sub(event.setting, 1, 18) == "rampant-arsenal")) then
-	return false
+        return false
     end
 
     upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)
@@ -394,13 +394,13 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives.safeEntities, "lamp", settings.global["rampant-safeBuildings-lamps"].value)
 
     local changed, newValue = upgrade.compareTable(natives.safeEntityName,
-						   "big-electric-pole",
-						   settings.global["rampant-safeBuildings-bigElectricPole"].value)
+                                                   "big-electric-pole",
+                                                   settings.global["rampant-safeBuildings-bigElectricPole"].value)
     if changed then
-	natives.safeEntityName["big-electric-pole"] = newValue
-	natives.safeEntityName["big-electric-pole-2"] = newValue
-	natives.safeEntityName["big-electric-pole-3"] = newValue
-	natives.safeEntityName["big-electric-pole-4"] = newValue
+        natives.safeEntityName["big-electric-pole"] = newValue
+        natives.safeEntityName["big-electric-pole-2"] = newValue
+        natives.safeEntityName["big-electric-pole-3"] = newValue
+        natives.safeEntityName["big-electric-pole-4"] = newValue
         natives.safeEntityName["lighted-big-electric-pole-4"] = newValue
         natives.safeEntityName["lighted-big-electric-pole-3"] = newValue
         natives.safeEntityName["lighted-big-electric-pole-2"] = newValue
@@ -437,41 +437,41 @@ local function prepWorld(rebuild)
     local upgraded
 
     if (game.surfaces["battle_surface_2"] ~= nil) then
-	natives.activeSurface = game.surfaces["battle_surface_2"].index
+        natives.activeSurface = game.surfaces["battle_surface_2"].index
     elseif (game.surfaces["battle_surface_1"] ~= nil) then
-	natives.activeSurface = game.surfaces["battle_surface_1"].index
+        natives.activeSurface = game.surfaces["battle_surface_1"].index
     else
-	natives.activeSurface = game.surfaces["nauvis"].index
+        natives.activeSurface = game.surfaces["nauvis"].index
     end
 
     upgraded, natives = upgrade.attempt(natives)
     onModSettingsChange(nil)
     if natives.newEnemies then
-	rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
+        rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
     end
     if upgraded then
-	rebuildMap()
+        rebuildMap()
 
-	-- clear pending chunks, will be added when loop runs below
-	global.pendingChunks = {}
-	pendingChunks = global.pendingChunks
+        -- clear pending chunks, will be added when loop runs below
+        global.pendingChunks = {}
+        pendingChunks = global.pendingChunks
 
-	-- queue all current chunks that wont be generated during play
-	local surface = game.surfaces[natives.activeSurface]
-	local tick = game.tick
+        -- queue all current chunks that wont be generated during play
+        local surface = game.surfaces[natives.activeSurface]
+        local tick = game.tick
         natives.nextChunkSort = 0
-	for chunk in surface.get_chunks() do
-	    onChunkGenerated({ tick = tick,
-			       surface = surface,
-			       area = { left_top = { x = chunk.x * 32,
-						     y = chunk.y * 32 }}})
-	end
+        for chunk in surface.get_chunks() do
+            onChunkGenerated({ tick = tick,
+                               surface = surface,
+                               area = { left_top = { x = chunk.x * 32,
+                                                     y = chunk.y * 32 }}})
+        end
 
         if natives.newEnemies and rebuild then
             game.forces.enemy.kill_all_units()
         end
 
-	processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
+        processPendingChunks(natives, map, surface, pendingChunks, tick, game.forces.enemy.evolution_factor, rebuild)
     end
 end
 
@@ -480,12 +480,12 @@ local function onConfigChanged()
 end
 
 script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
-		   function (event)
+                   function (event)
 
-		       local gameRef = game
-		       local surface = gameRef.surfaces[natives.activeSurface]
+                       local gameRef = game
+                       local surface = gameRef.surfaces[natives.activeSurface]
 
-		       processPlayers(gameRef.players,
+                       processPlayers(gameRef.players,
                                       map,
                                       surface,
                                       natives,
@@ -493,12 +493,12 @@ script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
 end)
 
 script.on_nth_tick(INTERVAL_MAP_PROCESS,
-		   function (event)
+                   function (event)
 
-		       local gameRef = game
-		       local surface = gameRef.surfaces[natives.activeSurface]
+                       local gameRef = game
+                       local surface = gameRef.surfaces[natives.activeSurface]
 
-		       processMap(map,
+                       processMap(map,
                                   surface,
                                   natives,
                                   event.tick,
@@ -507,36 +507,36 @@ end)
 
 
 script.on_nth_tick(INTERVAL_SCAN,
-		   function (event)
-		       local tick = event.tick
-		       local gameRef = game
-		       local surface = gameRef.surfaces[natives.activeSurface]
+                   function (event)
+                       local tick = event.tick
+                       local gameRef = game
+                       local surface = gameRef.surfaces[natives.activeSurface]
 
-		       processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
+                       processPendingChunks(natives, map, surface, pendingChunks, tick, gameRef.forces.enemy.evolution_factor)
 
-		       scanMap(map, surface, natives, tick)
+                       scanMap(map, surface, natives, tick)
 
-		       map.chunkToPassScan = processScanChunks(map, surface)
+                       map.chunkToPassScan = processScanChunks(map, surface)
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
-		   function (event)
-		       local tick = event.tick
+                   function (event)
+                       local tick = event.tick
 
-		       planning(natives,
-				game.forces.enemy.evolution_factor,
-				tick)
+                       planning(natives,
+                                game.forces.enemy.evolution_factor,
+                                tick)
 
-		       if natives.newEnemies then
-			   recycleBases(natives, tick)
-		       end
+                       if natives.newEnemies then
+                           recycleBases(natives, tick)
+                       end
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
-		   function ()
+                   function ()
                        local surface = game.surfaces[natives.activeSurface]
-		       squadsBeginAttack(natives)
-		       squadsDispatch(map, surface, natives)
+                       squadsBeginAttack(natives)
+                       squadsDispatch(map, surface, natives)
 
                        regroupSquads(natives, map)
 
@@ -577,35 +577,35 @@ local function onDeath(event)
     local entity = event.entity
     local surface = entity.surface
     if (surface.index == natives.activeSurface) then
-	local entityPosition = entity.position
-	local chunk = getChunkByPosition(map, entityPosition)
-	local cause = event.cause
+        local entityPosition = entity.position
+        local chunk = getChunkByPosition(map, entityPosition)
+        local cause = event.cause
         local tick = event.tick
         if (entity.force.name == "enemy") then
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
             if (entity.type == "unit") then
-		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    -- drop death pheromone where unit died
-		    deathScent(map, chunk)
+                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    -- drop death pheromone where unit died
+                    deathScent(map, chunk)
 
-		    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
+                    if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
 
-			retreatUnits(chunk,
-				     entityPosition,
-				     convertUnitGroupToSquad(natives, entity.unit_group),
-				     map,
-				     surface,
-				     natives,
-				     tick,
-				     (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS,
-				     artilleryBlast)
+                        retreatUnits(chunk,
+                                     entityPosition,
+                                     convertUnitGroupToSquad(natives, entity.unit_group),
+                                     map,
+                                     surface,
+                                     natives,
+                                     tick,
+                                     (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS,
+                                     artilleryBlast)
 
-			if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-			    rallyUnits(chunk, map, surface, natives, tick)
-			end
-		    end
+                        if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
+                            rallyUnits(chunk, map, surface, natives, tick)
+                        end
+                    end
                 end
 
                 local cloudName = POISON_LOOKUP[entity.name]
@@ -622,21 +622,21 @@ local function onDeath(event)
                     natives.points = AI_MAX_OVERFLOW_POINTS
                 end
 
-		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    unregisterEnemyBaseStructure(map, entity)
+                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    unregisterEnemyBaseStructure(map, entity)
 
-		    rallyUnits(chunk, map, surface, natives, tick)
+                    rallyUnits(chunk, map, surface, natives, tick)
 
-		    retreatUnits(chunk,
-				 entityPosition,
-				 nil,
-				 map,
-				 surface,
-				 natives,
-				 tick,
-				 RETREAT_SPAWNER_GRAB_RADIUS,
-				 (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
-		end
+                    retreatUnits(chunk,
+                                 entityPosition,
+                                 nil,
+                                 map,
+                                 surface,
+                                 natives,
+                                 tick,
+                                 RETREAT_SPAWNER_GRAB_RADIUS,
+                                 (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
+                end
             end
 
             -- if (cause and not artilleryBlast) then
@@ -667,22 +667,22 @@ local function onDeath(event)
                 end
             end
         elseif (entity.force.name ~= "enemy") then
-	    local creditNatives = false
-	    if (event.force ~= nil) and (event.force.name == "enemy") then
-		creditNatives = true
-		if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		    victoryScent(map, chunk, entity.type)
-		end
+            local creditNatives = false
+            if (event.force ~= nil) and (event.force.name == "enemy") then
+                creditNatives = true
+                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    victoryScent(map, chunk, entity.type)
+                end
 
                 local drained = (entity.type == "electric-turret") and map.chunkToDrained[chunk]
                 if (cause ~= nil) or (drained and (drained - tick) > 0) then
                     if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
-			local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
-			if conversion then
-			    local newEntity = surface.create_entity({position=entity.position,
-								     name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
-								     direction=entity.direction})
-			    if (conversion == "pole") then
+                        local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
+                        if conversion then
+                            local newEntity = surface.create_entity({position=entity.position,
+                                                                     name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+                                                                     direction=entity.direction})
+                            if (conversion == "pole") then
                                 local targetEntity = surface.create_entity({position=entity.position,
                                                                             name="pylon-target-rampant",
                                                                             direction=entity.direction})
@@ -690,8 +690,8 @@ local function onDeath(event)
                                 local pair = {targetEntity, newEntity}
                                 natives.drainPylons[targetEntity.unit_number] = pair
                                 natives.drainPylons[newEntity.unit_number] = pair
-				local wires = entity.neighbours
-				if wires then
+                                local wires = entity.neighbours
+                                if wires then
                                     for _,v in pairs(wires.copper) do
                                         if (v.valid) then
                                             newEntity.connect_neighbour(v);
@@ -707,20 +707,20 @@ local function onDeath(event)
                                             newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
                                         end
                                     end
-				end
+                                end
                             elseif newEntity.backer_name then
                                 newEntity.backer_name = ""
-			    end
-			end
-		    end
-		end
+                            end
+                        end
+                    end
+                end
 
-	    end
-	    if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
-		makeImmortalEntity(surface, entity)
-	    else
-		accountPlayerEntity(map, entity, natives, false, creditNatives)
-	    end
+            end
+            if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
+                makeImmortalEntity(surface, entity)
+            else
+                accountPlayerEntity(map, entity, natives, false, creditNatives)
+            end
         end
     end
 end
@@ -731,8 +731,8 @@ local function onEnemyBaseBuild(event)
 
     if entity.valid and (surface.index == natives.activeSurface) then
 
-	local chunk = getChunkByPosition(map, entity.position)
-	if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        local chunk = getChunkByPosition(map, entity.position)
+        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             -- print(entity.name)
             local evolutionFactor = entity.force.evolution_factor
             local base
@@ -764,40 +764,40 @@ local function onSurfaceTileChange(event)
         ((event.item.name == "landfill") or (event.item.name == "waterfill")) and
         (surfaceIndex == natives.activeSurface)
     then
-	local surface = game.surfaces[natives.activeSurface]
-	local chunks = {}
-	local tiles = event.tiles
-	for i=1,#tiles do
-	    local position = tiles[i].position
-	    local chunk = getChunkByPosition(map, position)
+        local surface = game.surfaces[natives.activeSurface]
+        local chunks = {}
+        local tiles = event.tiles
+        for i=1,#tiles do
+            local position = tiles[i].position
+            local chunk = getChunkByPosition(map, position)
 
-	    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-		map.chunkToPassScan[chunk] = true
-	    else
-		local x,y = positionToChunkXY(position)
-		local addMe = true
-		for ci=1,#chunks do
-		    local c = chunks[ci]
-		    if (c.x == x) and (c.y == y) then
-			addMe = false
-			break
-		    end
-		end
-		if addMe then
-		    local chunkXY = {x=x,y=y}
-		    chunks[#chunks+1] = chunkXY
-		    onChunkGenerated({area = { left_top = chunkXY },
-				      surface = surface})
-		end
-	    end
-	end
+            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                map.chunkToPassScan[chunk] = true
+            else
+                local x,y = positionToChunkXY(position)
+                local addMe = true
+                for ci=1,#chunks do
+                    local c = chunks[ci]
+                    if (c.x == x) and (c.y == y) then
+                        addMe = false
+                        break
+                    end
+                end
+                if addMe then
+                    local chunkXY = {x=x,y=y}
+                    chunks[#chunks+1] = chunkXY
+                    onChunkGenerated({area = { left_top = chunkXY },
+                                      surface = surface})
+                end
+            end
+        end
     end
 end
 
 local function onResourceDepleted(event)
     local entity = event.entity
     if (entity.surface.index == natives.activeSurface) then
-	unregisterResource(entity, map)
+        unregisterResource(entity, map)
     end
 end
 
@@ -812,22 +812,22 @@ end
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
     if (event.item.name == "cliff-explosives") and (surface.index == natives.activeSurface) then
-	local cliffs = surface.find_entities_filtered({area={{event.position.x-0.75,event.position.y-0.75},
-							   {event.position.x+0.75,event.position.y+0.75}},
-						       type="cliff"})
-	for i=1,#cliffs do
-	    entityForPassScan(map, cliffs[i])
-	end
+        local cliffs = surface.find_entities_filtered({area={{event.position.x-0.75,event.position.y-0.75},
+                                                           {event.position.x+0.75,event.position.y+0.75}},
+                                                       type="cliff"})
+        for i=1,#cliffs do
+            entityForPassScan(map, cliffs[i])
+        end
     end
 end
 
 local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
     if entity and (entity.surface.index == natives.activeSurface) then
-	natives.points = natives.points + 2000
-	if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-	    natives.points = AI_MAX_OVERFLOW_POINTS
-	end
+        natives.points = natives.points + 2000
+        if (natives.points > AI_MAX_OVERFLOW_POINTS) then
+            natives.points = AI_MAX_OVERFLOW_POINTS
+        end
     end
 end
 
@@ -878,7 +878,7 @@ script.on_configuration_changed(onConfigChanged)
 
 script.on_event(defines.events.on_resource_depleted, onResourceDepleted)
 script.on_event({defines.events.on_player_built_tile,
-		 defines.events.on_robot_built_tile}, onSurfaceTileChange)
+                 defines.events.on_robot_built_tile}, onSurfaceTileChange)
 
 script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 
@@ -901,38 +901,38 @@ script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
 
 remote.add_interface("rampantTests",
-		     {
-			 pheromoneLevels = tests.pheromoneLevels,
-			 activeSquads = tests.activeSquads,
-			 entitiesOnPlayerChunk = tests.entitiesOnPlayerChunk,
-			 findNearestPlayerEnemy = tests.findNearestPlayerEnemy,
-			 morePoints = tests.morePoints,
-			 aiStats = tests.aiStats,
-			 dumpEnvironment = tests.dumpEnvironment,
-			 fillableDirtTest = tests.fillableDirtTest,
-			 tunnelTest = tests.tunnelTest,
-			 dumpNatives = tests.dumpatives,
-			 createEnemy = tests.createEnemy,
-			 attackOrigin = tests.attackOrigin,
-			 cheatMode = tests.cheatMode,
-			 gaussianRandomTest = tests.gaussianRandomTest,
-			 reveal = tests.reveal,
-			 showMovementGrid = tests.showMovementGrid,
-			 showBaseGrid = tests.showBaseGrid,
-			 baseStats = tests.baseStats,
-			 mergeBases = tests.mergeBases,
-			 clearBases = tests.clearBases,
-			 getOffsetChunk = tests.getOffsetChunk,
-			 registeredNest = tests.registeredNest,
-			 colorResourcePoints = tests.colorResourcePoints,
-			 entityStats = tests.entityStats,
-			 stepAdvanceTendrils = tests.stepAdvanceTendrils,
-			 unitGroupBuild = tests.unitGroupBuild,
-			 exportAiState = tests.exportAiState(nil),
-			 createEnergyTest = tests.createEnergyTest,
-			 killActiveSquads = tests.killActiveSquads,
+                     {
+                         pheromoneLevels = tests.pheromoneLevels,
+                         activeSquads = tests.activeSquads,
+                         entitiesOnPlayerChunk = tests.entitiesOnPlayerChunk,
+                         findNearestPlayerEnemy = tests.findNearestPlayerEnemy,
+                         morePoints = tests.morePoints,
+                         aiStats = tests.aiStats,
+                         dumpEnvironment = tests.dumpEnvironment,
+                         fillableDirtTest = tests.fillableDirtTest,
+                         tunnelTest = tests.tunnelTest,
+                         dumpNatives = tests.dumpatives,
+                         createEnemy = tests.createEnemy,
+                         attackOrigin = tests.attackOrigin,
+                         cheatMode = tests.cheatMode,
+                         gaussianRandomTest = tests.gaussianRandomTest,
+                         reveal = tests.reveal,
+                         showMovementGrid = tests.showMovementGrid,
+                         showBaseGrid = tests.showBaseGrid,
+                         baseStats = tests.baseStats,
+                         mergeBases = tests.mergeBases,
+                         clearBases = tests.clearBases,
+                         getOffsetChunk = tests.getOffsetChunk,
+                         registeredNest = tests.registeredNest,
+                         colorResourcePoints = tests.colorResourcePoints,
+                         entityStats = tests.entityStats,
+                         stepAdvanceTendrils = tests.stepAdvanceTendrils,
+                         unitGroupBuild = tests.unitGroupBuild,
+                         exportAiState = tests.exportAiState(nil),
+                         createEnergyTest = tests.createEnergyTest,
+                         killActiveSquads = tests.killActiveSquads,
                          scanChunkPaths = tests.scanChunkPaths
-		     }
+                     }
 )
 
 remote.add_interface("rampant", interop)
