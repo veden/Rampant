@@ -41,7 +41,7 @@ end
 function mapUtils.getChunkByPosition(map, position)
     local chunkX = map[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
-	local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+        local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
     end
     return SENTINEL_IMPASSABLE_CHUNK
@@ -50,7 +50,7 @@ end
 function mapUtils.getChunkByUnalignedXY(map, x, y)
     local chunkX = map[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
-	local chunkY = mFloor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+        local chunkY = mFloor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
     end
     return SENTINEL_IMPASSABLE_CHUNK
@@ -79,9 +79,9 @@ function mapUtils.getNeighborChunks(map, x, y)
         neighbors[4] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[6] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[6] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[6] = SENTINEL_IMPASSABLE_CHUNK
     end
 
     xChunks = map[x+CHUNK_SIZE]
@@ -90,9 +90,9 @@ function mapUtils.getNeighborChunks(map, x, y)
         neighbors[5] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[8] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[5] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[5] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
     end
 
     xChunks = map[x]
@@ -100,8 +100,8 @@ function mapUtils.getNeighborChunks(map, x, y)
         neighbors[2] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
         neighbors[7] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[7] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[7] = SENTINEL_IMPASSABLE_CHUNK
     end
     return neighbors
 end
@@ -120,27 +120,27 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local endPassable = getPassable(map, endChunk)
     -- print(direction, startPassable, endPassable)
     if (startPassable == CHUNK_ALL_DIRECTIONS) then
-	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-	elseif (direction == 2) or (direction == 7) then
-	    canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
-	elseif (direction == 4) or (direction == 5) then
-	    canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
-	end
+        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+        elseif (direction == 2) or (direction == 7) then
+            canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
+        elseif (direction == 4) or (direction == 5) then
+            canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
+        end
     elseif (startPassable == CHUNK_NORTH_SOUTH) then
-	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-	elseif (direction == 2) or (direction == 7) then
-	    canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
-	end
+        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+        elseif (direction == 2) or (direction == 7) then
+            canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
+        end
     elseif (startPassable == CHUNK_EAST_WEST) then
-	if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-	    canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-	elseif (direction == 4) or (direction == 5) then
-	    canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
-	end
+        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
+            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
+        elseif (direction == 4) or (direction == 5) then
+            canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
+        end
     else
-	canMove = (endPassable ~= CHUNK_IMPASSABLE)
+        canMove = (endPassable ~= CHUNK_IMPASSABLE)
     end
     return canMove
 end
@@ -149,57 +149,87 @@ function mapUtils.getCardinalChunks(map, x, y)
     local neighbors = map.cardinalNeighbors
     local xChunks = map[x]
     if xChunks then
-	neighbors[1] = xChunks[y-CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
-	neighbors[4] = xChunks[y+CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = xChunks[y-CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[4] = xChunks[y+CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
-	neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
     end
 
     xChunks = map[x-CHUNK_SIZE]
     if xChunks then
-	neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
     end
 
     xChunks = map[x+CHUNK_SIZE]
     if xChunks then
-	neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
     else
-	neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
     end
     return neighbors
 end
 
 function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPosition, scaling)
     if (direction == 1) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
-	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
+        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
+        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 2) then
-	endPosition.x = startPosition.x
-	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling + 0.25)
+        endPosition.x = startPosition.x
+        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling + 0.25)
     elseif (direction == 3) then
-	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
-	endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
+        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
+        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 4) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling + 0.25)
-	endPosition.y = startPosition.y
+        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling + 0.25)
+        endPosition.y = startPosition.y
     elseif (direction == 5) then
-	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling + 0.25)
-	endPosition.y = startPosition.y
+        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling + 0.25)
+        endPosition.y = startPosition.y
     elseif (direction == 6) then
-	endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
-	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
+        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
+        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
     elseif (direction == 7) then
-	endPosition.x = startPosition.x
-	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling + 0.25)
+        endPosition.x = startPosition.x
+        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling + 0.25)
     elseif (direction == 8) then
-	endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
-	endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
+        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
+        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
     end
     return endPosition
 end
+
+function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosition)
+    local lx = startPosition.x
+    local ly = startPosition.y
+    if (direction == 1) then
+        lx = lx - CHUNK_SIZE
+        ly = ly - CHUNK_SIZE
+    elseif (direction == 2) then
+        ly = ly - CHUNK_SIZE
+    elseif (direction == 3) then
+        lx = lx + CHUNK_SIZE
+        ly = ly - CHUNK_SIZE
+    elseif (direction == 4) then
+        lx = lx - CHUNK_SIZE
+    elseif (direction == 5) then
+        lx = lx + CHUNK_SIZE
+    elseif (direction == 6) then
+        lx = lx - CHUNK_SIZE
+        ly = ly + CHUNK_SIZE
+    elseif (direction == 7) then
+        ly = ly + CHUNK_SIZE
+    elseif (direction == 8) then
+        lx = lx + CHUNK_SIZE
+        ly = ly + CHUNK_SIZE
+    end
+    endPosition.x = lx
+    endPosition.y = ly
+    -- return lx, ly
+end
+
 
 mapUtilsG = mapUtils
 return mapUtils

@@ -79,40 +79,40 @@ end
 
 if settings.startup["rampant-enableSwarm"].value then
     for k, unit in pairs(data.raw["unit"]) do
-	if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
-	    unit.collision_box = {
-		{unit.collision_box[1][1] * 0.20, unit.collision_box[1][2] * 0.20},
-		{unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
-	    }
-            -- if unit.collision_mask == nil then
-            --     unit.collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
-            -- else
-            --     unit.collision_mask[#unit.collision_mask+1] = "not-colliding-with-itself"
-            -- end
+        if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
+            unit.collision_box = {
+                {unit.collision_box[1][1] * 0.20, unit.collision_box[1][2] * 0.20},
+                {unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
+            }
+            if unit.collision_mask == nil then
+                unit.collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
+            else
+                unit.collision_mask[#unit.collision_mask+1] = "not-colliding-with-itself"
+            end
 
             unit.ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = false, path_resolution_modifier = -8, do_seperation = false }
-	end
+        end
     end
 end
 
 if settings.startup["rampant-enableShrinkNestsAndWorms"].value then    
     for k, unit in pairs(data.raw["unit-spawner"]) do
-	if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
-            unit.collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
-	    unit.collision_box = {
-		{unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
-		{unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
-	    }   
-	end
+        if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
+            -- unit.collision_mask = {"player-layer", "train-layer"}
+            unit.collision_box = {
+                {unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
+                {unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
+            }   
+        end
     end
 
     for k, unit in pairs(data.raw["turret"]) do
-	if string.find(k, "worm") and unit.collision_box then
-	    unit.collision_box = {
-		{unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
-		{unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
-	    }
-	end
+        if string.find(k, "worm") and unit.collision_box then
+            unit.collision_box = {
+                {unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
+                {unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
+            }
+        end
     end    
 end
 

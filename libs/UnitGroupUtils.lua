@@ -54,8 +54,8 @@ function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
     local squads = getSquadsOnChunk(map, chunk)
     for i=1,#squads do
         local squad = squads[i]
-	local unitGroup = squad.group
-	if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
+        local unitGroup = squad.group
+        if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
             return squad
         end
     end
@@ -121,12 +121,12 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         kamikaze = false,
         frenzyPosition = {x = 0,
                           y = 0},
-        cycles = 60,
+        cycles = 10,
         maxDistance = 0,
         attackScoreFunction = 1,
         originPosition = {x = 0,
                           y = 0},
-        chunk = nil
+        chunk = SENTINEL_IMPASSABLE_CHUNK
     }
 
     if position then

@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.29
+Date: 10. 13. 2019
+  Improvements:
+    - Pathfinding now looks two steps ahead and using the compound command
+    - Squad formation now has a gathering delay to allow all members to make the initial group
+  Bugfixes:
+    - Fixed old savegames penalties having nil chunk index
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.28
 Date: 8. 17. 2019
   Bugfixes:

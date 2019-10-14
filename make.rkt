@@ -84,11 +84,22 @@
       (copyDirectory "prototypes" modFolder)))
 
   (define (copy)
+    (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
+                                     "_"
+                                     (hash-ref configuration 'version)))
+    (print 'copying)
     (copyFiles modFolder))
 
   (define (zipIt)
+    (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
+                                     "_"
+                                     (hash-ref configuration 'version)))
+    (print 'zipping)
     (makeZip modFolder))
 
   (define (runStart)
+    (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
+                                     "_"
+                                     (hash-ref configuration 'version)))
     (copyFiles modFolder)
     (system*/exit-code "factorio")))

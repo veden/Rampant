@@ -56,6 +56,8 @@ local DEFINES_COMMAND_FLEE = defines.command.flee
 local DEFINES_COMMAND_STOP = defines.command.stop
 
 local DEFINES_COMPOUND_COMMAND_RETURN_LAST = defines.compound_command.return_last
+local DEFINES_COMPOUND_COMMAND_AND = defines.compound_command.logical_and
+local DEFINES_COMPOUND_COMMAND_OR = defines.compound_command.logical_or
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -240,6 +242,10 @@ local function rebuildMap()
         x=0,
         y=0
     }
+    map.position2 = {
+        x=0,
+        y=0
+    }
 
     map.scentStaging = {}
 
@@ -307,15 +313,30 @@ local function rebuildMap()
     map.attackCommand = {
         type = DEFINES_COMMAND_ATTACK_AREA,
         destination = map.position,
-        radius = CHUNK_SIZE,
+        radius = CHUNK_SIZE * 1.5,
+        distraction = DEFINES_DISTRACTION_BY_ANYTHING
+    }
+
+    map.attack2Command = {
+        type = DEFINES_COMMAND_ATTACK_AREA,
+        destination = map.position2,
+        radius = CHUNK_SIZE * 1.5,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING
     }
 
     map.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = map.position,
-        radius = 6,
-        pathfind_flags = { prefer_straight_paths = true },
+        radius = 1,
+        pathfind_flags = { prefer_straight_paths = true, cache = true },
+        distraction = DEFINES_DISTRACTION_BY_ENEMY
+    }
+
+    map.move2Command = {
+        type = DEFINES_COMMAND_GO_TO_LOCATION,
+        destination = map.position2,
+        radius = 1,
+        pathfind_flags = { prefer_straight_paths = true, cache = true },
         distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
@@ -343,6 +364,33 @@ local function rebuildMap()
         commands = {
             map.wonderCommand,
             map.settleCommand
+        }
+    }
+
+    map.compoundMoveMoveCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.moveCommand,
+            map.move2Command
+        }
+    }
+
+    map.compoundMoveAttackCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.moveCommand,
+            map.attack2Command
+        }
+    }
+
+    map.compoundAttackAttackCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.attackCommand,
+            map.attack2Command
         }
     }
 
@@ -856,6 +904,25 @@ local function onInit()
     hookEvents()
 end
 
+local function onCommandDebugger(event)
+    for i=1,#natives.squads do
+        if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
+            local msg
+            if (event.result == defines.behavior_result.in_progress) then
+                msg = "progress"
+            elseif (event.result == defines.behavior_result.fail) then
+                msg = "fail"
+            elseif (event.result == defines.behavior_result.success) then
+                msg = "success"
+            elseif (event.result == defines.behavior_result.deleted) then
+                msg = "deleted"                
+            end
+            print(msg, event.unit_number)
+            return
+        end
+    end
+end
+
 local function onForceCreated(event)
     map.activePlayerForces[#map.activePlayerForces+1] = event.force.name
 end
@@ -893,6 +960,8 @@ script.on_event({defines.events.on_player_mined_entity,
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity,
                  defines.events.script_raised_built}, onBuild)
+
+-- script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)

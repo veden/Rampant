@@ -13,6 +13,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
@@ -134,36 +135,36 @@ local function scanPaths(chunk, surface, map)
     bottomPosition[2] = y + 32
 
     for xi=x, x + 32 do
-	topPosition[1] = xi
+        topPosition[1] = xi
         bottomPosition[1] = xi + 1
-	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+        if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
             (count_tiles_filtered(filteredTilesPathQuery) == 0)
         then
-	    passableNorthSouth = true
-	    break
-	end
+            passableNorthSouth = true
+            break
+        end
     end
 
     topPosition[1] = x
     bottomPosition[1] = x + 32
 
     for yi=y, y + 32 do
-	topPosition[2] = yi
+        topPosition[2] = yi
         bottomPosition[2] = yi + 1
-	if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
+        if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
             (count_tiles_filtered(filteredTilesPathQuery) == 0)
         then
-	    passableEastWest = true
-	    break
-	end
+            passableEastWest = true
+            break
+        end
     end
     
     if passableEastWest and passableNorthSouth then
-	pass = CHUNK_ALL_DIRECTIONS
+        pass = CHUNK_ALL_DIRECTIONS
     elseif passableEastWest then
-	pass = CHUNK_EAST_WEST
+        pass = CHUNK_EAST_WEST
     elseif passableNorthSouth then
-	pass = CHUNK_NORTH_SOUTH
+        pass = CHUNK_NORTH_SOUTH
     end
     return pass
 end
@@ -181,15 +182,15 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
     local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
 
     if (passScore >= CHUNK_PASS_THRESHOLD) then
-	local pass = scanPaths(chunk, surface, map)
+        local pass = scanPaths(chunk, surface, map)
 
-	local playerObjects = scorePlayerBuildings(surface, map)
+        local playerObjects = scorePlayerBuildings(surface, map)
         
         local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
 
-	if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
-	    pass = CHUNK_ALL_DIRECTIONS
-	end
+        if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
+            pass = CHUNK_ALL_DIRECTIONS
+        end
 
         if (pass ~= CHUNK_IMPASSABLE) then
             local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
@@ -270,20 +271,20 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
 
     if (passScore >= CHUNK_PASS_THRESHOLD) then
-	local pass = scanPaths(chunk, surface, map)
+        local pass = scanPaths(chunk, surface, map)
 
-	local playerObjects = getPlayerBaseGenerator(map, chunk)
+        local playerObjects = getPlayerBaseGenerator(map, chunk)
 
-	local nests = getNestCount(map, chunk)
+        local nests = getNestCount(map, chunk)
 
-	if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
-	    pass = CHUNK_ALL_DIRECTIONS
-	end
+        if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
+            pass = CHUNK_ALL_DIRECTIONS
+        end
 
-	setPassable(map, chunk, pass)
-	setPathRating(map, chunk, passScore)
+        setPassable(map, chunk, pass)
+        setPathRating(map, chunk, passScore)
 
-	return chunk
+        return chunk
     end
 
     return SENTINEL_IMPASSABLE_CHUNK
@@ -313,8 +314,8 @@ end
 
 function chunkUtils.createChunk(topX, topY)
     local chunk = {
-	x = topX,
-	y = topY
+        x = topX,
+        y = topY
     }
     chunk[MOVEMENT_PHEROMONE] = 0
     chunk[BASE_PHEROMONE] = 0
@@ -327,10 +328,12 @@ end
 
 function chunkUtils.colorChunk(x, y, tileType, surface)
     local tiles = {}
-    for xi=x+5, x + 27 do
-	for yi=y+5, y + 27 do
-	    tiles[#tiles+1] = {name=tileType, position={xi, yi}}
-	end
+    local lx = math.floor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    local ly = math.floor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE    
+    for xi=lx+5, lx + 27 do
+        for yi=ly+5, ly + 27 do
+            tiles[#tiles+1] = {name=tileType, position={xi, yi}}
+        end
     end
     surface.set_tiles(tiles, false)
 end
@@ -338,7 +341,7 @@ end
 function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local overlapArray = getEntityOverlapChunks(map, entity)
+        local overlapArray = getEntityOverlapChunks(map, entity)
 
         local lookup
         if (entityType == "unit-spawner") then
@@ -362,7 +365,7 @@ end
 function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-	local overlapArray = getEntityOverlapChunks(map, entity)
+        local overlapArray = getEntityOverlapChunks(map, entity)
 
         local mainLookup
         local secondaryLookup
@@ -399,7 +402,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
 end
 
 function chunkUtils.accountPlayerEntity(map, entity, natives, addObject, creditNatives)
-   
+    
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         local entityValue = BUILDING_PHEROMONES[entity.type]
         

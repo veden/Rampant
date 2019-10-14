@@ -122,21 +122,21 @@ end
 
 function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
     if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (natives.points >= AI_VENGENCE_SQUAD_COST)) then
-	setRallyTick(map, chunk, tick)
-	local cX = chunk.x
-	local cY = chunk.y
-	for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do
-	    for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
-		if (x ~= cX) and (y ~= cY) then
-		    local rallyChunk = getChunkByXY(map, x, y)
-		    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
-			if not aiAttackWave.formVengenceSquad(map, surface, natives, rallyChunk) then
-			    return
-			end
-		    end
-		end
-	    end
-	end
+        setRallyTick(map, chunk, tick)
+        local cX = chunk.x
+        local cY = chunk.y
+        for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do
+            for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
+                if (x ~= cX) and (y ~= cY) then
+                    local rallyChunk = getChunkByXY(map, x, y)
+                    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
+                        if not aiAttackWave.formVengenceSquad(map, surface, natives, rallyChunk) then
+                            return
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -144,14 +144,14 @@ local function noNearbySettlers(map, chunk, tick)
     local cX = chunk.x
     local cY = chunk.y
     for x=cX - SETTLER_DISTANCE, cX + SETTLER_DISTANCE, 32 do
-	for y=cY - SETTLER_DISTANCE, cY + SETTLER_DISTANCE, 32 do
-	    if (x ~= cX) and (y ~= cY) then
-		local c = getChunkByXY(map, x, y)
-		if (c ~= SENTINEL_IMPASSABLE_CHUNK) and ((tick - getChunkSettlerTick(map, c)) < 0) then
-		    return false
-		end
-	    end
-	end
+        for y=cY - SETTLER_DISTANCE, cY + SETTLER_DISTANCE, 32 do
+            if (x ~= cX) and (y ~= cY) then
+                local c = getChunkByXY(map, x, y)
+                if (c ~= SENTINEL_IMPASSABLE_CHUNK) and ((tick - getChunkSettlerTick(map, c)) < 0) then
+                    return false
+                end
+            end
+        end
     end
     return true
 end
@@ -173,31 +173,31 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
                                                                   map)
         end
 
-	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) and noNearbySettlers(map, chunk, tick) then
-	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
-								      positionFromDirectionAndChunk(squadDirection,
-												    chunk,
-												    map.position,
-												    0.98),
-								      CHUNK_SIZE,
-								      4,
+        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) and noNearbySettlers(map, chunk, tick) then
+            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+                                                                      positionFromDirectionAndChunk(squadDirection,
+                                                                                                    chunk,
+                                                                                                    map.position,
+                                                                                                    0.98),
+                                                                      CHUNK_SIZE,
+                                                                      4,
                                                                       true)
-	    if squadPosition then
-		local squad = createSquad(squadPosition, surface, nil, true)
+            if squadPosition then
+                local squad = createSquad(squadPosition, surface, nil, true)
 
-		squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance * 0.5,
-							natives.expansionMaxDistanceDerivation,
-							10,
-							natives.expansionMaxDistance)
+                squad.maxDistance = gaussianRandomRange(natives.expansionMaxDistance * 0.5,
+                                                        natives.expansionMaxDistanceDerivation,
+                                                        10,
+                                                        natives.expansionMaxDistance)
 
-		local scaledWaveSize = settlerWaveScaling(natives)
+                local scaledWaveSize = settlerWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
-		local foundUnits = surface.set_multi_command(map.formCommand)
-		if (foundUnits > 0) then
-		    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
+                local foundUnits = surface.set_multi_command(map.formCommand)
+                if (foundUnits > 0) then
+                    setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
-		    natives.points = natives.points - AI_SETTLER_COST
+                    natives.points = natives.points - AI_SETTLER_COST
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -214,38 +214,38 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
     if (mRandom() < natives.formSquadThreshold) and (#natives.squads < AI_MAX_SQUAD_COUNT)
     then
 
-	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-								     validUnitGroupLocation,
-								     scoreUnitGroupLocation,
-								     map)
-	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
-								      positionFromDirectionAndChunk(squadDirection,
-												    chunk,
-												    map.position,
-												    0.98),
-								      CHUNK_SIZE,
-								      4,
+        local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
+                                                                     validUnitGroupLocation,
+                                                                     scoreUnitGroupLocation,
+                                                                     map)
+        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+                                                                      positionFromDirectionAndChunk(squadDirection,
+                                                                                                    chunk,
+                                                                                                    map.position,
+                                                                                                    0.98),
+                                                                      CHUNK_SIZE,
+                                                                      4,
                                                                       true)
-	    if squadPosition then
-		local squad = createSquad(squadPosition, surface)
+            if squadPosition then
+                local squad = createSquad(squadPosition, surface)
 
-		squad.rabid = mRandom() < 0.03
+                squad.rabid = mRandom() < 0.03
 
-		local scaledWaveSize = attackWaveScaling(natives)
+                local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
-		local foundUnits = surface.set_multi_command(map.formCommand)
-		if (foundUnits > 0) then
+                local foundUnits = surface.set_multi_command(map.formCommand)
+                if (foundUnits > 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
-		    natives.points = natives.points - AI_VENGENCE_SQUAD_COST
+                    natives.points = natives.points - AI_VENGENCE_SQUAD_COST
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
                     end
-		end
-	    end
-	end
+                end
+            end
+        end
     end
 
     return (natives.points - AI_VENGENCE_SQUAD_COST) > 0
@@ -256,31 +256,31 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
         (mRandom() < natives.formSquadThreshold) and
         (#natives.squads < AI_MAX_SQUAD_COUNT)
     then
-	local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-								     validUnitGroupLocation,
-								     scoreUnitGroupLocation,
-								     map)
-	if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-	    local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
-								      positionFromDirectionAndChunk(squadDirection,
-												    chunk,
-												    map.position,
-												    0.98),
-								      CHUNK_SIZE,
-								      4,
+        local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
+                                                                     validUnitGroupLocation,
+                                                                     scoreUnitGroupLocation,
+                                                                     map)
+        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+                                                                      positionFromDirectionAndChunk(squadDirection,
+                                                                                                    chunk,
+                                                                                                    map.position,
+                                                                                                    0.98),
+                                                                      CHUNK_SIZE,
+                                                                      4,
                                                                       true)
-	    if squadPosition then
-		local squad = createSquad(squadPosition, surface)
+            if squadPosition then
+                local squad = createSquad(squadPosition, surface)
 
-		squad.rabid = mRandom() < 0.03
+                squad.rabid = mRandom() < 0.03
 
-		local scaledWaveSize = attackWaveScaling(natives)
+                local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
-		local foundUnits = surface.set_multi_command(map.formCommand)
-		if (foundUnits > 0) then
+                local foundUnits = surface.set_multi_command(map.formCommand)
+                if (foundUnits > 0) then
                     natives.pendingAttack[#natives.pendingAttack+1] = squad
-		    natives.points = natives.points - AI_SQUAD_COST
+                    natives.points = natives.points - AI_SQUAD_COST
                     if tick and (natives.state == AI_STATE_AGGRESSIVE) then
                         natives.canAttackTick = randomTickEvent(tick,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
@@ -291,7 +291,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
                     if (squad.group.valid) then
                         squad.group.destroy()
                     end
-		end
+                end
             end
         end
     end
