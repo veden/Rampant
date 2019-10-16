@@ -595,10 +595,8 @@ local function onBuild(event)
     local entity = event.created_entity or event.entity
     if (entity.surface.index == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
-            -- print("registering resource", entity.name)
             registerResource(entity, map)
         else
-            -- print("registering entity", entity.name)
             accountPlayerEntity(map, entity, natives, true, false)
             if natives.safeBuildings then
                 if natives.safeEntities[entity.type] or natives.safeEntityName[entity.name] then
@@ -614,7 +612,9 @@ local function onMine(event)
     local surface = entity.surface
     if (surface.index == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
-            unregisterResource(entity, map)
+            if (entity.amount == 0) then
+                unregisterResource(entity, map)
+            end
         else        
             accountPlayerEntity(map, entity, natives, false, false)
         end

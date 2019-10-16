@@ -171,12 +171,12 @@
       (refresh dc)
 
       (thread (lambda ()
-                (sync (filesystem-change-evt "/data/games/factorio/script-output/rampantState.txt"))
-                (showVisual dc (readState "/data/games/factorio/script-output/rampantState.txt"))))))
+                (sync (filesystem-change-evt "/mnt/gallery/gameFiles/factorio/script-output/rampantState.txt"))
+                (showVisual dc (readState "/mnt/gallery/gameFiles/factorio/script-output/rampantState.txt"))))))
 
   (define dcMap (first dcs))
 
-  (showVisual dcMap (readState "/data/games/factorio/script-output/rampantState.txt"))
+  (showVisual dcMap (readState "/mnt/gallery/gameFiles/factorio/script-output/rampantState.txt"))
 
   (define (chunkX->screenX x)
     (roundTo (* (normalize x minX maxX)

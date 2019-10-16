@@ -6,6 +6,7 @@ Date: 10. 13. 2019
     - Squad formation now has a gathering delay to allow all members to make the initial group
   Bugfixes:
     - Fixed old savegames penalties having nil chunk index
+    - Fixed that mining a resource by hand unregister all remaining resource on a tile
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28
