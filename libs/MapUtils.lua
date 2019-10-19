@@ -223,11 +223,10 @@ function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosi
         ly = ly + CHUNK_SIZE
     elseif (direction == 8) then
         lx = lx + CHUNK_SIZE
-        ly = ly + CHUNK_SIZE
+        ly = ly + CHUNK_SIZE        
     end
     endPosition.x = lx
     endPosition.y = ly
-    -- return lx, ly
 end
 
 

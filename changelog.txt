@@ -2,11 +2,18 @@
 Version: 0.17.29
 Date: 10. 13. 2019
   Improvements:
-    - Pathfinding now looks two steps ahead and using the compound command
+    - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
+    - Better tracking of squads on chunks to accommodate the two step path finding
+  Optimizations:
+    - Better object reuse for squad and pending attack, creating less garbage
   Bugfixes:
     - Fixed old savegames penalties having nil chunk index
     - Fixed that mining a resource by hand unregister all remaining resource on a tile
+    - Fixed pheromone dispersal not following pathing restrictions
+    - Fixed chunk scan and player building pheromone generator mismatch
+    - Fixed ai credits being uncapped and accumulating more than Max Credits available for that evolution level
+    - Fixed retreating squads being adding to squad set multiple times
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

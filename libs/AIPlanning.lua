@@ -26,8 +26,6 @@ local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
-local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
-
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
 
@@ -60,8 +58,10 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     local maxPoints = AI_MAX_POINTS * evolution_factor
 
     if natives.aiNocturnalMode then
-	maxPoints = maxPoints * 0.85
+        maxPoints = maxPoints * 0.85
     end
+    
+    local maxOverflowPoints = maxPoints * 3
 
     local attackWaveMaxSize = natives.attackWaveMaxSize
     natives.retreatThreshold = linearInterpolation(evolution_factor, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
@@ -88,44 +88,47 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 
     natives.baseIncrement = points
 
-    if (natives.points < maxPoints) then
-	natives.points = natives.points + points
+    local currentPoints = natives.points
+    
+    if (currentPoints < maxPoints) then
+        natives.points = currentPoints + points
+    end
+    
+    if (currentPoints > maxOverflowPoints) then
+        natives.points = maxOverflowPoints
     end
 
     if (natives.temperamentTick <= tick) then
-	natives.temperament = mRandom()
-	natives.temperamentTick = randomTickEvent(tick, AI_MIN_TEMPERAMENT_DURATION, AI_MAX_TEMPERAMENT_DURATION)
+        natives.temperament = mRandom()
+        natives.temperamentTick = randomTickEvent(tick, AI_MIN_TEMPERAMENT_DURATION, AI_MAX_TEMPERAMENT_DURATION)
     end
 
     if (natives.stateTick <= tick) then
-	local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * natives.aiAggressiveness
-	if (roll > natives.temperament) then
-	    natives.state = AI_STATE_PEACEFUL
-	else
-	    roll = mRandom()
-	    if (roll < 0.65) then
-	    	natives.state = AI_STATE_AGGRESSIVE
+        local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * natives.aiAggressiveness
+        if (roll > natives.temperament) then
+            natives.state = AI_STATE_PEACEFUL
+        else
+            roll = mRandom()
+            if (roll < 0.65) then
+                natives.state = AI_STATE_AGGRESSIVE
                 natives.canAttackTick = randomTickEvent(tick,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
-	    elseif ((natives.enabledMigration) and (natives.expansion) and (roll < 0.75)) then
-		natives.state = AI_STATE_MIGRATING
-	    elseif ((natives.siegeAIToggle) and (natives.expansion) and (roll < 0.80)) then
-		natives.state = AI_STATE_SIEGE
+            elseif ((natives.enabledMigration) and (natives.expansion) and (roll < 0.75)) then
+                natives.state = AI_STATE_MIGRATING
+            elseif ((natives.siegeAIToggle) and (natives.expansion) and (roll < 0.80)) then
+                natives.state = AI_STATE_SIEGE
             elseif ((natives.onslaughtAIToggle) and (roll < 0.85)) then
-		natives.state = AI_STATE_ONSLAUGHT
-	    elseif ((natives.raidAIToggle) and (evolution_factor >= 0.04)) then
-		natives.state = AI_STATE_RAIDING
+                natives.state = AI_STATE_ONSLAUGHT
+            elseif ((natives.raidAIToggle) and (evolution_factor >= 0.04)) then
+                natives.state = AI_STATE_RAIDING
 
-		natives.points = natives.points + 1000
-		if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-		    natives.points = AI_MAX_OVERFLOW_POINTS
-		end
-	    else
-		natives.state = AI_STATE_AGGRESSIVE
-	    end
-	end
-	natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+                natives.points = natives.points + 1000
+            else
+                natives.state = AI_STATE_AGGRESSIVE
+            end
+        end
+        natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
 end

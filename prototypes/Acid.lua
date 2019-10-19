@@ -39,64 +39,64 @@ function acid.addFaction()
 
     -- acid biters
     buildUnitSpawner(
-	{
-	    unit = {
-		name = "acid-biter",
+        {
+            unit = {
+                name = "acid-biter",
 
-		attributes = {
-		    explosion = "blood-explosion-small"
-		},
-		attack = {
-		    damageType = "acid"
-		},
-		resistances = {},
+                attributes = {
+                    explosion = "blood-explosion-small"
+                },
+                attack = {
+                    damageType = "acid"
+                },
+                resistances = {},
 
-		type = "biter",
-		loot = biterLoot,
-		tint = {r=0, g=0.85, b=0.13, a=0.65}
-	    },
+                type = "biter",
+                loot = biterLoot,
+                tint = {r=0, g=0.85, b=0.13, a=0.65}
+            },
 
-	    unitSpawner = {
-		name = "acid-biter-spawner",
+            unitSpawner = {
+                name = "acid-biter-spawner",
 
-		loot = spawnerLoot,
-		attributes = {},
-		resistances = {},
-		tint = {r=0, g=0.85, b=0.13, a=0.65}
-	    }
-	},
+                loot = spawnerLoot,
+                attributes = {},
+                resistances = {},
+                tint = {r=0, g=0.85, b=0.13, a=0.65}
+            }
+        },
 
-	{
-	    unit = {               
+        {
+            unit = {               
                 
-		{
-		    type = "resistance",
-		    name = "acid",
-		    decrease = {
-			[1] = 7,
-			[2] = 7,
-			[3] = 10,
-			[4] = 10,
-			[5] = 13,
-			[6] = 13,
-			[7] = 16,
-			[8] = 16,
-			[9] = 19,
-			[10] = 23
-		    },
-		    percent = {
-			[1] = 65,
-			[2] = 65,
-			[3] = 70,
-			[4] = 75,
-			[5] = 75,
-			[6] = 80,
-			[7] = 85,
-			[8] = 85,
-			[9] = 90,
-			[10] = 90
-		    }
-		},
+                {
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
+                },
 
                 {
                     type = "resistance",
@@ -126,53 +126,53 @@ function acid.addFaction()
                         [10] = 60
                     }
                 }
-	    },
+            },
 
-	    unitSpawner = {
+            unitSpawner = {
 
-		{
-		    type = "attribute",
-		    name = "evolutionRequirement",
-		    [1] = 0,
-		    [2] = 0.12,
-		    [3] = 0.22,
-		    [4] = 0.32,
-		    [5] = 0.42,
-		    [6] = 0.52,
-		    [7] = 0.62,
-		    [8] = 0.72,
-		    [9] = 0.82,
-		    [10] = 0.92
-		},
+                {
+                    type = "attribute",
+                    name = "evolutionRequirement",
+                    [1] = 0,
+                    [2] = 0.12,
+                    [3] = 0.22,
+                    [4] = 0.32,
+                    [5] = 0.42,
+                    [6] = 0.52,
+                    [7] = 0.62,
+                    [8] = 0.72,
+                    [9] = 0.82,
+                    [10] = 0.92
+                },
 
-		{
-		    type = "resistance",
-		    name = "acid",
-		    decrease = {
-			[1] = 7,
-			[2] = 7,
-			[3] = 10,
-			[4] = 10,
-			[5] = 13,
-			[6] = 13,
-			[7] = 16,
-			[8] = 16,
-			[9] = 19,
-			[10] = 23
-		    },
-		    percent = {
-			[1] = 65,
-			[2] = 65,
-			[3] = 70,
-			[4] = 75,
-			[5] = 75,
-			[6] = 80,
-			[7] = 85,
-			[8] = 85,
-			[9] = 90,
-			[10] = 90
-		    }
-		},
+                {
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
+                },
 
                 {
                     type = "resistance",
@@ -202,56 +202,56 @@ function acid.addFaction()
                         [10] = 60
                     }
                 }
-	    }
-	},
+            }
+        },
 
-	createMeleeAttack,
+        createMeleeAttack,
 
-	{
-	    unit = ACID_UNIT_VARIATIONS,
-	    unitSpawner = ACID_NEST_VARIATIONS
-	},
+        {
+            unit = ACID_UNIT_VARIATIONS,
+            unitSpawner = ACID_NEST_VARIATIONS
+        },
 
-	{
-	    unit = ACID_UNIT_TIERS,
-	    unitSpawner = ACID_NEST_TIERS
-	}
+        {
+            unit = ACID_UNIT_TIERS,
+            unitSpawner = ACID_NEST_TIERS
+        }
     )
 
     -- acid spitters
     buildUnitSpawner(
-	{
-	    unit = {
-		name = "acid-spitter",
+        {
+            unit = {
+                name = "acid-spitter",
 
-		loot = biterLoot,
-		attributes = {
-		    explosion = "blood-explosion-small"
-		},
-		attack = {
-		    type = "projectile",
+                loot = biterLoot,
+                attributes = {
+                    explosion = "blood-explosion-small"
+                },
+                attack = {
+                    type = "projectile",
                     directionOnly = true
-		},
-		resistances = {},
+                },
+                resistances = {},
 
-		type = "spitter",
-		attackName = "acid-spitter",
-		tint = {r=0, g=0.85, b=0.1, a=0.65}
-	    },
+                type = "spitter",
+                attackName = "acid-spitter",
+                tint = {r=0, g=0.85, b=0.1, a=0.65}
+            },
 
-	    unitSpawner = {
-		name = "acid-spitter-spawner",
+            unitSpawner = {
+                name = "acid-spitter-spawner",
 
-		loot = spawnerLoot,
-		attributes = {},
-		resistances = {},
+                loot = spawnerLoot,
+                attributes = {},
+                resistances = {},
 
-		tint = {r=0, g=0.85, b=0.13, a=1}
-	    }
-	},
+                tint = {r=0, g=0.85, b=0.13, a=1}
+            }
+        },
 
-	{
-	    unit = {
+        {
+            unit = {
 
 
                 {
@@ -269,35 +269,35 @@ function acid.addFaction()
                     [10] = 1.4
                 },
                 
-		{
-		    type = "resistance",
-		    name = "acid",
-		    decrease = {
-			[1] = 7,
-			[2] = 7,
-			[3] = 10,
-			[4] = 10,
-			[5] = 13,
-			[6] = 13,
-			[7] = 16,
-			[8] = 16,
-			[9] = 19,
-			[10] = 23
-		    },
-		    percent = {
-			[1] = 65,
-			[2] = 65,
-			[3] = 70,
-			[4] = 75,
-			[5] = 75,
-			[6] = 80,
-			[7] = 85,
-			[8] = 85,
-			[9] = 90,
-			[10] = 90
-		    }
+                {
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
 
-		},
+                },
 
                 {
                     type = "resistance",
@@ -328,53 +328,53 @@ function acid.addFaction()
                     }
                 }
 
-	    },
+            },
 
-	    unitSpawner = {
+            unitSpawner = {
 
                 {
-		    type = "attribute",
-		    name = "evolutionRequirement",
-		    [1] = 0,
-		    [2] = 0.12,
-		    [3] = 0.22,
-		    [4] = 0.32,
-		    [5] = 0.42,
-		    [6] = 0.52,
-		    [7] = 0.62,
-		    [8] = 0.72,
-		    [9] = 0.82,
-		    [10] = 0.92
-		},
+                    type = "attribute",
+                    name = "evolutionRequirement",
+                    [1] = 0,
+                    [2] = 0.12,
+                    [3] = 0.22,
+                    [4] = 0.32,
+                    [5] = 0.42,
+                    [6] = 0.52,
+                    [7] = 0.62,
+                    [8] = 0.72,
+                    [9] = 0.82,
+                    [10] = 0.92
+                },
 
-		{
-		    type = "resistance",
-		    name = "acid",
-		    decrease = {
-			[1] = 7,
-			[2] = 7,
-			[3] = 10,
-			[4] = 10,
-			[5] = 13,
-			[6] = 13,
-			[7] = 16,
-			[8] = 16,
-			[9] = 19,
-			[10] = 23
-		    },
-		    percent = {
-			[1] = 65,
-			[2] = 65,
-			[3] = 70,
-			[4] = 75,
-			[5] = 75,
-			[6] = 80,
-			[7] = 85,
-			[8] = 85,
-			[9] = 90,
-			[10] = 90
-		    }
-		},
+                {
+                    type = "resistance",
+                    name = "acid",
+                    decrease = {
+                        [1] = 7,
+                        [2] = 7,
+                        [3] = 10,
+                        [4] = 10,
+                        [5] = 13,
+                        [6] = 13,
+                        [7] = 16,
+                        [8] = 16,
+                        [9] = 19,
+                        [10] = 23
+                    },
+                    percent = {
+                        [1] = 65,
+                        [2] = 65,
+                        [3] = 70,
+                        [4] = 75,
+                        [5] = 75,
+                        [6] = 80,
+                        [7] = 85,
+                        [8] = 85,
+                        [9] = 90,
+                        [10] = 90
+                    }
+                },
 
                 {
                     type = "resistance",
@@ -405,76 +405,76 @@ function acid.addFaction()
                     }
                 }
 
-	    }
+            }
 
 
-	},
+        },
 
-	function (attributes)
-	    return createRangedAttack(attributes,
-				      createAttackBall(attributes),
-				      spitterattackanimation(attributes.scale,
-							     attributes.tint,
+        function (attributes)
+            return createRangedAttack(attributes,
+                                      createAttackBall(attributes),
+                                      spitterattackanimation(attributes.scale,
+                                                             attributes.tint,
                                                              attributes.tint))
-	end,
+        end,
 
-	{
-	    unit = ACID_UNIT_VARIATIONS,
-	    unitSpawner = ACID_NEST_VARIATIONS
-	},
+        {
+            unit = ACID_UNIT_VARIATIONS,
+            unitSpawner = ACID_NEST_VARIATIONS
+        },
 
-	{
-	    unit = ACID_UNIT_TIERS,
-	    unitSpawner = ACID_NEST_TIERS
-	}
+        {
+            unit = ACID_UNIT_TIERS,
+            unitSpawner = ACID_NEST_TIERS
+        }
     )
 
     -- acid worms
     buildWorm(
-	{
-	    name = "acid-worm",
+        {
+            name = "acid-worm",
 
-	    loot = wormLoot,
-	    attributes = {},
-	    attack = {
-		type = "projectile"
-	    },
-	    resistances = {},
+            loot = wormLoot,
+            attributes = {},
+            attack = {
+                type = "projectile"
+            },
+            resistances = {},
 
-	    attackName = "acid-worm",
-	    tint = {r=0, g=0.85, b=0.1, a=0.65}
-	},
+            attackName = "acid-worm",
+            tint = {r=0, g=0.85, b=0.1, a=0.65}
+        },
 
-	{
-           
-	    {
-		type = "resistance",
-		name = "acid",
-		decrease = {
-		    [1] = 7,
-		    [2] = 7,
-		    [3] = 10,
-		    [4] = 10,
-		    [5] = 13,
-		    [6] = 13,
-		    [7] = 16,
-		    [8] = 16,
-		    [9] = 19,
-		    [10] = 23
-		},
-		percent = {
-		    [1] = 65,
-		    [2] = 65,
-		    [3] = 70,
-		    [4] = 75,
-		    [5] = 75,
-		    [6] = 80,
-		    [7] = 85,
-		    [8] = 85,
-		    [9] = 90,
-		    [10] = 90
-		}
-	    },
+        {
+            
+            {
+                type = "resistance",
+                name = "acid",
+                decrease = {
+                    [1] = 7,
+                    [2] = 7,
+                    [3] = 10,
+                    [4] = 10,
+                    [5] = 13,
+                    [6] = 13,
+                    [7] = 16,
+                    [8] = 16,
+                    [9] = 19,
+                    [10] = 23
+                },
+                percent = {
+                    [1] = 65,
+                    [2] = 65,
+                    [3] = 70,
+                    [4] = 75,
+                    [5] = 75,
+                    [6] = 80,
+                    [7] = 85,
+                    [8] = 85,
+                    [9] = 90,
+                    [10] = 90
+                }
+            },
 
             {
                 type = "resistance",
@@ -504,15 +504,15 @@ function acid.addFaction()
                     [10] = 60
                 }
             }
-	},
+        },
 
-	function (attributes)
-	    return createRangedAttack(attributes,
-				      createAttackBall(attributes))
-	end,
+        function (attributes)
+            return createRangedAttack(attributes,
+                                      createAttackBall(attributes))
+        end,
 
-	ACID_WORM_VARIATIONS,
-	ACID_WORM_TIERS
+        ACID_WORM_VARIATIONS,
+        ACID_WORM_TIERS
     )
 end
 

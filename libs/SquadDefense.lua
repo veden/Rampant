@@ -98,7 +98,10 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
-                    natives.squads[#natives.squads+1] = newSquad
+                    local squads = natives.squads
+                    print("adding squad defense")
+                    squads.len = squads.len+1
+                    squads[squads.len] = newSquad
                 end
 
                 if newSquad then

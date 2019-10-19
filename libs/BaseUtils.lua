@@ -197,20 +197,20 @@ local function normalizeProbabilities(probabilityTable)
     local result = {}
 
     for alignment,probabilitySet in pairs(probabilityTable) do
-	local max = 0
-	local min = MAGIC_MAXIMUM_NUMBER
+        local max = 0
+        local min = MAGIC_MAXIMUM_NUMBER
 
-	for probability, _ in pairs(probabilitySet) do
-	    if (probability > max) then
-		max = probability
-	    end
-	    if (probability < min) then
-		min = probability
-	    end
-	end
+        for probability, _ in pairs(probabilitySet) do
+            if (probability > max) then
+                max = probability
+            end
+            if (probability < min) then
+                min = probability
+            end
+        end
 
         local alignmentResult = {}
-	for probability, entities in pairs(probabilitySet) do
+        for probability, entities in pairs(probabilitySet) do
             local normalizeProbability = 0
             if (probability ~= 0) then
                 normalizeProbability = mMin(mFloor(((probability - min) / (max - min)) * 100), 97)
@@ -223,7 +223,7 @@ local function normalizeProbabilities(probabilityTable)
             for i=1,#entities do
                 set[#set+1] = entities[i]
             end
-	end
+        end
 
         local paired = {}
         for probability, entities in pairs(alignmentResult) do
@@ -243,18 +243,18 @@ function baseUtils.findNearbyBase(map, chunk, natives)
 
     local foundBase = getChunkBase(map, chunk)
     if foundBase then
-    	return foundBase
+        return foundBase
     end
 
     local bases = natives.bases
     local closet = MAGIC_MAXIMUM_NUMBER
     for i=1, #bases do
-	local base = bases[i]
-	local distance = euclideanDistancePoints(base.x, base.y, x, y)
-	if (distance <= base.distanceThreshold) and (distance < closet) then
+        local base = bases[i]
+        local distance = euclideanDistancePoints(base.x, base.y, x, y)
+        if (distance <= base.distanceThreshold) and (distance < closet) then
             closet = distance
-	    foundBase = base
-	end
+            foundBase = base
+        end
     end
 
     return foundBase
@@ -270,7 +270,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlig
     )
     
     if not alignments or (adjCurrentEvo > evoIndex) then
-	return nil
+        return nil
     end
 
     local entity = nil
@@ -319,8 +319,8 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
     for i=1,#natives.evolutionTableAlignmentOrder do
         local evo = natives.evolutionTableAlignmentOrder[i]
         local entitySet = evolutionTable[evo]
-	if (evo <= evoTop) and entitySet and (#entitySet > 0) then
-	    if not pickedEvo then
+        if (evo <= evoTop) and entitySet and (#entitySet > 0) then
+            if not pickedEvo then
                 alignment = entitySet[mRandom(#entitySet)]
                 pickedEvo = evo
             else
@@ -504,29 +504,29 @@ function baseUtils.processBase(map, chunk, surface, natives, tick, base, evoluti
     end
 
     if (base.temperamentTick <= tick) then
-	base.temperament = mRandom()
-	base.temperamentTick = randomTickEvent(tick, BASE_AI_MIN_TEMPERAMENT_DURATION, BASE_AI_MAX_TEMPERAMENT_DURATION)
+        base.temperament = mRandom()
+        base.temperamentTick = randomTickEvent(tick, BASE_AI_MIN_TEMPERAMENT_DURATION, BASE_AI_MAX_TEMPERAMENT_DURATION)
     end
 
     if (base.stateTick <= tick) then
-	local roll = mRandom() * mMax(1 - evolutionFactor, 0.15)
-	if (roll > natives.temperament) then
-	    base.state = BASE_AI_STATE_DORMANT
-	else
-	    roll = mRandom()
-	    if (roll < 0.70) then
-	    	base.state = BASE_AI_STATE_ACTIVE
-	    elseif (roll < 0.80) then
-		base.state = BASE_AI_STATE_NESTS
+        local roll = mRandom() * mMax(1 - evolutionFactor, 0.15)
+        if (roll > natives.temperament) then
+            base.state = BASE_AI_STATE_DORMANT
+        else
+            roll = mRandom()
+            if (roll < 0.70) then
+                base.state = BASE_AI_STATE_ACTIVE
+            elseif (roll < 0.80) then
+                base.state = BASE_AI_STATE_NESTS
             elseif (roll < 0.90) then
-		base.state = BASE_AI_STATE_WORMS
+                base.state = BASE_AI_STATE_WORMS
             elseif (roll < 0.975) then
-		base.state = BASE_AI_STATE_OVERDRIVE
+                base.state = BASE_AI_STATE_OVERDRIVE
             else
-		base.state = BASE_AI_STATE_MUTATE
-	    end
-	end
-	base.stateTick = randomTickEvent(tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
+                base.state = BASE_AI_STATE_MUTATE
+            end
+        end
+        base.stateTick = randomTickEvent(tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
     end
 
     base.tick = tick    

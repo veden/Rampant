@@ -45,7 +45,7 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 221000
 
 constants.PROCESS_QUEUE_SIZE = 85
 constants.SCAN_QUEUE_SIZE = 10
-constants.ATTACK_QUEUE_SIZE = 20
+constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
 constants.PROCESS_PLAYER_BOUND = 128
@@ -437,32 +437,44 @@ constants.MAX_PENALTY_BEFORE_PURGE = 36000
 
 -- player building pheromones
 
+constants.GENERATOR_PHEROMONE_LEVEL_1 = 25
+constants.GENERATOR_PHEROMONE_LEVEL_2 = 100
+constants.GENERATOR_PHEROMONE_LEVEL_3 = 500
+constants.GENERATOR_PHEROMONE_LEVEL_4 = 1000
+constants.GENERATOR_PHEROMONE_LEVEL_5 = 1750
+constants.GENERATOR_PHEROMONE_LEVEL_6 = 6000
+
 constants.BUILDING_PHEROMONES = {}
-constants.BUILDING_PHEROMONES["wall"] = 25
-constants.BUILDING_PHEROMONES["transport-belt"] = 25 -- 1
-constants.BUILDING_PHEROMONES["splitter"] = 100 
-constants.BUILDING_PHEROMONES["pump"] = 100 
-constants.BUILDING_PHEROMONES["offshore-pump"] = 100 -- 2
-constants.BUILDING_PHEROMONES["lamp"] = 500
-constants.BUILDING_PHEROMONES["generator"] = 500 
-constants.BUILDING_PHEROMONES["solar-panel"] = 500
-constants.BUILDING_PHEROMONES["programmable-speaker"] = 500
-constants.BUILDING_PHEROMONES["accumulator"] = 500
-constants.BUILDING_PHEROMONES["assembling-machine"] = 500
-constants.BUILDING_PHEROMONES["turret"] = 500
-constants.BUILDING_PHEROMONES["roboport"] = 500
-constants.BUILDING_PHEROMONES["beacon"] = 500
-constants.BUILDING_PHEROMONES["ammo-turret"] = 500 -- 3
-constants.BUILDING_PHEROMONES["boiler"] = 500
-constants.BUILDING_PHEROMONES["furnace"] = 500 
-constants.BUILDING_PHEROMONES["lab"] = 500 
-constants.BUILDING_PHEROMONES["reactor"] = 500 
-constants.BUILDING_PHEROMONES["radar"] = 500 
-constants.BUILDING_PHEROMONES["electric-turret"] = 500 -- 4
-constants.BUILDING_PHEROMONES["fluid-turret"] = 1750 
-constants.BUILDING_PHEROMONES["mining-drill"] = 1750 -- 5
-constants.BUILDING_PHEROMONES["artillery-turret"] = 6000
-constants.BUILDING_PHEROMONES["rocket-silo"] = 6000 -- 6
+constants.BUILDING_PHEROMONES["wall"] = constants.GENERATOR_PHEROMONE_LEVEL_1
+constants.BUILDING_PHEROMONES["transport-belt"] = constants.GENERATOR_PHEROMONE_LEVEL_1
+
+constants.BUILDING_PHEROMONES["splitter"] = constants.GENERATOR_PHEROMONE_LEVEL_2
+constants.BUILDING_PHEROMONES["pump"] = constants.GENERATOR_PHEROMONE_LEVEL_2
+constants.BUILDING_PHEROMONES["offshore-pump"] = constants.GENERATOR_PHEROMONE_LEVEL_2
+
+constants.BUILDING_PHEROMONES["lamp"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["solar-panel"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["programmable-speaker"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["accumulator"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["assembling-machine"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["turret"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["ammo-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+
+constants.BUILDING_PHEROMONES["furnace"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["lab"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["roboport"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["beacon"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["radar"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["electric-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+
+constants.BUILDING_PHEROMONES["boiler"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["generator"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["fluid-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["mining-drill"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+
+constants.BUILDING_PHEROMONES["artillery-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_6
+constants.BUILDING_PHEROMONES["reactor"] = constants.GENERATOR_PHEROMONE_LEVEL_6
+constants.BUILDING_PHEROMONES["rocket-silo"] = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 
 -- constants.RETREAT_FILTER = {}

@@ -24,8 +24,6 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
 local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
 
-local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
-
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
 
@@ -156,7 +154,7 @@ function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
         return nil
     end
     local squads = natives.squads
-    for i=1,#squads do
+    for i=1,squads.len do
         local squad = squads[i]
         if (squad.group == unitGroup) then
             return squad
@@ -178,10 +176,6 @@ function unitGroupUtils.recycleBiters(natives, biters)
         biters[i].destroy()
     end
     natives.points = natives.points + (unitCount * natives.unitRefundAmount)
-
-    if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-        natives.points = AI_MAX_OVERFLOW_POINTS
-    end
 end
 
 function unitGroupUtils.cleanBuilders(map, natives, surface)
@@ -240,7 +234,7 @@ end
 
 function unitGroupUtils.regroupSquads(natives, map)
     local squads = natives.squads
-    local squadCount = #squads
+    local squadCount = squads.len
 
     local startIndex = natives.regroupIndex
 

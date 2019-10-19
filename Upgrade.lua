@@ -16,6 +16,8 @@ local ATTACK_SCORE = constants.ATTACK_SCORE
 
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
+local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
+
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -330,6 +332,10 @@ function upgrade.attempt(natives)
             end
         end
 
+        natives.pendingAttack.len = #natives.pendingAttack
+        natives.squads.len = #natives.squads
+        natives.maxOverflowPoints = AI_MAX_OVERFLOW_POINTS
+        
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.29")
         global.version = 99
     end

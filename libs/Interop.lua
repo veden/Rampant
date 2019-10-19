@@ -93,7 +93,8 @@ end
 
 function interop.registerUnitGroup(unitGroup, isSettler)
     local squad = unitGroupUtils.createSquad(unitGroup.position, unitGroup.surface, unitGroup, isSettler)
-    global.natives.pendingAttack[#global.natives.pendingAttack+1] = squad
+    global.natives.pendingAttack.len = global.natives.pendingAttack.len + 1
+    global.natives.pendingAttack[global.natives.pendingAttack.len] = squad
 end
 
 interopG = interop

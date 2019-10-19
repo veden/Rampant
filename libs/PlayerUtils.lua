@@ -19,11 +19,11 @@ end
 
 function playerUtils.playersWithinProximityToPosition(players, position, distance, natives)
     for _,player in pairs(players) do
-	if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == natives.activeSurface) then
-	    if (euclideanDistanceNamed(player.character.position, position) < distance) then
-		return true
-	    end
-	end
+        if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == natives.activeSurface) then
+            if (euclideanDistanceNamed(player.character.position, position) < distance) then
+                return true
+            end
+        end
     end
     return false
 end

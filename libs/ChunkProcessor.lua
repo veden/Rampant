@@ -61,14 +61,14 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
         local event = pendingStack[i]
         pendingStack[i] = nil
 
-	local topLeft = event.area.left_top
-	local x = topLeft.x
-	local y = topLeft.y
+        local topLeft = event.area.left_top
+        local x = topLeft.x
+        local y = topLeft.y
 
-	topOffset[1] = x
-	topOffset[2] = y
-	bottomOffset[1] = x + CHUNK_SIZE
-	bottomOffset[2] = y + CHUNK_SIZE
+        topOffset[1] = x
+        topOffset[2] = y
+        bottomOffset[1] = x + CHUNK_SIZE
+        bottomOffset[2] = y + CHUNK_SIZE
 
         if map[x] and map[x][y] then           
             mapScanChunk(map[x][y], surface, map)
@@ -106,21 +106,21 @@ function chunkProcessor.processScanChunks(map, surface)
     local removals = {}
 
     for chunk,_ in pairs(map.chunkToPassScan) do
-	local x = chunk.x
-	local y = chunk.y
+        local x = chunk.x
+        local y = chunk.y
 
-	topOffset[1] = x
-	topOffset[2] = y
-	bottomOffset[1] = x + CHUNK_SIZE
-	bottomOffset[2] = y + CHUNK_SIZE
+        topOffset[1] = x
+        topOffset[2] = y
+        bottomOffset[1] = x + CHUNK_SIZE
+        bottomOffset[2] = y + CHUNK_SIZE
 
         chunk = chunkPassScan(chunk, surface, map)
 
-	if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
-	    map[x][y] = nil
+        if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
+            map[x][y] = nil
 
-	    removals[#removals+1] = chunk
-	end
+            removals[#removals+1] = chunk
+        end
     end
 
     if (#removals > 0) then

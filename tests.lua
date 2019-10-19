@@ -49,7 +49,7 @@ end
 
 function tests.killActiveSquads()
     print("--")
-    for i=1, #global.natives.squads do
+    for i=1, global.natives.squads.len do
         local squad = global.natives.squads[i]
         if (squad.group.valid) then
             local members = squad.group.members
@@ -63,49 +63,51 @@ end
 
 function tests.activeSquads()
     print("-----")
-    print("Squads", #global.natives.squads)
-    for i=1, #global.natives.squads do
+    print("Squads", global.natives.squads.len)
+    for i=1, global.natives.squads.len do
         print("-")
         local squad = global.natives.squads[i]
         local squadHealth = 0
         local squadMakeup = {}
         if squad.group.valid then
-            for x=1,#squad.group.members do
-                local member = squad.group.members[x].prototype
-                if not squadMakeup[member.name] then
-                    squadMakeup[member.name] = 0
-                end
+            -- for x=1,#squad.group.members do
+            --     local member = squad.group.members[x].prototype
+            --     if not squadMakeup[member.name] then
+            --         squadMakeup[member.name] = 0
+            --     end
 
-                squadHealth = squadHealth + member.max_health
-                squadMakeup[member.name] = squadMakeup[member.name] + 1
-            end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squad.group.group_number, squadHealth)
+            --     squadHealth = squadHealth + member.max_health
+            --     squadMakeup[member.name] = squadMakeup[member.name] + 1
+            -- end
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squad.group.group_number -- , squadHealth
+            )
             -- print(serpent.dump(squadResistances))
-            print(serpent.dump(squadMakeup))
-            print(serpent.dump(squad))
+            -- print(serpent.dump(squadMakeup))
+            -- print(serpent.dump(squad))
         end
     end
     print("---")
-    print("pending", #global.natives.pendingAttack)    
-    for i=1, #global.natives.pendingAttack do
+    print("pending", global.natives.pendingAttack.len)    
+    for i=1, global.natives.pendingAttack.len do
         print("-")
         local squad = global.natives.pendingAttack[i]
         local squadHealth = 0
         local squadMakeup = {}
         if squad.group.valid then
-            for x=1,#squad.group.members do
-                local member = squad.group.members[x].prototype
-                if not squadMakeup[member.name] then
-                    squadMakeup[member.name] = 0
-                end
+            -- for x=1,#squad.group.members do
+            --     local member = squad.group.members[x].prototype
+            --     if not squadMakeup[member.name] then
+            --         squadMakeup[member.name] = 0
+            --     end
 
-                squadHealth = squadHealth + member.max_health
-                squadMakeup[member.name] = squadMakeup[member.name] + 1
-            end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squadHealth, squad.group.group_number)
+            --     squadHealth = squadHealth + member.max_health
+            --     squadMakeup[member.name] = squadMakeup[member.name] + 1
+            -- end
+            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, -- squadHealth,
+                  squad.group.group_number)
             -- print(serpent.dump(squadResistances))
-            print(serpent.dump(squadMakeup))
-            print(serpent.dump(squad))
+            -- print(serpent.dump(squadMakeup))
+            -- print(serpent.dump(squad))
         end
     end
     print("---")
@@ -116,19 +118,19 @@ function tests.activeSquads()
         local squadHealth = 0
         local squadMakeup = {}
         if squad.group.valid then
-            for x=1,#squad.group.members do
-                local member = squad.group.members[x].prototype
-                if not squadMakeup[member.name] then
-                    squadMakeup[member.name] = 0
-                end
+            -- for x=1,#squad.group.members do
+            --     local member = squad.group.members[x].prototype
+            --     if not squadMakeup[member.name] then
+            --         squadMakeup[member.name] = 0
+            --     end
 
-                squadHealth = squadHealth + member.max_health
-                squadMakeup[member.name] = squadMakeup[member.name] + 1
-            end
+            --     squadHealth = squadHealth + member.max_health
+            --     squadMakeup[member.name] = squadMakeup[member.name] + 1
+            -- end
             print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squad.group.group_number, squadHealth)
             -- print(serpent.dump(squadResistances))
-            print(serpent.dump(squadMakeup))
-            print(serpent.dump(squad))
+            -- print(serpent.dump(squadMakeup))
+            -- print(serpent.dump(squad))
         end
     end        
 end

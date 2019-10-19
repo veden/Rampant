@@ -1,5 +1,6 @@
 -- imports
 
+local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local unitUtils = require("libs/UnitUtils")
 local baseUtils = require("libs/BaseUtils")
 local mapUtils = require("libs/MapUtils")
@@ -40,8 +41,6 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 
 local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 
-local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
-
 local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
@@ -81,6 +80,7 @@ local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
+local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -143,9 +143,6 @@ local function onIonCannonFired(event)
     local surface = event.surface
     if (surface.index == natives.activeSurface) then
         natives.points = natives.points + 3000
-        if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-            natives.points = AI_MAX_OVERFLOW_POINTS
-        end
         local chunk = getChunkByPosition(map, event.position)
         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             rallyUnits(chunk, map, surface, natives, event.tick)
@@ -297,12 +294,36 @@ local function rebuildMap()
         end
     end
 
-    map.filteredEntitiesPlayerQuery50 = { area=map.area, force=map.activePlayerForces, type={"wall","transport-belt"}}
-    map.filteredEntitiesPlayerQuery200 = { area=map.area, force=map.activePlayerForces, type={"splitter","pump","offshore-pump"}}
-    map.filteredEntitiesPlayerQuery1000 = { area=map.area, force=map.activePlayerForces, type={"lamp","generator","solar-panel", "programmable-speaker", "accumulator", "assembling-machine", "turret", "roboport", "beacon", "ammo-turret"}}
-    map.filteredEntitiesPlayerQuery2000 = { area=map.area, force=map.activePlayerForces, type={"boiler", "furnace", "lab", "reactor", "radar","electric-turret"}}
-    map.filteredEntitiesPlayerQuery3500 = { area=map.area, force=map.activePlayerForces, type={"fluid-turret", "mining-drill"}}
-    map.filteredEntitiesPlayerQuery12000 = { area=map.area, force=map.activePlayerForces, type={"artillery-turret", "rocket-silo"}}
+    map.filteredEntitiesPlayerQuery50 = { area=map.area, force=map.activePlayerForces, type={"wall",
+                                                                                             "transport-belt"}}
+
+    map.filteredEntitiesPlayerQuery200 = { area=map.area, force=map.activePlayerForces, type={"splitter",
+                                                                                              "pump",
+                                                                                              "offshore-pump"}}
+    
+    map.filteredEntitiesPlayerQuery1000 = { area=map.area, force=map.activePlayerForces, type={"lamp",
+                                                                                               "solar-panel",
+                                                                                               "programmable-speaker",
+                                                                                               "accumulator",
+                                                                                               "assembling-machine",
+                                                                                               "turret",
+                                                                                               "ammo-turret"}}
+
+    map.filteredEntitiesPlayerQuery2000 = { area=map.area, force=map.activePlayerForces, type={"furnace",
+                                                                                               "lab",
+                                                                                               "roboport",
+                                                                                               "beacon",
+                                                                                               "radar",
+                                                                                               "electric-turret"}}
+
+    map.filteredEntitiesPlayerQuery3500 = { area=map.area, force=map.activePlayerForces, type={"boiler",
+                                                                                               "generator",                                                                                               
+                                                                                               "fluid-turret",
+                                                                                               "mining-drill"}}
+
+    map.filteredEntitiesPlayerQuery12000 = { area=map.area, force=map.activePlayerForces, type={"artillery-turret",
+                                                                                                "reactor",
+                                                                                                "rocket-silo"}}
 
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
@@ -317,25 +338,10 @@ local function rebuildMap()
         distraction = DEFINES_DISTRACTION_BY_ANYTHING
     }
 
-    map.attack2Command = {
-        type = DEFINES_COMMAND_ATTACK_AREA,
-        destination = map.position2,
-        radius = CHUNK_SIZE * 1.5,
-        distraction = DEFINES_DISTRACTION_BY_ANYTHING
-    }
-
     map.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = map.position,
-        radius = 1,
-        pathfind_flags = { prefer_straight_paths = true, cache = true },
-        distraction = DEFINES_DISTRACTION_BY_ENEMY
-    }
-
-    map.move2Command = {
-        type = DEFINES_COMMAND_GO_TO_LOCATION,
-        destination = map.position2,
-        radius = 1,
+        radius = 2,
         pathfind_flags = { prefer_straight_paths = true, cache = true },
         distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
@@ -350,8 +356,8 @@ local function rebuildMap()
     map.wonderCommand = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
-        radius = DOUBLE_CHUNK_SIZE,
-        ticks_to_wait = 360
+        radius = TRIPLE_CHUNK_SIZE,
+        ticks_to_wait = 3600
     }
 
     map.stopCommand = {
@@ -364,33 +370,6 @@ local function rebuildMap()
         commands = {
             map.wonderCommand,
             map.settleCommand
-        }
-    }
-
-    map.compoundMoveMoveCommand = {
-        type = DEFINES_COMMMAD_COMPOUND,
-        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
-        commands = {
-            map.moveCommand,
-            map.move2Command
-        }
-    }
-
-    map.compoundMoveAttackCommand = {
-        type = DEFINES_COMMMAD_COMPOUND,
-        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
-        commands = {
-            map.moveCommand,
-            map.attack2Command
-        }
-    }
-
-    map.compoundAttackAttackCommand = {
-        type = DEFINES_COMMMAD_COMPOUND,
-        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
-        commands = {
-            map.attackCommand,
-            map.attack2Command
         }
     }
 
@@ -583,12 +562,31 @@ end)
 script.on_nth_tick(INTERVAL_SQUAD,
                    function ()
                        local surface = game.surfaces[natives.activeSurface]
-                       squadsBeginAttack(natives)
+
+                       local time = game.create_profiler()
+
+                                                              
+                       squadsBeginAttack(natives)                      
+
+                       log(game.tick .. " " .. #natives.squads .. " " .. #natives.pendingAttack)
+                       time.reset()      
                        squadsDispatch(map, surface, natives)
+                       log(time)
+                       log("beginAttack")                       
 
+                       -- game.players[1].print("dispatch")
+                       -- game.players[1].print(time)
+                       -- time.reset()
                        regroupSquads(natives, map)
-
+                       -- game.players[1].print("regroupSquads")
+                       -- game.players[1].print(time)
+                       -- time.reset()
+                       
                        cleanBuilders(map, natives, surface)
+                       -- game.players[1].print("cleanBuilders")
+                       -- game.players[1].print(time)
+                       log("-------------------")
+
 end)
 
 local function onBuild(event)
@@ -603,7 +601,7 @@ local function onBuild(event)
                     entity.destructible = false
                 end
             end
-        end	
+        end
     end
 end
 
@@ -615,7 +613,7 @@ local function onMine(event)
             if (entity.amount == 0) then
                 unregisterResource(entity, map)
             end
-        else        
+        else
             accountPlayerEntity(map, entity, natives, false, false)
         end
     end
@@ -629,11 +627,12 @@ local function onDeath(event)
         local chunk = getChunkByPosition(map, entityPosition)
         local cause = event.cause
         local tick = event.tick
+        local entityType = entity.type
         if (entity.force.name == "enemy") then
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
-            if (entity.type == "unit") then
+            if (entityType == "unit") then
                 if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                     -- drop death pheromone where unit died
                     deathScent(map, chunk)
@@ -663,12 +662,9 @@ local function onDeath(event)
                                            name=cloudName})
                 end
 
-            elseif event.force and (event.force.name ~= "enemy") and ((entity.type == "unit-spawner") or (entity.type == "turret")) then
+            elseif event.force and (event.force.name ~= "enemy") and ((entityType == "unit-spawner") or (entityType == "turret")) then
 
-                natives.points = natives.points + (((entity.type == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
-                if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-                    natives.points = AI_MAX_OVERFLOW_POINTS
-                end
+                natives.points = natives.points + (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
 
                 if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                     unregisterEnemyBaseStructure(map, entity)
@@ -719,13 +715,13 @@ local function onDeath(event)
             if (event.force ~= nil) and (event.force.name == "enemy") then
                 creditNatives = true
                 if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                    victoryScent(map, chunk, entity.type)
+                    victoryScent(map, chunk, entityType)
                 end
 
-                local drained = (entity.type == "electric-turret") and map.chunkToDrained[chunk]
+                local drained = (entityType == "electric-turret") and map.chunkToDrained[chunk]
                 if (cause ~= nil) or (drained and (drained - tick) > 0) then
                     if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
-                        local conversion = ENERGY_THIEF_CONVERSION_TABLE[entity.type]
+                        local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
                         if conversion then
                             local newEntity = surface.create_entity({position=entity.position,
                                                                      name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
@@ -764,11 +760,12 @@ local function onDeath(event)
                 end
 
             end
-            if creditNatives and natives.safeBuildings and (natives.safeEntities[entity.type] or natives.safeEntityName[entity.name]) then
+            if creditNatives and natives.safeBuildings and (natives.safeEntities[entityType] or natives.safeEntityName[entity.name]) then
                 makeImmortalEntity(surface, entity)
             else
                 accountPlayerEntity(map, entity, natives, false, creditNatives)
             end
+            -- print("destroyed", entityType, getPlayerBaseGenerator(map,chunk))
         end
     end
 end
@@ -873,9 +870,6 @@ local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
     if entity and (entity.surface.index == natives.activeSurface) then
         natives.points = natives.points + 2000
-        if (natives.points > AI_MAX_OVERFLOW_POINTS) then
-            natives.points = AI_MAX_OVERFLOW_POINTS
-        end
     end
 end
 
@@ -905,7 +899,7 @@ local function onInit()
 end
 
 local function onCommandDebugger(event)
-    for i=1,#natives.squads do
+    for i=1,natives.squads.len do
         if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
             local msg
             if (event.result == defines.behavior_result.in_progress) then
@@ -915,7 +909,7 @@ local function onCommandDebugger(event)
             elseif (event.result == defines.behavior_result.success) then
                 msg = "success"
             elseif (event.result == defines.behavior_result.deleted) then
-                msg = "deleted"                
+                msg = "deleted"
             end
             print(msg, event.unit_number)
             return
@@ -933,7 +927,7 @@ local function onForceMerged(event)
             tRemove(map.activePlayerForces, i)
             break
         end
-    end   
+    end
 end
 
 -- hooks

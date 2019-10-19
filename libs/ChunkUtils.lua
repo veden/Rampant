@@ -42,6 +42,13 @@ local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
 
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local GENERATOR_PHEROMONE_LEVEL_1 = constants.GENERATOR_PHEROMONE_LEVEL_1
+local GENERATOR_PHEROMONE_LEVEL_2 = constants.GENERATOR_PHEROMONE_LEVEL_2
+local GENERATOR_PHEROMONE_LEVEL_3 = constants.GENERATOR_PHEROMONE_LEVEL_3
+local GENERATOR_PHEROMONE_LEVEL_4 = constants.GENERATOR_PHEROMONE_LEVEL_4
+local GENERATOR_PHEROMONE_LEVEL_5 = constants.GENERATOR_PHEROMONE_LEVEL_5
+local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
+
 -- imported functions
 
 local isRampant = stringUtils.isRampant
@@ -170,12 +177,12 @@ local function scanPaths(chunk, surface, map)
 end
 
 local function scorePlayerBuildings(surface, map)
-    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * 25) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * 100) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * 500) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * 1000) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * 1750) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * 6000)
+    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * GENERATOR_PHEROMONE_LEVEL_1) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * GENERATOR_PHEROMONE_LEVEL_2) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * GENERATOR_PHEROMONE_LEVEL_3) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * GENERATOR_PHEROMONE_LEVEL_4) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * GENERATOR_PHEROMONE_LEVEL_5) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * GENERATOR_PHEROMONE_LEVEL_6)
 end
 
 function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
