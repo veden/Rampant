@@ -49,11 +49,11 @@ function mathUtils.xorRandom(state)
     state = state + 21594771
 
     return function()
-	state = xor(state, lshift(state, 13))
-	state = xor(state, rshift(state, 17))
-	state = xor(state, lshift(state, 5))
-	state = state % 2147483647
-	return state * 4.65661287525e-10
+        state = xor(state, lshift(state, 13))
+        state = xor(state, rshift(state, 17))
+        state = xor(state, lshift(state, 5))
+        state = state % 2147483647
+        return state * 4.65661287525e-10
     end
 end
 
@@ -70,9 +70,9 @@ function mathUtils.gaussianRandom(mean, std_dev)
     local iid2
     local q
     repeat
-	iid1 = 2 * mRandom() + -1
-	iid2 = 2 * mRandom() + -1
-	q = (iid1 * iid1) + (iid2 * iid2)
+        iid1 = 2 * mRandom() + -1
+        iid2 = 2 * mRandom() + -1
+        q = (iid1 * iid1) + (iid2 * iid2)
     until (q ~= 0) and (q < 1)
     local s = mSqrt((-2 * mLog10(q)) / q)
     local v = iid1 * s
@@ -82,22 +82,22 @@ end
 
 function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
     if (min >= max) then
-	return min
+        return min
     end
     local r
     repeat
-	local iid1
-	local iid2
-	local q
-	repeat
-	    iid1 = 2 * mRandom() + -1
-	    iid2 = 2 * mRandom() + -1
-	    q = (iid1 * iid1) + (iid2 * iid2)
-	until (q ~= 0) and (q < 1)
-	local s = mSqrt((-2 * mLog10(q)) / q)
-	local v = iid1 * s
+        local iid1
+        local iid2
+        local q
+        repeat
+            iid1 = 2 * mRandom() + -1
+            iid2 = 2 * mRandom() + -1
+            q = (iid1 * iid1) + (iid2 * iid2)
+        until (q ~= 0) and (q < 1)
+        local s = mSqrt((-2 * mLog10(q)) / q)
+        local v = iid1 * s
 
-	r = mean + (v * std_dev)
+        r = mean + (v * std_dev)
     until (r >= min) and (r <= max)
     return r
 end
@@ -108,9 +108,9 @@ function mathUtils.gaussianRandomRG(mean, std_dev, rg)
     local iid2
     local q
     repeat
-	iid1 = 2 * rg() + -1
-	iid2 = 2 * rg() + -1
-	q = (iid1 * iid1) + (iid2 * iid2)
+        iid1 = 2 * rg() + -1
+        iid2 = 2 * rg() + -1
+        q = (iid1 * iid1) + (iid2 * iid2)
     until (q ~= 0) and (q < 1)
     local s = mSqrt((-2 * mLog10(q)) / q)
     local v = iid1 * s
@@ -121,20 +121,20 @@ end
 function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
     local r
     if (min >= max) then
-	return min
+        return min
     end
     repeat
-	local iid1
-	local iid2
-	local q
-	repeat
-	    iid1 = 2 * rg() + -1
-	    iid2 = 2 * rg() + -1
-	    q = (iid1 * iid1) + (iid2 * iid2)
-	until (q ~= 0) and (q < 1)
-	local s = mSqrt((-2 * mLog10(q)) / q)
-	local v = iid1 * s
-	r = mean + (v * std_dev)
+        local iid1
+        local iid2
+        local q
+        repeat
+            iid1 = 2 * rg() + -1
+            iid2 = 2 * rg() + -1
+            q = (iid1 * iid1) + (iid2 * iid2)
+        until (q ~= 0) and (q < 1)
+        local s = mSqrt((-2 * mLog10(q)) / q)
+        local v = iid1 * s
+        r = mean + (v * std_dev)
     until (r >= min) and (r <= max)
     return r
 end

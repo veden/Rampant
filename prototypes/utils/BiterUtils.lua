@@ -827,7 +827,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
                                 type = "projectile",
                                 projectile = projectile or "defender-bullet",
                                 starting_speed = attributes.startingSpeed or 0.6,
-                                max_range = attributes.maxRange or attributes.range or 20
+                                max_range = attributes.maxRange or (attributes.range + 1) or 20
                             }
                     }
             },

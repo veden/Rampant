@@ -4,18 +4,18 @@ function projectileUtils.makeProjectile(name, attributes, attack)
     local n = name .. "-projectile-rampant"
     
     data:extend({{
-		type = "projectile",
-		name = n,
-		flags = {"not-on-map"},
-		collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
-		collision_mask = attributes.collisionMask or {"layer-11"},
-		direction_only = attributes.directionOnly,
-		piercing_damage = attributes.piercingDamage or 0,
-		acceleration = attributes.acceleration or 0.02,
+                type = "projectile",
+                name = n,
+                flags = {"not-on-map"},
+                collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
+                collision_mask = attributes.collisionMask or {"layer-11"},
+                direction_only = attributes.directionOnly,
+                piercing_damage = attributes.piercingDamage or 0,
+                acceleration = attributes.acceleration or 0.02,
                 force_condition = (settings.startup["rampant-disableCollidingProjectiles"].value and "not-same") or nil,
-		action = attack,
-		animation =
-		    {
+                action = attack,
+                animation =
+                    {
                         filename = "__base__/graphics/entity/acid-projectile/acid-projectile-head.png",
                         line_length = 5,
                         width = 22,
@@ -40,8 +40,8 @@ function projectileUtils.makeProjectile(name, attributes, attack)
                                 animation_speed = 1,
                             }
                     },
-		shadow =
-		    {
+                shadow =
+                    {
                         filename = "__base__/graphics/entity/acid-projectile/acid-projectile-shadow.png",
                         line_length = 15,
                         width = 22,
@@ -66,7 +66,7 @@ function projectileUtils.makeProjectile(name, attributes, attack)
                                 animation_speed = 1,
                             }
                     },
-		-- rotatable = false,
+                -- rotatable = false,
                 oriented_particle = true,
                 shadow_scale_enabled = true,
 

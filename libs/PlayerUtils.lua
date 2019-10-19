@@ -14,13 +14,19 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 -- module code
 
 function playerUtils.validPlayer(player, natives)
-    return player and player.valid and player.connected and player.character and player.character.valid and (player.character.surface.index == natives.activeSurface)
+    if player and player.valid and player.connected then
+        local char = player.character
+        return char and char.valid and (char.surface.index == natives.activeSurface)            
+    end
+    return false
 end
 
 function playerUtils.playersWithinProximityToPosition(players, position, distance, natives)
     for _,player in pairs(players) do
-        if (player ~= nil) and player.connected and (player.character ~= nil) and player.character.valid and (player.character.surface.index == natives.activeSurface) then
-            if (euclideanDistanceNamed(player.character.position, position) < distance) then
+        if player and player.valid and player.connected then
+            local char = player.character
+            if ((char and char.valid and (char.surface.index == natives.activeSurface)) and
+                (euclideanDistanceNamed(char.position, position) < distance)) then                
                 return true
             end
         end

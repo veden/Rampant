@@ -165,7 +165,7 @@ local function scanPaths(chunk, surface, map)
             break
         end
     end
-    
+
     if passableEastWest and passableNorthSouth then
         pass = CHUNK_ALL_DIRECTIONS
     elseif passableEastWest then
@@ -192,7 +192,7 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = scorePlayerBuildings(surface, map)
-        
+
         local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
 
         if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
@@ -214,12 +214,12 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
                 end
                 local alignment = base.alignment
 
-                for _, unit in pairs(surface.find_entities_filtered(map.filteredEntitiesUnitQuery)) do                    
+                for _, unit in pairs(surface.find_entities_filtered(map.filteredEntitiesUnitQuery)) do
                     if (unit.valid) then
                         unit.destroy()
                     end
                 end
-                
+
                 if (#nests > 0) then
                     for i = 1, #nests do
                         if rebuilding then
@@ -336,7 +336,7 @@ end
 function chunkUtils.colorChunk(x, y, tileType, surface)
     local tiles = {}
     local lx = math.floor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-    local ly = math.floor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE    
+    local ly = math.floor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     for xi=lx+5, lx + 27 do
         for yi=ly+5, ly + 27 do
             tiles[#tiles+1] = {name=tileType, position={xi, yi}}
@@ -355,7 +355,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
             lookup = map.chunkToNests
         elseif (entityType == "turret") then
             lookup = map.chunkToWorms
-        end      
+        end
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
@@ -381,7 +381,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
             secondaryLookup = map.chunkToWorms
         elseif (entity.type == "turret") then
             mainLookup = map.chunkToWorms
-            secondaryLookup = map.chunkToNests            
+            secondaryLookup = map.chunkToNests
         end
 
         for i=1,#overlapArray do
@@ -404,16 +404,16 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
                 end
             end
         end
-        
+
     end
 end
 
 function chunkUtils.accountPlayerEntity(map, entity, natives, addObject, creditNatives)
-    
+
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         local entityValue = BUILDING_PHEROMONES[entity.type]
-        
-        local overlapArray = getEntityOverlapChunks(map, entity)       
+
+        local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
             if creditNatives then
                 if (natives.state == AI_STATE_ONSLAUGHT) then
@@ -446,7 +446,7 @@ function chunkUtils.unregisterResource(entity, map)
         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             addResourceGenerator(map, chunk, -RESOURCE_NORMALIZER)
         end
-    end        
+    end
 end
 
 function chunkUtils.registerResource(entity, map)
@@ -457,7 +457,7 @@ function chunkUtils.registerResource(entity, map)
         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
             addResourceGenerator(map, chunk, RESOURCE_NORMALIZER)
         end
-    end        
+    end
 end
 
 function chunkUtils.makeImmortalEntity(surface, entity)

@@ -65,13 +65,13 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
 
         if not squad then
             enemiesToSquad = surface.find_enemy_units(position, radius)
-            performRetreat = #enemiesToSquad > 0
+            performRetreat = #enemiesToSquad > 6
             if (mRandom() < calculateKamikazeThreshold(#enemiesToSquad, natives)) then
                 setRetreatTick(map, chunk, tick)
                 return
             end
         elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-            performRetreat = #squad.group.members > 3
+            performRetreat = #squad.group.members > 6
         end
 
         if performRetreat then
@@ -99,7 +99,6 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
                     local squads = natives.squads
-                    print("adding squad defense")
                     squads.len = squads.len+1
                     squads[squads.len] = newSquad
                 end

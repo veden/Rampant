@@ -300,7 +300,7 @@ local function rebuildMap()
     map.filteredEntitiesPlayerQuery200 = { area=map.area, force=map.activePlayerForces, type={"splitter",
                                                                                               "pump",
                                                                                               "offshore-pump"}}
-    
+
     map.filteredEntitiesPlayerQuery1000 = { area=map.area, force=map.activePlayerForces, type={"lamp",
                                                                                                "solar-panel",
                                                                                                "programmable-speaker",
@@ -317,7 +317,7 @@ local function rebuildMap()
                                                                                                "electric-turret"}}
 
     map.filteredEntitiesPlayerQuery3500 = { area=map.area, force=map.activePlayerForces, type={"boiler",
-                                                                                               "generator",                                                                                               
+                                                                                               "generator",
                                                                                                "fluid-turret",
                                                                                                "mining-drill"}}
 
@@ -360,6 +360,13 @@ local function rebuildMap()
         ticks_to_wait = 3600
     }
 
+    map.wonder2Command = {
+        type = DEFINES_COMMAND_WANDER,
+        wander_in_group = false,
+        radius = TRIPLE_CHUNK_SIZE,
+        ticks_to_wait = 360
+    }
+
     map.stopCommand = {
         type = DEFINES_COMMAND_STOP
     }
@@ -368,7 +375,7 @@ local function rebuildMap()
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
-            map.wonderCommand,
+            map.wonder2Command,
             map.settleCommand
         }
     }
@@ -532,7 +539,6 @@ script.on_nth_tick(INTERVAL_MAP_PROCESS,
                                   gameRef.forces.enemy.evolution_factor)
 end)
 
-
 script.on_nth_tick(INTERVAL_SCAN,
                    function (event)
                        local tick = event.tick
@@ -563,30 +569,11 @@ script.on_nth_tick(INTERVAL_SQUAD,
                    function ()
                        local surface = game.surfaces[natives.activeSurface]
 
-                       local time = game.create_profiler()
-
-                                                              
-                       squadsBeginAttack(natives)                      
-
-                       log(game.tick .. " " .. #natives.squads .. " " .. #natives.pendingAttack)
-                       time.reset()      
+                       squadsBeginAttack(natives)
                        squadsDispatch(map, surface, natives)
-                       log(time)
-                       log("beginAttack")                       
-
-                       -- game.players[1].print("dispatch")
-                       -- game.players[1].print(time)
-                       -- time.reset()
                        regroupSquads(natives, map)
-                       -- game.players[1].print("regroupSquads")
-                       -- game.players[1].print(time)
-                       -- time.reset()
-                       
-                       cleanBuilders(map, natives, surface)
-                       -- game.players[1].print("cleanBuilders")
-                       -- game.players[1].print(time)
-                       log("-------------------")
 
+                       cleanBuilders(map, natives, surface)
 end)
 
 local function onBuild(event)

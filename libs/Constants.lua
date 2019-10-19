@@ -383,6 +383,7 @@ constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 
 constants.MOVEMENT_PENALTY_AMOUNT = 300000
 constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 1300
+constants.DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * 2
 constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT = 300
 
 constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = 0
@@ -476,6 +477,37 @@ constants.BUILDING_PHEROMONES["artillery-turret"] = constants.GENERATOR_PHEROMON
 constants.BUILDING_PHEROMONES["reactor"] = constants.GENERATOR_PHEROMONE_LEVEL_6
 constants.BUILDING_PHEROMONES["rocket-silo"] = constants.GENERATOR_PHEROMONE_LEVEL_6
 
+constants.VICTORY_SCENT = {}
+constants.VICTORY_SCENT["wall"] = constants.BUILDING_PHEROMONES["wall"] * 3
+constants.VICTORY_SCENT["transport-belt"] = constants.BUILDING_PHEROMONES["transport-belt"] * 3
+
+constants.VICTORY_SCENT["splitter"] = constants.BUILDING_PHEROMONES["splitter"] * 3
+constants.VICTORY_SCENT["pump"] = constants.BUILDING_PHEROMONES["pump"] * 3
+constants.VICTORY_SCENT["offshore-pump"] = constants.BUILDING_PHEROMONES["offshore-pump"] * 3
+
+constants.VICTORY_SCENT["lamp"] = constants.BUILDING_PHEROMONES["lamp"] * 3
+constants.VICTORY_SCENT["solar-panel"] = constants.BUILDING_PHEROMONES["solar-panel"] * 3
+constants.VICTORY_SCENT["programmable-speaker"] = constants.BUILDING_PHEROMONES["programmable-speaker"] * 3
+constants.VICTORY_SCENT["accumulator"] = constants.BUILDING_PHEROMONES["accumulator"] * 3
+constants.VICTORY_SCENT["assembling-machine"] = constants.BUILDING_PHEROMONES["assembling-machine"] * 3
+constants.VICTORY_SCENT["turret"] = constants.BUILDING_PHEROMONES["turret"] * 3
+constants.VICTORY_SCENT["ammo-turret"] = constants.BUILDING_PHEROMONES["ammo-turret"] * 3
+
+constants.VICTORY_SCENT["furnace"] = constants.BUILDING_PHEROMONES["furnace"] * 3
+constants.VICTORY_SCENT["lab"] = constants.BUILDING_PHEROMONES["lab"] * 3
+constants.VICTORY_SCENT["roboport"] = constants.BUILDING_PHEROMONES["roboport"] * 3
+constants.VICTORY_SCENT["beacon"] = constants.BUILDING_PHEROMONES["beacon"] * 3
+constants.VICTORY_SCENT["radar"] = constants.BUILDING_PHEROMONES["radar"] * 3
+constants.VICTORY_SCENT["electric-turret"] = constants.BUILDING_PHEROMONES["electric-turret"] * 3
+
+constants.VICTORY_SCENT["boiler"] = constants.BUILDING_PHEROMONES["boiler"] * 3
+constants.VICTORY_SCENT["generator"] = constants.BUILDING_PHEROMONES["generator"] * 3
+constants.VICTORY_SCENT["fluid-turret"] = constants.BUILDING_PHEROMONES["fluid-turret"] * 3
+constants.VICTORY_SCENT["mining-drill"] = constants.BUILDING_PHEROMONES["mining-drill"] * 3
+
+constants.VICTORY_SCENT["artillery-turret"] = constants.BUILDING_PHEROMONES["artillery-turret"] * 3
+constants.VICTORY_SCENT["reactor"] = constants.BUILDING_PHEROMONES["reactor"] * 3
+constants.VICTORY_SCENT["rocket-silo"] = constants.BUILDING_PHEROMONES["rocket-silo"] * 3
 
 -- constants.RETREAT_FILTER = {}
 -- constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
@@ -544,6 +576,8 @@ constants.ENERGY_THIEF_DRAIN_CRYSTALS = {
     "crystal-v9-drain-rampant",
     "crystal-v10-drain-rampant"
 }
+
+constants.NEIGHBOR_DIVIDER = {1/1, 1/2, 1/3, 1/4, 1/5, 1/6, 1/7, 1/8}
 
 
 -- unit spawners

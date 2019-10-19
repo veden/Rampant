@@ -5,6 +5,8 @@ Date: 10. 13. 2019
     - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
     - Better tracking of squads on chunks to accommodate the two step path finding
+  Tweaks:
+    - Increased minimum unit count for a retreat from 3 to 6
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
   Bugfixes:
@@ -14,6 +16,7 @@ Date: 10. 13. 2019
     - Fixed chunk scan and player building pheromone generator mismatch
     - Fixed ai credits being uncapped and accumulating more than Max Credits available for that evolution level
     - Fixed retreating squads being adding to squad set multiple times
+    - Fixed spitter max projectile range could cause a spitter to attack but not hit a target
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28
