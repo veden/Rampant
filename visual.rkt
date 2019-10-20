@@ -72,7 +72,7 @@
   (define siteBox2 (new message%
                         [parent panel]
                         [label ""]
-                        [vert-margin 270]))
+                        [vert-margin 300]))
 
   (new button%
        [parent mainFrame]

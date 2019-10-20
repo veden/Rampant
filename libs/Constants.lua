@@ -359,19 +359,19 @@ if constants.ENABLED_NE_UNITS then
     constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
 
     if settings.startup["NE_Blue_Spawners"].value then
-	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_BLUE] = 0.1
+        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_BLUE] = 0.1
     end
     if settings.startup["NE_Red_Spawners"].value then
-	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_RED] = 0.1
+        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_RED] = 0.1
     end
     if settings.startup["NE_Pink_Spawners"].value then
-	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_PINK] = 0.1
+        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_PINK] = 0.1
     end
     if settings.startup["NE_Green_Spawners"].value then
-	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_GREEN] = 0.1
+        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_GREEN] = 0.1
     end
     if settings.startup["NE_Yellow_Spawners"].value then
-	constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_YELLOW] = 0.1
+        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_YELLOW] = 0.1
     end
 end
 
@@ -599,8 +599,8 @@ local function buildTier(size, tiers)
     local step = (tierEnd - tierStart) / (size - 1)
     local i = tierStart
     for _=1,size do
-	tiers[#tiers+1] = roundToNearest(i, 1)
-	i = i + step
+        tiers[#tiers+1] = roundToNearest(i, 1)
+        i = i + step
     end
 end
 

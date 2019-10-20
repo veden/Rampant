@@ -259,6 +259,8 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK
     }
 
+    map.mapOrdering = {}
+    map.mapOrdering.len = 0
     map.enemiesToSquad = {}
     map.enemiesToSquad.len = 0
     map.chunkRemovals = {}

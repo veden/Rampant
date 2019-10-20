@@ -175,17 +175,20 @@ local mRandom = math.random
 
 -- module code
 
-local function nonRepeatingRandom(evoTable, rg)
-    local ordering = {}
+local function nonRepeatingRandom(natives, evoTable, rg)
+    local ordering = natives.baseOrdering
+    local baseCount = 0
     for evo in pairs(evoTable) do
-        ordering[#ordering+1] = evo
+        baseCount = baseCount + 1
+        ordering[baseCount] = evo
     end
-    for i=#ordering,1,-1 do
+    for i=baseCount,1,-1 do
         local s = rg(i)
         local t = ordering[i]
         ordering[i] = ordering[s]
         ordering[s] = t
     end
+    ordering.len = baseCount
     return ordering
 end
 
@@ -316,8 +319,9 @@ local function findBaseInitialAlignment(evoIndex, natives, evolutionTable)
 
     local pickedEvo
     local alignment
-    for i=1,#natives.evolutionTableAlignmentOrder do
-        local evo = natives.evolutionTableAlignmentOrder[i]
+    local alignmentTable = natives.evolutionTableAlignmentOrder
+    for i=1,alignmentTable.len do
+        local evo = alignmentTable[i]
         local entitySet = evolutionTable[evo]
         if (evo <= evoTop) and entitySet and (#entitySet > 0) then
             if not pickedEvo then
@@ -413,11 +417,11 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, evolut
 end
 
 local function findMutation(natives, evolutionFactor)
-    local shuffled = nonRepeatingRandom(natives.evolutionTableAlignment, natives.randomGenerator)
+    local shuffled = nonRepeatingRandom(natives, natives.evolutionTableAlignment, natives.randomGenerator)
     local evoTable = natives.evolutionTableAlignment
     local alignment
 
-    for i=1,#shuffled do
+    for i=1,shuffled.len do
         local evo = shuffled[i]
         if (evo <= evolutionFactor) then
             local alignmentSet = evoTable[evo]
@@ -655,7 +659,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
                       natives.evolutionTableAlignment)
     end
 
-    natives.evolutionTableAlignmentOrder = nonRepeatingRandom(natives.evolutionTableAlignment, natives.randomGenerator)
+    natives.evolutionTableAlignmentOrder = nonRepeatingRandom(natives, natives.evolutionTableAlignment, natives.randomGenerator)
 
     if ENABLED_NE_UNITS then
         processNEUnitClass(natives, surface)

@@ -89,17 +89,20 @@ local mRandom = math.random
 
 -- module code
 
-local function nonRepeatingRandom(players)
-    local ordering = {}
+local function nonRepeatingRandom(map, players)
+    local ordering = map.mapOrdering
+    local playerCount = 0
     for _,player in pairs(players) do
-        ordering[#ordering+1] = player.index
+        playerCount = playerCount + 1
+        ordering[playerCount] = player.index
     end
-    for i=#ordering,1,-1 do
+    for i=playerCount,1,-1 do
         local s = mRandom(i)
         local t = ordering[i]
         ordering[i] = ordering[s]
         ordering[s] = t
     end
+    ordering.len = playerCount
     return ordering
 end
 
@@ -181,7 +184,7 @@ end
 function mapProcessor.processPlayers(players, map, surface, natives, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
-    local playerOrdering = nonRepeatingRandom(players)
+    local playerOrdering = nonRepeatingRandom(map, players)
 
     local roll = mRandom()
 
@@ -192,7 +195,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
     local squads = allowingAttacks and (0.11 <= roll) and (roll <= 0.20) and (natives.points >= AI_SQUAD_COST)
 
     -- not looping everyone because the cost is high enough already in multiplayer
-    if (#playerOrdering > 0) then
+    if (playerOrdering.len > 0) then
         local player = players[playerOrdering[1]]
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)
@@ -261,7 +264,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
         end
     end
 
-    for i=1,#playerOrdering do
+    for i=1,playerOrdering.len do
         local player = players[playerOrdering[i]]
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)

@@ -334,6 +334,9 @@ function upgrade.attempt(natives)
             end
         end
 
+        natives.baseOrdering = {}
+        natives.baseOrdering.len = 0
+
         natives.pendingAttack.len = #natives.pendingAttack
         natives.squads.len = #natives.squads
         natives.maxOverflowPoints = AI_MAX_OVERFLOW_POINTS
