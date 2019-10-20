@@ -33,7 +33,7 @@ local addSquadToChunk = chunkPropetyUtils.addSquadToChunk
 
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
-local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
+local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
 local getNeighborChunks = mapUtils.getNeighborChunks
 local findNearbyRetreatingSquad = unitGroupUtils.findNearbyRetreatingSquad
 local addMovementPenalty = movementUtils.addMovementPenalty
@@ -64,60 +64,84 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
         local enemiesToSquad = nil
 
         if not squad then
-            enemiesToSquad = surface.find_enemy_units(position, radius)
-            performRetreat = #enemiesToSquad > 6
-            if (mRandom() < calculateKamikazeThreshold(#enemiesToSquad, natives)) then
+            enemiesToSquad = map.enemiesToSquad
+            local unitCount = 0
+            local units = surface.find_enemy_units(position, radius)
+            for i=1,#units do
+                local unit = units[i]
+                if not unit.unit_group then
+                    unitCount = unitCount + 1
+                    enemiesToSquad[unitCount] = unit
+                end
+            end
+            enemiesToSquad.len = unitCount
+            if (mRandom() < calculateKamikazeThreshold(unitCount, natives)) then
                 setRetreatTick(map, chunk, tick)
                 return
             end
+            performRetreat = unitCount > 6
         elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
             performRetreat = #squad.group.members > 6
         end
 
         if performRetreat then
             setRetreatTick(map, chunk, tick)
-            local exitPath,exitDirection  = scoreNeighborsForRetreat(chunk,
-                                                                     getNeighborChunks(map, chunk.x, chunk.y),
-                                                                     scoreRetreatLocation,
-                                                                     map)
+            local exitPath,exitDirection,nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
+                                                                                                    getNeighborChunks(map,
+                                                                                                                      chunk.x,
+                                                                                                                      chunk.y),
+                                                                                                    scoreRetreatLocation,
+                                                                                                    map)
             if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
-                local retreatPosition = findMovementPosition(surface,
-                                                             positionFromDirectionAndChunk(exitDirection,
-                                                                                           position,
-                                                                                           map.position,
-                                                                                           0.98))
+                local targetPosition = map.position
+                local targetPosition2 = map.position2                
+
+                positionFromDirectionAndFlat(exitDirection, position, targetPosition)
+
+                local retreatPosition = findMovementPosition(surface, targetPosition)
 
                 if not retreatPosition then
                     return
+                end
+
+                if (nextExitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    positionFromDirectionAndFlat(nextExitDirection, retreatPosition, targetPosition2)
+                    
+                    local retreatPosition2 = findMovementPosition(surface, targetPosition2)
+
+                    if retreatPosition2 then
+                        retreatPosition.x = retreatPosition2.x
+                        retreatPosition.y = retreatPosition2.y
+                    end
                 end
 
                 -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
                 -- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
 
                 local newSquad = findNearbyRetreatingSquad(map, exitPath)
-
+                
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
                     local squads = natives.squads
                     squads.len = squads.len+1
                     squads[squads.len] = newSquad
                 end
-
+                
                 if newSquad then
                     newSquad.status = SQUAD_RETREATING
-                    newSquad.cycles = 4                                       
+                    newSquad.cycles = 13
                     
-                    local cmd = map.retreatCommand
+                    local cmd = map.retreatCommand                    
                     cmd.group = newSquad.group
                     if enemiesToSquad then
-                        membersToSquad(cmd, enemiesToSquad, artilleryBlast)
-                    else                        
-                        membersToSquad(cmd, squad.group.members, true)
+                        membersToSquad(cmd, enemiesToSquad.len, enemiesToSquad, artilleryBlast)
+                    else
+                        membersToSquad(cmd, #squad.group.members, squad.group.members, true)
                         if squad.rabid then
                             newSquad.rabid = true
                         end
                     end
-
+                    
                     if not newSquad.rapid then
                         newSquad.frenzy = true
                         local squadPosition = newSquad.group.position

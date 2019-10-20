@@ -198,6 +198,7 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
                     setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
+                    squad.cycles = 30
                     pending[pending.len] = squad
                     natives.points = natives.points - AI_SETTLER_COST
                 else
@@ -241,6 +242,7 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
                 if (foundUnits > 0) then
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
+                    squad.cycles = 13
                     pending[pending.len] = squad
                     natives.points = natives.points - AI_VENGENCE_SQUAD_COST
                 else
@@ -285,6 +287,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
                 if (foundUnits > 0) then
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
+                    squad.cycles = 30
                     pending[pending.len] = squad
                     natives.points = natives.points - AI_SQUAD_COST
                     if tick and (natives.state == AI_STATE_AGGRESSIVE) then
@@ -301,7 +304,7 @@ function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
             end
         end
     end
-
+    
     return (natives.points - AI_SQUAD_COST) > 0
 end
 

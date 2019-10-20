@@ -82,11 +82,11 @@ function unitGroupUtils.findNearbySquad(map, chunk)
     for i=1,#squads do
         local squad = squads[i]
         local unitGroup = squad.group
-        if unitGroup and unitGroup.valid then           
-            return squad            
+        if unitGroup and unitGroup.valid then
+            return squad
         end
     end
-    
+
     local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
     for i=1,#neighbors do
@@ -138,15 +138,15 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
     return squad
 end
 
-function unitGroupUtils.membersToSquad(cmd, members, overwriteGroup)
-    if (members ~= nil) then
-        for i=1,#members do
-            local member = members[i]
-            if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
-                member.set_command(cmd)
-            end
+function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
+    -- if (members ~= nil) then
+    for i=1,size do
+        local member = members[i]
+        if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
+            member.set_command(cmd)
         end
     end
+    -- end
 end
 
 function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
@@ -190,13 +190,7 @@ function unitGroupUtils.cleanBuilders(map, natives, surface)
     for i=maxSquadIndex,startIndex,-1 do
         local squad = squads[i]
         local group = squad.group
-        if not (group and group.valid) then
-            tRemove(squads, i)
-        else
-            if (squad.cycles > 0) then
-                squad.cycles = squad.cycles - 1
-            end
-            
+        if group and group.valid then
             if (group.state == DEFINES_GROUP_FINISHED) or (squad.cycles <= 0) then
                 if (#group.members > 0) then
                     local groupPosition = findMovementPosition(surface, group.position)
@@ -204,19 +198,23 @@ function unitGroupUtils.cleanBuilders(map, natives, surface)
                     if not groupPosition then
                         groupPosition = group.position
                     end
-                    
+
                     position.x = groupPosition.x
                     position.y = groupPosition.y
 
                     squad.cycles = 400
-                    
+
                     group.set_command(cmd)
                     group.start_moving()
                 else
                     tRemove(squads, i)
                     group.destroy()
                 end
+            elseif (squad.cycles > 0) then
+                squad.cycles = squad.cycles - 1
             end
+        else
+            tRemove(squads, i)
         end
     end
 
@@ -225,11 +223,6 @@ function unitGroupUtils.cleanBuilders(map, natives, surface)
     else
         natives.cleanBuildingIndex = maxSquadIndex + 1
     end
-end
-
-local function isAttacking(group)
-    local state = group.state
-    return (state == DEFINES_GROUP_STATE_ATTACKING_TARGET) or (state == DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
 end
 
 function unitGroupUtils.regroupSquads(natives, map)
@@ -242,39 +235,41 @@ function unitGroupUtils.regroupSquads(natives, map)
     for i=startIndex,maxSquadIndex do
         local squad = squads[i]
         local group = squad.group
-        if group and group.valid and not isAttacking(group) then
-            local memberCount = #group.members
-            if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
-                local status = squad.status
-                local chunk = squad.chunk
+        if group and group.valid then
+            local groupState = group.state
+            if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION) then
+                local memberCount = #group.members
+                if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
+                    local status = squad.status
+                    local chunk = squad.chunk
 
-                if chunk then
-                    local chunkSquads = getSquadsOnChunk(map, chunk)
-                    for p=1,#chunkSquads do
-                        local mergeSquad = chunkSquads[p]
-                        if (mergeSquad ~= squad) then
-                            local mergeGroup = mergeSquad.group
-                            if mergeGroup and
-                                mergeGroup.valid and                
-                                (mergeSquad.status == status) and
-                                not isAttacking(mergeGroup)
-                            then
-                                local mergeMembers = mergeGroup.members
-                                local mergeCount = #mergeMembers
-                                if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
-                                    for memberIndex=1, mergeCount do
-                                        group.add_member(mergeMembers[memberIndex])
-                                    end                                    
-                                    mergeGroup.destroy()
-                                end
-                                squad.status = SQUAD_GUARDING
-                                memberCount = memberCount + mergeCount
-                                if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
-                                    break
+                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                        local chunkSquads = getSquadsOnChunk(map, chunk)
+                        for p=1,#chunkSquads do
+                            local mergeSquad = chunkSquads[p]
+                            if (mergeSquad ~= squad) then
+                                local mergeGroup = mergeSquad.group
+                                if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
+                                    local mergeGroupState = mergeGroup.state
+                                    if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION) then
+                                        local mergeMembers = mergeGroup.members
+                                        local mergeCount = #mergeMembers
+                                        if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
+                                            for memberIndex=1, mergeCount do
+                                                group.add_member(mergeMembers[memberIndex])
+                                            end
+                                            mergeGroup.destroy()
+                                        end
+                                        squad.status = SQUAD_GUARDING
+                                        memberCount = memberCount + mergeCount
+                                        if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
+                                            break
+                                        end
+                                    end
                                 end
                             end
-                        end                        
-                    end                    
+                        end
+                    end
                 end
             end
         end

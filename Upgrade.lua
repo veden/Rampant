@@ -138,7 +138,7 @@ function upgrade.attempt(natives)
     end
     if (global.version < constants.VERSION_26) then
 
-        game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
+        -- game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
 
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.16")
         global.version = constants.VERSION_26
@@ -323,6 +323,8 @@ function upgrade.attempt(natives)
         game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
         game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
         game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR        
+
+        game.map_settings.max_failed_behavior_count = 3
         
         for i=#natives.squads,1,-1 do
             natives.squads[i].penalties = {}

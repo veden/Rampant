@@ -236,7 +236,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
         dying_sound =  make_biter_dying_sounds(biterAttributes.scale),
         working_sound =  make_biter_calls(biterAttributes.scale),
         run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
-        ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true, path_resolution_modifier = -8, do_seperation = true }
+        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
     if biterAttributes.collisionMask then
         entity.collision_mask = biterAttributes.collisionMask
@@ -282,7 +282,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
         dying_sound =  make_spitter_dying_sounds(0.8),
         working_sound =  make_biter_calls(0.7),
         run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
-        ai_settings = { destroy_when_commands_fail = true, allow_try_return_to_spawner = true, path_resolution_modifier = -8, do_seperation = true }
+        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
     if biterAttributes.collisionMask then
         entity.collision_mask = biterAttributes.collisionMask

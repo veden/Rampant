@@ -143,7 +143,7 @@ local function settleMove(map, squad, natives, surface)
     local cmd
     local position
     local position2
-    
+
     if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
     then
         if not ((groupState == DEFINES_GROUP_FINISHED) or ((groupState == DEFINES_GROUP_GATHERING) and (squad.cycles <= 0))) then
@@ -168,7 +168,7 @@ local function settleMove(map, squad, natives, surface)
         map.buildPositionTop.x = position.x - BASE_CLEAN_DISTANCE
         map.buildPositionTop.y = position.y - BASE_CLEAN_DISTANCE
         map.buildPositionBottom.x = position.x + BASE_CLEAN_DISTANCE
-        map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE  
+        map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE
 
         local entities = surface.find_entities_filtered(map.filteredEntitiesClearBuildingQuery)
         for i=1,#entities do
@@ -178,7 +178,7 @@ local function settleMove(map, squad, natives, surface)
             end
         end
 
-        squad.cycles = 400    
+        squad.cycles = 400
         group.set_command(cmd)
     else
         local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
@@ -199,15 +199,15 @@ local function settleMove(map, squad, natives, surface)
             if not position then
                 squad.cycles = 30
                 cmd = map.wonderCommand
-                group.set_command(cmd)             
+                group.set_command(cmd)
                 return
             else
                 targetPosition.x = position.x
                 targetPosition.y = position.y
 
                 if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
-                    (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold) 
-                then                    
+                    (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
+                then
                     cmd = map.attackCommand
 
                     if not squad.rabid then
@@ -224,22 +224,22 @@ local function settleMove(map, squad, natives, surface)
                     end
                 end
             end
-            
+
             if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
                 position2 = findMovementPosition(surface, targetPosition2)
-                
+
                 if position2 then
                     targetPosition.x = position2.x
                     targetPosition.y = position2.y
-                    
+
                     if ((cmd ~= map.attackCommand) and
                             ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) or
-                                    (nextAttackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold))) 
-                    then                    
+                                    (nextAttackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)))
+                    then
                         cmd = map.attackCommand
-                        
+
                         if not squad.rabid then
                             squad.frenzy = true
                             squad.frenzyPosition.x = groupPosition.x
@@ -263,7 +263,7 @@ local function settleMove(map, squad, natives, surface)
             map.buildPositionTop.x = position.x - BASE_CLEAN_DISTANCE
             map.buildPositionTop.y = position.y - BASE_CLEAN_DISTANCE
             map.buildPositionBottom.x = position.x + BASE_CLEAN_DISTANCE
-            map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE  
+            map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE
 
             local entities = surface.find_entities_filtered(map.filteredEntitiesClearBuildingQuery)
             for i=1,#entities do
@@ -272,12 +272,12 @@ local function settleMove(map, squad, natives, surface)
                     entity.die()
                 end
             end
-            
-            squad.cycles = 400    
+
+            squad.cycles = 400
             group.set_command(cmd)
         else
             squad.cycles = 23
-            group.set_command(cmd)            
+            group.set_command(cmd)
         end
     end
 end
@@ -326,7 +326,7 @@ local function attackMove(map, squad, natives, surface)
         else
             targetPosition.x = position.x
             targetPosition.y = position.y
-            
+
             if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
                 (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
             then
@@ -343,7 +343,7 @@ local function attackMove(map, squad, natives, surface)
                     cmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
                 else
                     cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-                end                
+                end
             end
         end
 
@@ -363,7 +363,7 @@ local function attackMove(map, squad, natives, surface)
                             (nextAttackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold))
                 then
                     cmd = map.attackCommand
-                    
+
                     if not squad.rabid then
                         squad.frenzy = true
                         squad.frenzyPosition.x = groupPosition.x
@@ -389,7 +389,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     local pending = natives.pendingAttack
     local squadsLen = squads.len
     local x = 0
-    
+
     for i=1,squadsLen do
         local squad = squads[i]
         local group = squad.group
@@ -430,7 +430,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                         end
                     end
                 elseif (status == SQUAD_SETTLING) then
-                    x = x + 1                          
+                    x = x + 1
                     squads[x] = squad
                     if (groupState == DEFINES_GROUP_FINISHED) or
                         (groupState == DEFINES_GROUP_GATHERING) or
@@ -443,10 +443,22 @@ function squadAttack.squadsDispatch(map, surface, natives)
                             addSquadToChunk(map, chunk, squad)
                         end
                     end
-                elseif (status == SQUAD_RETREATING) and (cycles <= 0) then
-                    pending.len = pending.len + 1
-                    pending[pending.len] = squad
-                    squad.status = SQUAD_GUARDING
+                elseif (status == SQUAD_RETREATING) then
+                    if (groupState == DEFINES_GROUP_FINISHED) or
+                        (groupState == DEFINES_GROUP_GATHERING) or
+                        ((groupState == DEFINES_GROUP_MOVING) and (cycles <= 0))
+                    then
+                        pending.len = pending.len + 1
+                        pending[pending.len] = squad
+                        squad.status = SQUAD_GUARDING
+                    else
+                        x = x + 1
+                        squads[x] = squad
+                    end
+                    local chunk = getChunkByPosition(map, group.position)
+                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                        addSquadToChunk(map, chunk, squad)
+                    end
                 elseif (status == SQUAD_BUILDING) then
                     removeSquadFromChunk(map, squad)
                     natives.building[#natives.building+1] = squad
@@ -454,7 +466,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                     pending.len = pending.len + 1
                     pending[pending.len] = squad
                 else
-                    x = x + 1                          
+                    x = x + 1
                     squads[x] = squad
                 end
                 if (cycles > 0) then
@@ -468,7 +480,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
     end
 
     squads.len = x
-    
+
     -- print("end dispatch")
     -- if (maxSquadIndex >= #squads) then
     --     natives.attackIndex = 1
@@ -484,15 +496,17 @@ function squadAttack.squadsBeginAttack(natives)
     local squads = natives.squads
     local pendingLen = pending.len
     local x = 0
-    
+
     for i=1,pendingLen do
         local squad = pending[i]
         local group = squad.group
         if group and group.valid then
-            if (squad.cycles ~= 0) then
+            local groupState = group.state
+            if -- (groupState ~= DEFINES_GROUP_GATHERING) and
+            (groupState ~= DEFINES_GROUP_FINISHED) and (squad.cycles ~= 0) then
                 squad.cycles = squad.cycles - 1
                 x = x + 1
-                pending[x] = squad                
+                pending[x] = squad
             else
                 local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
                 if not squad.kamikaze then
@@ -510,7 +524,7 @@ function squadAttack.squadsBeginAttack(natives)
                     squads.len = squads.len + 1
                     squads[squads.len] = squad
                 end
-            end            
+            end
         end
     end
 

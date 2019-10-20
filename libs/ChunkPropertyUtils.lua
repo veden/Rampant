@@ -211,7 +211,7 @@ function chunkPropertyUtils.removeSquadFromChunk(map, squad)
 end
 
 function chunkPropertyUtils.getSquadsOnChunk(map, chunk)
-    return map.chunkToSquad[chunk] or {}
+    return map.chunkToSquad[chunk] or map.emptySquadsOnChunk
 end
 
 function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)

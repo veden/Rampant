@@ -17,7 +17,7 @@ end
 
 for _, robot in pairs(data.raw["logistic-robot"]) do
     if not robot.collision_mask then
-	robot.collision_mask = {}
+        robot.collision_mask = {}
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
 
@@ -34,7 +34,7 @@ end
 
 for _, robot in pairs(data.raw["construction-robot"]) do
     if not robot.collision_mask then
-	robot.collision_mask = {}
+        robot.collision_mask = {}
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
 
@@ -51,7 +51,7 @@ end
 
 for _, robot in pairs(data.raw["combat-robot"]) do
     if not robot.collision_mask then
-	robot.collision_mask = {}
+        robot.collision_mask = {}
     end
     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
 end
@@ -62,7 +62,7 @@ end
 --]]
 local mapSettings = data.raw["map-settings"]["map-settings"]
 
-mapSettings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
+mapSettings.max_failed_behavior_count = 3 -- constants.MAX_FAILED_BEHAVIORS
 
 mapSettings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
 mapSettings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
@@ -73,7 +73,7 @@ mapSettings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX
 mapSettings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
 
-data.raw["utility-constants"]["default"].unit_group_pathfinding_resolution = -8
+data.raw["utility-constants"]["default"].unit_group_pathfinding_resolution = -5
 data.raw["utility-constants"]["default"].unit_group_collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
 
 

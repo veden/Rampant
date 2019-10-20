@@ -1,5 +1,6 @@
 local vanillaBuildings = require("prototypes/buildings/UpdatesVanilla")
 
+local biterFunctions = require("prototypes/utils/BiterUtils")
 local neutral = require("prototypes/Neutral")
 local acid = require("prototypes/Acid")
 local physical = require("prototypes/Physical")
@@ -68,6 +69,18 @@ if settings.startup["rampant-newEnemies"].value then
 
 end
 
+data:extend({
+        biterFunctions.makeUnitSpawner("tester",
+                                       {
+                                           scale=1.0,
+                                           spawningRadius=30,
+                                           spawningSpacing=15
+                                       },
+                                       {},
+                                       {{"small-worm-turret", {{0.0, 1.0}, {1.0, 1.0}}}})
+})
+
+
 for _, unitSpawner in pairs(data.raw["unit-spawner"]) do
     if settings.startup["rampant-unitSpawnerBreath"].value then
         if not unitSpawner.flags then
@@ -84,13 +97,8 @@ if settings.startup["rampant-enableSwarm"].value then
                 {unit.collision_box[1][1] * 0.20, unit.collision_box[1][2] * 0.20},
                 {unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
             }
-            if unit.collision_mask == nil then
-                unit.collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
-            else
-                unit.collision_mask[#unit.collision_mask+1] = "not-colliding-with-itself"
-            end
 
-            unit.ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = false, path_resolution_modifier = -8, do_seperation = false }
+            unit.ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
         end
     end
 end

@@ -30,6 +30,8 @@ local tSort = table.sort
 
 local abs = math.abs
 
+local tRemove = table.remove
+
 -- module code
 
 local origin = {x=0,y=0}
@@ -103,9 +105,13 @@ function chunkProcessor.processScanChunks(map, surface)
     local topOffset = area[1]
     local bottomOffset = area[2]
 
-    local removals = {}
+    local removals = map.chunkRemovals
 
-    for chunk,_ in pairs(map.chunkToPassScan) do
+    local chunkCount = 0
+
+    local chunkToPassScan = map.chunkToPassScan
+    
+    for chunk,_ in pairs(chunkToPassScan) do
         local x = chunk.x
         local y = chunk.y
 
@@ -119,24 +125,25 @@ function chunkProcessor.processScanChunks(map, surface)
         if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
             map[x][y] = nil
 
-            removals[#removals+1] = chunk
+            chunkCount = chunkCount + 1
+            removals[chunkCount] = chunk
         end
+        
+        chunkToPassScan[chunk] = nil
     end
 
-    if (#removals > 0) then
+    if (chunkCount > 0) then
         local processQueue = map.processQueue
         for i=#processQueue,1,-1 do
-            for ri=#removals,1,-1 do
+            for ri=chunkCount,1,-1 do
                 if (removals[ri] == processQueue[i]) then
-                    table.remove(processQueue, i)
-                    table.remove(removals, ri)
+                    tRemove(processQueue, i)
+                    -- tRemove(removals, ri)
                     break
                 end
             end
         end
     end
-
-    return {}
 end
 
 chunkProcessorG = chunkProcessor

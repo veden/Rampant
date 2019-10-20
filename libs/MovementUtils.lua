@@ -121,7 +121,7 @@ function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDire
     if (nextHighestChunk == nil) then
         nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
     end
-    
+
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 
@@ -133,7 +133,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
-    
+
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
@@ -153,7 +153,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     local nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
     local nextHighestScore = -MAGIC_MAXIMUM_NUMBER
     local nextHighestDirection
-    
+
     if (highestChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
         for x=1,8 do
@@ -174,7 +174,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     if (nextHighestChunk == nil) then
         nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
     end
-       
+
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 
@@ -211,6 +211,11 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
+
+    local nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
+    local nextHighestScore = -MAGIC_MAXIMUM_NUMBER
+    local nextHighestDirection
+
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
@@ -223,7 +228,28 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
         end
     end
 
-    return highestChunk, highestDirection
+    if (highestChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
+        for x=1,8 do
+            local neighborChunk = neighborDirectionChunks[x]
+
+            if ((neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (neighborChunk ~= chunk) and
+                canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
+                local score = scoreFunction(map, neighborChunk)
+                if (score > nextHighestScore) then
+                    nextHighestScore = score
+                    nextHighestChunk = neighborChunk
+                    nextHighestDirection = x
+                end
+            end
+        end
+    end
+
+    if (nextHighestChunk == nil) then
+        nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
+    end
+
+    return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 
 

@@ -27,6 +27,8 @@ local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
 local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
+local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
+local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
 
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
@@ -257,6 +259,11 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK
     }
 
+    map.enemiesToSquad = {}
+    map.enemiesToSquad.len = 0
+    map.chunkRemovals = {}
+
+    map.emptySquadsOnChunk = {}
     map.position2Top = {0, 0}
     map.position2Bottom = {0, 0}
     --this is shared between two different queries
@@ -404,7 +411,9 @@ local function rebuildMap()
 
     map.formGroupCommand = { type = DEFINES_COMMAND_GROUP,
                              group = nil,
-                             distraction = DEFINES_DISTRACTION_NONE }
+                             distraction = DEFINES_DISTRACTION_ANYTHING,
+                             use_group_distraction = false
+    }
 
     map.formCommand = { command = map.formGroupCommand,
                         unit_count = 0,
@@ -517,11 +526,10 @@ script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
                    function (event)
 
                        local gameRef = game
-                       local surface = gameRef.surfaces[natives.activeSurface]
 
                        processPlayers(gameRef.players,
                                       map,
-                                      surface,
+                                      gameRef.surfaces[natives.activeSurface],
                                       natives,
                                       event.tick)
 end)
@@ -530,10 +538,9 @@ script.on_nth_tick(INTERVAL_MAP_PROCESS,
                    function (event)
 
                        local gameRef = game
-                       local surface = gameRef.surfaces[natives.activeSurface]
 
                        processMap(map,
-                                  surface,
+                                  gameRef.surfaces[natives.activeSurface],
                                   natives,
                                   event.tick,
                                   gameRef.forces.enemy.evolution_factor)
@@ -549,7 +556,7 @@ script.on_nth_tick(INTERVAL_SCAN,
 
                        scanMap(map, surface, natives, tick)
 
-                       map.chunkToPassScan = processScanChunks(map, surface)
+                       processScanChunks(map, surface)
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
@@ -560,6 +567,8 @@ script.on_nth_tick(INTERVAL_LOGIC,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
+                       squadsBeginAttack(natives)                       
+
                        if natives.newEnemies then
                            recycleBases(natives, tick)
                        end
@@ -567,14 +576,24 @@ end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
                    function ()
-                       local surface = game.surfaces[natives.activeSurface]
-
-                       squadsBeginAttack(natives)
-                       squadsDispatch(map, surface, natives)
-                       regroupSquads(natives, map)
-
-                       cleanBuilders(map, natives, surface)
+                       squadsDispatch(map,
+                                      game.surfaces[natives.activeSurface],
+                                      natives)
 end)
+
+script.on_nth_tick(INTERVAL_BUILDERS,
+                   function ()
+                       cleanBuilders(map,
+                                     natives,
+                                     game.surfaces[natives.activeSurface])
+end)
+
+
+script.on_nth_tick(INTERVAL_RESQUAD,
+                   function ()
+                       regroupSquads(natives, map)
+end)
+
 
 local function onBuild(event)
     local entity = event.created_entity or event.entity
@@ -885,6 +904,16 @@ local function onInit()
     hookEvents()
 end
 
+local function onEntitySpawned(event)
+    local entity = event.entity
+    if (entity.type ~= "unit") then
+        local spawner = event.spawner
+        -- print(spawner.unit_number)
+    else
+        -- print("cost")
+    end
+end
+
 local function onCommandDebugger(event)
     for i=1,natives.squads.len do
         if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
@@ -943,6 +972,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.script_raised_built}, onBuild)
 
 -- script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
+script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)
