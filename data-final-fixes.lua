@@ -69,22 +69,23 @@ if settings.startup["rampant-newEnemies"].value then
 
 end
 
-data:extend({
-        biterFunctions.makeUnitSpawner("tester",
-                                       {
-                                           scale=3.0,
-                                           spawningRadius=20,
-                                           spawningSpacing=10,
-                                           unitsToSpawn=1000
-                                       },
-                                       {},
-                                       {{"chunk-scanner-1-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
-                                        --    {"medium-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}},
-                                        --    {"big-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}}
-                                           {"chunk-scanner-3-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
-                                           {"chunk-scanner-8-nest-rampant", {{0.0, 0.001}, {1.0, 1.0}}}
-        })
-})
+-- data:extend({
+--         biterFunctions.makeUnitSpawner("tester",
+--                                        {
+--                                            scale=3.0,
+--                                            spawningRadius=20,
+--                                            spawningSpacing=10,
+--                                            unitsToSpawn=1000
+--                                        },
+--                                        {},
+--                                        {
+--                                            {"chunk-scanner-1-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
+--                                            --    {"medium-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}},
+--                                            --    {"big-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}}
+--                                            {"chunk-scanner-3-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
+--                                            {"chunk-scanner-8-nest-rampant", {{0.0, 0.001}, {1.0, 1.0}}}
+--         })
+-- })
 
 
 for _, unitSpawner in pairs(data.raw["unit-spawner"]) do

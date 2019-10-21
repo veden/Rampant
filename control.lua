@@ -4,6 +4,8 @@ local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local unitUtils = require("libs/UnitUtils")
 local baseUtils = require("libs/BaseUtils")
 local mapUtils = require("libs/MapUtils")
+local movementUtils = require("libs/MovementUtils")
+local mathUtils = require("libs/MathUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapProcessor = require("libs/MapProcessor")
@@ -569,7 +571,7 @@ script.on_nth_tick(INTERVAL_LOGIC,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
-                       squadsBeginAttack(natives)                       
+                       squadsBeginAttack(natives)
 
                        if natives.newEnemies then
                            recycleBases(natives, tick)
@@ -910,9 +912,12 @@ local function onEntitySpawned(event)
     local entity = event.entity
     if (entity.type ~= "unit") then
         local spawner = event.spawner
-        -- print(spawner.unit_number)
-    else
-        -- print("cost")
+        local pos = movementUtils.findMovementPositionEntity(entity.name,
+                                                             game.surfaces[1],
+                                                             mathUtils.distortPosition(entity.position, 8))
+        if pos then
+            entity.teleport(pos)
+        end
     end
 end
 

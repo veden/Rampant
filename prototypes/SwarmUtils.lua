@@ -1206,26 +1206,9 @@ local function fillUnitTable(result, unitSet, tier, probability)
 end
 
 local function unitSetToProbabilityTable(unitSet, tier)
-    -- local dividers = {}
-
-    -- for i=#unitSet,1,-1 do
-    --     dividers[i] = 0.
-    -- end
-
     local result = {}
 
     if (#unitSet == 10) then
-        -- dividers[10] = 0.05
-        -- dividers[9] = 0.05
-        -- dividers[8] = 0.05
-        -- dividers[7] = 0.05
-        -- dividers[6] = 0.10
-        -- dividers[5] = 0.10
-        -- dividers[4] = 0.10
-        -- dividers[3] = 0.10
-        -- dividers[2] = 0.10
-        -- dividers[1] = 0.30
-
         fillUnitTable(result, unitSet, 1, {{0, 1}, {0.35, 0.0}})
         fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}})
         fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}})
@@ -1237,100 +1220,13 @@ local function unitSetToProbabilityTable(unitSet, tier)
         fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
         fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
     else
-        -- dividers[5] = 0.15
-        -- dividers[4] = 0.15
-        -- dividers[3] = 0.20
-        -- dividers[2] = 0.20
-        -- dividers[1] = 0.40
-
         fillUnitTable(result, unitSet, 1, {{0, 1}, {0.45, 0.0}})
         fillUnitTable(result, unitSet, 2, {{0.4, 0}, {0.5, 0.5}, {0.65, 0.0}})
         fillUnitTable(result, unitSet, 3, {{0.6, 0}, {0.7, 0.5}, {0.75, 0.0}})
         fillUnitTable(result, unitSet, 4, {{0.70, 0}, {0.775, 0.5}, {0.95, 0.0}})
         fillUnitTable(result, unitSet, 5, {{0.9, 0}, {1, 1}})
     end
-
-    -- local points = #unitSet * 2
-    -- for _=1,points do
-    --     local index
-
-    --     if (tier == 1) then
-    --         index = mFloor(gaussianRandomRangeRG(tier, 1.3, 1, 2.5, xorRandom))
-    --     else
-    --         index = mFloor(gaussianRandomRangeRG(tier, 2, tier * 0.1, mMin(tier * 1.1, #unitSet), xorRandom)+1)
-    --     end
-
-    --     dividers[index] = dividers[index] + (((index < tier) and 4) or 1)
-    -- end
-
-    -- local total = 0
-    -- for i=1,#dividers do
-    --     total = total + dividers[i]
-    -- end
-
-    -- local runningTotal = 0
-    -- for i=1,#dividers do
-    --     runningTotal = runningTotal + (dividers[i] / total)
-    --     dividers[i] = runningTotal
-    -- end
-
-    -- local stepUnit = 1 / (#unitSet[1] + 1)
-
-    -- local probabilityTable = {}
-
-    -- for i=1,#unitSet do
-    --     local result
-    -- 	if (i == 1) then
-    -- 	    result = {
-    -- 		{
-    -- 		    0,
-    -- 		    stepUnit
-    -- 		},
-    -- 		{
-    -- 		    dividers[i],
-    -- 		    0
-    -- 		}
-    -- 	    }
-    -- 	elseif (i == #unitSet) then
-    -- 	    result = {
-    -- 		{
-    -- 		    dividers[i-2],
-    -- 		    0
-    -- 		},
-    -- 		{
-    -- 		    1,
-    -- 		    stepUnit
-    -- 		}
-    -- 	    }
-    -- 	else
-    -- 	    result = {
-    -- 		{
-    -- 		    ((i - 2) > 0 and dividers[i-2]) or (dividers[i-1]) * 0.95,
-    -- 		    0
-    -- 		},
-    -- 		{
-    -- 		    dividers[i-1],
-    -- 		    stepUnit
-    -- 		},
-    -- 		{
-    -- 		    dividers[i],
-    -- 		    0
-    -- 		}
-    -- 	    }
-    -- 	end
-
-    --     probabilityTable[i] = result
-    -- end
-
-    -- local result = {}
-
-    -- for i=1, #probabilityTable do
-    --     local probability = probabilityTable[i]
-    --     for x=1, #unitSet[i] do
-    --         result[#result+1] = {unitSet[i][x], probability}
-    --     end
-    -- end
-
+    
     return result
 end
 
@@ -1600,6 +1496,114 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
 
     return unitSet
 end
+
+local propTables10 = {
+    {{0, 1}, {0.35, 0.0}},
+    {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}},
+    {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}},
+    {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}},
+    {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}},
+    {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}},
+    {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}},
+    {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}},
+    {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}},
+    {{0.93, 0}, {1, 1.0}}
+}
+
+local propTables5 = {
+    {{0, 1}, {0.45, 0.0}},
+    {{0.4, 0}, {0.5, 0.5}, {0.65, 0.0}},
+    {{0.6, 0}, {0.7, 0.5}, {0.75, 0.0}},
+    {{0.70, 0}, {0.775, 0.5}, {0.95, 0.0}},
+    {{0.9, 0}, {1, 1}}
+}
+
+function swarmUtils.buildEntities(entityTemplates, variations, tiers)
+    local unitSet = {}
+
+    for tier=1, tiers do
+        local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+        local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+        local result = {}
+        
+        local entityTemplate = entityTemplates[ut]
+        
+        for ei=1,#entityTemplate do            
+            local template = entityTemplate[ei]
+            local xt = ((template[3] == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+            local xut = ((template[3] == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+            
+            for i=1,template[2] do
+                local probability
+                if template[3] == 5 then
+                    probability = deepcopy(propTables5[xt])
+                else
+                    probability = deepcopy(propTables10[xt])
+                end
+                
+                for z=1,#probability do
+                    probability[z][2] = probability[z][2] * template[4]
+                end
+                
+                unitSet[#unitSet+1] = {template[1] .. "-v" .. i .. "-t" .. xt .. "-rampant", probability}
+            end
+        end
+    end
+    
+    return unitSet
+end
+
+function swarmUtils.buildEntitySpawner(template, entityTemplates, upgradeTable, variations, tiers)
+    addUnitSpawnerDefaults(template, upgradeTable)
+
+    if (not upgradeTable.probabilityTable) then
+        upgradeTable.probabilityTable = {
+            [1] = 1,
+            [2] = 1,
+            [3] = 1,
+            [4] = 1,
+            [5] = 1,
+            [6] = 1,
+            [7] = 1,
+            [8] = 1,
+            [9] = 1,
+            [10] = 1,
+        }
+    end
+
+    local unitSet = swarmUtils.buildEntities(entityTemplates, variations.unit, tiers.unit)
+
+    for tier=1, tiers.unitSpawner do
+        local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
+        local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+        
+        for i=1,variations.unitSpawner do
+            local unitSpawner = deepcopy(template)
+            unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
+            
+            generateApperance(unitSpawner, ut)
+            unitSpawner.type = "spawner"
+            upgradeEntity(unitSpawner, upgradeTable, ut)
+
+            if unitSpawner.loot then
+                unitSpawner.attributes.loot = { unitSpawner.loot[ut] }
+            end
+
+            if unitSpawner.autoplace then
+                unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[ut]
+            end
+            unitSpawner.attributes.corpse = makeUnitSpawnerCorpse(unitSpawner)
+            data:extend({
+                    makeUnitSpawner(unitSpawner.name,
+                                    unitSpawner.attributes,
+                                    unitSpawner.resistances,
+                                    unitSet)
+            })
+        end
+    end
+
+end
+
 
 function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
     addUnitDefaults(templates.unit, upgradeTable.unit)

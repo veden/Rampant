@@ -514,6 +514,167 @@ function acid.addFaction()
         ACID_WORM_VARIATIONS,
         ACID_WORM_TIERS
     )
+
+
+    swarmUtils.buildEntitySpawner(
+        {
+            name = "acid-hive",
+
+            loot = spawnerLoot,
+            attributes = {},
+            resistances = {},
+
+            scales = {
+                [1] = 1,
+                [2] = 1.1,
+                [3] = 1.2,
+                [4] = 1.3,
+                [5] = 1.4,
+                [6] = 1.5,
+                [7] = 1.6,
+                [8] = 1.7,
+                [9] = 1.8,
+                [10] = 1.9
+            },
+
+            tint = {r=0, g=0.85, b=0.13, a=1}
+        },
+        {
+            [1] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.8},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.2}
+            },
+            [2] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.7},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.3}
+            },
+            [3] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.595},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.005}
+            },
+            [4] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.59},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.01}
+            },
+            [5] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.59},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.01}
+            },
+            [6] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.58},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.02}
+            },
+            [7] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.58},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.02}
+            },
+            [8] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.57},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.03}
+            },
+            [9] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.57},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.03}
+            },
+            [10] = {
+                {"acid-worm", ACID_WORM_VARIATIONS, ACID_WORM_TIERS, 0.57},
+                {"acid-spitter-spawner", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.4},
+                {"acid-hive", ACID_NEST_VARIATIONS, ACID_NEST_TIERS, 0.03}
+            }
+        },
+        {
+            {
+                type = "attribute",
+                name = "evolutionRequirement",
+                [1] = 0,
+                [2] = 0.12,
+                [3] = 0.22,
+                [4] = 0.32,
+                [5] = 0.42,
+                [6] = 0.52,
+                [7] = 0.62,
+                [8] = 0.72,
+                [9] = 0.82,
+                [10] = 0.92
+            },
+
+            {
+                type = "resistance",
+                name = "acid",
+                decrease = {
+                    [1] = 7,
+                    [2] = 7,
+                    [3] = 10,
+                    [4] = 10,
+                    [5] = 13,
+                    [6] = 13,
+                    [7] = 16,
+                    [8] = 16,
+                    [9] = 19,
+                    [10] = 23
+                },
+                percent = {
+                    [1] = 65,
+                    [2] = 65,
+                    [3] = 70,
+                    [4] = 75,
+                    [5] = 75,
+                    [6] = 80,
+                    [7] = 85,
+                    [8] = 85,
+                    [9] = 90,
+                    [10] = 90
+                }
+            },
+
+            {
+                type = "resistance",
+                name = "poison",
+                decrease = {
+                    [1] = 3,
+                    [2] = 3,
+                    [3] = 7,
+                    [4] = 7,
+                    [5] = 10,
+                    [6] = 10,
+                    [7] = 13,
+                    [8] = 13,
+                    [9] = 16,
+                    [10] = 18
+                },
+                percent = {
+                    [1] = 35,
+                    [2] = 35,
+                    [3] = 40,
+                    [4] = 40,
+                    [5] = 45,
+                    [6] = 45,
+                    [7] = 50,
+                    [8] = 55,
+                    [9] = 55,
+                    [10] = 60
+                }
+            }
+
+        },        
+        {
+            unit = ACID_UNIT_VARIATIONS,
+            unitSpawner = ACID_NEST_VARIATIONS
+        },
+
+        {
+            unit = ACID_UNIT_TIERS,
+            unitSpawner = ACID_NEST_TIERS
+        }
+    )
+    
 end
 
 return acid
