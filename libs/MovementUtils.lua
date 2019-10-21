@@ -39,12 +39,20 @@ function movementUtils.findMovementPosition(surface, position)
     return pos
 end
 
+function movementUtils.findMovementPositionEntity(entityName, surface, position)
+    local pos = position
+    if not surface.can_place_entity({name=entityName, position=pos}) then
+        pos = surface.find_non_colliding_position(entityName, pos, 5, 1, true)
+    end
+    return pos
+end
+
 function movementUtils.findMovementPositionDistort(surface, position)
     local pos = position
     if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
         pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 15, 2, true)
     end
-    return distortPosition(pos)
+    return distortPosition(pos, 8)
 end
 
 function movementUtils.addMovementPenalty(units, chunk)

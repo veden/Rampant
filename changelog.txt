@@ -5,8 +5,10 @@ Date: 10. 13. 2019
     - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
     - Better tracking of squads on chunks to accommodate the two step path finding
+    - Collision checker for squads from a container to a unit
   Tweaks:
     - Increased minimum unit count for a retreat from 3 to 6
+    - Biters and Spitters now are affected by tile modifiers
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible

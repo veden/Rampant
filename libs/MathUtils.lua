@@ -163,11 +163,11 @@ function mathUtils.euclideanDistanceArray(p1, p2)
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
-function mathUtils.distortPosition(position)
+function mathUtils.distortPosition(position, size)
     local xDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
     local yDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
-    position.x = position.x + (xDistort * 16)
-    position.y = position.y + (yDistort * 16)
+    position.x = position.x + (xDistort * size)
+    position.y = position.y + (yDistort * size)
     return position
 end
 

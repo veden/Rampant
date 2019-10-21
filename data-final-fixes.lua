@@ -72,12 +72,18 @@ end
 data:extend({
         biterFunctions.makeUnitSpawner("tester",
                                        {
-                                           scale=1.0,
-                                           spawningRadius=30,
-                                           spawningSpacing=15
+                                           scale=3.0,
+                                           spawningRadius=20,
+                                           spawningSpacing=10,
+                                           unitsToSpawn=1000
                                        },
                                        {},
-                                       {{"small-worm-turret", {{0.0, 1.0}, {1.0, 1.0}}}})
+                                       {{"chunk-scanner-1-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
+                                        --    {"medium-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}},
+                                        --    {"big-worm-turret", {{0.0, 0.3}, {1.0, 1.0}}}
+                                           {"chunk-scanner-3-nest-rampant", {{0.0, 0.3}, {1.0, 1.0}}},
+                                           {"chunk-scanner-8-nest-rampant", {{0.0, 0.001}, {1.0, 1.0}}}
+        })
 })
 
 
@@ -98,6 +104,10 @@ if settings.startup["rampant-enableSwarm"].value then
                 {unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
             }
 
+            -- unit.move_while_shooting = true
+            unit.affected_by_tiles = true
+
+            
             unit.ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
         end
     end

@@ -217,12 +217,18 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
         subgroup="enemies",
         healing_per_tick = biterAttributes.healing,
         resistances = resistances,
-        collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
-            {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
-        selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
-            {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}},
-        sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
-            {0.6 * biterAttributes.scale, 0}},
+        collision_box = {
+            {-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
+            {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}
+        },
+        selection_box = {
+            {-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
+            {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}
+        },
+        sticker_box = {
+            {-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
+            {0.6 * biterAttributes.scale, 0}
+        },
         attack_parameters = biterAttack,
         vision_distance = biterAttributes.vision or 30,
         movement_speed = biterAttributes.movement,
@@ -233,6 +239,7 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
         distraction_cooldown = biterAttributes.distractionCooldown or 300,
         corpse = biterAttributes.corpse,
         dying_explosion = biterAttributes.explosion,
+        affected_by_tiles = true,
         dying_sound =  make_biter_dying_sounds(biterAttributes.scale),
         working_sound =  make_biter_calls(biterAttributes.scale),
         run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
@@ -281,6 +288,7 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
         dying_explosion = biterAttributes.explosion,
         dying_sound =  make_spitter_dying_sounds(0.8),
         working_sound =  make_biter_calls(0.7),
+        affected_by_tiles = true,
         run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }

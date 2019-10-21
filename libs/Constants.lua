@@ -841,5 +841,8 @@ for t = 1, 10 do
     end
 end
 
+constants.BUILDING_SPACE_LOOKUP["biter-spawner"] = "chunk-scanner-5-nest-rampant"
+constants.BUILDING_SPACE_LOOKUP["spitter-spawner"] = "chunk-scanner-5-nest-rampant"
+
 constantsG =  constants
 return constants
