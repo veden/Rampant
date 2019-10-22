@@ -343,6 +343,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
         -- in ticks per 1 pu
         pollution_absorption_absolute = biterAttributes.pollutionAbsorptionAbs or 20,
         pollution_absorption_proportional = biterAttributes.pollutionAbsorptionPro or 0.01,
+        map_generator_bounding_box = {{-4.2 * biterAttributes.scale, -3.2 * biterAttributes.scale}, {3.2 * biterAttributes.scale, 3.2 * biterAttributes.scale}},
         corpse = biterAttributes.corpse,
         dying_explosion = "blood-explosion-huge",
         max_count_of_owned_units = biterAttributes.unitsOwned or 7,

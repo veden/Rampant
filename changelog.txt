@@ -26,6 +26,7 @@ Date: 10. 13. 2019
     - Fixed retreating squads not waiting long enough to assemble all units before movement
     - Fixed spitter max projectile range could cause a spitter to attack but not hit a target
     - Fixed non retreating group formation not having a distraction modifier
+    - New spawner enemies color mask should fit much better now
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

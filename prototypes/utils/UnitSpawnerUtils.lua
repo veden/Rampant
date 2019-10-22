@@ -10,7 +10,7 @@ function unitSpawnerUtils.spawner_integration(scale)
             height = 188,
             shift = util.by_pixel(2, -2),
             frame_count = 1,
-            scale = scale,
+            scale = scale * 1.01,
             line_length = 1,
             hr_version =
                 {
@@ -21,7 +21,7 @@ function unitSpawnerUtils.spawner_integration(scale)
                     shift = util.by_pixel(3, -3),
                     frame_count = 1,
                     line_length = 1,
-                    scale = scale * 0.5
+                    scale = scale * 0.51
                 }
         }
 end
@@ -66,7 +66,7 @@ function unitSpawnerUtils.spawner_idle_animation(variation, tint, scale)
                         frame_count = 8,
                         animation_speed = 0.18,
                         run_mode = "forward-then-backward",
-                        shift = util.by_pixel(-2, -14),
+                        shift = util.by_pixel(-1.5 + (-0.5 * scale), -11 + (-3 * scale)),
                         line_length = 4,
                         tint = tint,
                         scale = scale,
@@ -80,7 +80,7 @@ function unitSpawnerUtils.spawner_idle_animation(variation, tint, scale)
                                 frame_count = 8,
                                 animation_speed = 0.18,
                                 run_mode = "forward-then-backward",
-                                shift = util.by_pixel(-1, -14),
+                                shift = util.by_pixel(3 + (-2 * (scale * 2.5)), -0.8 + (-8 * (scale * 1.55))),
                                 line_length = 4,
                                 tint = tint,
                                 y = variation * 234 * 2,

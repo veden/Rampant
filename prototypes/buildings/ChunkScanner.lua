@@ -46,141 +46,150 @@ for t=1,11 do
     data:extend(
         {
             {
-                type = "container",
+                type = "simple-entity-with-force",
                 name = "chunk-scanner-" .. t .. "-nest-rampant",
-                icon = "__base__/graphics/icons/wooden-chest.png",
+                -- render_layer = "object",
+                icon = "__base__/graphics/icons/steel-chest.png",
                 icon_size = 32,
                 flags = {},
+                order = "s-e-w-f",
                 collision_mask = {"player-layer", "object-layer", "water-tile"},
+                minable = nil,
+                max_health = 100,
+                corpse = nil,
                 collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
                 selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                minable = {mining_time = 1, result = "wooden-chest"},
-                max_health = 100,
-                corpse = "small-remnants",
-                fast_replaceable_group = "container",
-                inventory_size = 16,
-                open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
-                close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
-                vehicle_impact_sound =  { filename = "__base__/sound/car-wood-impact.ogg", volume = 1.0 },
                 picture =
                     {
-                        filename = "__base__/graphics/entity/wooden-chest/wooden-chest.png",
+                        filename = "__core__/graphics/empty.png",
                         priority = "extra-high",
-                        width = 32,
-                        height = 36,
-                        shift = util.by_pixel(0.5, -2),
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/wooden-chest/hr-wooden-chest.png",
-                                priority = "extra-high",
-                                width = 62,
-                                height = 72,
-                                shift = util.by_pixel(0.5, -2),
-                                scale = 0.5
-                            }
-                    },
-                circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
-                circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
-                circuit_wire_max_distance = default_circuit_wire_max_distance
+                        width = 1,
+                        height = 1
+                    }
             }
+            -- {
+            --     type = "container",
+            --     name = "chunk-scanner-" .. t .. "-nest-rampant",
+            --     -- icon = "__base__/graphics/icons/wooden-chest.png",
+            --     -- icon_size = 32,
+            --     flags = {},
+            --     collision_mask = {"player-layer", "object-layer", "water-tile"},
+            --     collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+            --     selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+            --     minable = nil,
+            --     max_health = 100,
+            --     corpse = nil,
+            --     fast_replaceable_group = "container",
+            --     inventory_size = 16,
+            --     open_sound = nil,
+            --     close_sound = nil,
+            --     vehicle_impact_sound =  nil,
+            --     picture =
+            --         {
+            --             filename = "__core__/graphics/empty.png",
+            --             priority = "extra-high",
+            --             width = 1,
+            --             height = 1,
+            --             shift = util.by_pixel(0.5, -2)
+            --         },
+            --     circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
+            --     circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
+            --     circuit_wire_max_distance = default_circuit_wire_max_distance
+            -- }
         }
     )
 end
 
-local types = {"Neutral", "Acid", "Physical", "Electric", "Suicide", "Nuclear", "Fire", "Inferno", "Troll", "Fast", "Laser", "Wasp", "Spawner", "Energy-Thief", "Poison"}
+local types = {
+    "neutral",
+    "acid",
+    "physical",
+    "electric",
+    "suicide",
+    "nuclear",
+    "fire",
+    "inferno",
+    "troll",
+    "fast",
+    "laser",
+    "wasp",
+    "spawner",
+    "energy-thief",
+    "poison"
+}
+
+local subTypes = {
+    "trap",
+    "turret",
+    "utility",
+    "spawner",
+    "hive",
+    
+}
 
 for x=1,#types do
     local name = types[x]
-
-    for t=1,11 do
+    
+    for t=1,11 do        
         local scale = scales[t] * 1.65
-        data:extend(
-            {
+
+        for si=1,#subTypes do
+            local st = subTypes[si]
+
+            data:extend(
                 {
-                    type = "container",
-                    name = "chunk-scanner-" .. t .. "-" .. name .. "-nest-rampant",
-                    icon = "__base__/graphics/icons/wooden-chest.png",
-                    icon_size = 32,
-                    flags = {},
-                    collision_mask = {"player-layer", "object-layer", "water-tile"},
-                    collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                    selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                    minable = {mining_time = 1, result = "wooden-chest"},
-                    max_health = 100,
-                    corpse = "small-remnants",
-                    fast_replaceable_group = "container",
-                    inventory_size = 16,
-                    open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
-                    close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
-                    vehicle_impact_sound =  { filename = "__base__/sound/car-wood-impact.ogg", volume = 1.0 },
-                    picture =
-                        {
-                            filename = "__base__/graphics/entity/wooden-chest/wooden-chest.png",
-                            priority = "extra-high",
-                            width = 32,
-                            height = 36,
-                            shift = util.by_pixel(0.5, -2),
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/wooden-chest/hr-wooden-chest.png",
-                                    priority = "extra-high",
-                                    width = 62,
-                                    height = 72,
-                                    shift = util.by_pixel(0.5, -2),
-                                    scale = 0.5
-                                }
-                        },
-                    circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
-                    circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
-                    circuit_wire_max_distance = default_circuit_wire_max_distance
+                    --     {
+                    --         type = "container",
+                    --         name = "chunk-scanner-" .. t .. "-" .. name .. "-nest-rampant",
+                    --         -- icon = "__base__/graphics/icons/wooden-chest.png",
+                    --         -- icon_size = 32,
+                    --         flags = {},
+                    --         collision_mask = {"player-layer", "object-layer", "water-tile"},
+                    --         collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    --         selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    --         minable = nil,
+                    --         max_health = 1,
+                    --         corpse = nil,
+                    --         fast_replaceable_group = "container",
+                    --         inventory_size = 1,
+                    --         open_sound = nil,
+                    --         close_sound = nil,
+                    --         vehicle_impact_sound = nil,
+                    --         picture =
+                    --             {
+                    --                 filename = "__core__/graphics/empty.png",
+                    --                 priority = "extra-high",
+                    --                 width = 1,
+                    --                 height = 1
+                    --             },
+                    --         circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
+                    --         circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
+                    --         circuit_wire_max_distance = default_circuit_wire_max_distance
+                    --     }
+                    {
+                        type = "simple-entity-with-force",
+                        name = "entity-proxy-" .. t .. "-" .. name .. "-" .. st .. "-rampant",
+                        -- render_layer = "object",
+                        icon = "__base__/graphics/icons/steel-chest.png",
+                        icon_size = 32,
+                        flags = {},
+                        order = "s-e-w-f",
+                        collision_mask = {"player-layer", "object-layer", "water-tile"},
+                        minable = nil,
+                        max_health = 100,
+                        corpse = nil,
+                        collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                        selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                        picture =
+                            {
+                                filename = "__core__/graphics/empty.png",
+                                priority = "extra-high",
+                                width = 1,
+                                height = 1
+                            }
+                    }
                 }
-            }
-        )
+            )
+        end
     end
 end
-
--- for t=1,11 do
---     local scale = scales[t] * 1.65
---     data:extend(
---         {
---             {
---                 type = "container",
---                 name = "chunk-scanner-" .. t .. "-worm-rampant",
---                 icon = "__base__/graphics/icons/wooden-chest.png",
---                 icon_size = 32,
---                 flags = {},
---                 collision_mask = {"player-layer", "object-layer", "water-tile"},
---                 collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
---                 selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
---                 minable = {mining_time = 1, result = "wooden-chest"},
---                 max_health = 100,
---                 corpse = "small-remnants",
---                 fast_replaceable_group = "container",
---                 inventory_size = 16,
---                 open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
---                 close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
---                 vehicle_impact_sound =  { filename = "__base__/sound/car-wood-impact.ogg", volume = 1.0 },
---                 picture =
---                     {
---                         filename = "__base__/graphics/entity/wooden-chest/wooden-chest.png",
---                         priority = "extra-high",
---                         width = 32,
---                         height = 36,
---                         shift = util.by_pixel(0.5, -2),
---                         hr_version =
---                             {
---                                 filename = "__base__/graphics/entity/wooden-chest/hr-wooden-chest.png",
---                                 priority = "extra-high",
---                                 width = 62,
---                                 height = 72,
---                                 shift = util.by_pixel(0.5, -2),
---                                 scale = 0.5
---                             }
---                     },
---                 circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
---                 circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
---                 circuit_wire_max_distance = default_circuit_wire_max_distance
---             }
---         }
---     )
--- end
