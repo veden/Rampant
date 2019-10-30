@@ -10,7 +10,8 @@ Date: 10. 13. 2019
     - Increased minimum unit count for a retreat from 3 to 6
     - Biters and Spitters now are affected by tile modifiers
     - Nerfed inferno spitter fire damage and duration to reasonable levels
-    - Buffed suicide biters damage and health    
+    - Buffed suicide biters damage and health
+    - Nerfed poison biters cloud damage and duration
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible

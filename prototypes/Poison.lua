@@ -53,7 +53,8 @@ function poison.addFaction()
                 scale = 0.80 + (i * 0.15),
                 wind = true,
                 slowdown = -1.3,
-                duration = 60 * (i * 5)
+                duration = 10 * (i * 5),
+                cooldown = 5
             },
             {
                 type = "direct",
@@ -76,7 +77,7 @@ function poison.addFaction()
                                                     target_effects =
                                                         {
                                                             type = "damage",
-                                                            damage = { amount = -8 * i, type = "healing"}
+                                                            damage = { amount = -2 * i, type = "healing"}
                                                         }
                                                 }
                                         },
@@ -90,7 +91,7 @@ function poison.addFaction()
                                                     target_effects =
                                                         {
                                                             type = "damage",
-                                                            damage = { amount = 14 * i, type = "poison"}
+                                                            damage = { amount = 1.2 * i, type = "poison"}
                                                         }
                                                 }
                                         }
