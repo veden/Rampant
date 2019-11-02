@@ -682,6 +682,7 @@ function energyThief.addFaction()
     local chest = util.table.deepcopy(data.raw["radar"]["radar"])
     chest.name = "pylon-target-rampant"
     chest.icon = "__Rampant__/graphics/icons/thief/crystal-drain.png"
+    chest.icon_size = 32
     chest.flags = {"not-repairable", "not-on-map", "hidden"}
     chest.subgroup = "enemies"
     chest.pictures = {
