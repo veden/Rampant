@@ -23,16 +23,16 @@ config.ionCannonPresent = settings.startup["ion-cannon-radius"] ~= nil
 --]]
 config.attackWaveScaling = function (natives)
     return mCeil(gaussianRandomRange(natives.attackWaveSize,
-				     natives.attackWaveDeviation,
-				     1,
-				     natives.attackWaveUpperBound))
+                                     natives.attackWaveDeviation,
+                                     1,
+                                     natives.attackWaveUpperBound))
 end
 
 config.settlerWaveScaling = function (natives)
     return mCeil(gaussianRandomRange(natives.settlerWaveSize,
-				     natives.settlerWaveDeviation,
-				     natives.expansionMinSize,
-				     natives.expansionMaxSize))
+                                     natives.settlerWaveDeviation,
+                                     natives.expansionMinSize,
+                                     natives.expansionMaxSize))
 end
 
 return config

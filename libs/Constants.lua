@@ -589,7 +589,6 @@ local function roundToNearest(number, multiple)
     return num - (num % multiple)
 end
 
-local tiers5 = {}
 local tiers10 = {}
 
 local tierStart = settings.startup["rampant-tierStart"].value
@@ -604,183 +603,38 @@ local function buildTier(size, tiers)
     end
 end
 
-buildTier(5, tiers5)
 buildTier(10, tiers10)
 
-constants.TIER_UPGRADE_SET_5 = tiers5
 constants.TIER_UPGRADE_SET_10 = tiers10
 
-constants.TIER_NAMING_SET_5 = { 1, 3, 5, 7, 10 }
-constants.TIER_NAMING_SET_10 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
-
 local nestVariations = settings.startup["rampant-newEnemyNestVariations"].value
-local nestTiers = settings.startup["rampant-newEnemyNestTiers"].value
 local wormVariations = settings.startup["rampant-newEnemyWormVariations"].value
-local wormTiers = settings.startup["rampant-newEnemyWormTiers"].value
 local unitVariations = settings.startup["rampant-newEnemyUnitVariations"].value
-local unitTiers = settings.startup["rampant-newEnemyUnitTiers"].value
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
-for tier=1, wormTiers do
-    local t = ((wormTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+for tier=1, 10 do
     for i=1,wormVariations do
-        constants.ENERGY_THIEF_LOOKUP["energy-thief-worm-v" .. i .. "-t" .. t .. "-rampant"] = true
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-worm-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
 end
 
-for tier=1, unitTiers do
-    local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
+for tier=1, 10 do
     for i=1,unitVariations do
-        constants.ENERGY_THIEF_LOOKUP["energy-thief-biter-v" .. i .. "-t" .. t .. "-rampant"] = true
+        constants.ENERGY_THIEF_LOOKUP["energy-thief-biter-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
 end
 
 constants.POISON_LOOKUP = {}
 
-for tier=1, unitTiers do
-    local t = ((unitTiers == 5) and constants.TIER_NAMING_SET_5[tier]) or constants.TIER_NAMING_SET_10[tier]
-    local ct = ((unitTiers == 5) and constants.TIER_UPGRADE_SET_5[tier]) or constants.TIER_UPGRADE_SET_10[tier]
+for tier=1, 10 do
+    local effectiveLevel = constants.TIER_UPGRADE_SET_10[tier]
     for i=1,unitVariations do
-        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. t .. "-rampant"] = "poison-cloud-v" .. ct .. "-cloud-rampant"
+        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. tier .. "-rampant"] = "poison-cloud-v" .. effectiveLevel .. "-cloud-rampant"
     end
 end
 
-
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
-
-constants.NEUTRAL_NEST_TIERS = nestTiers
-constants.NEUTRAL_NEST_VARIATIONS = nestVariations
-constants.NEUTRAL_WORM_TIERS = wormTiers
-constants.NEUTRAL_WORM_VARIATIONS = wormVariations
-constants.NEUTRAL_UNIT_TIERS = unitTiers
-constants.NEUTRAL_UNIT_VARIATIONS = unitVariations
-
-constants.ACID_NEST_TIERS = nestTiers
-constants.ACID_NEST_VARIATIONS = nestVariations
-constants.ACID_WORM_TIERS = wormTiers
-constants.ACID_WORM_VARIATIONS = wormVariations
-constants.ACID_UNIT_TIERS = unitTiers
-constants.ACID_UNIT_VARIATIONS = unitVariations
-
-constants.FIRE_NEST_TIERS = nestTiers
-constants.FIRE_NEST_VARIATIONS = nestVariations
-constants.FIRE_WORM_TIERS = wormTiers
-constants.FIRE_WORM_VARIATIONS = wormVariations
-constants.FIRE_UNIT_TIERS = unitTiers
-constants.FIRE_UNIT_VARIATIONS = unitVariations
-
-constants.PHYSICAL_NEST_TIERS = nestTiers
-constants.PHYSICAL_NEST_VARIATIONS = nestVariations
-constants.PHYSICAL_WORM_TIERS = wormTiers
-constants.PHYSICAL_WORM_VARIATIONS = wormVariations
-constants.PHYSICAL_UNIT_TIERS = unitTiers
-constants.PHYSICAL_UNIT_VARIATIONS = unitVariations
-
-constants.TROLL_NEST_TIERS = nestTiers
-constants.TROLL_NEST_VARIATIONS = nestVariations
-constants.TROLL_WORM_TIERS = wormTiers
-constants.TROLL_WORM_VARIATIONS = wormVariations
-constants.TROLL_UNIT_TIERS = unitTiers
-constants.TROLL_UNIT_VARIATIONS = unitVariations
-
-constants.SPAWNER_NEST_TIERS = nestTiers
-constants.SPAWNER_NEST_VARIATIONS = nestVariations
-constants.SPAWNER_WORM_TIERS = wormTiers
-constants.SPAWNER_WORM_VARIATIONS = wormVariations
-constants.SPAWNER_UNIT_TIERS = unitTiers
-constants.SPAWNER_UNIT_VARIATIONS = unitVariations
-
-constants.FAST_NEST_TIERS = nestTiers
-constants.FAST_NEST_VARIATIONS = nestVariations
-constants.FAST_WORM_TIERS = wormTiers
-constants.FAST_WORM_VARIATIONS = wormVariations
-constants.FAST_UNIT_TIERS = unitTiers
-constants.FAST_UNIT_VARIATIONS = unitVariations
-
-constants.SUICIDE_NEST_TIERS = nestTiers
-constants.SUICIDE_NEST_VARIATIONS = nestVariations
-constants.SUICIDE_WORM_TIERS = wormTiers
-constants.SUICIDE_WORM_VARIATIONS = wormVariations
-constants.SUICIDE_UNIT_TIERS = unitTiers
-constants.SUICIDE_UNIT_VARIATIONS = unitVariations
-
-constants.WASP_NEST_TIERS = nestTiers
-constants.WASP_NEST_VARIATIONS = nestVariations
-constants.WASP_WORM_TIERS = wormTiers
-constants.WASP_WORM_VARIATIONS = wormVariations
-constants.WASP_UNIT_TIERS = unitTiers
-constants.WASP_UNIT_VARIATIONS = unitVariations
-
-constants.POISON_NEST_TIERS = nestTiers
-constants.POISON_NEST_VARIATIONS = nestVariations
-constants.POISON_WORM_TIERS = wormTiers
-constants.POISON_WORM_VARIATIONS = wormVariations
-constants.POISON_UNIT_TIERS = unitTiers
-constants.POISON_UNIT_VARIATIONS = unitVariations
-
-constants.DECAYING_NEST_TIERS = nestTiers
-constants.DECAYING_NEST_VARIATIONS = nestVariations
-constants.DECAYING_WORM_TIERS = wormTiers
-constants.DECAYING_WORM_VARIATIONS = wormVariations
-constants.DECAYING_UNIT_TIERS = unitTiers
-constants.DECAYING_UNIT_VARIATIONS = unitVariations
-
-constants.UNDYING_NEST_TIERS = nestTiers
-constants.UNDYING_NEST_VARIATIONS = nestVariations
-constants.UNDYING_WORM_TIERS = wormTiers
-constants.UNDYING_WORM_VARIATIONS = wormVariations
-constants.UNDYING_UNIT_TIERS = unitTiers
-constants.UNDYING_UNIT_VARIATIONS = unitVariations
-
-constants.ELECTRIC_NEST_TIERS = nestTiers
-constants.ELECTRIC_NEST_VARIATIONS = nestVariations
-constants.ELECTRIC_WORM_TIERS = wormTiers
-constants.ELECTRIC_WORM_VARIATIONS = wormVariations
-constants.ELECTRIC_UNIT_TIERS = unitTiers
-constants.ELECTRIC_UNIT_VARIATIONS = unitVariations
-
-constants.ENERGY_THIEF_NEST_TIERS = nestTiers
-constants.ENERGY_THIEF_NEST_VARIATIONS = nestVariations
-constants.ENERGY_THIEF_WORM_TIERS = wormTiers
-constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
-constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
-constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
-
-constants.LASER_NEST_TIERS = nestTiers
-constants.LASER_NEST_VARIATIONS = nestVariations
-constants.LASER_WORM_TIERS = wormTiers
-constants.LASER_WORM_VARIATIONS = wormVariations
-constants.LASER_UNIT_TIERS = unitTiers
-constants.LASER_UNIT_VARIATIONS = unitVariations
-
-constants.INFERNO_NEST_TIERS = nestTiers
-constants.INFERNO_NEST_VARIATIONS = nestVariations
-constants.INFERNO_WORM_TIERS = wormTiers
-constants.INFERNO_WORM_VARIATIONS = wormVariations
-constants.INFERNO_UNIT_TIERS = unitTiers
-constants.INFERNO_UNIT_VARIATIONS = unitVariations
-
-constants.NUCLEAR_NEST_TIERS = nestTiers
-constants.NUCLEAR_NEST_VARIATIONS = nestVariations
-constants.NUCLEAR_WORM_TIERS = wormTiers
-constants.NUCLEAR_WORM_VARIATIONS = wormVariations
-constants.NUCLEAR_UNIT_TIERS = unitTiers
-constants.NUCLEAR_UNIT_VARIATIONS = unitVariations
-
-constants.ENERGY_THIEF_NEST_TIERS = nestTiers
-constants.ENERGY_THIEF_NEST_VARIATIONS = nestVariations
-constants.ENERGY_THIEF_WORM_TIERS = wormTiers
-constants.ENERGY_THIEF_WORM_VARIATIONS = wormVariations
-constants.ENERGY_THIEF_UNIT_TIERS = unitTiers
-constants.ENERGY_THIEF_UNIT_VARIATIONS = unitVariations
-
-constants.POISON_NEST_TIERS = nestTiers
-constants.POISON_NEST_VARIATIONS = nestVariations
-constants.POISON_WORM_TIERS = wormTiers
-constants.POISON_WORM_VARIATIONS = wormVariations
-constants.POISON_UNIT_TIERS = unitTiers
-constants.POISON_UNIT_VARIATIONS = unitVariations
 
 constants.BUILDING_SPACE_LOOKUP = {}
 
@@ -790,7 +644,7 @@ for t = 1, 10 do
         constants.BUILDING_SPACE_LOOKUP["neutral-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["neutral-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["neutral-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-        
+
         constants.BUILDING_SPACE_LOOKUP["acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["acid-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
@@ -843,6 +697,70 @@ end
 
 constants.BUILDING_SPACE_LOOKUP["biter-spawner"] = "chunk-scanner-5-nest-rampant"
 constants.BUILDING_SPACE_LOOKUP["spitter-spawner"] = "chunk-scanner-5-nest-rampant"
+
+constants.FACTION_TYPES = {
+    "neutral",
+    "acid",
+    "physical",
+    "electric",
+    "suicide",
+    "nuclear",
+    "fire",
+    "inferno",
+    "troll",
+    "fast",
+    "laser",
+    "wasp",
+    "spawner",
+    "energy-thief",
+    "poison"
+}
+
+constants.HIVE_BUILDINGS_TYPES = {
+    "trap",
+    "turret",
+    "utility",
+    "spitter-spawner",
+    "biter-spawner",
+    "hive"
+}
+
+constants.HIVE_BUILDINGS = {}
+
+for t=1,10 do
+    for ift=1,#constants.FACTION_TYPES do
+        for ihbt=1,#constants.HIVE_BUILDINGS_TYPES do
+            local hbt = constants.HIVE_BUILDINGS_TYPES[ihbt]
+            local name = constants.FACTION_TYPES[ift]
+            if (hbt == "turret") then
+                local set = {}
+                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                for v=1,20 do
+                    set[#set+1] = name .. "-worm-v" .. v .. "-t" .. t .. "-rampant"
+                end
+            elseif (hbt == "spitter-spawner") then
+                local set = {}
+                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                for v=1,20 do
+                    set[#set+1] = name .. "-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"
+                end
+            elseif (hbt == "biter-spawner") then
+                local set = {}
+                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                for v=1,20 do
+                    set[#set+1] = name .. "-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"
+                end
+            elseif (hbt == "hive") then
+                local set = {}
+                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                for v=1,20 do
+                    set[#set+1] = name .. "-hive-v" .. v .. "-t" .. t .. "-rampant"
+                end
+            end
+        end
+    end
+end
+
 
 constantsG =  constants
 return constants

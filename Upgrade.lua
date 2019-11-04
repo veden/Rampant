@@ -136,18 +136,6 @@ function upgrade.attempt(natives)
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.15")
         global.version = constants.VERSION_25
     end
-    if (global.version < constants.VERSION_26) then
-
-        -- game.map_settings.max_failed_behavior_count = constants.MAX_FAILED_BEHAVIORS
-
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.16")
-        global.version = constants.VERSION_26
-    end
-    if (global.version < constants.VERSION_27) then
-
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.15.17")
-        global.version = constants.VERSION_27
-    end
     if (global.version < constants.VERSION_33) then
 
         global.world = nil
@@ -282,26 +270,21 @@ function upgrade.attempt(natives)
 
         natives.expansion = game.map_settings.enemy_expansion.enabled
         natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
-        
+
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.5")
         global.version = constants.VERSION_86
     end
     if (global.version < constants.VERSION_87) then
 
         natives.enemyAlignmentLookup = {}
-        
+
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.6")
         global.version = constants.VERSION_87
-    end
-    if (global.version < constants.VERSION_88) then
-        
-        game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.18")
-        global.version = constants.VERSION_88
     end
     if (global.version < 89) then
 
         natives.canAttackTick = 0
-        
+
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.22")
         global.version = 89
     end
@@ -322,10 +305,10 @@ function upgrade.attempt(natives)
 
         game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
         game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
-        game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR        
+        game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
         game.map_settings.max_failed_behavior_count = 3
-        
+
         for i=#natives.squads,1,-1 do
             natives.squads[i].penalties = {}
 
@@ -334,17 +317,21 @@ function upgrade.attempt(natives)
             end
         end
 
+        natives.NEST_VARIATIONS = settings.startup["rampant-newEnemyNestVariations"].value
+        natives.WORM_VARIATIONS = settings.startup["rampant-newEnemyWormVariations"].value
+        natives.UNIT_VARIATIONS = settings.startup["rampant-newEnemyUnitVariations"].value
+
         natives.baseOrdering = {}
         natives.baseOrdering.len = 0
 
         natives.pendingAttack.len = #natives.pendingAttack
         natives.squads.len = #natives.squads
         natives.maxOverflowPoints = AI_MAX_OVERFLOW_POINTS
-        
+
         game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.29")
         global.version = 99
     end
-    
+
     return starting ~= global.version, natives
 end
 

@@ -6,22 +6,15 @@ local swarmUtils = require("SwarmUtils")
 
 local constants = require("__Rampant__/libs/Constants")
 local math3d = require("math3d")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local inferno = {}
 
-local INFERNO_UNIT_TIERS = constants.INFERNO_UNIT_TIERS
-local INFERNO_UNIT_VARIATIONS = constants.INFERNO_UNIT_VARIATIONS
-
-local INFERNO_NEST_TIERS = constants.INFERNO_NEST_TIERS
-local INFERNO_NEST_VARIATIONS = constants.INFERNO_NEST_VARIATIONS
-
-local INFERNO_WORM_TIERS = constants.INFERNO_WORM_TIERS
-local INFERNO_WORM_VARIATIONS = constants.INFERNO_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackFlame = attackFlame.createAttackFlame
@@ -35,7 +28,35 @@ local biterLoot = makeUnitAlienLootTable("orange")
 local spawnerLoot = makeSpawnerAlienLootTable("orange")
 local wormLoot = makeWormAlienLootTable("orange")
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.15 + ((tier - 2) * 0.10)
+    end
+end
+
 function inferno.addFaction()
+
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "inferno-blood-explosion-small-rampant",
+        [2] = "inferno-blood-explosion-small-rampant",
+        [3] = "inferno-blood-explosion-small-rampant",
+        [4] = "inferno-blood-explosion-small-rampant",
+        [5] = "inferno-blood-explosion-big-rampant",
+        [6] = "inferno-blood-explosion-big-rampant",
+        [7] = "inferno-blood-explosion-big-rampant",
+        [8] = "inferno-blood-explosion-huge-rampant",
+        [9] = "inferno-blood-explosion-huge-rampant",
+        [10] = "inferno-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "inferno",
+            tint = {r=0.6, g=0, b=0, a=1}
+    })
 
 
     -- inferno spitters
@@ -46,7 +67,6 @@ function inferno.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 attack = {
                     damageType = "acid",
@@ -57,7 +77,8 @@ function inferno.addFaction()
 
                 type = "spitter",
                 attackName = "spitter-inferno",
-                tint = {r=0.65, g=0, b=0, a=1}
+                tint = {r=0.7, g=0.45, b=0.5, a=1},
+                tint2 = {r=0.9, g=0, b=0, a=1}
             },
 
             unitSpawner = {
@@ -67,12 +88,15 @@ function inferno.addFaction()
                 attributes = {},
                 resistances = {},
 
-                tint = {r=0.99, g=0.09, b=0.09, a=1}
+                tint = {r=0.7, g=0.45, b=0.5, a=1},
+                tint2 = {r=0.9, g=0, b=0, a=1}
             }
         },
 
         {
             unit = {
+
+                bloodFountains,
 
                 {
                     type = "attack",
@@ -195,196 +219,35 @@ function inferno.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "acid",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
-                },
-
-
-                {
-                    type = "resistance",
-                    name = "poison",
-                    decrease = {
-                        [1] = -3,
-                        [2] = -3,
-                        [3] = -7,
-                        [4] = -7,
-                        [5] = -10,
-                        [6] = -10,
-                        [7] = -13,
-                        [8] = -13,
-                        [9] = -16,
-                        [10] = -18
-                    },
-                    percent = {
-                        [1] = -35,
-                        [2] = -35,
-                        [3] = -40,
-                        [4] = -40,
-                        [5] = -45,
-                        [6] = -45,
-                        [7] = -50,
-                        [8] = -55,
-                        [9] = -55,
-                        [10] = -60
-                    }
+                    type = "majorResistances",
+                    entries = {"acid", "fire"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = 10,
-                        [2] = 10,
-                        [3] = 14,
-                        [4] = 14,
-                        [5] = 16,
-                        [6] = 16,
-                        [7] = 18,
-                        [8] = 18,
-                        [9] = 20,
-                        [10] = 20
-                    },
-                    percent = {
-                        [1] = 75,
-                        [2] = 75,
-                        [3] = 80,
-                        [4] = 85,
-                        [5] = 85,
-                        [6] = 90,
-                        [7] = 90,
-                        [8] = 95,
-                        [9] = 95,
-                        [10] = 97
-                    }
+                    type = "minorWeaknesses",
+                    entries = {"poison"}
                 }
 
             },
 
             unitSpawner = {
+
+                bloodFountains,
+
                 {
-                    type = "resistance",
-                    name = "acid",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
+                    type = "majorResistances",
+                    entries = {"acid", "fire"}
+                },
+
+                {
+                    type = "minorWeaknesses",
+                    entries = {"poison"}
                 },
 
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.15,
-                    [3] = 0.25,
-                    [4] = 0.35,
-                    [5] = 0.45,
-                    [6] = 0.55,
-                    [7] = 0.65,
-                    [8] = 0.70,
-                    [9] = 0.75,
-                    [10] = 0.95
-                },
-                
-                {
-                    type = "resistance",
-                    name = "poison",
-                    decrease = {
-                        [1] = -3,
-                        [2] = -3,
-                        [3] = -7,
-                        [4] = -7,
-                        [5] = -10,
-                        [6] = -10,
-                        [7] = -13,
-                        [8] = -13,
-                        [9] = -16,
-                        [10] = -18
-                    },
-                    percent = {
-                        [1] = -35,
-                        [2] = -35,
-                        [3] = -40,
-                        [4] = -40,
-                        [5] = -45,
-                        [6] = -45,
-                        [7] = -50,
-                        [8] = -55,
-                        [9] = -55,
-                        [10] = -60
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = 10,
-                        [2] = 10,
-                        [3] = 14,
-                        [4] = 14,
-                        [5] = 16,
-                        [6] = 16,
-                        [7] = 18,
-                        [8] = 18,
-                        [9] = 20,
-                        [10] = 20
-                    },
-                    percent = {
-                        [1] = 75,
-                        [2] = 75,
-                        [3] = 80,
-                        [4] = 85,
-                        [5] = 85,
-                        [6] = 90,
-                        [7] = 90,
-                        [8] = 95,
-                        [9] = 95,
-                        [10] = 97
-                    }
+                    formula = evolutionFunction
                 }
             }
         },
@@ -394,18 +257,8 @@ function inferno.addFaction()
                                       createAttackFlame(attributes),
                                       spitterattackanimation(attributes.scale,
                                                              attributes.tint,
-                                                             attributes.tint))
-        end,
-
-        {
-            unit = INFERNO_UNIT_VARIATIONS,
-            unitSpawner = INFERNO_NEST_VARIATIONS
-        },
-
-        {
-            unit = INFERNO_UNIT_TIERS,
-            unitSpawner = INFERNO_NEST_TIERS
-        }
+                                                             attributes.tint2))
+        end
     )
 
     -- inferno worms
@@ -423,10 +276,13 @@ function inferno.addFaction()
             resistances = {},
 
             attackName = "worm-inferno",
-            tint = {r=0.65, g=0, b=0, a=0.65}
+            tint = {r=0.7, g=0.45, b=0.5, a=1},
+            tint2 = {r=0.9, g=0, b=0, a=1}
+
         },
 
         {
+            bloodFountains,
 
             {
                 type = "attack",
@@ -446,18 +302,9 @@ function inferno.addFaction()
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.15,
-                [3] = 0.25,
-                [4] = 0.35,
-                [5] = 0.45,
-                [6] = 0.55,
-                [7] = 0.65,
-                [8] = 0.70,
-                [9] = 0.75,
-                [10] = 0.95
+                formula = evolutionFunction
             },
-            
+
             {
                 type = "attack",
                 name = "particleTimeout",
@@ -564,100 +411,20 @@ function inferno.addFaction()
             },
 
             {
-                type = "resistance",
-                name = "poison",
-                decrease = {
-                    [1] = -3,
-                    [2] = -3,
-                    [3] = -7,
-                    [4] = -7,
-                    [5] = -10,
-                    [6] = -10,
-                    [7] = -13,
-                    [8] = -13,
-                    [9] = -16,
-                    [10] = -18
-                },
-                percent = {
-                    [1] = -35,
-                    [2] = -35,
-                    [3] = -40,
-                    [4] = -40,
-                    [5] = -45,
-                    [6] = -45,
-                    [7] = -50,
-                    [8] = -55,
-                    [9] = -55,
-                    [10] = -60
-                }
+                type = "majorResistances",
+                entries = {"acid", "fire"}
             },
 
             {
-                type = "resistance",
-                name = "acid",
-                decrease = {
-                    [1] = 7,
-                    [2] = 7,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 13,
-                    [6] = 13,
-                    [7] = 16,
-                    [8] = 16,
-                    [9] = 19,
-                    [10] = 23
-                },
-                percent = {
-                    [1] = 65,
-                    [2] = 65,
-                    [3] = 70,
-                    [4] = 75,
-                    [5] = 75,
-                    [6] = 80,
-                    [7] = 85,
-                    [8] = 85,
-                    [9] = 90,
-                    [10] = 90
-                }
-            },
-
-            {
-                type = "resistance",
-                name = "fire",
-                decrease = {
-                    [1] = 7,
-                    [2] = 7,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 13,
-                    [6] = 13,
-                    [7] = 16,
-                    [8] = 16,
-                    [9] = 19,
-                    [10] = 23
-                },
-                percent = {
-                    [1] = 65,
-                    [2] = 65,
-                    [3] = 70,
-                    [4] = 75,
-                    [5] = 75,
-                    [6] = 80,
-                    [7] = 85,
-                    [8] = 85,
-                    [9] = 90,
-                    [10] = 90
-                }
+                type = "minorWeaknesses",
+                entries = {"poison"}
             }
         },
 
         function (attributes)
             return createStreamAttack(attributes,
                                       createAttackFlame(attributes))
-        end,
-
-        INFERNO_WORM_VARIATIONS,
-        INFERNO_WORM_TIERS
+        end
     )
 end
 

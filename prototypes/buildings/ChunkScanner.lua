@@ -1,48 +1,52 @@
 local biterFunctions = require("prototypes/utils/BiterUtils")
-
+local constants = require("libs/Constants")
 
 data:extend({
         biterFunctions.makeBiter("chunk-scanner-squad",
                                  {
                                      scale=15,
-                                     movement=1
+                                     movement=1,
+                                     effectiveLevel=1
                                  },
                                  biterFunctions.createMeleeAttack({
                                          radius=1,
                                          damage=1,
-                                         scale=15
+                                         scale=15,
+                                         effectiveLevel=1
                                  }),
                                  {}),
 
         biterFunctions.makeBiter("chunk-scanner-squad-movement",
                                  {
                                      scale=2.5,
-                                     movement=1
+                                     movement=1,
+                                     effectiveLevel=1
                                  },
                                  biterFunctions.createMeleeAttack({
                                          radius=1,
                                          damage=1,
-                                         scale=1
+                                         scale=1,
+                                         effectiveLevel=1
                                  }),
-                                 {})                       
+                                 {})
 })
 
 local scales = {
-    [1] = 0.7,
-    [2] = 0.8,
-    [3] = 0.9,
-    [4] = 1,
-    [5] = 1.1,
-    [6] = 1.2,
-    [7] = 1.3,
-    [8] = 1.4,
-    [9] = 1.5,
-    [10] = 1.6,
-    [11] = 1.7
+    [1] = 0.9,
+    [2] = 1.1,
+    [3] = 1.2,
+    [4] = 1.3,
+    [5] = 1.4,
+    [6] = 1.5,
+    [7] = 1.6,
+    [8] = 1.7,
+    [9] = 1.8,
+    [10] = 1.9,
+    [11] = 2.0
 }
 
 for t=1,11 do
-    local scale = scales[t] * 1.65
+    local scale = scales[t] * 1.2
     data:extend(
         {
             {
@@ -70,38 +74,15 @@ for t=1,11 do
     )
 end
 
-local types = {
-    "neutral",
-    "acid",
-    "physical",
-    "electric",
-    "suicide",
-    "nuclear",
-    "fire",
-    "inferno",
-    "troll",
-    "fast",
-    "laser",
-    "wasp",
-    "spawner",
-    "energy-thief",
-    "poison"
-}
+local types = constants.FACTION_TYPES
 
-local subTypes = {
-    "trap",
-    "turret",
-    "utility",
-    "spawner",
-    "hive",
-    
-}
+local subTypes = constants.HIVE_BUILDINGS_TYPES
 
 for x=1,#types do
     local name = types[x]
-    
-    for t=1,11 do        
-        local scale = scales[t] * 1.65
+
+    for t=1,11 do
+        local scale = scales[t] * 1.2
 
         for si=1,#subTypes do
             local st = subTypes[si]
@@ -110,7 +91,7 @@ for x=1,#types do
                 {
                     {
                         type = "simple-entity-with-force",
-                        name = "entity-proxy-" .. t .. "-" .. name .. "-" .. st .. "-rampant",
+                        name = "entity-proxy-" .. name .. "-" .. st .. "-t" .. t .. "-rampant",
                         icon = "__base__/graphics/icons/steel-chest.png",
                         icon_size = 32,
                         flags = {},

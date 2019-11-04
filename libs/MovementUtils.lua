@@ -42,7 +42,7 @@ end
 function movementUtils.findMovementPositionEntity(entityName, surface, position)
     local pos = position
     if not surface.can_place_entity({name=entityName, position=pos}) then
-        pos = surface.find_non_colliding_position(entityName, pos, 5, 1, true)
+        pos = surface.find_non_colliding_position(entityName, pos, 5, 4, true)
     end
     return pos
 end

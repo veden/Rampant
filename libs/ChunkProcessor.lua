@@ -58,7 +58,7 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
 
     local topOffset = area[1]
     local bottomOffset = area[2]
-
+    
     for i=#pendingStack, 1, -1 do
         local event = pendingStack[i]
         pendingStack[i] = nil

@@ -5,22 +5,15 @@ local beamUtils = require("utils/BeamUtils")
 local attackBall = require("utils/AttackBall")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local electric = {}
 
-local ELECTRIC_UNIT_TIERS = constants.ELECTRIC_UNIT_TIERS
-local ELECTRIC_UNIT_VARIATIONS = constants.ELECTRIC_UNIT_VARIATIONS
-
-local ELECTRIC_NEST_TIERS = constants.ELECTRIC_NEST_TIERS
-local ELECTRIC_NEST_VARIATIONS = constants.ELECTRIC_NEST_VARIATIONS
-
-local ELECTRIC_WORM_TIERS = constants.ELECTRIC_WORM_TIERS
-local ELECTRIC_WORM_VARIATIONS = constants.ELECTRIC_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createElectricAttack = biterUtils.createElectricAttack
@@ -34,6 +27,14 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.12 + ((tier - 2) * 0.10)
+    end
+end
+
 function electric.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("blue")
@@ -45,6 +46,26 @@ function electric.addFaction()
             tint = {r=0, g=0.1, b=1, a=1}
     })
 
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "electric-blood-explosion-small-rampant",
+        [2] = "electric-blood-explosion-small-rampant",
+        [3] = "electric-blood-explosion-small-rampant",
+        [4] = "electric-blood-explosion-small-rampant",
+        [5] = "electric-blood-explosion-big-rampant",
+        [6] = "electric-blood-explosion-big-rampant",
+        [7] = "electric-blood-explosion-big-rampant",
+        [8] = "electric-blood-explosion-huge-rampant",
+        [9] = "electric-blood-explosion-huge-rampant",
+        [10] = "electric-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "electric",
+            tint = {r=0, g=0, b=1, a=1}
+    })
+
     -- electric biters
     buildUnitSpawner(
         {
@@ -52,7 +73,6 @@ function electric.addFaction()
                 name = "electric-biter",
 
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 loot = biterLoot,
                 attack = {
@@ -62,7 +82,8 @@ function electric.addFaction()
 
                 type = "biter",
                 attackName = "biter-electric",
-                tint = {r=0, g=0.25, b=0.83, a=0.65}
+                tint = {r=0.7, g=0.7, b=1.0, a=1.0},
+                tint2 = {r=0, g=0, b=1, a=1}
             },
 
             unitSpawner = {
@@ -71,12 +92,15 @@ function electric.addFaction()
                 loot = spawnerLoot,
                 attributes = {},
                 resistances = {},
-                tint = {r=0, g=0.25, b=0.83, a=0.65}
+                tint = {r=0.7, g=0.7, b=1.0, a=1.0},
+                tint2 = {r=0, g=0, b=1, a=1}
             }
         },
 
         {
             unit = {
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "health",
@@ -153,61 +177,13 @@ function electric.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "electric",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
+                    type = "majorResistances",
+                    entries = {"electric"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "laser",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"laser"}
                 },
 
                 {
@@ -229,95 +205,29 @@ function electric.addFaction()
             unitSpawner = {
 
                 {
-                    type = "resistance",
-                    name = "electric",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
+                    type = "majorResistances",
+                    entries = {"electric"}
+                },
+
+                {
+                    type = "minorResistances",
+                    entries = {"laser"}
                 },
 
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.12,
-                    [3] = 0.17,
-                    [4] = 0.32,
-                    [5] = 0.42,
-                    [6] = 0.57,
-                    [7] = 0.72,
-                    [8] = 0.82,
-                    [9] = 0.87,
-                    [10] = 0.92
-                },
-                
-                {
-                    type = "resistance",
-                    name = "laser",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
+                    formula = evolutionFunction
+                }
+
             }
         },
 
         function (attributes)
             return createElectricAttack(attributes,
                                         makeBeam(attributes),
-                                        biterattackanimation(attributes.scale, attributes.tint, attributes.tint))
-        end,
-
-        {
-            unit = ELECTRIC_UNIT_VARIATIONS,
-            unitSpawner = ELECTRIC_NEST_VARIATIONS
-        },
-
-        {
-            unit = ELECTRIC_UNIT_TIERS,
-            unitSpawner = ELECTRIC_NEST_TIERS
-        }
+                                        biterattackanimation(attributes.scale, attributes.tint, attributes.tint2))
+        end
     )
 
     -- electric worms
@@ -360,10 +270,13 @@ function electric.addFaction()
             resistances = {},
 
             attackName = "worm-electric",
-            tint = {r=0, g=0.25, b=0.83, a=0.65}
+            tint = {r=0.7, g=0.7, b=1.0, a=1.0},
+            tint2 = {r=0, g=0, b=1, a=1}
         },
 
         {
+            bloodFountains,
+
             {
                 type = "attack",
                 name = "startingSpeed",
@@ -382,18 +295,9 @@ function electric.addFaction()
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.12,
-                [3] = 0.17,
-                [4] = 0.32,
-                [5] = 0.42,
-                [6] = 0.57,
-                [7] = 0.72,
-                [8] = 0.82,
-                [9] = 0.87,
-                [10] = 0.92
+                formula = evolutionFunction
             },
-            
+
             {
                 type = "attack",
                 name = "clusterDistance",
@@ -426,61 +330,13 @@ function electric.addFaction()
             },
 
             {
-                type = "resistance",
-                name = "electric",
-                decrease = {
-                    [1] = 7,
-                    [2] = 7,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 13,
-                    [6] = 13,
-                    [7] = 16,
-                    [8] = 16,
-                    [9] = 19,
-                    [10] = 23
-                },
-                percent = {
-                    [1] = 65,
-                    [2] = 65,
-                    [3] = 70,
-                    [4] = 75,
-                    [5] = 75,
-                    [6] = 80,
-                    [7] = 85,
-                    [8] = 85,
-                    [9] = 90,
-                    [10] = 90
-                }
+                type = "majorResistances",
+                entries = {"electric"}
             },
 
             {
-                type = "resistance",
-                name = "laser",
-                decrease = {
-                    [1] = 3,
-                    [2] = 3,
-                    [3] = 7,
-                    [4] = 7,
-                    [5] = 10,
-                    [6] = 10,
-                    [7] = 13,
-                    [8] = 13,
-                    [9] = 16,
-                    [10] = 18
-                },
-                percent = {
-                    [1] = 35,
-                    [2] = 35,
-                    [3] = 40,
-                    [4] = 40,
-                    [5] = 45,
-                    [6] = 45,
-                    [7] = 50,
-                    [8] = 55,
-                    [9] = 55,
-                    [10] = 60
-                }
+                type = "minorResistances",
+                entries = {"laser"}
             }
         },
 
@@ -488,10 +344,7 @@ function electric.addFaction()
             attributes.laserName = makeLaser(attributes)
             return createRangedAttack(attributes,
                                       createAttackBall(attributes))
-        end,
-
-        ELECTRIC_WORM_VARIATIONS,
-        ELECTRIC_WORM_TIERS
+        end
     )
 end
 

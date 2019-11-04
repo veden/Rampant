@@ -2,6 +2,7 @@ local biterFunctions = {}
 
 local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
+local wormUtils = require("WormUtils")
 
 -- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
@@ -9,6 +10,13 @@ local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alter
 local spawner_integration = unitSpawnerUtils.spawner_integration
 local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
 local spawner_die_animation = unitSpawnerUtils.spawner_die_animation
+local wormFoldedAnimation = wormUtils.wormFoldedAnimation
+local wormPreparingAnimation = wormUtils.wormPreparingAnimation
+local wormPreparedAnimation = wormUtils.wormPreparedAnimation
+local wormPreparedAlternativeAnimation = wormUtils.wormPreparedAlternativeAnimation
+local wormStartAttackAnimation = wormUtils.wormStartAttackAnimation
+local wormEndAttackAnimation = wormUtils.wormEndAttackAnimation
+local wormDieAnimation = wormUtils.wormDieAnimation
 
 
 function biterFunctions.makeSpitterCorpse(attributes)
@@ -26,7 +34,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
     }
 
-    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint)
+    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -53,7 +61,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
                     width = 84,
                     height = 68,
                     shift = util.by_pixel(1, 0),
-                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                     scale = attributes.scale * 2,
                     hr_version =
                         {
@@ -65,12 +73,12 @@ function biterFunctions.makeSpitterCorpse(attributes)
                             width = 164,
                             height = 134,
                             shift = util.by_pixel(-0.5,-0.5),
-                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                             scale = attributes.scale
                         }
                 }
         }
-    
+
     data:extend(
         {
             corpse
@@ -92,8 +100,8 @@ function biterFunctions.makeBiterCorpse(attributes)
         order = "c[corpse]-a[biter]-a[small]",
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
     }
-    
-    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint)
+
+    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -120,7 +128,7 @@ function biterFunctions.makeBiterCorpse(attributes)
                     width = 84,
                     height = 68,
                     shift = util.by_pixel(1, 0),
-                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                     scale = attributes.scale * 2,
                     hr_version =
                         {
@@ -132,12 +140,12 @@ function biterFunctions.makeBiterCorpse(attributes)
                             width = 164,
                             height = 134,
                             shift = util.by_pixel(-0.5,-0.5),
-                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                             scale = attributes.scale
                         }
                 }
         }
-    
+
     data:extend({
             corpse
     })
@@ -163,10 +171,10 @@ function biterFunctions.makeUnitSpawnerCorpse(attributes)
                 final_render_layer = "remnants",
                 animation =
                     {
-                        spawner_die_animation(0, attributes.tint, attributes.scale),
-                        spawner_die_animation(1, attributes.tint, attributes.scale),
-                        spawner_die_animation(2, attributes.tint, attributes.scale),
-                        spawner_die_animation(3, attributes.tint, attributes.scale)
+                        spawner_die_animation(0, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(1, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(2, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(3, attributes.tint, attributes.scale, attributes.tint2)
                     }
             }
     })
@@ -189,7 +197,7 @@ function biterFunctions.makeWormCorpse(attributes)
                 dying_speed = 0.01,
                 time_before_removed = 15 * 60 * 60,
                 final_render_layer = "lower-object-above-shadow",
-                animation = worm_die_animation(attributes.scale, attributes.tint),
+                animation = wormDieAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
                 ground_patch =
                     {
                         sheet = worm_integration(attributes.scale)
@@ -240,9 +248,9 @@ function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResis
         corpse = biterAttributes.corpse,
         dying_explosion = biterAttributes.explosion,
         affected_by_tiles = true,
-        dying_sound =  make_biter_dying_sounds(biterAttributes.scale),
-        working_sound =  make_biter_calls(biterAttributes.scale),
-        run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
+        dying_sound =  make_biter_dying_sounds(0.3 + (0.05 * biterAttributes.effectiveLevel)),
+        working_sound =  make_biter_calls(0.2 + (0.05 * biterAttributes.effectiveLevel)),
+        run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint2 or biterAttributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
     if biterAttributes.collisionMask then
@@ -286,16 +294,16 @@ function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterRes
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = biterAttributes.corpse,
         dying_explosion = biterAttributes.explosion,
-        dying_sound =  make_spitter_dying_sounds(0.8),
-        working_sound =  make_biter_calls(0.7),
+        dying_sound =  make_spitter_dying_sounds(0.3 + (0.05 * biterAttributes.effectiveLevel)),
+        working_sound =  make_biter_calls(0.2 + (0.05 * biterAttributes.effectiveLevel)),
         affected_by_tiles = true,
-        run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
+        run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint2 or biterAttributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
     if biterAttributes.collisionMask then
         entity.collision_mask = biterAttributes.collisionMask
     end
-    return entity    
+    return entity
 end
 
 function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances, unitSet)
@@ -321,20 +329,20 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
                 {
                     {
                         filename = "__base__/sound/creatures/spawner.ogg",
-                        volume = 1.0
+                        volume = 0.2 + (0.05 * biterAttributes.effectiveLevel)
                     }
                 },
-            apparent_volume = 2
+            apparent_volume = 0.4 + (0.1 * biterAttributes.effectiveLevel)
         },
         dying_sound =
             {
                 {
                     filename = "__base__/sound/creatures/spawner-death-1.ogg",
-                    volume = 1.0
+                    volume = 0.4 + (0.05 * biterAttributes.effectiveLevel)
                 },
                 {
                     filename = "__base__/sound/creatures/spawner-death-2.ogg",
-                    volume = 1.0
+                    volume = 0.4 + (0.05 * biterAttributes.effectiveLevel)
                 }
             },
         healing_per_tick = biterAttributes.healing or 0.02,
@@ -345,15 +353,15 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
         pollution_absorption_proportional = biterAttributes.pollutionAbsorptionPro or 0.01,
         map_generator_bounding_box = {{-4.2 * biterAttributes.scale, -3.2 * biterAttributes.scale}, {3.2 * biterAttributes.scale, 3.2 * biterAttributes.scale}},
         corpse = biterAttributes.corpse,
-        dying_explosion = "blood-explosion-huge",
+        dying_explosion = biterAttributes.explosion or "blood-explosion-huge",
         max_count_of_owned_units = biterAttributes.unitsOwned or 7,
         max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
         animations =
             {
-                spawner_idle_animation(0, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(1, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(2, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(3, biterAttributes.tint, biterAttributes.scale)
+                spawner_idle_animation(0, biterAttributes.tint, biterAttributes.scale, biterAttributes.tint2 or biterAttributes.tint),
+                spawner_idle_animation(1, biterAttributes.tint, biterAttributes.scale, biterAttributes.tint2 or biterAttributes.tint),
+                spawner_idle_animation(2, biterAttributes.tint, biterAttributes.scale, biterAttributes.tint2 or biterAttributes.tint),
+                spawner_idle_animation(3, biterAttributes.tint, biterAttributes.scale, biterAttributes.tint2 or biterAttributes.tint)
             },
         integration =
             {
@@ -367,7 +375,7 @@ function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances,
         max_spawn_shift = 0,
         max_richness_for_spawn_shift = 100,
         build_base_evolution_requirement = biterAttributes.evolutionRequirement or 0.0,
-        call_for_help_radius = 50
+        call_for_help_radius = biterAttributes.helpRadius or 50
     }
     if biterAttributes.autoplace then
         o["autoplace"] = enemy_spawner_autoplace(biterAttributes.autoplace)
@@ -392,7 +400,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
         subgroup="enemies",
         max_health = attributes.health,
         loot = attributes.loot,
-        shooting_cursor_size = 3.5 * attributes.scale,        
+        shooting_cursor_size = 3.5 * attributes.scale,
         resistances = resistances,
         healing_per_tick = attributes.healing or 0.01,
         collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
@@ -400,40 +408,40 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
         shooting_cursor_size = attributes.cursorSize or 3,
         rotation_speed = attributes.rotationSpeed or 1,
         corpse = attributes.corpse,
-        dying_explosion = "blood-explosion-big",
+        dying_explosion = attributes.explosion or "blood-explosion-big",
         inventory_size = attributes.inventorySize,
-        dying_sound = make_worm_dying_sounds(0.9),
+        dying_sound = make_worm_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         folded_speed = 0.01,
         folded_speed_secondary = 0.024,
-        folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
+        folded_animation = wormFoldedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         preparing_speed = attributes.preparingSpeed or 0.024,
-        preparing_animation = worm_preparing_animation(attributes.scale, attributes.tint, "forward"),
-        preparing_sound = make_worm_standup_sounds(1),
+        preparing_animation = wormPreparingAnimation(attributes.scale, attributes.tint, "forward", attributes.tint2 or attributes.tint),
+        preparing_sound = make_worm_standup_sounds(0.4 + (0.05 * attributes.effectiveLevel)),
         prepared_speed = 0.024,
         prepared_speed_secondary = 0.012,
-        prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
-        prepared_sound = make_worm_breath(0.8),
+        prepared_animation = wormPreparedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        prepared_sound = make_worm_breath(0.2 + (0.05 * attributes.effectiveLevel)),
         prepared_alternative_speed = 0.014,
         prepared_alternative_speed_secondary = 0.010,
         prepared_alternative_chance = 0.2,
-        prepared_alternative_animation = worm_prepared_alternative_animation(attributes.scale, attributes.tint),
-        prepared_alternative_sound = make_worm_roar_alternative(0.8),
-        
+        prepared_alternative_animation = wormPreparedAlternativeAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        prepared_alternative_sound = make_worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
+
         starting_attack_speed = 0.034,
-        starting_attack_animation = worm_start_attack_animation(attributes.scale, attributes.tint),
-        starting_attack_sound = make_worm_roars(0.8),
+        starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        starting_attack_sound = make_worm_roars(0.2 + (0.05 * attributes.effectiveLevel)),
         ending_attack_speed = 0.016,
-        ending_attack_animation = worm_end_attack_animation(attributes.scale, attributes.tint),
+        ending_attack_animation = wormEndAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         folding_speed = attributes.foldingSpeed or 0.015,
-        folding_animation =  worm_preparing_animation(attributes.scale, attributes.tint, "backward"),
-        folding_sound = make_worm_fold_sounds(1),
+        folding_animation =  wormPreparingAnimation(attributes.scale, attributes.tint, "backward", attributes.tint2 or attributes.tint),
+        folding_sound = make_worm_fold_sounds(0.4 + (0.05 * attributes.effectiveLevel)),
         prepare_range = attributes.prepareRange or 30,
         integration = worm_integration(attributes.scale),
         attack_parameters = attack,
         secondary_animation = true,
         random_animation_offset = true,
         attack_from_start_frame = true,
-        
+
         allow_turning_when_starting_attack = true,
         build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
         call_for_help_radius = 60
@@ -455,8 +463,8 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
         ammo_type = {
             category = "biological"
         },
-        sound = make_biter_roars(0.5),
-        animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
+        sound = make_biter_roars(0.3 + (attributes.effectiveLevel * 0.05)),
+        animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
     }
 
     if attributes.nuclear then
@@ -761,30 +769,30 @@ function biterFunctions.findTint(entity)
     return findKey("tint", entity.run_animation.layers)
 end
 
-function biterFunctions.acidSplashSounds()
-    return {
-        type = "play-sound",
-        sound =
-            {
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-1.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-2.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-long-1.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-long-2.ogg",
-                    volume = 0.8
-                }
-            }
-    }
-end
+-- function biterFunctions.acidSplashSounds(tier)
+--     return {
+--         type = "play-sound",
+--         sound =
+--             {
+--                 {
+--                     filename = "__base__/sound/creatures/projectile-acid-burn-1.ogg",
+--                     volume = 0.8
+--                 },
+--                 {
+--                     filename = "__base__/sound/creatures/projectile-acid-burn-2.ogg",
+--                     volume = 0.8
+--                 },
+--                 {
+--                     filename = "__base__/sound/creatures/projectile-acid-burn-long-1.ogg",
+--                     volume = 0.8
+--                 },
+--                 {
+--                     filename = "__base__/sound/creatures/projectile-acid-burn-long-2.ogg",
+--                     volume = 0.8
+--                 }
+--             }
+--     }
+-- end
 
 function biterFunctions.createElectricAttack(attributes, electricBeam, animation)
     return
@@ -844,11 +852,11 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
     }
 end
 
-function biterFunctions.createMeleeAttack(attributes)
+function biterFunctions.createMeleeAttack(attackAttributes)
     return {
         type = "projectile",
-        range = attributes.range or 0.5,
-        cooldown = attributes.cooldown or 35,
+        range = attackAttributes.range or 0.5,
+        cooldown = attackAttributes.cooldown or 35,
         ammo_category = "melee",
         ammo_type = {
             category = "melee",
@@ -857,7 +865,7 @@ function biterFunctions.createMeleeAttack(attributes)
                 {
                     {
                         type = "area",
-                        radius = attributes.radius,
+                        radius = attackAttributes.radius,
                         force = "enemy",
                         ignore_collision_condition = true,
                         action_delivery =
@@ -866,7 +874,7 @@ function biterFunctions.createMeleeAttack(attributes)
                                 target_effects =
                                     {
                                         type = "damage",
-                                        damage = { amount = attributes.damage * 0.75, type = attributes.damageType or "physical" }
+                                        damage = { amount = attackAttributes.damage * 0.75, type = attackAttributes.damageType or "physical" }
                                     }
                             }
                     },
@@ -878,58 +886,58 @@ function biterFunctions.createMeleeAttack(attributes)
                                 target_effects =
                                     {
                                         type = "damage",
-                                        damage = { amount = attributes.damage * 0.25, type = attributes.damageType or "physical" }
+                                        damage = { amount = attackAttributes.damage * 0.25, type = attackAttributes.damageType or "physical" }
                                     }
                             }
                     }
                 }
         },
-        sound = make_biter_roars(0.7),
-        animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
+        sound = make_biter_roars(0.2 + (attackAttributes.effectiveLevel * 0.05)),
+        animation = biterattackanimation(attackAttributes.scale, attackAttributes.tint, attackAttributes.tint2 or attackAttributes.tint)
     }
 end
 
-function biterFunctions.biterAttackSounds()
+function biterFunctions.biterAttackSounds(effectiveLevel)
     return {
         {
             filename = "__base__/sound/creatures/Spiters_1_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_1_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_2_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_2_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_3_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_3_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_4_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_4_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_5_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_5_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         }
     }
 end
@@ -959,11 +967,11 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
         damage_modifier = attributes.damageModifier or 1.0,
 
         lead_target_for_projectile_speed = attributes.particleHoizontalSpeed or 0.6,
-        
+
         projectile_creation_parameters = spitter_shoot_shiftings(attributes.scale, attributes.scale * 20),
-        
+
         use_shooter_direction = true,
-        
+
         gun_barrel_length = 2 * attributes.scale,
         gun_center_shift = {
             north = {0, -0.65 * attributes.scale},
@@ -988,19 +996,19 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 
         cyclic_sound =
             {
-                begin_sound = biterFunctions.biterAttackSounds(),
+                begin_sound = biterFunctions.biterAttackSounds(attributes.effectiveLevel),
                 middle_sound =
                     {
                         {
                             filename = attributes.midSound or "__Rampant__/sounds/attacks/acid-mid.ogg",
-                            volume = 0.5
+                            volume = 0.2 + (attributes.effectiveLevel * 0.05)
                         }
                     },
                 end_sound =
                     {
                         {
                             filename = attributes.endSound or "__Rampant__/sounds/attacks/acid-end.ogg",
-                            volume = 0.5
+                            volume = 0.2 + (attributes.effectiveLevel * 0.05)
                         }
                     }
             },

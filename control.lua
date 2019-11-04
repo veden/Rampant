@@ -32,6 +32,8 @@ local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
 local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
 
+local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
+
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
 
@@ -260,7 +262,7 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK,
         SENTINEL_IMPASSABLE_CHUNK
     }
-
+       
     map.mapOrdering = {}
     map.mapOrdering.len = 0
     map.enemiesToSquad = {}
@@ -285,7 +287,7 @@ local function rebuildMap()
     map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
     map.filteredEntitiesSpawnerQueryLimited = { area=map.area2, force="enemy", type="unit-spawner" }
     map.filteredEntitiesWormQueryLimited = { area=map.area2, force="enemy", type="turret" }
-
+    
     map.activePlayerForces = {"player"}
 
     for _,force in pairs(game.forces) do
@@ -475,18 +477,25 @@ local function onModSettingsChange(event)
 
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
 
+    upgrade.compareTable(natives, "NEST_VARIATIONS", settings.startup["rampant-newEnemyNestVariations"].value)
+    upgrade.compareTable(natives, "WORM_VARIATIONS", settings.startup["rampant-newEnemyWormVariations"].value)
+    upgrade.compareTable(natives, "UNIT_VARIATIONS", settings.startup["rampant-newEnemyUnitVariations"].value)
+    
     game.forces.enemy.ai_controllable = not natives.disableVanillaAI
 
     return true
 end
 
-local function prepWorld(rebuild)
+local function prepWorld(rebuild, surfaceIndex)
     local upgraded
 
     if (game.surfaces["battle_surface_2"] ~= nil) then
         natives.activeSurface = game.surfaces["battle_surface_2"].index
     elseif (game.surfaces["battle_surface_1"] ~= nil) then
         natives.activeSurface = game.surfaces["battle_surface_1"].index
+    elseif surfaceIndex then
+        natives.activeSurface = surfaceIndex
+        game.forces.enemy.kill_all_units()
     else
         natives.activeSurface = game.surfaces["nauvis"].index
     end
@@ -878,7 +887,7 @@ end
 
 local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
-    if entity and (entity.surface.index == natives.activeSurface) then
+    if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
         natives.points = natives.points + 2000
     end
 end
@@ -910,14 +919,32 @@ end
 
 local function onEntitySpawned(event)
     local entity = event.entity
-    if (entity.type ~= "unit") then
+    if (entity.valid and entity.type ~= "unit") then
         local spawner = event.spawner
-        local pos = movementUtils.findMovementPositionEntity(entity.name,
-                                                             game.surfaces[1],
-                                                             mathUtils.distortPosition(entity.position, 8))
-        if pos then
-            entity.teleport(pos)
-        end
+        local surface = entity.surface
+        if (surface.index == natives.activeSurface) then
+            local entitySet = HIVE_BUILDINGS[entity.name]
+            if entitySet then
+                local name = entitySet[mRandom(#entitySet)]
+                local disPos = mathUtils.distortPosition(entity.position, 8)
+                entity.destroy()
+                local canPlaceQuery = map.canPlaceQuery
+                canPlaceQuery.name = name
+                canPlaceQuery.position = disPos
+                
+                if surface.can_place_entity(canPlaceQuery) then
+                    surface.create_entity(canPlaceQuery)
+                else
+                    local pos = movementUtils.findMovementPositionEntity(name,
+                                                                         surface,
+                                                                         disPos)
+                    if pos then
+                        canPlaceQuery.position = pos
+                        surface.create_entity(canPlaceQuery)
+                    end
+                end
+            end
+        end        
     end
 end
 
@@ -1022,4 +1049,7 @@ remote.add_interface("rampantTests",
                      }
 )
 
+interop.setActiveSurface = function (surfaceIndex)
+    prepWorld(false, surfaceIndex)
+end
 remote.add_interface("rampant", interop)

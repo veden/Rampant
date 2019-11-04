@@ -17,7 +17,7 @@ data:extend({
 	    default_value = true,
 	    order = "b[modifier]-b[trigger]",
 	    per_user = false
-	},       
+	},
 
         {
 	    type = "bool-setting",
@@ -27,7 +27,7 @@ data:extend({
 	    order = "b[modifier]-b[trigger]",
 	    per_user = false
 	},
-        
+
 	{
 	    type = "double-setting",
 	    name = "rampant-attackPlayerThreshold",
@@ -202,8 +202,8 @@ data:extend({
 	    maximum_value = 1.0,
 	    order = "d[modifier]-a[ai]",
 	    per_user = false
-	},        
-        
+	},
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-newEnemies",
@@ -226,16 +226,16 @@ data:extend({
 	},
 
 
-	{
-	    type = "int-setting",
-	    name = "rampant-newEnemyNestTiers",
-	    description = "rampant-newEnemyNestTiers",
-	    setting_type = "startup",
-	    default_value = 5,
-	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-c[unit]",
-	    per_user = false
-	},
+	-- {
+	--     type = "int-setting",
+	--     name = "rampant-newEnemyNestTiers",
+	--     description = "rampant-newEnemyNestTiers",
+	--     setting_type = "startup",
+	--     default_value = 10,
+	--     allowed_values = { 5, 10 },
+	--     order = "l[modifer]-c[unit]",
+	--     per_user = false
+	-- },
 
 	{
 	    type = "int-setting",
@@ -249,16 +249,16 @@ data:extend({
 	    per_user = false
 	},
 
-	{
-	    type = "int-setting",
-	    name = "rampant-newEnemyWormTiers",
-	    description = "rampant-newEnemyWormTiers",
-	    setting_type = "startup",
-	    default_value = 5,
-	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-e[unit]",
-	    per_user = false
-	},
+	-- {
+	--     type = "int-setting",
+	--     name = "rampant-newEnemyWormTiers",
+	--     description = "rampant-newEnemyWormTiers",
+	--     setting_type = "startup",
+	--     default_value = 10,
+	--     allowed_values = { 5, 10 },
+	--     order = "l[modifer]-e[unit]",
+	--     per_user = false
+	-- },
 
 	{
 	    type = "int-setting",
@@ -272,16 +272,16 @@ data:extend({
 	    per_user = false
 	},
 
-	{
-	    type = "int-setting",
-	    name = "rampant-newEnemyUnitTiers",
-	    description = "rampant-newEnemyUnitTiers",
-	    setting_type = "startup",
-	    default_value = 10,
-	    allowed_values = { 5, 10 },
-	    order = "l[modifer]-g[unit]",
-	    per_user = false
-	},        
+	-- {
+	--     type = "int-setting",
+	--     name = "rampant-newEnemyUnitTiers",
+	--     description = "rampant-newEnemyUnitTiers",
+	--     setting_type = "startup",
+	--     default_value = 10,
+	--     allowed_values = { 5, 10 },
+	--     order = "l[modifer]-g[unit]",
+	--     per_user = false
+	-- },
 
 	{
 	    type = "int-setting",
@@ -515,7 +515,7 @@ data:extend({
 	    default_value = true,
 	    order = "m[total]-e[ai]",
 	    per_user = false
-	},                      
+	},
 
         {
 	    type = "double-setting",
@@ -528,13 +528,13 @@ data:extend({
 	    order = "m[total]-f[ai]",
 	    per_user = false
 	},
-        
+
 	{
 	    type = "bool-setting",
 	    name = "rampant-removeBloodParticles",
 	    description = "rampant-reduceBloodParticles",
 	    setting_type = "startup",
-	    default_value = true,
+	    default_value = false,
 	    order = "n[modifier]-a[optimize]",
 	    per_user = false
 	},
@@ -546,7 +546,7 @@ data:extend({
 	    default_value = false,
 	    order = "n[modifier]-a[optimize]",
 	    per_user = false
-	},        
+	},
 
         {
 	    type = "bool-setting",
@@ -565,7 +565,7 @@ data:extend({
 	    order = "n[modifier]-c[optimize]",
 	    per_user = false
 	},
-        
+
 	{
 	    type = "double-setting",
 	    name = "rampant-unitBiterHealthScaler",

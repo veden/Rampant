@@ -18,11 +18,7 @@ local mFloor = math.floor
 
 local deepcopy = util.table.deepcopy
 
-local TIER_UPGRADE_SET_5 = constants.TIER_UPGRADE_SET_5
 local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
-
-local TIER_NAMING_SET_10 = constants.TIER_NAMING_SET_10
-local TIER_NAMING_SET_5 = constants.TIER_NAMING_SET_5
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
@@ -45,7 +41,15 @@ local makeUnitSpawner = biterUtils.makeUnitSpawner
 
 local function isMember(fieldType, fieldName, lst)
     for i=1,#lst do
-        if (lst[i].type == fieldType) and (lst[i].name == fieldName) then
+        if ((fieldType == "resistance") and
+                ((lst[i].type == "majorResistances") or (lst[i].type == "majorWeaknesses") or
+                    (lst[i].type == "minorResistances") or (lst[i].type == "minorWeaknesses"))) then
+            for x=1,#lst[i].entries do
+                if (lst[i].entries[x] == fieldName) then
+                    return true
+                end
+            end
+        elseif (lst[i].type == fieldType) and (lst[i].name == fieldName) then
             return true
         end
     end
@@ -440,22 +444,6 @@ local function addUnitDefaults(template, upgrades)
                         [9] = 0.30,
                         [10] = 0.25
         })
-
-        -- pushUpgrade(upgrades,
-        --             {
-        --                 type = "attack",
-        --                 name = "damagePerTick",
-        --                 [1] = 0.1,
-        --                 [2] = 0.2,
-        --                 [3] = 0.6,
-        --                 [4] = 1.2,
-        --                 [5] = 1.2,
-        --                 [6] = 1.3,
-        --                 [7] = 1.3,
-        --                 [8] = 1.3,
-        --                 [9] = 1.4,
-        --                 [10] = 1.4
-        -- })
 
         pushUpgrade(upgrades,
                     {
@@ -867,24 +855,24 @@ local function addUnitSpawnerDefaults(template, upgrades)
                         [2] = 3,
                         [3] = 4,
                         [4] = 4,
-                        [5] = 6,
-                        [6] = 6,
-                        [7] = 6,
-                        [8] = 6,
-                        [9] = 7,
-                        [10] = 7
+                        [5] = 4,
+                        [6] = 4,
+                        [7] = 4,
+                        [8] = 4,
+                        [9] = 5,
+                        [10] = 5
                     },
                     percent = {
-                        [1] = 60,
-                        [2] = 60,
-                        [3] = 62,
-                        [4] = 62,
-                        [5] = 63,
-                        [6] = 63,
-                        [7] = 64,
-                        [8] = 64,
-                        [9] = 65,
-                        [10] = 65
+                        [1] = 40,
+                        [2] = 40,
+                        [3] = 42,
+                        [4] = 42,
+                        [5] = 43,
+                        [6] = 43,
+                        [7] = 44,
+                        [8] = 44,
+                        [9] = 45,
+                        [10] = 45
                     }
     })
 
@@ -1081,24 +1069,24 @@ local function addWormDefaults(template, upgrades)
                         [2] = 3,
                         [3] = 4,
                         [4] = 4,
-                        [5] = 6,
-                        [6] = 6,
-                        [7] = 6,
-                        [8] = 6,
-                        [9] = 7,
-                        [10] = 7
+                        [5] = 5,
+                        [6] = 5,
+                        [7] = 5,
+                        [8] = 5,
+                        [9] = 5,
+                        [10] = 6
                     },
                     percent = {
-                        [1] = 70,
-                        [2] = 70,
-                        [3] = 72,
-                        [4] = 72,
-                        [5] = 73,
-                        [6] = 73,
-                        [7] = 74,
-                        [8] = 74,
-                        [9] = 75,
-                        [10] = 75
+                        [1] = 40,
+                        [2] = 40,
+                        [3] = 42,
+                        [4] = 42,
+                        [5] = 43,
+                        [6] = 43,
+                        [7] = 44,
+                        [8] = 44,
+                        [9] = 45,
+                        [10] = 45
                     }
     })
 
@@ -1205,30 +1193,175 @@ local function fillUnitTable(result, unitSet, tier, probability)
     end
 end
 
-local function unitSetToProbabilityTable(unitSet, tier)
+local function unitSetToProbabilityTable(unitSet)
     local result = {}
 
-    if (#unitSet == 10) then
-        fillUnitTable(result, unitSet, 1, {{0, 1}, {0.35, 0.0}})
-        fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}})
-        fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}})
-        fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}})
-        fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}})
-        fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}})
-        fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}})
-        fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}})
-        fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
-        fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
-    else
-        fillUnitTable(result, unitSet, 1, {{0, 1}, {0.45, 0.0}})
-        fillUnitTable(result, unitSet, 2, {{0.4, 0}, {0.5, 0.5}, {0.65, 0.0}})
-        fillUnitTable(result, unitSet, 3, {{0.6, 0}, {0.7, 0.5}, {0.75, 0.0}})
-        fillUnitTable(result, unitSet, 4, {{0.70, 0}, {0.775, 0.5}, {0.95, 0.0}})
-        fillUnitTable(result, unitSet, 5, {{0.9, 0}, {1, 1}})
-    end
-    
+    fillUnitTable(result, unitSet, 1, {{0, 1}, {0.35, 0.0}})
+    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}})
+    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}})
+    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}})
+    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}})
+    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}})
+    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}})
+    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}})
+    fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
+
     return result
 end
+
+local function addMajorResistance(entity, name, tier)
+    local decreases = {
+        [1] = 7,
+        [2] = 7,
+        [3] = 10,
+        [4] = 10,
+        [5] = 13,
+        [6] = 13,
+        [7] = 16,
+        [8] = 16,
+        [9] = 19,
+        [10] = 23
+    }
+    local percents = {
+        [1] = 65,
+        [2] = 65,
+        [3] = 70,
+        [4] = 75,
+        [5] = 75,
+        [6] = 80,
+        [7] = 85,
+        [8] = 85,
+        [9] = 90,
+        [10] = 90
+    }
+    entity.resistances[name] = {
+        decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
+        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
+    }
+end
+
+local function addMinorResistance(entity, name, tier)
+    -- {
+    --                 type = "resistance",
+    --                 name = "fire",
+    --                 decrease = {
+    --                     [1] = 1,
+    --                     [2] = 1,
+    --                     [3] = 1,
+    --                     [4] = 1,
+    --                     [5] = 2,
+    --                     [6] = 2,
+    --                     [7] = 3,
+    --                     [8] = 3,
+    --                     [9] = 3,
+    --                     [10] = 4
+    --                 },
+    --                 percent = {
+    --                     [1] = 30,
+    --                     [2] = 30,
+    --                     [3] = 30,
+    --                     [4] = 40,
+    --                     [5] = 40,
+    --                     [6] = 40,
+    --                     [7] = 45,
+    --                     [8] = 45,
+    --                     [9] = 45,
+    --                     [10] = 50
+    --                 }
+    --             }
+    local decreases = {
+        [1] = 3,
+        [2] = 3,
+        [3] = 7,
+        [4] = 7,
+        [5] = 10,
+        [6] = 10,
+        [7] = 13,
+        [8] = 13,
+        [9] = 16,
+        [10] = 18
+    }
+    local percents = {
+        [1] = 35,
+        [2] = 35,
+        [3] = 40,
+        [4] = 40,
+        [5] = 45,
+        [6] = 45,
+        [7] = 50,
+        [8] = 55,
+        [9] = 55,
+        [10] = 60
+    }
+    entity.resistances[name] = {
+        decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
+        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
+    }
+end
+
+local function addMajorWeakness(entity, name, tier)
+    local decreases = {
+        [1] = -7,
+        [2] = -7,
+        [3] = -10,
+        [4] = -10,
+        [5] = -13,
+        [6] = -13,
+        [7] = -16,
+        [8] = -16,
+        [9] = -19,
+        [10] = -23
+    }
+    local percents = {
+        [1] = -65,
+        [2] = -65,
+        [3] = -70,
+        [4] = -75,
+        [5] = -75,
+        [6] = -80,
+        [7] = -85,
+        [8] = -85,
+        [9] = -90,
+        [10] = -90
+    }
+    entity.resistances[name] = {
+        decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
+        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
+    }
+end
+
+local function addMinorWeakness(entity, name, tier)
+    local decreases = {
+        [1] = -3,
+        [2] = -3,
+        [3] = -7,
+        [4] = -7,
+        [5] = -10,
+        [6] = -10,
+        [7] = -13,
+        [8] = -13,
+        [9] = -16,
+        [10] = -18
+    }
+    local percents = {
+        [1] = -35,
+        [2] = -35,
+        [3] = -40,
+        [4] = -40,
+        [5] = -45,
+        [6] = -45,
+        [7] = -50,
+        [8] = -55,
+        [9] = -55,
+        [10] = -60
+    }
+    entity.resistances[name] = {
+        decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
+        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
+    }
+end
+
 
 local function scaleAttributes (upgrade, entity)
     if (upgrade.type == "attribute") then
@@ -1341,6 +1474,8 @@ local function upgradeEntity(entity, upgradeTable, tier)
             if (upgrade.type == "attribute") then
                 if upgrade.mapping then
                     entity.attributes[upgrade.mapping] = upgrade[tier]
+                elseif upgrade.formula then
+                    entity.attributes[upgrade.name] = upgrade.formula(tier)
                 else
                     local adj = upgrade[tier]
                     local min = upgrade.min or adj * 0.85
@@ -1350,12 +1485,27 @@ local function upgradeEntity(entity, upgradeTable, tier)
                         min = max
                         max = t
                     end
-                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
+                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.01)
                     entity.attributes[upgrade.name] = (entity.attributes[upgrade.name] or 0) + adj
                 end
                 scaleAttributes(upgrade, entity)
-            end
-            if (upgrade.type == "resistance") then
+            elseif (upgrade.type == "majorResistances") then
+                for i=1,#upgrade.entries do
+                    addMajorResistance(entity, upgrade.entries[i], tier)
+                end
+            elseif (upgrade.type == "minorResistances") then
+                for i=1,#upgrade.entries do
+                    addMinorResistance(entity, upgrade.entries[i], tier)
+                end
+            elseif (upgrade.type == "majorWeaknesses") then
+                for i=1,#upgrade.entries do
+                    addMajorWeakness(entity, upgrade.entries[i], tier)
+                end
+            elseif (upgrade.type == "minorWeaknesses") then
+                for i=1,#upgrade.entries do
+                    addMinorWeakness(entity, upgrade.entries[i], tier)
+                end
+            elseif (upgrade.type == "resistance") then
                 local field = upgrade.name
                 if not entity.resistances[field] then
                     entity.resistances[field] = {}
@@ -1370,7 +1520,7 @@ local function upgradeEntity(entity, upgradeTable, tier)
                         min = max
                         max = t
                     end
-                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
+                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.01)
                     entity.resistances[field].decrease = (entity.resistances[field].decrease or 0) + adj
                 end
                 if upgrade.percent then
@@ -1382,11 +1532,10 @@ local function upgradeEntity(entity, upgradeTable, tier)
                         min = max
                         max = t
                     end
-                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
+                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.01)
                     entity.resistances[field].percent = mMin((entity.resistances[field].percent or 0) + adj, 100)
                 end
-            end
-            if (upgrade.type == "attack") then
+            elseif (upgrade.type == "attack") then
                 if upgrade.mapping then
                     entity.attack[upgrade.mapping] = upgrade[tier]
                 else
@@ -1398,20 +1547,25 @@ local function upgradeEntity(entity, upgradeTable, tier)
                         min = max
                         max = t
                     end
-                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.001)
+                    adj = roundToNearest(gaussianRandomRangeRG(adj, adj * 0.15, min, max, xorRandom), 0.01)
                     entity.attack[upgrade.name] = (entity.attack[upgrade.name] or 0) + adj
                 end
                 scaleAttributes(upgrade, entity)
+            else
+                error("Unknown type attribute " .. serpent.dump(upgrade))
             end
         end
     end
 end
 
-local function calculateRGBa(tint, tier)
+local function calculateRGBa(tint, tier, staticAlpha)
     local r = gaussianRandomRangeRG(tint.r, tint.r * 0.10 + (0.005 * tier), mMax(tint.r * 0.85 - (0.005 * tier), 0), mMin(tint.r * 1.15, 1), xorRandom)
     local g = gaussianRandomRangeRG(tint.g, tint.g * 0.10 + (0.005 * tier), mMax(tint.g * 0.85 - (0.005 * tier), 0), mMin(tint.g * 1.15, 1), xorRandom)
     local b = gaussianRandomRangeRG(tint.b, tint.b * 0.10 + (0.005 * tier), mMax(tint.b * 0.85 - (0.005 * tier), 0), mMin(tint.b * 1.15, 1), xorRandom)
-    local a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
+    local a = tint.a
+    if not staticAlpha then
+        a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
+    end
 
     return { r=r, g=g, b=b, a=a }
 end
@@ -1427,7 +1581,7 @@ local function generateApperance(unit, tier)
         unit.attributes.scale = scale
     end
     if unit.tint then
-        local tint = calculateRGBa(unit.tint, tier)
+        local tint = calculateRGBa(unit.tint, tier, true)
 
         unit.attributes.tint = tint
 
@@ -1438,31 +1592,47 @@ local function generateApperance(unit, tier)
             unit.attack.tint = tint
         end
     end
+    if unit.tint2 then
+        local tint2 = calculateRGBa(unit.tint2, tier)
+
+        unit.attributes.tint2 = tint2
+
+        if unit.attack then
+            if scale then
+                unit.attack.scale = scale
+            end
+            unit.attack.tint2 = tint2
+        end
+    end
 end
 
-function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variations, tiers)
+function swarmUtils.buildUnits(template, attackGenerator, upgradeTable)
     addUnitDefaults(template, upgradeTable)
 
     local unitSet = {}
 
-    for tier=1, tiers do
-        local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-        local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+    local variations = settings.startup["rampant-newEnemyUnitVariations"].value
+
+    for tier=1, 10 do
+        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
         local result = {}
 
         for i=1,variations do
             local unit = deepcopy(template)
-            unit.name = unit.name .. "-v" .. i .. "-t" .. t
-            unit.attributes.tier = "-v" .. i .. "-t" .. t
-            generateApperance(unit, ut)
-            upgradeEntity(unit, upgradeTable,  ut)
+            unit.name = unit.name .. "-v" .. i .. "-t" .. tier
+            unit.attributes.tier = "-v" .. i .. "-t" .. tier
+            generateApperance(unit, effectiveLevel)
+            upgradeEntity(unit, upgradeTable,  effectiveLevel)
+
+            unit.attributes.effectiveLevel = effectiveLevel
+            unit.attack.effectiveLevel = effectiveLevel
 
             if unit.attackName then
-                unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. t
+                unit.attack.name = unit.attackName .. "-v" .. i .. "-t" .. tier
             end
 
             if unit.loot then
-                unit.attributes.loot = { unit.loot[ut] }
+                unit.attributes.loot = { unit.loot[effectiveLevel] }
             end
 
             local entity
@@ -1470,20 +1640,20 @@ function swarmUtils.buildUnits(template, attackGenerator, upgradeTable, variatio
                 unit.attributes.corpse = makeSpitterCorpse(unit)
                 entity = makeSpitter(unit.name,
                                      unit.attributes,
-                                     attackGenerator(unit.attack, unit.attributes, t),
+                                     attackGenerator(unit.attack, unit.attributes, effectiveLevel),
                                      unit.resistances)
             elseif (unit.type == "biter") then
                 unit.attributes.corpse = makeBiterCorpse(unit)
                 entity = makeBiter(unit.name,
                                    unit.attributes,
-                                   attackGenerator(unit.attack, unit.attributes, t),
+                                   attackGenerator(unit.attack, unit.attributes, effectiveLevel),
                                    unit.resistances)
             elseif (unit.type == "drone") then
                 entity = makeDrone(unit.name,
                                    unit.attributes,
                                    unit.resistances,
-                                   attackGenerator(unit.attack, unit.attributes, t),
-                                   unit.death(unit.attack, unit.attributes, t))
+                                   attackGenerator(unit.attack, unit.attributes, effectiveLevel),
+                                   unit.death(unit.attack, unit.attributes, effectiveLevel))
             end
 
             result[#result+1] = entity.name
@@ -1510,87 +1680,54 @@ local propTables10 = {
     {{0.93, 0}, {1, 1.0}}
 }
 
-local propTables5 = {
-    {{0, 1}, {0.45, 0.0}},
-    {{0.4, 0}, {0.5, 0.5}, {0.65, 0.0}},
-    {{0.6, 0}, {0.7, 0.5}, {0.75, 0.0}},
-    {{0.70, 0}, {0.775, 0.5}, {0.95, 0.0}},
-    {{0.9, 0}, {1, 1}}
-}
-
-function swarmUtils.buildEntities(entityTemplates, variations, tiers)
+function swarmUtils.buildEntities(entityTemplates)
     local unitSet = {}
 
-    for tier=1, tiers do
-        local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-        local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+    for tier=1, 10 do
+        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
         local result = {}
-        
-        local entityTemplate = entityTemplates[ut]
-        
-        for ei=1,#entityTemplate do            
+
+        local entityTemplate = entityTemplates[effectiveLevel]
+
+        for ei=1,#entityTemplate do
             local template = entityTemplate[ei]
-            local xt = ((template[3] == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-            local xut = ((template[3] == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
-            
-            for i=1,template[2] do
-                local probability
-                if template[3] == 5 then
-                    probability = deepcopy(propTables5[xt])
-                else
-                    probability = deepcopy(propTables10[xt])
-                end
-                
-                for z=1,#probability do
-                    probability[z][2] = probability[z][2] * template[4]
-                end
-                
-                unitSet[#unitSet+1] = {template[1] .. "-v" .. i .. "-t" .. xt .. "-rampant", probability}
+
+            local probability = deepcopy(propTables10[tier])
+
+            for z=1,#probability do
+                probability[z][2] = probability[z][2] * template[2]
             end
+            unitSet[#unitSet+1] = {template[1] .. "-t" .. tier .. "-rampant", probability}
         end
     end
-    
+
     return unitSet
 end
 
-function swarmUtils.buildEntitySpawner(template, entityTemplates, upgradeTable, variations, tiers)
+function swarmUtils.buildEntitySpawner(template, entityTemplates, upgradeTable)
     addUnitSpawnerDefaults(template, upgradeTable)
 
-    if (not upgradeTable.probabilityTable) then
-        upgradeTable.probabilityTable = {
-            [1] = 1,
-            [2] = 1,
-            [3] = 1,
-            [4] = 1,
-            [5] = 1,
-            [6] = 1,
-            [7] = 1,
-            [8] = 1,
-            [9] = 1,
-            [10] = 1,
-        }
-    end
+    local unitSet = swarmUtils.buildEntities(entityTemplates)
 
-    local unitSet = swarmUtils.buildEntities(entityTemplates, variations.unit, tiers.unit)
+    local variations = settings.startup["rampant-newEnemyNestVariations"].value
 
-    for tier=1, tiers.unitSpawner do
-        local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-        local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
-        
-        for i=1,variations.unitSpawner do
+    for tier=1, 10 do
+        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+
+        for i=1,variations do
             local unitSpawner = deepcopy(template)
-            unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
-            
-            generateApperance(unitSpawner, ut)
+            unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
+            unitSpawner.attributes.effectiveLevel = effectiveLevel
+            generateApperance(unitSpawner, effectiveLevel)
             unitSpawner.type = "spawner"
-            upgradeEntity(unitSpawner, upgradeTable, ut)
+            upgradeEntity(unitSpawner, upgradeTable, effectiveLevel)
 
             if unitSpawner.loot then
-                unitSpawner.attributes.loot = { unitSpawner.loot[ut] }
+                unitSpawner.attributes.loot = { unitSpawner.loot[effectiveLevel] }
             end
 
             if unitSpawner.autoplace then
-                unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[ut]
+                unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[effectiveLevel]
             end
             unitSpawner.attributes.corpse = makeUnitSpawnerCorpse(unitSpawner)
             data:extend({
@@ -1605,50 +1742,34 @@ function swarmUtils.buildEntitySpawner(template, entityTemplates, upgradeTable, 
 end
 
 
-function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, variations, tiers)
+function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator)
     addUnitDefaults(templates.unit, upgradeTable.unit)
     addUnitSpawnerDefaults(templates.unitSpawner, upgradeTable.unitSpawner)
 
-    if (not upgradeTable.probabilityTable) then
-        upgradeTable.probabilityTable = {
-            [1] = 1,
-            [2] = 1,
-            [3] = 1,
-            [4] = 1,
-            [5] = 1,
-            [6] = 1,
-            [7] = 1,
-            [8] = 1,
-            [9] = 1,
-            [10] = 1,
-        }
-    end
-
     local unitSet = swarmUtils.buildUnits(templates.unit,
                                           attackGenerator,
-                                          upgradeTable.unit,
-                                          variations.unit,
-                                          tiers.unit)
+                                          upgradeTable.unit)
 
-    for tier=1, tiers.unitSpawner do
-        local t = ((tiers.unitSpawner == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-        local ut = ((tiers.unitSpawner == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
-        -- print(tier,t,ut)
-        for i=1,variations.unitSpawner do
+    local variations = settings.startup["rampant-newEnemyNestVariations"].value
+
+    for tier=1, 10 do
+        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+
+        for i=1,variations do
             local unitSpawner = deepcopy(templates.unitSpawner)
-            unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. t
-            local unitTable = unitSetToProbabilityTable(unitSet,
-                                                        tier)
-            generateApperance(unitSpawner, ut)
+            unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
+            local unitTable = unitSetToProbabilityTable(unitSet)
+            unitSpawner.attributes.effectiveLevel = effectiveLevel
+            generateApperance(unitSpawner, effectiveLevel)
             unitSpawner.type = "spawner"
-            upgradeEntity(unitSpawner, upgradeTable.unitSpawner, ut)
+            upgradeEntity(unitSpawner, upgradeTable.unitSpawner, effectiveLevel)
 
             if unitSpawner.loot then
-                unitSpawner.attributes.loot = { unitSpawner.loot[ut] }
+                unitSpawner.attributes.loot = { unitSpawner.loot[effectiveLevel] }
             end
 
             if unitSpawner.autoplace then
-                unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[ut]
+                unitSpawner.attributes["autoplace"] = unitSpawner.autoplace[effectiveLevel]
             end
             unitSpawner.attributes.corpse = makeUnitSpawnerCorpse(unitSpawner)
             data:extend({
@@ -1659,40 +1780,41 @@ function swarmUtils.buildUnitSpawner(templates, upgradeTable, attackGenerator, v
             })
         end
     end
-
-    -- ent()
-
 end
 
-function swarmUtils.buildWorm(template, upgradeTable, attackGenerator, variations, tiers)
+function swarmUtils.buildWorm(template, upgradeTable, attackGenerator)
     addWormDefaults(template, upgradeTable)
 
-    for tier=1, tiers do
-        local t = ((tiers == 5) and TIER_NAMING_SET_5[tier]) or TIER_NAMING_SET_10[tier]
-        local ut = ((tiers == 5) and TIER_UPGRADE_SET_5[tier]) or TIER_UPGRADE_SET_10[tier]
+    local variations = settings.startup["rampant-newEnemyWormVariations"].value
+
+    for tier=1, 10 do
+        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
         for i=1,variations do
             local worm = deepcopy(template)
-            worm.name = worm.name .. "-v" .. i .. "-t" .. t
-            generateApperance(worm, ut)
+            worm.name = worm.name .. "-v" .. i .. "-t" .. tier
+            generateApperance(worm, effectiveLevel)
             worm.type = "worm"
-            upgradeEntity(worm, upgradeTable, ut)
+            upgradeEntity(worm, upgradeTable, effectiveLevel)
+
+            worm.attributes.effectiveLevel = effectiveLevel
+            worm.attack.effectiveLevel = effectiveLevel
 
             if worm.attackName then
-                worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. t
+                worm.attack.name = worm.attackName .. "-v" .. i .. "-t" .. tier
             end
 
             if worm.loot then
-                worm.attributes.loot = { worm.loot[ut] }
+                worm.attributes.loot = { worm.loot[effectiveLevel] }
             end
 
             if worm.autoplace then
-                worm.attributes["autoplace"] = worm.autoplace[ut]
+                worm.attributes["autoplace"] = worm.autoplace[effectiveLevel]
             end
             worm.attributes.corpse = makeWormCorpse(worm)
             data:extend({
                     makeWorm(worm.name,
                              worm.attributes,
-                             attackGenerator(worm.attack, worm.attributes, t),
+                             attackGenerator(worm.attack, worm.attributes, effectiveLevel),
                              worm.resistances)
             })
         end

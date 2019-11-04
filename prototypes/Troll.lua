@@ -4,22 +4,15 @@ local acidBall = require("utils/AttackBall")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local troll = {}
 
-local TROLL_UNIT_TIERS = constants.TROLL_UNIT_TIERS
-local TROLL_UNIT_VARIATIONS = constants.TROLL_UNIT_VARIATIONS
-
-local TROLL_NEST_TIERS = constants.TROLL_NEST_TIERS
-local TROLL_NEST_VARIATIONS = constants.TROLL_NEST_VARIATIONS
-
-local TROLL_WORM_TIERS = constants.TROLL_WORM_TIERS
-local TROLL_WORM_VARIATIONS = constants.TROLL_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createAttackBall = acidBall.createAttackBall
@@ -30,11 +23,40 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.17 + ((tier - 2) * 0.10)
+    end
+end
+
 function troll.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("green")
     local spawnerLoot = makeSpawnerAlienLootTable("green")
     local wormLoot = makeWormAlienLootTable("green")
+
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "troll-blood-explosion-small-rampant",
+        [2] = "troll-blood-explosion-small-rampant",
+        [3] = "troll-blood-explosion-small-rampant",
+        [4] = "troll-blood-explosion-small-rampant",
+        [5] = "troll-blood-explosion-big-rampant",
+        [6] = "troll-blood-explosion-big-rampant",
+        [7] = "troll-blood-explosion-big-rampant",
+        [8] = "troll-blood-explosion-huge-rampant",
+        [9] = "troll-blood-explosion-huge-rampant",
+        [10] = "troll-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "troll",
+            tint = {r=0.8, g=0.8, b=0.8, a=1}
+    })
+
 
     -- troll biters
     buildUnitSpawner(
@@ -44,7 +66,6 @@ function troll.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 attack = {},
                 resistances = {},
@@ -62,7 +83,8 @@ function troll.addFaction()
                     [9] = 1.9,
                     [10] = 2.1
                 },
-                tint = {r=0.56, g=0.46, b=0.42, a=0.65}
+                tint = {r=0.4, g=0.4, b=0.4, a=1},
+                tint2 = {r=0.8, g=0.8, b=0.8, a=1}
             },
 
             unitSpawner = {
@@ -83,12 +105,15 @@ function troll.addFaction()
                     [9] = 1.5,
                     [10] = 1.6
                 },
-                tint = {r=1.0, g=1.0, b=1.0, a=1.0}
+                tint = {r=0.4, g=0.4, b=0.4, a=1},
+                tint2 = {r=0.8, g=0.8, b=0.8, a=1}
             }
         },
 
         {
             unit = {
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "health",
@@ -120,32 +145,13 @@ function troll.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"explosion", "physical"}
+                },
+
+                {
+                    type = "majorWeaknesses",
+                    entries = {"fire"}
                 },
 
                 {
@@ -161,68 +167,13 @@ function troll.addFaction()
                     [8] = 0.15,
                     [9] = 0.15,
                     [10] = 0.15
-                },
-
-                {
-                    type = "resistance",
-                    name = "physical",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = -10,
-                        [2] = -10,
-                        [3] = -15,
-                        [4] = -15,
-                        [5] = -20,
-                        [6] = -20,
-                        [7] = -25,
-                        [8] = -25,
-                        [9] = -30,
-                        [10] = -35
-                    },
-                    percent = {
-                        [1] = -100,
-                        [2] = -100,
-                        [3] = -100,
-                        [4] = -120,
-                        [5] = -120,
-                        [6] = -160,
-                        [7] = -160,
-                        [8] = -200,
-                        [9] = -200,
-                        [10] = -240
-                    }
                 }
+
             },
 
             unitSpawner = {
+
+                bloodFountains,
 
                 {
                     type = "attribute",
@@ -237,35 +188,6 @@ function troll.addFaction()
                     [8] = 40000,
                     [9] = 60000,
                     [10] = 70000
-                },
-
-                {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
                 },
 
                 {
@@ -286,89 +208,22 @@ function troll.addFaction()
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.15,
-                    [3] = 0.25,
-                    [4] = 0.35,
-                    [5] = 0.45,
-                    [6] = 0.55,
-                    [7] = 0.65,
-                    [8] = 0.70,
-                    [9] = 0.75,
-                    [10] = 0.95
+                    formula = evolutionFunction
                 },
 
                 {
-                    type = "resistance",
-                    name = "physical",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"explosion", "physical"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = -10,
-                        [2] = -10,
-                        [3] = -15,
-                        [4] = -15,
-                        [5] = -20,
-                        [6] = -20,
-                        [7] = -25,
-                        [8] = -25,
-                        [9] = -30,
-                        [10] = -35
-                    },
-                    percent = {
-                        [1] = -100,
-                        [2] = -100,
-                        [3] = -100,
-                        [4] = -120,
-                        [5] = -120,
-                        [6] = -160,
-                        [7] = -160,
-                        [8] = -200,
-                        [9] = -200,
-                        [10] = -240
-                    }
-                }
+                    type = "majorWeaknesses",
+                    entries = {"fire"}
+                },
             }
         },
 
-        createMeleeAttack,
-
-        {
-            unit = TROLL_UNIT_VARIATIONS,
-            unitSpawner = TROLL_NEST_VARIATIONS
-        },
-
-        {
-            unit = TROLL_UNIT_TIERS,
-            unitSpawner = TROLL_NEST_TIERS
-        }
+        createMeleeAttack
     )
 
     -- troll spitters
@@ -379,7 +234,6 @@ function troll.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 attack = {
                     type = "projectile",
@@ -401,7 +255,8 @@ function troll.addFaction()
                     [10] = 1.6
                 },
                 attackName = "troll-spitter",
-                tint = {r=0.56, g=0.46, b=0.42, a=0.65}
+                tint = {r=0.4, g=0.4, b=0.4, a=1},
+                tint2 = {r=0.8, g=0.8, b=0.8, a=1}
             },
 
             unitSpawner = {
@@ -423,12 +278,15 @@ function troll.addFaction()
                     [9] = 1.5,
                     [10] = 1.6
                 },
-                tint = {r=0.99, g=0.09, b=0.09, a=1}
+                tint = {r=0.4, g=0.4, b=0.4, a=1},
+                tint2 = {r=0.8, g=0.8, b=0.8, a=1}
             }
         },
 
         {
             unit = {
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "health",
@@ -445,32 +303,13 @@ function troll.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"explosion", "physical"}
+                },
+
+                {
+                    type = "majorWeaknesses",
+                    entries = {"fire"}
                 },
 
                 {
@@ -501,69 +340,12 @@ function troll.addFaction()
                     [8] = 0.13,
                     [9] = 0.13,
                     [10] = 0.12
-                },
-
-                {
-                    type = "resistance",
-                    name = "physical",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = -10,
-                        [2] = -10,
-                        [3] = -15,
-                        [4] = -15,
-                        [5] = -20,
-                        [6] = -20,
-                        [7] = -25,
-                        [8] = -25,
-                        [9] = -30,
-                        [10] = -35
-                    },
-                    percent = {
-                        [1] = -100,
-                        [2] = -100,
-                        [3] = -100,
-                        [4] = -120,
-                        [5] = -120,
-                        [6] = -160,
-                        [7] = -160,
-                        [8] = -200,
-                        [9] = -200,
-                        [10] = -240
-                    }
                 }
 
             },
 
             unitSpawner = {
+                bloodFountains,
 
                 {
                     type = "attribute",
@@ -596,112 +378,24 @@ function troll.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "physical",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"explosion", "physical"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = -10,
-                        [2] = -10,
-                        [3] = -15,
-                        [4] = -15,
-                        [5] = -20,
-                        [6] = -20,
-                        [7] = -25,
-                        [8] = -25,
-                        [9] = -30,
-                        [10] = -35
-                    },
-                    percent = {
-                        [1] = -100,
-                        [2] = -100,
-                        [3] = -100,
-                        [4] = -120,
-                        [5] = -120,
-                        [6] = -160,
-                        [7] = -160,
-                        [8] = -200,
-                        [9] = -200,
-                        [10] = -240
-                    }
+                    type = "majorWeaknesses",
+                    entries = {"fire"}
                 }
             }
         },
 
         function (attributes)
-
             return createRangedAttack(attributes,
                                       createAttackBall(attributes),
                                       spitterattackanimation(attributes.scale,
                                                              attributes.tint,
-                                                             attributes.tint))
-        end,
-
-        {
-            unit = TROLL_UNIT_VARIATIONS,
-            unitSpawner = TROLL_NEST_VARIATIONS
-        },
-
-        {
-            unit = TROLL_UNIT_TIERS,
-            unitSpawner = TROLL_NEST_TIERS
-        }
+                                                             attributes.tint2))
+        end
     )
 
     -- troll worms
@@ -742,10 +436,12 @@ function troll.addFaction()
                 [10] = 1.6
             },
             attackName = "troll-worm",
-            tint = {r=0.56, g=0.46, b=0.42, a=0.65}
+            tint = {r=0.4, g=0.4, b=0.4, a=1},
+            tint2 = {r=0.2, g=0.2, b=0.2, a=1}
         },
 
         {
+            bloodFountains,
 
             {
                 type = "attack",
@@ -761,7 +457,7 @@ function troll.addFaction()
                 [9] = "massive-explosion",
                 [10] = "massive-explosion"
             },
-            
+
             {
                 type = "attribute",
                 name = "health",
@@ -795,112 +491,23 @@ function troll.addFaction()
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.15,
-                [3] = 0.25,
-                [4] = 0.35,
-                [5] = 0.45,
-                [6] = 0.55,
-                [7] = 0.65,
-                [8] = 0.70,
-                [9] = 0.75,
-                [10] = 0.95
-            },
-            
-            {
-                type = "resistance",
-                name = "explosion",
-                decrease = {
-                    [1] = 3,
-                    [2] = 3,
-                    [3] = 7,
-                    [4] = 7,
-                    [5] = 10,
-                    [6] = 10,
-                    [7] = 13,
-                    [8] = 13,
-                    [9] = 16,
-                    [10] = 18
-                },
-                percent = {
-                    [1] = 35,
-                    [2] = 35,
-                    [3] = 40,
-                    [4] = 40,
-                    [5] = 45,
-                    [6] = 45,
-                    [7] = 50,
-                    [8] = 55,
-                    [9] = 55,
-                    [10] = 60
-                }
+                formula = evolutionFunction
             },
 
             {
-                type = "resistance",
-                name = "physical",
-                decrease = {
-                    [1] = 3,
-                    [2] = 3,
-                    [3] = 7,
-                    [4] = 7,
-                    [5] = 10,
-                    [6] = 10,
-                    [7] = 13,
-                    [8] = 13,
-                    [9] = 16,
-                    [10] = 18
-                },
-                percent = {
-                    [1] = 35,
-                    [2] = 35,
-                    [3] = 40,
-                    [4] = 40,
-                    [5] = 45,
-                    [6] = 45,
-                    [7] = 50,
-                    [8] = 55,
-                    [9] = 55,
-                    [10] = 60
-                }
+                type = "minorResistances",
+                entries = {"explosion", "physical"}
             },
 
             {
-                type = "resistance",
-                name = "fire",
-                decrease = {
-                    [1] = -10,
-                    [2] = -10,
-                    [3] = -15,
-                    [4] = -15,
-                    [5] = -20,
-                    [6] = -20,
-                    [7] = -25,
-                    [8] = -25,
-                    [9] = -30,
-                    [10] = -35
-                },
-                percent = {
-                    [1] = -100,
-                    [2] = -100,
-                    [3] = -100,
-                    [4] = -120,
-                    [5] = -120,
-                    [6] = -160,
-                    [7] = -160,
-                    [8] = -200,
-                    [9] = -200,
-                    [10] = -240
-                }
-            }
+                type = "majorWeaknesses",
+                entries = {"fire"}
+            },
         },
 
         function (attributes)
             return createRangedAttack(attributes, createAttackBall(attributes))
-        end,
-
-        TROLL_WORM_VARIATIONS,
-        TROLL_WORM_TIERS
+        end
     )
 end
 

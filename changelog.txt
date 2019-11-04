@@ -12,6 +12,8 @@ Date: 10. 13. 2019
     - Nerfed inferno spitter fire damage and duration to reasonable levels
     - Buffed suicide biters damage and health
     - Nerfed poison biters cloud damage and duration
+    - Added blood color to match new enemy color
+    - Added blood explosions to each new enemy
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible
@@ -28,7 +30,15 @@ Date: 10. 13. 2019
     - Fixed spitter max projectile range could cause a spitter to attack but not hit a target
     - Fixed non retreating group formation not having a distraction modifier
     - Fixed icon size not being set
+    - Fixed new enemies attacks following naming levels instead effective levels
     - New spawner enemies color mask should fit much better now
+    - Fixed blood particle size not increasing with tiers
+    - Fixed enemy volume not changing based on tier
+    - Fixed Nuclear and Suicide spawners instantly spawning low level units
+  Framework:
+    - Cleaned up new enemy creation
+    - Dropped support for 5 tier new enemy configuration
+    - Changed default blood particle removal optimization to off
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

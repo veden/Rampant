@@ -7,22 +7,15 @@ local beamUtils = require("utils/BeamUtils")
 local attackBall = require("utils/AttackBall")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local energyThief = {}
 
-local ENERGY_THIEF_UNIT_TIERS = constants.ENERGY_THIEF_UNIT_TIERS
-local ENERGY_THIEF_UNIT_VARIATIONS = constants.ENERGY_THIEF_UNIT_VARIATIONS
-
-local ENERGY_THIEF_NEST_TIERS = constants.ENERGY_THIEF_NEST_TIERS
-local ENERGY_THIEF_NEST_VARIATIONS = constants.ENERGY_THIEF_NEST_VARIATIONS
-
-local ENERGY_THIEF_WORM_TIERS = constants.ENERGY_THIEF_WORM_TIERS
-local ENERGY_THIEF_WORM_VARIATIONS = constants.ENERGY_THIEF_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local createElectricAttack = biterUtils.createElectricAttack
@@ -37,6 +30,14 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.17 + ((tier - 2) * 0.10)
+    end
+end
+
 function energyThief.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("blue")
@@ -48,6 +49,27 @@ function energyThief.addFaction()
             tint = {r=0, g=0, b=1, a=1}
     })
 
+
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "energy-thief-blood-explosion-small-rampant",
+        [2] = "energy-thief-blood-explosion-small-rampant",
+        [3] = "energy-thief-blood-explosion-small-rampant",
+        [4] = "energy-thief-blood-explosion-small-rampant",
+        [5] = "energy-thief-blood-explosion-big-rampant",
+        [6] = "energy-thief-blood-explosion-big-rampant",
+        [7] = "energy-thief-blood-explosion-big-rampant",
+        [8] = "energy-thief-blood-explosion-huge-rampant",
+        [9] = "energy-thief-blood-explosion-huge-rampant",
+        [10] = "energy-thief-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "energy-thief",
+            tint = {r=0, g=0, b=0.7, a=1}
+    })
+
     -- energy-thief biters
     buildUnitSpawner(
         {
@@ -55,7 +77,6 @@ function energyThief.addFaction()
                 name = "energy-thief-biter",
 
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 loot = biterLoot,
                 attack = {
@@ -84,7 +105,8 @@ function energyThief.addFaction()
 
                 type = "biter",
                 attackName = "biter-energy-thief",
-                tint = {r=0, g=0, b=0.83, a=0.65}
+                tint = {r=0.4, g=0.5, b=0.7, a=1},
+                tint2 = {r=0, g=0, b=0.7, a=1}
             },
 
             unitSpawner = {
@@ -93,12 +115,15 @@ function energyThief.addFaction()
                 loot = spawnerLoot,
                 attributes = {},
                 resistances = {},
-                tint = {r=0, g=0, b=0.83, a=0.65}
+                tint = {r=0.4, g=0.5, b=0.7, a=1},
+                tint2 = {r=0, g=0, b=0.7, a=1}
             }
         },
 
         {
             unit = {
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "health",
@@ -175,61 +200,8 @@ function energyThief.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "laser",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "electric",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
+                    type = "majorResistances",
+                    entries = {"laser", "electric"}
                 },
 
                 {
@@ -250,77 +222,17 @@ function energyThief.addFaction()
 
             unitSpawner = {
 
-                {
-                    type = "resistance",
-                    name = "laser",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
-                },
+                bloodFountains,
 
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.15,
-                    [3] = 0.25,
-                    [4] = 0.35,
-                    [5] = 0.45,
-                    [6] = 0.55,
-                    [7] = 0.65,
-                    [8] = 0.70,
-                    [9] = 0.75,
-                    [10] = 0.95
+                    formula = evolutionFunction
                 },
-                
+
                 {
-                    type = "resistance",
-                    name = "electric",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
+                    type = "majorResistances",
+                    entries = {"laser", "electric"}
                 }
             }
         },
@@ -328,18 +240,8 @@ function energyThief.addFaction()
         function (attributes)
             return createElectricAttack(attributes,
                                         makeBeam(attributes),
-                                        biterattackanimation(attributes.scale, attributes.tint, attributes.tint))
-        end,
-
-        {
-            unit = ENERGY_THIEF_UNIT_VARIATIONS,
-            unitSpawner = ENERGY_THIEF_NEST_VARIATIONS
-        },
-
-        {
-            unit = ENERGY_THIEF_UNIT_TIERS,
-            unitSpawner = ENERGY_THIEF_NEST_TIERS
-        }
+                                        biterattackanimation(attributes.scale, attributes.tint, attributes.tint2))
+        end
     )
 
     -- energy-thief worms
@@ -381,10 +283,13 @@ function energyThief.addFaction()
             },
             resistances = {},
             attackName = "worm-energy-thief",
-            tint = {r=0, g=0, b=0.83, a=0.65}
+            tint = {r=0.4, g=0.5, b=0.7, a=1},
+            tint2 = {r=0, g=0, b=0.7, a=1}
         },
 
         {
+            bloodFountains,
+
             {
                 type = "attack",
                 name = "startingSpeed",
@@ -418,18 +323,9 @@ function energyThief.addFaction()
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.15,
-                [3] = 0.25,
-                [4] = 0.35,
-                [5] = 0.45,
-                [6] = 0.55,
-                [7] = 0.65,
-                [8] = 0.70,
-                [9] = 0.75,
-                [10] = 0.95
+                formula = evolutionFunction
             },
-            
+
             {
                 type = "attack",
                 name = "clusters",
@@ -447,61 +343,8 @@ function energyThief.addFaction()
             },
 
             {
-                type = "resistance",
-                name = "laser",
-                decrease = {
-                    [1] = 3,
-                    [2] = 3,
-                    [3] = 7,
-                    [4] = 7,
-                    [5] = 10,
-                    [6] = 10,
-                    [7] = 13,
-                    [8] = 13,
-                    [9] = 16,
-                    [10] = 18
-                },
-                percent = {
-                    [1] = 35,
-                    [2] = 35,
-                    [3] = 40,
-                    [4] = 40,
-                    [5] = 45,
-                    [6] = 45,
-                    [7] = 50,
-                    [8] = 55,
-                    [9] = 55,
-                    [10] = 60
-                }
-            },
-
-            {
-                type = "resistance",
-                name = "electric",
-                decrease = {
-                    [1] = 7,
-                    [2] = 7,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 13,
-                    [6] = 13,
-                    [7] = 16,
-                    [8] = 16,
-                    [9] = 19,
-                    [10] = 23
-                },
-                percent = {
-                    [1] = 65,
-                    [2] = 65,
-                    [3] = 70,
-                    [4] = 75,
-                    [5] = 75,
-                    [6] = 80,
-                    [7] = 85,
-                    [8] = 85,
-                    [9] = 90,
-                    [10] = 90
-                }
+                type = "majorResistances",
+                entries = {"laser", "electric"}
             }
 
         },
@@ -510,10 +353,7 @@ function energyThief.addFaction()
             attributes.laserName = makeLaser(attributes)
             return createRangedAttack(attributes,
                                       createAttackBall(attributes))
-        end,
-
-        ENERGY_THIEF_WORM_VARIATIONS,
-        ENERGY_THIEF_WORM_TIERS
+        end
     )
 
     data:extend({

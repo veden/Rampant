@@ -5,22 +5,15 @@ local biterUtils = require("utils/BiterUtils")
 local stickerUtils = require("utils/StickerUtils")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local suicide = {}
 
-local SUICIDE_UNIT_TIERS = constants.SUICIDE_UNIT_TIERS
-local SUICIDE_UNIT_VARIATIONS = constants.SUICIDE_UNIT_VARIATIONS
-
-local SUICIDE_NEST_TIERS = constants.SUICIDE_NEST_TIERS
-local SUICIDE_NEST_VARIATIONS = constants.SUICIDE_NEST_VARIATIONS
-
-local SUICIDE_WORM_TIERS = constants.SUICIDE_WORM_TIERS
-local SUICIDE_WORM_VARIATIONS = constants.SUICIDE_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local makeSticker = stickerUtils.makeSticker
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
@@ -32,12 +25,39 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.12 + ((tier - 2) * 0.10)
+    end
+end
+
 function suicide.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("yellow")
     local spawnerLoot = makeSpawnerAlienLootTable("yellow")
     local wormLoot = makeWormAlienLootTable("yellow")
 
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "suicide-blood-explosion-small-rampant",
+        [2] = "suicide-blood-explosion-small-rampant",
+        [3] = "suicide-blood-explosion-small-rampant",
+        [4] = "suicide-blood-explosion-small-rampant",
+        [5] = "suicide-blood-explosion-big-rampant",
+        [6] = "suicide-blood-explosion-big-rampant",
+        [7] = "suicide-blood-explosion-big-rampant",
+        [8] = "suicide-blood-explosion-huge-rampant",
+        [9] = "suicide-blood-explosion-huge-rampant",
+        [10] = "suicide-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "suicide",
+            tint = {r=0.85, g=0.85, b=0, a=1}
+    })
 
 
     -- suicide biters
@@ -48,7 +68,7 @@ function suicide.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
+
                 },
                 attack = {
                     scorchmark = "small-scorchmark"
@@ -56,7 +76,8 @@ function suicide.addFaction()
                 resistances = {},
 
                 type = "biter",
-                tint = {r=0.56, g=0.46, b=0, a=0.65}
+                tint = {r=1, g=1, b=1, a=1},
+                tint = {r=0.85, g=0.85, b=0, a=1}
             },
 
             unitSpawner = {
@@ -65,12 +86,15 @@ function suicide.addFaction()
                 loot = spawnerLoot,
                 attributes = {},
                 resistances = {},
-                tint = {r=0.56, g=0.46, b=0, a=0.65}
+                tint = {r=1, g=1, b=1, a=1},
+                tint = {r=0.85, g=0.85, b=0, a=1}
             }
         },
 
         {
             unit = {
+                bloodFountains,
+
                 {
 
                     type = "attribute",
@@ -90,8 +114,8 @@ function suicide.addFaction()
                 {
                     type = "attribute",
                     name = "spawningTimeModifer",
-                    [1] = 0,
-                    [2] = 0,
+                    [1] = 1,
+                    [2] = 1,
                     [3] = 1,
                     [4] = 2,
                     [5] = 3,
@@ -208,65 +232,20 @@ function suicide.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = -7,
-                        [2] = -7,
-                        [3] = -10,
-                        [4] = -10,
-                        [5] = -13,
-                        [6] = -13,
-                        [7] = -16,
-                        [8] = -16,
-                        [9] = -19,
-                        [10] = -23
-                    },
-                    percent = {
-                        [1] = -65,
-                        [2] = -65,
-                        [3] = -70,
-                        [4] = -75,
-                        [5] = -75,
-                        [6] = -80,
-                        [7] = -85,
-                        [8] = -85,
-                        [9] = -90,
-                        [10] = -90
-                    }
+                    type = "majorWeaknesses",
+                    entries = {"explosion"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "poison",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "minorResistances",
+                    entries = {"poison"}
                 }
+
             },
 
             unitSpawner = {
+
+                bloodFountains,
 
                 {
                     type = "attribute",
@@ -301,16 +280,7 @@ function suicide.addFaction()
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.17,
-                    [3] = 0.27,
-                    [4] = 0.37,
-                    [5] = 0.47,
-                    [6] = 0.57,
-                    [7] = 0.67,
-                    [8] = 0.77,
-                    [9] = 0.87,
-                    [10] = 0.97
+                    formula = evolutionFunction
                 },
 
                 {
@@ -344,105 +314,18 @@ function suicide.addFaction()
                 },
 
                 {
-                    type = "resistance",
-                    name = "poison",
-                    decrease = {
-                        [1] = 3,
-                        [2] = 3,
-                        [3] = 7,
-                        [4] = 7,
-                        [5] = 10,
-                        [6] = 10,
-                        [7] = 13,
-                        [8] = 13,
-                        [9] = 16,
-                        [10] = 18
-                    },
-                    percent = {
-                        [1] = 35,
-                        [2] = 35,
-                        [3] = 40,
-                        [4] = 40,
-                        [5] = 45,
-                        [6] = 45,
-                        [7] = 50,
-                        [8] = 55,
-                        [9] = 55,
-                        [10] = 60
-                    }
+                    type = "majorResistances",
+                    entries = {"explosion"}
                 },
 
                 {
-                    type = "resistance",
-                    name = "explosion",
-                    decrease = {
-                        [1] = 7,
-                        [2] = 7,
-                        [3] = 10,
-                        [4] = 10,
-                        [5] = 13,
-                        [6] = 13,
-                        [7] = 16,
-                        [8] = 16,
-                        [9] = 19,
-                        [10] = 23
-                    },
-                    percent = {
-                        [1] = 65,
-                        [2] = 65,
-                        [3] = 70,
-                        [4] = 75,
-                        [5] = 75,
-                        [6] = 80,
-                        [7] = 85,
-                        [8] = 85,
-                        [9] = 90,
-                        [10] = 90
-                    }
-                },
-
-                {
-                    type = "resistance",
-                    name = "fire",
-                    decrease = {
-                        [1] = 1,
-                        [2] = 1,
-                        [3] = 2,
-                        [4] = 2,
-                        [5] = 3,
-                        [6] = 3,
-                        [7] = 4,
-                        [8] = 4,
-                        [9] = 5,
-                        [10] = 5
-                    },
-                    percent = {
-                        [1] = 40,
-                        [2] = 40,
-                        [3] = 42,
-                        [4] = 42,
-                        [5] = 43,
-                        [6] = 43,
-                        [7] = 44,
-                        [8] = 44,
-                        [9] = 45,
-                        [10] = 45
-                    }
+                    type = "minorResistances",
+                    entries = {"fire", "poison"}
                 }
             }
         },
 
-        createSuicideAttack,
-
-        {
-            unit = SUICIDE_UNIT_VARIATIONS,
-            unitSpawner = SUICIDE_NEST_VARIATIONS
-        },
-
-        {
-            unit = SUICIDE_UNIT_TIERS,
-            unitSpawner = SUICIDE_NEST_TIERS
-        }
+        createSuicideAttack
     )
 
     -- suicide worms
@@ -479,10 +362,12 @@ function suicide.addFaction()
             resistances = {},
 
             attackName = "suicide-worm",
-            tint = {r=0.56, g=0.46, b=0, a=0.65}
+            tint = {r=1, g=1, b=1, a=1},
+            tint = {r=0.85, g=0.85, b=0, a=1}
         },
 
         {
+            bloodFountains,
 
             {
                 type = "attack",
@@ -517,113 +402,24 @@ function suicide.addFaction()
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.17,
-                [3] = 0.27,
-                [4] = 0.37,
-                [5] = 0.47,
-                [6] = 0.57,
-                [7] = 0.67,
-                [8] = 0.77,
-                [9] = 0.87,
-                [10] = 0.97
-            },
-            
-            {
-                type = "resistance",
-                name = "poison",
-                decrease = {
-                    [1] = 3,
-                    [2] = 3,
-                    [3] = 7,
-                    [4] = 7,
-                    [5] = 10,
-                    [6] = 10,
-                    [7] = 13,
-                    [8] = 13,
-                    [9] = 16,
-                    [10] = 18
-                },
-                percent = {
-                    [1] = 35,
-                    [2] = 35,
-                    [3] = 40,
-                    [4] = 40,
-                    [5] = 45,
-                    [6] = 45,
-                    [7] = 50,
-                    [8] = 55,
-                    [9] = 55,
-                    [10] = 60
-                }
+                formula = evolutionFunction
             },
 
             {
-                type = "resistance",
-                name = "explosion",
-                decrease = {
-                    [1] = 7,
-                    [2] = 7,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 13,
-                    [6] = 13,
-                    [7] = 16,
-                    [8] = 16,
-                    [9] = 19,
-                    [10] = 23
-                },
-                percent = {
-                    [1] = 65,
-                    [2] = 65,
-                    [3] = 70,
-                    [4] = 75,
-                    [5] = 75,
-                    [6] = 80,
-                    [7] = 85,
-                    [8] = 85,
-                    [9] = 90,
-                    [10] = 90
-                }
+                type = "majorResistances",
+                entries = {"explosion"}
             },
 
             {
-                type = "resistance",
-                name = "fire",
-                decrease = {
-                    [1] = 1,
-                    [2] = 1,
-                    [3] = 2,
-                    [4] = 2,
-                    [5] = 3,
-                    [6] = 3,
-                    [7] = 4,
-                    [8] = 4,
-                    [9] = 5,
-                    [10] = 5
-                },
-                percent = {
-                    [1] = 40,
-                    [2] = 40,
-                    [3] = 42,
-                    [4] = 42,
-                    [5] = 43,
-                    [6] = 43,
-                    [7] = 44,
-                    [8] = 44,
-                    [9] = 45,
-                    [10] = 45
-                }
+                type = "minorResistances",
+                entries = {"fire", "poison"}
             }
         },
 
         function (attributes)
             makeSticker(attributes)
             return createRangedAttack(attributes, createAttackBall(attributes))
-        end,
-
-        SUICIDE_WORM_VARIATIONS,
-        SUICIDE_WORM_TIERS
+        end
     )
 end
 

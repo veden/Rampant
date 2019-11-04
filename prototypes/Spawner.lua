@@ -5,22 +5,15 @@ local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local spawner = {}
 
-local SPAWNER_UNIT_TIERS = constants.SPAWNER_UNIT_TIERS
-local SPAWNER_UNIT_VARIATIONS = constants.SPAWNER_UNIT_VARIATIONS
-
-local SPAWNER_NEST_TIERS = constants.SPAWNER_NEST_TIERS
-local SPAWNER_NEST_VARIATIONS = constants.SPAWNER_NEST_VARIATIONS
-
-local SPAWNER_WORM_TIERS = constants.SPAWNER_WORM_TIERS
-local SPAWNER_WORM_VARIATIONS = constants.SPAWNER_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
@@ -35,11 +28,41 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.17 + ((tier - 2) * 0.10)
+    end
+end
+
 function spawner.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("orange")
     local spawnerLoot = makeSpawnerAlienLootTable("orange")
     local wormLoot = makeWormAlienLootTable("orange")
+
+
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "spawner-blood-explosion-small-rampant",
+        [2] = "spawner-blood-explosion-small-rampant",
+        [3] = "spawner-blood-explosion-small-rampant",
+        [4] = "spawner-blood-explosion-small-rampant",
+        [5] = "spawner-blood-explosion-big-rampant",
+        [6] = "spawner-blood-explosion-big-rampant",
+        [7] = "spawner-blood-explosion-big-rampant",
+        [8] = "spawner-blood-explosion-huge-rampant",
+        [9] = "spawner-blood-explosion-huge-rampant",
+        [10] = "spawner-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "spawner",
+            tint = {r=0.8, g=0, b=0.8, a=1}
+    })
+
 
     -- spawner
     buildUnits(
@@ -89,7 +112,8 @@ function spawner.addFaction()
 
             type = "drone",
             attackName = "spawner-drone",
-            tint = {r=1, g=0, b=1, a=1}
+            tint = {r=0.7, g=0, b=0.7, a=1},
+            tint2 = {r=0.8, g=0, b=0.8, a=1}
         },
         function (attack)
             return {
@@ -99,7 +123,7 @@ function spawner.addFaction()
                 projectile_center = {0, 1},
                 projectile_creation_distance = 0.6,
                 range = attack.range or 15,
-                sound = biterAttackSounds(),
+                sound = biterAttackSounds(attack.effectiveLevel),
                 ammo_type =
                     {
                         category = "biological",
@@ -281,9 +305,7 @@ function spawner.addFaction()
                 [10] = 2.5
             }
 
-        },
-        SPAWNER_UNIT_VARIATIONS,
-        SPAWNER_UNIT_TIERS
+        }
     )
 
     buildUnits(
@@ -333,7 +355,8 @@ function spawner.addFaction()
 
             type = "drone",
             attackName = "spawner-drone",
-            tint = {r=1, g=0, b=1, a=1}
+            tint = {r=0.7, g=0, b=0.7, a=1},
+            tint2 = {r=0.8, g=0, b=0.8, a=1}
         },
         function (attack)
             return {
@@ -343,7 +366,7 @@ function spawner.addFaction()
                 projectile_center = {0, 1},
                 projectile_creation_distance = 0.6,
                 range = attack.range or 15,
-                sound = biterAttackSounds(),
+                sound = biterAttackSounds(attack.effectiveLevel),
                 ammo_type =
                     {
                         category = "biological",
@@ -525,9 +548,7 @@ function spawner.addFaction()
                 [10] = 2.5
             }
 
-        },
-        SPAWNER_WORM_VARIATIONS,
-        SPAWNER_WORM_TIERS
+        }
     )
 
     -- spawner units
@@ -536,7 +557,7 @@ function spawner.addFaction()
             name = "spawner-biter",
 
             attributes = {
-                explosion = "blood-explosion-small"
+
             },
             attack = {
             },
@@ -555,10 +576,13 @@ function spawner.addFaction()
             resistances = {},
 
             type = "biter",
-            tint = {r=1, g=0, b=1, a=1}
+            tint = {r=0.7, g=0, b=0.7, a=1},
+            tint2 = {r=0.8, g=0, b=0.8, a=1}
         },
         createMeleeAttack,
         {
+            bloodFountains,
+
             {
                 type = "attribute",
                 name = "health",
@@ -573,7 +597,7 @@ function spawner.addFaction()
                 [9] = 1000,
                 [10] = 2000
             },
-            
+
             {
                 type = "attribute",
                 name = "healing",
@@ -589,9 +613,7 @@ function spawner.addFaction()
                 [10] = -0.09
             }
 
-        },
-        math.max(SPAWNER_UNIT_VARIATIONS,SPAWNER_WORM_VARIATIONS),
-        math.max(SPAWNER_UNIT_TIERS,SPAWNER_WORM_TIERS)
+        }
     )
 
 
@@ -603,7 +625,6 @@ function spawner.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 attack = {
                     type = "projectile",
@@ -624,7 +645,9 @@ function spawner.addFaction()
 
                 type = "spitter",
                 attackName = "spawner-drone",
-                tint = {r=1, g=0, b=1, a=1}
+                tint = {r=0.7, g=0.6, b=0.7, a=1},
+                tint2 = {r=0.8, g=0, b=0.8, a=1}
+
             },
 
             unitSpawner = {
@@ -634,12 +657,15 @@ function spawner.addFaction()
                 attributes = {},
                 resistances = {},
 
-                tint = {r=1, g=0, b=1, a=1}
+                tint = {r=0.7, g=0.6, b=0.7, a=1},
+                tint2 = {r=0.8, g=0, b=0.8, a=1}
             }
         },
 
         {
             unit = {
+
+                bloodFountains,
 
                 {
                     type = "attack",
@@ -659,19 +685,13 @@ function spawner.addFaction()
             },
 
             unitSpawner = {
+
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.17,
-                    [3] = 0.27,
-                    [4] = 0.37,
-                    [5] = 0.47,
-                    [6] = 0.57,
-                    [7] = 0.67,
-                    [8] = 0.77,
-                    [9] = 0.87,
-                    [10] = 0.97
+                    formula = evolutionFunction
                 }
             }
 
@@ -689,18 +709,8 @@ function spawner.addFaction()
                                           createCapsuleProjectile(attack.name,
                                                                   attack,
                                                                   attack.name .. "-drone-rampant"),
-                                          spitterattackanimation(attack.scale, attack.tint, attack.tint))
-        end,
-
-        {
-            unit = SPAWNER_UNIT_VARIATIONS,
-            unitSpawner = SPAWNER_NEST_VARIATIONS
-        },
-
-        {
-            unit = SPAWNER_UNIT_TIERS,
-            unitSpawner = SPAWNER_NEST_TIERS
-        }
+                                          spitterattackanimation(attack.scale, attack.tint, attack.tint2))
+        end
     )
 
     -- spawner worms
@@ -718,26 +728,19 @@ function spawner.addFaction()
             resistances = {},
 
             attackName = "spawner-worm-drone",
-            tint = {r=1, g=0, b=1, a=1}
+            tint = {r=0.7, g=0.6, b=0.7, a=1},
+            tint2 = {r=0.8, g=0, b=0.8, a=1}
         },
 
         {
+            bloodFountains,
 
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.17,
-                [3] = 0.27,
-                [4] = 0.37,
-                [5] = 0.47,
-                [6] = 0.57,
-                [7] = 0.67,
-                [8] = 0.77,
-                [9] = 0.87,
-                [10] = 0.97
+                formula = evolutionFunction
             }
-            
+
         },
 
         function (attributes)
@@ -745,10 +748,7 @@ function spawner.addFaction()
                                           createCapsuleProjectile(attributes.name,
                                                                   attributes,
                                                                   attributes.name .. "-drone-rampant"))
-        end,
-
-        SPAWNER_WORM_VARIATIONS,
-        SPAWNER_WORM_TIERS
+        end
     )
 end
 

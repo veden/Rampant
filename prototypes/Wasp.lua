@@ -6,22 +6,15 @@ local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 local swarmUtils = require("SwarmUtils")
 local constants = require("__Rampant__/libs/Constants")
+local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
 local wasp = {}
 
-local WASP_UNIT_TIERS = constants.WASP_UNIT_TIERS
-local WASP_UNIT_VARIATIONS = constants.WASP_UNIT_VARIATIONS
-
-local WASP_NEST_TIERS = constants.WASP_NEST_TIERS
-local WASP_NEST_VARIATIONS = constants.WASP_NEST_VARIATIONS
-
-local WASP_WORM_TIERS = constants.WASP_WORM_TIERS
-local WASP_WORM_VARIATIONS = constants.WASP_WORM_VARIATIONS
-
 -- imported functions
 
+local makeBloodFountains = particleUtils.makeBloodFountains
 local buildUnitSpawner = swarmUtils.buildUnitSpawner
 local buildWorm = swarmUtils.buildWorm
 local buildUnits = swarmUtils.buildUnits
@@ -37,11 +30,39 @@ local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
 local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
+local function evolutionFunction(tier)
+    if (tier == 0) then
+        return 0
+    else
+        return 0.15 + ((tier - 2) * 0.10)
+    end
+end
+
 function wasp.addFaction()
 
     local biterLoot = makeUnitAlienLootTable("purple")
     local spawnerLoot = makeSpawnerAlienLootTable("purple")
     local wormLoot = makeWormAlienLootTable("purple")
+
+    local bloodFountains = {
+        type = "attribute",
+        mapping = "explosion",
+        [1] = "wasp-blood-explosion-small-rampant",
+        [2] = "wasp-blood-explosion-small-rampant",
+        [3] = "wasp-blood-explosion-small-rampant",
+        [4] = "wasp-blood-explosion-small-rampant",
+        [5] = "wasp-blood-explosion-big-rampant",
+        [6] = "wasp-blood-explosion-big-rampant",
+        [7] = "wasp-blood-explosion-big-rampant",
+        [8] = "wasp-blood-explosion-huge-rampant",
+        [9] = "wasp-blood-explosion-huge-rampant",
+        [10] = "wasp-blood-explosion-huge-rampant",
+    }
+
+    makeBloodFountains({
+            name = "wasp",
+            tint = {r=0.85, g=0.85, b=0, a=1}
+    })
 
     -- wasp
     buildUnits(
@@ -84,14 +105,15 @@ function wasp.addFaction()
 
             type = "drone",
             attackName = "wasp-drone",
-            tint = {r=1, g=1, b=0, a=1}           
+            tint = {r=0.9, g=0.8, b=0.9, a=1},
+            tint2 = {r=0.85, g=0.85, b=0, a=1}
         },
         function (attack, attributes, tier)
             return createProjectileAttack(attack,
                                           createAttackBall(attack))
         end,
         {
-            {		
+            {
                 type = "attribute",
                 name = "health",
                 [1] = 10,
@@ -106,7 +128,7 @@ function wasp.addFaction()
                 [10] = 55
             },
 
-            {		
+            {
                 type = "attack",
                 name = "cooldown",
                 [1] = 60,
@@ -121,7 +143,7 @@ function wasp.addFaction()
                 [10] = 40
             },
 
-            {		
+            {
                 type = "attribute",
                 name = "ttl",
                 [1] = 300,
@@ -135,8 +157,8 @@ function wasp.addFaction()
                 [9] = 500,
                 [10] = 500
             },
-            
-            {		
+
+            {
                 type = "attack",
                 name = "damage",
                 [1] = 2,
@@ -150,7 +172,7 @@ function wasp.addFaction()
                 [9] = 35,
                 [10] = 40
             },
-            
+
             {
                 type = "attribute",
                 name = "movement",
@@ -194,7 +216,7 @@ function wasp.addFaction()
                 [9] = 28,
                 [10] = 28
             },
-            
+
             {
                 type = "attack",
                 name = "range",
@@ -225,16 +247,14 @@ function wasp.addFaction()
                 [10] = 2.5
             }
 
-        },
-        WASP_UNIT_VARIATIONS,
-        WASP_UNIT_TIERS
+        }
     )
 
     buildUnits(
         {
             name = "wasp-worm-drone",
 
-            attributes = {	    
+            attributes = {
             },
             attack = {
 
@@ -269,7 +289,8 @@ function wasp.addFaction()
 
             type = "drone",
             attackName = "wasp-worm-drone",
-            tint = {r=1, g=1, b=0, a=1}
+            tint = {r=0.9, g=0.8, b=0.9, a=1},
+            tint2 = {r=0.85, g=0.85, b=0, a=1}
         },
         function (attack)
             return {
@@ -279,7 +300,7 @@ function wasp.addFaction()
                 projectile_center = {0, 1},
                 projectile_creation_distance = 0.6,
                 range = attack.range or 15,
-                sound = biterAttackSounds(),
+                sound = biterAttackSounds(attack.effectiveLevel),
                 ammo_type =
                     {
                         category = "biological",
@@ -297,7 +318,7 @@ function wasp.addFaction()
             }
         end,
         {
-            {		
+            {
                 type = "attribute",
                 name = "health",
                 [1] = 10,
@@ -311,8 +332,8 @@ function wasp.addFaction()
                 [9] = 50,
                 [10] = 55
             },
-            
-            {		
+
+            {
                 type = "attack",
                 name = "cooldown",
                 [1] = 60,
@@ -327,7 +348,7 @@ function wasp.addFaction()
                 [10] = 40
             },
 
-            {		
+            {
                 type = "attribute",
                 name = "ttl",
                 [1] = 300,
@@ -341,8 +362,8 @@ function wasp.addFaction()
                 [9] = 500,
                 [10] = 500
             },
-            
-            {		
+
+            {
                 type = "attack",
                 name = "damage",
                 [1] = 2,
@@ -371,7 +392,7 @@ function wasp.addFaction()
                 [9] = 14,
                 [10] = 14
             },
-            
+
             {
                 type = "attribute",
                 name = "movement",
@@ -430,10 +451,8 @@ function wasp.addFaction()
                 [9] = 2.0,
                 [10] = 2.5
             }
-            
-        },
-        WASP_WORM_VARIATIONS,
-        WASP_WORM_TIERS
+
+        }
     )
 
 
@@ -445,7 +464,6 @@ function wasp.addFaction()
 
                 loot = biterLoot,
                 attributes = {
-                    explosion = "blood-explosion-small"
                 },
                 attack = {
                     type = "projectile",
@@ -456,7 +474,8 @@ function wasp.addFaction()
 
                 type = "spitter",
                 attackName = "wasp-drone",
-                tint = {r=1, g=1, b=0, a=1}
+                tint = {r=0.9, g=0.8, b=0.9, a=1},
+                tint2 = {r=0.85, g=0.85, b=0, a=1}
             },
 
             unitSpawner = {
@@ -466,29 +485,23 @@ function wasp.addFaction()
                 attributes = {},
                 resistances = {},
 
-                tint = {r=1, g=1, b=0, a=1}
+                tint = {r=0.9, g=0.8, b=0.9, a=1},
+                tint2 = {r=0.85, g=0.85, b=0, a=1}
             }
         },
 
         {
-            unit = {	   
-                
+            unit = {
+                bloodFountains
             },
 
             unitSpawner = {
+                bloodFountains,
+
                 {
                     type = "attribute",
                     name = "evolutionRequirement",
-                    [1] = 0,
-                    [2] = 0.15,
-                    [3] = 0.25,
-                    [4] = 0.35,
-                    [5] = 0.45,
-                    [6] = 0.55,
-                    [7] = 0.65,
-                    [8] = 0.70,
-                    [9] = 0.75,
-                    [10] = 0.95
+                    formula = evolutionFunction
                 }
             }
         },
@@ -498,18 +511,8 @@ function wasp.addFaction()
                                           createCapsuleProjectile(attributes.name,
                                                                   attributes,
                                                                   attributes.name .. "-drone-rampant"),
-                                          spitterattackanimation(attributes.scale, attributes.tint, attributes.tint))
-        end,
-
-        {
-            unit = WASP_UNIT_VARIATIONS,
-            unitSpawner = WASP_NEST_VARIATIONS
-        },
-
-        {
-            unit = WASP_UNIT_TIERS,
-            unitSpawner = WASP_NEST_TIERS
-        }
+                                          spitterattackanimation(attributes.scale, attributes.tint, attributes.tint2))
+        end
     )
 
     -- wasp worms
@@ -517,7 +520,7 @@ function wasp.addFaction()
         {
             name = "wasp-worm",
 
-            loot = wormLoot,	    
+            loot = wormLoot,
             attributes = {
             },
             attack = {
@@ -527,23 +530,17 @@ function wasp.addFaction()
             resistances = {},
 
             attackName = "wasp-worm-drone",
-            tint = {r=1, g=1, b=0, a=1}
+            tint = {r=0.9, g=0.8, b=0.9, a=1},
+            tint2 = {r=0.85, g=0.85, b=0, a=1}
         },
 
-        {	
+        {
+            bloodFountains,
+
             {
                 type = "attribute",
                 name = "evolutionRequirement",
-                [1] = 0,
-                [2] = 0.15,
-                [3] = 0.25,
-                [4] = 0.35,
-                [5] = 0.45,
-                [6] = 0.55,
-                [7] = 0.65,
-                [8] = 0.70,
-                [9] = 0.75,
-                [10] = 0.95
+                formula = evolutionFunction
             }
         },
 
@@ -552,10 +549,7 @@ function wasp.addFaction()
                                           createCapsuleProjectile(attributes.name,
                                                                   attributes,
                                                                   attributes.name .. "-drone-rampant"))
-        end,
-
-        WASP_WORM_VARIATIONS,
-        WASP_WORM_TIERS
+        end
     )
 end
 
