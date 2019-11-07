@@ -29,16 +29,18 @@ Date: 10. 13. 2019
     - Fixed retreating squads not waiting long enough to assemble all units before movement
     - Fixed spitter max projectile range could cause a spitter to attack but not hit a target
     - Fixed non retreating group formation not having a distraction modifier
-    - Fixed icon size not being set
+    - Fixed icon size not being set energy thief drain crystal
     - Fixed new enemies attacks following naming levels instead effective levels
     - New spawner enemies color mask should fit much better now
     - Fixed blood particle size not increasing with tiers
     - Fixed enemy volume not changing based on tier
     - Fixed Nuclear and Suicide spawners instantly spawning low level units
+    - Fixed Physical and troll spawner and worm scales
   Framework:
     - Cleaned up new enemy creation
     - Dropped support for 5 tier new enemy configuration
     - Changed default blood particle removal optimization to off
+    - Added interop function that allows other mods to set the active surface for the AI processing
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

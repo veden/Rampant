@@ -511,9 +511,6 @@ constants.VICTORY_SCENT["artillery-turret"] = constants.BUILDING_PHEROMONES["art
 constants.VICTORY_SCENT["reactor"] = constants.BUILDING_PHEROMONES["reactor"] * 3
 constants.VICTORY_SCENT["rocket-silo"] = constants.BUILDING_PHEROMONES["rocket-silo"] * 3
 
--- constants.RETREAT_FILTER = {}
--- constants.RETREAT_FILTER[constants.SQUAD_RETREATING] = true
-
 -- map settings tweaks
 
 constants.PATH_FINDER_SHORT_REQUEST_RATIO = 0.8
@@ -540,9 +537,7 @@ constants.SENTINEL_IMPASSABLE_CHUNK[constants.MOVEMENT_PHEROMONE] = constants.IM
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.BASE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.PLAYER_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.RESOURCE_PHEROMONE] = constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT
--- constants.SENTINEL_IMPASSABLE_CHUNK[constants.PASSABLE] = constants.CHUNK_IMPASSABLE
 constants.SENTINEL_IMPASSABLE_CHUNK[constants.CHUNK_TICK] = 0
--- constants.SENTINEL_IMPASSABLE_CHUNK[constants.PATH_RATING] = 0
 constants.SENTINEL_IMPASSABLE_CHUNK.x = -1
 constants.SENTINEL_IMPASSABLE_CHUNK.y = -1
 
@@ -648,6 +643,7 @@ for t = 1, 10 do
         constants.BUILDING_SPACE_LOOKUP["acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["acid-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
+        constants.BUILDING_SPACE_LOOKUP["acid-hive-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
 
         constants.BUILDING_SPACE_LOOKUP["physical-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
         constants.BUILDING_SPACE_LOOKUP["physical-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
@@ -734,27 +730,27 @@ for t=1,10 do
             local name = constants.FACTION_TYPES[ift]
             if (hbt == "turret") then
                 local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
                 for v=1,20 do
-                    set[#set+1] = name .. "-worm-v" .. v .. "-t" .. t .. "-rampant"
+                    set[#set+1] = true
                 end
             elseif (hbt == "spitter-spawner") then
                 local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
                 for v=1,20 do
-                    set[#set+1] = name .. "-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"
+                    set[#set+1] = true
                 end
             elseif (hbt == "biter-spawner") then
                 local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
                 for v=1,20 do
-                    set[#set+1] = name .. "-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"
+                    set[#set+1] = true
                 end
             elseif (hbt == "hive") then
                 local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. name .. "-" .. hbt .. "-t" .. t .. "-rampant"] = set
+                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
                 for v=1,20 do
-                    set[#set+1] = name .. "-hive-v" .. v .. "-t" .. t .. "-rampant"
+                    set[#set+1] = true
                 end
             end
         end

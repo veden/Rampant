@@ -262,7 +262,7 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK,
         SENTINEL_IMPASSABLE_CHUNK
     }
-       
+    
     map.mapOrdering = {}
     map.mapOrdering.len = 0
     map.enemiesToSquad = {}
@@ -488,6 +488,7 @@ end
 
 local function prepWorld(rebuild, surfaceIndex)
     local upgraded
+    local setNewSurface
 
     if (game.surfaces["battle_surface_2"] ~= nil) then
         natives.activeSurface = game.surfaces["battle_surface_2"].index
@@ -495,12 +496,14 @@ local function prepWorld(rebuild, surfaceIndex)
         natives.activeSurface = game.surfaces["battle_surface_1"].index
     elseif surfaceIndex then
         natives.activeSurface = surfaceIndex
+        setNewSurface = true
         game.forces.enemy.kill_all_units()
+        global.version = nil
     else
         natives.activeSurface = game.surfaces["nauvis"].index
     end
 
-    upgraded, natives = upgrade.attempt(natives)
+    upgraded, natives = upgrade.attempt(natives, setNewSurface)
     onModSettingsChange(nil)
     if natives.newEnemies then
         rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
@@ -797,7 +800,6 @@ local function onEnemyBaseBuild(event)
 
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-            -- print(entity.name)
             local evolutionFactor = entity.force.evolution_factor
             local base
             if natives.newEnemies then
@@ -940,7 +942,30 @@ local function onEntitySpawned(event)
                                                                          disPos)
                     if pos then
                         canPlaceQuery.position = pos
-                        surface.create_entity(canPlaceQuery)
+                        entity = surface.create_entity(canPlaceQuery)
+                        local chunk = getChunkByPosition(map, pos)
+                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                            local evolutionFactor = entity.force.evolution_factor
+                            local base
+                            if natives.newEnemies then
+                                base = findNearbyBase(map, chunk, natives)
+                                if not base then
+                                    base = createBase(map,
+                                                      natives,
+                                                      evolutionFactor,
+                                                      chunk,
+                                                      event.tick)
+                                end
+                                entity = upgradeEntity(entity,
+                                                       surface,
+                                                       base.alignment[mRandom(#base.alignment)],
+                                                       natives,
+                                                       evolutionFactor)
+                            end
+                            if entity and entity.valid then
+                                event.entity = registerEnemyBaseStructure(map, entity, base)
+                            end
+                        end
                     end
                 end
             end

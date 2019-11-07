@@ -525,7 +525,7 @@ local function fileAlignment(baseAlignment, evolution, evolutionTable)
     eTable[#eTable+1] = baseAlignment
 end
 
-local function processUnitClass(hasBiter, hasSpitter, surface, natives, baseAlignment, baseAlignmentString)
+local function processUnitClass(hasBiter, hasSpitter, hasHive, hasUtility, hasTrap, surface, natives, baseAlignment, baseAlignmentString)
     local position = { x = 0, y = 0 }
 
     if hasBiter then
@@ -556,6 +556,20 @@ local function processUnitClass(hasBiter, hasSpitter, surface, natives, baseAlig
             end
         end
     end
+    if hasHive then
+        for tier=1,10 do
+            for v=1,natives.NEST_VARIATIONS do
+                local entityName = baseAlignmentString .. "-hive-v" .. v .. "-t" .. tier .. "-rampant"
+                local entity = surface.create_entity({
+                        name = entityName,
+                        position = position
+                })
+                natives.enemyAlignmentLookup[entityName] = baseAlignment
+                fileEntity(baseAlignment, entity, natives.evolutionTableUnitSpawner)
+                entity.destroy()
+            end
+        end
+    end    
     for tier=1,10 do
         for v=1,natives.WORM_VARIATIONS do
             local entityName = baseAlignmentString .. "-worm-v" .. v .. "-t" .. tier .. "-rampant"
@@ -596,6 +610,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     processUnitClass(true,
                      true,
+                     false,
+                     false,
+                     false,
                      surface,
                      natives,
                      BASE_ALIGNMENT_NEUTRAL,
@@ -604,6 +621,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-acidEnemy"].value then
         processUnitClass(true,
                          true,
+                         true,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_ACID,
@@ -612,6 +632,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     if settings.startup["rampant-physicalEnemy"].value then
         processUnitClass(true,
+                         false,
+                         false,
+                         false,
                          false,
                          surface,
                          natives,
@@ -622,6 +645,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-fireEnemy"].value then
         processUnitClass(true,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_FIRE,
@@ -630,6 +656,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     if settings.startup["rampant-electricEnemy"].value then
         processUnitClass(true,
+                         false,
+                         false,
+                         false,
                          false,
                          surface,
                          natives,
@@ -640,6 +669,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-suicideEnemy"].value then
         processUnitClass(true,
                          false,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_SUICIDE,
@@ -648,6 +680,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     if settings.startup["rampant-nuclearEnemy"].value then
         processUnitClass(true,
+                         false,
+                         false,
+                         false,
                          false,
                          surface,
                          natives,
@@ -658,6 +693,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-trollEnemy"].value then
         processUnitClass(true,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_TROLL,
@@ -667,6 +705,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-infernoEnemy"].value then
         processUnitClass(false,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_INFERNO,
@@ -676,6 +717,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-fastEnemy"].value then
         processUnitClass(true,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_FAST,
@@ -685,6 +729,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-laserEnemy"].value then
         processUnitClass(true,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_LASER,
@@ -694,6 +741,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-waspEnemy"].value then
         processUnitClass(false,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_WASP,
@@ -703,6 +753,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-spawnerEnemy"].value then
         processUnitClass(false,
                          true,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_SPAWNER,
@@ -712,6 +765,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     if settings.startup["rampant-energyThiefEnemy"].value then
         processUnitClass(true,
                          false,
+                         false,
+                         false,
+                         false,
                          surface,
                          natives,
                          BASE_ALIGNMENT_ENERGY_THIEF,
@@ -720,6 +776,9 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     if settings.startup["rampant-poisonEnemy"].value then
         processUnitClass(true,
+                         false,
+                         false,
+                         false,
                          false,
                          surface,
                          natives,

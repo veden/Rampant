@@ -39,10 +39,10 @@ local scales = {
     [5] = 1.4,
     [6] = 1.5,
     [7] = 1.6,
-    [8] = 1.7,
-    [9] = 1.8,
-    [10] = 1.9,
-    [11] = 2.0
+    [8] = 1.8,
+    [9] = 2.0,
+    [10] = 2.1,
+    [11] = 2.2
 }
 
 for t=1,11 do
@@ -74,44 +74,44 @@ for t=1,11 do
     )
 end
 
-local types = constants.FACTION_TYPES
+-- local types = constants.FACTION_TYPES
 
 local subTypes = constants.HIVE_BUILDINGS_TYPES
 
-for x=1,#types do
-    local name = types[x]
+-- for x=1,#types do
+--     local name = types[x]
 
-    for t=1,11 do
-        local scale = scales[t] * 1.2
+for t=1,11 do
+    local scale = scales[t] * 1.2
 
-        for si=1,#subTypes do
-            local st = subTypes[si]
+    for si=1,#subTypes do
+        local st = subTypes[si]
 
-            data:extend(
+        data:extend(
+            {
                 {
-                    {
-                        type = "simple-entity-with-force",
-                        name = "entity-proxy-" .. name .. "-" .. st .. "-t" .. t .. "-rampant",
-                        icon = "__base__/graphics/icons/steel-chest.png",
-                        icon_size = 32,
-                        flags = {},
-                        order = "s-e-w-f",
-                        collision_mask = {"player-layer", "object-layer", "water-tile"},
-                        minable = nil,
-                        max_health = 100,
-                        corpse = nil,
-                        collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                        selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                        picture =
-                            {
-                                filename = "__core__/graphics/empty.png",
-                                priority = "extra-high",
-                                width = 1,
-                                height = 1
-                            }
-                    }
+                    type = "simple-entity-with-force",
+                    name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
+                    icon = "__base__/graphics/icons/steel-chest.png",
+                    icon_size = 32,
+                    flags = {},
+                    order = "s-e-w-f",
+                    collision_mask = {"player-layer", "object-layer", "water-tile"},
+                    minable = nil,
+                    max_health = 100,
+                    corpse = nil,
+                    collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    picture =
+                        {
+                            filename = "__core__/graphics/empty.png",
+                            priority = "extra-high",
+                            width = 1,
+                            height = 1
+                        }
                 }
-            )
-        end
+            }
+        )
     end
 end
+-- end

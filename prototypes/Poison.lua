@@ -44,9 +44,9 @@ function poison.addFaction()
             {
                 type = "damage-type",
                 name = "healing"
-            }
+            }            
     })
-
+    
     local bloodFountains = {
         type = "attribute",
         mapping = "explosion",
@@ -66,7 +66,6 @@ function poison.addFaction()
             name = "poison",
             tint = {r=0, g=0.7, b=0, a=1}
     })
-
 
     for i=1,10 do
         makeCloud(
@@ -124,6 +123,39 @@ function poison.addFaction()
         )
     end
 
+    -- data:extend({
+    --         {
+    --             type = "explosion",
+    --             name = "poisonTester",
+    --             flags = {"not-on-map"},
+    --             animations =
+    --                 {
+    --                     {
+    --                         filename = "__core__/graphics/empty.png",
+    --                         priority = "high",
+    --                         width = 1,
+    --                         height = 1,
+    --                         frame_count = 1
+    --                     }
+    --                 },
+    --             created_effect =
+    --                 {
+    --                     type = "direct",
+    --                     action_delivery =
+    --                         {
+    --                             type = "instant",
+    --                             target_effects =
+    --                                 {
+    --                                     {
+    --                                         type = "create-entity",
+    --                                         entity_name = "assembling-machine-1"
+    --                                     }
+    --                                 }
+    --                         }
+    --                 }
+    --         }
+    -- })
+    
     -- poison biters
     buildUnitSpawner(
         {

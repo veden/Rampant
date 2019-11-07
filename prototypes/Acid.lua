@@ -289,62 +289,62 @@ function acid.addFaction()
         },
         {
             [1] = {
-                {"entity-proxy-acid-turret", 0.8},
-                {"entity-proxy-acid-spitter-spawner", 0.1},
-                {"entity-proxy-acid-biter-spawner", 0.1}
+                {"entity-proxy-turret", 0.8},
+                {"entity-proxy-spitter-spawner", 0.1},
+                {"entity-proxy-biter-spawner", 0.1}
             },
             [2] = {
-                {"entity-proxy-acid-turret", 0.7},
-                {"entity-proxy-acid-spitter-spawner", 0.15},
-                {"entity-proxy-acid-biter-spawner", 0.15}
+                {"entity-proxy-turret", 0.7},
+                {"entity-proxy-spitter-spawner", 0.15},
+                {"entity-proxy-biter-spawner", 0.15}
             },
             [3] = {
-                {"entity-proxy-acid-turret", 0.595},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.005}
+                {"entity-proxy-turret", 0.595},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.005}
             },
             [4] = {
-                {"entity-proxy-acid-turret", 0.59},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.01}
+                {"entity-proxy-turret", 0.59},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.01}
             },
             [5] = {
-                {"entity-proxy-acid-turret", 0.59},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.01}
+                {"entity-proxy-turret", 0.59},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.01}
             },
             [6] = {
-                {"entity-proxy-acid-turret", 0.58},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.02}
+                {"entity-proxy-turret", 0.58},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.02}
             },
             [7] = {
-                {"entity-proxy-acid-turret", 0.58},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.02}
+                {"entity-proxy-turret", 0.58},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.02}
             },
             [8] = {
-                {"entity-proxy-acid-turret", 0.57},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.03}
+                {"entity-proxy-turret", 0.57},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.03}
             },
             [9] = {
-                {"entity-proxy-acid-turret", 0.57},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.03}
+                {"entity-proxy-turret", 0.57},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.03}
             },
             [10] = {
-                {"entity-proxy-acid-turret", 0.57},
-                {"entity-proxy-acid-spitter-spawner", 0.2},
-                {"entity-proxy-acid-biter-spawner", 0.2},
-                {"entity-proxy-acid-hive", 0.03}
+                {"entity-proxy-turret", 0.57},
+                {"entity-proxy-spitter-spawner", 0.2},
+                {"entity-proxy-biter-spawner", 0.2},
+                {"entity-proxy-hive", 0.03}
             }
         },
         {

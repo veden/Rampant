@@ -89,7 +89,7 @@ function troll.addFaction()
 
             unitSpawner = {
                 name = "troll-biter-spawner",
-
+                
                 loot = spawnerLoot,
                 attributes = {},
                 resistances = {},
@@ -100,10 +100,10 @@ function troll.addFaction()
                     [4] = 1,
                     [5] = 1.1,
                     [6] = 1.2,
-                    [7] = 1.3,
-                    [8] = 1.4,
-                    [9] = 1.5,
-                    [10] = 1.6
+                    [7] = 1.4,
+                    [8] = 1.6,
+                    [9] = 1.8,
+                    [10] = 2.0
                 },
                 tint = {r=0.4, g=0.4, b=0.4, a=1},
                 tint2 = {r=0.8, g=0.8, b=0.8, a=1}
@@ -273,10 +273,10 @@ function troll.addFaction()
                     [4] = 1,
                     [5] = 1.1,
                     [6] = 1.2,
-                    [7] = 1.3,
-                    [8] = 1.4,
-                    [9] = 1.5,
-                    [10] = 1.6
+                    [7] = 1.4,
+                    [8] = 1.6,
+                    [9] = 1.8,
+                    [10] = 2.0
                 },
                 tint = {r=0.4, g=0.4, b=0.4, a=1},
                 tint2 = {r=0.8, g=0.8, b=0.8, a=1}
@@ -430,10 +430,10 @@ function troll.addFaction()
                 [4] = 1,
                 [5] = 1.1,
                 [6] = 1.2,
-                [7] = 1.3,
-                [8] = 1.4,
-                [9] = 1.5,
-                [10] = 1.6
+                [7] = 1.4,
+                [8] = 1.6,
+                [9] = 1.8,
+                [10] = 2.0
             },
             attackName = "troll-worm",
             tint = {r=0.4, g=0.4, b=0.4, a=1},

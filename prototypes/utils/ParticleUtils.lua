@@ -12,7 +12,7 @@ local function makeBloodParticle(attributes)
                 name = name,
                 flags = {"not-on-map"},
                 movement_modifier_when_on_ground = 0.2,
-                life_time = 180,
+                life_time = 240,
                 pictures =
                     {
                         {
