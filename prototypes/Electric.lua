@@ -255,7 +255,7 @@ function electric.addFaction()
                                         action_delivery =
                                             {
                                                 type = "projectile",
-                                                projectile = attributes.laserName,
+                                                projectile = makeLaser(attributes),
                                                 duration = 20,
                                                 direction_deviation = 0.6,
                                                 starting_speed = attributes.startingSpeed,
@@ -340,8 +340,7 @@ function electric.addFaction()
             }
         },
 
-        function (attributes)
-            attributes.laserName = makeLaser(attributes)
+        function (attributes)            
             return createRangedAttack(attributes,
                                       createAttackBall(attributes))
         end

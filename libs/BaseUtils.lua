@@ -138,7 +138,7 @@ local function normalizeProbabilities(probabilityTable)
         for probability, entities in pairs(probabilitySet) do
             local normalizeProbability = 0
             if (probability ~= 0) then
-                normalizeProbability = mMin(mFloor(((probability - min) / (max - min)) * 100), 97)
+                normalizeProbability = mMin(mFloor(((probability - min) / (max - min)) * 100), 92)
             end
             local set = alignmentResult[normalizeProbability]
             if (not set) then
@@ -203,12 +203,12 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlig
     if (evoIndex >= 0.5) then
         for i=#alignments,1,-1 do
             local pair = alignments[i]
-            local evo = pair[1]
-            local entitySet = pair[2]
+            local evo = pair[1]            
             if (evo <= evoIndex) then
                 if (evo < adjCurrentEvo) then
                     break
                 end
+                local entitySet = pair[2]
                 entity = entitySet[mRandom(#entitySet)]
                 if (mRandom() < 0.25) then
                     break
@@ -219,11 +219,11 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, entityAlig
         for i=1,#alignments do
             local pair = alignments[i]
             local evo = pair[1]
-            local entitySet = pair[2]
             if (adjCurrentEvo <= evo) then
                 if (evo > evoIndex) then
                     break
                 end
+                local entitySet = pair[2]                
                 entity = entitySet[mRandom(#entitySet)]
                 if (mRandom() < 0.25) then
                     break
@@ -368,7 +368,7 @@ local function upgradeBase(natives, evolutionFactor, base)
             base.alignment = {base.alignment[1], findMutation(natives, evolutionFactor)}
         end
         return true
-    elseif alignmentCount == 1 then
+    else-- if alignmentCount == 1 then
         if (roll < 0.85) then
             base.alignment = {findMutation(natives, evolutionFactor)}
         else
@@ -808,7 +808,10 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     -- 		     BASE_ALIGNMENT_UNDYING,
     -- 		     "undying")
 
+    
+    
     natives.evolutionTableUnitSpawner = normalizeProbabilities(natives.evolutionTableUnitSpawner)
+    print(serpent.dump(natives.evolutionTableUnitSpawner))
     natives.evolutionTableWorm = normalizeProbabilities(natives.evolutionTableWorm)
 
 end

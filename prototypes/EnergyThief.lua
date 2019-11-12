@@ -2,12 +2,12 @@
 -- imports
 
 local thiefUtils = require("utils/ThiefUtils")
-local biterUtils = require("utils/BiterUtils")
-local beamUtils = require("utils/BeamUtils")
-local attackBall = require("utils/AttackBall")
-local swarmUtils = require("SwarmUtils")
-local constants = require("__Rampant__/libs/Constants")
-local particleUtils = require("utils/ParticleUtils")
+-- local biterUtils = require("utils/BiterUtils")
+-- local beamUtils = require("utils/BeamUtils")
+-- local attackBall = require("utils/AttackBall")
+-- local swarmUtils = require("SwarmUtils")
+-- local constants = require("__Rampant__/libs/Constants")
+-- local particleUtils = require("utils/ParticleUtils")
 
 -- constants
 
@@ -15,346 +15,346 @@ local energyThief = {}
 
 -- imported functions
 
-local makeBloodFountains = particleUtils.makeBloodFountains
-local buildUnitSpawner = swarmUtils.buildUnitSpawner
-local buildWorm = swarmUtils.buildWorm
-local createElectricAttack = biterUtils.createElectricAttack
-local createAttackBall = attackBall.createAttackBall
-local makeLaser = beamUtils.makeLaser
-local createRangedAttack = biterUtils.createRangedAttack
-local makeBeam = beamUtils.makeBeam
-local makeBubble = beamUtils.makeBubble
+-- local makeBloodFountains = particleUtils.makeBloodFountains
+-- local buildUnitSpawner = swarmUtils.buildUnitSpawner
+-- local buildWorm = swarmUtils.buildWorm
+-- local createElectricAttack = biterUtils.createElectricAttack
+-- local createAttackBall = attackBall.createAttackBall
+-- local makeLaser = beamUtils.makeLaser
+-- local createRangedAttack = biterUtils.createRangedAttack
+-- local makeBeam = beamUtils.makeBeam
+-- local makeBubble = beamUtils.makeBubble
 local makeDrainCrystal = thiefUtils.makeDrainCrystal
 
-local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
-local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
-local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
+-- local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+-- local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
+-- local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 
-local function evolutionFunction(tier)
-    if (tier == 0) then
-        return 0
-    else
-        return 0.17 + ((tier - 2) * 0.10)
-    end
-end
+-- local function evolutionFunction(tier)
+--     if (tier == 0) then
+--         return 0
+--     else
+--         return 0.17 + ((tier - 2) * 0.10)
+--     end
+-- end
 
-function energyThief.addFaction()
+function energyThief.addFactionAddon()
 
-    local biterLoot = makeUnitAlienLootTable("blue")
-    local spawnerLoot = makeSpawnerAlienLootTable("blue")
-    local wormLoot = makeWormAlienLootTable("blue")
+    -- local biterLoot = makeUnitAlienLootTable("blue")
+    -- local spawnerLoot = makeSpawnerAlienLootTable("blue")
+    -- local wormLoot = makeWormAlienLootTable("blue")
 
-    local electricBubble = makeBubble({
-            name = "energy-thief-worm",
-            tint = {r=0, g=0, b=1, a=1}
-    })
+    -- local electricBubble = makeBubble({
+    --         name = "energy-thief-worm",
+    --         tint = {r=0, g=0, b=1, a=1}
+    -- })
 
 
-    local bloodFountains = {
-        type = "attribute",
-        mapping = "explosion",
-        [1] = "energy-thief-blood-explosion-small-rampant",
-        [2] = "energy-thief-blood-explosion-small-rampant",
-        [3] = "energy-thief-blood-explosion-small-rampant",
-        [4] = "energy-thief-blood-explosion-small-rampant",
-        [5] = "energy-thief-blood-explosion-big-rampant",
-        [6] = "energy-thief-blood-explosion-big-rampant",
-        [7] = "energy-thief-blood-explosion-big-rampant",
-        [8] = "energy-thief-blood-explosion-huge-rampant",
-        [9] = "energy-thief-blood-explosion-huge-rampant",
-        [10] = "energy-thief-blood-explosion-huge-rampant",
-    }
+    -- local bloodFountains = {
+    --     type = "attribute",
+    --     mapping = "explosion",
+    --     [1] = "energy-thief-blood-explosion-small-rampant",
+    --     [2] = "energy-thief-blood-explosion-small-rampant",
+    --     [3] = "energy-thief-blood-explosion-small-rampant",
+    --     [4] = "energy-thief-blood-explosion-small-rampant",
+    --     [5] = "energy-thief-blood-explosion-big-rampant",
+    --     [6] = "energy-thief-blood-explosion-big-rampant",
+    --     [7] = "energy-thief-blood-explosion-big-rampant",
+    --     [8] = "energy-thief-blood-explosion-huge-rampant",
+    --     [9] = "energy-thief-blood-explosion-huge-rampant",
+    --     [10] = "energy-thief-blood-explosion-huge-rampant",
+    -- }
 
-    makeBloodFountains({
-            name = "energy-thief",
-            tint = {r=0, g=0, b=0.7, a=1}
-    })
+    -- makeBloodFountains({
+    --         name = "energy-thief",
+    --         tint = {r=0, g=0, b=0.7, a=1}
+    -- })
 
-    -- energy-thief biters
-    buildUnitSpawner(
-        {
-            unit = {
-                name = "energy-thief-biter",
+    -- -- energy-thief biters
+    -- buildUnitSpawner(
+    --     {
+    --         unit = {
+    --             name = "energy-thief-biter",
 
-                attributes = {
-                },
-                loot = biterLoot,
-                attack = {
-                    damageType = "electric",
-                    actions = function(attributes, electricBeam)
-                        return
-                            {
-                                {
-                                    type = "instant",
-                                    target_effects =
-                                        {
-                                            type = "create-entity",
-                                            trigger_created_entity = true,
-                                            entity_name = "drain-trigger-rampant"
-                                        }
-                                },
-                                {
-                                    type = "beam",
-                                    beam = electricBeam or "electric-beam",
-                                    duration = attributes.duration or 20
-                                }
-                            }
-                    end
-                },
-                resistances = {},
+    --             attributes = {
+    --             },
+    --             loot = biterLoot,
+    --             attack = {
+    --                 damageType = "electric",
+    --                 actions = function(attributes, electricBeam)
+    --                     return
+    --                         {
+    --                             {
+    --                                 type = "instant",
+    --                                 target_effects =
+    --                                     {
+    --                                         type = "create-entity",
+    --                                         trigger_created_entity = true,
+    --                                         entity_name = "drain-trigger-rampant"
+    --                                     }
+    --                             },
+    --                             {
+    --                                 type = "beam",
+    --                                 beam = electricBeam or "electric-beam",
+    --                                 duration = attributes.duration or 20
+    --                             }
+    --                         }
+    --                 end
+    --             },
+    --             resistances = {},
 
-                type = "biter",
-                attackName = "biter-energy-thief",
-                tint = {r=0.4, g=0.5, b=0.7, a=1},
-                tint2 = {r=0, g=0, b=0.7, a=1}
-            },
+    --             type = "biter",
+    --             attackName = "biter-energy-thief",
+    --             tint = {r=0.4, g=0.5, b=0.7, a=1},
+    --             tint2 = {r=0, g=0, b=0.7, a=1}
+    --         },
 
-            unitSpawner = {
-                name = "energy-thief-biter-spawner",
+    --         unitSpawner = {
+    --             name = "energy-thief-biter-spawner",
 
-                loot = spawnerLoot,
-                attributes = {},
-                resistances = {},
-                tint = {r=0.4, g=0.5, b=0.7, a=1},
-                tint2 = {r=0, g=0, b=0.7, a=1}
-            }
-        },
+    --             loot = spawnerLoot,
+    --             attributes = {},
+    --             resistances = {},
+    --             tint = {r=0.4, g=0.5, b=0.7, a=1},
+    --             tint2 = {r=0, g=0, b=0.7, a=1}
+    --         }
+    --     },
 
-        {
-            unit = {
-                bloodFountains,
+    --     {
+    --         unit = {
+    --             bloodFountains,
 
-                {
-                    type = "attribute",
-                    name = "health",
-                    [1] = 10,
-                    [2] = 50,
-                    [3] = 200,
-                    [4] = 350,
-                    [5] = 1250,
-                    [6] = 2250,
-                    [7] = 3250,
-                    [8] = 6500,
-                    [9] = 12500,
-                    [10] = 25000
-                },
+    --             {
+    --                 type = "attribute",
+    --                 name = "health",
+    --                 [1] = 10,
+    --                 [2] = 50,
+    --                 [3] = 200,
+    --                 [4] = 350,
+    --                 [5] = 1250,
+    --                 [6] = 2250,
+    --                 [7] = 3250,
+    --                 [8] = 6500,
+    --                 [9] = 12500,
+    --                 [10] = 25000
+    --             },
 
-                {
-                    type = "attack",
-                    name = "width",
-                    [1] = 1,
-                    [2] = 1,
-                    [3] = 1.2,
-                    [4] = 1.2,
-                    [5] = 1.3,
-                    [6] = 1.3,
-                    [7] = 1.4,
-                    [8] = 1.4,
-                    [9] = 1.5,
-                    [10] = 1.5
-                },
+    --             {
+    --                 type = "attack",
+    --                 name = "width",
+    --                 [1] = 1,
+    --                 [2] = 1,
+    --                 [3] = 1.2,
+    --                 [4] = 1.2,
+    --                 [5] = 1.3,
+    --                 [6] = 1.3,
+    --                 [7] = 1.4,
+    --                 [8] = 1.4,
+    --                 [9] = 1.5,
+    --                 [10] = 1.5
+    --             },
 
-                {
-                    type = "attack",
-                    name = "damageInterval",
-                    [1] = 20,
-                    [2] = 20,
-                    [3] = 21,
-                    [4] = 21,
-                    [5] = 22,
-                    [6] = 22,
-                    [7] = 23,
-                    [8] = 23,
-                    [9] = 24,
-                    [10] = 24
-                },
+    --             {
+    --                 type = "attack",
+    --                 name = "damageInterval",
+    --                 [1] = 20,
+    --                 [2] = 20,
+    --                 [3] = 21,
+    --                 [4] = 21,
+    --                 [5] = 22,
+    --                 [6] = 22,
+    --                 [7] = 23,
+    --                 [8] = 23,
+    --                 [9] = 24,
+    --                 [10] = 24
+    --             },
 
-                {
-                    type = "attack",
-                    name = "damage",
-                    [1] = 4,
-                    [2] = 8,
-                    [3] = 15,
-                    [4] = 20,
-                    [5] = 25,
-                    [6] = 35,
-                    [7] = 50,
-                    [8] = 65,
-                    [9] = 80,
-                    [10] = 140
-                },
+    --             {
+    --                 type = "attack",
+    --                 name = "damage",
+    --                 [1] = 4,
+    --                 [2] = 8,
+    --                 [3] = 15,
+    --                 [4] = 20,
+    --                 [5] = 25,
+    --                 [6] = 35,
+    --                 [7] = 50,
+    --                 [8] = 65,
+    --                 [9] = 80,
+    --                 [10] = 140
+    --             },
 
-                {
-                    type = "attack",
-                    name = "duration",
-                    [1] = 20,
-                    [2] = 20,
-                    [3] = 21,
-                    [4] = 21,
-                    [5] = 22,
-                    [6] = 22,
-                    [7] = 23,
-                    [8] = 23,
-                    [9] = 24,
-                    [10] = 24
-                },
+    --             {
+    --                 type = "attack",
+    --                 name = "duration",
+    --                 [1] = 20,
+    --                 [2] = 20,
+    --                 [3] = 21,
+    --                 [4] = 21,
+    --                 [5] = 22,
+    --                 [6] = 22,
+    --                 [7] = 23,
+    --                 [8] = 23,
+    --                 [9] = 24,
+    --                 [10] = 24
+    --             },
 
-                {
-                    type = "majorResistances",
-                    entries = {"laser", "electric"}
-                },
+    --             {
+    --                 type = "majorResistances",
+    --                 entries = {"laser", "electric"}
+    --             },
 
-                {
-                    type = "attack",
-                    name = "range",
-                    [1] = 9,
-                    [2] = 9,
-                    [3] = 10,
-                    [4] = 10,
-                    [5] = 11,
-                    [6] = 11,
-                    [7] = 12,
-                    [8] = 12,
-                    [9] = 13,
-                    [10] = 13
-                }
-            },
+    --             {
+    --                 type = "attack",
+    --                 name = "range",
+    --                 [1] = 9,
+    --                 [2] = 9,
+    --                 [3] = 10,
+    --                 [4] = 10,
+    --                 [5] = 11,
+    --                 [6] = 11,
+    --                 [7] = 12,
+    --                 [8] = 12,
+    --                 [9] = 13,
+    --                 [10] = 13
+    --             }
+    --         },
 
-            unitSpawner = {
+    --         unitSpawner = {
 
-                bloodFountains,
+    --             bloodFountains,
 
-                {
-                    type = "attribute",
-                    name = "evolutionRequirement",
-                    formula = evolutionFunction
-                },
+    --             {
+    --                 type = "attribute",
+    --                 name = "evolutionRequirement",
+    --                 formula = evolutionFunction
+    --             },
 
-                {
-                    type = "majorResistances",
-                    entries = {"laser", "electric"}
-                }
-            }
-        },
+    --             {
+    --                 type = "majorResistances",
+    --                 entries = {"laser", "electric"}
+    --             }
+    --         }
+    --     },
 
-        function (attributes)
-            return createElectricAttack(attributes,
-                                        makeBeam(attributes),
-                                        biterattackanimation(attributes.scale, attributes.tint, attributes.tint2))
-        end
-    )
+    --     function (attributes)
+    --         return createElectricAttack(attributes,
+    --                                     makeBeam(attributes),
+    --                                     biterattackanimation(attributes.scale, attributes.tint, attributes.tint2))
+    --     end
+    -- )
 
-    -- energy-thief worms
-    buildWorm(
-        {
-            name = "energy-thief-worm",
+    -- -- energy-thief worms
+    -- buildWorm(
+    --     {
+    --         name = "energy-thief-worm",
 
-            loot = wormLoot,
-            attributes = {},
-            attack = {
-                type = "projectile",
-                bubble = electricBubble,
-                damageType = "electric",
-                pointEffects = function(attributes)
-                    return
-                        {
-                            {
-                                type="nested-result",
-                                action = {
-                                    {
-                                        type = "cluster",
-                                        cluster_count = attributes.clusters,
-                                        distance = attributes.clusterDistance,
-                                        distance_deviation = 3,
-                                        action_delivery =
-                                            {
-                                                type = "projectile",
-                                                projectile = attributes.laserName,
-                                                duration = 20,
-                                                direction_deviation = 0.6,
-                                                starting_speed = attributes.startingSpeed,
-                                                starting_speed_deviation = 0.3
-                                            }
-                                    }
-                                },
-                            }
-                        }
-                end
-            },
-            resistances = {},
-            attackName = "worm-energy-thief",
-            tint = {r=0.4, g=0.5, b=0.7, a=1},
-            tint2 = {r=0, g=0, b=0.7, a=1}
-        },
+    --         loot = wormLoot,
+    --         attributes = {},
+    --         attack = {
+    --             type = "projectile",
+    --             bubble = electricBubble,
+    --             damageType = "electric",
+    --             pointEffects = function(attributes)
+    --                 return
+    --                     {
+    --                         {
+    --                             type="nested-result",
+    --                             action = {
+    --                                 {
+    --                                     type = "cluster",
+    --                                     cluster_count = attributes.clusters,
+    --                                     distance = attributes.clusterDistance,
+    --                                     distance_deviation = 3,
+    --                                     action_delivery =
+    --                                         {
+    --                                             type = "projectile",
+    --                                             projectile = attributes.laserName,
+    --                                             duration = 20,
+    --                                             direction_deviation = 0.6,
+    --                                             starting_speed = attributes.startingSpeed,
+    --                                             starting_speed_deviation = 0.3
+    --                                         }
+    --                                 }
+    --                             },
+    --                         }
+    --                     }
+    --             end
+    --         },
+    --         resistances = {},
+    --         attackName = "worm-energy-thief",
+    --         tint = {r=0.4, g=0.5, b=0.7, a=1},
+    --         tint2 = {r=0, g=0, b=0.7, a=1}
+    --     },
 
-        {
-            bloodFountains,
+    --     {
+    --         bloodFountains,
 
-            {
-                type = "attack",
-                name = "startingSpeed",
-                [1] = 0.25,
-                [2] = 0.25,
-                [3] = 0.27,
-                [4] = 0.27,
-                [5] = 0.29,
-                [6] = 0.29,
-                [7] = 0.31,
-                [8] = 0.31,
-                [9] = 0.33,
-                [10] = 0.33
-            },
+    --         {
+    --             type = "attack",
+    --             name = "startingSpeed",
+    --             [1] = 0.25,
+    --             [2] = 0.25,
+    --             [3] = 0.27,
+    --             [4] = 0.27,
+    --             [5] = 0.29,
+    --             [6] = 0.29,
+    --             [7] = 0.31,
+    --             [8] = 0.31,
+    --             [9] = 0.33,
+    --             [10] = 0.33
+    --         },
 
-            {
-                type = "attack",
-                name = "clusterDistance",
-                [1] = 3,
-                [2] = 3,
-                [3] = 4,
-                [4] = 4,
-                [5] = 5,
-                [6] = 5,
-                [7] = 6,
-                [8] = 6,
-                [9] = 7,
-                [10] = 7
-            },
+    --         {
+    --             type = "attack",
+    --             name = "clusterDistance",
+    --             [1] = 3,
+    --             [2] = 3,
+    --             [3] = 4,
+    --             [4] = 4,
+    --             [5] = 5,
+    --             [6] = 5,
+    --             [7] = 6,
+    --             [8] = 6,
+    --             [9] = 7,
+    --             [10] = 7
+    --         },
 
-            {
-                type = "attribute",
-                name = "evolutionRequirement",
-                formula = evolutionFunction
-            },
+    --         {
+    --             type = "attribute",
+    --             name = "evolutionRequirement",
+    --             formula = evolutionFunction
+    --         },
 
-            {
-                type = "attack",
-                name = "clusters",
-                min = 2,
-                [1] = 5,
-                [2] = 5,
-                [3] = 6,
-                [4] = 6,
-                [5] = 7,
-                [6] = 7,
-                [7] = 8,
-                [8] = 8,
-                [9] = 9,
-                [10] = 9
-            },
+    --         {
+    --             type = "attack",
+    --             name = "clusters",
+    --             min = 2,
+    --             [1] = 5,
+    --             [2] = 5,
+    --             [3] = 6,
+    --             [4] = 6,
+    --             [5] = 7,
+    --             [6] = 7,
+    --             [7] = 8,
+    --             [8] = 8,
+    --             [9] = 9,
+    --             [10] = 9
+    --         },
 
-            {
-                type = "majorResistances",
-                entries = {"laser", "electric"}
-            }
+    --         {
+    --             type = "majorResistances",
+    --             entries = {"laser", "electric"}
+    --         }
 
-        },
+    --     },
 
-        function (attributes)
-            attributes.laserName = makeLaser(attributes)
-            return createRangedAttack(attributes,
-                                      createAttackBall(attributes))
-        end
-    )
+    --     function (attributes)
+    --         attributes.laserName = makeLaser(attributes)
+    --         return createRangedAttack(attributes,
+    --                                   createAttackBall(attributes))
+    --     end
+    -- )
 
     data:extend({
             {

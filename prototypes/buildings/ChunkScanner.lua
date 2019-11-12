@@ -2,33 +2,33 @@ local biterFunctions = require("prototypes/utils/BiterUtils")
 local constants = require("libs/Constants")
 
 data:extend({
-        biterFunctions.makeBiter("chunk-scanner-squad",
-                                 {
-                                     scale=15,
-                                     movement=1,
-                                     effectiveLevel=1
-                                 },
-                                 biterFunctions.createMeleeAttack({
-                                         radius=1,
-                                         damage=1,
-                                         scale=15,
-                                         effectiveLevel=1
-                                 }),
-                                 {}),
+        biterFunctions.makeBiter({
+                name = "chunk-scanner-squad",
+                scale=15,
+                movement=1,
+                effectiveLevel=1,
+                resistances = {},
+                attack = biterFunctions.createMeleeAttack({
+                        radius=1,
+                        damage=1,
+                        scale=15,
+                        effectiveLevel=1
+                })
+        }),
 
-        biterFunctions.makeBiter("chunk-scanner-squad-movement",
-                                 {
-                                     scale=2.5,
-                                     movement=1,
-                                     effectiveLevel=1
-                                 },
-                                 biterFunctions.createMeleeAttack({
-                                         radius=1,
-                                         damage=1,
-                                         scale=1,
-                                         effectiveLevel=1
-                                 }),
-                                 {})
+        biterFunctions.makeBiter({
+                name = "chunk-scanner-squad-movement",
+                scale=2.5,
+                movement=1,
+                effectiveLevel=1,
+                resistances = {},
+                attack = biterFunctions.createMeleeAttack({
+                        radius=1,
+                        damage=1,
+                        scale=15,
+                        effectiveLevel=1
+                })
+        })
 })
 
 local scales = {
@@ -74,12 +74,7 @@ for t=1,11 do
     )
 end
 
--- local types = constants.FACTION_TYPES
-
 local subTypes = constants.HIVE_BUILDINGS_TYPES
-
--- for x=1,#types do
---     local name = types[x]
 
 for t=1,11 do
     local scale = scales[t] * 1.2
@@ -114,4 +109,3 @@ for t=1,11 do
         )
     end
 end
--- end

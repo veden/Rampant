@@ -148,8 +148,8 @@ function upgrade.attempt(natives, setNewSurface)
     end
     if (global.version < constants.VERSION_41) then
 
-        natives.evolutionTableUnitSpawner = {}
-        natives.evolutionTableWorm = {}
+        -- natives.evolutionTableUnitSpawner = {}
+        -- natives.evolutionTableWorm = {}
         natives.evolutionTableAlignment = {}
         natives.bases = {}
         natives.baseIndex = 1
@@ -246,7 +246,7 @@ function upgrade.attempt(natives, setNewSurface)
 
         natives.cleanBuildingIndex = 1
         natives.attackIndex = 1
-        
+
         global.version = constants.VERSION_85
     end
     if (global.version < constants.VERSION_86) then
@@ -296,12 +296,21 @@ function upgrade.attempt(natives, setNewSurface)
             end
         end
 
-        natives.NEST_VARIATIONS = settings.startup["rampant-newEnemyNestVariations"].value
-        natives.WORM_VARIATIONS = settings.startup["rampant-newEnemyWormVariations"].value
-        natives.UNIT_VARIATIONS = settings.startup["rampant-newEnemyUnitVariations"].value
+        natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
 
         natives.baseOrdering = {}
         natives.baseOrdering.len = 0
+
+        natives.evolutionTableBiterSpawner = {}
+        natives.evolutionTableSpitterSpawner = {}
+        natives.evolutionTableOutpost = {}
+        natives.evolutionTableHive = {}
+        natives.evolutionTableTrap = {}
+        natives.evolutionTableTurret = {}
+        natives.evolutionTableUtility = {}
+
+        natives.evolutionTableUnitSpawner = nil
+        natives.evolutionTableWorm = nil
 
         natives.pendingAttack.len = #natives.pendingAttack
         natives.squads.len = #natives.squads

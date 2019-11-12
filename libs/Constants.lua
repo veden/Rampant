@@ -602,20 +602,18 @@ buildTier(10, tiers10)
 
 constants.TIER_UPGRADE_SET_10 = tiers10
 
-local nestVariations = settings.startup["rampant-newEnemyNestVariations"].value
-local wormVariations = settings.startup["rampant-newEnemyWormVariations"].value
-local unitVariations = settings.startup["rampant-newEnemyUnitVariations"].value
+local variations = settings.startup["rampant-newEnemyVariations"].value
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
 for tier=1, 10 do
-    for i=1,wormVariations do
+    for i=1,variations do
         constants.ENERGY_THIEF_LOOKUP["energy-thief-worm-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
 end
 
 for tier=1, 10 do
-    for i=1,unitVariations do
+    for i=1,variations do
         constants.ENERGY_THIEF_LOOKUP["energy-thief-biter-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
 end
@@ -624,12 +622,556 @@ constants.POISON_LOOKUP = {}
 
 for tier=1, 10 do
     local effectiveLevel = constants.TIER_UPGRADE_SET_10[tier]
-    for i=1,unitVariations do
+    for i=1,variations do
         constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. tier .. "-rampant"] = "poison-cloud-v" .. effectiveLevel .. "-cloud-rampant"
     end
 end
 
 constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
+
+constants.FACTION_SET = {}
+
+constants.FACTION_SET[#constants.FACTION_SET+1] = {
+    type = "neutral",
+    tint = {r=0.9, g=0.9, b=0.9, a=1},
+    tint2 = {r=1, g=1, b=1, a=1},
+    evo = 0,
+    units = {
+        {
+            type = "biter",
+            attackAttributes = {"melee"},
+            name = "biter",
+            majorResistances = {},
+            minorResistances = {},
+            attributes = {},
+            drops = {"nilArtifact"}
+        },
+        {
+            type = "spitter",
+            attackAttributes = {"spit", "acid"},
+            name = "spitter",
+            majorResistances = {},
+            minorResistances = {},
+            attributes = {},
+            drops = {"nilArtifact"}
+        }
+    },
+    buildings = {
+        {
+            type = "spitter-spawner",
+            name = "spitter-spawner",
+            majorResistances = {},
+            minorResistances = {},
+            attributes = {},
+            drops = {"nilArtifact"},
+            buildSets = {
+                {"spitter", 1, 10}
+            }
+        },
+        {
+            type = "biter-spawner",
+            name = "biter-spawner",
+            majorResistances = {},
+            minorResistances = {},
+            attributes = {},
+            drops = {"nilArtifact"},
+            buildSets = {
+                {"biter", 1, 10}
+            }
+        },
+        {
+            type = "turret",
+            name = "worm",
+            majorResistances = {},
+            minorResistances = {},
+            attackAttributes = {"spit", "acid"},
+            attributes = {},
+            drops = {"nilArtifact"}
+        },
+        {
+            type = "hive",
+            name = "hive",
+            majorResistances = {},
+            minorResistances = {},
+            attributes = {},
+            drops = {"nilArtifact"},
+            buildSets = {
+                {"biter-spawner", 1, 10, 0.1, 0.2},
+                {"spitter-spawner", 1, 10, 0.1, 0.2},
+                {"turret", 1, 10, 0.8, 0.57},
+                {"hive", 4, 10, 0.005, 0.03}
+            }
+        }
+    }
+}
+
+if settings.startup["rampant-acidEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "acid",
+        tint = {r=1, g=1, b=1, a=1},
+        tint2 = {r=0, g=0.9, b=0, a=1},
+        evo = 0,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"greenArtifact"}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"spit", "acid"},
+                name = "spitter",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"greenArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attackAttributes = {"spit", "acid"},
+                attributes = {},
+                drops = {"greenArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"acid"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.1, 0.2},
+                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-laserEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "laser",
+        tint = {r=0.3, g=0.3, b=0.42, a=1},
+        tint2 = {r=0, g=0.6, b=0.8, a=1},
+        evo = 0.15,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                majorResistances = {"laser", "electric"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"spit", "laser", "cluster"},
+                name = "spitter",
+                majorResistances = {"laser", "electric"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                majorResistances = {"laser", "electric"},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"laser", "electric"},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"laser", "electric"},
+                attackAttributes = {"spit", "laser", "cluster"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"laser", "electric"},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.1, 0.2},
+                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
+            }
+        }
+    }
+end
+
+
+if settings.startup["rampant-fireEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "fire",
+        tint = {r=1, g=1, b=1, a=1},
+        tint2 = {r=0.9, g=0, b=0, a=1},
+        evo = 0.12,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"redArtifact"}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"spit", "acid"},
+                name = "spitter",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"redArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"redArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"redArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attackAttributes = {"spit", "acid"},
+                attributes = {},
+                drops = {"redArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"redArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.1, 0.2},
+                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-infernoEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "inferno",
+        tint = {r=0.7, g=0.45, b=0.5, a=1},
+        tint2 = {r=0.9, g=0, b=0, a=1},        
+        evo = 0.2,
+        units = {
+            {
+                type = "spitter",
+                attackAttributes = {"stream", "acid"},
+                name = "spitter",
+                majorResistances = {"acid", "fire"},
+                minorWeaknesses = {"poison"},
+                attributes = {},
+                drops = {"orangeArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                majorResistances = {"acid", "fire"},
+                minorWeaknesses = {"poison"},
+                attributes = {},
+                drops = {"orangeArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"acid", "fire"},
+                minorWeaknesses = {"poison"},
+                attackAttributes = {"stream", "acid"},
+                attributes = {},
+                drops = {"orangeArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-electricEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "electric",
+        tint = {r=0.7, g=0.7, b=1.0, a=1.0},
+        tint2 = {r=0, g=0, b=1, a=1},
+        evo = 0.1,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"beam", "electric"},
+                name = "biter",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attributes = {"lowHealth"},
+                drops = {"blueArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attackAttributes = {"spit", "electric", "cluster"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-nuclearEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "nuclear",
+        tint = {r=0.6, g=0.6, b=0.4, a=1},
+        tint2 = {r=0.95, g=0.95, b=0, a=1},
+        evo = 0.2,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"beam", "electric"},
+                name = "biter",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attributes = {"lowestHealth", "quickSpawning"},
+                drops = {"blueArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attackAttributes = {"spit", "electric", "cluster"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            }
+        }
+    }
+end
+
+
+if settings.startup["rampant-energyThiefEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "energy-thief",
+        tint = {r=0.4, g=0.5, b=0.7, a=1},
+        tint2 = {r=0, g=0, b=0.7, a=1},
+        evo = 0.2,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"beam", "electric", "drainCrystal"},
+                name = "biter",
+                majorResistances = {"electric", "laser"},
+                minorResistances = {},
+                attributes = {"lowHealth"},
+                drops = {"blueArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"electric", "laser"},
+                minorResistances = {},
+                attributes = {},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"electric", "laser"},
+                minorResistances = {},
+                attackAttributes = {"spit", "electric", "cluster"},
+                attributes = {},
+                drops = {"blueArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-fastEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "fast",
+        tint = {r=0.26, g=0.66, b=0.62, a=1},
+        tint2 = {r=0, g=0.85, b=0.80, a=1},
+        evo = 0.12,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attributes = {"quickCooldown", "quickMovement"},
+                drops = {"purpleArtifact"}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"spit", "acid"},
+                name = "spitter",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attributes = {"quickCooldown", "quickMovement"},
+                drops = {"purpleArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attributes = {"quickSpawning"},
+                drops = {"purpleArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attributes = {"quickSpawning"},
+                drops = {"purpleArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attackAttributes = {"spit", "acid"},
+                attributes = {"quickCooldown"},
+                drops = {"purpleArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {},
+                minorResistances = {"explosion"},
+                attributes = {"quickSpawning"},
+                drops = {"purpleArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.1, 0.2},
+                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
+            }
+        }
+    }
+end
 
 constants.BUILDING_SPACE_LOOKUP = {}
 
@@ -694,23 +1236,23 @@ end
 constants.BUILDING_SPACE_LOOKUP["biter-spawner"] = "chunk-scanner-5-nest-rampant"
 constants.BUILDING_SPACE_LOOKUP["spitter-spawner"] = "chunk-scanner-5-nest-rampant"
 
-constants.FACTION_TYPES = {
-    "neutral",
-    "acid",
-    "physical",
-    "electric",
-    "suicide",
-    "nuclear",
-    "fire",
-    "inferno",
-    "troll",
-    "fast",
-    "laser",
-    "wasp",
-    "spawner",
-    "energy-thief",
-    "poison"
-}
+-- constants.FACTION_TYPES = {
+--     "neutral",
+--     "acid",
+--     "physical",
+--     "electric",
+--     "suicide",
+--     "nuclear",
+--     "fire",
+--     "inferno",
+--     "troll",
+--     "fast",
+--     "laser",
+--     "wasp",
+--     "spawner",
+--     "energy-thief",
+--     "poison"
+-- }
 
 constants.HIVE_BUILDINGS_TYPES = {
     "trap",
@@ -721,41 +1263,41 @@ constants.HIVE_BUILDINGS_TYPES = {
     "hive"
 }
 
-constants.HIVE_BUILDINGS = {}
+-- constants.HIVE_BUILDINGS = {}
 
-for t=1,10 do
-    for ift=1,#constants.FACTION_TYPES do
-        for ihbt=1,#constants.HIVE_BUILDINGS_TYPES do
-            local hbt = constants.HIVE_BUILDINGS_TYPES[ihbt]
-            local name = constants.FACTION_TYPES[ift]
-            if (hbt == "turret") then
-                local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
-                for v=1,20 do
-                    set[#set+1] = true
-                end
-            elseif (hbt == "spitter-spawner") then
-                local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
-                for v=1,20 do
-                    set[#set+1] = true
-                end
-            elseif (hbt == "biter-spawner") then
-                local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
-                for v=1,20 do
-                    set[#set+1] = true
-                end
-            elseif (hbt == "hive") then
-                local set = {}
-                constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
-                for v=1,20 do
-                    set[#set+1] = true
-                end
-            end
-        end
-    end
-end
+-- for t=1,10 do
+--     for ift=1,#constants.FACTION_TYPES do
+--         for ihbt=1,#constants.HIVE_BUILDINGS_TYPES do
+--             local hbt = constants.HIVE_BUILDINGS_TYPES[ihbt]
+--             local name = constants.FACTION_TYPES[ift]
+--             if (hbt == "turret") then
+--                 local set = {}
+--                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
+--                 for v=1,20 do
+--                     set[#set+1] = true
+--                 end
+--             elseif (hbt == "spitter-spawner") then
+--                 local set = {}
+--                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
+--                 for v=1,20 do
+--                     set[#set+1] = true
+--                 end
+--             elseif (hbt == "biter-spawner") then
+--                 local set = {}
+--                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
+--                 for v=1,20 do
+--                     set[#set+1] = true
+--                 end
+--             elseif (hbt == "hive") then
+--                 local set = {}
+--                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
+--                 for v=1,20 do
+--                     set[#set+1] = true
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 
 constantsG =  constants

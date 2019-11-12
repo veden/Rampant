@@ -477,9 +477,7 @@ local function onModSettingsChange(event)
 
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
 
-    upgrade.compareTable(natives, "NEST_VARIATIONS", settings.startup["rampant-newEnemyNestVariations"].value)
-    upgrade.compareTable(natives, "WORM_VARIATIONS", settings.startup["rampant-newEnemyWormVariations"].value)
-    upgrade.compareTable(natives, "UNIT_VARIATIONS", settings.startup["rampant-newEnemyUnitVariations"].value)
+    upgrade.compareTable(natives, "ENEMY_VARIATIONS", settings.startup["rampant-newEnemyVariations"].value)
     
     game.forces.enemy.ai_controllable = not natives.disableVanillaAI
 

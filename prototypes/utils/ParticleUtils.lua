@@ -4,7 +4,7 @@ local particleUtils = {}
 
 local function makeBloodParticle(attributes)
     local name = attributes.name .. "-blood-particle-rampant"
-    local tint = attributes.tint
+    local tint = attributes.tint2
     
     data:extend({
             {

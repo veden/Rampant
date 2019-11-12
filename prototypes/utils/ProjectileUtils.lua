@@ -1,17 +1,17 @@
 local projectileUtils = {}
 
-function projectileUtils.makeProjectile(name, attributes, attack)
-    local n = name .. "-projectile-rampant"
+function projectileUtils.makeProjectile(attributes, attack)
+    local n = attributes.name .. "-projectile-rampant"
     
     data:extend({{
                 type = "projectile",
                 name = n,
                 flags = {"not-on-map"},
-                collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
-                collision_mask = attributes.collisionMask or {"layer-11"},
-                direction_only = attributes.directionOnly,
-                piercing_damage = attributes.piercingDamage or 0,
-                acceleration = attributes.acceleration or 0.02,
+                collision_box = attributes.attackCollisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
+                collision_mask = attributes.attackCollisionMask or {"layer-11"},
+                direction_only = attributes.attackDirectionOnly,
+                piercing_damage = attributes.attackPiercingDamage or 0,
+                acceleration = attributes.attackAcceleration or 0.02,
                 force_condition = (settings.startup["rampant-disableCollidingProjectiles"].value and "not-same") or nil,
                 action = attack,
                 animation =
@@ -22,7 +22,7 @@ function projectileUtils.makeProjectile(name, attributes, attack)
                         height = 84,
                         frame_count = 15,
                         shift = util.mul_shift(util.by_pixel(-2, 30), attributes.scale or 1),
-                        tint = attributes.tint,
+                        tint = attributes.tint2,
                         priority = "high",
                         scale = (attributes.scale or 1),
                         animation_speed = 1,
@@ -34,7 +34,7 @@ function projectileUtils.makeProjectile(name, attributes, attack)
                                 height = 164,
                                 frame_count = 15,
                                 shift = util.mul_shift(util.by_pixel(-2, 31), attributes.scale or 1),
-                                tint = attributes.tint,
+                                tint = attributes.tint2,
                                 priority = "high",
                                 scale = 0.5 * (attributes.scale or 1),
                                 animation_speed = 1,

@@ -112,7 +112,7 @@ function acid.addFaction()
                     name = "evolutionRequirement",
                     formula = evolutionFunction
                 },
-
+                
                 {
                     type = "majorResistances",
                     entries = {"acid"}

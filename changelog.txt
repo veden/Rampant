@@ -14,6 +14,7 @@ Date: 10. 13. 2019
     - Nerfed poison biters cloud damage and duration
     - Added blood color to match new enemy color
     - Added blood explosions to each new enemy
+    - Nuclear biters have more visual explosions
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible
