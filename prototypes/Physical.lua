@@ -232,7 +232,7 @@ function physical.addFaction()
                         },
                         {
                             type= "create-entity",
-                            entity_name = attributes.explosion
+                            entity_name = attributes.attackExplosion
                         }
                     }
                 end

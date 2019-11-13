@@ -32,7 +32,8 @@ function bombUtils.makeAtomicBlast(attributes)
                                     target_effects =
                                         {
                                             type = "damage",
-                                            damage = {amount = (attributes.damage * 2) or 400, type = attributes.damageType or "explosion"}
+                                            damage = {amount = (attributes.damage * 2) or 400,
+                                                      type = attributes.damageType or "explosion"}
                                         }
                                 }
                         }

@@ -851,7 +851,6 @@ if settings.startup["rampant-laserEnemy"].value then
     }
 end
 
-
 if settings.startup["rampant-fireEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fire",
@@ -1012,6 +1011,133 @@ if settings.startup["rampant-electricEnemy"].value then
     }
 end
 
+if settings.startup["rampant-physicalEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "physical",
+        tint = {r=0.9, g=0.9, b=0.9, a=1},
+        tint2 = {r=0, g=0, b=0, a=1},
+        evo = 0.12,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                majorResistances = {"physical", "explosion"},
+                minorWeaknesses = {"laser", "electric"},
+                attributes = {"highHealth","big", "highRegen", "slowMovement"},
+                drops = {"redArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"physical", "explosion"},
+                minorWeaknesses = {"laser", "electric"},
+                attributes = {"highHealth", "big", "highRegen"},
+                drops = {"redArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"physical", "explosion"},
+                minorWeaknesses = {"laser", "electric"},
+                attackAttributes = {"spit", "physical"},
+                attributes = {"highHealth", "big", "highRegen"},
+                drops = {"redArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-trollEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "troll",
+        tint = {r=0.4, g=0.4, b=0.4, a=1},
+        tint2 = {r=0.8, g=0.8, b=0.8, a=1},
+        evo = 0.17,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                minorResistances = {"physical", "explosion"},
+                majorWeaknesses = {"fire"},
+                attributes = {"highestHealth", "bigger", "highestRegen", "slowMovement"},
+                drops = {"greenArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                minorResistances = {"physical", "explosion"},
+                majorWeaknesses = {"fire"},
+                attributes = {"highestHealth", "bigger", "highestRegen"},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                minorResistances = {"physical", "explosion"},
+                majorWeaknesses = {"fire"},
+                attackAttributes = {"spit", "physical"},
+                attributes = {"highestHealth", "bigger", "highestRegen"},
+                drops = {"greenArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-suicideEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "suicide",
+        tint = {r=1, g=1, b=1, a=1},
+        tint2 = {r=0.85, g=0.85, b=0, a=1},
+        evo = 0.12,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"bomb"},
+                name = "biter",
+                majorWeaknesses = {"explosion"},
+                minorResistances = {"poison"},
+                attributes = {"lowestHealth", "quickSpawning", "quickMovement"},
+                drops = {"yellowArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                majorResistances = {"explosion"},
+                minorResistances = {"poison"},
+                attributes = {},
+                drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                majorResistances = {"explosion"},
+                minorResistances = {"poison"},
+                attackAttributes = {"spit", "acid", "slow"},
+                attributes = {},
+                drops = {"yellowArtifact"}
+            }
+        }
+    }
+end
+
+
 if settings.startup["rampant-nuclearEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
@@ -1021,22 +1147,21 @@ if settings.startup["rampant-nuclearEnemy"].value then
         units = {
             {
                 type = "biter",
-                attackAttributes = {"beam", "electric"},
+                attackAttributes = {"nuclear"},
                 name = "biter",
-                majorResistances = {"electric"},
-                minorResistances = {"laser"},
-                attributes = {"lowestHealth", "quickSpawning"},
-                drops = {"blueArtifact"}
+                majorWeaknesses = {"explosion"},
+                attributes = {"lowestHealth", "quickSpawning", "quickMovement"},
+                drops = {"yellowArtifact"}
             }
         },
         buildings = {
             {
                 type = "biter-spawner",
                 name = "biter-spawner",
-                majorResistances = {"electric"},
-                minorResistances = {"laser"},
+                majorResistances = {"explosion"},
+                minorResistances = {"fire"},
                 attributes = {},
-                drops = {"blueArtifact"},
+                drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
                 buildSets = {
                     {"biter", 1, 10}
                 }
@@ -1044,11 +1169,11 @@ if settings.startup["rampant-nuclearEnemy"].value then
             {
                 type = "turret",
                 name = "worm",
-                majorResistances = {"electric"},
-                minorResistances = {"laser"},
-                attackAttributes = {"spit", "electric", "cluster"},
+                majorResistances = {"explosion"},
+                minorResistances = {"fire"},
+                attackAttributes = {"spit", "acid", "slow"},
                 attributes = {},
-                drops = {"blueArtifact"}
+                drops = {"yellowArtifact"}
             }
         }
     }

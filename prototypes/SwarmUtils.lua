@@ -1,6 +1,7 @@
 local swarmUtils = {}
 -- imports
 
+local bombUtils = require("utils/BombUtils")
 local attackFlame = require("utils/AttackFlame")
 local energyThief = require("EnergyThief")
 local beamUtils = require("utils/BeamUtils")
@@ -8,6 +9,7 @@ local acidBall = require("utils/AttackBall")
 local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 local particleUtils = require("utils/ParticleUtils")
+local stickerUtils = require("utils/StickerUtils")
 
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
@@ -28,11 +30,15 @@ local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
+local makeSticker = stickerUtils.makeSticker
+local makeAtomicBlast = bombUtils.makeAtomicBlast
 local makeLaser = beamUtils.makeLaser
 local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+
+local createSuicideAttack = biterUtils.createSuicideAttack
 
 local createAttackFlame = attackFlame.createAttackFlame
 local createStreamAttack = biterUtils.createStreamAttack
@@ -58,6 +64,19 @@ local makeUnitSpawner = biterUtils.makeUnitSpawner
 
 -- module code
 
+local explosionTiers = {
+    "explosion",
+    "explosion",
+    "big-explosion",
+    "big-explosion",
+    "big-explosion",
+    "big-explosion",
+    "massive-explosion",
+    "massive-explosion",
+    "massive-explosion",
+    "massive-explosion"
+}
+
 local bloodFountains = {
     "blood-explosion-small-rampant",
     "blood-explosion-small-rampant",
@@ -69,6 +88,26 @@ local bloodFountains = {
     "blood-explosion-huge-rampant",
     "blood-explosion-huge-rampant",
     "blood-explosion-huge-rampant",
+}
+
+local nuclearAttackNumeric = {
+    ["damage"] = { 50, 60, 80, 100, 120, 130, 140, 150, 180, 240 },
+    ["repeatCount"] = { 150, 175, 250, 300, 350, 400, 450, 500, 550, 600 },
+    ["radius"] = { 5, 10, 10, 12, 14, 16, 16, 18, 18, 20 },
+    ["explosionDistance"] = { 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 },
+    ["explosionCount"] = { 3, 3, 3, 4, 4, 4, 5, 5, 6, 6 }
+}
+
+local bombAttackNumeric = {
+    ["damage"] = { 100, 200, 300, 400, 600, 800, 1000, 1200, 1500, 2000 },
+    ["radius"] = { 3.5, 3.5, 4, 5, 6, 6, 7, 7, 7.5, 8 },
+    ["explosionDistance"] = { 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 3, 3 },
+    ["explosionCount"] = { 2, 3, 4, 5, 6, 8, 10, 12, 13, 14 }
+}
+
+local slowStickerNumeric = {
+    ["stickerMovementModifier"] = { 0.8, 0.8, 0.7, 0.7, 0.6, 0.6, 0.5, 0.5, 0.4, 0.4 },
+    ["stickerDuration"] = { 1800, 1800, 1900, 1900, 2000, 2000, 2100, 2100, 2200, 2200 }
 }
 
 local streamAttackNumeric = {
@@ -441,18 +480,47 @@ local function fillEntityTemplate(entity)
             for i=1,#value do
                 addMinorWeakness(entity, value[i], tier)
             end
+        elseif (key == "explosionTiers") then
+            entity.attackExplosion = entity.explosionTiers[tier]
         elseif (key == "attributes") then
             for i=1,#entity[key] do
-                if (entity[key] == "lowHealth") then
+                local attribute = entity[key][i]
+                if (attribute == "lowHealth") then
                     entity["health"] = entity["health"] * 0.75
-                elseif (entity[key] == "quickCooldown") then
+                elseif (attribute == "lowestHealth") then
+                    entity["health"] = entity["health"] * 0.50
+                elseif (attribute == "quickCooldown") then
                     entity["cooldown"] = entity["cooldown"] * 0.85
-                elseif (entity[key] == "quickMovement") then
-                    entity["movement"] = entity["movement"] * 0.85
+                elseif (attribute == "slowMovement") then
+                    entity["movement"] = entity["movement"] * 0.9
+                    entity["distancePerFrame"] = entity["distancePerFrame"] * 0.85
+                elseif (attribute == "quickMovement") then
+                    entity["movement"] = entity["movement"] * 1.05
                     entity["distancePerFrame"] = entity["distancePerFrame"] * 1.15
-                elseif (entity[key] == "quickSpawning") then
-                    entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * 0.85
-                    entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * 0.85
+                elseif (attribute == "quickSpawning") then
+                    if entity["spawningCooldownStart"] then
+                        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * 0.85
+                        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * 0.85
+                    end
+                    if entity["spawningTimeModifer"] then
+                        entity["spawningTimeModifer"] = entity["spawningTimeModifer"] * 0.85
+                    end
+                elseif (attribute == "altBiter") then
+                    entity["altBiter"] = true
+                elseif (attribute == "highRegen") then
+                    entity["healing"] = entity["healing"] * 1.5
+                elseif (attribute == "highestRegen") then
+                    entity["healing"] = entity["healing"] * 3.5
+                elseif (attribute == "big") then
+                    entity["scale"] = entity["scale"] * 1.2
+                elseif (attribute == "bigger") then
+                    entity["scale"] = entity["scale"] * 1.35                    
+                elseif (attribute == "highHealth") then
+                    entity["health"] = entity["health"] * 1.20
+                elseif (attribute == "highestHealth") then
+                    entity["health"] = entity["health"] * 1.35
+                else
+                    error("Unknown attribute " .. attribute)
                 end
             end
         end
@@ -700,6 +768,23 @@ local function buildAttack(faction, template)
                         }
                     }
             end
+        elseif (attack == "physical") then
+            template.explosionTiers = explosionTiers
+            template.damageType = "physical"
+            template.fireDamagePerTickType = "physical"
+            template.stickerDamagePerTickType = "physical"
+            template.attackPointEffects = function (attributes)
+                return {
+                    {
+                        type= "create-entity",
+                        entity_name = "small-scorchmark"
+                    },
+                    {
+                        type= "create-entity",
+                        entity_name = attributes.attackExplosion
+                    }
+                }
+            end
         elseif (attack == "acid") then
             template.damageType = "acid"
             template.fireDamagePerTickType = "acid"
@@ -762,6 +847,49 @@ local function buildAttack(faction, template)
                             }
                         }
                     }
+            end
+        elseif (attack == "slow") then
+            template.force = "enemy"
+            template.stickerAnimation = {
+                filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
+                priority = "extra-high",
+                width = 11,
+                height = 11,
+                frame_count = 13,
+                animation_speed = 0.4
+            }
+            template.areaEffects = function (attributes)
+                return {
+                    {
+                        type = "damage",
+                        damage = { amount = attributes.damage, type = "acid" }
+                    },
+                    {
+                        type = "create-sticker",
+                        sticker = makeSticker(attributes)
+                    }
+                }
+            end
+        elseif (attack == "nuclear") then
+            template.addon[#template.addon+1] = nuclearAttackNumeric
+            template.explosionTiers = explosionTiers
+            template.nuclear = true
+            template.attackGenerator = function (attack)
+                return createSuicideAttack(attack,
+                                           makeAtomicBlast(attack),
+                                           (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                                  attack.tint,
+                                                                                                  attack.tint2)) or nil)
+            end
+        elseif (attack == "bomb") then
+            template.addon[#template.addon+1] = bombAttackNumeric
+            template.explosionTiers = explosionTiers
+            template.attackGenerator = function (attack)
+                return createSuicideAttack(attack,
+                                           nil,
+                                           (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                                  attack.tint,
+                                                                                                  attack.tint2)) or nil)
             end
         end
     end

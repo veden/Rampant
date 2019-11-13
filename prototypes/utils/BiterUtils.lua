@@ -6,6 +6,7 @@ local wormUtils = require("WormUtils")
 
 -- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
+local biterrunanimation = unitUtils.biterrunanimation
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
 local spawner_integration = unitSpawnerUtils.spawner_integration
 local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
@@ -251,7 +252,7 @@ function biterFunctions.makeBiter(attributes)
         affected_by_tiles = true,
         dying_sound =  make_biter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
-        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
     if attributes.collisionMask then
@@ -468,7 +469,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
             category = "biological"
         },
         sound = make_biter_roars(0.3 + (attributes.effectiveLevel * 0.05)),
-        animation = animation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
+        animation = animation
     }
 
     if attributes.nuclear then
@@ -529,7 +530,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                 type = "cluster",
                 cluster_count = attributes.explosionCount,
                 distance = attributes.explosionDistance,
-                distance_deviation = 3,
+                distance_deviation = attributes.explosionDistance,
                 action_delivery =
                     {
                         type = "instant",
@@ -540,7 +541,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                             },
                             {
                                 type = "create-entity",
-                                entity_name = attributes.attackScorchmark,
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
                             }
                         }
@@ -580,7 +581,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                             },
                             {
                                 type = "create-entity",
-                                entity_name = attributes.attackScorchmark,
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
                             }
                         }
@@ -602,7 +603,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                             },
                             {
                                 type = "create-entity",
-                                entity_name = attributes.attackScorchmark,
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
                             },
                             {
