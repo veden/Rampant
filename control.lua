@@ -76,7 +76,7 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
 local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
-local POISON_LOOKUP = constants.POISON_LOOKUP
+-- local POISON_LOOKUP = constants.POISON_LOOKUP
 
 -- imported functions
 
@@ -675,12 +675,12 @@ local function onDeath(event)
                     end
                 end
 
-                local cloudName = POISON_LOOKUP[entity.name]
+                -- local cloudName = POISON_LOOKUP[entity.name]
 
-                if cloudName then
-                    surface.create_entity({position=entity.position,
-                                           name=cloudName})
-                end
+                -- if cloudName then
+                --     surface.create_entity({position=entity.position,
+                --                            name=cloudName})
+                -- end
 
             elseif event.force and (event.force.name ~= "enemy") and ((entityType == "unit-spawner") or (entityType == "turret")) then
 

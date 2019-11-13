@@ -3,7 +3,8 @@ local swarmUtils = {}
 
 local bombUtils = require("utils/BombUtils")
 local attackFlame = require("utils/AttackFlame")
-local energyThief = require("EnergyThief")
+local energyThiefFaction = require("EnergyThief")
+local poisonFaction = require("Poison")
 local beamUtils = require("utils/BeamUtils")
 local acidBall = require("utils/AttackBall")
 local droneUtils = require("utils/DroneUtils")
@@ -16,7 +17,8 @@ local mathUtils = require("__Rampant__/libs/MathUtils")
 
 -- imported functions
 
-local addFactionAddon = energyThief.addFactionAddon
+local addFactionAddon = energyThiefFaction.addFactionAddon
+local addFactionAddon = poisonFaction.addFactionAddon
 
 local roundToNearest = mathUtils.roundToNearest
 
@@ -517,6 +519,11 @@ local function fillEntityTemplate(entity)
                     entity["scale"] = entity["scale"] * 1.35                    
                 elseif (attribute == "highHealth") then
                     entity["health"] = entity["health"] * 1.20
+                elseif (attribute == "poisonDeathCloud") then
+                    entity.dyingEffect = {
+                        type = "create-entity",
+                        entity_name = "poison-cloud-v" .. tier .. "-cloud-rampant"
+                    }
                 elseif (attribute == "highestHealth") then
                     entity["health"] = entity["health"] * 1.35
                 else
@@ -801,6 +808,15 @@ local function buildAttack(faction, template)
             template.damageType = "poison"
             template.fireDamagePerTickType = "poison"
             template.stickerDamagePerTickType = "poison"
+            template.attackPointEffects = function(attributes)
+                return
+                    {
+                        {
+                            type="create-entity",
+                            entity_name = "poison-cloud-v" .. attributes.effectiveLevel .. "-cloud-rampant"
+                        }
+                    }
+            end
         elseif (attack == "stream") then
             template.addon[#template.addon+1] = streamAttackNumeric
             template.attackGenerator = function (attack)
@@ -1083,7 +1099,15 @@ function swarmUtils.processFactions()
         local faction = constants.FACTION_SET[i]
 
         if (faction.type == "energy-thief") then
-            energyThief.addFactionAddon()
+            energyThiefFaction.addFactionAddon()
+        elseif (faction.type == "poison") then
+            data:extend({
+                    {
+                        type = "damage-type",
+                        name = "healing"
+                    }            
+            })
+            poisonFaction.addFactionAddon()
         end
 
         makeBloodFountains({

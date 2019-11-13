@@ -618,16 +618,16 @@ for tier=1, 10 do
     end
 end
 
-constants.POISON_LOOKUP = {}
+-- constants.POISON_LOOKUP = {}
 
-for tier=1, 10 do
-    local effectiveLevel = constants.TIER_UPGRADE_SET_10[tier]
-    for i=1,variations do
-        constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. tier .. "-rampant"] = "poison-cloud-v" .. effectiveLevel .. "-cloud-rampant"
-    end
-end
+-- for tier=1, 10 do
+--     local effectiveLevel = constants.TIER_UPGRADE_SET_10[tier]
+--     for i=1,variations do
+--         constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. tier .. "-rampant"] = "poison-cloud-v" .. effectiveLevel .. "-cloud-rampant"
+--     end
+-- end
 
-constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
+-- constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
 
 constants.FACTION_SET = {}
 
@@ -1089,6 +1089,51 @@ if settings.startup["rampant-trollEnemy"].value then
                 majorWeaknesses = {"fire"},
                 attackAttributes = {"spit", "physical"},
                 attributes = {"highestHealth", "bigger", "highestRegen"},
+                drops = {"greenArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-poisonEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "poison",
+        tint = {r=0.4, g=0.6, b=0.5, a=1},
+        tint2 = {r=0, g=0.7, b=0, a=1},
+        evo = 0.17,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "biter",
+                minorResistances = {"fire"},
+                majorResistances = {"poison"},
+                minorWeaknesses = {"electric", "explosion", "laser"},
+                attributes = {"poisonDeathCloud"},
+                drops = {"greenArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "biter-spawner",
+                name = "biter-spawner",
+                minorResistances = {"fire"},
+                majorResistances = {"poison"},
+                minorWeaknesses = {"electric", "explosion", "laser"},                
+                attributes = {"poisonDeathCloud"},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                minorResistances = {"fire"},
+                majorResistances = {"poison"},
+                minorWeaknesses = {"electric", "explosion", "laser"},
+                attackAttributes = {"spit", "poison"},
+                attributes = {"poisonDeathCloud"},
                 drops = {"greenArtifact"}
             }
         }
