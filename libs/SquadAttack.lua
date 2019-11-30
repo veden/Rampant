@@ -116,7 +116,7 @@ local function scoreAttackKamikazeLocation(natives, squad, neighborChunk)
 end
 
 
-local function settleMove(map, squad, natives, surface)
+local function settleMove(map, squad, surface)
     local targetPosition = map.position
     local targetPosition2 = map.position2
     local group = squad.group
@@ -126,6 +126,7 @@ local function settleMove(map, squad, natives, surface)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
     local groupState = group.state
+    local natives = map.natives
     if (natives.state == AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
     end
@@ -196,6 +197,8 @@ local function settleMove(map, squad, natives, surface)
             positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
             position = findMovementPosition(surface, targetPosition)
 
+            local attackPlayerThreshold = natives.attackPlayerThreshold
+            
             if not position then
                 squad.cycles = 30
                 cmd = map.wonderCommand
@@ -206,7 +209,7 @@ local function settleMove(map, squad, natives, surface)
                 targetPosition.y = position.y
 
                 if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
-                    (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
+                    (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
                 then
                     cmd = map.attackCommand
 
@@ -236,7 +239,7 @@ local function settleMove(map, squad, natives, surface)
 
                     if ((cmd ~= map.attackCommand) and
                             ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) or
-                                    (nextAttackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)))
+                                    (nextAttackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)))
                     then
                         cmd = map.attackCommand
 
@@ -282,7 +285,7 @@ local function settleMove(map, squad, natives, surface)
     end
 end
 
-local function attackMove(map, squad, natives, surface)
+local function attackMove(map, squad, surface)
     local targetPosition = map.position
     local targetPosition2 = map.position2
 
@@ -303,7 +306,6 @@ local function attackMove(map, squad, natives, surface)
     end
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
-                                                                                                       natives,
                                                                                                        chunk,
                                                                                                        getNeighborChunks(map, x, y),
                                                                                                        attackScorer,
@@ -316,6 +318,7 @@ local function attackMove(map, squad, natives, surface)
     else
         positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
 
+        local attackPlayerThreshold = map.natives.attackPlayerThreshold
         local position = findMovementPosition(surface, targetPosition)
 
         if not position then
@@ -328,7 +331,7 @@ local function attackMove(map, squad, natives, surface)
             targetPosition.y = position.y
 
             if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
-                (attackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold)
+                (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
             then
                 cmd = map.attackCommand
 
@@ -360,7 +363,7 @@ local function attackMove(map, squad, natives, surface)
 
                 if (cmd ~= map.attackCommand) and
                     ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) or
-                            (nextAttackChunk[PLAYER_PHEROMONE] >= natives.attackPlayerThreshold))
+                            (nextAttackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold))
                 then
                     cmd = map.attackCommand
 
@@ -378,7 +381,8 @@ local function attackMove(map, squad, natives, surface)
     end
 end
 
-function squadAttack.squadsDispatch(map, surface, natives)
+function squadAttack.squadsDispatch(map, surface)
+    local natives = map.natives
     local squads = natives.squads
 
     -- print("start dispatch")
@@ -422,7 +426,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                         (groupState == DEFINES_GROUP_GATHERING) or
                         ((groupState == DEFINES_GROUP_MOVING) and (cycles <= 0))
                     then
-                        attackMove(map, squad, natives, surface)
+                        attackMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
                         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
@@ -436,7 +440,7 @@ function squadAttack.squadsDispatch(map, surface, natives)
                         (groupState == DEFINES_GROUP_GATHERING) or
                         ((groupState == DEFINES_GROUP_MOVING) and (cycles <= 0))
                     then
-                        settleMove(map, squad, natives, surface)
+                        settleMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
                         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then

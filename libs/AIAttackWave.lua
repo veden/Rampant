@@ -120,8 +120,8 @@ local function validUnitGroupLocation(map, neighborChunk)
         (getNestCount(map, neighborChunk) == 0)
 end
 
-function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
-    if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (natives.points >= AI_VENGENCE_SQUAD_COST)) then
+function aiAttackWave.rallyUnits(chunk, map, surface, tick)
+    if ((tick - getRallyTick(map, chunk) > INTERVAL_RALLY) and (map.natives.points >= AI_VENGENCE_SQUAD_COST)) then
         setRallyTick(map, chunk, tick)
         local cX = chunk.x
         local cY = chunk.y
@@ -130,7 +130,7 @@ function aiAttackWave.rallyUnits(chunk, map, surface, natives, tick)
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
                     if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
-                        if not aiAttackWave.formVengenceSquad(map, surface, natives, rallyChunk) then
+                        if not aiAttackWave.formVengenceSquad(map, surface, rallyChunk) then
                             return
                         end
                     end
@@ -156,7 +156,8 @@ local function noNearbySettlers(map, chunk, tick)
     return true
 end
 
-function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
+function aiAttackWave.formSettlers(map, surface, chunk, tick)
+    local natives = map.natives
     if (mRandom() < natives.formSquadThreshold) and ((natives.squads.len + #natives.building) < AI_MAX_SQUAD_COUNT) then
 
         local squadPath, squadDirection
@@ -213,10 +214,10 @@ function aiAttackWave.formSettlers(map, surface, natives, chunk, tick)
     return (natives.points - AI_SETTLER_COST) > 0
 end
 
-function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
+function aiAttackWave.formVengenceSquad(map, surface, chunk)
+    local natives = map.natives
     if (mRandom() < natives.formSquadThreshold) and (natives.squads.len < AI_MAX_SQUAD_COUNT)
     then
-
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
@@ -257,7 +258,8 @@ function aiAttackWave.formVengenceSquad(map, surface, natives, chunk)
     return (natives.points - AI_VENGENCE_SQUAD_COST) > 0
 end
 
-function aiAttackWave.formSquads(map, surface, natives, chunk, tick)
+function aiAttackWave.formSquads(map, surface, chunk, tick)
+    local natives = map.natives
     if attackWaveValidCandidate(chunk, natives, map) and
         (mRandom() < natives.formSquadThreshold) and
         (natives.squads.len < AI_MAX_SQUAD_COUNT)

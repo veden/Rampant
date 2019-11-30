@@ -1,6 +1,7 @@
 local swarmUtils = {}
 -- imports
 
+local droneUtils = require("utils/DroneUtils")
 local bombUtils = require("utils/BombUtils")
 local attackFlame = require("utils/AttackFlame")
 local energyThiefFaction = require("EnergyThief")
@@ -11,6 +12,7 @@ local droneUtils = require("utils/DroneUtils")
 local biterUtils = require("utils/BiterUtils")
 local particleUtils = require("utils/ParticleUtils")
 local stickerUtils = require("utils/StickerUtils")
+local unitUtils = require("utils/UnitUtils")
 
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
@@ -25,6 +27,8 @@ local roundToNearest = mathUtils.roundToNearest
 local mMax = math.max
 local mMin = math.min
 
+local distort = mathUtils.distort
+
 local mFloor = math.floor
 local deepcopy = util.table.deepcopy
 
@@ -32,13 +36,21 @@ local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
 
+local biterattackanimation = unitUtils.biterattackanimation
+
+local createProjectileAttack = biterUtils.createProjectileAttack
+local createCapsuleProjectile = droneUtils.createCapsuleProjectile
 local makeSticker = stickerUtils.makeSticker
 local makeAtomicBlast = bombUtils.makeAtomicBlast
 local makeLaser = beamUtils.makeLaser
 local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
+local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTabl
+
+local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
+local makeSpawnerAlienLootTable = biterUtils.makeSpawnerAlienLootTable
 
 local createSuicideAttack = biterUtils.createSuicideAttack
 
@@ -159,9 +171,9 @@ local spitterAttributeNumeric = {
     ["range"] = { 13, 13, 14, 14, 15, 15, 16, 16, 17, 17 },
     ["radius"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5 },
     ["cooldown"] = { 100, 100, 97, 97, 95, 95, 93, 93, 90, 90 },
-    ["stickerDuration"] = { 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050 },
+    ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
-    ["stickerDamagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
+    -- ["stickerDamagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
     ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
     ["damage"] = { 16, 30, 45, 60, 90, 110, 130, 150, 170, 190 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
@@ -180,14 +192,23 @@ local spitterAttributeNumeric = {
 }
 
 local droneAttributeNumeric = {
+    ["scale"] = { 0.5, 0.5, 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
-    ["stickerDuration"] = { 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050 },
+    ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
     ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
-    ["damagePerTick"] = { 0.1, 0.2, 0.6, 1.2, 1.2, 1.3, 1.3, 1.3, 1.4, 1.4 },
-    ["cooldown"] = { 100, 100, 97, 97, 95, 95, 93, 93, 90, 90 },
-    ["health"] = { 100, 100, 110, 110, 120, 120, 130, 130, 140, 140 }
+    ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
+    ["cooldown"] = { 60, 60, 55, 55, 50, 50, 45, 45, 40, 40 },
+    ["ttl"] = { 300, 300, 350, 350, 400, 400, 450, 450, 500, 500 },
+    ["damage"] = { 2, 4, 7, 13, 15, 18, 22, 28, 35, 40 },
+    ["movement"] = { 0.06, 0.06, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.1 },
+    ["distancePerFrame"] = { 0.08, 0.08, 0.085, 0.085, 0.09, 0.09, 0.092, 0.092, 0.094, 0.094 },
+    ["rangeFromPlayer"] = { 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 },
+    ["range"] = { 10, 10, 11, 11, 12, 12, 13, 13, 14, 14 },
+    ["radius"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5 },
+    ["health"] = { 15, 75, 100, 150, 200, 250, 275, 300, 325, 350 },
+    ["healing"] = { 0.01, 0.01, 0.015, 0.02, 0.05, 0.075, 0.1, 0.12, 0.14, 0.16 },
 }
 
 local unitSpawnerAttributeNumeric = {
@@ -231,9 +252,9 @@ local hiveAttributeNumeric = {
 }
 
 local wormAttributeNumeric = {
-    ["stickerDuration"] = { 1200, 1250, 1300, 1350, 1400, 1450, 1500, 1550, 1600, 1650 },
+    ["stickerDuration"] = { 800, 810, 820, 830, 840, 850, 860, 870, 880, 890 },
     ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
-    ["damagePerTick"] = { 0.1, 0.2, 0.6, 1.2, 1.2, 1.3, 1.3, 1.3, 1.4, 1.4 },
+    ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
     ["range"] = { 25, 27, 31, 33, 35, 36, 37, 38, 39, 40 },
     ["cooldown"] = { 70, 70, 68, 66, 64, 62, 60, 58, 56, 54 },
     ["damage"] = { 36, 45, 85, 135, 155, 175, 195, 215, 235, 255 },
@@ -347,7 +368,9 @@ local function scaleAttributes (entity)
         entity["movement"] = entity["movement"] * settings.startup["rampant-unitSpitterSpeedScaler"].value
         entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant-unitSpitterSpeedScaler"].value
         entity["damage"] = entity["damage"] * settings.startup["rampant-unitSpitterDamageScaler"].value
-        entity["stickerDamagePerTick"] = entity["stickerDamagePerTick"] * settings.startup["rampant-unitSpitterDamageScaler"].value
+        if entity["stickerDamagePerTick"] then
+            entity["stickerDamagePerTick"] = entity["stickerDamagePerTick"] * settings.startup["rampant-unitSpitterDamageScaler"].value
+        end
         entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitSpitterDamageScaler"].value
         entity["range"] = entity["range"] * settings.startup["rampant-unitSpitterRangeScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant-unitSpitterHealingScaler"].value
@@ -375,16 +398,16 @@ local function scaleAttributes (entity)
     end
 end
 
-local function distort(num, min, max)
-    local min = min or num * 0.85
-    local max = max or num * 1.30
-    if (num < 0) then
-        local t = min
-        min = max
-        max = t
-    end
-    return roundToNearest(gaussianRandomRangeRG(num, num * 0.15, min, max, xorRandom), 0.01)
-end
+-- local function distort(xorRandom, num, min, max)
+--     local min = min or num * 0.85
+--     local max = max or num * 1.30
+--     if (num < 0) then
+--         local t = min
+--         min = max
+--         max = t
+--     end
+--     return roundToNearest(gaussianRandomRangeRG(num, num * 0.15, min, max, xorRandom), 0.01)
+-- end
 
 local function fillEntityTemplate(entity)
     local tier = entity.effectiveLevel
@@ -392,41 +415,49 @@ local function fillEntityTemplate(entity)
     if (entity.type == "biter") then
         for key,value in pairs(biterAttributeNumeric) do
             if not entity[key] then
-                entity[key] = distort(value[tier])
+                entity[key] = distort(xorRandom, value[tier])
             else
-                entity[key] = distort(entity[key][tier])
+                entity[key] = distort(xorRandom, entity[key][tier])
             end
         end
     elseif (entity.type == "spitter") then
         for key,value in pairs(spitterAttributeNumeric) do
             if not entity[key] then
-                entity[key] = distort(value[tier])
+                entity[key] = distort(xorRandom, value[tier])
             else
-                entity[key] = distort(entity[key][tier])
+                entity[key] = distort(xorRandom, entity[key][tier])
             end
         end
     elseif (entity.type == "biter-spawner") or (entity.type == "spitter-spawner") then
         for key,value in pairs(unitSpawnerAttributeNumeric) do
             if not entity[key] then
-                entity[key] = distort(value[tier])
+                entity[key] = distort(xorRandom, value[tier])
             else
-                entity[key] = distort(entity[key][tier])
+                entity[key] = distort(xorRandom, entity[key][tier])
             end
         end
     elseif (entity.type == "hive") then
         for key,value in pairs(hiveAttributeNumeric) do
             if not entity[key] then
-                entity[key] = distort(value[tier])
+                entity[key] = distort(xorRandom, value[tier])
             else
-                entity[key] = distort(entity[key][tier])
+                entity[key] = distort(xorRandom, entity[key][tier])
             end
         end
     elseif (entity.type == "turret") then
         for key,value in pairs(wormAttributeNumeric) do
             if not entity[key] then
-                entity[key] = distort(value[tier])
+                entity[key] = distort(xorRandom, value[tier])
             else
-                entity[key] = distort(entity[key][tier])
+                entity[key] = distort(xorRandom, entity[key][tier])
+            end
+        end
+    elseif (entity.type == "drone") then
+        for key,value in pairs(droneAttributeNumeric) do
+            if not entity[key] then
+                entity[key] = distort(xorRandom, value[tier])
+            else
+                entity[key] = distort(xorRandom, entity[key][tier])
             end
         end
     end
@@ -463,9 +494,13 @@ local function fillEntityTemplate(entity)
                 entity.loot[#entity.loot+1] = lootTable[tier]
             end
         elseif (key == "explosion") then
-            entity[key] = entity[key] .. "-" .. bloodFountains[tier]
+            local ti = tier
+            if (entity.type == "drone") then
+                ti = 1
+            end
+            entity[key] = entity[key] .. "-" .. bloodFountains[ti]
         elseif (key == "evolutionFunction") then
-            entity["evolutionRequirement"] = distort(value(tier))
+            entity["evolutionRequirement"] = distort(xorRandom, value(tier))
         elseif (key == "majorResistances") then
             for i=1,#value do
                 addMajorResistance(entity, value[i], tier)
@@ -516,7 +551,38 @@ local function fillEntityTemplate(entity)
                 elseif (attribute == "big") then
                     entity["scale"] = entity["scale"] * 1.2
                 elseif (attribute == "bigger") then
-                    entity["scale"] = entity["scale"] * 1.35                    
+                    entity["scale"] = entity["scale"] * 1.35
+                elseif (attribute == "smallest") then
+                    entity["scale"] = entity["scale"] * 0.5
+                elseif (attribute == "fragile") then
+                    entity["health"] = entity["health"] * 0.1
+                elseif (attribute == "selfDamaging") then
+                    local divider
+                    if entity.health < 100 then
+                        divider = 2
+                    else
+                        divider = 2.5
+                    end
+                    entity.healthDamage = entity.health / divider
+                    entity.sourceEffect = function (attributes)
+                        return
+                            {
+                                {
+                                    type = "damage",
+                                    affects_target = true,
+                                    damage = {amount = attributes.healthDamage or 5, type = attributes.damageType or "physical"}
+                                }
+                            }
+                    end
+                elseif (attribute == "unstable") then
+                    entity["healing"] = entity["healing"] * -1
+                elseif (attribute == "checkBuildability") then
+                    entity.checkBuildability = true
+                elseif (attribute == "followsPlayer") then
+                    entity.followsPlayer = true
+                elseif (attribute == "stationary") then
+                    entity.movement = 0
+                    entity.distancePerFrame = 0
                 elseif (attribute == "highHealth") then
                     entity["health"] = entity["health"] * 1.20
                 elseif (attribute == "poisonDeathCloud") then
@@ -526,6 +592,33 @@ local function fillEntityTemplate(entity)
                     }
                 elseif (attribute == "highestHealth") then
                     entity["health"] = entity["health"] * 1.35
+                elseif type(attribute) == "table" then
+                    if (attribute[1] == "clusterDeath") then
+                        entity.deathGenerator = function (attack)
+                            return {
+                                {
+                                    type = "cluster",
+                                    cluster_count = attack.clusters,
+                                    distance = attack.clusterDistance,
+                                    distance_deviation = 3,
+                                    action_delivery =
+                                        {
+                                            type = "projectile",
+                                            projectile = createCapsuleProjectile(attack,
+                                                                                 attack.faction .. "-" .. attribute[2]
+                                                                                     .. "-v" .. attack.variation .. "-t"
+                                                                                     .. attack.effectiveLevel .. "-rampant"),
+                                            direction_deviation = 0.6,
+                                            starting_speed = 0.25,
+                                            max_range = attack.range,
+                                            starting_speed_deviation = 0.3
+                                        }
+                                }
+                            }
+                        end
+                    else
+                        error("Unknown table attribute " .. attribute[1])
+                    end
                 else
                     error("Unknown attribute " .. attribute)
                 end
@@ -578,6 +671,7 @@ function swarmUtils.buildUnits(template)
             unit.name = unit.name .. "-v" .. i .. "-t" .. tier
             -- unit.nameSuffix = "-v" .. i .. "-t" .. tier
             unit.effectiveLevel = effectiveLevel
+            unit.variation = i
             generateApperance(unit)
             fillEntityTemplate(unit)
             unit.attack = unit.attackGenerator(unit)
@@ -590,7 +684,18 @@ function swarmUtils.buildUnits(template)
                 entity = makeBiter(unit)
             elseif (unit.type == "drone") then
                 if not death then
-                    error("drone needs death deathGenerator")
+                    death = {
+                        type = "direct",
+                        action_delivery =
+                            {
+                                type = "instant",
+                                target_effects =
+                                    {
+                                        type = "create-entity",
+                                        entity_name = unit.explosion
+                                    }
+                            }
+                    }
                 end
                 entity = makeDrone(unit)
             end
@@ -640,6 +745,7 @@ function swarmUtils.buildEntitySpawner(template)
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
             unitSpawner.effectiveLevel = effectiveLevel
+            unitSpawner.variation = i
             generateApperance(unitSpawner)
             fillEntityTemplate(unitSpawner)
 
@@ -652,9 +758,7 @@ function swarmUtils.buildEntitySpawner(template)
             })
         end
     end
-
 end
-
 
 function swarmUtils.buildUnitSpawner(template)
     local variations = settings.startup["rampant-newEnemyVariations"].value
@@ -666,6 +770,7 @@ function swarmUtils.buildUnitSpawner(template)
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
             unitSpawner.effectiveLevel = effectiveLevel
+            unitSpawner.variation = i
             local unitTable = unitSetToProbabilityTable(template.unitSet)
             unitSpawner.unitSet = unitTable
             generateApperance(unitSpawner)
@@ -691,6 +796,7 @@ function swarmUtils.buildWorm(template)
             local worm = deepcopy(template)
             worm.name = worm.name .. "-v" .. i .. "-t" .. tier
             worm.effectiveLevel = effectiveLevel
+            worm.variation = i
             generateApperance(worm)
             fillEntityTemplate(worm)
 
@@ -713,6 +819,8 @@ local function makeLootTables(template)
     elseif (template.type == "worm") then
         makeLootTable = makeWormAlienLootTable
     elseif (template.type == "biter-spawner") or (template.type == "spitter-spawner") then
+        makeLootTable = makeSpawnerAlienLootTable
+    elseif (template.type == "hive") then
         makeLootTable = makeSpawnerAlienLootTable
     else
         return nil
@@ -746,7 +854,19 @@ local function buildAttack(faction, template)
             template.attackGenerator = createMeleeAttack
         elseif (attack == "spit") then
             template.attackType = "projectile"
-            template.attackDirectionOnly = true
+            -- template.attackDirectionOnly = true
+
+            template.attackGenerator = function (attack)
+                return createRangedAttack(attack,
+                                          createAttackBall(attack),
+                                          (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                                 attack.tint,
+                                                                                                 attack.tint2)) or nil)
+            end
+        elseif (attack == "touch") then
+            template.attackType = "projectile"
+            -- template.attackDirectionOnly = true
+            template.range = { 0.1, 0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 0.3, 0.3, 0.4 }
 
             template.attackGenerator = function (attack)
                 return createRangedAttack(attack,
@@ -907,6 +1027,42 @@ local function buildAttack(faction, template)
                                                                                                   attack.tint,
                                                                                                   attack.tint2)) or nil)
             end
+        elseif (attack == "capsule") then
+            template.attackType = "projectile"
+            -- template.attackDirectionOnly = true
+
+            template.attackGenerator = function (attack)
+                return createProjectileAttack(attack,
+                                              createCapsuleProjectile(attack,
+                                                                      attack.entityGenerator(attack)),
+                                              (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                                     attack.tint,
+                                                                                                     attack.tint2)) or nil)
+            end
+        elseif (attack == "noFriendlyFire") then
+            template["force"] = "enemy"
+        elseif (attack == "noAcidPuddle") then
+            template.noAcidPuddle = true
+        elseif (type(attack) == "table") then
+            if (attack[1] == "drone") then
+                template.entityGenerator = function (attributes)
+                    return template.faction .. "-" .. attack[2] .. "-v" ..
+                        attributes.variation .. "-t" .. attributes.effectiveLevel .. "-drone-rampant"
+                end
+            end
+        else
+            error ("unknown attack " .. attack)
+        end
+    end
+end
+
+local function checkForAddons(template)
+    for i=1,#template.attributes do
+        local attribute = template.attributes[i]
+        if (type(attribute) == "table") then
+            if (attribute[1] == "clusterDeath") then
+                template.addon[#template.addon+1] = clusterAttackNumeric
+            end
         end
     end
 end
@@ -918,19 +1074,21 @@ local function buildUnitTemplate(faction, unit)
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
+    template.faction = faction.type
+
     template.addon = {}
     template.explosion = faction.type
 
     template.resistances = {}
 
     local attackAnimation
-    if (unit.type == "biter") then
-        attackAnimation = biterattackanimation
-    elseif (unit.type == "spitter") then
-        attackAnimation = spitterattackanimation
+    if (template.type == "biter") then
+        template.attackAnimation = biterattackanimation
+    elseif (template.type == "spitter") then
+        template.attackAnimation = spitterattackanimation
     end
 
-    template.attackAnimation = attackAnimation
+    checkForAddons(template)
 
     buildAttack(faction, template)
 
@@ -952,6 +1110,8 @@ local function buildTurretTemplate(faction, turret)
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
+    template.faction = faction.type
+
     template.evolutionFunction = function (tier)
         if (tier == 0) then
             return 0
@@ -966,6 +1126,8 @@ local function buildTurretTemplate(faction, turret)
     template.resistances = {}
 
     buildAttack(faction, template)
+
+    checkForAddons(template)
 
     if template.drops then
         template.drops = makeLootTables(template)
@@ -985,6 +1147,8 @@ local function buildUnitSpawnerTemplate(faction, template, unitSets)
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
+    template.faction = faction.type
+
     template.evolutionFunction = function (tier)
         if (tier == 0) then
             return 0
@@ -995,6 +1159,8 @@ local function buildUnitSpawnerTemplate(faction, template, unitSets)
 
     template.explosion = faction.type
     template.addon = {}
+
+    checkForAddons(template)
 
     template.resistances = {}
 
@@ -1038,6 +1204,8 @@ local function buildHiveTemplate(faction, template)
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
+    template.faction = faction.type
+
     template.evolutionFunction = function (tier)
         if (tier == 0) then
             return 0
@@ -1048,6 +1216,8 @@ local function buildHiveTemplate(faction, template)
 
     template.addon = {}
     template.explosion = faction.type
+
+    checkForAddons(template)
 
     template.resistances = {}
 
@@ -1105,7 +1275,7 @@ function swarmUtils.processFactions()
                     {
                         type = "damage-type",
                         name = "healing"
-                    }            
+                    }
             })
             poisonFaction.addFactionAddon()
         end
@@ -1127,11 +1297,11 @@ function swarmUtils.processFactions()
         for iu=1,#faction.buildings do
             local building = faction.buildings[iu]
 
-            if (building.type == "spitter-template") then
+            if (building.type == "spitter-spawner") then
                 local template = buildUnitSpawnerTemplate(faction, building, unitSets)
 
                 swarmUtils.buildUnitSpawner(template)
-            elseif (building.type == "biter-template") then
+            elseif (building.type == "biter-spawner") then
                 local template = buildUnitSpawnerTemplate(faction, building, unitSets)
 
                 swarmUtils.buildUnitSpawner(template)

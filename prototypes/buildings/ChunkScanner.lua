@@ -45,35 +45,6 @@ local scales = {
     [11] = 2.2
 }
 
-for t=1,11 do
-    local scale = scales[t] * 1.2
-    data:extend(
-        {
-            {
-                type = "simple-entity-with-force",
-                name = "chunk-scanner-" .. t .. "-nest-rampant",
-                icon = "__base__/graphics/icons/steel-chest.png",
-                icon_size = 32,
-                flags = {},
-                order = "s-e-w-f",
-                collision_mask = {"player-layer", "object-layer", "water-tile"},
-                minable = nil,
-                max_health = 100,
-                corpse = nil,
-                collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                picture =
-                    {
-                        filename = "__core__/graphics/empty.png",
-                        priority = "extra-high",
-                        width = 1,
-                        height = 1
-                    }
-            }
-        }
-    )
-end
-
 local subTypes = constants.HIVE_BUILDINGS_TYPES
 
 for t=1,11 do
@@ -90,6 +61,7 @@ for t=1,11 do
                     icon = "__base__/graphics/icons/steel-chest.png",
                     icon_size = 32,
                     flags = {},
+                    build_base_evolution_requirement = 0.8 * (t-1),
                     order = "s-e-w-f",
                     collision_mask = {"player-layer", "object-layer", "water-tile"},
                     minable = nil,

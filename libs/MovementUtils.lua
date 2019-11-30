@@ -87,7 +87,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDirectionChunks, scoreFunction, squad)
+function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction, squad)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -96,6 +96,8 @@ function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDire
     local nextHighestScore = -MAGIC_MAXIMUM_NUMBER
     local nextHighestDirection
 
+    local natives = map.natives
+    
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
 

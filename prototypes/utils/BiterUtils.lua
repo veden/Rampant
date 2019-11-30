@@ -6,6 +6,7 @@ local wormUtils = require("WormUtils")
 
 -- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
+local biterattackanimation = unitUtils.biterattackanimation
 local biterrunanimation = unitUtils.biterrunanimation
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
 local spawner_integration = unitSpawnerUtils.spawner_integration
@@ -250,7 +251,7 @@ function biterFunctions.makeBiter(attributes)
         dying_explosion = attributes.explosion,
         dying_trigger_effect = attributes.dyingEffect,
         affected_by_tiles = true,
-        dying_sound =  make_biter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
+        dying_sound = make_biter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
@@ -315,7 +316,7 @@ function biterFunctions.makeUnitSpawner(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    --    print(name .. " " .. biterAttributes.health)
+       -- print(attributes.name)
     local o = {
         type = "unit-spawner",
         name = attributes.name .. "-rampant",

@@ -241,7 +241,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
         type = "fire",
         name = name,
         flags = {"placeable-off-grid", "not-on-map"},
-        damage_per_tick = {amount = attributes.damagePerTick or 0, type = attributes.damageType or "acid"},
+        damage_per_tick = {amount = 0, type = "acid"},
         maximum_damage_multiplier = 3,
         damage_multiplier_increase_per_added_fuel = 1,
         damage_multiplier_decrease_per_tick = 0.005,
@@ -288,11 +288,11 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
         
         on_damage_tick_effect =
             {
-                type = "direct",
+                type = "area",
                 radius = attributes.radius or 2.5,
                 force = "enemy",
-
-                filter_enabled = true,
+                ignore_collision_condition = true,
+                -- filter_enabled = true,
                 action_delivery =
                     {
                         type = "instant",

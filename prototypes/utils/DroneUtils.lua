@@ -2,15 +2,15 @@ local util = require ("util")
 
 local droneUtils = {}
 
-function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, biterDeath)
-    local n = name .. "-drone-rampant"
+function droneUtils.makeDrone(attributes)
+    local n = attributes.name .. "-drone-rampant"
     local resistances = {}
-    for k,v in pairs(biterResistances) do
+    for k,v in pairs(attributes.resistances) do
         v.type = k
         resistances[#resistances+1] = v
     end
-    attributes.name = name
-
+    -- attributes.name = name
+    
     local drone = {
         type = "combat-robot",
         name = n,
@@ -24,14 +24,14 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
         alert_when_damaged = false,
         collision_box = {{0, 0}, {0, 0}},
         selection_box = {{-0.5, -1.5}, {0.5, -0.5}},
-        distance_per_frame = attributes.distancePerFrame or 0.0,
+        distance_per_frame = attributes.distancePerFrame or 0,
         time_to_live = attributes.ttl or (60 * 45),
-        follows_player = attributes.followsPlayer or false,
+        follows_player = attributes.followsPlayer,
         friction = attributes.friction or 0.01,
         range_from_player = attributes.rangeFromPlayer or 6.0,
-        speed = attributes.movement or 0.00,
-        destroy_action = biterDeath,
-        attack_parameters = biterAttack,
+        speed = attributes.movement or 0,
+        destroy_action = attributes.death,
+        attack_parameters = attributes.attack,
         idle =
             {
                 layers =
@@ -94,7 +94,6 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
                 width = 43,
                 height = 23,
                 frame_count = 1,
-                tint = attributes.tint,
                 direction_count = 16,
                 shift = {0.859375, 0.609375},
                 hr_version = {
@@ -104,7 +103,6 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
                     width = 88,
                     height = 50,
                     frame_count = 1,
-                    tint = attributes.tint,                    
                     direction_count = 16,
                     shift = util.by_pixel(25.5, 19),
                     scale = 0.5
@@ -199,8 +197,8 @@ function droneUtils.makeDrone(name, attributes, biterResistances, biterAttack, b
     return drone
 end
 
-function droneUtils.createCapsuleProjectile(name, attributes, entityName)
-    local n = name .. "-capsule-rampant"
+function droneUtils.createCapsuleProjectile(attributes, entityName)
+    local n = attributes.name .. "-capsule-rampant"
 
     local actions = {
         {
@@ -237,7 +235,7 @@ function droneUtils.createCapsuleProjectile(name, attributes, entityName)
         flags = {"not-on-map"},
         collision_box = attributes.collisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
         collision_mask = attributes.collisionMask,
-        direction_only = attributes.directionOnly,
+        direction_only = attributes.attackDirectionOnly,
         piercing_damage = attributes.piercingDamage or 0,
         acceleration = attributes.acceleration or 0.01,
         action = actions,

@@ -130,10 +130,10 @@ constants.AI_STATE_ONSLAUGHT = 7
 
 constants.BASE_AI_STATE_DORMANT = 0
 constants.BASE_AI_STATE_ACTIVE = 1
-constants.BASE_AI_STATE_WORMS = 2
-constants.BASE_AI_STATE_NESTS = 3
-constants.BASE_AI_STATE_OVERDRIVE = 4
-constants.BASE_AI_STATE_MUTATE = 5
+-- constants.BASE_AI_STATE_WORMS = 2
+-- constants.BASE_AI_STATE_NESTS = 3
+constants.BASE_AI_STATE_OVERDRIVE = 2
+constants.BASE_AI_STATE_MUTATE = 3
 
 
 constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = 0.5
@@ -159,7 +159,6 @@ constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 18
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
 constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 9600
--- constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 32000
 
 constants.BASE_SPAWNER_UPGRADE = 250
 constants.BASE_WORM_UPGRADE = 200
@@ -168,212 +167,7 @@ constants.BASE_UPGRADE = 1500
 constants.BASE_DISTANCE_THRESHOLD = 30 * constants.CHUNK_SIZE
 constants.BASE_DISTANCE_LEVEL_BONUS = 15
 
-constants.BASE_ALIGNMENT_NEUTRAL = 1
-constants.BASE_ALIGNMENT_FIRE = 2
-constants.BASE_ALIGNMENT_NUCLEAR = 3
-constants.BASE_ALIGNMENT_SUICIDE = 4
-constants.BASE_ALIGNMENT_INFEST = 5
-constants.BASE_ALIGNMENT_ACID = 6
-constants.BASE_ALIGNMENT_FIRE = 7
-constants.BASE_ALIGNMENT_PHYSICAL = 8
-constants.BASE_ALIGNMENT_LASER = 9
-constants.BASE_ALIGNMENT_INFERNO = 10
-constants.BASE_ALIGNMENT_POISON = 11
-constants.BASE_ALIGNMENT_TROLL = 12
-constants.BASE_ALIGNMENT_FAST = 13
-constants.BASE_ALIGNMENT_WEB = 14
-constants.BASE_ALIGNMENT_DECAYING = 15
-constants.BASE_ALIGNMENT_UNDYING = 16
-constants.BASE_ALIGNMENT_ENERGY_THIEF = 17
-constants.BASE_ALIGNMENT_ELECTRIC = 18
-constants.BASE_ALIGNMENT_WASP = 19
-constants.BASE_ALIGNMENT_DEADZONE = 20
-constants.BASE_ALIGNMENT_NE = 21
-constants.BASE_ALIGNMENT_BOBS = 22
-constants.BASE_ALIGNMENT_SPAWNER = 23
-constants.BASE_ALIGNMENT_NE_BLUE = 24
-constants.BASE_ALIGNMENT_NE_RED = 25
-constants.BASE_ALIGNMENT_NE_YELLOW = 26
-constants.BASE_ALIGNMENT_NE_GREEN = 27
-constants.BASE_ALIGNMENT_NE_PINK = 28
--- constants.BASE_ALIGNMENT_BURROW = 3
-
 constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
-
--- neutralPath[constants.BASE_ALIGNMENT_DECAYING] = true
--- neutralPath[constants.BASE_ALIGNMENT_WEB] = true
--- neutralPath[constants.BASE_ALIGNMENT_WASP] = true
-
--- local acidPath = {}
--- acidPath[constants.BASE_ALIGNMENT_POISON] = true
--- acidPath[constants.BASE_ALIGNMENT_INFEST] = true
-
--- local decayingPath = {}
--- decayingPath[constants.BASE_ALIGNMENT_UNDYING] = true
-
-constants.BASE_ALIGNMENT_EVOLUTION_BASELINE = {
-    [constants.BASE_ALIGNMENT_NEUTRAL] = 0
-}
-
-constants.BASE_ALIGNMENT_PATHS = {}
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = {
---     constants.BASE_ALIGNMENT_ACID,
---     constants.BASE_ALIGNMENT_FIRE,
---     constants.BASE_ALIGNMENT_WASP,
---     constants.BASE_ALIGNMENT_PHYSICAL,
---     constants.BASE_ALIGNMENT_ELECTRIC,
---     constants.BASE_ALIGNMENT_SUICIDE,
---     constants.BASE_ALIGNMENT_TROLL,
---     constants.BASE_ALIGNMENT_FAST
--- }
-
-local function pushBasePath(x)
-    local tbl = constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL]
-    if not tbl then
-        tbl = {}
-        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_NEUTRAL] = tbl
-    end
-    tbl[#tbl+1] = x
-end
-
-if settings.startup["rampant-acidEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_ACID)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_ACID] = 0.1
-end
-
-if settings.startup["rampant-physicalEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_PHYSICAL)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_PHYSICAL] = 0.4
-end
-
-if settings.startup["rampant-suicideEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_SUICIDE)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_SUICIDE] = 0.3
-end
-
-if settings.startup["rampant-fireEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_FIRE)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_FIRE] = 0.4
-end
-
-if settings.startup["rampant-electricEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_ELECTRIC)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_ELECTRIC] = 0.2
-end
-
-if settings.startup["rampant-nuclearEnemy"].value then
-    if settings.startup["rampant-suicideEnemy"].value then
-        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
-    end
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_NUCLEAR] = 0.7
-end
-
-if settings.startup["rampant-fastEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_FAST)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_FAST] = 0.5
-end
-
-if settings.startup["rampant-trollEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_TROLL)
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_TROLL] = 0.5
-end
-
-if settings.startup["rampant-laserEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_LASER)
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_LASER] = 0.4
-end
-
-if settings.startup["rampant-waspEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_WASP)
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_WASP] = 0.5
-end
-
-if settings.startup["rampant-energyThiefEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_ENERGY_THIEF)
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_ENERGY_THIEF] = 0.4
-end
-
-if settings.startup["rampant-poisonEnemy"].value then
-    pushBasePath(constants.BASE_ALIGNMENT_POISON)
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_POISON] = 0.4
-end
-
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_SUICIDE] = { constants.BASE_ALIGNMENT_NUCLEAR }
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ACID] = acidPath
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_DECAYING] = decayingPath
--- constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_ELECTRIC] = { constants.BASE_ALIGNMENT_LASER }
-
--- [constants.BASE_ALIGNMENT_WASP] = 0.5,
---     [constants.BASE_ALIGNMENT_SPAWNER] = 0.7,
---     [constants.BASE_ALIGNMENT_INFERNO] = 0.6,
-
-if settings.startup["rampant-infernoEnemy"].value then
-    if settings.startup["rampant-fireEnemy"].value then
-        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_FIRE] = { constants.BASE_ALIGNMENT_INFERNO }
-    end
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_INFERNO] = 0.6
-end
-
-if settings.startup["rampant-spawnerEnemy"].value then
-    if settings.startup["rampant-waspEnemy"].value then
-        constants.BASE_ALIGNMENT_PATHS[constants.BASE_ALIGNMENT_WASP] = { constants.BASE_ALIGNMENT_SPAWNER }
-    end
-
-    local tbl = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-    tbl[constants.BASE_ALIGNMENT_SPAWNER] = 0.7
-end
-
-
-
-
-constants.ENABLED_NE_UNITS = settings.startup["rampant-enableNEUnits"].value and (settings.startup["NE_Difficulty"] ~= nil)
-
-constants.ENABLED_BOBS_UNITS = settings.startup["rampant-enableBobsUnits"].value and (settings.startup["bobmods-enemies-enableartifacts"] ~= nil)
-
-if constants.ENABLED_BOBS_UNITS then
-    constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_BOBS] = 0.1
-end
-
-if constants.ENABLED_NE_UNITS then
-    constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE] = 0.1
-
-    if settings.startup["NE_Blue_Spawners"].value then
-        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_BLUE] = 0.1
-    end
-    if settings.startup["NE_Red_Spawners"].value then
-        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_RED] = 0.1
-    end
-    if settings.startup["NE_Pink_Spawners"].value then
-        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_PINK] = 0.1
-    end
-    if settings.startup["NE_Green_Spawners"].value then
-        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_GREEN] = 0.1
-    end
-    if settings.startup["NE_Yellow_Spawners"].value then
-        constants.BASE_ALIGNMENT_EVOLUTION_BASELINE[constants.BASE_ALIGNMENT_NE_YELLOW] = 0.1
-    end
-end
 
 -- ai retreat
 
@@ -576,7 +370,6 @@ constants.ENERGY_THIEF_DRAIN_CRYSTALS = {
 
 constants.NEIGHBOR_DIVIDER = {1/1, 1/2, 1/3, 1/4, 1/5, 1/6, 1/7, 1/8}
 
-
 -- unit spawners
 
 local function roundToNearest(number, multiple)
@@ -618,23 +411,13 @@ for tier=1, 10 do
     end
 end
 
--- constants.POISON_LOOKUP = {}
-
--- for tier=1, 10 do
---     local effectiveLevel = constants.TIER_UPGRADE_SET_10[tier]
---     for i=1,variations do
---         constants.POISON_LOOKUP["poison-biter-v" .. i .. "-t" .. tier .. "-rampant"] = "poison-cloud-v" .. effectiveLevel .. "-cloud-rampant"
---     end
--- end
-
--- constants.SPAWNER_EGG_TIMEOUT = constants.TICKS_A_SECOND * 5
-
 constants.FACTION_SET = {}
 
 constants.FACTION_SET[#constants.FACTION_SET+1] = {
     type = "neutral",
     tint = {r=0.9, g=0.9, b=0.9, a=1},
     tint2 = {r=1, g=1, b=1, a=1},
+    acceptRate = {1, 7, 0.3, 0.1},
     evo = 0,
     units = {
         {
@@ -661,6 +444,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             type = "spitter-spawner",
             name = "spitter-spawner",
             majorResistances = {},
+            acceptRate = {1, 10, 0.1, 0.2},
             minorResistances = {},
             attributes = {},
             drops = {"nilArtifact"},
@@ -672,6 +456,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             type = "biter-spawner",
             name = "biter-spawner",
             majorResistances = {},
+            acceptRate = {1, 10, 0.1, 0.2},
             minorResistances = {},
             attributes = {},
             drops = {"nilArtifact"},
@@ -683,6 +468,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             type = "turret",
             name = "worm",
             majorResistances = {},
+            acceptRate = {1, 10, 0.8, 0.6},
             minorResistances = {},
             attackAttributes = {"spit", "acid"},
             attributes = {},
@@ -694,6 +480,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             majorResistances = {},
             minorResistances = {},
             attributes = {},
+            acceptRate = {2, 10, 0.005, 0.03},
             drops = {"nilArtifact"},
             buildSets = {
                 {"biter-spawner", 1, 10, 0.1, 0.2},
@@ -710,6 +497,7 @@ if settings.startup["rampant-acidEnemy"].value then
         type = "acid",
         tint = {r=1, g=1, b=1, a=1},
         tint2 = {r=0, g=0.9, b=0, a=1},
+        acceptRate = {1, 10, 0.1, 0.2},
         evo = 0,
         units = {
             {
@@ -737,6 +525,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -748,6 +537,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -760,6 +550,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
                 attackAttributes = {"spit", "acid"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"greenArtifact"}
             },
@@ -768,6 +559,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 name = "hive",
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
+                acceptRate = {2, 10, 0.005, 0.03},
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -786,7 +578,8 @@ if settings.startup["rampant-laserEnemy"].value then
         type = "laser",
         tint = {r=0.3, g=0.3, b=0.42, a=1},
         tint2 = {r=0, g=0.6, b=0.8, a=1},
-        evo = 0.15,
+        acceptRate = {2, 10, 0.1, 0.15},
+        evo = 0.10,
         units = {
             {
                 type = "biter",
@@ -810,6 +603,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 type = "spitter-spawner",
                 name = "spitter-spawner",
                 majorResistances = {"laser", "electric"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -820,6 +614,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 type = "biter-spawner",
                 name = "biter-spawner",
                 majorResistances = {"laser", "electric"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -831,6 +626,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 name = "worm",
                 majorResistances = {"laser", "electric"},
                 attackAttributes = {"spit", "laser", "cluster"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"blueArtifact"}
             },
@@ -839,6 +635,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 name = "hive",
                 majorResistances = {"laser", "electric"},
                 attributes = {},
+                acceptRate = {2, 10, 0.005, 0.003},
                 drops = {"blueArtifact"},
                 buildSets = {
                     {"biter-spawner", 1, 10, 0.1, 0.2},
@@ -856,6 +653,7 @@ if settings.startup["rampant-fireEnemy"].value then
         type = "fire",
         tint = {r=1, g=1, b=1, a=1},
         tint2 = {r=0.9, g=0, b=0, a=1},
+        acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
             {
@@ -883,6 +681,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -893,6 +692,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 type = "biter-spawner",
                 name = "biter-spawner",
                 majorResistances = {"fire", "acid"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 minorResistances = {},
                 attributes = {},
                 drops = {"redArtifact"},
@@ -906,6 +706,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
                 attackAttributes = {"spit", "acid"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"redArtifact"}
             },
@@ -915,6 +716,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
                 attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
                 drops = {"redArtifact"},
                 buildSets = {
                     {"biter-spawner", 1, 10, 0.1, 0.2},
@@ -931,7 +733,8 @@ if settings.startup["rampant-infernoEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "inferno",
         tint = {r=0.7, g=0.45, b=0.5, a=1},
-        tint2 = {r=0.9, g=0, b=0, a=1},        
+        tint2 = {r=0.9, g=0, b=0, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
             {
@@ -950,6 +753,7 @@ if settings.startup["rampant-infernoEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"acid", "fire"},
                 minorWeaknesses = {"poison"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -961,7 +765,121 @@ if settings.startup["rampant-infernoEnemy"].value then
                 name = "worm",
                 majorResistances = {"acid", "fire"},
                 minorWeaknesses = {"poison"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"stream", "acid"},
+                attributes = {},
+                drops = {"orangeArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-waspEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "wasp",
+        tint = {r=0.9, g=0.8, b=0.9, a=1},
+        tint2 = {r=0.85, g=0.85, b=0, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
+        evo = 0.2,
+        units = {
+            {
+                type = "drone",
+                attackAttributes = {"spit", "acid"},
+                name = "wasp",
+                attributes = {"followsPlayer"},
+                drops = {}
+            },
+            {
+                type = "drone",
+                attackAttributes = {"stream", "acid"},
+                name = "worm-wasp",
+                attributes = {"stationary"},
+                drops = {}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"capsule", {"drone", "wasp"}},
+                name = "spitter",
+                attributes = {},
+                drops = {"purpleArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                attributes = {},
+                acceptRate = {1, 10, 0.1, 0.2},
+                drops = {"purpleArtifact"},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                attackAttributes = {"capsule", {"drone", "worm-wasp"}},
+                acceptRate = {1, 10, 0.8, 0.6},
+                attributes = {},
+                drops = {"purpleArtifact"}
+            }
+        }
+    }
+end
+
+if settings.startup["rampant-spawnerEnemy"].value then
+    constants.FACTION_SET[#constants.FACTION_SET+1] = {
+        type = "spawner",
+        tint = {r=0.7, g=0, b=0.7, a=1},
+        tint2 = {r=0.8, g=0, b=0.8, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
+        evo = 0.2,
+        units = {
+            {
+                type = "biter",
+                attackAttributes = {"melee"},
+                name = "spawn",
+                attributes = {"fragile", "unstable", "smallest"},
+                drops = {}
+            },
+            {
+                type = "drone",
+                attackAttributes = {"touch", "acid"},
+                name = "egg",
+                attributes = {"stationary", {"clusterDeath", "spawn"}},
+                drops = {}
+            },
+            {
+                type = "drone",
+                attackAttributes = {"touch", "acid"},
+                name = "worm-egg",
+                attributes = {"stationary", {"clusterDeath", "spawn"}},
+                drops = {}
+            },
+            {
+                type = "spitter",
+                attackAttributes = {"capsule", {"drone", "egg"}},
+                name = "spitter",
+                attributes = {"selfDamaging"},
+                drops = {"orangeArtifact"}
+            }
+        },
+        buildings = {
+            {
+                type = "spitter-spawner",
+                name = "spitter-spawner",
+                attributes = {},
+                drops = {"orangeArtifact"},
+                acceptRate = {1, 10, 0.1, 0.2},
+                buildSets = {
+                    {"spitter", 1, 10}
+                }
+            },
+            {
+                type = "turret",
+                name = "worm",
+                attackAttributes = {"capsule", {"drone", "worm-egg"}},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"orangeArtifact"}
             }
@@ -974,6 +892,7 @@ if settings.startup["rampant-electricEnemy"].value then
         type = "electric",
         tint = {r=0.7, g=0.7, b=1.0, a=1.0},
         tint2 = {r=0, g=0, b=1, a=1},
+        acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.1,
         units = {
             {
@@ -992,6 +911,7 @@ if settings.startup["rampant-electricEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1003,6 +923,7 @@ if settings.startup["rampant-electricEnemy"].value then
                 name = "worm",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"spit", "electric", "cluster"},
                 attributes = {},
                 drops = {"blueArtifact"}
@@ -1016,6 +937,7 @@ if settings.startup["rampant-physicalEnemy"].value then
         type = "physical",
         tint = {r=0.9, g=0.9, b=0.9, a=1},
         tint2 = {r=0, g=0, b=0, a=1},
+        acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
             {
@@ -1035,6 +957,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
                 attributes = {"highHealth", "big", "highRegen"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 drops = {"redArtifact"},
                 buildSets = {
                     {"biter", 1, 10}
@@ -1046,6 +969,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
                 attackAttributes = {"spit", "physical"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {"highHealth", "big", "highRegen"},
                 drops = {"redArtifact"}
             }
@@ -1058,6 +982,7 @@ if settings.startup["rampant-trollEnemy"].value then
         type = "troll",
         tint = {r=0.4, g=0.4, b=0.4, a=1},
         tint2 = {r=0.8, g=0.8, b=0.8, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.17,
         units = {
             {
@@ -1076,6 +1001,7 @@ if settings.startup["rampant-trollEnemy"].value then
                 name = "biter-spawner",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {"highestHealth", "bigger", "highestRegen"},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1088,6 +1014,7 @@ if settings.startup["rampant-trollEnemy"].value then
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
                 attackAttributes = {"spit", "physical"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {"highestHealth", "bigger", "highestRegen"},
                 drops = {"greenArtifact"}
             }
@@ -1100,6 +1027,7 @@ if settings.startup["rampant-poisonEnemy"].value then
         type = "poison",
         tint = {r=0.4, g=0.6, b=0.5, a=1},
         tint2 = {r=0, g=0.7, b=0, a=1},
+        acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.17,
         units = {
             {
@@ -1119,8 +1047,9 @@ if settings.startup["rampant-poisonEnemy"].value then
                 name = "biter-spawner",
                 minorResistances = {"fire"},
                 majorResistances = {"poison"},
-                minorWeaknesses = {"electric", "explosion", "laser"},                
+                minorWeaknesses = {"electric", "explosion", "laser"},
                 attributes = {"poisonDeathCloud"},
+                acceptRate = {1, 10, 0.1, 0.2},                
                 drops = {"greenArtifact"},
                 buildSets = {
                     {"biter", 1, 10}
@@ -1132,6 +1061,7 @@ if settings.startup["rampant-poisonEnemy"].value then
                 minorResistances = {"fire"},
                 majorResistances = {"poison"},
                 minorWeaknesses = {"electric", "explosion", "laser"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"spit", "poison"},
                 attributes = {"poisonDeathCloud"},
                 drops = {"greenArtifact"}
@@ -1145,6 +1075,7 @@ if settings.startup["rampant-suicideEnemy"].value then
         type = "suicide",
         tint = {r=1, g=1, b=1, a=1},
         tint2 = {r=0.85, g=0.85, b=0, a=1},
+        acceptRate = {1, 10, 0.05, 0.15},
         evo = 0.12,
         units = {
             {
@@ -1163,6 +1094,7 @@ if settings.startup["rampant-suicideEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"explosion"},
                 minorResistances = {"poison"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
                 buildSets = {
@@ -1175,6 +1107,7 @@ if settings.startup["rampant-suicideEnemy"].value then
                 majorResistances = {"explosion"},
                 minorResistances = {"poison"},
                 attackAttributes = {"spit", "acid", "slow"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"yellowArtifact"}
             }
@@ -1182,12 +1115,12 @@ if settings.startup["rampant-suicideEnemy"].value then
     }
 end
 
-
 if settings.startup["rampant-nuclearEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
         tint = {r=0.6, g=0.6, b=0.4, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
             {
@@ -1205,6 +1138,7 @@ if settings.startup["rampant-nuclearEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"explosion"},
                 minorResistances = {"fire"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
                 buildSets = {
@@ -1216,6 +1150,7 @@ if settings.startup["rampant-nuclearEnemy"].value then
                 name = "worm",
                 majorResistances = {"explosion"},
                 minorResistances = {"fire"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"spit", "acid", "slow"},
                 attributes = {},
                 drops = {"yellowArtifact"}
@@ -1224,12 +1159,12 @@ if settings.startup["rampant-nuclearEnemy"].value then
     }
 end
 
-
 if settings.startup["rampant-energyThiefEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "energy-thief",
         tint = {r=0.4, g=0.5, b=0.7, a=1},
         tint2 = {r=0, g=0, b=0.7, a=1},
+        acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
             {
@@ -1248,6 +1183,7 @@ if settings.startup["rampant-energyThiefEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"electric", "laser"},
                 minorResistances = {},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1259,6 +1195,7 @@ if settings.startup["rampant-energyThiefEnemy"].value then
                 name = "worm",
                 majorResistances = {"electric", "laser"},
                 minorResistances = {},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"spit", "electric", "cluster"},
                 attributes = {},
                 drops = {"blueArtifact"}
@@ -1272,6 +1209,7 @@ if settings.startup["rampant-fastEnemy"].value then
         type = "fast",
         tint = {r=0.26, g=0.66, b=0.62, a=1},
         tint2 = {r=0, g=0.85, b=0.80, a=1},
+        acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
             {
@@ -1300,6 +1238,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 majorResistances = {},
                 minorResistances = {"explosion"},
                 attributes = {"quickSpawning"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 drops = {"purpleArtifact"},
                 buildSets = {
                     {"spitter", 1, 10}
@@ -1310,6 +1249,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {},
                 minorResistances = {"explosion"},
+                acceptRate = {1, 10, 0.1, 0.2},
                 attributes = {"quickSpawning"},
                 drops = {"purpleArtifact"},
                 buildSets = {
@@ -1321,6 +1261,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 name = "worm",
                 majorResistances = {},
                 minorResistances = {"explosion"},
+                acceptRate = {1, 10, 0.8, 0.6},
                 attackAttributes = {"spit", "acid"},
                 attributes = {"quickCooldown"},
                 drops = {"purpleArtifact"}
@@ -1331,6 +1272,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 majorResistances = {},
                 minorResistances = {"explosion"},
                 attributes = {"quickSpawning"},
+                acceptRate = {2, 10, 0.005, 0.03},
                 drops = {"purpleArtifact"},
                 buildSets = {
                     {"biter-spawner", 1, 10, 0.1, 0.2},
@@ -1343,87 +1285,6 @@ if settings.startup["rampant-fastEnemy"].value then
     }
 end
 
-constants.BUILDING_SPACE_LOOKUP = {}
-
-for t = 1, 10 do
-    local wormTier = t + 1
-    for v = 1, 20 do
-        constants.BUILDING_SPACE_LOOKUP["neutral-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["neutral-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["neutral-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["acid-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["acid-hive-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["physical-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["physical-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["electric-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["electric-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["suicide-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["suicide-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["nuclear-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["nuclear-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["fire-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fire-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fire-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["inferno-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["inferno-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["troll-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["troll-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["troll-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["fast-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fast-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["fast-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["laser-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["laser-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["laser-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["wasp-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["wasp-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["spawner-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["spawner-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["energy-thief-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-        constants.BUILDING_SPACE_LOOKUP["poison-biter-spawner-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. t .. "-nest-rampant"
-        constants.BUILDING_SPACE_LOOKUP["poison-worm-v" .. v .. "-t" .. t .. "-rampant"] = "chunk-scanner-" .. wormTier .. "-nest-rampant"
-
-    end
-end
-
-constants.BUILDING_SPACE_LOOKUP["biter-spawner"] = "chunk-scanner-5-nest-rampant"
-constants.BUILDING_SPACE_LOOKUP["spitter-spawner"] = "chunk-scanner-5-nest-rampant"
-
--- constants.FACTION_TYPES = {
---     "neutral",
---     "acid",
---     "physical",
---     "electric",
---     "suicide",
---     "nuclear",
---     "fire",
---     "inferno",
---     "troll",
---     "fast",
---     "laser",
---     "wasp",
---     "spawner",
---     "energy-thief",
---     "poison"
--- }
-
 constants.HIVE_BUILDINGS_TYPES = {
     "trap",
     "turret",
@@ -1433,42 +1294,13 @@ constants.HIVE_BUILDINGS_TYPES = {
     "hive"
 }
 
--- constants.HIVE_BUILDINGS = {}
-
--- for t=1,10 do
---     for ift=1,#constants.FACTION_TYPES do
---         for ihbt=1,#constants.HIVE_BUILDINGS_TYPES do
---             local hbt = constants.HIVE_BUILDINGS_TYPES[ihbt]
---             local name = constants.FACTION_TYPES[ift]
---             if (hbt == "turret") then
---                 local set = {}
---                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
---                 for v=1,20 do
---                     set[#set+1] = true
---                 end
---             elseif (hbt == "spitter-spawner") then
---                 local set = {}
---                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
---                 for v=1,20 do
---                     set[#set+1] = true
---                 end
---             elseif (hbt == "biter-spawner") then
---                 local set = {}
---                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
---                 for v=1,20 do
---                     set[#set+1] = true
---                 end
---             elseif (hbt == "hive") then
---                 local set = {}
---                 constants.HIVE_BUILDINGS["entity-proxy-" .. hbt .. "-t" .. t .. "-rampant"] = set
---                 for v=1,20 do
---                     set[#set+1] = true
---                 end
---             end
---         end
---     end
--- end
-
+constants.HIVE_BUILDINGS_COST = {}
+constants.HIVE_BUILDINGS_COST["trap"] = constants.BASE_WORM_UPGRADE * 0.5
+constants.HIVE_BUILDINGS_COST["turret"] = constants.BASE_WORM_UPGRADE
+constants.HIVE_BUILDINGS_COST["utility"] = constants.BASE_SPAWNER_UPGRADE * 1.5
+constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRADE
+constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
+constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
 
 constantsG =  constants
 return constants

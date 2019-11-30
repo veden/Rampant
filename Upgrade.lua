@@ -211,10 +211,7 @@ function upgrade.attempt(natives, setNewSurface)
             base.state = BASE_AI_STATE_DORMANT
             base.stateTick = 0
             base.alignment = {base.alignment}
-        end
-
-        natives.nextChunkSort = 0
-        natives.nextChunkSortTick = 0
+        end        
 
         global.version = constants.VERSION_72
     end
@@ -298,17 +295,24 @@ function upgrade.attempt(natives, setNewSurface)
 
         natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
 
-        natives.baseOrdering = {}
-        natives.baseOrdering.len = 0
+        -- natives.baseOrdering = {}
+        -- natives.baseOrdering.len = 0
 
-        natives.evolutionTableBiterSpawner = {}
-        natives.evolutionTableSpitterSpawner = {}
-        natives.evolutionTableOutpost = {}
-        natives.evolutionTableHive = {}
-        natives.evolutionTableTrap = {}
-        natives.evolutionTableTurret = {}
-        natives.evolutionTableUtility = {}
+        -- natives.evolutionTable = {}
+        -- natives.evolutionAlignmentTable = {}
+        
+        -- natives.evolutionTableSpitterSpawner = {}
+        -- natives.evolutionTableOutpost = {}
+        -- natives.evolutionTableHive = {}
+        -- natives.evolutionTableTrap = {}
+        -- natives.evolutionTableTurret = {}
+        -- natives.evolutionTableUtility = {}        
 
+        natives.nextChunkSort = nil
+        natives.nextChunkSortTick = nil
+
+        natives.evolutionLevel = game.forces.enemy.evolution_factor
+        
         natives.evolutionTableUnitSpawner = nil
         natives.evolutionTableWorm = nil
 

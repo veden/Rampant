@@ -178,13 +178,13 @@ function unitGroupUtils.recycleBiters(natives, biters)
     natives.points = natives.points + (unitCount * natives.unitRefundAmount)
 end
 
-function unitGroupUtils.cleanBuilders(map, natives, surface)
+function unitGroupUtils.cleanBuilders(natives, surface)
     local squads = natives.building
     local squadCount = #squads
 
     local startIndex = natives.cleanBuildingIndex
-    local position = map.position
-    local cmd = map.compoundSettleCommand
+    local position = natives.map.position
+    local cmd = natives.map.compoundSettleCommand
 
     local maxSquadIndex = mMin(startIndex + SQUAD_QUEUE_SIZE, squadCount)
     for i=maxSquadIndex,startIndex,-1 do
@@ -225,9 +225,10 @@ function unitGroupUtils.cleanBuilders(map, natives, surface)
     end
 end
 
-function unitGroupUtils.regroupSquads(natives, map)
+function unitGroupUtils.regroupSquads(natives)
     local squads = natives.squads
     local squadCount = squads.len
+    local map = natives.map
 
     local startIndex = natives.regroupIndex
 

@@ -30,7 +30,7 @@ function tests.pheromoneLevels(size)
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-                    str = str .. " " .. "p/" .. game.surfaces[global.natives.activeSurface].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getWormCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
+                    str = str .. " " .. "p/" .. game.surfaces[global.natives.activeSurface].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getTurretCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
                     if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
                         print("=============")
                         print(chunk.x, chunk.y, str)
@@ -411,7 +411,7 @@ function tests.exportAiState()
                                    chunk.x,
                                    chunk.y,
                                    chunkPropertyUtils.getNestCount(global.map, chunk),
-                                   chunkPropertyUtils.getWormCount(global.map, chunk),
+                                   chunkPropertyUtils.getTurretCount(global.map, chunk),
                                    chunkPropertyUtils.getRallyTick(global.map, chunk),
                                    chunkPropertyUtils.getRetreatTick(global.map, chunk),
                                    chunkPropertyUtils.getResourceGenerator(global.map, chunk),
@@ -421,7 +421,10 @@ function tests.exportAiState()
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
                                    #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk),
-                                   alignmentCount}, ",") .. "\n"
+                                   alignmentCount,
+                                   chunkPropertyUtils.getHiveCount(global.map, chunk),
+                                   chunkPropertyUtils.getTrapCount(global.map, chunk),
+                                   chunkPropertyUtils.getUtilityCount(global.map, chunk)}, ",") .. "\n"
         end
         game.write_file("rampantState.txt", s, false)
     end

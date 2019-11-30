@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.29
-Date: 11. 12. 2019
+Date: 11. 29. 2019
+  Features:
+    - Hives that can produce unit spawners, turrets, or more hives. Typically appear on resources patches.
   Improvements:
     - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
@@ -16,6 +18,12 @@ Date: 11. 12. 2019
     - Added blood explosions to each new enemy
     - Nuclear biters have more visual explosions
     - Changed poison biter death cloud to be generated using dying_trigger_effect
+    - Reduced sticker damage and duration everywhere
+    - Switched general spit projectile from direction only to positional targeting
+    - Added spit projectile stickers to tooltip
+    - Default for new enemies spit projectile stickers no longer do damage only slow
+    - Spawner spitter and worm eggs now damage the immediate area around the egg
+    - Acid pools no longer cause friendly fire
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible
@@ -38,7 +46,9 @@ Date: 11. 12. 2019
     - Fixed enemy volume not changing based on tier
     - Fixed Nuclear and Suicide spawners instantly spawning low level units
     - Fixed Physical and troll spawner and worm scales
+    - Fixed chunk processing not checking chunk generation status
   Framework:
+    - Bobs enemies and Natural Evolution Enemies no longer able to be active with Rampant's new enemies
     - Cleaned up new enemy creation
     - Dropped support for 5 tier new enemy configuration
     - Changed default blood particle removal optimization to off

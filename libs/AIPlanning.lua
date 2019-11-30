@@ -60,6 +60,8 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     if natives.aiNocturnalMode then
         maxPoints = maxPoints * 0.85
     end
+
+    natives.evolutionLevel = evolution_factor
     
     local maxOverflowPoints = maxPoints * 3
 

@@ -113,7 +113,7 @@ end
     In theory, this might be fine as smaller bases have less surface to attack and need to have
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
+function mapProcessor.processMap(map, surface, tick)
     local roll = map.processRoll
     local index = map.processIndex
 
@@ -124,6 +124,8 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
         map.processRoll = roll
     end
 
+    local natives = map.natives
+    
     local newEnemies = natives.newEnemies
     local scentStaging = map.scentStaging
 
@@ -143,16 +145,16 @@ function mapProcessor.processMap(map, surface, natives, tick, evolutionFactor)
             processPheromone(map, chunk, scentStaging[i])
 
             if squads then
-                squads = formSquads(map, surface, natives, chunk, tick)
+                squads = formSquads(map, surface, chunk, tick)
             end
             if settlers and (getNestCount(map, chunk) > 0) then
-                settlers = formSettlers(map, surface, natives, chunk, tick)
+                settlers = formSettlers(map, surface, chunk, tick)
             end
 
             if newEnemies then
                 local base = chunkToBase[chunk]
                 if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) and (mRandom() < 0.10) then
-                    processBase(map, chunk, surface, natives, tick, base, evolutionFactor)
+                    processBase(chunk, surface, natives, tick, base)
                 end
             end
         end
@@ -181,10 +183,11 @@ end
     vs
     the slower passive version processing the entire map in multiple passes.
 --]]
-function mapProcessor.processPlayers(players, map, surface, natives, tick)
+function mapProcessor.processPlayers(players, map, surface, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     local playerOrdering = nonRepeatingRandom(map, players)
+    local natives = map.natives
 
     local roll = mRandom()
 
@@ -243,7 +246,7 @@ function mapProcessor.processPlayers(players, map, surface, natives, tick)
                                 squads = formSquads(map, surface, natives, chunk)
                             end
                             if vengence and (getNestCount(map, chunk) > 0) then
-                                vengence = formVengenceSquad(map, surface, natives, chunk)
+                                vengence = formVengenceSquad(map, surface, chunk)
                             end
                         end
                         i = i + 1
@@ -279,7 +282,7 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanMap(map, surface, natives, tick)
+function mapProcessor.scanMap(map, surface, tick)
     local index = map.scanIndex
 
     local unitCountQuery = map.filteredEntitiesEnemyUnitQuery
@@ -296,6 +299,8 @@ function mapProcessor.scanMap(map, surface, natives, tick)
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
 
     local isFullMapScan = settings.global["rampant-enableFullMapScan"].value
+
+    local natives = map.natives
     
     for x=index,endIndex do
         local chunk = processQueue[x]
