@@ -6,6 +6,7 @@ local wormUtils = require("WormUtils")
 
 -- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
+local biterdieanimation = unitUtils.biterdieanimation
 local biterattackanimation = unitUtils.biterattackanimation
 local biterrunanimation = unitUtils.biterrunanimation
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
@@ -103,7 +104,7 @@ local function makeBiterCorpse(attributes)
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
     }
 
-    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
+    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -895,7 +896,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
                 }
         },
         sound = make_biter_roars(0.2 + (attackAttributes.effectiveLevel * 0.05)),
-        animation = biterattackanimation(attackAttributes.scale, attackAttributes.tint, attackAttributes.tint2 or attackAttributes.tint)
+        animation = biterattackanimation(attackAttributes.scale, attackAttributes.tint, attackAttributes.tint2 or attackAttributes.tint, attackAttributes.altBiter)
     }
 end
 

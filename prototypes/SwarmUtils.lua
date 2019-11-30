@@ -529,7 +529,7 @@ local function fillEntityTemplate(entity)
                 elseif (attribute == "quickCooldown") then
                     entity["cooldown"] = entity["cooldown"] * 0.85
                 elseif (attribute == "slowMovement") then
-                    entity["movement"] = entity["movement"] * 0.9
+                    entity["movement"] = entity["movement"] * 0.35
                     entity["distancePerFrame"] = entity["distancePerFrame"] * 0.85
                 elseif (attribute == "quickMovement") then
                     entity["movement"] = entity["movement"] * 1.05
@@ -542,8 +542,8 @@ local function fillEntityTemplate(entity)
                     if entity["spawningTimeModifer"] then
                         entity["spawningTimeModifer"] = entity["spawningTimeModifer"] * 0.85
                     end
-                elseif (attribute == "altBiter") then
-                    entity["altBiter"] = true
+                elseif (attribute == "altBiterArmored") then
+                    entity["altBiter"] = "armored"
                 elseif (attribute == "highRegen") then
                     entity["healing"] = entity["healing"] * 1.5
                 elseif (attribute == "highestRegen") then
@@ -552,6 +552,8 @@ local function fillEntityTemplate(entity)
                     entity["scale"] = entity["scale"] * 1.2
                 elseif (attribute == "bigger") then
                     entity["scale"] = entity["scale"] * 1.35
+                elseif (attribute == "longReach") then
+                    entity["range"] = entity["range"] * 3
                 elseif (attribute == "smallest") then
                     entity["scale"] = entity["scale"] * 0.5
                 elseif (attribute == "fragile") then
@@ -584,14 +586,14 @@ local function fillEntityTemplate(entity)
                     entity.movement = 0
                     entity.distancePerFrame = 0
                 elseif (attribute == "highHealth") then
-                    entity["health"] = entity["health"] * 1.20
+                    entity["health"] = entity["health"] * 1.50
                 elseif (attribute == "poisonDeathCloud") then
                     entity.dyingEffect = {
                         type = "create-entity",
                         entity_name = "poison-cloud-v" .. tier .. "-cloud-rampant"
                     }
                 elseif (attribute == "highestHealth") then
-                    entity["health"] = entity["health"] * 1.35
+                    entity["health"] = entity["health"] * 2
                 elseif type(attribute) == "table" then
                     if (attribute[1] == "clusterDeath") then
                         entity.deathGenerator = function (attack)

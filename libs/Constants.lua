@@ -946,7 +946,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 name = "biter",
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
-                attributes = {"highHealth","big", "highRegen", "slowMovement"},
+                attributes = {"highHealth", "longReach", "big", "highRegen", "slowMovement", "altBiterArmored"},
                 drops = {"redArtifact"}
             }
         },
@@ -956,7 +956,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
-                attributes = {"highHealth", "big", "highRegen"},
+                attributes = {"highHealth", "bigger", "highRegen"},
                 acceptRate = {1, 10, 0.1, 0.2},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -970,7 +970,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 minorWeaknesses = {"laser", "electric"},
                 attackAttributes = {"spit", "physical"},
                 acceptRate = {1, 10, 0.8, 0.6},
-                attributes = {"highHealth", "big", "highRegen"},
+                attributes = {"highHealth", "bigger", "highRegen"},
                 drops = {"redArtifact"}
             }
         }
@@ -981,7 +981,7 @@ if settings.startup["rampant-trollEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "troll",
         tint = {r=0.4, g=0.4, b=0.4, a=1},
-        tint2 = {r=0.8, g=0.8, b=0.8, a=1},
+        tint2 = {r=0.6, g=0.6, b=0.6, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.17,
         units = {
@@ -991,7 +991,7 @@ if settings.startup["rampant-trollEnemy"].value then
                 name = "biter",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
-                attributes = {"highestHealth", "bigger", "highestRegen", "slowMovement"},
+                attributes = {"highestHealth", "longReach", "bigger", "highestRegen", "slowMovement", "altBiterArmored"},
                 drops = {"greenArtifact"}
             }
         },
