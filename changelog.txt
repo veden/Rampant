@@ -3,6 +3,7 @@ Version: 0.17.29
 Date: 11. 29. 2019
   Features:
     - Hives that can produce unit spawners, turrets, or more hives. Typically appear on resources patches.
+    - New graphics for Troll and Physical Factions styled as an armored biter (Thanks to Cybran M contribution)
   Improvements:
     - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
