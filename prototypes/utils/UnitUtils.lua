@@ -292,22 +292,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                 {
                     filenames =
                         {
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-01.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-02.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-03.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-04.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-05.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-06.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-07.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-08.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-09.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-10.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-11.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-12.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-13.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-14.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-15.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-16.png"
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-01.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-02.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-03.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-04.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-05.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-06.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-07.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-08.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-09.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-10.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-11.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-12.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-13.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-14.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-15.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-16.png"
                         },
                     slice = 4,
                     lines_per_file = 4,
@@ -323,22 +323,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                         {
                             filenames =
                                 {
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-01.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-02.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-03.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-04.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-05.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-06.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-07.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-08.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-09.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-10.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-11.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-12.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-13.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-14.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-15.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-16.png"
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-01.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-02.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-03.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-04.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-05.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-06.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-07.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-08.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-09.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-10.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-11.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-12.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-13.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-14.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-15.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-16.png"
                                 },
                             slice = 4,
                             lines_per_file = 4,
@@ -354,22 +354,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                 {
                     filenames =
                         {
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-01.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-02.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-03.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-04.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-05.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-06.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-07.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-08.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-09.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-10.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-11.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-12.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-13.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-14.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-15.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask1-16.png"
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-01.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-02.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-03.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-04.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-05.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-06.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-07.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-08.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-09.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-10.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-11.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-12.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-13.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-14.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-15.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1-16.png"
                         },
                     slice = 4,
                     lines_per_file = 4,
@@ -386,22 +386,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                         {
                             filenames =
                                 {
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-01.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-02.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-03.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-04.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-05.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-06.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-07.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-08.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-09.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-10.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-11.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-12.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-13.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-14.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-15.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask1-16.png"
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-01.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-02.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-03.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-04.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-05.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-06.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-07.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-08.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-09.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-10.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-11.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-12.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-13.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-14.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-15.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask1-16.png"
                                 },
                             slice = 4,
                             lines_per_file = 4,
@@ -418,22 +418,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                 {
                     filenames =
                         {
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-01.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-02.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-03.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-04.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-05.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-06.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-07.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-08.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-09.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-10.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-11.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-12.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-13.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-14.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-15.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-mask2-16.png"
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-01.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-02.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-03.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-04.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-05.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-06.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-07.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-08.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-09.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-10.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-11.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-12.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-13.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-14.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-15.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2-16.png"
                         },
                     slice = 4,
                     lines_per_file = 4,
@@ -450,22 +450,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                         {
                             filenames =
                                 {
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-01.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-02.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-03.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-04.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-05.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-06.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-07.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-08.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-09.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-10.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-11.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-12.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-13.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-14.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-15.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-mask2-16.png"
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-01.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-02.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-03.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-04.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-05.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-06.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-07.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-08.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-09.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-10.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-11.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-12.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-13.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-14.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-15.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-mask2-16.png"
                                 },
                             slice = 4,
                             lines_per_file = 4,
@@ -482,22 +482,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                 {
                     filenames =
                         {
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-01.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-02.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-03.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-04.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-05.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-06.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-07.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-08.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-09.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-10.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-11.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-12.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-13.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-14.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-15.png",
-                            "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-die-shadow-16.png"
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-01.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-02.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-03.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-04.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-05.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-06.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-07.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-08.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-09.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-10.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-11.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-12.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-13.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-14.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-15.png",
+                            "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow-16.png"
                         },
                     slice = 4,
                     lines_per_file = 4,
@@ -513,22 +513,22 @@ local function armoredDieBiter(scale, tint1, tint2)
                         {
                             filenames =
                                 {
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-01.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-02.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-03.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-04.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-05.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-06.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-07.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-08.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-09.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-10.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-11.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-12.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-13.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-14.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-15.png",
-                                    "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-die-shadow-16.png"
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-01.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-02.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-03.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-04.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-05.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-06.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-07.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-08.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-09.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-10.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-11.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-12.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-13.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-14.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-15.png",
+                                    "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-die-shadow-16.png"
                                 },
                             slice = 4,
                             lines_per_file = 4,
@@ -727,10 +727,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-04.png",
                             },
                         slice = 11,
                         lines_per_file = 4,
@@ -747,10 +747,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-04.png",
                                     },
                                 slice = 11,
                                 lines_per_file = 4,
@@ -767,10 +767,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask1-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask1-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask1-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask1-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask1-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask1-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask1-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask1-04.png",
                             },
                         slice = 11,
                         lines_per_file = 4,
@@ -788,10 +788,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask1-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask1-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask1-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask1-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask1-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask1-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask1-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask1-04.png",
                                     },
                                 slice = 11,
                                 lines_per_file = 4,
@@ -809,10 +809,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask2-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask2-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask2-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-mask2-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask2-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask2-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask2-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask2-04.png",
                             },
                         slice = 11,
                         lines_per_file = 4,
@@ -830,10 +830,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask2-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask2-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask2-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-mask2-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask2-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask2-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask2-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-mask2-04.png",
                                     },
                                 slice = 11,
                                 lines_per_file = 4,
@@ -851,10 +851,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-shadow-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-shadow-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-shadow-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-attack-shadow-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-shadow-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-shadow-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-shadow-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-attack-shadow-04.png",
                             },
                         slice = 11,
                         lines_per_file = 4,
@@ -871,10 +871,10 @@ local function armoredAttackBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-shadow-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-shadow-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-shadow-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-attack-shadow-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-shadow-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-shadow-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-shadow-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-attack-shadow-04.png",
                                     },
                                 slice = 11,
                                 lines_per_file = 4,
@@ -901,10 +901,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-04.png",
                             },
                         slice = 8,
                         lines_per_file = 8,
@@ -920,10 +920,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-04.png",
                                     },
                                 slice = 8,
                                 lines_per_file = 8,
@@ -939,10 +939,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask1-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask1-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask1-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask1-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask1-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask1-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask1-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask1-04.png",
                             },
                         slice = 8,
                         lines_per_file = 8,
@@ -959,10 +959,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask1-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask1-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask1-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask1-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask1-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask1-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask1-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask1-04.png",
                                     },
                                 slice = 8,
                                 lines_per_file = 8,
@@ -979,10 +979,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask2-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask2-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask2-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-mask2-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask2-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask2-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask2-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-mask2-04.png",
                             },
                         slice = 8,
                         lines_per_file = 8,
@@ -999,10 +999,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask2-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask2-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask2-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-mask2-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask2-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask2-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask2-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-mask2-04.png",
                                     },
                                 slice = 8,
                                 lines_per_file = 8,
@@ -1019,10 +1019,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                     {
                         filenames =
                             {
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-shadow-01.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-shadow-02.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-shadow-03.png",
-                                "__Rampant__/graphics/entities/CybranM_ArmouredBiter/LowRes/armoured-biter-run-shadow-04.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-shadow-01.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-shadow-02.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-shadow-03.png",
+                                "__CybranM_ArmouredBiter__/graphics/armoured-biter/LowRes/armoured-biter-run-shadow-04.png",
                             },
                         slice = 8,
                         lines_per_file = 8,
@@ -1038,10 +1038,10 @@ local function armoredRunBiter(scale, tint1, tint2)
                             {
                                 filenames =
                                     {
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-shadow-01.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-shadow-02.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-shadow-03.png",
-                                        "__Rampant__/graphics/entities/CybranM_ArmouredBiter/HighRes/hr-armoured-biter-run-shadow-04.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-shadow-01.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-shadow-02.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-shadow-03.png",
+                                        "__CybranM_ArmouredBiter__/graphics/armoured-biter/HighRes/hr-armoured-biter-run-shadow-04.png",
                                     },
                                 slice = 8,
                                 lines_per_file = 8,
@@ -1225,7 +1225,7 @@ local function vanillaRunBiter(scale, tint1, tint2)
 end
 
 function unitUtils.biterdieanimation(scale, tint1, tint2, altBiter)
-    if (altBiter == "armored") and data.mods[""] then
+    if (altBiter == "armored") and mods["CybranM_ArmouredBiter"] then
         return armoredDieBiter(scale, tint1, tint2)
     else
         return vanillaDieBiter(scale, tint1, tint2)
@@ -1233,7 +1233,7 @@ function unitUtils.biterdieanimation(scale, tint1, tint2, altBiter)
 end
 
 function unitUtils.biterattackanimation(scale, tint1, tint2, altBiter)
-    if (altBiter == "armored") and data.mods[""] then
+    if (altBiter == "armored") and mods["CybranM_ArmouredBiter"] then
         return armoredAttackBiter(scale, tint1, tint2)
     else
         return vanillaAttackBiter(scale, tint1, tint2)
@@ -1242,7 +1242,7 @@ end
 
 
 function unitUtils.biterrunanimation(scale, tint1, tint2, altBiter)
-    if (altBiter == "armored") and data.mods[""] then
+    if (altBiter == "armored") and mods["CybranM_ArmouredBiter"] then
         return armoredRunBiter(scale, tint1, tint2)
     else
         return vanillaRunBiter(scale, tint1, tint2)

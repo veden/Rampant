@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.29
-Date: 11. 29. 2019
-  Contributions:
-    - New Hi and Low resolution graphics for Troll and Physical Factions biters, armored biters (Thanks to CybranM contribution)
+Date: 07. 12. 2019
+  Optional Graphics:
+    - New Hi and Low resolution graphics for Troll and Physical Factions biters, armored biters (Thanks to CybranM, requires downloading separate mod Armoured Biters)
   Features:
     - Hives that can produce unit spawners, turrets, or more hives. Typically appear on resources patches.
   Improvements:
