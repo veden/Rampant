@@ -131,13 +131,36 @@ function aiAttackWave.rallyUnits(chunk, map, surface, tick)
                     local rallyChunk = getChunkByXY(map, x, y)
                     if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
                         if not aiAttackWave.formVengenceSquad(map, surface, rallyChunk) then
-                            return
+                            return false
                         end
                     end
                 end
             end
         end
+        return true
     end
+end
+
+function aiAttackWave.formAttackWave(chunk, map, surface, tick)
+    if (map.natives.points >= AI_SQUAD_COST) then
+        setRallyTick(map, chunk, tick)
+        local cX = chunk.x
+        local cY = chunk.y
+        for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do
+            for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
+                if (x ~= cX) and (y ~= cY) then
+                    local rallyChunk = getChunkByXY(map, x, y)
+                    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
+                        if not aiAttackWave.formSquads(map, surface, rallyChunk, tick) then
+                            return false
+                        end
+                    end
+                end
+            end
+        end
+        return true
+    end
+    return false
 end
 
 local function noNearbySettlers(map, chunk, tick)

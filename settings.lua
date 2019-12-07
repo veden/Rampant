@@ -225,76 +225,6 @@ data:extend({
             per_user = false
         },
 
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyNestTiers",
-        --     description = "rampant-newEnemyNestTiers",
-        --     setting_type = "startup",
-        --     default_value = 10,
-        --     allowed_values = { 5, 10 },
-        --     order = "l[modifer]-c[unit]",
-        --     per_user = false
-        -- },
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyNestVariations",
-        --     description = "rampant-newEnemyNestVariations",
-        --     setting_type = "startup",
-        --     minimum_value = 1,
-        --     maximum_value = 20,
-        --     default_value = 1,
-        --     order = "l[modifier]-d[unit]",
-        --     per_user = false
-        -- },
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyWormTiers",
-        --     description = "rampant-newEnemyWormTiers",
-        --     setting_type = "startup",
-        --     default_value = 10,
-        --     allowed_values = { 5, 10 },
-        --     order = "l[modifer]-e[unit]",
-        --     per_user = false
-        -- },
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyWormVariations",
-        --     description = "rampant-newEnemyWormVariations",
-        --     setting_type = "startup",
-        --     minimum_value = 1,
-        --     maximum_value = 20,
-        --     default_value = 1,
-        --     order = "l[modifier]-f[unit]",
-        --     per_user = false
-        -- },
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyUnitTiers",
-        --     description = "rampant-newEnemyUnitTiers",
-        --     setting_type = "startup",
-        --     default_value = 10,
-        --     allowed_values = { 5, 10 },
-        --     order = "l[modifer]-g[unit]",
-        --     per_user = false
-        -- },
-
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant-newEnemyUnitVariations",
-        --     description = "rampant-newEnemyUnitVariations",
-        --     setting_type = "startup",
-        --     minimum_value = 1,
-        --     maximum_value = 20,
-        --     default_value = 1,
-        --     order = "l[modifier]-h[unit]",
-        --     per_user = false
-        -- },
-
         {
             type = "int-setting",
             name = "rampant-newEnemyVariations",
@@ -307,24 +237,6 @@ data:extend({
             per_user = false
         },
         
-        {
-            type = "bool-setting",
-            name = "rampant-enableBobsUnits",
-            setting_type = "startup",
-            default_value = true,
-            order = "l[modifier]-i[unit]",
-            per_user = false
-        },
-
-        {
-            type = "bool-setting",
-            name = "rampant-enableNEUnits",
-            setting_type = "startup",
-            default_value = true,
-            order = "l[modifier]-j[unit]",
-            per_user = false
-        },
-
         {
             type = "int-setting",
             name = "rampant-tierStart",

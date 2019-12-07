@@ -251,6 +251,7 @@ function biterFunctions.makeBiter(attributes)
         corpse = makeBiterCorpse(attributes),
         dying_explosion = attributes.explosion,
         dying_trigger_effect = attributes.dyingEffect,
+        enemy_map_color = attributes.tint2,
         affected_by_tiles = true,
         dying_sound = make_biter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
@@ -298,6 +299,7 @@ function biterFunctions.makeSpitter(attributes)
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = makeSpitterCorpse(attributes),
         dying_explosion = attributes.explosion,
+                enemy_map_color = attributes.tint2,
         dying_trigger_effect = attributes.dyingEffect,        
         dying_sound =  make_spitter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
@@ -362,6 +364,7 @@ function biterFunctions.makeUnitSpawner(attributes)
         dying_trigger_effect = attributes.dyingEffect,
         max_count_of_owned_units = attributes.unitsOwned or 7,
         max_friends_around_to_spawn = attributes.unitsToSpawn or 5,
+        enemy_map_color = attributes.tint2,
         animations =
             {
                 spawner_idle_animation(0, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
@@ -446,6 +449,7 @@ function biterFunctions.makeWorm(attributes)
         integration = worm_integration(attributes.scale),
         attack_parameters = attributes.attack,
         secondary_animation = true,
+        enemy_map_color = attributes.tint2,
         random_animation_offset = true,
         attack_from_start_frame = true,
 

@@ -148,8 +148,6 @@ function upgrade.attempt(natives, setNewSurface)
     end
     if (global.version < constants.VERSION_41) then
 
-        -- natives.evolutionTableUnitSpawner = {}
-        -- natives.evolutionTableWorm = {}
         natives.evolutionTableAlignment = {}
         natives.bases = {}
         natives.baseIndex = 1
@@ -294,19 +292,6 @@ function upgrade.attempt(natives, setNewSurface)
         end
 
         natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
-
-        -- natives.baseOrdering = {}
-        -- natives.baseOrdering.len = 0
-
-        -- natives.evolutionTable = {}
-        -- natives.evolutionAlignmentTable = {}
-        
-        -- natives.evolutionTableSpitterSpawner = {}
-        -- natives.evolutionTableOutpost = {}
-        -- natives.evolutionTableHive = {}
-        -- natives.evolutionTableTrap = {}
-        -- natives.evolutionTableTurret = {}
-        -- natives.evolutionTableUtility = {}        
 
         natives.nextChunkSort = nil
         natives.nextChunkSortTick = nil

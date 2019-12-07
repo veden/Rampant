@@ -249,6 +249,8 @@ local function rebuildMap()
         map.scentStaging[x] = {0,0,0,0}
     end
 
+    map.chunkScanCounts = {}
+
     map.chunkOverlapArray = {
         SENTINEL_IMPASSABLE_CHUNK,
         SENTINEL_IMPASSABLE_CHUNK,
@@ -256,8 +258,8 @@ local function rebuildMap()
         SENTINEL_IMPASSABLE_CHUNK
     }
 
-    map.mapOrdering = {}
-    map.mapOrdering.len = 0
+    -- map.mapOrdering = {}
+    -- map.mapOrdering.len = 0
     map.enemiesToSquad = {}
     map.enemiesToSquad.len = 0
     map.chunkRemovals = {}
@@ -480,9 +482,6 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "aiAggressiveness", settings.global["rampant-aiAggressiveness"].value)
 
-    -- if (game.active_mods) then
-    --     game.
-    -- end
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
@@ -501,15 +500,15 @@ local function prepWorld(rebuild, surfaceIndex)
     local upgraded
     local setNewSurface
 
-    if (game.surfaces["battle_surface_2"] ~= nil) then
-        natives.activeSurface = game.surfaces["battle_surface_2"].index
-    elseif (game.surfaces["battle_surface_1"] ~= nil) then
-        natives.activeSurface = game.surfaces["battle_surface_1"].index
-    elseif surfaceIndex then
+    if surfaceIndex then
         natives.activeSurface = surfaceIndex
         setNewSurface = true
         game.forces.enemy.kill_all_units()
         global.version = nil
+    elseif (game.surfaces["battle_surface_2"] ~= nil) then
+        natives.activeSurface = game.surfaces["battle_surface_2"].index
+    elseif (game.surfaces["battle_surface_1"] ~= nil) then
+        natives.activeSurface = game.surfaces["battle_surface_1"].index
     else
         natives.activeSurface = game.surfaces["nauvis"].index
     end
@@ -518,6 +517,14 @@ local function prepWorld(rebuild, surfaceIndex)
     onModSettingsChange(nil)
     if natives.newEnemies then
         rebuildNativeTables(natives, game.surfaces[natives.activeSurface], game.create_random_generator(natives.enemySeed))
+    else
+        natives.buildingHiveTypeLookup = {}
+        natives.buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
+        natives.buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
+        natives.buildingHiveTypeLookup["small-worm-turret"] = "turret"
+        natives.buildingHiveTypeLookup["medium-worm-turret"] = "turret"
+        natives.buildingHiveTypeLookup["big-worm-turret"] = "turret"
+        natives.buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
     end
     if upgraded then
         rebuildMap()
@@ -564,7 +571,7 @@ script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
 
                        local gameRef = game
 
-                       processPlayers(gameRef.players,
+                       processPlayers(gameRef.connected_players,
                                       map,
                                       gameRef.surfaces[natives.activeSurface],
                                       event.tick)
@@ -922,6 +929,7 @@ local function onEntitySpawned(event)
         local surface = entity.surface
         if (surface.index == natives.activeSurface) then
             local disPos = mathUtils.distortPosition(entity.position, 8)
+            print(disPos.x, disPos.y, entity.position.x, entity.position.y)
             local canPlaceQuery = map.canPlaceQuery
 
             local chunk = getChunkByPosition(map, disPos)
@@ -937,18 +945,11 @@ local function onEntitySpawned(event)
                                        base.alignment,
                                        natives,
                                        disPos)
-                if entity and entity.valid then                  
+                if entity and entity.valid then
                     event.entity = registerEnemyBaseStructure(map, entity, base)
                 end
             else
                 entity.destroy()
-                -- local position = {disPos[1],disPos[2]}
-                -- if (surface.is_chunk_generated(position)) then
-                --     onChunkGenerated({
-                --             area = { left_top = position },
-                --             surface = surface
-                --     })
-                -- end
             end
         end
     end

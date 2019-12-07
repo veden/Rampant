@@ -214,9 +214,9 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
         if (pass ~= CHUNK_IMPASSABLE) then
             local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
             local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
-
+            
             local buildingHiveTypeLookup = natives.buildingHiveTypeLookup
-            local counts = {}
+            local counts = map.chunkScanCounts
             for i=1,#HIVE_BUILDINGS_TYPES do
                 counts[HIVE_BUILDINGS_TYPES[i]] = 0
             end
@@ -290,12 +290,12 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
                 setTurretCount(map, chunk, counts["turret"])
             else
                 for i=1,#nests do
-                    local hiveType = buildingHiveTypeLookup[nests[i].name]
+                    local hiveType = buildingHiveTypeLookup[nests[i].name] or "biter-spawner"
                     counts[hiveType] = counts[hiveType] + 1
                 end
 
                 for i=1,#worms do
-                    local hiveType = buildingHiveTypeLookup[worms[i].name]
+                    local hiveType = buildingHiveTypeLookup[worms[i].name] or "turret"
                     counts[hiveType] = counts[hiveType] + 1
                 end
 
@@ -347,10 +347,29 @@ function chunkUtils.mapScanChunk(chunk, surface, map)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local nests = surface.count_entities_filtered(map.filteredEntitiesUnitSpawnerQuery)
-    setNestCount(map, chunk, nests)
-    local worms = surface.count_entities_filtered(map.filteredEntitiesWormQuery)
-    setTurretCount(map, chunk, worms)
+
+    local buildingHiveTypeLookup = map.natives.buildingHiveTypeLookup
+    local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnerQuery)
+    local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
+    local counts = map.chunkScanCounts
+    for i=1,#HIVE_BUILDINGS_TYPES do
+        counts[HIVE_BUILDINGS_TYPES[i]] = 0
+    end    
+    for i=1,#nests do
+        local hiveType = buildingHiveTypeLookup[nests[i].name] or "biter-spawner"
+        counts[hiveType] = counts[hiveType] + 1
+    end
+
+    for i=1,#worms do
+        local hiveType = buildingHiveTypeLookup[worms[i].name] or "turret"
+        counts[hiveType] = counts[hiveType] + 1
+    end
+
+    setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
+    setUtilityCount(map, chunk, counts["utility"])
+    setHiveCount(map, chunk, counts["hive"])
+    setTrapCount(map, chunk, counts["trap"])
+    setTurretCount(map, chunk, counts["turret"])   
 end
 
 function chunkUtils.entityForPassScan(map, entity)
@@ -414,6 +433,14 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
         elseif (hiveType == "hive") then
             getFunc = getHiveCount
             setFunc = setHiveCount
+        else
+            if (entityType == "turret") then
+                getFunc = getTurretCount
+                setFunc = setTurretCount
+            elseif (entityType == "unit-spawner") then
+                getFunc = getNestCount
+                setFunc = setNestCount    
+            end
         end
 
         for i=1,#overlapArray do
@@ -452,6 +479,14 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
         elseif (hiveType == "hive") then
             getFunc = getHiveCount
             setFunc = setHiveCount
+        else
+            if (entityType == "turret") then
+                getFunc = getTurretCount
+                setFunc = setTurretCount
+            elseif (entityType == "unit-spawner") then
+                getFunc = getNestCount
+                setFunc = setNestCount    
+            end
         end
 
         for i=1,#overlapArray do

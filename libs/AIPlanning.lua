@@ -61,6 +61,13 @@ function aiPlanning.planning(natives, evolution_factor, tick)
         maxPoints = maxPoints * 0.85
     end
 
+    if not natives.ranIncompatibleMessage and natives.newEnemies and (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
+        natives.ranIncompatibleMessage = true
+        for i,p in ipairs(game.connected_players) do
+            p.print("Bobs enemies or NEE has been detected with Rampant's new enemies, the artifacts from each of these mods will still work with Rampant's new enemies. The generation of bobs or NEE unit spawners explicitly by Rampant is no longer supported when the Rampant's new enemies are active.")
+        end
+    end
+
     natives.evolutionLevel = evolution_factor
     
     local maxOverflowPoints = maxPoints * 3

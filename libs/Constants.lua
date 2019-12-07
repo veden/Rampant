@@ -483,8 +483,8 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             acceptRate = {2, 10, 0.005, 0.03},
             drops = {"nilArtifact"},
             buildSets = {
-                {"biter-spawner", 1, 10, 0.1, 0.2},
-                {"spitter-spawner", 1, 10, 0.1, 0.2},
+                {"biter-spawner", 1, 10, 0.15, 0.3},
+                {"spitter-spawner", 1, 10, 0.15, 0.3},
                 {"turret", 1, 10, 0.8, 0.57},
                 {"hive", 4, 10, 0.005, 0.03}
             }
@@ -563,8 +563,8 @@ if settings.startup["rampant-acidEnemy"].value then
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
-                    {"biter-spawner", 1, 10, 0.1, 0.2},
-                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
                     {"turret", 1, 10, 0.8, 0.57},
                     {"hive", 4, 10, 0.005, 0.03}
                 }
@@ -638,8 +638,8 @@ if settings.startup["rampant-laserEnemy"].value then
                 acceptRate = {2, 10, 0.005, 0.003},
                 drops = {"blueArtifact"},
                 buildSets = {
-                    {"biter-spawner", 1, 10, 0.1, 0.2},
-                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
                     {"turret", 1, 10, 0.8, 0.57},
                     {"hive", 4, 10, 0.005, 0.03}
                 }
@@ -719,8 +719,8 @@ if settings.startup["rampant-fireEnemy"].value then
                 acceptRate = {2, 10, 0.005, 0.03},
                 drops = {"redArtifact"},
                 buildSets = {
-                    {"biter-spawner", 1, 10, 0.1, 0.2},
-                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
                     {"turret", 1, 10, 0.8, 0.57},
                     {"hive", 4, 10, 0.005, 0.03}
                 }
@@ -769,6 +769,20 @@ if settings.startup["rampant-infernoEnemy"].value then
                 attackAttributes = {"stream", "acid"},
                 attributes = {},
                 drops = {"orangeArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"fire", "acid"},
+                minorResistances = {},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"orangeArtifact"},
+                buildSets = {
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -822,6 +836,18 @@ if settings.startup["rampant-waspEnemy"].value then
                 acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"purpleArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"purpleArtifact"},
+                buildSets = {
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -882,6 +908,18 @@ if settings.startup["rampant-spawnerEnemy"].value then
                 acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"orangeArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"orangeArtifact"},
+                buildSets = {
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -927,6 +965,20 @@ if settings.startup["rampant-electricEnemy"].value then
                 attackAttributes = {"spit", "electric", "cluster"},
                 attributes = {},
                 drops = {"blueArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"electric"},
+                minorResistances = {"laser"},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -936,7 +988,7 @@ if settings.startup["rampant-physicalEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "physical",
         tint = {r=0.9, g=0.9, b=0.9, a=1},
-        tint2 = {r=0, g=0, b=0, a=1},
+        tint2 = {r=0.8, g=0.8, b=0.8, a=1},
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -972,6 +1024,20 @@ if settings.startup["rampant-physicalEnemy"].value then
                 acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {"highHealth", "bigger", "highRegen"},
                 drops = {"redArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"physical", "explosion"},
+                minorResistances = {"laser", "electric"},
+                attributes = {"highHealth", "bigger"},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"redArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1017,6 +1083,20 @@ if settings.startup["rampant-trollEnemy"].value then
                 acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {"highestHealth", "bigger", "highestRegen"},
                 drops = {"greenArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                minorResistances = {"physical", "explosion"},
+                majorWeaknesses = {"fire"},
+                attributes = {"highestHealth", "bigger", "highRegen"},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1065,6 +1145,21 @@ if settings.startup["rampant-poisonEnemy"].value then
                 attackAttributes = {"spit", "poison"},
                 attributes = {"poisonDeathCloud"},
                 drops = {"greenArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"poison"},
+                minorResistances = {"fire"},
+                minorWeaknesses = {"electric", "explosion", "laser"},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"greenArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},            
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1110,6 +1205,20 @@ if settings.startup["rampant-suicideEnemy"].value then
                 acceptRate = {1, 10, 0.8, 0.6},
                 attributes = {},
                 drops = {"yellowArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"explosion"},
+                minorResistances = {"poison"},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"yellowArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1154,6 +1263,20 @@ if settings.startup["rampant-nuclearEnemy"].value then
                 attackAttributes = {"spit", "acid", "slow"},
                 attributes = {},
                 drops = {"yellowArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"explosion"},
+                minorResistances = {"fire"},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"yellowArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1199,6 +1322,19 @@ if settings.startup["rampant-energyThiefEnemy"].value then
                 attackAttributes = {"spit", "electric", "cluster"},
                 attributes = {},
                 drops = {"blueArtifact"}
+            },
+            {
+                type = "hive",
+                name = "hive",
+                majorResistances = {"electric", "laser"},
+                attributes = {},
+                acceptRate = {2, 10, 0.005, 0.03},
+                drops = {"blueArtifact"},
+                buildSets = {
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"turret", 1, 10, 0.8, 0.57},
+                    {"hive", 4, 10, 0.005, 0.03}
+                }
             }
         }
     }
@@ -1275,8 +1411,8 @@ if settings.startup["rampant-fastEnemy"].value then
                 acceptRate = {2, 10, 0.005, 0.03},
                 drops = {"purpleArtifact"},
                 buildSets = {
-                    {"biter-spawner", 1, 10, 0.1, 0.2},
-                    {"spitter-spawner", 1, 10, 0.1, 0.2},
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
+                    {"spitter-spawner", 1, 10, 0.15, 0.3},
                     {"turret", 1, 10, 0.8, 0.57},
                     {"hive", 4, 10, 0.005, 0.03}
                 }

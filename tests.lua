@@ -383,6 +383,15 @@ function tests.entityStats(name, d)
     a.destroy()
 end
 
+local function lookupIndexFaction(targetFaction)
+    for i=1,#constants.FACTION_SET do
+        if constants.FACTION_SET[i].type == targetFaction then
+            return i
+        end
+    end
+    return 0
+end
+
 function tests.exportAiState()
 
     local printState = function ()
@@ -393,11 +402,12 @@ function tests.exportAiState()
 
             local base = chunkPropertyUtils.getChunkBase(global.map, chunk)
             local alignmentCount = 0
-            if base then
+
+            if base then                
                 if (#base.alignment == 2) then
-                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (base.alignment[1] * 100) + base.alignment[2]
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (lookupIndexFaction(base.alignment[1]) * 100) + lookupIndexFaction(base.alignment[2])
                 else
-                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + base.alignment[1]
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + lookupIndexFaction(base.alignment[1])
                 end
             end
             

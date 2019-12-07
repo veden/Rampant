@@ -506,8 +506,7 @@ function squadAttack.squadsBeginAttack(natives)
         local group = squad.group
         if group and group.valid then
             local groupState = group.state
-            if -- (groupState ~= DEFINES_GROUP_GATHERING) and
-            (groupState ~= DEFINES_GROUP_FINISHED) and (squad.cycles ~= 0) then
+            if (groupState ~= DEFINES_GROUP_FINISHED) and (squad.cycles ~= 0) then
                 squad.cycles = squad.cycles - 1
                 x = x + 1
                 pending[x] = squad

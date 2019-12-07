@@ -214,8 +214,8 @@ local droneAttributeNumeric = {
 local unitSpawnerAttributeNumeric = {
     ["health"] = { 350, 500, 750, 1500, 3500, 7500, 11000, 20000, 30000, 45000 },
     ["healing"] = { 0.02, 0.02, 0.022, 0.024, 0.026, 0.028, 0.03, 0.032, 0.034, 0.036 },
-    ["spawningCooldownStart"] = { 360, 360, 355, 355, 350, 350, 345, 345, 340, 340 },
-    ["spawningCooldownEnd"] = { 150, 150, 145, 145, 140, 140, 135, 135, 130, 130 },
+    ["spawningCooldownStart"] = { 1080, 1075, 1070, 1065, 1060, 1055, 1050, 1045, 1040, 1035 },
+    ["spawningCooldownEnd"] = { 350, 345, 340, 335, 330, 325, 320, 315, 310, 305 },
     ["unitsToSpawn"] = { 5, 5, 6, 6, 7, 7, 8, 8, 9, 9 },
     ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
     ["unitsOwned"] = { 7, 7, 8, 8, 9, 9, 10, 10, 11, 11 },
@@ -655,7 +655,7 @@ local function generateApperance(unit)
         unit.tint = calculateRGBa(unit.tint, tier, true)
     end
     if unit.tint2 then
-        unit.tint2 = calculateRGBa(unit.tint2, tier)
+        unit.tint2 = calculateRGBa(unit.tint2, tier, true)
     end
 end
 
@@ -841,6 +841,8 @@ local function makeLootTables(template)
             newDrops[#newDrops+1] = makeLootTable("orange")
         elseif (attribute == "redArtifact") then
             newDrops[#newDrops+1] = makeLootTable("red")
+        elseif (attribute == "purpleArtifact") then
+            newDrops[#newDrops+1] = makeLootTable("purple")
         elseif (attribute == "nilArtifact") then
             newDrops[#newDrops+1] = makeLootTable(nil)
         end

@@ -83,7 +83,7 @@ function pheromoneUtils.commitPheromone(map, chunk, staging, tick)
     chunk[BASE_PHEROMONE] = staging[BASE_PHEROMONE] + getPlayerBaseGenerator(map, chunk)
     chunk[PLAYER_PHEROMONE] = staging[PLAYER_PHEROMONE]
     if (resourceGenerator > 0) and (getEnemyStructureCount(map, chunk) == 0) then
-       chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 15000, 20000))
+        chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 15000, 20000))
     else
         chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE]
     end

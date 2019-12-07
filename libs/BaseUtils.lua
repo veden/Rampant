@@ -249,7 +249,7 @@ function baseUtils.recycleBases(natives, tick)
 end
 
 
-function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, position, evolve)
+function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, disPos, evolve)
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
 
