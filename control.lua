@@ -928,8 +928,7 @@ local function onEntitySpawned(event)
         local spawner = event.spawner
         local surface = entity.surface
         if (surface.index == natives.activeSurface) then
-            local disPos = mathUtils.distortPosition(entity.position, 8)
-            print(disPos.x, disPos.y, entity.position.x, entity.position.y)
+            local disPos = mathUtils.distortPosition(entity.position, 8)           
             local canPlaceQuery = map.canPlaceQuery
 
             local chunk = getChunkByPosition(map, disPos)
