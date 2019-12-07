@@ -30,7 +30,7 @@ function tests.pheromoneLevels(size)
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-                    str = str .. " " .. "p/" .. game.surfaces[global.natives.activeSurface].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getWormCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
+                    str = str .. " " .. "p/" .. game.surfaces[global.natives.activeSurface].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getTurretCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
                     if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
                         print("=============")
                         print(chunk.x, chunk.y, str)
@@ -383,6 +383,15 @@ function tests.entityStats(name, d)
     a.destroy()
 end
 
+local function lookupIndexFaction(targetFaction)
+    for i=1,#constants.FACTION_SET do
+        if constants.FACTION_SET[i].type == targetFaction then
+            return i
+        end
+    end
+    return 0
+end
+
 function tests.exportAiState()
 
     local printState = function ()
@@ -393,11 +402,12 @@ function tests.exportAiState()
 
             local base = chunkPropertyUtils.getChunkBase(global.map, chunk)
             local alignmentCount = 0
-            if base then
+
+            if base then                
                 if (#base.alignment == 2) then
-                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (base.alignment[1] * 100) + base.alignment[2]
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (lookupIndexFaction(base.alignment[1]) * 100) + lookupIndexFaction(base.alignment[2])
                 else
-                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + base.alignment[1]
+                    alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + lookupIndexFaction(base.alignment[1])
                 end
             end
             
@@ -411,7 +421,7 @@ function tests.exportAiState()
                                    chunk.x,
                                    chunk.y,
                                    chunkPropertyUtils.getNestCount(global.map, chunk),
-                                   chunkPropertyUtils.getWormCount(global.map, chunk),
+                                   chunkPropertyUtils.getTurretCount(global.map, chunk),
                                    chunkPropertyUtils.getRallyTick(global.map, chunk),
                                    chunkPropertyUtils.getRetreatTick(global.map, chunk),
                                    chunkPropertyUtils.getResourceGenerator(global.map, chunk),
@@ -421,7 +431,10 @@ function tests.exportAiState()
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
                                    #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk),
-                                   alignmentCount}, ",") .. "\n"
+                                   alignmentCount,
+                                   chunkPropertyUtils.getHiveCount(global.map, chunk),
+                                   chunkPropertyUtils.getTrapCount(global.map, chunk),
+                                   chunkPropertyUtils.getUtilityCount(global.map, chunk)}, ",") .. "\n"
         end
         game.write_file("rampantState.txt", s, false)
     end

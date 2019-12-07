@@ -1,14 +1,35 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.29
-Date: 10. 13. 2019
+Date: 11. 29. 2019
+  Contributions:
+    - New graphics for Troll and Physical Factions biters, armored biters (Thanks to CybranM contribution)
+  Features:
+    - Hives that can produce unit spawners, turrets, or more hives. Typically appear on resources patches.
   Improvements:
     - Pathfinding now looks two steps ahead
     - Squad formation now has a gathering delay to allow all members to make the initial group
     - Better tracking of squads on chunks to accommodate the two step path finding
-    - Collision checker for squads from a container to a unit
+    - Collision checker for squads and squad movement from a container to a unit
+    - Attack waves should generate more localized squad formations, so that biters appear to attack from all sides less
   Tweaks:
     - Increased minimum unit count for a retreat from 3 to 6
     - Biters and Spitters now are affected by tile modifiers
+    - Nerfed inferno spitter fire damage and duration to reasonable levels
+    - Buffed suicide biters damage and health
+    - Nerfed poison biters cloud damage and duration
+    - Added blood color to match new enemy color
+    - Added blood explosions to each new enemy
+    - Nuclear biters have more visual explosions
+    - Changed poison biter death cloud to be generated using dying_trigger_effect
+    - Reduced sticker damage and duration everywhere
+    - Switched general spit projectile from direction only to positional targeting
+    - Added spit projectile stickers to tooltip
+    - Default for new enemies spit projectile stickers no longer do damage only slow
+    - Spawner spitter and worm eggs now damage the immediate area around the egg
+    - Acid pools no longer cause friendly fire
+    - Prioritize settler group creation of attack squads
+    - Biter faction color should match map color now
+    - Increased unit spawner spawning time by 3x
   Optimizations:
     - Better object reuse for squad and pending attack, creating less garbage
     - Trimmed table creation where possible
@@ -24,6 +45,20 @@ Date: 10. 13. 2019
     - Fixed retreating squads not waiting long enough to assemble all units before movement
     - Fixed spitter max projectile range could cause a spitter to attack but not hit a target
     - Fixed non retreating group formation not having a distraction modifier
+    - Fixed icon size not being set energy thief drain crystal
+    - Fixed new enemies attacks following naming levels instead effective levels
+    - New spawner enemies color mask should fit much better now
+    - Fixed blood particle size not increasing with tiers
+    - Fixed enemy volume not changing based on tier
+    - Fixed Nuclear and Suicide spawners instantly spawning low level units
+    - Fixed Physical and troll spawner and worm scales
+    - Fixed chunk processing not checking chunk generation status
+  Framework:
+    - Bobs enemies and Natural Evolution Enemies no longer able to be active with Rampant's new enemies
+    - Cleaned up new enemy creation
+    - Dropped support for 5 tier new enemy configuration
+    - Changed default blood particle removal optimization to off
+    - Added interop function that allows other mods to set the active surface for the AI processing
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

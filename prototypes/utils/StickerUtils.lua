@@ -1,3 +1,4 @@
+
 local stickerUtils = {}
 
 -- imported
@@ -26,7 +27,7 @@ function stickerUtils.makeSticker(attributes)
                 blend_mode = "normal",
                 animation_speed = 2,
                 scale = 0.4,
-                tint = attributes.tint or { r = 1, g = 1, b = 1, a = 0.35 },
+                tint = attributes.tint2 or { r = 1, g = 1, b = 1, a = 0.35 },
                 shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
             },
         

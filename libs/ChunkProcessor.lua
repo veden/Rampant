@@ -51,7 +51,7 @@ local function sorter(a, b)
     return (aDistance < bDistance)
 end
 
-function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack, tick, evolutionFactor, rebuilding)
+function chunkProcessor.processPendingChunks(map, surface, pendingStack, tick, rebuilding)
     local processQueue = map.processQueue
 
     local area = map.area
@@ -72,7 +72,7 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
         bottomOffset[1] = x + CHUNK_SIZE
         bottomOffset[2] = y + CHUNK_SIZE
 
-        if map[x] and map[x][y] then           
+        if map[x] and map[x][y] then
             mapScanChunk(map[x][y], surface, map)
         else
             if map[x] == nil then
@@ -80,28 +80,28 @@ function chunkProcessor.processPendingChunks(natives, map, surface, pendingStack
             end
 
             local chunk = createChunk(x, y)
-            
-            chunk = initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
+
+            chunk = initialScan(chunk, surface, map, tick, rebuilding)
 
             if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                 map[x][y] = chunk
                 processQueue[#processQueue+1] = chunk
             end
-        end       
+        end
     end
 
-    if (#processQueue > natives.nextChunkSort) or
-        (((tick - natives.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((natives.nextChunkSort - 75) ~= #processQueue))
+    if (#processQueue > map.nextChunkSort) or
+        (((tick - map.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((map.nextChunkSort - 75) ~= #processQueue))
     then
-        natives.nextChunkSort = #processQueue + 75
-        natives.nextChunkSortTick = tick
+        map.nextChunkSort = #processQueue + 75
+        map.nextChunkSortTick = tick
         tSort(processQueue, sorter)
     end
 end
 
 function chunkProcessor.processScanChunks(map, surface)
     local area = map.area
-    
+
     local topOffset = area[1]
     local bottomOffset = area[2]
 
@@ -110,7 +110,7 @@ function chunkProcessor.processScanChunks(map, surface)
     local chunkCount = 0
 
     local chunkToPassScan = map.chunkToPassScan
-    
+
     for chunk,_ in pairs(chunkToPassScan) do
         local x = chunk.x
         local y = chunk.y
@@ -128,7 +128,7 @@ function chunkProcessor.processScanChunks(map, surface)
             chunkCount = chunkCount + 1
             removals[chunkCount] = chunk
         end
-        
+
         chunkToPassScan[chunk] = nil
     end
 

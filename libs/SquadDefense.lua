@@ -56,7 +56,7 @@ local function scoreRetreatLocation(map, neighborChunk)
                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, tick, radius, artilleryBlast)
+function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radius, artilleryBlast)
     if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and
         ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast)
     then
@@ -75,7 +75,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
                 end
             end
             enemiesToSquad.len = unitCount
-            if (mRandom() < calculateKamikazeThreshold(unitCount, natives)) then
+            if (mRandom() < calculateKamikazeThreshold(unitCount, map.natives)) then
                 setRetreatTick(map, chunk, tick)
                 return
             end
@@ -122,7 +122,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, natives, t
                 
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
-                    local squads = natives.squads
+                    local squads = map.natives.squads
                     squads.len = squads.len+1
                     squads[squads.len] = newSquad
                 end

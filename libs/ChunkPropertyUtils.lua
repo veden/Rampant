@@ -18,15 +18,51 @@ function chunkPropertyUtils.getNestCount(map, chunk)
     return map.chunkToNests[chunk] or 0
 end
 
-function chunkPropertyUtils.getWormCount(map, chunk)
-    return map.chunkToWorms[chunk] or 0
+function chunkPropertyUtils.getTurretCount(map, chunk)
+    return map.chunkToTurrets[chunk] or 0
 end
 
-function chunkPropertyUtils.setWormCount(map, chunk, count)
+function chunkPropertyUtils.getTrapCount(map, chunk)
+    return map.chunkToTraps[chunk] or 0
+end
+
+function chunkPropertyUtils.getUtilityCount(map, chunk)
+    return map.chunkToUtilities[chunk] or 0
+end
+
+function chunkPropertyUtils.getHiveCount(map, chunk)
+    return map.chunkToHives[chunk] or 0
+end
+
+function chunkPropertyUtils.setTurretCount(map, chunk, count)
     if (count <= 0) then
-        map.chunkToWorms[chunk] = nil
+        map.chunkToTurrets[chunk] = nil
     else
-        map.chunkToWorms[chunk] = count
+        map.chunkToTurrets[chunk] = count
+    end
+end
+
+function chunkPropertyUtils.setHiveCount(map, chunk, count)
+    if (count <= 0) then
+        map.chunkToHives[chunk] = nil
+    else
+        map.chunkToHives[chunk] = count
+    end
+end
+
+function chunkPropertyUtils.setTrapCount(map, chunk, count)
+    if (count <= 0) then
+        map.chunkToTraps[chunk] = nil
+    else
+        map.chunkToTraps[chunk] = count
+    end
+end
+
+function chunkPropertyUtils.setUtilityCount(map, chunk, count)
+    if (count <= 0) then
+        map.chunkToUtilities[chunk] = nil
+    else
+        map.chunkToUtilities[chunk] = count
     end
 end
 
@@ -62,12 +98,9 @@ function chunkPropertyUtils.setChunkBase(map, chunk, base)
     map.chunkToBase[chunk] = base
 end
 
-function chunkPropertyUtils.getWormCount(map, chunk)
-    return map.chunkToWorms[chunk] or 0
-end
-
 function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
-    return (map.chunkToNests[chunk] or 0) + (map.chunkToWorms[chunk] or 0)
+    return (map.chunkToNests[chunk] or 0) + (map.chunkToTurrets[chunk] or 0) + (map.chunkToTraps[chunk] or 0) +
+        (map.chunkToUtilities[chunk] or 0) + (map.chunkToHives[chunk] or 0)
 end
 
 function chunkPropertyUtils.getRetreatTick(map, chunk)

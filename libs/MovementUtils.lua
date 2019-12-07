@@ -42,7 +42,7 @@ end
 function movementUtils.findMovementPositionEntity(entityName, surface, position)
     local pos = position
     if not surface.can_place_entity({name=entityName, position=pos}) then
-        pos = surface.find_non_colliding_position(entityName, pos, 5, 1, true)
+        pos = surface.find_non_colliding_position(entityName, pos, 5, 4, true)
     end
     return pos
 end
@@ -87,7 +87,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDirectionChunks, scoreFunction, squad)
+function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction, squad)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -96,6 +96,8 @@ function movementUtils.scoreNeighborsForAttack(map, natives, chunk, neighborDire
     local nextHighestScore = -MAGIC_MAXIMUM_NUMBER
     local nextHighestDirection
 
+    local natives = map.natives
+    
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
 

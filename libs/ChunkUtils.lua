@@ -13,6 +13,8 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local HIVE_BUILDINGS_TYPES = constants.HIVE_BUILDINGS_TYPES
+
 local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -57,11 +59,20 @@ local setPlayerBaseGenerator = chunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = chunkPropertyUtils.addPlayerBaseGenerator
 local setResourceGenerator = chunkPropertyUtils.setResourceGenerator
 local addResourceGenerator = chunkPropertyUtils.addResourceGenerator
-local setWormCount = chunkPropertyUtils.setWormCount
+local setHiveCount = chunkPropertyUtils.setHiveCount
+local setTrapCount = chunkPropertyUtils.setTrapCount
+local setTurretCount = chunkPropertyUtils.setTurretCount
+local setUtilityCount = chunkPropertyUtils.setUtilityCount
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getNestCount = chunkPropertyUtils.getNestCount
+local getHiveCount = chunkPropertyUtils.getHiveCount
+local getTrapCount = chunkPropertyUtils.getTrapCount
+local getUtilityCount = chunkPropertyUtils.getUtilityCount
+local getTurretCount = chunkPropertyUtils.getTurretCount
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
+
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
@@ -185,15 +196,16 @@ local function scorePlayerBuildings(surface, map)
         (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * GENERATOR_PHEROMONE_LEVEL_6)
 end
 
-function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFactor, rebuilding)
+function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
     local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
+    local natives = map.natives
 
     if (passScore >= CHUNK_PASS_THRESHOLD) then
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = scorePlayerBuildings(surface, map)
 
-        local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
+        local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnerQuery)
 
         if ((playerObjects > 0) or (#nests > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
@@ -202,15 +214,19 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
         if (pass ~= CHUNK_IMPASSABLE) then
             local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
             local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
+            
+            local buildingHiveTypeLookup = natives.buildingHiveTypeLookup
+            local counts = map.chunkScanCounts
+            for i=1,#HIVE_BUILDINGS_TYPES do
+                counts[HIVE_BUILDINGS_TYPES[i]] = 0
+            end
 
             if natives.newEnemies and ((#nests > 0) or (#worms > 0)) then
-                local nestCount = 0
-                local wormCount = 0
-                local base = findNearbyBase(map, chunk, natives)
+                local base = findNearbyBase(map, chunk)
                 if base then
                     setChunkBase(map, chunk, base)
                 else
-                    base = createBase(map, natives, evolutionFactor, chunk, tick, rebuilding)
+                    base = createBase(natives, chunk, tick, rebuilding)
                 end
                 local alignment = base.alignment
 
@@ -222,43 +238,72 @@ function chunkUtils.initialScan(chunk, natives, surface, map, tick, evolutionFac
 
                 if (#nests > 0) then
                     for i = 1, #nests do
+                        local nest = nests[i]
                         if rebuilding then
-                            if not isRampant(nests[i].name) then
-                                if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-                                    nestCount = nestCount + 1
+                            if not isRampant(nest.name) then
+                                local newEntity = upgradeEntity(nest, surface, alignment, natives, nil, true)
+                                if newEntity then
+                                    local hiveType = buildingHiveTypeLookup[newEntity.name]
+                                    counts[hiveType] = counts[hiveType] + 1
                                 end
                             else
-                                nestCount = nestCount + 1
+                                local hiveType = buildingHiveTypeLookup[nest.name]
+                                counts[hiveType] = counts[hiveType] + 1
                             end
                         else
-                            if upgradeEntity(nests[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-                                nestCount = nestCount + 1
+                            local newEntity = upgradeEntity(nest, surface, alignment, natives, nil, true)
+                            if newEntity then
+                                local hiveType = buildingHiveTypeLookup[newEntity.name]
+                                counts[hiveType] = counts[hiveType] + 1
                             end
                         end
                     end
                 end
                 if (#worms > 0) then
                     for i = 1, #worms do
+                        local worm = worms[i]
                         if rebuilding then
-                            if not isRampant(worms[i].name) then
-                                if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-                                    wormCount = wormCount + 1
+                            if not isRampant(worm.name) then
+                                local newEntity = upgradeEntity(worm, surface, alignment, natives, nil, true)
+                                if newEntity then
+                                    local hiveType = buildingHiveTypeLookup[newEntity.name]
+                                    counts[hiveType] = counts[hiveType] + 1
                                 end
                             else
-                                wormCount = wormCount + 1
+                                local hiveType = buildingHiveTypeLookup[worm.name]
+                                counts[hiveType] = counts[hiveType] + 1
                             end
                         else
-                            if upgradeEntity(worms[i], surface, alignment[mRandom(#alignment)], natives, evolutionFactor) then
-                                wormCount = wormCount + 1
+                            local newEntity = upgradeEntity(worm, surface, alignment, natives, nil, true)
+                            if newEntity then
+                                local hiveType = buildingHiveTypeLookup[newEntity.name]
+                                counts[hiveType] = counts[hiveType] + 1
                             end
                         end
                     end
                 end
-                setNestCount(map, chunk, nestCount)
-                setWormCount(map, chunk, wormCount)
+
+                setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
+                setUtilityCount(map, chunk, counts["utility"])
+                setHiveCount(map, chunk, counts["hive"])
+                setTrapCount(map, chunk, counts["trap"])
+                setTurretCount(map, chunk, counts["turret"])
             else
-                setNestCount(map, chunk, #nests)
-                setWormCount(map, chunk, #worms)
+                for i=1,#nests do
+                    local hiveType = buildingHiveTypeLookup[nests[i].name] or "biter-spawner"
+                    counts[hiveType] = counts[hiveType] + 1
+                end
+
+                for i=1,#worms do
+                    local hiveType = buildingHiveTypeLookup[worms[i].name] or "turret"
+                    counts[hiveType] = counts[hiveType] + 1
+                end
+
+                setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
+                setUtilityCount(map, chunk, counts["utility"])
+                setHiveCount(map, chunk, counts["hive"])
+                setTrapCount(map, chunk, counts["trap"])
+                setTurretCount(map, chunk, counts["turret"])
             end
 
             setPlayerBaseGenerator(map, chunk, playerObjects)
@@ -302,10 +347,29 @@ function chunkUtils.mapScanChunk(chunk, surface, map)
     setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local nests = surface.count_entities_filtered(map.filteredEntitiesUnitSpawnereQuery)
-    setNestCount(map, chunk, nests)
-    local worms = surface.count_entities_filtered(map.filteredEntitiesWormQuery)
-    setWormCount(map, chunk, worms)
+
+    local buildingHiveTypeLookup = map.natives.buildingHiveTypeLookup
+    local nests = surface.find_entities_filtered(map.filteredEntitiesUnitSpawnerQuery)
+    local worms = surface.find_entities_filtered(map.filteredEntitiesWormQuery)
+    local counts = map.chunkScanCounts
+    for i=1,#HIVE_BUILDINGS_TYPES do
+        counts[HIVE_BUILDINGS_TYPES[i]] = 0
+    end    
+    for i=1,#nests do
+        local hiveType = buildingHiveTypeLookup[nests[i].name] or "biter-spawner"
+        counts[hiveType] = counts[hiveType] + 1
+    end
+
+    for i=1,#worms do
+        local hiveType = buildingHiveTypeLookup[worms[i].name] or "turret"
+        counts[hiveType] = counts[hiveType] + 1
+    end
+
+    setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
+    setUtilityCount(map, chunk, counts["utility"])
+    setHiveCount(map, chunk, counts["hive"])
+    setTrapCount(map, chunk, counts["trap"])
+    setTurretCount(map, chunk, counts["turret"])   
 end
 
 function chunkUtils.entityForPassScan(map, entity)
@@ -350,17 +414,39 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
 
-        local lookup
-        if (entityType == "unit-spawner") then
-            lookup = map.chunkToNests
-        elseif (entityType == "turret") then
-            lookup = map.chunkToWorms
+        local getFunc
+        local setFunc
+        local hiveTypeLookup = map.natives.buildingHiveTypeLookup
+        local hiveType = hiveTypeLookup[entity.name]
+        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+            getFunc = getNestCount
+            setFunc = setNestCount
+        elseif (hiveType == "turret") then
+            getFunc = getTurretCount
+            setFunc = setTurretCount            
+        elseif (hiveType == "trap") then
+            getFunc = getTrapCount
+            setFunc = setTrapCount
+        elseif (hiveType == "utility") then
+            getFunc = getUtilityCount
+            setFunc = setUtilityCount            
+        elseif (hiveType == "hive") then
+            getFunc = getHiveCount
+            setFunc = setHiveCount
+        else
+            if (entityType == "turret") then
+                getFunc = getTurretCount
+                setFunc = setTurretCount
+            elseif (entityType == "unit-spawner") then
+                getFunc = getNestCount
+                setFunc = setNestCount    
+            end
         end
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
             if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                lookup[chunk] = (lookup[chunk] or 0) + 1
+                setFunc(map, chunk, getFunc(map, chunk) + 1)
                 setChunkBase(map, chunk, base)
             end
         end
@@ -374,32 +460,51 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
 
-        local mainLookup
-        local secondaryLookup
-        if (entityType == "unit-spawner") then
-            mainLookup = map.chunkToNests
-            secondaryLookup = map.chunkToWorms
-        elseif (entity.type == "turret") then
-            mainLookup = map.chunkToWorms
-            secondaryLookup = map.chunkToNests
+        local getFunc
+        local setFunc
+        local hiveTypeLookup = map.natives.buildingHiveTypeLookup
+        local hiveType = hiveTypeLookup[entity.name]
+        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+            getFunc = getNestCount
+            setFunc = setNestCount
+        elseif (hiveType == "turret") then
+            getFunc = getTurretCount
+            setFunc = setTurretCount            
+        elseif (hiveType == "trap") then
+            getFunc = getTrapCount
+            setFunc = setTrapCount
+        elseif (hiveType == "utility") then
+            getFunc = getUtilityCount
+            setFunc = setUtilityCount            
+        elseif (hiveType == "hive") then
+            getFunc = getHiveCount
+            setFunc = setHiveCount
+        else
+            if (entityType == "turret") then
+                getFunc = getTurretCount
+                setFunc = setTurretCount
+            elseif (entityType == "unit-spawner") then
+                getFunc = getNestCount
+                setFunc = setNestCount    
+            end
         end
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
             if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                local count = mainLookup[chunk]
+                local count = getFunc(map, chunk)
                 if count then
                     if (count <= 1) then
-                        if (entityType == "unit-spawner") then
+                        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                             setRaidNestActiveness(map, chunk, 0)
                             setNestActiveness(map, chunk, 0)
                         end
-                        mainLookup[chunk] = nil
-                        if not secondaryLookup[chunk] then
+                        setFunc(map, chunk, 0)
+                        if (getEnemyStructureCount(map, chunk) == 0) then
                             setChunkBase(map, chunk, nil)
                         end
                     else
-                        mainLookup[chunk] = count - 1
+                        setFunc(map, chunk, count - 1)
                     end
                 end
             end
@@ -408,9 +513,10 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     end
 end
 
-function chunkUtils.accountPlayerEntity(map, entity, natives, addObject, creditNatives)
+function chunkUtils.accountPlayerEntity(entity, natives, addObject, creditNatives)
 
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
+        local map = natives.map
         local entityValue = BUILDING_PHEROMONES[entity.type]
 
         local overlapArray = getEntityOverlapChunks(map, entity)

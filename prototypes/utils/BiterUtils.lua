@@ -2,16 +2,27 @@ local biterFunctions = {}
 
 local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
+local wormUtils = require("WormUtils")
 
 -- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
+local biterdieanimation = unitUtils.biterdieanimation
+local biterattackanimation = unitUtils.biterattackanimation
+local biterrunanimation = unitUtils.biterrunanimation
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
 local spawner_integration = unitSpawnerUtils.spawner_integration
 local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
 local spawner_die_animation = unitSpawnerUtils.spawner_die_animation
+local wormFoldedAnimation = wormUtils.wormFoldedAnimation
+local wormPreparingAnimation = wormUtils.wormPreparingAnimation
+local wormPreparedAnimation = wormUtils.wormPreparedAnimation
+local wormPreparedAlternativeAnimation = wormUtils.wormPreparedAlternativeAnimation
+local wormStartAttackAnimation = wormUtils.wormStartAttackAnimation
+local wormEndAttackAnimation = wormUtils.wormEndAttackAnimation
+local wormDieAnimation = wormUtils.wormDieAnimation
 
 
-function biterFunctions.makeSpitterCorpse(attributes)
+local function makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
 
     local corpse = {
@@ -26,7 +37,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
     }
 
-    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint)
+    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -53,7 +64,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
                     width = 84,
                     height = 68,
                     shift = util.by_pixel(1, 0),
-                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                     scale = attributes.scale * 2,
                     hr_version =
                         {
@@ -65,12 +76,12 @@ function biterFunctions.makeSpitterCorpse(attributes)
                             width = 164,
                             height = 134,
                             shift = util.by_pixel(-0.5,-0.5),
-                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                             scale = attributes.scale
                         }
                 }
         }
-    
+
     data:extend(
         {
             corpse
@@ -78,7 +89,7 @@ function biterFunctions.makeSpitterCorpse(attributes)
     return name
 end
 
-function biterFunctions.makeBiterCorpse(attributes)
+local function makeBiterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
 
     local corpse = {
@@ -92,8 +103,8 @@ function biterFunctions.makeBiterCorpse(attributes)
         order = "c[corpse]-a[biter]-a[small]",
         flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
     }
-    
-    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint)
+
+    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
     corpse.dying_speed = 0.04
     corpse.time_before_removed = 15 * 60 * 60
     corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
@@ -105,7 +116,7 @@ function biterFunctions.makeBiterCorpse(attributes)
     corpse.ground_patch_fade_in_speed = 0.002
     corpse.ground_patch_fade_out_start = 50 * 60
     corpse.ground_patch_fade_out_duration = 20 * 60
-
+    
     local a = 1
     local d = 0.9
     corpse.ground_patch =
@@ -120,7 +131,7 @@ function biterFunctions.makeBiterCorpse(attributes)
                     width = 84,
                     height = 68,
                     shift = util.by_pixel(1, 0),
-                    tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                     scale = attributes.scale * 2,
                     hr_version =
                         {
@@ -132,19 +143,19 @@ function biterFunctions.makeBiterCorpse(attributes)
                             width = 164,
                             height = 134,
                             shift = util.by_pixel(-0.5,-0.5),
-                            tint = {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
+                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
                             scale = attributes.scale
                         }
                 }
         }
-    
+
     data:extend({
             corpse
     })
     return name
 end
 
-function biterFunctions.makeUnitSpawnerCorpse(attributes)
+local function makeUnitSpawnerCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend({
             {
@@ -163,17 +174,17 @@ function biterFunctions.makeUnitSpawnerCorpse(attributes)
                 final_render_layer = "remnants",
                 animation =
                     {
-                        spawner_die_animation(0, attributes.tint, attributes.scale),
-                        spawner_die_animation(1, attributes.tint, attributes.scale),
-                        spawner_die_animation(2, attributes.tint, attributes.scale),
-                        spawner_die_animation(3, attributes.tint, attributes.scale)
+                        spawner_die_animation(0, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(1, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(2, attributes.tint, attributes.scale, attributes.tint2),
+                        spawner_die_animation(3, attributes.tint, attributes.scale, attributes.tint2)
                     }
             }
     })
     return name
 end
 
-function biterFunctions.makeWormCorpse(attributes)
+local function makeWormCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
     data:extend({
             {
@@ -189,7 +200,7 @@ function biterFunctions.makeWormCorpse(attributes)
                 dying_speed = 0.01,
                 time_before_removed = 15 * 60 * 60,
                 final_render_layer = "lower-object-above-shadow",
-                animation = worm_die_animation(attributes.scale, attributes.tint),
+                animation = wormDieAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
                 ground_patch =
                     {
                         sheet = worm_integration(attributes.scale)
@@ -199,191 +210,198 @@ function biterFunctions.makeWormCorpse(attributes)
     return name
 end
 
-function biterFunctions.makeBiter(name, biterAttributes, biterAttack, biterResistances)
+function biterFunctions.makeBiter(attributes)
     local resistances = {}
-    for k,v in pairs(biterResistances) do
+    for k,v in pairs(attributes.resistances) do
         v.type = k
         resistances[#resistances+1] = v
     end
     --    print(name .. " " .. biterAttributes.health)
     local entity = {
         type = "unit",
-        name = name .. "-rampant",
+        name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/small-biter.png",
         icon_size = 32,
-        flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
-        max_health = biterAttributes.health,
+        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+        max_health = attributes.health,
         order = "b-b-a",
         subgroup="enemies",
-        healing_per_tick = biterAttributes.healing,
+        healing_per_tick = attributes.healing,
         resistances = resistances,
         collision_box = {
-            {-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
-            {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}
+            {-0.4 * attributes.scale, -0.4 * attributes.scale},
+            {0.4 * attributes.scale, 0.4 * attributes.scale}
         },
         selection_box = {
-            {-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
-            {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}
+            {-0.7 * attributes.scale, -1.5 * attributes.scale},
+            {0.7 * attributes.scale, 0.3 * attributes.scale}
         },
         sticker_box = {
-            {-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
-            {0.6 * biterAttributes.scale, 0}
+            {-0.6 * attributes.scale, -0.8 * attributes.scale},
+            {0.6 * attributes.scale, 0}
         },
-        attack_parameters = biterAttack,
-        vision_distance = biterAttributes.vision or 30,
-        movement_speed = biterAttributes.movement,
-        loot = biterAttributes.loot,
-        spawning_time_modifier = biterAttributes.spawningTimeModifer or nil,
-        distance_per_frame = biterAttributes.distancePerFrame or 0.1,
-        pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
-        distraction_cooldown = biterAttributes.distractionCooldown or 300,
-        corpse = biterAttributes.corpse,
-        dying_explosion = biterAttributes.explosion,
+        attack_parameters = attributes.attack,
+        vision_distance = attributes.vision or 30,
+        movement_speed = attributes.movement,
+        loot = attributes.loot,
+        spawning_time_modifier = attributes.spawningTimeModifer or nil,
+        distance_per_frame = attributes.distancePerFrame or 0.1,
+        pollution_to_join_attack = attributes.pollutionToAttack or 200,
+        distraction_cooldown = attributes.distractionCooldown or 300,
+        corpse = makeBiterCorpse(attributes),
+        dying_explosion = attributes.explosion,
+        dying_trigger_effect = attributes.dyingEffect,
+        enemy_map_color = attributes.tint2,
         affected_by_tiles = true,
-        dying_sound =  make_biter_dying_sounds(biterAttributes.scale),
-        working_sound =  make_biter_calls(biterAttributes.scale),
-        run_animation = biterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
+        dying_sound = make_biter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
+        working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
+        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
-    if biterAttributes.collisionMask then
-        entity.collision_mask = biterAttributes.collisionMask
+    if attributes.collisionMask then
+        entity.collision_mask = attributes.collisionMask
     end
     return entity
 end
 
-function biterFunctions.makeSpitter(name, biterAttributes, biterAttack, biterResistances)
+function biterFunctions.makeSpitter(attributes)
     local resistances = {}
-    for k,v in pairs(biterResistances) do
+    for k,v in pairs(attributes.resistances) do
         v.type = k
         resistances[#resistances+1] = v
     end
     --    print(name .. " " .. biterAttributes.health)
     local entity = {
         type = "unit",
-        name = name .. "-rampant",
+        name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/small-spitter.png",
         icon_size = 32,
-        flags = biterAttributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
-        max_health = biterAttributes.health,
+        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+        max_health = attributes.health,
         order = "b-b-a",
         subgroup="enemies",
-        healing_per_tick = biterAttributes.healing,
+        healing_per_tick = attributes.healing,
         resistances = resistances,
-        collision_box = {{-0.4 * biterAttributes.scale, -0.4 * biterAttributes.scale},
-            {0.4 * biterAttributes.scale, 0.4 * biterAttributes.scale}},
-        selection_box = {{-0.7 * biterAttributes.scale, -1.5 * biterAttributes.scale},
-            {0.7 * biterAttributes.scale, 0.3 * biterAttributes.scale}},
-        sticker_box = {{-0.6 * biterAttributes.scale, -0.8 * biterAttributes.scale},
-            {0.6 * biterAttributes.scale, 0}},
-        attack_parameters = biterAttack,
-        loot = biterAttributes.loot,
-        vision_distance = biterAttributes.vision or 30,
-        movement_speed = biterAttributes.movement,
-        spawning_time_modifier = biterAttributes.spawningTimeModifer or nil,
-        distance_per_frame = biterAttributes.distancePerFrame or 0.1,
-        pollution_to_join_attack = biterAttributes.pollutionToAttack or 200,
-        distraction_cooldown = biterAttributes.distractionCooldown or 300,
+        collision_box = {{-0.4 * attributes.scale, -0.4 * attributes.scale},
+            {0.4 * attributes.scale, 0.4 * attributes.scale}},
+        selection_box = {{-0.7 * attributes.scale, -1.5 * attributes.scale},
+            {0.7 * attributes.scale, 0.3 * attributes.scale}},
+        sticker_box = {{-0.6 * attributes.scale, -0.8 * attributes.scale},
+            {0.6 * attributes.scale, 0}},
+        attack_parameters = attributes.attack,
+        loot = attributes.loot,
+        vision_distance = attributes.vision or 30,
+        movement_speed = attributes.movement,
+        spawning_time_modifier = attributes.spawningTimeModifer or nil,
+        distance_per_frame = attributes.distancePerFrame or 0.1,
+        pollution_to_join_attack = attributes.pollutionToAttack or 200,
+        distraction_cooldown = attributes.distractionCooldown or 300,
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
-        corpse = biterAttributes.corpse,
-        dying_explosion = biterAttributes.explosion,
-        dying_sound =  make_spitter_dying_sounds(0.8),
-        working_sound =  make_biter_calls(0.7),
+        corpse = makeSpitterCorpse(attributes),
+        dying_explosion = attributes.explosion,
+                enemy_map_color = attributes.tint2,
+        dying_trigger_effect = attributes.dyingEffect,        
+        dying_sound =  make_spitter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
+        working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         affected_by_tiles = true,
-        run_animation = spitterrunanimation(biterAttributes.scale, biterAttributes.tint, biterAttributes.tint),
+        run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
-    if biterAttributes.collisionMask then
-        entity.collision_mask = biterAttributes.collisionMask
+    if attributes.collisionMask then
+        entity.collision_mask = attributes.collisionMask
     end
-    return entity    
+    return entity
 end
 
-function biterFunctions.makeUnitSpawner(name, biterAttributes, biterResistances, unitSet)
+function biterFunctions.makeUnitSpawner(attributes)
     local resistances = {}
-    for k,v in pairs(biterResistances) do
+    for k,v in pairs(attributes.resistances) do
         v.type = k
         resistances[#resistances+1] = v
     end
-    --    print(name .. " " .. biterAttributes.health)
+       -- print(attributes.name)
     local o = {
         type = "unit-spawner",
-        name = name .. "-rampant",
+        name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/biter-spawner.png",
         icon_size = 32,
         flags = {"placeable-player", "placeable-enemy", "not-repairable"},
-        max_health = biterAttributes.health,
+        max_health = attributes.health,
         order="b-b-g",
         subgroup="enemies",
-        loot = biterAttributes.loot,
+        loot = attributes.loot,
         resistances = resistances,
         working_sound = {
             sound =
                 {
                     {
                         filename = "__base__/sound/creatures/spawner.ogg",
-                        volume = 1.0
+                        volume = 0.2 + (0.05 * attributes.effectiveLevel)
                     }
                 },
-            apparent_volume = 2
+            apparent_volume = 0.4 + (0.1 * attributes.effectiveLevel)
         },
         dying_sound =
             {
                 {
                     filename = "__base__/sound/creatures/spawner-death-1.ogg",
-                    volume = 1.0
+                    volume = 0.4 + (0.05 * attributes.effectiveLevel)
                 },
                 {
                     filename = "__base__/sound/creatures/spawner-death-2.ogg",
-                    volume = 1.0
+                    volume = 0.4 + (0.05 * attributes.effectiveLevel)
                 }
             },
-        healing_per_tick = biterAttributes.healing or 0.02,
-        collision_box = {{-3.0 * biterAttributes.scale, -2.0 * biterAttributes.scale}, {2.0 * biterAttributes.scale, 2.0 * biterAttributes.scale}},
-        selection_box = {{-3.5 * biterAttributes.scale, -2.5 * biterAttributes.scale}, {2.5 * biterAttributes.scale, 2.5 * biterAttributes.scale}},
+        healing_per_tick = attributes.healing or 0.02,
+        collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}},
+        selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}},
         -- in ticks per 1 pu
-        pollution_absorption_absolute = biterAttributes.pollutionAbsorptionAbs or 20,
-        pollution_absorption_proportional = biterAttributes.pollutionAbsorptionPro or 0.01,
-        corpse = biterAttributes.corpse,
-        dying_explosion = "blood-explosion-huge",
-        max_count_of_owned_units = biterAttributes.unitsOwned or 7,
-        max_friends_around_to_spawn = biterAttributes.unitsToSpawn or 5,
+        pollution_absorption_absolute = attributes.pollutionAbsorptionAbs or 20,
+        pollution_absorption_proportional = attributes.pollutionAbsorptionPro or 0.01,
+        map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}},
+        corpse = makeUnitSpawnerCorpse(attributes),
+        dying_explosion = attributes.explosion or "blood-explosion-huge",
+        dying_trigger_effect = attributes.dyingEffect,
+        max_count_of_owned_units = attributes.unitsOwned or 7,
+        max_friends_around_to_spawn = attributes.unitsToSpawn or 5,
+        enemy_map_color = attributes.tint2,
         animations =
             {
-                spawner_idle_animation(0, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(1, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(2, biterAttributes.tint, biterAttributes.scale),
-                spawner_idle_animation(3, biterAttributes.tint, biterAttributes.scale)
+                spawner_idle_animation(0, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
+                spawner_idle_animation(1, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
+                spawner_idle_animation(2, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
+                spawner_idle_animation(3, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint)
             },
         integration =
             {
-                sheet = spawner_integration(biterAttributes.scale)
+                sheet = spawner_integration(attributes.scale)
             },
-        result_units = unitSet,
+        result_units = attributes.unitSet,
         -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-        spawning_cooldown = biterAttributes.spawningCooldown or {360, 150},
-        spawning_radius = biterAttributes.spawningRadius or 10,
-        spawning_spacing = biterAttributes.spawningSpacing or 3,
+        spawning_cooldown = attributes.spawningCooldown or {360, 150},
+        spawning_radius = attributes.spawningRadius or 10,
+        spawning_spacing = attributes.spawningSpacing or 3,
         max_spawn_shift = 0,
         max_richness_for_spawn_shift = 100,
-        build_base_evolution_requirement = biterAttributes.evolutionRequirement or 0.0,
-        call_for_help_radius = 50
+        build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
+        call_for_help_radius = attributes.helpRadius or 50
     }
-    if biterAttributes.autoplace then
-        o["autoplace"] = enemy_spawner_autoplace(biterAttributes.autoplace)
+    if attributes.autoplace then
+        o["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
     end
     return o
 end
 
-function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
+function biterFunctions.makeWorm(attributes)
     local resistances = {}
-    for k,v in pairs(wormResistances) do
+    for k,v in pairs(attributes.resistances) do
         v.type = k
         resistances[#resistances+1] = v
     end
     --    print(name .. " " .. attributes.health)
     local o = {
         type = "turret",
-        name = name .. "-rampant",
+        name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/medium-worm.png",
         icon_size = 32,
         flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "breaths-air"},
@@ -391,51 +409,53 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
         subgroup="enemies",
         max_health = attributes.health,
         loot = attributes.loot,
-        shooting_cursor_size = 3.5 * attributes.scale,        
+        shooting_cursor_size = 3.5 * attributes.scale,
         resistances = resistances,
         healing_per_tick = attributes.healing or 0.01,
         collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
         selection_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
         shooting_cursor_size = attributes.cursorSize or 3,
         rotation_speed = attributes.rotationSpeed or 1,
-        corpse = attributes.corpse,
-        dying_explosion = "blood-explosion-big",
+        corpse = makeWormCorpse(attributes),
+        dying_explosion = attributes.explosion or "blood-explosion-big",
+        dying_trigger_effect = attributes.dyingEffect,
         inventory_size = attributes.inventorySize,
-        dying_sound = make_worm_dying_sounds(0.9),
+        dying_sound = make_worm_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         folded_speed = 0.01,
         folded_speed_secondary = 0.024,
-        folded_animation = worm_folded_animation(attributes.scale, attributes.tint),
+        folded_animation = wormFoldedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         preparing_speed = attributes.preparingSpeed or 0.024,
-        preparing_animation = worm_preparing_animation(attributes.scale, attributes.tint, "forward"),
-        preparing_sound = make_worm_standup_sounds(1),
+        preparing_animation = wormPreparingAnimation(attributes.scale, attributes.tint, "forward", attributes.tint2 or attributes.tint),
+        preparing_sound = make_worm_standup_sounds(0.4 + (0.05 * attributes.effectiveLevel)),
         prepared_speed = 0.024,
         prepared_speed_secondary = 0.012,
-        prepared_animation = worm_prepared_animation(attributes.scale, attributes.tint),
-        prepared_sound = make_worm_breath(0.8),
+        prepared_animation = wormPreparedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        prepared_sound = make_worm_breath(0.2 + (0.05 * attributes.effectiveLevel)),
         prepared_alternative_speed = 0.014,
         prepared_alternative_speed_secondary = 0.010,
         prepared_alternative_chance = 0.2,
-        prepared_alternative_animation = worm_prepared_alternative_animation(attributes.scale, attributes.tint),
-        prepared_alternative_sound = make_worm_roar_alternative(0.8),
-        
+        prepared_alternative_animation = wormPreparedAlternativeAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        prepared_alternative_sound = make_worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
+
         starting_attack_speed = 0.034,
-        starting_attack_animation = worm_start_attack_animation(attributes.scale, attributes.tint),
-        starting_attack_sound = make_worm_roars(0.8),
+        starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
+        starting_attack_sound = make_worm_roars(0.2 + (0.05 * attributes.effectiveLevel)),
         ending_attack_speed = 0.016,
-        ending_attack_animation = worm_end_attack_animation(attributes.scale, attributes.tint),
+        ending_attack_animation = wormEndAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         folding_speed = attributes.foldingSpeed or 0.015,
-        folding_animation =  worm_preparing_animation(attributes.scale, attributes.tint, "backward"),
-        folding_sound = make_worm_fold_sounds(1),
+        folding_animation =  wormPreparingAnimation(attributes.scale, attributes.tint, "backward", attributes.tint2 or attributes.tint),
+        folding_sound = make_worm_fold_sounds(0.4 + (0.05 * attributes.effectiveLevel)),
         prepare_range = attributes.prepareRange or 30,
         integration = worm_integration(attributes.scale),
-        attack_parameters = attack,
+        attack_parameters = attributes.attack,
         secondary_animation = true,
+        enemy_map_color = attributes.tint2,
         random_animation_offset = true,
         attack_from_start_frame = true,
-        
+
         allow_turning_when_starting_attack = true,
         build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
-        call_for_help_radius = 60
+        call_for_help_radius = attributes.helpRadius or 60
     }
 
     if attributes.autoplace then
@@ -445,7 +465,7 @@ function biterFunctions.makeWorm(name, attributes, attack, wormResistances)
 
 end
 
-function biterFunctions.createSuicideAttack(attributes, blastWave)
+function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
     local o = {
         type = "projectile",
         range = attributes.range or 0.5,
@@ -454,62 +474,85 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
         ammo_type = {
             category = "biological"
         },
-        sound = make_biter_roars(0.5),
-        animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
+        sound = make_biter_roars(0.3 + (attributes.effectiveLevel * 0.05)),
+        animation = animation
     }
 
     if attributes.nuclear then
         o.ammo_type.action = {
-            type = "direct",
-            action_delivery =
-                {
-                    type = "instant",
-                    target_effects =
-                        {
+            {
+                type = "direct",
+                action_delivery =
+                    {
+                        type = "instant",
+                        target_effects =
                             {
-                                repeat_count = 100,
-                                type = "create-trivial-smoke",
-                                smoke_name = "nuclear-smoke",
-                                offset_deviation = {{-1, -1}, {1, 1}},
-                                slow_down_factor = 1,
-                                starting_frame = 3,
-                                starting_frame_deviation = 5,
-                                starting_frame_speed = 0,
-                                starting_frame_speed_deviation = 5,
-                                speed_from_center = 0.5,
-                                speed_deviation = 0.2
+                                {
+                                    repeat_count = 100,
+                                    type = "create-trivial-smoke",
+                                    smoke_name = "nuclear-smoke",
+                                    offset_deviation = {{-1, -1}, {1, 1}},
+                                    slow_down_factor = 1,
+                                    starting_frame = 3,
+                                    starting_frame_deviation = 5,
+                                    starting_frame_speed = 0,
+                                    starting_frame_speed_deviation = 5,
+                                    speed_from_center = 0.5,
+                                    speed_deviation = 0.2
+                                },                            
+                                {
+                                    type = "create-entity",
+                                    entity_name = attributes.attackExplosion
+                                },
+                                {
+                                    type = "damage",
+                                    damage = {amount = attributes.damage or 400, type = attributes.damageType or "explosion"}
+                                },
+                                {
+                                    type = "create-entity",
+                                    entity_name = attributes.attackScorchmark or "small-scorchmark",
+                                    check_buildability = true
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            target_entities = false,
+                                            repeat_count = attributes.repeatCount or 2000,
+                                            radius = attributes.radius or 35,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = blastWave or "atomic-bomb-wave",
+                                                    starting_speed = 0.5
+                                                }
+                                        }
+                                }
+                            }
+                    }
+            },
+            {
+                type = "cluster",
+                cluster_count = attributes.explosionCount,
+                distance = attributes.explosionDistance,
+                distance_deviation = attributes.explosionDistance,
+                action_delivery =
+                    {
+                        type = "instant",
+                        target_effects= {
+                            {
+                                type="create-entity",
+                                entity_name = attributes.attackExplosion,
                             },
                             {
                                 type = "create-entity",
-                                entity_name = "explosion"
-                            },
-                            {
-                                type = "damage",
-                                damage = {amount = attributes.damage or 400, type = attributes.damageType or "explosion"}
-                            },
-                            {
-                                type = "create-entity",
-                                entity_name = "small-scorchmark",
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
-                            },
-                            {
-                                type = "nested-result",
-                                action =
-                                    {
-                                        type = "area",
-                                        target_entities = false,
-                                        repeat_count = attributes.repeatCount or 2000,
-                                        radius = attributes.radius or 35,
-                                        action_delivery =
-                                            {
-                                                type = "projectile",
-                                                projectile = blastWave or "atomic-bomb-wave",
-                                                starting_speed = 0.5
-                                            }
-                                    }
                             }
                         }
-                }
+                    }
+            }
         }
     else
         o.ammo_type.action = {
@@ -521,8 +564,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
                         {
                             {
                                 type = "create-entity",
-                                entity_name = attributes.explosion,
-                                check_buildability = true
+                                entity_name = attributes.attackExplosion
                             },
                             {
                                 type = "nested-result",
@@ -545,7 +587,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
                             },
                             {
                                 type = "create-entity",
-                                entity_name = attributes.scorchmark,
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
                             }
                         }
@@ -563,12 +605,11 @@ function biterFunctions.createSuicideAttack(attributes, blastWave)
                         target_effects= {
                             {
                                 type="create-entity",
-                                entity_name = attributes.explosion,
-                                check_buildability = true
+                                entity_name = attributes.attackExplosion,
                             },
                             {
                                 type = "create-entity",
-                                entity_name = attributes.scorchmark,
+                                entity_name = attributes.attackScorchmark or "small-scorchmark",
                                 check_buildability = true
                             },
                             {
@@ -760,31 +801,6 @@ function biterFunctions.findTint(entity)
     return findKey("tint", entity.run_animation.layers)
 end
 
-function biterFunctions.acidSplashSounds()
-    return {
-        type = "play-sound",
-        sound =
-            {
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-1.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-2.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-long-1.ogg",
-                    volume = 0.8
-                },
-                {
-                    filename = "__base__/sound/creatures/projectile-acid-burn-long-2.ogg",
-                    volume = 0.8
-                }
-            }
-    }
-end
-
 function biterFunctions.createElectricAttack(attributes, electricBeam, animation)
     return
         {
@@ -843,11 +859,11 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
     }
 end
 
-function biterFunctions.createMeleeAttack(attributes)
+function biterFunctions.createMeleeAttack(attackAttributes)
     return {
         type = "projectile",
-        range = attributes.range or 0.5,
-        cooldown = attributes.cooldown or 35,
+        range = attackAttributes.range or 0.5,
+        cooldown = attackAttributes.cooldown or 35,
         ammo_category = "melee",
         ammo_type = {
             category = "melee",
@@ -856,7 +872,7 @@ function biterFunctions.createMeleeAttack(attributes)
                 {
                     {
                         type = "area",
-                        radius = attributes.radius,
+                        radius = attackAttributes.radius,
                         force = "enemy",
                         ignore_collision_condition = true,
                         action_delivery =
@@ -865,7 +881,7 @@ function biterFunctions.createMeleeAttack(attributes)
                                 target_effects =
                                     {
                                         type = "damage",
-                                        damage = { amount = attributes.damage * 0.75, type = attributes.damageType or "physical" }
+                                        damage = { amount = attackAttributes.damage * 0.75, type = attackAttributes.damageType or "physical" }
                                     }
                             }
                     },
@@ -877,68 +893,69 @@ function biterFunctions.createMeleeAttack(attributes)
                                 target_effects =
                                     {
                                         type = "damage",
-                                        damage = { amount = attributes.damage * 0.25, type = attributes.damageType or "physical" }
+                                        damage = { amount = attackAttributes.damage * 0.25, type = attackAttributes.damageType or "physical" }
                                     }
                             }
                     }
                 }
         },
-        sound = make_biter_roars(0.7),
-        animation = biterattackanimation(attributes.scale, attributes.tint, attributes.tint)
+        sound = make_biter_roars(0.2 + (attackAttributes.effectiveLevel * 0.05)),
+        animation = biterattackanimation(attackAttributes.scale, attackAttributes.tint, attackAttributes.tint2 or attackAttributes.tint, attackAttributes.altBiter)
     }
 end
 
-function biterFunctions.biterAttackSounds()
+function biterFunctions.biterAttackSounds(effectiveLevel)
     return {
         {
             filename = "__base__/sound/creatures/Spiters_1_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_1_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_2_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_2_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_3_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_3_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_4_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_4_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_5_1.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         },
         {
             filename = "__base__/sound/creatures/Spiters_5_2.ogg",
-            volume = 0.7
+            volume = 0.2 + (effectiveLevel * 0.05)
         }
     }
 end
 
 function biterFunctions.createRangedAttack(attributes, attack, animation)
-    if (attributes.type == "stream") -- or FORCE_OLD_PROJECTILES
-    then
+    if (attributes.attackType == "stream") then
         return biterFunctions.createStreamAttack(attributes, attack, animation)
-    elseif (attributes.type == "projectile") then
+    elseif (attributes.attackType == "projectile") then
         return biterFunctions.createProjectileAttack(attributes, attack, animation)
+    else
+        error("Unknown range attack")
     end
 end
 
@@ -958,11 +975,11 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
         damage_modifier = attributes.damageModifier or 1.0,
 
         lead_target_for_projectile_speed = attributes.particleHoizontalSpeed or 0.6,
-        
+
         projectile_creation_parameters = spitter_shoot_shiftings(attributes.scale, attributes.scale * 20),
-        
+
         use_shooter_direction = true,
-        
+
         gun_barrel_length = 2 * attributes.scale,
         gun_center_shift = {
             north = {0, -0.65 * attributes.scale},
@@ -987,19 +1004,19 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 
         cyclic_sound =
             {
-                begin_sound = biterFunctions.biterAttackSounds(),
+                begin_sound = biterFunctions.biterAttackSounds(attributes.effectiveLevel),
                 middle_sound =
                     {
                         {
                             filename = attributes.midSound or "__Rampant__/sounds/attacks/acid-mid.ogg",
-                            volume = 0.5
+                            volume = 0.2 + (attributes.effectiveLevel * 0.05)
                         }
                     },
                 end_sound =
                     {
                         {
                             filename = attributes.endSound or "__Rampant__/sounds/attacks/acid-end.ogg",
-                            volume = 0.5
+                            volume = 0.2 + (attributes.effectiveLevel * 0.05)
                         }
                     }
             },

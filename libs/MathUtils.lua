@@ -34,7 +34,19 @@ end
 function mathUtils.randomTickEvent(tick, low, high)
     local range = high - low
     local minutesToTick = (range * mRandom()) + low
-    return tick + (TICKS_A_MINUTE * minutesToTick)
+    return tick + mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
+end
+
+function mathUtils.distort(xorRandom, num, stdDev, min, max)
+    local min = min or num * 0.85
+    local max = max or num * 1.30
+    local sd = stdDev or 0.30
+    if (num < 0) then
+        local t = min
+        min = max
+        max = t
+    end
+    return mathUtils.roundToNearest(mathUtils.gaussianRandomRangeRG(num, num * sd, min, max, xorRandom), 0.01)
 end
 
 function mathUtils.linearInterpolation(percent, min, max)

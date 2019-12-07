@@ -1,88 +1,83 @@
 local biterFunctions = require("prototypes/utils/BiterUtils")
-
+local constants = require("libs/Constants")
 
 data:extend({
-        biterFunctions.makeBiter("chunk-scanner-squad",
-                                 {
-                                     scale=15,
-                                     movement=1
-                                 },
-                                 biterFunctions.createMeleeAttack({
-                                         radius=1,
-                                         damage=1,
-                                         scale=15
-                                 }),
-                                 {}),
+        biterFunctions.makeBiter({
+                name = "chunk-scanner-squad",
+                scale=15,
+                movement=1,
+                effectiveLevel=1,
+                resistances = {},
+                attack = biterFunctions.createMeleeAttack({
+                        radius=1,
+                        damage=1,
+                        scale=15,
+                        effectiveLevel=1
+                })
+        }),
 
-        biterFunctions.makeBiter("chunk-scanner-squad-movement",
-                                 {
-                                     scale=2.5,
-                                     movement=1
-                                 },
-                                 biterFunctions.createMeleeAttack({
-                                         radius=1,
-                                         damage=1,
-                                         scale=1
-                                 }),
-                                 {})                       
+        biterFunctions.makeBiter({
+                name = "chunk-scanner-squad-movement",
+                scale=2.5,
+                movement=1,
+                effectiveLevel=1,
+                resistances = {},
+                attack = biterFunctions.createMeleeAttack({
+                        radius=1,
+                        damage=1,
+                        scale=15,
+                        effectiveLevel=1
+                })
+        })
 })
 
 local scales = {
-    [1] = 0.7,
-    [2] = 0.8,
-    [3] = 0.9,
-    [4] = 1,
-    [5] = 1.1,
-    [6] = 1.2,
-    [7] = 1.3,
-    [8] = 1.4,
-    [9] = 1.5,
-    [10] = 1.6,
-    [11] = 1.7
+    [1] = 0.9,
+    [2] = 1.1,
+    [3] = 1.2,
+    [4] = 1.3,
+    [5] = 1.4,
+    [6] = 1.5,
+    [7] = 1.6,
+    [8] = 1.8,
+    [9] = 2.0,
+    [10] = 2.1,
+    [11] = 2.2
 }
 
+local subTypes = constants.HIVE_BUILDINGS_TYPES
+
 for t=1,11 do
-    local scale = scales[t] * 1.65
-    data:extend(
-        {
+    local scale = scales[t] * 1.2
+
+    for si=1,#subTypes do
+        local st = subTypes[si]
+
+        data:extend(
             {
-                type = "container",
-                name = "chunk-scanner-" .. t .. "-nest-rampant",
-                icon = "__base__/graphics/icons/wooden-chest.png",
-                icon_size = 32,
-                flags = {},
-                collision_mask = {"player-layer", "object-layer", "water-tile"},
-                collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                minable = {mining_time = 1, result = "wooden-chest"},
-                max_health = 100,
-                corpse = "small-remnants",
-                fast_replaceable_group = "container",
-                inventory_size = 16,
-                open_sound = { filename = "__base__/sound/wooden-chest-open.ogg" },
-                close_sound = { filename = "__base__/sound/wooden-chest-close.ogg" },
-                vehicle_impact_sound =  { filename = "__base__/sound/car-wood-impact.ogg", volume = 1.0 },
-                picture =
-                    {
-                        filename = "__base__/graphics/entity/wooden-chest/wooden-chest.png",
-                        priority = "extra-high",
-                        width = 32,
-                        height = 36,
-                        shift = util.by_pixel(0.5, -2),
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/wooden-chest/hr-wooden-chest.png",
-                                priority = "extra-high",
-                                width = 62,
-                                height = 72,
-                                shift = util.by_pixel(0.5, -2),
-                                scale = 0.5
-                            }
-                    },
-                circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
-                circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
-                circuit_wire_max_distance = default_circuit_wire_max_distance
+                {
+                    type = "simple-entity-with-force",
+                    name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
+                    icon = "__base__/graphics/icons/steel-chest.png",
+                    icon_size = 32,
+                    flags = {},
+                    build_base_evolution_requirement = 0.8 * (t-1),
+                    order = "s-e-w-f",
+                    collision_mask = {"player-layer", "object-layer", "water-tile"},
+                    minable = nil,
+                    max_health = 100,
+                    corpse = nil,
+                    collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
+                    picture =
+                        {
+                            filename = "__core__/graphics/empty.png",
+                            priority = "extra-high",
+                            width = 1,
+                            height = 1
+                        }
+                }
             }
-        }
-    )
+        )
+    end
 end
