@@ -43,7 +43,7 @@ function upgrade.attempt(natives, setNewSurface)
     end
     if (global.version < constants.VERSION_11) then
         natives.state = constants.AI_STATE_AGGRESSIVE
-        natives.temperament = 0
+        -- natives.temperament = 0
 
         global.version = constants.VERSION_11
     end
@@ -304,6 +304,20 @@ function upgrade.attempt(natives, setNewSurface)
         natives.pendingAttack.len = #natives.pendingAttack
         natives.squads.len = #natives.squads
 
+        natives.activeRaidNests = 0
+        natives.activeNests = 0
+        natives.destroyPlayerBuildings = 0
+        natives.lostEnemyUnits = 0
+        natives.lostEnemyBuilding = 0
+        natives.rocketLaunched = 0
+        natives.builtEnemyBuilding = 0
+        natives.ionCannonBlasts = 0
+        natives.artilleryBlasts = 0
+
+        natives.temperament = 0
+        natives.temperamentScore = 0
+        natives.stateTick = 0
+        
         if not setNewSurface then
             game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.29")
         end

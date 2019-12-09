@@ -11,6 +11,7 @@ Date: 07. 12. 2019
     - Better tracking of squads on chunks to accommodate the two step path finding
     - Collision checker for squads and squad movement from a container to a unit
     - Attack waves should generate more localized squad formations, so that biters appear to attack from all sides less
+    - New AI temperament system
   Tweaks:
     - Increased minimum unit count for a retreat from 3 to 6
     - Biters and Spitters now are affected by tile modifiers
@@ -59,6 +60,8 @@ Date: 07. 12. 2019
     - Dropped support for 5 tier new enemy configuration
     - Changed default blood particle removal optimization to off
     - Added interop function that allows other mods to set the active surface for the AI processing
+  License:
+    - License change from Apache2 to CC BY-NC 4.0
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.28

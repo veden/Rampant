@@ -59,7 +59,8 @@ constants.INTERVAL_PLAYER_PROCESS = (settings.startup["rampant-liteMode"].value 
 constants.INTERVAL_MAP_PROCESS = (settings.startup["rampant-liteMode"].value and 8) or 5
 constants.INTERVAL_SCAN = (settings.startup["rampant-liteMode"].value and 42) or 21
 constants.INTERVAL_CHUNK = 17
-constants.INTERVAL_LOGIC = 61
+constants.INTERVAL_LOGIC = 60
+constants.INTERVAL_TEMPERAMENT = 60 * 360
 constants.INTERVAL_SQUAD = 41
 constants.INTERVAL_RESQUAD = 101
 constants.INTERVAL_BUILDERS = 300
@@ -122,7 +123,7 @@ constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
 
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
-constants.AI_STATE_NOCTURNAL = 3
+-- constants.AI_STATE_NOCTURNAL = 3
 constants.AI_STATE_RAIDING = 4
 constants.AI_STATE_MIGRATING = 5
 constants.AI_STATE_SIEGE = 6
@@ -139,8 +140,11 @@ constants.BASE_AI_STATE_MUTATE = 3
 constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = 0.5
 constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = 3
 
-constants.AI_MIN_STATE_DURATION = 7
-constants.AI_MAX_STATE_DURATION = 17
+-- constants.AI_MIN_STATE_DURATION = 7
+-- constants.AI_MAX_STATE_DURATION = 17
+constants.AI_MIN_STATE_DURATION = 0.2
+constants.AI_MAX_STATE_DURATION = 0.2
+
 constants.AI_MIN_TEMPERAMENT_DURATION = 25
 constants.AI_MAX_TEMPERAMENT_DURATION = 32
 
@@ -444,7 +448,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             type = "spitter-spawner",
             name = "spitter-spawner",
             majorResistances = {},
-            acceptRate = {1, 10, 0.1, 0.2},
+            acceptRate = {1, 10, 0.3, 0.5},
             minorResistances = {},
             attributes = {},
             drops = {"nilArtifact"},
@@ -456,7 +460,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             type = "biter-spawner",
             name = "biter-spawner",
             majorResistances = {},
-            acceptRate = {1, 10, 0.1, 0.2},
+            acceptRate = {1, 10, 0.3, 0.5},
             minorResistances = {},
             attributes = {},
             drops = {"nilArtifact"},
@@ -525,7 +529,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -537,7 +541,7 @@ if settings.startup["rampant-acidEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -603,7 +607,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 type = "spitter-spawner",
                 name = "spitter-spawner",
                 majorResistances = {"laser", "electric"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -614,7 +618,7 @@ if settings.startup["rampant-laserEnemy"].value then
                 type = "biter-spawner",
                 name = "biter-spawner",
                 majorResistances = {"laser", "electric"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -681,7 +685,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -692,7 +696,7 @@ if settings.startup["rampant-fireEnemy"].value then
                 type = "biter-spawner",
                 name = "biter-spawner",
                 majorResistances = {"fire", "acid"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 minorResistances = {},
                 attributes = {},
                 drops = {"redArtifact"},
@@ -753,7 +757,7 @@ if settings.startup["rampant-infernoEnemy"].value then
                 name = "spitter-spawner",
                 majorResistances = {"acid", "fire"},
                 minorWeaknesses = {"poison"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -823,7 +827,7 @@ if settings.startup["rampant-waspEnemy"].value then
                 type = "spitter-spawner",
                 name = "spitter-spawner",
                 attributes = {},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 drops = {"purpleArtifact"},
                 buildSets = {
                     {"spitter", 1, 10}
@@ -896,7 +900,7 @@ if settings.startup["rampant-spawnerEnemy"].value then
                 name = "spitter-spawner",
                 attributes = {},
                 drops = {"orangeArtifact"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 buildSets = {
                     {"spitter", 1, 10}
                 }
@@ -949,7 +953,7 @@ if settings.startup["rampant-electricEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -998,7 +1002,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 name = "biter",
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
-                attributes = {"highHealth", "longReach", "big", "highRegen", "slowMovement", "altBiterArmored"},
+                attributes = {"highHealth", "longReach", "big", "slowMovement", "altBiterArmored"},
                 drops = {"redArtifact"}
             }
         },
@@ -1008,8 +1012,8 @@ if settings.startup["rampant-physicalEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"physical", "explosion"},
                 minorWeaknesses = {"laser", "electric"},
-                attributes = {"highHealth", "bigger", "highRegen"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                attributes = {"highHealth", "bigger"},
+                acceptRate = {1, 10, 0.3, 0.5},
                 drops = {"redArtifact"},
                 buildSets = {
                     {"biter", 1, 10}
@@ -1022,7 +1026,7 @@ if settings.startup["rampant-physicalEnemy"].value then
                 minorWeaknesses = {"laser", "electric"},
                 attackAttributes = {"spit", "physical"},
                 acceptRate = {1, 10, 0.8, 0.6},
-                attributes = {"highHealth", "bigger", "highRegen"},
+                attributes = {"highHealth", "bigger"},
                 drops = {"redArtifact"}
             },
             {
@@ -1067,7 +1071,7 @@ if settings.startup["rampant-trollEnemy"].value then
                 name = "biter-spawner",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {"highestHealth", "bigger", "highestRegen"},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1129,7 +1133,7 @@ if settings.startup["rampant-poisonEnemy"].value then
                 majorResistances = {"poison"},
                 minorWeaknesses = {"electric", "explosion", "laser"},
                 attributes = {"poisonDeathCloud"},
-                acceptRate = {1, 10, 0.1, 0.2},                
+                acceptRate = {1, 10, 0.3, 0.5},                
                 drops = {"greenArtifact"},
                 buildSets = {
                     {"biter", 1, 10}
@@ -1189,7 +1193,7 @@ if settings.startup["rampant-suicideEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"explosion"},
                 minorResistances = {"poison"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
                 buildSets = {
@@ -1247,7 +1251,7 @@ if settings.startup["rampant-nuclearEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"explosion"},
                 minorResistances = {"fire"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"yellowArtifact", "quickSpawning", "lowUnits"},
                 buildSets = {
@@ -1306,7 +1310,7 @@ if settings.startup["rampant-energyThiefEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {"electric", "laser"},
                 minorResistances = {},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1374,7 +1378,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 majorResistances = {},
                 minorResistances = {"explosion"},
                 attributes = {"quickSpawning"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 drops = {"purpleArtifact"},
                 buildSets = {
                     {"spitter", 1, 10}
@@ -1385,7 +1389,7 @@ if settings.startup["rampant-fastEnemy"].value then
                 name = "biter-spawner",
                 majorResistances = {},
                 minorResistances = {"explosion"},
-                acceptRate = {1, 10, 0.1, 0.2},
+                acceptRate = {1, 10, 0.3, 0.5},
                 attributes = {"quickSpawning"},
                 drops = {"purpleArtifact"},
                 buildSets = {

@@ -31,6 +31,7 @@ local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
 local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
+local INTERVAL_TEMPERAMENT = constants.INTERVAL_TEMPERAMENT
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
@@ -85,6 +86,8 @@ local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
 local squadsDispatch = squadAttack.squadsDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
+
+local temperamentPlanner = aiPlanning.temperamentPlanner
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 
@@ -148,6 +151,7 @@ local function onIonCannonFired(event)
     --]]
     local surface = event.surface
     if (surface.index == natives.activeSurface) then
+        natives.ionCannonBlasts = natives.ionCannonBlasts + 1
         natives.points = natives.points + 3000
         local chunk = getChunkByPosition(map, event.position)
         if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
@@ -615,6 +619,12 @@ script.on_nth_tick(INTERVAL_LOGIC,
                        end
 end)
 
+script.on_nth_tick(-- INTERVAL_TEMPERAMENT
+    61,
+    function (event)
+        temperamentPlanner(natives)
+end)
+
 script.on_nth_tick(INTERVAL_SQUAD,
                    function ()
                        squadsDispatch(map,
@@ -677,12 +687,18 @@ local function onDeath(event)
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
+            if artilleryBlast then
+                natives.artilleryBlasts = natives.artilleryBlasts + 1
+            end
+
             if (entityType == "unit") then
                 if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                     -- drop death pheromone where unit died
                     deathScent(map, chunk)
 
                     if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
+
+                        natives.lostEnemyUnits = natives.lostEnemyUnits + 1
 
                         retreatUnits(chunk,
                                      entityPosition,
@@ -893,6 +909,7 @@ end
 local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
     if entity and entity.valid and (entity.surface.index == natives.activeSurface) then
+        natives.rocketLaunched = natives.rocketLaunched + 1
         natives.points = natives.points + 2000
     end
 end
@@ -951,6 +968,13 @@ local function onEntitySpawned(event)
                 entity.destroy()
             end
         end
+    end
+end
+
+local function onUnitGroupCreated(event)
+    local group = event.group
+    if (group.force.name ~= "enemy") then
+        
     end
 end
 
@@ -1017,6 +1041,7 @@ script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
+-- script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
 

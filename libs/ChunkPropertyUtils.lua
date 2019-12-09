@@ -150,8 +150,14 @@ end
 
 function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
     if (value <= 0) then
+        if (map.chunkToActiveRaidNest[chunk] ~= nil) then
+            map.natives.activeRaidNests = map.natives.activeRaidNests - 1
+        end
         map.chunkToActiveRaidNest[chunk] = nil
     else
+        if (map.chunkToActiveRaidNest[chunk] == nil) then
+            map.natives.activeRaidNests = map.natives.activeRaidNests + 1
+        end
         map.chunkToActiveRaidNest[chunk] = value
     end
 end
@@ -162,8 +168,14 @@ end
 
 function chunkPropertyUtils.setNestActiveness(map, chunk, value)
     if (value <= 0) then
+        if (map.chunkToActiveNest[chunk] ~= nil) then
+            map.natives.activeNests = map.natives.activeNests - 1
+        end
         map.chunkToActiveNest[chunk] = nil
     else
+        if (map.chunkToActiveNest[chunk] == nil) then
+            map.natives.activeNests = map.natives.activeNests + 1
+        end
         map.chunkToActiveNest[chunk] = value
     end
 end
@@ -222,7 +234,7 @@ function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
         squads[#squads+1] = squad
 
         squad.chunk = chunk
-    end    
+    end
 end
 
 function chunkPropertyUtils.removeSquadFromChunk(map, squad)

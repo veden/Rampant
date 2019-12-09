@@ -202,10 +202,9 @@ function unitGroupUtils.cleanBuilders(natives, surface)
                     position.x = groupPosition.x
                     position.y = groupPosition.y
 
-                    squad.cycles = 400
+                    squad.cycles = 40
 
                     group.set_command(cmd)
-                    group.start_moving()
                 else
                     tRemove(squads, i)
                     group.destroy()

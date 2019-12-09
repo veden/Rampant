@@ -11,6 +11,7 @@ local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -144,7 +145,7 @@ local function settleMove(map, squad, surface)
     local cmd
     local position
     local position2
-
+    
     if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
     then
         if not ((groupState == DEFINES_GROUP_FINISHED) or ((groupState == DEFINES_GROUP_GATHERING) and (squad.cycles <= 0))) then
@@ -157,6 +158,9 @@ local function settleMove(map, squad, surface)
             position = groupPosition
         end
 
+        targetPosition.x = position.x
+        targetPosition.y = position.y       
+        
         cmd = map.settleCommand
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
@@ -179,7 +183,7 @@ local function settleMove(map, squad, surface)
             end
         end
 
-        squad.cycles = 400
+        squad.cycles = 40
         group.set_command(cmd)
     else
         local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
@@ -207,7 +211,7 @@ local function settleMove(map, squad, surface)
             else
                 targetPosition.x = position.x
                 targetPosition.y = position.y
-
+                
                 if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
                     (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
                 then
@@ -228,7 +232,7 @@ local function settleMove(map, squad, surface)
                 end
             end
 
-            if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then                
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
                 position2 = findMovementPosition(surface, targetPosition2)
@@ -263,10 +267,10 @@ local function settleMove(map, squad, surface)
 
             squad.status = SQUAD_BUILDING
 
-            map.buildPositionTop.x = position.x - BASE_CLEAN_DISTANCE
-            map.buildPositionTop.y = position.y - BASE_CLEAN_DISTANCE
-            map.buildPositionBottom.x = position.x + BASE_CLEAN_DISTANCE
-            map.buildPositionBottom.y = position.y + BASE_CLEAN_DISTANCE
+            map.buildPositionTop.x = targetPosition.x - BASE_CLEAN_DISTANCE
+            map.buildPositionTop.y = targetPosition.y - BASE_CLEAN_DISTANCE
+            map.buildPositionBottom.x = targetPosition.x + BASE_CLEAN_DISTANCE
+            map.buildPositionBottom.y = targetPosition.y + BASE_CLEAN_DISTANCE
 
             local entities = surface.find_entities_filtered(map.filteredEntitiesClearBuildingQuery)
             for i=1,#entities do
@@ -276,7 +280,7 @@ local function settleMove(map, squad, surface)
                 end
             end
 
-            squad.cycles = 400
+            squad.cycles = 40
             group.set_command(cmd)
         else
             squad.cycles = 23

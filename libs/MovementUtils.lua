@@ -142,7 +142,7 @@ end
 function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction, squad)
     local highestChunk = SENTINEL_IMPASSABLE_CHUNK
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection
+    local highestDirection = 0
 
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
@@ -162,7 +162,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
 
     local nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
     local nextHighestScore = -MAGIC_MAXIMUM_NUMBER
-    local nextHighestDirection
+    local nextHighestDirection = 0
 
     if (highestChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
@@ -179,10 +179,6 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
                 end
             end
         end
-    end
-
-    if (nextHighestChunk == nil) then
-        nextHighestChunk = SENTINEL_IMPASSABLE_CHUNK
     end
 
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
