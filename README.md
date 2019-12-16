@@ -5,10 +5,6 @@ Factorio Mod - Improves the enemies tactics by using potential fields/pheromones
 
 https://forums.factorio.com/viewtopic.php?f=94&t=31445  
 
-# Graphics License
-
-The armoured biter graphics are done by Cybran M and have been allowed to be included in Rampant using the https://creativecommons.org/licenses/by-nc/4.0/  
-
 # Notes
 
 0.14.14 factorio version fixed save corruption  
