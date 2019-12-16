@@ -82,7 +82,7 @@ local mRandom = math.random
 
 local function evoToTier(natives, evolutionFactor)
     local v
-    for i=10,1,-1 do        
+    for i=10,1,-1 do
         if natives.evoToTierMapping[i] <= evolutionFactor then
             v = i
             if mRandom() <= 0.65 then
@@ -136,40 +136,48 @@ end
 local function initialEntityUpgrade(baseAlignment, tier, maxTier, natives, useHiveType)
     local evolutionTable = natives.buildingEvolveLookup
     local entity
-    
-    for t=maxTier,tier,-1 do
-        local upgrades = evolutionTable[baseAlignment][t]
 
-        if upgrades then
-            if useHiveType then
-                for ui=1,#upgrades do
-                    local upgrade = upgrades[ui]
-                    if upgrade[3] == useHiveType then
-                        entity = upgrade[2][mRandom(#upgrade[2])]
-                        if mRandom() < 0.45 then
-                            break
-                        end
-                    end
+    local useTier
+
+    local tierRoll = mRandom()
+    if (tierRoll < 0.4) then
+        useTier = maxTier
+    elseif (tierRoll < 0.7) then
+        useTier = mMax(maxTier - 1, tier)
+    elseif (tierRoll < 0.9) then
+        useTier = mMax(maxTier - 2, tier)
+    else
+        useTier = mMax(maxTier - 3, tier)
+    end
+
+    local upgrades = evolutionTable[baseAlignment][useTier]
+
+    if upgrades then
+        if useHiveType then
+            for ui=1,#upgrades do
+                local upgrade = upgrades[ui]
+                if upgrade[3] == useHiveType then
+                    entity = upgrade[2][mRandom(#upgrade[2])]
+                    break
                 end
-            else
-                local roll = mRandom()
+            end
+        else
+            local roll = mRandom()
+            local initial = roll
 
-                for ui=1,#upgrades do
-                    local upgrade = upgrades[ui]
+            for ui=1,#upgrades do
+                local upgrade = upgrades[ui]
 
-                    roll = roll - upgrade[1]
+                roll = roll - upgrade[1]
 
-                    if (roll <= 0) then
-                        entity = upgrade[2][mRandom(#upgrade[2])]
-                        if mRandom() < 0.45 then
-                            break
-                        end
-                    end
+                if (roll <= 0) then
+                    entity = upgrade[2][mRandom(#upgrade[2])]
+                    break
                 end
             end
         end
     end
-    
+
     return entity
 end
 
@@ -181,9 +189,9 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, nativ
     for t=maxTier,tier,-1 do
         local upgrades = evolutionTable[baseAlignment][t][buildingHiveTypeLookup[originalEntity.name]]
 
-        if upgrades then
+        if upgrades and (#upgrades > 0) then
             entity = upgrades[mRandom(#upgrades)]
-            if mRandom() < 0.45 then
+            if mRandom() < 0.55 then
                 break
             end
         end
@@ -204,15 +212,15 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     if (tier > maxTier) then
         return nil
     end
-    
+
     if evolve then
         local chunk = getChunkByPosition(natives.map, originalEntity.position)
-        local makeHive = (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getResourceGenerator(natives.map, chunk) > 0) and (mRandom() < 0.3)
+        local makeHive = (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getResourceGenerator(natives.map, chunk) > 0) and (mRandom() < 0.2)
 
         return initialEntityUpgrade(baseAlignment, tier, maxTier, natives, (makeHive and "hive"))
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, natives)
-    end   
+    end
 end
 
 local function findBaseInitialAlignment(natives, evoIndex)
@@ -266,8 +274,8 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, disPos
                                           evoIndex,
                                           entity,
                                           natives,
-                                          evolve)    
-    
+                                          evolve)
+
     if spawnerName then
         entity.destroy()
         local name = natives.buildingSpaceLookup[spawnerName] or spawnerName
@@ -490,7 +498,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
                 to pick given an evolution level.
 
                 evolutionTable is a table that given a faction allows the selection of a building
-                type based on the propabilities given. Once the the building type is selected given 
+                type based on the propabilities given. Once the the building type is selected given
                 a faction, then the evolution decides what level of building to select
             --]]
             local factionAcceptRate = faction.acceptRate
@@ -583,6 +591,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
             end
         end
     end
+
 end
 
 baseUtilsG = baseUtils

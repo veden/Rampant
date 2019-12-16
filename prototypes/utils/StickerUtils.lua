@@ -32,9 +32,9 @@ function stickerUtils.makeSticker(attributes)
             },
         
         duration_in_ticks = attributes.stickerDuration or (30 * 60),
-        target_movement_modifier_from = attributes.stickerMovementModifier,
+        target_movement_modifier_from = attributes.stickerMovementModifier or 1,
         target_movement_modifier_to = 1,
-        vehicle_speed_modifier_from = attributes.stickerMovementModifier,
+        vehicle_speed_modifier_from = attributes.stickerMovementModifier or 1,
         vehicle_speed_modifier_to = 1,
         vehicle_friction_modifier_from = 1.5,
         vehicle_friction_modifier_to = 1,

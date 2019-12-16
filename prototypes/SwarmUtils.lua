@@ -13,6 +13,7 @@ local biterUtils = require("utils/BiterUtils")
 local particleUtils = require("utils/ParticleUtils")
 local stickerUtils = require("utils/StickerUtils")
 local unitUtils = require("utils/UnitUtils")
+local fireUtils = require("utils/FireUtils")
 
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
@@ -47,6 +48,7 @@ local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTabl
+local makeAcidSplashFire = fireUtils.makeAcidSplashFire
 
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
 local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTable
@@ -154,17 +156,24 @@ local biterAttributeNumeric = {
     ["radius"] = { 0.5, 0.65, 0.75, 0.85, 0.95, 1.1, 1.2, 1.3, 1.4, 1.5 },
     ["cooldown"] = { 40, 41, 42, 44, 46, 48, 50, 52, 55, 57 },
     ["damage"] = { 7, 15, 22.5, 35, 45, 60, 75, 90, 150, 200 },
-    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["scale"] = { 0.25, 0.40, 0.60, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
     ["healing"] = { 0.01, 0.01, 0.015, 0.02, 0.05, 0.075, 0.1, 0.12, 0.14, 0.16 },
     ["physicalDecrease"] = { 0, 0, 4, 5, 6, 8, 11, 13, 16, 17 },
     ["physicalPercent"] = { 0, 0, 0, 10, 12, 12, 14, 16, 18, 20 },
     ["explosionDecrease"] = { 0, 0, 0, 0, 0, 10, 12, 14, 16, 20 },
     ["explosionPercent"] = { 0, 0, 0, 10, 12, 13, 15, 16, 17, 20 },
-    ["distancePerFrame"] = { 0.1, 0.125, 0.15, 0.19, 0.195, 0.2, 0.2, 0.2, 0.2, 0.2 },
+    -- ["distancePerFrame"] = { 0.1, 0.125, 0.15, 0.19, 0.195, 0.2, 0.2, 0.2, 0.2, 0.2 },
+    ["distancePerFrame"] = { 0.08, 0.10, 0.125, 0.15, 0.18, 0.195, 0.2, 0.2, 0.2, 0.2 },
     ["movement"] = { 0.2, 0.19, 0.185, 0.18, 0.175, 0.17, 0.17, 0.17, 0.17, 0.17 },
     ["health"] = { 15, 75, 150, 250, 1000, 2000, 3500, 7500, 15000, 30000 },
     ["pollutionToAttack"] = { 200, 750, 1200, 1750, 2500, 5000, 10000, 12500, 15000, 20000 },
     ["spawningTimeModifer"] = { 1, 1, 1, 2, 3, 7, 10, 10, 12, 12 }
+}
+
+local acidPuddleAttributeNumeric = {
+    ["damagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
+    ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
+    ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 }
 }
 
 local spitterAttributeNumeric = {
@@ -173,18 +182,18 @@ local spitterAttributeNumeric = {
     ["cooldown"] = { 100, 100, 97, 97, 95, 95, 93, 93, 90, 90 },
     ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
-    -- ["stickerDamagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
+    ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
     ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
     ["damage"] = { 16, 30, 45, 60, 90, 110, 130, 150, 170, 190 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
-    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["scale"] = { 0.25, 0.40, 0.60, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
     ["healing"] = { 0.01, 0.01, 0.015, 0.02, 0.05, 0.075, 0.1, 0.12, 0.14, 0.16 },
     ["physicalDecrease"] = { 0, 0, 0, 0, 2, 4, 6, 8, 10, 12 },
     ["physicalPercent"] = { 0, 0, 0, 10, 12, 12, 14, 14, 15, 15 },
     ["explosionPercent"] = { 0, 0, 10, 10, 20, 20, 30, 30, 40, 40 },
-    ["distancePerFrame"] = { 0.04, 0.045, 0.050, 0.055, 0.060, 0.065, 0.070, 0.075, 0.08, 0.084 },
+    ["distancePerFrame"] = { 0.04, 0.045, 0.050, 0.055, 0.060, 0.065, 0.067, 0.069, 0.071, 0.073 },
     ["movement"] = { 0.185, 0.18, 0.18, 0.17, 0.17, 0.16, 0.16, 0.15, 0.15, 0.14 },
     ["health"] = { 10, 50, 200, 350, 1250, 2250, 3250, 6500, 12500, 25000 },
     ["pollutionToAttack"] = { 200, 750, 1200, 1750, 2500, 5000, 10000, 12500, 15000, 20000 },
@@ -192,7 +201,7 @@ local spitterAttributeNumeric = {
 }
 
 local droneAttributeNumeric = {
-    ["scale"] = { 0.5, 0.5, 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9 },
+    ["scale"] = { 0.3, 0.32, 0.34, 0.36, 0.4, 0.42, 0.44, 0.5, 0.52, 0.54 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
@@ -203,7 +212,7 @@ local droneAttributeNumeric = {
     ["ttl"] = { 300, 300, 350, 350, 400, 400, 450, 450, 500, 500 },
     ["damage"] = { 2, 4, 7, 13, 15, 18, 22, 28, 35, 40 },
     ["movement"] = { 0.06, 0.06, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.1 },
-    ["distancePerFrame"] = { 0.08, 0.08, 0.085, 0.085, 0.09, 0.09, 0.092, 0.092, 0.094, 0.094 },
+    ["distancePerFrame"] = { 0.1, 0.1, 0.105, 0.105, 0.110, 0.110, 0.112, 0.112, 0.114, 0.114 },
     ["rangeFromPlayer"] = { 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 },
     ["range"] = { 10, 10, 11, 11, 12, 12, 13, 13, 14, 14 },
     ["radius"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5 },
@@ -258,8 +267,9 @@ local wormAttributeNumeric = {
     ["range"] = { 25, 27, 31, 33, 35, 36, 37, 38, 39, 40 },
     ["cooldown"] = { 70, 70, 68, 66, 64, 62, 60, 58, 56, 54 },
     ["damage"] = { 36, 45, 85, 135, 155, 175, 195, 215, 235, 255 },
-    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["scale"] = { 0.25, 0.40, 0.60, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
     ["radius"] = { 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.3, 2.5, 3.0 },
+    ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
@@ -530,7 +540,7 @@ local function fillEntityTemplate(entity)
                     entity["cooldown"] = entity["cooldown"] * 0.85
                 elseif (attribute == "slowMovement") then
                     entity["movement"] = entity["movement"] * 0.35
-                    entity["distancePerFrame"] = entity["distancePerFrame"] * 0.85
+                    entity["distancePerFrame"] = entity["distancePerFrame"] * 0.65
                 elseif (attribute == "quickMovement") then
                     entity["movement"] = entity["movement"] * 1.05
                     entity["distancePerFrame"] = entity["distancePerFrame"] * 1.15
@@ -694,7 +704,7 @@ function swarmUtils.buildUnits(template)
                                 target_effects =
                                     {
                                         type = "create-entity",
-                                        entity_name = unit.explosion
+                                        entity_name = "massive-explosion"
                                     }
                             }
                     }
@@ -856,6 +866,18 @@ local function buildAttack(faction, template)
         local attack = template.attackAttributes[i]
         if (attack == "melee") then
             template.attackGenerator = createMeleeAttack
+        elseif (attack == "acidPool") then
+            template.addon[#template.addon+1] = acidPuddleAttributeNumeric
+            template.meleePuddleGenerator = function (attributes)
+                attributes.stickerDamagePerTickType = "acid"
+                return {
+                    type="create-fire",
+                    entity_name = makeAcidSplashFire(attributes, attributes.stickerName or makeSticker(attributes)),
+                    check_buildability = true,
+                    initial_ground_flame_count = 2,
+                    show_in_tooltip = true
+                }
+            end
         elseif (attack == "spit") then
             template.attackType = "projectile"
             -- template.attackDirectionOnly = true

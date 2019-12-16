@@ -72,6 +72,8 @@ local getTurretCount = chunkPropertyUtils.getTurretCount
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
 
+local processNestActiveness = chunkPropertyUtils.processNestActiveness
+
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local findNearbyBase = baseUtils.findNearbyBase
@@ -409,7 +411,7 @@ function chunkUtils.colorChunk(x, y, tileType, surface)
     surface.set_tiles(tiles, false)
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, base)
+function chunkUtils.registerEnemyBaseStructure(map, entity, base, surface)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
@@ -455,6 +457,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
             if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
                 setFunc(map, chunk, getFunc(map, chunk) + 1)
                 setChunkBase(map, chunk, base)
+                processNestActiveness(map, chunk, natives, surface)
             end
         end
     end

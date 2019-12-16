@@ -210,7 +210,8 @@ function tests.registeredNest(x)
     local entity = tests.createEnemy(x)
     chunk.registerEnemyBaseStructure(global.map,
                                      entity,
-                                     nil)
+                                     nil,
+                                     game.surfaces[global.natives.activeSurface])
 end
 
 function tests.attackOrigin()

@@ -7,6 +7,8 @@ local mathUtils = require("libs/MathUtils")
 
 -- constants
 
+local CONVERSION_TABLE = constants.CONVERSION_TABLE
+
 local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
@@ -269,7 +271,7 @@ function upgrade.attempt(natives, setNewSurface)
 
         global.version = 95
     end
-    if (global.version < 99) then
+    if (global.version < 100) then
 
         game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
         game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
@@ -291,6 +293,19 @@ function upgrade.attempt(natives, setNewSurface)
             end
         end
 
+        for i=#natives.bases,1,-1 do
+            local base = natives.bases[i]
+
+            for x=1,#base.alignment do
+                local c = CONVERSION_TABLE[base.alignment[x]]
+                if (x == 1) and not c then
+                    base.alignment = {}
+                else
+                    base.alignment[x] = c
+                end                               
+            end
+        end
+        
         natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
 
         natives.nextChunkSort = nil
@@ -321,7 +336,7 @@ function upgrade.attempt(natives, setNewSurface)
         if not setNewSurface then
             game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.29")
         end
-        global.version = 99
+        global.version = 100
     end
 
     return starting ~= global.version, natives

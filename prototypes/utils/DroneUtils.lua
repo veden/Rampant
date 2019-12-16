@@ -10,7 +10,7 @@ function droneUtils.makeDrone(attributes)
         resistances[#resistances+1] = v
     end
     -- attributes.name = name
-    
+
     local drone = {
         type = "combat-robot",
         name = n,
@@ -41,22 +41,23 @@ function droneUtils.makeDrone(attributes)
                             priority = "high",
                             line_length = 16,
                             width = 32,
-                            tint = attributes.tint or {r=1.0, g=0.0, b=0.0},
+                            tint = attributes.tint2,
                             height = 33,
                             frame_count = 1,
                             direction_count = 16,
                             shift = {0, 0.015625},
+                            scale = attributes.scale,
                             hr_version = {
                                 filename = "__base__/graphics/entity/defender-robot/hr-defender-robot.png",
                                 priority = "high",
                                 line_length = 16,
                                 width = 56,
                                 height = 59,
-                                tint = attributes.tint or {r=1.0, g=0.0, b=0.0},
+                                tint = attributes.tint2,
                                 frame_count = 1,
                                 direction_count = 16,
                                 shift = util.by_pixel(0, 0.25),
-                                scale = 0.5
+                                scale = attributes.scale * 0.5
                             }
                         },
                         {
@@ -65,23 +66,24 @@ function droneUtils.makeDrone(attributes)
                             line_length = 16,
                             width = 18,
                             height = 16,
-                            tint = attributes.tint2 or {r=1.0, g=0.0, b=0.0},
+                            tint = attributes.tint2,
                             frame_count = 1,
                             direction_count = 16,
                             shift = {0, -0.125},
-                            apply_runtime_tint = true,
+                            -- apply_runtime_tint = true,
+                            scale = attributes.scale,
                             hr_version = {
                                 filename = "__base__/graphics/entity/defender-robot/hr-defender-robot-mask.png",
                                 priority = "high",
                                 line_length = 16,
                                 width = 28,
                                 height = 21,
-                                tint = attributes.tint2 or {r=1.0, g=0.0, b=0.0},
+                                tint = attributes.tint2,
                                 frame_count = 1,
                                 direction_count = 16,
                                 shift = util.by_pixel(0, -4.75),
-                                apply_runtime_tint = true,
-                                scale = 0.5
+                                -- apply_runtime_tint = true,
+                                scale = attributes.scale * 0.5
                             }
                         },
                     }
@@ -96,6 +98,7 @@ function droneUtils.makeDrone(attributes)
                 frame_count = 1,
                 direction_count = 16,
                 shift = {0.859375, 0.609375},
+                scale = attributes.scale,
                 hr_version = {
                     filename = "__base__/graphics/entity/defender-robot/hr-defender-robot-shadow.png",
                     priority = "high",
@@ -105,7 +108,7 @@ function droneUtils.makeDrone(attributes)
                     frame_count = 1,
                     direction_count = 16,
                     shift = util.by_pixel(25.5, 19),
-                    scale = 0.5
+                    scale = attributes.scale * 0.5
                 }
             },
         in_motion =
@@ -117,26 +120,25 @@ function droneUtils.makeDrone(attributes)
                             priority = "high",
                             line_length = 16,
                             width = 32,
-                            tint = attributes.tint or {r=1.0, g=0.0, b=0.0},
+                            tint = attributes.tint,
                             height = 33,
                             frame_count = 1,
-                            tint = attributes.tint,                            
                             direction_count = 16,
                             shift = {0, 0.015625},
                             y = 33,
+                            scale = attributes.scale,
                             hr_version = {
                                 filename = "__base__/graphics/entity/defender-robot/hr-defender-robot.png",
                                 priority = "high",
                                 line_length = 16,
                                 width = 56,
-                                tint = attributes.tint or {r=1.0, g=0.0, b=0.0},
+                                tint = attributes.tint,
                                 height = 59,
                                 frame_count = 1,
-                                tint = attributes.tint,
                                 direction_count = 16,
                                 shift = util.by_pixel(0, 0.25),
                                 y = 59,
-                                scale = 0.5
+                                scale = attributes.scale * 0.5
                             }
                         },
                         {
@@ -149,8 +151,8 @@ function droneUtils.makeDrone(attributes)
                             direction_count = 16,
                             tint = attributes.tint2,
                             shift = {0, -0.125},
-                            apply_runtime_tint = true,
                             y = 16,
+                            scale = attributes.scale,
                             hr_version = {
                                 filename = "__base__/graphics/entity/defender-robot/hr-defender-robot-mask.png",
                                 priority = "high",
@@ -161,9 +163,8 @@ function droneUtils.makeDrone(attributes)
                                 direction_count = 16,
                                 tint = attributes.tint2,
                                 shift = util.by_pixel(0, -4.75),
-                                apply_runtime_tint = true,
                                 y = 21,
-                                scale = 0.5
+                                scale = attributes.scale * 0.5
                             }
                         },
                     }
@@ -176,20 +177,19 @@ function droneUtils.makeDrone(attributes)
                 width = 43,
                 height = 23,
                 frame_count = 1,
-                tint = attributes.tint,
                 direction_count = 16,
                 shift = {0.859375, 0.609375},
+                scale = attributes.scale,
                 hr_version = {
                     filename = "__base__/graphics/entity/defender-robot/hr-defender-robot-shadow.png",
                     priority = "high",
                     line_length = 16,
                     width = 88,
                     height = 50,
-                    tint = attributes.tint,
                     frame_count = 1,
                     direction_count = 16,
                     shift = util.by_pixel(25.5, 19),
-                    scale = 0.5
+                    scale = attributes.scale * 0.5
                 }
             }
     }
@@ -249,7 +249,8 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
                     frame_count = 1,
                     width = 28,
                     height = 20,
-                    tint = attributes.tint,
+                    tint = attributes.tint2,
+                    scale = attributes.scale,
                     priority = "high"
                 },
                 {
@@ -259,8 +260,8 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
                     width = 28,
                     height = 20,
                     tint = attributes.tint2,
+                    scale = attributes.scale,
                     priority = "high",
-                    apply_runtime_tint = true,
                 },
             },
         },
@@ -271,6 +272,7 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
                 frame_count = 1,
                 width = 26,
                 height = 20,
+                scale = attributes.scale,
                 priority = "high"
             },
         smoke = {

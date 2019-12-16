@@ -35,7 +35,7 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
-local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
+local processNestActiveness = chunkPropertyUtils.processNestActiveness
 
 local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
@@ -158,34 +158,6 @@ function mapProcessor.processMap(map, surface, tick)
         map.processIndex = 1
     else
         map.processIndex = endIndex + 1
-    end
-end
-
-local function processNestActiveness(map, chunk, natives, surface)
-    local nests = getNestCount(map, chunk)
-    if (nests > 0) then
-        local activeness = getNestActiveness(map, chunk)
-        local raidActiveness = getRaidNestActiveness(map, chunk)
-        if natives.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > natives.attackPlayerThreshold) then
-            setNestActiveness(map, chunk, mMin(activeness + 5, 20))
-        elseif (chunk[BASE_PHEROMONE] > 0) then
-            if (surface.get_pollution(chunk) > 0) then
-                setNestActiveness(map, chunk, mMin(activeness + 5, 20))
-            else
-                setNestActiveness(map, chunk, activeness - 2)
-                if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
-                    setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20))
-                else
-                    setRaidNestActiveness(map, chunk, raidActiveness - 1)
-                end
-            end
-        else
-            setNestActiveness(map, chunk, activeness - 5)
-            setRaidNestActiveness(map, chunk, raidActiveness - 5)
-        end
-    else
-        setNestActiveness(map, chunk, 0)
-        setRaidNestActiveness(map, chunk, 0)
     end
 end
 

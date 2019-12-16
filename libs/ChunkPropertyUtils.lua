@@ -5,12 +5,22 @@ local chunkPropertyUtils = {}
 
 local constants = require("Constants")
 
-local tRemove = table.remove
+-- constants
 
--- imported functions
+local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
+
+local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
 local MOVEMENT_GENERATOR_PERSISTANCE = constants.MOVEMENT_GENERATOR_PERSISTANCE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+
+-- imported functions
+
+local tRemove = table.remove
+
+local mMin = math.min
+local mMax = math.max
 
 -- module code
 
@@ -270,6 +280,60 @@ end
 function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
     map.chunkToPlayerBase[chunk] = (map.chunkToPlayerBase[chunk] or 0) + playerGenerator
 end
+
+function chunkPropertyUtils.processNestActiveness(map, chunk, natives, surface)
+    local nests = chunkPropertyUtils.getNestCount(map, chunk)
+    if (nests > 0) then
+        local activeness = chunkPropertyUtils.getNestActiveness(map, chunk)
+        local raidActiveness = chunkPropertyUtils.getRaidNestActiveness(map, chunk)
+        if natives.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > natives.attackPlayerThreshold) then
+            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+        elseif (chunk[BASE_PHEROMONE] > 0) then
+            local position = map.position
+            if (surface.get_pollution(chunk) > 0) then
+                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+            else
+                local x = chunk.x
+                local y = chunk.y
+                position.x = x + 32
+                position.y = y
+                if (surface.get_pollution(position) > 0) then
+                    chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                else
+                    position.x = x - 32
+                    if (surface.get_pollution(position) > 0) then
+                        chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                    else
+                        position.x = x
+                        position.y = y - 32
+                        if (surface.get_pollution(position) > 0) then
+                            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                        else
+                            position.y = y + 32
+                            if (surface.get_pollution(position) > 0) then
+                                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                            else
+                                chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2)
+                                if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
+                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20))
+                                else
+                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 1)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 5)
+            chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 5)
+        end
+    else
+        chunkPropertyUtils.setNestActiveness(map, chunk, 0)
+        chunkPropertyUtils.setRaidNestActiveness(map, chunk, 0)
+    end
+end
+
 
 chunkPropertyUtilsG = chunkPropertyUtils
 return chunkPropertyUtils

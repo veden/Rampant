@@ -476,15 +476,11 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
-    upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
-    upgrade.compareTable(natives, "onslaughtAIToggle", settings.global["rampant-onslaughtAIToggle"].value)
 
     upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
-
-    upgrade.compareTable(natives, "aiAggressiveness", settings.global["rampant-aiAggressiveness"].value)
 
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
@@ -557,10 +553,9 @@ local function prepWorld(rebuild, surfaceIndex)
             end
         end
 
-        -- UNCOMMENT ME
-        -- if natives.newEnemies and rebuild then
-        --     game.forces.enemy.kill_all_units()
-        -- end
+        if natives.newEnemies and rebuild then
+            game.forces.enemy.kill_all_units()
+        end
 
         processPendingChunks(map, surface, pendingChunks, tick, rebuild)
     end
@@ -619,10 +614,9 @@ script.on_nth_tick(INTERVAL_LOGIC,
                        end
 end)
 
-script.on_nth_tick(-- INTERVAL_TEMPERAMENT
-    61,
-    function (event)
-        temperamentPlanner(natives)
+script.on_nth_tick(INTERVAL_TEMPERAMENT,
+                   function (event)
+                       temperamentPlanner(natives)
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
@@ -835,7 +829,7 @@ local function onEnemyBaseBuild(event)
                                        true)
             end
             if entity and entity.valid then
-                event.entity = registerEnemyBaseStructure(map, entity, base)
+                event.entity = registerEnemyBaseStructure(map, entity, base, surface)
             end
         end
     end
@@ -962,7 +956,7 @@ local function onEntitySpawned(event)
                                        natives,
                                        disPos)
                 if entity and entity.valid then
-                    event.entity = registerEnemyBaseStructure(map, entity, base)
+                    event.entity = registerEnemyBaseStructure(map, entity, base, surface)
                 end
             else
                 entity.destroy()

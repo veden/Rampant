@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.29
-Date: 07. 12. 2019
+Date: 15. 12. 2019
   Optional Graphics:
     - New Hi and Low resolution graphics for Troll and Physical Factions biters, armored biters (Thanks to CybranM, requires downloading separate mod Armoured Biters)
   Features:
@@ -12,7 +12,11 @@ Date: 07. 12. 2019
     - Collision checker for squads and squad movement from a container to a unit
     - Attack waves should generate more localized squad formations, so that biters appear to attack from all sides less
     - New AI temperament system
+    - Spawner pollution coverage detection
+    - Acid biter melee attack now leaves acid puddle
   Tweaks:
+    - Reduced size of new enemy lower tiers
+    - Onslaught AI setting and aiAggressiveness setting removed
     - Increased minimum unit count for a retreat from 3 to 6
     - Biters and Spitters now are affected by tile modifiers
     - Nerfed inferno spitter fire damage and duration to reasonable levels
@@ -25,10 +29,10 @@ Date: 07. 12. 2019
     - Reduced sticker damage and duration everywhere
     - Switched general spit projectile from direction only to positional targeting
     - Added spit projectile stickers to tooltip
-    - Default for new enemies spit projectile stickers no longer do damage only slow
+    - Default for new enemies spit projectile stickers damage reduced by half
     - Spawner spitter and worm eggs now damage the immediate area around the egg
     - Acid pools no longer cause friendly fire
-    - Prioritize settler group creation of attack squads
+    - Prioritize settler group creation over attack squads
     - Biter faction color should match map color now
     - Increased unit spawner spawning time by 3x
   Optimizations:
@@ -37,6 +41,7 @@ Date: 07. 12. 2019
     - Regrouping squads and builder clean up put onto separate intervals
     - Reusing chunk scanner tables
   Bugfixes:
+    - Fixed spawner egg and wasp size being larger than intended
     - Fixed old savegames penalties having nil chunk index
     - Fixed that mining a resource by hand unregister all remaining resource on a tile
     - Fixed pheromone dispersal not following pathing restrictions

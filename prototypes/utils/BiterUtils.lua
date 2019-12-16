@@ -299,7 +299,7 @@ function biterFunctions.makeSpitter(attributes)
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = makeSpitterCorpse(attributes),
         dying_explosion = attributes.explosion,
-                enemy_map_color = attributes.tint2,
+        enemy_map_color = attributes.tint2,
         dying_trigger_effect = attributes.dyingEffect,        
         dying_sound =  make_spitter_dying_sounds(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  make_biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
@@ -319,7 +319,7 @@ function biterFunctions.makeUnitSpawner(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-       -- print(attributes.name)
+    -- print(attributes.name)
     local o = {
         type = "unit-spawner",
         name = attributes.name .. "-rampant",
@@ -860,6 +860,18 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
 end
 
 function biterFunctions.createMeleeAttack(attackAttributes)
+    local meleeAttackEffects = {
+        type = "damage",
+        damage = { amount = attackAttributes.damage * 0.25, type = attackAttributes.damageType or "physical" }
+    }
+
+    if attackAttributes.meleePuddleGenerator then
+        local o = {}
+        o[1] = meleeAttackEffects
+        o[2] = attackAttributes.meleePuddleGenerator(attackAttributes)
+        meleeAttackEffects = o
+    end
+    
     return {
         type = "projectile",
         range = attackAttributes.range or 0.5,
@@ -890,11 +902,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
                         action_delivery =
                             {
                                 type = "instant",
-                                target_effects =
-                                    {
-                                        type = "damage",
-                                        damage = { amount = attackAttributes.damage * 0.25, type = attackAttributes.damageType or "physical" }
-                                    }
+                                target_effects = meleeAttackEffects
                             }
                     }
                 }
