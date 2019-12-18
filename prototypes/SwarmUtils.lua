@@ -241,12 +241,12 @@ local unitSpawnerAttributeNumeric = {
 local hiveAttributeNumeric = {
     ["health"] = { 700, 1000, 1500, 3000, 7000, 15000, 22000, 40000, 60000, 90000 },
     ["healing"] = { 0.02, 0.02, 0.022, 0.024, 0.026, 0.028, 0.03, 0.032, 0.034, 0.036 },
-    ["spawingCooldownStart"] = { 2840, 2800, 2760, 2720, 2680, 2640, 2600, 2560, 2520, 2480 },
-    -- ["spawingCooldownStart"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
+    ["spawningCooldownStart"] = { 2840, 2800, 2760, 2720, 2680, 2640, 2600, 2560, 2520, 2480 },
+    -- ["spawningCooldownStart"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["spawningRadius"] = { 10, 13, 15, 17, 20, 23, 26, 29, 32, 35 },
     ["spawningSpacing"] = { 5, 5, 5, 6, 6, 6, 7, 7, 7, 8 },
-    ["spawingCooldownEnd"] = { 1020, 1015, 1010, 1005, 1000, 995, 990, 985, 980, 975 },
-    -- ["spawingCooldownEnd"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
+    ["spawningCooldownEnd"] = { 1020, 1015, 1010, 1005, 1000, 995, 990, 985, 980, 975 },
+    -- ["spawningCooldownEnd"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["unitsToSpawn"] = { 3000, 3000, 300, 3000, 3000, 3000, 3000, 3000, 3000, 3000 },
     ["scale"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1 },
     ["unitsOwned"] = { 7, 7, 8, 8, 9, 9, 10, 10, 11, 11 },
@@ -396,8 +396,8 @@ local function scaleAttributes (entity)
         entity["health"] = entity["health"] * settings.startup["rampant-unitSpawnerHealthScaler"].value
         entity["unitsOwned"] = entity["unitsOwned"] * settings.startup["rampant-unitSpawnerOwnedScaler"].value
         entity["unitsToSpawn"] = entity["unitsToSpawn"] * settings.startup["rampant-unitSpawnerSpawnScaler"].value
-        entity["spawingCooldownStart"] = entity["spawingCooldownStart"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
-        entity["spawingCooldownEnd"] = entity["spawingCooldownEnd"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
+        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
+        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant-unitSpawnerHealingScaler"].value
     elseif (entity.type == "worm") then
         entity["health"] = entity["health"] * settings.startup["rampant-unitWormHealthScaler"].value

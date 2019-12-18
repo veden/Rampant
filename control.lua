@@ -936,27 +936,35 @@ end
 local function onEntitySpawned(event)
     local entity = event.entity
     if natives.newEnemies and (entity.valid and entity.type ~= "unit") then
-        local spawner = event.spawner
-        local surface = entity.surface
-        if (surface.index == natives.activeSurface) then
-            local disPos = mathUtils.distortPosition(entity.position, 8)           
-            local canPlaceQuery = map.canPlaceQuery
+        if natives.buildingHiveTypeLookup[entity.name] then
 
-            local chunk = getChunkByPosition(map, disPos)
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                local base = findNearbyBase(map, chunk)
-                if not base then
-                    base = createBase(natives,
-                                      chunk,
-                                      event.tick)
-                end
-                entity = upgradeEntity(entity,
-                                       surface,
-                                       base.alignment,
-                                       natives,
-                                       disPos)
-                if entity and entity.valid then
-                    event.entity = registerEnemyBaseStructure(map, entity, base, surface)
+            local spawner = event.spawner
+            local surface = entity.surface
+            
+            if (surface.index == natives.activeSurface) then
+                local disPos = mathUtils.distortPosition(entity.position, 8)           
+                local canPlaceQuery = map.canPlaceQuery
+
+                local chunk = getChunkByPosition(map, disPos)
+                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    local base = findNearbyBase(map, chunk)
+                    if not base then
+                        base = createBase(natives,
+                                          chunk,
+                                          event.tick)
+                    end
+                    local n = entity.name
+
+                    entity = upgradeEntity(entity,
+                                           surface,
+                                           base.alignment,
+                                           natives,
+                                           disPos)              
+                    if entity and entity.valid then                       
+                        event.entity = registerEnemyBaseStructure(map, entity, base, surface)
+                    end
+                else
+                    entity.destroy()
                 end
             else
                 entity.destroy()

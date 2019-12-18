@@ -1502,5 +1502,13 @@ constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRAD
 constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
 
+constants.FACTION_MUTATION_MAPPING = {}
+constants.FACTION_MUTATION_MAPPING["spitter-spawner"] = {"biter-spawner", "hive"}
+constants.FACTION_MUTATION_MAPPING["biter-spawner"] = {"spitter-spawner", "hive"}
+constants.FACTION_MUTATION_MAPPING["hive"] = {"utility", "biter-spawner", "spitter-spawner"}
+constants.FACTION_MUTATION_MAPPING["turret"] = {"trap"}
+constants.FACTION_MUTATION_MAPPING["trap"] = {"turret"}
+constants.FACTION_MUTATION_MAPPING["utility"] = {"hive", "biter-spawner", "spitter-spawner"}
+
 constantsG =  constants
 return constants

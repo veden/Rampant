@@ -378,7 +378,7 @@ function biterFunctions.makeUnitSpawner(attributes)
             },
         result_units = attributes.unitSet,
         -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-        spawning_cooldown = attributes.spawningCooldown or {360, 150},
+        spawning_cooldown = attributes.spawningCooldown or ((attributes.spawningCooldownStart and attributes.spawningCooldownEnd) and {attributes.spawningCooldownStart, attributes.spawningCooldownEnd}) or {360, 150},
         spawning_radius = attributes.spawningRadius or 10,
         spawning_spacing = attributes.spawningSpacing or 3,
         max_spawn_shift = 0,

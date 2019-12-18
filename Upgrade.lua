@@ -211,7 +211,7 @@ function upgrade.attempt(natives, setNewSurface)
             base.state = BASE_AI_STATE_DORMANT
             base.stateTick = 0
             base.alignment = {base.alignment}
-        end        
+        end
 
         global.version = constants.VERSION_72
     end
@@ -302,17 +302,17 @@ function upgrade.attempt(natives, setNewSurface)
                     base.alignment = {}
                 else
                     base.alignment[x] = c
-                end                               
+                end
             end
         end
-        
+
         natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
 
         natives.nextChunkSort = nil
         natives.nextChunkSortTick = nil
 
         natives.evolutionLevel = game.forces.enemy.evolution_factor
-        
+
         natives.evolutionTableUnitSpawner = nil
         natives.evolutionTableWorm = nil
 
@@ -332,11 +332,35 @@ function upgrade.attempt(natives, setNewSurface)
         natives.temperament = 0
         natives.temperamentScore = 0
         natives.stateTick = 0
-        
-        if not setNewSurface then
-            game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.29")
-        end
+
         global.version = 100
+    end
+    if (global.version < 101) then
+
+        local subTypes = constants.HIVE_BUILDINGS_TYPES
+
+        local acc = {}
+
+        for t=1,11 do
+            for si=1,#subTypes do
+                local st = subTypes[si]
+
+                acc[#acc+1] = "entity-proxy-" .. st .. "-t" .. t .. "-rampant"
+            end
+        end
+
+        local es = game.surfaces[natives.activeSurface].find_entities_filtered({
+                name=acc
+                                                                              })
+
+        for i=1,#es do
+            es[i].die()
+        end
+
+        if not setNewSurface then
+            game.surfaces[natives.activeSurface].print("Rampant - Version 0.17.30")
+        end
+        global.version = 101
     end
 
     return starting ~= global.version, natives

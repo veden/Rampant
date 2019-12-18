@@ -12,6 +12,8 @@ local mapUtils = require("MapUtils")
 
 -- constants
 
+local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
+
 local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
@@ -186,10 +188,23 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, nativ
     local evolutionTable = natives.upgradeLookup
     local entity
 
-    for t=maxTier,tier,-1 do
-        local upgrades = evolutionTable[baseAlignment][t][buildingHiveTypeLookup[originalEntity.name]]
+    local hiveType = buildingHiveTypeLookup[originalEntity.name]
 
-        if upgrades and (#upgrades > 0) then
+    for t=maxTier,tier,-1 do
+        local factionLookup = evolutionTable[baseAlignment][t]
+        local upgrades = factionLookup[hiveType]
+        if not upgrades then
+            local mapTypes = FACTION_MUTATION_MAPPING[hiveType]
+            for i=1, #mapTypes do
+                local upgrade = factionLookup[mapTypes[i]]
+                if upgrade and (#upgrade > 0) then
+                    entity = upgrade[mRandom(#upgrade)]
+                    if mRandom() < 0.55 then
+                        return entity
+                    end
+                end
+            end
+        elseif (#upgrades > 0) then
             entity = upgrades[mRandom(#upgrades)]
             if mRandom() < 0.55 then
                 break

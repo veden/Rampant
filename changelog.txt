@@ -1,5 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.29
+Date: 16. 12. 2019
+  Bugfixes:
+    - Hive buildings not getting swapped out correctly
+    - Hive and Spawner spawning cooldown was using wrong start and end values
+
+---------------------------------------------------------------------------------------------------
+Version: 0.17.29
 Date: 15. 12. 2019
   Optional Graphics:
     - New Hi and Low resolution graphics for Troll and Physical Factions biters, armored biters (Thanks to CybranM, requires downloading separate mod Armoured Biters)
