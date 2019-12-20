@@ -29,6 +29,15 @@ data:extend({
         },
 
         {
+            type = "bool-setting",
+            name = "rampant-oldRedEnemyMapColor",
+            setting_type = "startup",
+            default_value = false,
+            order = "b[modifier]-c[trigger]",
+            per_user = false
+        },
+
+        {
             type = "double-setting",
             name = "rampant-attackPlayerThreshold",
             setting_type = "runtime-global",
@@ -135,7 +144,7 @@ data:extend({
             order = "c[modifier]-d[safe]",
             per_user = false
         },
-
+        
         {
             type = "bool-setting",
             name = "rampant-safeBuildings-railSignals",
