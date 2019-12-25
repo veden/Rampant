@@ -4,7 +4,7 @@ Date: 24. 12. 2019
   Contributions:
     - Billbo99 - Energy thief crystal next_upgrade was not getting set to nil.
   Bugfixes:
-    - script_raised_revive was not being listened for
+    - script_raised_revive was not being listened for (AMCH0507) (https://mods.factorio.com/mod/Rampant/discussion/5e02758ead17f4000c086b7b)
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.31
