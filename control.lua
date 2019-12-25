@@ -1035,7 +1035,8 @@ script.on_event({defines.events.on_player_mined_entity,
                  defines.events.script_raised_destroy}, onMine)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity,
-                 defines.events.script_raised_built}, onBuild)
+                 defines.events.script_raised_built,
+                 defines.events.script_raised_revive}, onBuild)
 
 -- script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
 script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
