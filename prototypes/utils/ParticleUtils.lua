@@ -8,7 +8,7 @@ local function makeBloodParticle(attributes)
     
     data:extend({
             {
-                type = "particle",
+                type = "optimized-particle",
                 name = name,
                 flags = {"not-on-map"},
                 movement_modifier_when_on_ground = 0.2,
@@ -16,7 +16,7 @@ local function makeBloodParticle(attributes)
                 pictures =
                     {
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-01.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-01.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -27,7 +27,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(0,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-01.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-01.png",
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -38,7 +38,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-02.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-02.png",
                             priority = "extra-high",
                             width = 6,
                             height = 4,
@@ -49,7 +49,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-02.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-02.png",
                                     line_length = 6,
                                     width = 8,
                                     height = 6,
@@ -61,7 +61,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-03.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-03.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -72,7 +72,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-03.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-03.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -84,7 +84,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-04.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-04.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -95,7 +95,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-04.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-04.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -107,7 +107,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-05.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-05.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -118,7 +118,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-05.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-05.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 4,
@@ -130,7 +130,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-06.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-06.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -141,7 +141,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-06.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-06.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -153,7 +153,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-07.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-07.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -164,7 +164,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-07.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-07.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -176,7 +176,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-08.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-08.png",
                             priority = "extra-high",
                             width = 6,
                             height = 4,
@@ -187,7 +187,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(2,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-08.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-08.png",
                                     line_length = 6,
                                     width = 10,
                                     height = 8,
@@ -199,7 +199,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-09.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-09.png",
                             priority = "extra-high",
                             width = 6,
                             height = 6,
@@ -210,7 +210,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(2,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-09.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-09.png",
                                     width = 10,
                                     height = 8,
                                     line_length = 6,
@@ -221,7 +221,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-10.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-10.png",
                             priority = "extra-high",
                             width = 6,
                             height = 6,
@@ -232,7 +232,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-10.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-10.png",
                                     width = 10,
                                     height = 10,
                                     line_length = 6,
@@ -243,7 +243,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-11.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-11.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -254,7 +254,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-11.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-11.png",
                                     width = 8,
                                     height = 8,
                                     line_length = 6,
@@ -265,7 +265,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-12.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-12.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -276,7 +276,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(0,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-12.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-12.png",
                                     line_length = 6,
                                     width = 8,
                                     height = 8,
@@ -291,7 +291,7 @@ local function makeBloodParticle(attributes)
                 shadows =
                     {
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-01.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-01.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -302,7 +302,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(0,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-01.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-01.png",
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -313,7 +313,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-02.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-02.png",
                             priority = "extra-high",
                             width = 6,
                             height = 4,
@@ -324,7 +324,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-02.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-02.png",
                                     line_length = 6,
                                     width = 8,
                                     height = 6,
@@ -336,7 +336,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-03.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-03.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -347,7 +347,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-03.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-03.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -359,7 +359,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-04.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-04.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -370,7 +370,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-04.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-04.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 6,
@@ -382,7 +382,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-05.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-05.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -393,7 +393,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-05.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-05.png",
                                     line_length = 6,
                                     width = 6,
                                     height = 4,
@@ -405,7 +405,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-06.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-06.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -416,7 +416,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-06.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-06.png",
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -427,7 +427,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-07.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-07.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -438,7 +438,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,1),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-07.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-07.png",
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -449,7 +449,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-08.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-08.png",
                             priority = "extra-high",
                             width = 6,
                             height = 4,
@@ -460,7 +460,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(2,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-08.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-08.png",
                                     line_length = 6,
                                     width = 10,
                                     height = 8,
@@ -472,7 +472,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-09.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-09.png",
                             priority = "extra-high",
                             width = 6,
                             height = 4,
@@ -483,7 +483,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(2,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-09.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-09.png",
                                     width = 10,
                                     height = 8,
                                     line_length = 6,
@@ -494,7 +494,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-10.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-10.png",
                             priority = "extra-high",
                             width = 6,
                             height = 6,
@@ -505,7 +505,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-10.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-10.png",
                                     width = 10,
                                     height = 10,
                                     line_length = 6,
@@ -516,7 +516,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-11.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-11.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -527,7 +527,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-11.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-11.png",
                                     width = 8,
                                     height = 8,
                                     line_length = 6,
@@ -538,7 +538,7 @@ local function makeBloodParticle(attributes)
                                 }
                         },
                         {
-                            filename = "__base__/graphics/entity/blood-particle/blood-particle-12.png",
+                            filename = "__base__/graphics/particle/blood-particle/blood-particle-12.png",
                             priority = "extra-high",
                             width = 4,
                             height = 4,
@@ -549,7 +549,7 @@ local function makeBloodParticle(attributes)
                             shift = util.by_pixel(0,0),
                             hr_version =
                                 {
-                                    filename = "__base__/graphics/entity/blood-particle/hr-blood-particle-12.png",
+                                    filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-12.png",
                                     line_length = 6,
                                     width = 8,
                                     height = 8,
