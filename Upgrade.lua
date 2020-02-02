@@ -359,15 +359,15 @@ function upgrade.attempt(natives, setNewSurface)
 
         global.version = 101
     end       
-    if (global.version < 103) then
+    if (global.version < 104) then
 
         natives.pendingStealGroups = {}
         natives.pendingStealGroups.len = 1
         
         if not setNewSurface then
-            game.surfaces[natives.activeSurface].print("Rampant - Version 0.18.3")
+            game.surfaces[natives.activeSurface].print("Rampant - Version 0.18.4")
         end
-        global.version = 103
+        global.version = 104
     end
 
     return starting ~= global.version, natives
