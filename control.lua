@@ -472,13 +472,10 @@ local function onModSettingsChange(event)
         natives.safeEntityName["lighted-big-electric-pole"] = newValue
     end
 
-    upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
-
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
 
     upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
-    upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
     upgrade.compareTable(natives, "aiPointsScaler", settings.global["rampant-aiPointsScaler"].value)
 

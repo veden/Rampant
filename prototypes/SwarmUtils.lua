@@ -241,11 +241,11 @@ local unitSpawnerAttributeNumeric = {
 local hiveAttributeNumeric = {
     ["health"] = { 700, 1000, 1500, 3000, 7000, 15000, 22000, 40000, 60000, 90000 },
     ["healing"] = { 0.02, 0.02, 0.022, 0.024, 0.026, 0.028, 0.03, 0.032, 0.034, 0.036 },
-    ["spawningCooldownStart"] = { 2840, 2800, 2760, 2720, 2680, 2640, 2600, 2560, 2520, 2480 },
+    ["spawningCooldownStart"] = { 4970, 4930, 4890, 4850, 4810, 4780, 4740, 4700, 4660, 4620 },
     -- ["spawningCooldownStart"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["spawningRadius"] = { 10, 13, 15, 17, 20, 23, 26, 29, 32, 35 },
     ["spawningSpacing"] = { 5, 5, 5, 6, 6, 6, 7, 7, 7, 8 },
-    ["spawningCooldownEnd"] = { 1020, 1015, 1010, 1005, 1000, 995, 990, 985, 980, 975 },
+    ["spawningCooldownEnd"] = { 1785, 1780, 1775, 1770, 1765, 1760, 1755, 1750, 1745, 1740 },
     -- ["spawningCooldownEnd"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["unitsToSpawn"] = { 3000, 3000, 300, 3000, 3000, 3000, 3000, 3000, 3000, 3000 },
     ["scale"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1 },
@@ -392,19 +392,24 @@ local function scaleAttributes (entity)
         entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitDroneDamageScaler"].value
         entity["range"] = entity["range"] * settings.startup["rampant-unitDroneRangeScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant-unitDroneHealingScaler"].value
-    elseif (entity.type == "template") then
+    elseif (entity.type == "biter-spawner") or (entity.type == "spitter-spawner") then
         entity["health"] = entity["health"] * settings.startup["rampant-unitSpawnerHealthScaler"].value
         entity["unitsOwned"] = entity["unitsOwned"] * settings.startup["rampant-unitSpawnerOwnedScaler"].value
         entity["unitsToSpawn"] = entity["unitsToSpawn"] * settings.startup["rampant-unitSpawnerSpawnScaler"].value
         entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
         entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant-unitSpawnerHealingScaler"].value
-    elseif (entity.type == "worm") then
+    elseif (entity.type == "turret") then
         entity["health"] = entity["health"] * settings.startup["rampant-unitWormHealthScaler"].value
         entity["damage"] = entity["damage"] * settings.startup["rampant-unitWormDamageScaler"].value
         entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitWormDamageScaler"].value
         entity["range"] = entity["range"] * settings.startup["rampant-unitWormRangeScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant-unitWormHealingScaler"].value
+    elseif (entity.type == "hive") then
+        entity["health"] = entity["health"] * settings.startup["rampant-unitHiveHealthScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant-unitHiveHealingScaler"].value
+        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant-unitHiveRespawnScaler"].value
+        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant-unitHiveRespawnScaler"].value
     end
 end
 
@@ -509,7 +514,7 @@ local function fillEntityTemplate(entity)
                 ti = 1
             end
             entity["hitSprayName"] = entity[key] .. "-" .. "damaged-fountain-rampant"
-            entity[key] = entity[key] .. "-" .. bloodFountains[ti]            
+            entity[key] = entity[key] .. "-" .. bloodFountains[ti]
         elseif (key == "evolutionFunction") then
             entity["evolutionRequirement"] = distort(xorRandom, value(tier))
         elseif (key == "majorResistances") then

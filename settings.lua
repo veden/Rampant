@@ -12,15 +12,6 @@ data:extend({
 
         {
             type = "bool-setting",
-            name = "rampant-attackWaveGenerationUsePlayerProximity",
-            setting_type = "runtime-global",
-            default_value = true,
-            order = "b[modifier]-b[trigger]",
-            per_user = false
-        },
-
-        {
-            type = "bool-setting",
             name = "rampant-disableCollidingProjectiles",
             setting_type = "startup",
             default_value = true,
@@ -34,16 +25,6 @@ data:extend({
             setting_type = "startup",
             default_value = false,
             order = "b[modifier]-c[trigger]",
-            per_user = false
-        },
-
-        {
-            type = "double-setting",
-            name = "rampant-attackPlayerThreshold",
-            setting_type = "runtime-global",
-            minimum_value = 0,
-            default_value = 7,
-            order = "b[modifier]-c[threshold]",
             per_user = false
         },
 
@@ -749,6 +730,43 @@ data:extend({
             type = "double-setting",
             name = "rampant-unitSpawnerRespawnScaler",
             description = "rampant-unitSpawnerRespawnScaler",
+            setting_type = "startup",
+            default_value = 1.0,
+            minimum_value = 0.0,
+            maximum_value = 100000.0,
+            order = "p[modifier]-r[unit]",
+            per_user = false
+        },
+
+
+        {
+            type = "double-setting",
+            name = "rampant-unitHiveRespawnScaler",
+            description = "rampant-unitHiveRespawnScaler",
+            setting_type = "startup",
+            default_value = 1.0,
+            minimum_value = 0.0,
+            maximum_value = 100000.0,
+            order = "p[modifier]-r[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-unitHiveHealthScaler",
+            description = "rampant-unitHiveHealthScaler",
+            setting_type = "startup",
+            default_value = 1.0,
+            minimum_value = 0.0,
+            maximum_value = 100000.0,
+            order = "p[modifier]-r[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-unitHiveHealingScaler",
+            description = "rampant-unitHiveHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
             minimum_value = 0.0,

@@ -607,6 +607,18 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
         end
     end
 
+    local evoIndex = evoToTier(natives, natives.evolutionLevel)
+
+    for i=1,#natives.bases do
+        local base = natives.bases[i]
+        for x=1,#base.alignment do
+            local alignment = base.alignment[i]
+            if not natives.buildingEvolveLookup[alignment] then
+                base.alignment = findBaseInitialAlignment(natives, evoIndex)
+                break
+            end
+        end
+    end
 end
 
 baseUtilsG = baseUtils

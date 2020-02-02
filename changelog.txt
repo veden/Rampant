@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.3
+Date: 1. 2. 2020
+  Improvements:
+    - Fixed scaler settings not applying to worms or unit spawners
+    - Added scaler settings for hives
+  Tweaks:
+    - Increased Hive spawn times by 1.75
+  Bugfixes:
+    - Removed settings that were unused with Rampant
+    - Fixed removing factions during play
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.2
 Date: 1. 2. 2019
   Contributions:
@@ -172,7 +184,7 @@ Date: 4. 30. 2019
   Tweaks:
     - Added support for lighted-big-poles for safety
   Bugfixes:
-    - Fixed interop register unit group not actually registering new squad    
+    - Fixed interop register unit group not actually registering new squad
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.17.22
@@ -303,7 +315,7 @@ Date: 3. 16. 2019
   Bugfixes:
     - Fixed troll spitters having a homing projectile
     - Fixed spitters changing color when attacking
-    - Fixed biter attacks getting bonuses from player research    
+    - Fixed biter attacks getting bonuses from player research
     - Fixed suicide biter level 9 and 10 wouldn't die when they attacked
     - Fixed physical and troll worm turrets having incorrect health values
     - Fixed physical and troll nests having incorrect health values
@@ -374,7 +386,7 @@ Date: 3. 5. 2019
     - Increased squad movement penalty from 10000 to 300000
     - Balanced squad movement distance between straight and diagonals
     - Increased find path location entity size to 2x2 for better position resolution
-    - Added exponential growth to squad movement penalties    
+    - Added exponential growth to squad movement penalties
   Optimizations:
     - Improved squad processing and squad cleanup
     - Refactored chunk utilities
@@ -418,7 +430,7 @@ Date: 2. 26. 2019
   Tweaks:
     - Updated to 0.17
     - Synced worm vanilla to worm template
-    - Synced spawner vanilla to spawner template    
+    - Synced spawner vanilla to spawner template
     - Changed ground shakes warning message to off by default
     - For now, acid-splash-purple replaced explosion
   Bugfixes:
