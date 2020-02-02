@@ -773,6 +773,25 @@ data:extend({
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false
-        }
+        },
 
+        {
+            type = "bool-setting",
+            name = "rampant-attackWaveGenerationUsePlayerProximity",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "b[modifier]-b[trigger]",
+            per_user = false
+
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-attackPlayerThreshold",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 7,
+            order = "b[modifier]-c[threshold]",
+            per_user = false
+        }
 })
