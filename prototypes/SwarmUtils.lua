@@ -166,7 +166,7 @@ local biterAttributeNumeric = {
     ["distancePerFrame"] = { 0.08, 0.10, 0.125, 0.15, 0.18, 0.195, 0.2, 0.2, 0.2, 0.2 },
     ["movement"] = { 0.2, 0.19, 0.185, 0.18, 0.175, 0.17, 0.17, 0.17, 0.17, 0.17 },
     ["health"] = { 15, 75, 150, 250, 1000, 2000, 3500, 7500, 15000, 30000 },
-    ["pollutionToAttack"] = { 200, 750, 1200, 1750, 2500, 5000, 10000, 12500, 15000, 20000 },
+    ["pollutionToAttack"] = { 10, 40, 80, 120, 200, 300, 450, 550, 650, 750 },
     ["spawningTimeModifer"] = { 1, 1, 1, 2, 3, 7, 10, 10, 12, 12 }
 }
 
@@ -196,7 +196,7 @@ local spitterAttributeNumeric = {
     ["distancePerFrame"] = { 0.04, 0.045, 0.050, 0.055, 0.060, 0.065, 0.067, 0.069, 0.071, 0.073 },
     ["movement"] = { 0.185, 0.18, 0.18, 0.17, 0.17, 0.16, 0.16, 0.15, 0.15, 0.14 },
     ["health"] = { 10, 50, 200, 350, 1250, 2250, 3250, 6500, 12500, 25000 },
-    ["pollutionToAttack"] = { 200, 750, 1200, 1750, 2500, 5000, 10000, 12500, 15000, 20000 },
+    ["pollutionToAttack"] = { 10, 40, 80, 120, 200, 300, 450, 550, 650, 750 },
     ["spawningTimeModifer"] = { 1, 1, 1, 2, 2, 5, 8, 8, 10, 10 },
 }
 
@@ -508,7 +508,8 @@ local function fillEntityTemplate(entity)
             if (entity.type == "drone") then
                 ti = 1
             end
-            entity[key] = entity[key] .. "-" .. bloodFountains[ti]
+            entity["hitSprayName"] = entity[key] .. "-" .. "damaged-fountain-rampant"
+            entity[key] = entity[key] .. "-" .. bloodFountains[ti]            
         elseif (key == "evolutionFunction") then
             entity["evolutionRequirement"] = distort(xorRandom, value(tier))
         elseif (key == "majorResistances") then

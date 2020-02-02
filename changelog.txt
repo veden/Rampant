@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.2
+Date: 1. 2. 2019
+  Contributions:
+    - RuZZone - Updated to 18.2 fixing engine breaking changes
+  Improvements:
+    - Added blood effects on damaged for new enemies
+    - Added water reflections for new biters and spitters
+  Bugfixes:
+    - Fixed blood fountains not finding updated particles
+    - removed water effect from blood particles
+    - Reduced pollution to attack for vanilla AI on Rampant New Enemies
+
+---------------------------------------------------------------------------------------------------
 Version: 0.17.32
 Date: 24. 12. 2019
   Contributions:

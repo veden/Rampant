@@ -8,6 +8,7 @@ data:extend({
                 movement=1,
                 effectiveLevel=1,
                 resistances = {},
+                hitSprayName = "blood-fountain-hit-spray",
                 attack = biterFunctions.createMeleeAttack({
                         radius=1,
                         damage=1,
@@ -22,6 +23,7 @@ data:extend({
                 movement=1,
                 effectiveLevel=1,
                 resistances = {},
+                hitSprayName = "blood-fountain-hit-spray",
                 attack = biterFunctions.createMeleeAttack({
                         radius=1,
                         damage=1,

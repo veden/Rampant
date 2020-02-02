@@ -1,5 +1,42 @@
 local unitUtils = {}
 
+function unitUtils.spitter_water_reflection(scale)
+  return
+  {
+    pictures =
+    {
+      filename = "__base__/graphics/entity/spitter/spitter-reflection.png",
+      priority = "extra-high",
+      width = 20,
+      height = 32,
+      shift = util.by_pixel(5, 15),
+      scale = 5 * scale,
+      variation_count = 1,
+    },
+    rotate = true,
+    orientation_to_variation = false
+  }
+end
+
+function unitUtils.biter_water_reflection(scale)
+  return
+  {
+    pictures =
+    {
+      filename = "__base__/graphics/entity/biter/biter-reflection.png",
+      priority = "extra-high",
+      width = 20,
+      height = 28,
+      shift = util.by_pixel(5, 15),
+      scale = 5 * scale,
+      variation_count = 1,
+    },
+    rotate = true,
+    orientation_to_variation = false
+  }
+end
+
+
 function unitUtils.spitter_alternative_attacking_animation_sequence()
     return {
         warmup_frame_sequence = { 1, 2, 3, 4, 5, 6 },

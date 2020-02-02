@@ -2,6 +2,50 @@ local particleUtils = {}
 
 -- module code
 
+function particleUtils.makeDamagedParticle(attributes)
+    local name = attributes.name .. "-damaged-particle-rampant"
+    
+    data:extend({
+            {
+                type = "explosion",
+                name = name,
+                flags = {"not-on-map"},
+                subgroup = "hit-effects",
+                icon = "__core__/graphics/icons/mip/trash.png",
+                height = 0.3,
+                icon_size = 32,
+                animations =
+                    {
+                        util.empty_sprite()
+                    },
+                created_effect =
+                    {
+                        type = "direct",
+                        action_delivery =
+                            {
+                                type = "instant",
+                                target_effects =
+                                    {
+                                        {
+                                            type = "create-entity",
+                                            entity_name = attributes.hitSprayName,
+                                            repeat_count = 1,
+                                        }                                        
+                                    }
+                            }
+                    }
+            }            
+    })
+
+    return {
+        type = "create-entity",
+        entity_name = name,
+        offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
+        offsets = {{0,0}}
+    }
+end
+
+
 local function makeBloodParticle(attributes)
     local name = attributes.name .. "-blood-particle-rampant"
     local tint = attributes.tint2
@@ -11,6 +55,8 @@ local function makeBloodParticle(attributes)
                 type = "optimized-particle",
                 name = name,
                 flags = {"not-on-map"},
+                render_layer = "higher-object-under",
+                render_layer_when_on_ground = "corpse",
                 movement_modifier_when_on_ground = 0.2,
                 life_time = 240,
                 pictures =
@@ -562,10 +608,11 @@ local function makeBloodParticle(attributes)
                         }
                     },
                 ended_in_water_trigger_effect =
-                    {
-                        type = "create-entity",
-                        entity_name = "water-splash"
-                    }
+                    -- {
+                    --     type = "create-entity",
+                    --     entity_name = "water-splash"
+                    -- }
+                    nil
 
             }
     })
@@ -581,18 +628,33 @@ function particleUtils.makeBloodFountains(attributes)
     data:extend({
             {
                 type = "particle-source",
-                name = attributes.name .. "-blood-fountain-rampant",
+                name = attributes.name .. "-damaged-fountain-rampant",
                 particle = bloodParticle,
                 time_to_live = 10,
                 time_to_live_deviation = 5,
                 time_before_start = 0,
                 time_before_start_deviation = 3,
-                height = 0.4,
+                height = 0.3,
+                height_deviation = 0.1,
+                vertical_speed = 0.02,
+                vertical_speed_deviation = 0.08,
+                horizontal_speed = 0.07,
+                horizontal_speed_deviation = 0.04
+            },
+            {
+                type = "particle-source",
+                name = attributes.name .. "-blood-fountain-rampant",
+                particle = bloodParticle,
+                time_to_live = 15,
+                time_to_live_deviation = 5,
+                time_before_start = 0,
+                time_before_start_deviation = 3,
+                height = 0.5,
                 height_deviation = 0.1,
                 vertical_speed = 0.05,
-                vertical_speed_deviation = 0.03,
-                horizontal_speed = 0.025,
-                horizontal_speed_deviation = 0.025
+                vertical_speed_deviation = 0.08,
+                horizontal_speed = 0.05,
+                horizontal_speed_deviation = 0.04
             },
             {
                 type = "particle-source",
@@ -601,12 +663,12 @@ function particleUtils.makeBloodFountains(attributes)
                 time_to_live = 30,
                 time_to_live_deviation = 5,
                 time_before_start = 0,
-                time_before_start_deviation = 10,
-                height = 0.4,
+                time_before_start_deviation = 5,
+                height = 1,
                 height_deviation = 0.1,
-                vertical_speed = 0.15,
-                vertical_speed_deviation = 0.05,
-                horizontal_speed = 0.04,
+                vertical_speed = 0.05,
+                vertical_speed_deviation = 0.08,
+                horizontal_speed = 0.05,
                 horizontal_speed_deviation = 0.04
             },
             {
@@ -664,7 +726,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-particle",
                                             repeat_count = 150,
-                                            entity_name = bloodParticle,
+                                            particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
                                             speed_from_center_deviation = 0.05,
@@ -708,7 +770,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-particle",
                                             repeat_count = 150,
-                                            entity_name = bloodParticle,
+                                            particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
                                             speed_from_center_deviation = 0.05,
@@ -727,7 +789,6 @@ function particleUtils.makeBloodFountains(attributes)
                     }
             }
     })
-
 end
 
 return particleUtils

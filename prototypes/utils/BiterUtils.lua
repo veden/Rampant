@@ -1,11 +1,10 @@
-local sounds = require("__base__.prototypes.entity.demo-sounds")
 local biterFunctions = {}
 
+local sounds = require("__base__.prototypes.entity.demo-sounds")
+local particleUtils = require("ParticleUtils")
 local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
 local wormUtils = require("WormUtils")
-
--- local FORCE_OLD_PROJECTILES = settings.startup["rampant-forceOldProjectiles"].value
 
 local biterdieanimation = unitUtils.biterdieanimation
 local biterattackanimation = unitUtils.biterattackanimation
@@ -21,7 +20,9 @@ local wormPreparedAlternativeAnimation = wormUtils.wormPreparedAlternativeAnimat
 local wormStartAttackAnimation = wormUtils.wormStartAttackAnimation
 local wormEndAttackAnimation = wormUtils.wormEndAttackAnimation
 local wormDieAnimation = wormUtils.wormDieAnimation
-
+local makeDamagedParticle = particleUtils.makeDamagedParticle
+local biter_water_reflection = unitUtils.biter_water_reflection
+local spitter_water_reflection = unitUtils.spitter_water_reflection
 
 local function makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
@@ -228,6 +229,8 @@ function biterFunctions.makeBiter(attributes)
         order = "b-b-a",
         subgroup="enemies",
         healing_per_tick = attributes.healing,
+        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        water_reflection = biter_water_reflection(attributes.scale),
         resistances = resistances,
         collision_box = {
             {-0.4 * attributes.scale, -0.4 * attributes.scale},
@@ -256,6 +259,7 @@ function biterFunctions.makeBiter(attributes)
         affected_by_tiles = true,
         dying_sound = sounds.biter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
+        running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
@@ -293,7 +297,7 @@ function biterFunctions.makeSpitter(attributes)
         loot = attributes.loot,
         vision_distance = attributes.vision or 30,
         movement_speed = attributes.movement,
-        spawning_time_modifier = attributes.spawningTimeModifer or nil,
+        spawning_time_modifier = attributes.spawningTimeModifer or nil,        
         distance_per_frame = attributes.distancePerFrame or 0.1,
         pollution_to_join_attack = attributes.pollutionToAttack or 200,
         distraction_cooldown = attributes.distractionCooldown or 300,
@@ -304,6 +308,9 @@ function biterFunctions.makeSpitter(attributes)
         dying_trigger_effect = attributes.dyingEffect,        
         dying_sound =  sounds.spitter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
+        running_sound_animation_positions = {2,},
+        water_reflection = spitter_water_reflection(attributes.scale),
+        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         affected_by_tiles = true,
         run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
@@ -333,16 +340,16 @@ function biterFunctions.makeUnitSpawner(attributes)
         loot = attributes.loot,
         resistances = resistances,
         working_sound =
-		{
-            sound =
-                {
+            {
+                sound =
                     {
-                        filename = "__base__/sound/creatures/spawner.ogg",
-                        volume = 0.2 + (0.05 * attributes.effectiveLevel)
-                    }
-                },
-            apparent_volume = 0.4 + (0.1 * attributes.effectiveLevel)
-        },
+                        {
+                            filename = "__base__/sound/creatures/spawner.ogg",
+                            volume = 0.2 + (0.05 * attributes.effectiveLevel)
+                        }
+                    },
+                apparent_volume = 0.4 + (0.1 * attributes.effectiveLevel)
+            },
         dying_sound =
             {
                 {
@@ -354,6 +361,7 @@ function biterFunctions.makeUnitSpawner(attributes)
                     volume = 0.4 + (0.05 * attributes.effectiveLevel)
                 }
             },
+        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         healing_per_tick = attributes.healing or 0.02,
         collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}},
         selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}},
@@ -439,6 +447,8 @@ function biterFunctions.makeWorm(attributes)
         prepared_alternative_animation = wormPreparedAlternativeAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         prepared_alternative_sound = sounds.worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
 
+        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        
         starting_attack_speed = 0.034,
         starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         starting_attack_sound = sounds.worm_roars(0.2 + (0.05 * attributes.effectiveLevel)),
