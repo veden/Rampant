@@ -94,7 +94,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                                                                                                     map)
             if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
                 local targetPosition = map.position
-                local targetPosition2 = map.position2                
+                local targetPosition2 = map.position2
 
                 positionFromDirectionAndFlat(exitDirection, position, targetPosition)
 
@@ -106,7 +106,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
 
                 if (nextExitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
                     positionFromDirectionAndFlat(nextExitDirection, retreatPosition, targetPosition2)
-                    
+
                     local retreatPosition2 = findMovementPosition(surface, targetPosition2)
 
                     if retreatPosition2 then
@@ -119,19 +119,19 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                 -- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
 
                 local newSquad = findNearbyRetreatingSquad(map, exitPath)
-                
+
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
                     local squads = map.natives.squads
                     squads.len = squads.len+1
                     squads[squads.len] = newSquad
                 end
-                
+
                 if newSquad then
                     newSquad.status = SQUAD_RETREATING
                     newSquad.cycles = 13
-                    
-                    local cmd = map.retreatCommand                    
+
+                    local cmd = map.retreatCommand
                     cmd.group = newSquad.group
                     if enemiesToSquad then
                         membersToSquad(cmd, enemiesToSquad.len, enemiesToSquad, artilleryBlast)
@@ -141,7 +141,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                             newSquad.rabid = true
                         end
                     end
-                    
+
                     if not newSquad.rapid then
                         newSquad.frenzy = true
                         local squadPosition = newSquad.group.position

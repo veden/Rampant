@@ -101,7 +101,8 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
 
-        if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
+        if ((neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk)) or
+        (chunk == SENTINEL_IMPASSABLE_CHUNK) then
             local score = scoreFunction(natives, squad, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
@@ -146,7 +147,8 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
 
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
+        if ((neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk)) or
+        (chunk == SENTINEL_IMPASSABLE_CHUNK) then
             local score = scoreFunction(squad, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
@@ -224,7 +226,8 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
 
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk) then
+        if ((neighborChunk ~= SENTINEL_IMPASSABLE_CHUNK) and canMoveChunkDirection(map, x, chunk, neighborChunk)) or
+        (chunk == SENTINEL_IMPASSABLE_CHUNK) then
             local score = scoreFunction(map, neighborChunk)
             if (score > highestScore) then
                 highestScore = score

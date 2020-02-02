@@ -76,6 +76,9 @@ local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
 
+local createSquad = unitGroupUtils.createSquad
+local membersToSquad = unitGroupUtils.membersToSquad
+
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
@@ -499,21 +502,45 @@ end
 
 
 
-function squadAttack.squadsBeginAttack(natives)
-    local pending = natives.pendingAttack
+function squadAttack.squadsBeginAttack(natives, surface)
     local squads = natives.squads
-    local pendingLen = pending.len
-    local x = 0
+    local pendingAttack = natives.pendingAttack
+    local pendingStealGroups = natives.pendingStealGroups    
 
-    for i=1,pendingLen do
-        local squad = pending[i]
+    local cmd = natives.map.retreatCommand
+
+    local x = 0
+    
+    for i=1, pendingStealGroups.len do
+        local group = pendingStealGroups[i]
+        if group and group.valid then
+            if (group.state ~= DEFINES_GROUP_GATHERING) then
+                local squad = createSquad(group.position, surface, nil, false)
+                pendingAttack.len = pendingAttack.len + 1
+                pendingAttack[pendingAttack.len] = squad
+                cmd.group = squad.group
+                membersToSquad(cmd, #group.members, group.members, true)
+                group.destroy()
+            else
+                x = x + 1
+                pendingStealGroups[x] = group
+            end
+        end
+    end
+
+    pendingStealGroups.len = x
+
+    x = 0
+    
+    for i=1,pendingAttack.len do
+        local squad = pendingAttack[i]
         local group = squad.group
         if group and group.valid then
-            local groupState = group.state
+            local groupState = group.state            
             if (groupState ~= DEFINES_GROUP_FINISHED) and (squad.cycles ~= 0) then
                 squad.cycles = squad.cycles - 1
                 x = x + 1
-                pending[x] = squad
+                pendingAttack[x] = squad
             else
                 local kamikazeThreshold = calculateKamikazeThreshold(#squad.group.members, natives)
                 if not squad.kamikaze then
@@ -535,7 +562,8 @@ function squadAttack.squadsBeginAttack(natives)
         end
     end
 
-    pending.len = x
+    pendingAttack.len = x
+
 end
 
 squadAttackG = squadAttack

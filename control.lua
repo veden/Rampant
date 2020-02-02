@@ -607,7 +607,8 @@ script.on_nth_tick(INTERVAL_LOGIC,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
-                       squadsBeginAttack(natives)
+                       squadsBeginAttack(natives,
+                                         game.surfaces[natives.activeSurface])
 
                        if natives.newEnemies then
                            recycleBases(natives, tick)
@@ -975,8 +976,11 @@ end
 
 local function onUnitGroupCreated(event)
     local group = event.group
-    if (group.force.name ~= "enemy") then
-        
+    if (group.force.name == "enemy") then
+        if not group.is_script_driven then
+            natives.pendingStealGroups.len = natives.pendingStealGroups.len + 1
+            natives.pendingStealGroups[natives.pendingStealGroups.len] = group
+        end
     end
 end
 
@@ -1044,7 +1048,7 @@ script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event(defines.events.on_entity_died, onDeath)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
--- script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
+script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
 

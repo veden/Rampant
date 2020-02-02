@@ -1,8 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.4
-Date: 1. 2. 2020
+Date: 2. 2. 2020
+  Improvements:
+    - Unit groups created by factorio when shelling spawners are now converted to Rampant squads
   Bugfixes:
     - Re-added removed settings that were actual used with Rampant
+    - Potential squad getting stuck on impassable terrain
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.3

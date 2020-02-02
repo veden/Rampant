@@ -8,6 +8,7 @@ local unitGroupUtils = {}
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local chunkUtils = require("ChunkUtils")
 local movementUtils = require("MovementUtils")
 
 -- constants
@@ -139,14 +140,12 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
 end
 
 function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
-    -- if (members ~= nil) then
     for i=1,size do
         local member = members[i]
         if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
             member.set_command(cmd)
         end
     end
-    -- end
 end
 
 function unitGroupUtils.convertUnitGroupToSquad(natives, unitGroup)
