@@ -143,7 +143,6 @@ end
 
 function aiAttackWave.formAttackWave(chunk, map, surface, tick)
     if (map.natives.points >= AI_SQUAD_COST) then
-        setRallyTick(map, chunk, tick)
         local cX = chunk.x
         local cY = chunk.y
         for x=cX - RALLY_CRY_DISTANCE, cX + RALLY_CRY_DISTANCE, 32 do

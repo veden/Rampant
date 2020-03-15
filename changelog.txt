@@ -4,10 +4,15 @@ Date: 14. 3. 2020
   Improvements:
     - Added on hit damage for biters include filter for fire
   Tweaks:
+    - Increased range of visible size of enemy units
+    - Full map scan has been re-enabled by default to ensure eventaual map consistency
     - Decreased sticker movement speed reduction and removed friction modifier from vehicle
     - Vehicles are less slowed then the character on foot for stickers
   Bugfixes:
     - Fixed splash damage with friendly fire disabled not affecting neutral objects
+    - Fixed rally flag being set by the wrong function
+  Optimizations:
+    - Combined enemy structure query in full map scan
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.4

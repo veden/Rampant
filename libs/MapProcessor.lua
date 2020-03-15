@@ -109,7 +109,7 @@ function mapProcessor.processMap(map, surface, tick)
     end
 
     local natives = map.natives
-    
+
     local newEnemies = natives.newEnemies
     local scentStaging = map.scentStaging
 
@@ -134,7 +134,7 @@ function mapProcessor.processMap(map, surface, tick)
             if squads then
                 squads = formAttackWave(chunk, map, surface, tick)
             end
-            
+
             if newEnemies then
                 local base = chunkToBase[chunk]
                 if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
@@ -257,7 +257,7 @@ function mapProcessor.scanMap(map, surface, tick)
     local isFullMapScan = settings.global["rampant-enableFullMapScan"].value
 
     local natives = map.natives
-    
+
     for x=index,endIndex do
         local chunk = processQueue[x]
 
@@ -298,10 +298,10 @@ function mapProcessor.scanMap(map, surface, tick)
         end
 
         if isFullMapScan then
-            mapScanChunk(chunk, surface, map)
+           mapScanChunk(chunk, surface, map)
         end
 
-        processNestActiveness(map, chunk, natives, surface)       
+        processNestActiveness(map, chunk, natives, surface)
     end
 
     if (endIndex == #processQueue) then

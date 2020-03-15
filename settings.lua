@@ -427,7 +427,7 @@ data:extend({
             type = "bool-setting",
             name = "rampant-enableFullMapScan",
             setting_type = "runtime-global",
-            default_value = false,
+            default_value = true,
             order = "n[modifier]-a[optimize]",
             per_user = false
         },

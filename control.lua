@@ -282,8 +282,7 @@ local function rebuildMap()
     map.filteredEntitiesUnitQuery = { area=map.area, force="enemy",type="unit" }
     map.filteredEntitiesClearBuildingQuery = { area=map.buildArea, force="neutral",collision_mask="player-layer" }
     map.filteredEntitiesEnemyUnitQuery = { area=map.area, force="enemy", type="unit", limit=301 }
-    map.filteredEntitiesUnitSpawnerQuery = { area=map.area, force="enemy", type="unit-spawner" }
-    map.filteredEntitiesWormQuery = { area=map.area, force="enemy", type="turret" }
+    map.filteredEntitiesEnemyStructureQuery = { area=map.area, force="enemy", type={"turret","unit-spawner"} }
     map.filteredEntitiesPointQueryLimited = {
         position = map.position,
         radius = 10,
