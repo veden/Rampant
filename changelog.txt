@@ -11,6 +11,7 @@ Date: 14. 3. 2020
   Bugfixes:
     - Fixed splash damage with friendly fire disabled not affecting neutral objects
     - Fixed rally flag being set by the wrong function
+    - Fixed mod settings getting recalculated for rampant arsenal and rampant resources
   Optimizations:
     - Combined enemy structure query in full map scan
 

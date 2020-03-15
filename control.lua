@@ -444,7 +444,10 @@ end
 
 local function onModSettingsChange(event)
 
-    if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or (string.sub(event.setting, 1, 18) == "rampant-arsenal")) then
+    if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or
+            (string.sub(event.setting, 1, 15) == "rampant-arsenal") or
+            (string.sub(event.setting, 1, 17) == "rampant-resources"))
+    then
         return false
     end
 
