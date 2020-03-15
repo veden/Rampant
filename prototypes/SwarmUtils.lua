@@ -122,7 +122,7 @@ local bombAttackNumeric = {
 }
 
 local slowStickerNumeric = {
-    ["stickerMovementModifier"] = { 0.8, 0.8, 0.7, 0.7, 0.6, 0.6, 0.5, 0.5, 0.4, 0.4 },
+    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
     ["stickerDuration"] = { 1800, 1800, 1900, 1900, 2000, 2000, 2100, 2100, 2200, 2200 }
 }
 
@@ -183,7 +183,7 @@ local spitterAttributeNumeric = {
     ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
     ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
-    ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
+    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
     ["damage"] = { 16, 30, 45, 60, 90, 110, 130, 150, 170, 190 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
@@ -206,7 +206,7 @@ local droneAttributeNumeric = {
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
     ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
-    ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
+    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
     ["cooldown"] = { 60, 60, 55, 55, 50, 50, 45, 45, 40, 40 },
     ["ttl"] = { 300, 300, 350, 350, 400, 400, 450, 450, 500, 500 },
@@ -262,7 +262,7 @@ local hiveAttributeNumeric = {
 
 local wormAttributeNumeric = {
     ["stickerDuration"] = { 800, 810, 820, 830, 840, 850, 860, 870, 880, 890 },
-    ["stickerMovementModifier"] = { 0.8, 0.7, 0.6, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25 },
+    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
     ["range"] = { 25, 27, 31, 33, 35, 36, 37, 38, 39, 40 },
     ["cooldown"] = { 70, 70, 68, 66, 64, 62, 60, 58, 56, 54 },
@@ -1017,7 +1017,7 @@ local function buildAttack(faction, template)
                     }
             end
         elseif (attack == "slow") then
-            template.force = "enemy"
+            template.force = "not-same"
             template.stickerAnimation = {
                 filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
                 priority = "extra-high",
@@ -1072,7 +1072,7 @@ local function buildAttack(faction, template)
                                                                                                      attack.tint2)) or nil)
             end
         elseif (attack == "noFriendlyFire") then
-            template["force"] = "enemy"
+            template["force"] = "not-same"
         elseif (attack == "noAcidPuddle") then
             template.noAcidPuddle = true
         elseif (type(attack) == "table") then

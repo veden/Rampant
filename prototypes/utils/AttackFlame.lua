@@ -59,7 +59,7 @@ function attackFlame.createAttackFlame(attributes)
                 {
                     type = "area",
                     radius = attributes.radius or 2.5,
-                    force = (DISALLOW_FRIENDLY_FIRE and "enemy") or nil,
+                    force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
                     action_delivery =
                         {
                             type = "instant",

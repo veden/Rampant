@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.5
+Date: 14. 3. 2020
+  Improvements:
+    - Added on hit damage for biters include filter for fire
+  Tweaks:
+    - Decreased sticker movement speed reduction and removed friction modifier from vehicle
+    - Vehicles are less slowed then the character on foot for stickers
+  Bugfixes:
+    - Fixed splash damage with friendly fire disabled not affecting neutral objects
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.4
 Date: 2. 2. 2020
   Improvements:

@@ -26,7 +26,7 @@ function AttackBall.createAttackBall(attributes)
     local templateArea = {
         type = "area",
         radius = attributes.radius,
-        force = (DISALLOW_FRIENDLY_FIRE and "enemy") or attributes.force or nil,
+        force = (DISALLOW_FRIENDLY_FIRE and "not-same") or attributes.force or nil,
         ignore_collision_condition = true,
         action_delivery = (attributes.areaActionDelivery and attributes.areaActionDelivery(attributes)) or
             {
