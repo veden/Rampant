@@ -5,7 +5,7 @@ Date: 14. 3. 2020
     - Added on hit damage for biters include filter for fire
   Tweaks:
     - Increased range of visible size of enemy units
-    - Full map scan has been re-enabled by default to ensure eventaual map consistency
+    - Full map scan has been re-enabled by default to ensure eventual map consistency
     - Decreased sticker movement speed reduction and removed friction modifier from vehicle
     - Vehicles are less slowed then the character on foot for stickers
     - Added setting to enable units affected_by_tiles (As of 0.18.15, this setting can cause desyncs)
