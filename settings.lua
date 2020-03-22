@@ -21,6 +21,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant-unitsAffectedByTiles",
+            setting_type = "startup",
+            default_value = false,
+            order = "b[modifier]-b[trigger]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant-oldRedEnemyMapColor",
             setting_type = "startup",
             default_value = false,

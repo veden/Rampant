@@ -30,25 +30,24 @@ if settings.startup["rampant-unitSpawnerBreath"].value then
     end
 end
 
-if settings.startup["rampant-enableSwarm"].value then
-    for k, unit in pairs(data.raw["unit"]) do
-        if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
+
+for k, unit in pairs(data.raw["unit"]) do
+    if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
+        if settings.startup["rampant-enableSwarm"].value then
             unit.collision_box = {
                 {unit.collision_box[1][1] * 0.20, unit.collision_box[1][2] * 0.20},
                 {unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
             }
-
-            if not settings.startup["rampant-newEnemies"].value then
-                unit.affected_by_tiles = true
-
-                unit.ai_settings = {
-                    destroy_when_commands_fail = false,
-                    allow_try_return_to_spawner = true,
-                    path_resolution_modifier = -5,
-                    do_seperation = true
-                }
-            end            
         end
+
+        unit.affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value
+
+        unit.ai_settings = {
+            destroy_when_commands_fail = false,
+            allow_try_return_to_spawner = true,
+            path_resolution_modifier = -5,
+            do_seperation = true
+        }
     end
 end
 

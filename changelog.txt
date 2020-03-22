@@ -8,10 +8,12 @@ Date: 14. 3. 2020
     - Full map scan has been re-enabled by default to ensure eventaual map consistency
     - Decreased sticker movement speed reduction and removed friction modifier from vehicle
     - Vehicles are less slowed then the character on foot for stickers
+    - Added setting to enable units affected_by_tiles (As of 0.18.15, this setting can cause desyncs)
   Bugfixes:
     - Fixed splash damage with friendly fire disabled not affecting neutral objects
     - Fixed rally flag being set by the wrong function
     - Fixed mod settings getting recalculated for rampant arsenal and rampant resources
+    - Fixed desyncs around units having affected_by_tiles set to true (boskid)
   Optimizations:
     - Combined enemy structure query in full map scan
 

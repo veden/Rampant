@@ -256,7 +256,7 @@ function biterFunctions.makeBiter(attributes)
         dying_explosion = attributes.explosion,
         dying_trigger_effect = attributes.dyingEffect, 
         enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        affected_by_tiles = true,
+        affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value,
         dying_sound = sounds.biter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         running_sound_animation_positions = {2,},
@@ -311,7 +311,7 @@ function biterFunctions.makeSpitter(attributes)
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
         damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        affected_by_tiles = true,
+        affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value,
         run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }

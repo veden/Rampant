@@ -43,6 +43,7 @@ function energyThief.addFactionAddon()
                 name = "drain-trigger-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
+                icon_mipmaps = 1,
                 flags = {"hidden"},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
@@ -55,6 +56,7 @@ function energyThief.addFactionAddon()
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
+                icon_mipmaps = 1,
                 flags = {"hidden"},
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
@@ -67,6 +69,7 @@ function energyThief.addFactionAddon()
                 name = "crystal-drain-pole-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
+                icon_mipmaps = 1,
                 flags = {"hidden"},
                 selectable_in_game = false,
                 minable = {hardness = 0.2, mining_time = 0.5, result = "big-electric-pole"},
@@ -180,6 +183,7 @@ function energyThief.addFactionAddon()
     chest.name = "pylon-target-rampant"
     chest.icon = "__Rampant__/graphics/icons/thief/crystal-drain.png"
     chest.icon_size = 32
+    chest.icon_mipmaps = 1
     chest.flags = {"not-repairable", "not-on-map", "hidden"}
     chest.subgroup = "enemies"
     chest.next_upgrade = nil
@@ -237,6 +241,7 @@ function energyThief.addFactionAddon()
                 name = "pylon-target-rampant",
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
+                icon_mipmaps = 1,
                 flags = {"hidden"},
                 subgroup = "enemies",
                 order = "a[items]-h[steel-collector]",
