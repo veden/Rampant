@@ -125,16 +125,16 @@ function AttackBall.createAttackBall(attributes)
 end
 
 function AttackBall.generateVanilla()
-    AttackBall.createAttackBall({name="acid-ball", scale=0.5, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=16, damagePerTick=0.1, stickerName="acid-sticker-small", radius=1.2, effectiveLevel=1})
-    AttackBall.createAttackBall({name="acid-ball-1", scale=0.65, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=32, damagePerTick=0.2, stickerName="acid-sticker-medium", radius=1.3, effectiveLevel=3})
+    AttackBall.createAttackBall({name="acid-ball", scale=0.5, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=4, damagePerTick=0.1, stickerName="acid-sticker-small", radius=1.2, effectiveLevel=1})
+    AttackBall.createAttackBall({name="acid-ball-1", scale=0.65, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=7.5, damagePerTick=0.2, stickerName="acid-sticker-medium", radius=1.3, effectiveLevel=3})
 
-    AttackBall.createAttackBall({name="acid-ball-2-direction", scale=0.85, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=60, damagePerTick=0.03, stickerName="acid-sticker-big", radius=1.4, effectiveLevel=5})
-    AttackBall.createAttackBall({name="acid-ball-3-direction", scale=1.0, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=90, damagePerTick=0.55, stickerName="acid-sticker-behemoth", radius=1.5, effectiveLevel=7})
+    AttackBall.createAttackBall({name="acid-ball-2-direction", scale=0.85, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=11.25, damagePerTick=0.03, stickerName="acid-sticker-big", radius=1.4, effectiveLevel=5})
+    AttackBall.createAttackBall({name="acid-ball-3-direction", scale=1.0, directionOnly=true, attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=15, damagePerTick=0.55, stickerName="acid-sticker-behemoth", radius=1.5, effectiveLevel=7})
 
-    AttackBall.createAttackBall({name="acid-ball-2", scale=0.85,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=36, damagePerTick=0.2, stickerName="acid-sticker-small", radius=1.4, effectiveLevel=3})
-    AttackBall.createAttackBall({name="acid-ball-3", scale=1.0,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=45, damagePerTick=0.5, stickerName="acid-sticker-medium", radius=1.5, effectiveLevel=5})
-    AttackBall.createAttackBall({name="acid-ball-4", scale=1.2,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=85, damagePerTick=0.75, stickerName="acid-sticker-big", radius=1.75, effectiveLevel=7})
-    AttackBall.createAttackBall({name="acid-ball-5", scale=1.3,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=135, damagePerTick=1, stickerName="acid-sticker-behemoth", radius=2, effectiveLevel=8})
+    AttackBall.createAttackBall({name="acid-ball-2", scale=0.85,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=11.25, damagePerTick=0.2, stickerName="acid-sticker-small", radius=1.4, effectiveLevel=3})
+    AttackBall.createAttackBall({name="acid-ball-3", scale=1.0,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=15, damagePerTick=0.5, stickerName="acid-sticker-medium", radius=1.5, effectiveLevel=5})
+    AttackBall.createAttackBall({name="acid-ball-4", scale=1.2,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=22.5, damagePerTick=0.75, stickerName="acid-sticker-big", radius=1.75, effectiveLevel=7})
+    AttackBall.createAttackBall({name="acid-ball-5", scale=1.3,  attackType="projectile", tint2={r=0, g=1, b=0.3, a=0.5}, damage=32.5, damagePerTick=1, stickerName="acid-sticker-behemoth", radius=2, effectiveLevel=8})
 end
 
 return AttackBall

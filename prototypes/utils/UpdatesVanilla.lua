@@ -30,7 +30,7 @@ function vanillaUpdates.useDumbProjectiles()
             attackType = "projectile",
             fire_penalty = 0,
             damageModifier = 0.87,
-            effectiveLevel = 3,      
+            effectiveLevel = 3,
             scale = 1
         },
         "acid-ball-3-" .. attackType .. "-rampant")
@@ -44,7 +44,7 @@ function vanillaUpdates.useDumbProjectiles()
             attackType = "projectile",
             turn_range = 1,
             fire_penalty = 0,
-            effectiveLevel = 5,      
+            effectiveLevel = 5,
             scale = 1.2
         },
         "acid-ball-4-" .. attackType .. "-rampant")
@@ -60,7 +60,7 @@ function vanillaUpdates.useDumbProjectiles()
             effectiveLevel = 7,
             scale = 1.5
         },
-        "acid-ball-5-" .. attackType .. "-rampant")   
+        "acid-ball-5-" .. attackType .. "-rampant")
 
     local units = data.raw["unit"];
 
@@ -77,11 +77,11 @@ function vanillaUpdates.useDumbProjectiles()
             fire_penalty = 15,
             scale = biterUtils.findRunScale(unit)
         },
-        "acid-ball-" .. attackType .. "-rampant",        
+        "acid-ball-" .. attackType .. "-rampant",
         spitterattackanimation(biterUtils.findRunScale(unit),
                                tint_1_spitter_small,
                                tint_2_spitter_small))
-    
+
     unit = units["medium-spitter"]
     unit["attack_parameters"] = biterUtils.createRangedAttack(
         {

@@ -819,6 +819,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
             type = "beam",
             ammo_category = "biological",
             cooldown = attributes.cooldown or 20,
+            warmup = attributes.warmup,            
             min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
             range = (attributes.range and (attributes.range + 2)) or 15,
             ammo_type =
@@ -846,6 +847,8 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
         type = "projectile",
         ammo_category = "biological",
         cooldown = attributes.cooldown or 15,
+        warmup = attributes.warmup,
+        cooldown_deviation = 0.15,
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
         lead_target_for_projectile_speed = 0.6,
@@ -888,6 +891,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
         type = "projectile",
         range = attackAttributes.range or 0.5,
         cooldown = attackAttributes.cooldown or 35,
+        cooldown_deviation = 0.15,
         ammo_category = "melee",
         ammo_type = {
             category = "melee",
@@ -984,8 +988,10 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
         type = "stream",
         ammo_category = "biological",
         cooldown = attributes.cooldown,
+        warmup = attributes.warmup,
         range = attributes.range,
         min_range = attributes.minRange,
+        cooldown_deviation = 0.15,
 
         turn_range = attributes.turnRange,
         fire_penalty = attributes.firePenalty,

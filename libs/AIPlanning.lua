@@ -39,6 +39,7 @@ local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
 
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
+local MINIMUM_AI_POINTS = constants.MINIMUM_AI_POINTS
 
 -- imported functions
 
@@ -58,7 +59,7 @@ local mMin = math.min
 function aiPlanning.planning(natives, evolution_factor, tick)
     natives.evolutionLevel = evolution_factor
 
-    local maxPoints = AI_MAX_POINTS * evolution_factor
+    local maxPoints = mMax(AI_MAX_POINTS * evolution_factor, MINIMUM_AI_POINTS)
 
     if not natives.ranIncompatibleMessage and natives.newEnemies and (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
         natives.ranIncompatibleMessage = true
@@ -74,9 +75,15 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.25 * evolution_factor), 0.10)
 
-    natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.66667)
-    natives.attackWaveDeviation = (attackWaveMaxSize * 0.5) * 0.333
-    natives.attackWaveUpperBound = attackWaveMaxSize + (attackWaveMaxSize * 0.25)
+    natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.15)
+    natives.attackWaveDeviation = (natives.attackWaveSize * 0.333)
+    natives.attackWaveUpperBound = natives.attackWaveSize + (natives.attackWaveSize * 0.35)
+
+    if (natives.attackWaveSize < 1) then
+        natives.attackWaveSize = 2
+        natives.attackWaveDeviation = 1
+        natives.attackWaveUpperBound = 3
+    end
 
     natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
     natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.33)

@@ -1,4 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.6
+Date: 25. 3. 2020
+  Tweaks:
+    - Changed setting default to true for units affected by tile as factorio 0.18.16 fixes the desync issue
+    - AI now has a minimum number of points that it can always accure up to (200)
+    - Buffed Rampant Enemies biter close range damage by 70% for all tiers
+    - Nerfed Rampant Enemies spitter damage by 75% for all tiers
+    - Nerfed Rampant Enemies electric biter damage by 40%
+    - Nerfed Rampant Enemies worm damage by taking the spitter damage range and multipling by 3
+    - Nerfed damage for vanilla blockable projectile by roughly 50% for all tiers
+    - Added a warmup pause for spitters to spit (30 ticks tier 1, 20 ticks tier 10)
+    - Added cooldown deviation to Rampant Enemies
+  Bugfixes:
+    - Squads size correctly scales with evolution now.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.5
 Date: 14. 3. 2020
   Improvements:

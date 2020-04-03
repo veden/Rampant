@@ -23,7 +23,7 @@ data:extend({
             type = "bool-setting",
             name = "rampant-unitsAffectedByTiles",
             setting_type = "startup",
-            default_value = false,
+            default_value = true,
             order = "b[modifier]-b[trigger]",
             per_user = false
         },
