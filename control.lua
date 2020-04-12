@@ -882,7 +882,6 @@ local function onEntitySpawned(event)
                                           chunk,
                                           event.tick)
                     end
-                    local n = entity.name
 
                     entity = upgradeEntity(entity,
                                            surface,
