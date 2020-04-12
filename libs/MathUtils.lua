@@ -38,9 +38,9 @@ function mathUtils.randomTickEvent(tick, low, high)
 end
 
 function mathUtils.distort(xorRandom, num, stdDev, min, max)
-    local min = min or num * 0.85
+    local min = min or num * 0.70
     local max = max or num * 1.30
-    local sd = stdDev or 0.30
+    local sd = stdDev or 0.17
     if (num < 0) then
         local t = min
         min = max

@@ -118,7 +118,7 @@ local function makeBiterCorpse(attributes)
     corpse.ground_patch_fade_in_speed = 0.002
     corpse.ground_patch_fade_out_start = 50 * 60
     corpse.ground_patch_fade_out_duration = 20 * 60
-    
+
     local a = 1
     local d = 0.9
     corpse.ground_patch =
@@ -254,7 +254,7 @@ function biterFunctions.makeBiter(attributes)
         distraction_cooldown = attributes.distractionCooldown or 300,
         corpse = makeBiterCorpse(attributes),
         dying_explosion = attributes.explosion,
-        dying_trigger_effect = attributes.dyingEffect, 
+        dying_trigger_effect = attributes.dyingEffect,
         enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value,
         dying_sound = sounds.biter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
@@ -297,7 +297,7 @@ function biterFunctions.makeSpitter(attributes)
         loot = attributes.loot,
         vision_distance = attributes.vision or 30,
         movement_speed = attributes.movement,
-        spawning_time_modifier = attributes.spawningTimeModifer or nil,        
+        spawning_time_modifier = attributes.spawningTimeModifer or nil,
         distance_per_frame = attributes.distancePerFrame or 0.1,
         pollution_to_join_attack = attributes.pollutionToAttack or 200,
         distraction_cooldown = attributes.distractionCooldown or 300,
@@ -305,7 +305,7 @@ function biterFunctions.makeSpitter(attributes)
         corpse = makeSpitterCorpse(attributes),
         dying_explosion = attributes.explosion,
         enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        dying_trigger_effect = attributes.dyingEffect,        
+        dying_trigger_effect = attributes.dyingEffect,
         dying_sound =  sounds.spitter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         running_sound_animation_positions = {2,},
@@ -448,7 +448,7 @@ function biterFunctions.makeWorm(attributes)
         prepared_alternative_sound = sounds.worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
 
         damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        
+
         starting_attack_speed = 0.034,
         starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         starting_attack_sound = sounds.worm_roars(0.2 + (0.05 * attributes.effectiveLevel)),
@@ -511,7 +511,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                                     starting_frame_speed_deviation = 5,
                                     speed_from_center = 0.5,
                                     speed_deviation = 0.2
-                                },                            
+                                },
                                 {
                                     type = "create-entity",
                                     entity_name = attributes.attackExplosion
@@ -819,7 +819,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
             type = "beam",
             ammo_category = "biological",
             cooldown = attributes.cooldown or 20,
-            warmup = attributes.warmup,            
+            warmup = attributes.warmup,
             min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
             range = (attributes.range and (attributes.range + 2)) or 15,
             ammo_type =
@@ -851,6 +851,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
         cooldown_deviation = 0.15,
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
+        min_attack_distance = (attributes.range and (attributes.range - 2)) or 20,
         lead_target_for_projectile_speed = 0.6,
         use_shooter_direction = true,
         ammo_type =
@@ -886,7 +887,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
         o[2] = attackAttributes.meleePuddleGenerator(attackAttributes)
         meleeAttackEffects = o
     end
-    
+
     return {
         type = "projectile",
         range = attackAttributes.range or 0.5,

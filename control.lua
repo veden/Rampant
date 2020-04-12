@@ -567,80 +567,6 @@ local function onConfigChanged()
     prepWorld(true)
 end
 
-script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
-                   function (event)
-
-                       local gameRef = game
-
-                       processPlayers(gameRef.connected_players,
-                                      map,
-                                      gameRef.surfaces[natives.activeSurface],
-                                      event.tick)
-end)
-
-script.on_nth_tick(INTERVAL_MAP_PROCESS,
-                   function (event)
-
-                       local gameRef = game
-
-                       processMap(map,
-                                  gameRef.surfaces[natives.activeSurface],
-                                  event.tick)
-end)
-
-script.on_nth_tick(INTERVAL_SCAN,
-                   function (event)
-                       local tick = event.tick
-                       local gameRef = game
-                       local surface = gameRef.surfaces[natives.activeSurface]
-
-                       processPendingChunks(map, surface, pendingChunks, tick)
-
-                       scanMap(map, surface, tick)
-
-                       processScanChunks(map, surface)
-end)
-
-script.on_nth_tick(INTERVAL_LOGIC,
-                   function (event)
-                       local tick = event.tick
-
-                       planning(natives,
-                                game.forces.enemy.evolution_factor,
-                                tick)
-
-                       squadsBeginAttack(natives,
-                                         game.surfaces[natives.activeSurface])
-
-                       if natives.newEnemies then
-                           recycleBases(natives, tick)
-                       end
-end)
-
-script.on_nth_tick(INTERVAL_TEMPERAMENT,
-                   function (event)
-                       temperamentPlanner(natives)
-end)
-
-script.on_nth_tick(INTERVAL_SQUAD,
-                   function ()
-                       squadsDispatch(map,
-                                      game.surfaces[natives.activeSurface])
-end)
-
-script.on_nth_tick(INTERVAL_BUILDERS,
-                   function ()
-                       cleanBuilders(natives,
-                                     game.surfaces[natives.activeSurface])
-end)
-
-
-script.on_nth_tick(INTERVAL_RESQUAD,
-                   function ()
-                       regroupSquads(natives)
-end)
-
-
 local function onBuild(event)
     local entity = event.created_entity or event.entity
     if (entity.surface.index == natives.activeSurface) then
@@ -1019,6 +945,79 @@ local function onForceMerged(event)
 end
 
 -- hooks
+
+script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
+                   function (event)
+
+                       local gameRef = game
+
+                       processPlayers(gameRef.connected_players,
+                                      map,
+                                      gameRef.surfaces[natives.activeSurface],
+                                      event.tick)
+end)
+
+script.on_nth_tick(INTERVAL_MAP_PROCESS,
+                   function (event)
+
+                       local gameRef = game
+
+                       processMap(map,
+                                  gameRef.surfaces[natives.activeSurface],
+                                  event.tick)
+end)
+
+script.on_nth_tick(INTERVAL_SCAN,
+                   function (event)
+                       local tick = event.tick
+                       local gameRef = game
+                       local surface = gameRef.surfaces[natives.activeSurface]
+
+                       processPendingChunks(map, surface, pendingChunks, tick)
+
+                       scanMap(map, surface, tick)
+
+                       processScanChunks(map, surface)
+end)
+
+script.on_nth_tick(INTERVAL_LOGIC,
+                   function (event)
+                       local tick = event.tick
+
+                       planning(natives,
+                                game.forces.enemy.evolution_factor,
+                                tick)
+
+                       squadsBeginAttack(natives,
+                                         game.surfaces[natives.activeSurface])
+
+                       if natives.newEnemies then
+                           recycleBases(natives, tick)
+                       end
+end)
+
+script.on_nth_tick(INTERVAL_TEMPERAMENT,
+                   function (event)
+                       temperamentPlanner(natives)
+end)
+
+script.on_nth_tick(INTERVAL_SQUAD,
+                   function ()
+                       squadsDispatch(map,
+                                      game.surfaces[natives.activeSurface])
+end)
+
+script.on_nth_tick(INTERVAL_BUILDERS,
+                   function ()
+                       cleanBuilders(natives,
+                                     game.surfaces[natives.activeSurface])
+end)
+
+
+script.on_nth_tick(INTERVAL_RESQUAD,
+                   function ()
+                       regroupSquads(natives)
+end)
 
 script.on_init(onInit)
 script.on_load(onLoad)

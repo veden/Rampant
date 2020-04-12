@@ -4,7 +4,7 @@ local particleUtils = {}
 
 function particleUtils.makeDamagedParticle(attributes)
     local name = attributes.name .. "-damaged-particle-rampant"
-    
+
     data:extend({
             {
                 type = "explosion",
@@ -30,11 +30,11 @@ function particleUtils.makeDamagedParticle(attributes)
                                             type = "create-entity",
                                             entity_name = attributes.hitSprayName,
                                             repeat_count = 1,
-                                        }                                        
+                                        }
                                     }
                             }
                     }
-            }            
+            }
     })
 
     return {
@@ -50,7 +50,7 @@ end
 local function makeBloodParticle(attributes)
     local name = attributes.name .. "-blood-particle-rampant"
     local tint = attributes.tint2
-    
+
     data:extend({
             {
                 type = "optimized-particle",
@@ -570,7 +570,7 @@ local function makeBloodParticle(attributes)
                             line_length = 6,
                             frame_count = 12,
                             scale = 1,
-                            tint = {r=tint.r*0.1, b=tint.b*0.1, g=tint.g*0.1, a=tint.a*0.1},                            
+                            tint = {r=tint.r*0.1, b=tint.b*0.1, g=tint.g*0.1, a=tint.a*0.1},
                             shift = util.by_pixel(1,0),
                             hr_version =
                                 {
@@ -591,7 +591,7 @@ local function makeBloodParticle(attributes)
                             height = 4,
                             line_length = 6,
                             frame_count = 12,
-                            scale = 1,                            
+                            scale = 1,
                             tint = {r=tint.r*0.1, b=tint.b*0.1, g=tint.g*0.1, a=tint.a*0.1},
                             shift = util.by_pixel(0,0),
                             hr_version =
@@ -617,7 +617,7 @@ local function makeBloodParticle(attributes)
 
             }
     })
-    
+
     return name
 end
 
@@ -625,7 +625,7 @@ end
 function particleUtils.makeBloodFountains(attributes)
 
     local bloodParticle = makeBloodParticle(attributes)
-    
+
     data:extend({
             {
                 type = "particle-source",
@@ -697,6 +697,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         type = "create-entity",
                                         entity_name = attributes.name .. "-blood-fountain-rampant",
                                         repeat_count = 20,
+                                        repeat_count_deviation = 3,
                                         offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                     }
                             }
@@ -726,7 +727,8 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 150,
+                                            repeat_count = 130,
+                                            repeat_count_deviation = 20,
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
@@ -736,9 +738,60 @@ function particleUtils.makeBloodFountains(attributes)
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         },
                                         {
+                                            type = "create-particle",
+                                            repeat_count = 4,
+                                            repeat_count_deviation = 2,
+                                            probability = 1,
+                                            affects_target = false,
+                                            show_in_tooltip = false,
+                                            particle_name = "guts-entrails-particle-small-medium",
+                                            offsets = {
+                                                { 0.03906, -0.02344 }
+                                            },
+                                            offset_deviation = { { -1, -0.6992 }, { 1, 0.6992 } },
+                                            tile_collision_mask = nil,
+                                            initial_height = 0.4,
+                                            initial_height_deviation = 0.4,
+                                            initial_vertical_speed = 0.04,
+                                            initial_vertical_speed_deviation = 0.05,
+                                            speed_from_center = 0.04,
+                                            speed_from_center_deviation = 0.05,
+                                            frame_speed = 1,
+                                            frame_speed_deviation = 0.955,
+                                            tail_length = 3,
+                                            tail_length_deviation = 0,
+                                            tail_width = 1
+                                        },
+                                        {
+                                            type = "create-particle",
+                                            repeat_count = 4,
+                                            repeat_count_deviation = 2,
+                                            probability = 1,
+                                            affects_target = false,
+                                            show_in_tooltip = false,
+                                            particle_name = "guts-entrails-particle-big",
+                                            offsets = {
+                                                { 0, 0 }
+                                            },
+                                            offset_deviation = { { -0.5, -0.5 }, { 0.5, 0.5 } },
+                                            tile_collision_mask = nil,
+                                            initial_height = 0.02,
+                                            initial_height_deviation = 0.5,
+                                            initial_vertical_speed = 0.125,
+                                            initial_vertical_speed_deviation = 0.05,
+                                            speed_from_center = 0.035,
+                                            speed_from_center_deviation = 0.05,
+                                            frame_speed = 1,
+                                            frame_speed_deviation = 0,
+                                            tail_length = 2,
+                                            tail_length_deviation = 0,
+                                            tail_width = 1
+                                        },
+                                        {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-rampant",
                                             repeat_count = 35,
+                                            repeat_count_deviation = 5,
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         }
                                     }
@@ -770,7 +823,8 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 150,
+                                            repeat_count = 130,
+                                            repeat_count_deviation = 20,
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
@@ -780,9 +834,60 @@ function particleUtils.makeBloodFountains(attributes)
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         },
                                         {
+                                            type = "create-particle",
+                                            repeat_count = 4,
+                                            repeat_count_deviation = 2,
+                                            probability = 1,
+                                            affects_target = false,
+                                            show_in_tooltip = false,
+                                            particle_name = "guts-entrails-particle-small-medium",
+                                            offsets = {
+                                                { 0.03906, -0.02344 }
+                                            },
+                                            offset_deviation = { { -1, -0.6992 }, { 1, 0.6992 } },
+                                            tile_collision_mask = nil,
+                                            initial_height = 0.4,
+                                            initial_height_deviation = 0.4,
+                                            initial_vertical_speed = 0.04,
+                                            initial_vertical_speed_deviation = 0.05,
+                                            speed_from_center = 0.04,
+                                            speed_from_center_deviation = 0.05,
+                                            frame_speed = 1,
+                                            frame_speed_deviation = 0.955,
+                                            tail_length = 3,
+                                            tail_length_deviation = 0,
+                                            tail_width = 1
+                                        },
+                                        {
+                                            type = "create-particle",
+                                            repeat_count = 4,
+                                            repeat_count_deviation = 1,
+                                            probability = 1,
+                                            affects_target = false,
+                                            show_in_tooltip = false,
+                                            particle_name = "guts-entrails-particle-big",
+                                            offsets = {
+                                                { 0, 0 }
+                                            },
+                                            offset_deviation = { { -0.5, -0.5 }, { 0.5, 0.5 } },
+                                            tile_collision_mask = nil,
+                                            initial_height = 0.02,
+                                            initial_height_deviation = 0.5,
+                                            initial_vertical_speed = 0.125,
+                                            initial_vertical_speed_deviation = 0.05,
+                                            speed_from_center = 0.035,
+                                            speed_from_center_deviation = 0.05,
+                                            frame_speed = 1,
+                                            frame_speed_deviation = 0,
+                                            tail_length = 2,
+                                            tail_length_deviation = 0,
+                                            tail_width = 1
+                                        },
+                                        {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-big-rampant",
                                             repeat_count = 35,
+                                            repeat_count_deviation = 5,
                                             offset_deviation = {{-1.6, -1.6}, {1.6, 1.6}}
                                         }
                                     }

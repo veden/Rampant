@@ -261,7 +261,6 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
-                print("vengence", scaledWaveSize, natives.attackWaveSize, natives.attackWaveDeviation, natives.attackWaveUpperBound)
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
                     local pending = natives.pendingAttack
@@ -308,7 +307,6 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
-                print("squad", scaledWaveSize, natives.attackWaveSize, natives.attackWaveDeviation, natives.attackWaveUpperBound)
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
                     local pending = natives.pendingAttack

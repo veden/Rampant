@@ -101,7 +101,7 @@ constants.MAX_TICKS_BEFORE_SORT_CHUNKS = 60 * 60 * 30 -- 1 tick = 1/60 sec * 60 
 
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
-constants.MINIMUM_AI_POINTS = 200
+constants.MINIMUM_AI_POINTS = 100
 constants.AI_POINT_GENERATOR_AMOUNT = 6
 constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
