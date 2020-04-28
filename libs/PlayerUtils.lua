@@ -12,7 +12,7 @@ local playerUtils = {}
 function playerUtils.validPlayer(player, natives)
     if player and player.valid then
         local char = player.character
-        return char and char.valid and (char.surface.index == natives.activeSurface)
+        return char and char.valid and (char.surface.name == natives.activeSurface)
     end
     return false
 end

@@ -172,6 +172,18 @@ function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
     end
 end
 
+function chunkPropertyUtils.getNestActiveTick(map, chunk)
+    return map.tickActiveNest[chunk] or 0
+end
+
+function chunkPropertyUtils.setNestActiveTick(map, chunk, tick)
+    if (tick == 0) then
+        map.tickActiveNest[chunk] = nil
+    else
+        map.tickActiveNest[chunk] = tick
+    end
+end
+
 function chunkPropertyUtils.getNestActiveness(map, chunk)
     return map.chunkToActiveNest[chunk] or 0
 end

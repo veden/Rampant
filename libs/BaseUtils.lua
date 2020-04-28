@@ -95,6 +95,50 @@ local function evoToTier(natives, evolutionFactor)
     return v
 end
 
+function baseUtils.createSpawnerProxies(map, surface, chunk, foundUnits)
+    local query = map.placeSpawnerProxyQuery
+    if (foundUnits >= 60) then
+        query.name = "spawner-proxy-2-rampant"
+    elseif (foundUnits >= 120) then
+        query.name = "spawner-proxy-3-rampant"
+    else
+        query.name = "spawner-proxy-1-rampant"
+    end
+    local position3 = map.position3
+    local chunkX = chunk.x + 5
+    local chunkY = chunk.y + 5
+    position3.x = chunkX
+    position3.y = chunkY
+    local entity = surface.create_entity(query)
+    entity.destructible = false
+    position3.x = chunkX+CHUNK_SIZE
+    position3.y = chunkY
+    entity = surface.create_entity(query)
+    entity.destructible = false
+    position3.x = chunkX-CHUNK_SIZE
+    position3.y = chunkY
+    entity = surface.create_entity(query)
+    entity.destructible = false
+    position3.x = chunkX
+    position3.y = chunkY-CHUNK_SIZE
+    entity = surface.create_entity(query)
+    entity.destructible = false
+    position3.x = chunkX
+    position3.y = chunkY+CHUNK_SIZE
+    entity = surface.create_entity(query)
+    entity.destructible = false
+end
+
+function baseUtils.createSpawnerProxy(map, surface, chunk)
+    local query = map.placeSpawnerProxyQuery
+    query.name = "spawner-proxy-1-rampant"
+    local position3 = map.position3
+    position3.x = chunk.x + 5
+    position3.y = chunk.y + 5
+    local entity = surface.create_entity(query)
+    entity.destructible = false
+end
+
 function baseUtils.findNearbyBase(map, chunk)
     local x = chunk.x
     local y = chunk.y

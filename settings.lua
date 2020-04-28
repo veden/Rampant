@@ -134,7 +134,7 @@ data:extend({
             order = "c[modifier]-d[safe]",
             per_user = false
         },
-        
+
         {
             type = "bool-setting",
             name = "rampant-safeBuildings-railSignals",
@@ -235,7 +235,7 @@ data:extend({
             order = "l[modifier]-h[unit]",
             per_user = false
         },
-        
+
         {
             type = "int-setting",
             name = "rampant-tierStart",
@@ -799,8 +799,17 @@ data:extend({
             name = "rampant-attackPlayerThreshold",
             setting_type = "runtime-global",
             minimum_value = 0,
-            default_value = 7,
+            default_value = 20,
             order = "b[modifier]-c[threshold]",
             per_user = false
-        }
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-suppress-surface-change-warnings",
+            setting_type = "runtime-per-user",
+            default_value = false,
+            order = "b[modifier]-b[trigger]",
+            per_user = true
+        },
 })

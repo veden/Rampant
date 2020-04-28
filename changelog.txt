@@ -1,9 +1,22 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.7
+Date: 12. 4 2020
+  Improvements:
+    - Added logic for switching between active surfaces and Rampant alerting when players enter new surfaces. Rampant can only handle one active surface still.
+  Tweaks:
+    - Spawners periodically spawn lower level units at higher evolutions
+    - Reduced player pheromone cloud range by half (Player threshold setting from 7 to 20)
+  Bugfixes:
+    - Remove second info.json dependency entry for Rampant Resources
+    - Remove desync warning message from biters affected by tiles as it was fixed in factorio 0.18.16
+    - Fixed biter, spitters, worms, and spawner icons
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.6
 Date: 25. 3. 2020
   Tweaks:
     - Changed setting default to true for units affected by tile as factorio 0.18.16 fixes the desync issue
-    - AI now has a minimum number of points that it can always accure up to (100)
+    - AI now has a minimum number of points that it can always accrue up to (100)
     - Buffed Rampant Enemies biter close range damage by 70% for all tiers
     - Nerfed Rampant Enemies spitter damage by 75% for all tiers
     - Nerfed Rampant Enemies electric biter damage by 40%

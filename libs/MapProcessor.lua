@@ -18,6 +18,9 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
+local DURATION_ACTIVE_NEST_DIVIDER = constants.DURATION_ACTIVE_NEST_DIVIDER
+local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
+
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
 local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
@@ -66,12 +69,17 @@ local recycleBiters = unitGroupUtils.recycleBiters
 
 local validPlayer = playerUtils.validPlayer
 
+local createSpawnerProxy = baseUtils.createSpawnerProxy
+
 local mapScanChunk = chunkUtils.mapScanChunk
 
 local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getNestActiveness = chunkPropertyUtils.getNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
+local getNestActiveTick = chunkPropertyUtils.getNestActiveTick
+local setNestActiveTick = chunkPropertyUtils.setNestActiveTick
+
 local getRaidNestActiveness = chunkPropertyUtils.getRaidNestActiveness
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 
@@ -161,6 +169,42 @@ function mapProcessor.processMap(map, surface, tick)
     end
 end
 
+
+local function queueNestSpawners(map, chunk, tick)
+    local limitPerActiveChunkTick = map.natives.activeNests * DURATION_ACTIVE_NEST_DIVIDER
+
+    local processActiveNest = map.processActiveNest
+    
+    if ((getNestActiveness(map, chunk) > 0) and (getNestActiveTick(map, chunk) == 0)) then
+        local nextTick = tick + DURATION_ACTIVE_NEST
+        local slot = processActiveNest[nextTick]
+        if not slot then
+            slot = {}
+            processActiveNest[nextTick] = slot
+            slot[#slot+1] = chunk
+        else
+            if (#slot > limitPerActiveChunkTick) then
+                while (#slot > limitPerActiveChunkTick) do
+                    nextTick = nextTick + 1
+                    slot = processActiveNest[nextTick]
+                    if not slot then
+                        slot = {}
+                        processActiveNest[nextTick] = slot
+                        slot[#slot+1] = chunk
+                        break
+                    elseif (#slot < limitPerActiveChunkTick) then
+                        slot[#slot+1] = chunk
+                        break
+                    end
+                end
+            else
+                slot[#slot+1] = chunk
+            end
+        end
+        setNestActiveTick(map, chunk, tick)
+    end
+end
+
 --[[
     Localized player radius were processing takes place in realtime, doesn't store state
     between calls.
@@ -200,7 +244,8 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                             processPheromone(map, chunk, scentStaging[i])
 
                             processNestActiveness(map, chunk, natives, surface)
-
+                            queueNestSpawners(map, chunk, tick)
+                            
                             if vengence and (getNestCount(map, chunk) > 0) then
                                 vengence = formVengenceSquad(map, surface, chunk)
                             end
@@ -298,10 +343,11 @@ function mapProcessor.scanMap(map, surface, tick)
         end
 
         if isFullMapScan then
-           mapScanChunk(chunk, surface, map)
+            mapScanChunk(chunk, surface, map)
         end
 
         processNestActiveness(map, chunk, natives, surface)
+        queueNestSpawners(map, chunk, tick)
     end
 
     if (endIndex == #processQueue) then
@@ -311,5 +357,31 @@ function mapProcessor.scanMap(map, surface, tick)
     end
 end
 
+function mapProcessor.processActiveNests(map, surface, tick)
+    local processActiveNest = map.processActiveNest
+    local slot = processActiveNest[tick]
+    if slot then
+        for i=1,#slot do
+            local chunk = slot[i]
+            if (getNestActiveness(map, chunk) > 0) then
+                createSpawnerProxy(map, surface, chunk)
+                -- setNestActiveTick(map, chunk, tick)
+                local nextTick = tick + DURATION_ACTIVE_NEST
+                local nextSlot = processActiveNest[nextTick]
+                if not nextSlot then
+                    nextSlot = {}
+                    processActiveNest[nextTick] = nextSlot
+                end
+                nextSlot[#nextSlot+1] = chunk
+            else
+                setNestActiveTick(map, chunk, 0)
+            end
+        end
+        processActiveNest[tick] = nil
+    end
+end
+
 mapProcessorG = mapProcessor
 return mapProcessor
+
+

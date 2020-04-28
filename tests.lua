@@ -30,7 +30,7 @@ function tests.pheromoneLevels(size)
                     for i=1,#chunk do
                         str = str .. " " .. tostring(i) .. "/" .. tostring(chunk[i])
                     end
-                    str = str .. " " .. "p/" .. game.surfaces[global.natives.activeSurface].get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getTurretCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
+                    str = str .. " " .. "p/" .. game.get_surface(global.natives.activeSurface).get_pollution(chunk) .. " " .. "n/" .. chunkPropertyUtils.getNestCount(global.map, chunk) .. " " .. "w/" .. chunkPropertyUtils.getTurretCount(global.map, chunk) .. " pg/" .. chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk)
                     if (chunk.x == playerChunkX) and (chunk.y == playerChunkY) then
                         print("=============")
                         print(chunk.x, chunk.y, str)
@@ -139,7 +139,7 @@ function tests.entitiesOnPlayerChunk()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local entities = game.surfaces[global.natives.activeSurface].find_entities_filtered({area={{chunkX, chunkY},
+    local entities = game.get_surface(global.natives.activeSurface).find_entities_filtered({area={{chunkX, chunkY},
                                                                                              {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
                                                                                          force="player"})
     for i=1, #entities do
@@ -152,7 +152,7 @@ function tests.findNearestPlayerEnemy()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local entity = game.surfaces[global.natives.activeSurface].find_nearest_enemy({position={chunkX, chunkY},
+    local entity = game.get_surface(global.natives.activeSurface).find_nearest_enemy({position={chunkX, chunkY},
                                                                                    max_distance=constants.CHUNK_SIZE,
                                                                                    force = "enemy"})
     if (entity ~= nil) then
@@ -181,7 +181,7 @@ function tests.fillableDirtTest()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[global.natives.activeSurface].set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
+    game.get_surface(global.natives.activeSurface).set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
             {name="fillableDirt", position={chunkX, chunkY-1}},
             {name="fillableDirt", position={chunkX-1, chunkY}},
             {name="fillableDirt", position={chunkX, chunkY}}},
@@ -192,7 +192,7 @@ function tests.tunnelTest()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.surfaces[global.natives.activeSurface].create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
+    game.get_surface(global.natives.activeSurface).create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
 end
 
 function tests.createEnemy(x,d)
@@ -203,7 +203,7 @@ function tests.createEnemy(x,d)
     if d then
         a['direction'] = d
     end
-    return game.surfaces[global.natives.activeSurface].create_entity(a)
+    return game.get_surface(global.natives.activeSurface).create_entity(a)
 end
 
 function tests.registeredNest(x)
@@ -211,11 +211,11 @@ function tests.registeredNest(x)
     chunk.registerEnemyBaseStructure(global.map,
                                      entity,
                                      nil,
-                                     game.surfaces[global.natives.activeSurface])
+                                     game.get_surface(global.natives.activeSurface))
 end
 
 function tests.attackOrigin()
-    local enemy = game.surfaces[global.natives.activeSurface].find_nearest_enemy({position={0,0},
+    local enemy = game.get_surface(global.natives.activeSurface).find_nearest_enemy({position={0,0},
                                                                                   max_distance = 1000})
     if (enemy ~= nil) and enemy.valid then
         print(enemy, enemy.unit_number)
@@ -275,7 +275,7 @@ end
 
 function tests.clearBases()
 
-    local surface = game.surfaces[global.natives.activeSurface]
+    local surface = game.get_surface(global.natives.activeSurface)
     for x=#global.natives.bases,1,-1 do
         local base = global.natives.bases[x]
         for c=1,#base.chunks do
@@ -310,7 +310,7 @@ end
 
 function tests.mergeBases()
     local natives = global.natives
-    baseUtils.mergeBases(natives)
+    baseUtils.mergeBases(global.natives)
 end
 
 function tests.unitBuildBase()
@@ -336,7 +336,7 @@ function tests.showBaseGrid()
         elseif (pick == 3) then
             color = "water-green"
         end
-        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[global.natives.activeSurface])
+        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
     end
 end
 
@@ -352,7 +352,7 @@ function tests.showMovementGrid()
         elseif (chunkPropertyUtils.getPassable(global.map, chunk) == constants.CHUNK_EAST_WEST) then
             color = "stone-path"
         end
-        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[global.natives.activeSurface])
+        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
     end
 end
 
@@ -368,7 +368,7 @@ function tests.colorResourcePoints()
         elseif (chunk[constants.NEST_COUNT] ~= 0) then
             color = "stone-path"
         end
-        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.surfaces[global.natives.activeSurface])
+        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
     end
 end
 
@@ -376,7 +376,7 @@ function tests.entityStats(name, d)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local a = game.surfaces[global.natives.activeSurface].create_entity({name=name, position={chunkX, chunkY}})
+    local a = game.get_surface(global.natives.activeSurface).create_entity({name=name, position={chunkX, chunkY}})
     if d then
         a['direction'] = d
     end
@@ -428,7 +428,7 @@ function tests.exportAiState()
                                    chunkPropertyUtils.getResourceGenerator(global.map, chunk),
                                    chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk),
                                    chunkPropertyUtils.getDeathGenerator(global.map, chunk),
-                                   game.surfaces[global.natives.activeSurface].get_pollution(chunk),
+                                   game.get_surface(global.natives.activeSurface).get_pollution(chunk),
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
                                    #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk),
@@ -461,7 +461,7 @@ function tests.createEnergyTest(x)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local entities = game.surfaces[global.natives.activeSurface].find_entities_filtered({area={{chunkX, chunkY},
+    local entities = game.get_surface(global.natives.activeSurface).find_entities_filtered({area={{chunkX, chunkY},
                                                                                              {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
                                                                                          type = "electric-pole",
                                                                                          force="player"})
@@ -486,7 +486,7 @@ function tests.createEnergyTest(x)
 end
 
 function tests.unitGroupBuild()
-    local surface = game.surfaces[global.natives.activeSurface]
+    local surface = game.get_surface(global.natives.activeSurface)
     local group = surface.create_unit_group({position={-32, -32}})
 
     for i=1,10 do
@@ -506,7 +506,7 @@ function tests.dumpEnvironment(x)
 end
 
 -- function tests.scanChunkPaths()
---     local surface = game.surfaces[global.natives.activeSurface]
+--     local surface = game.get_surface(global.natives.activeSurface)
 --     local playerPosition = game.players[1].position
 --     local chunk = mapUtils.getChunkByPosition(global.map, playerPosition)
 --     print("------")
@@ -516,7 +516,7 @@ end
 
 function tests.stepAdvanceTendrils()
     -- for _, base in pairs(global.natives.bases) do
-    -- 	tendrilUtils.advanceTendrils(global.map, base, game.surfaces[global.natives.activeSurface], {nil,nil,nil,nil,nil,nil,nil,nil})
+    -- 	tendrilUtils.advanceTendrils(global.map, base, game.get_surface(global.natives.activeSurface), {nil,nil,nil,nil,nil,nil,nil,nil})
     -- end
 end
 

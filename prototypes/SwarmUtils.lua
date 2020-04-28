@@ -18,6 +18,11 @@ local fireUtils = require("utils/FireUtils")
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
 
+
+local unitSpawnerUtils = require("UnitSpawnerUtils")
+local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
+
+
 -- imported functions
 
 local addFactionAddon = energyThiefFaction.addFactionAddon
@@ -289,14 +294,14 @@ local wormAttributeNumeric = {
 }
 
 local propTables10 = {
-    {{0, 1}, {0.35, 0.0}},
-    {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}},
-    {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}},
-    {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}},
-    {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}},
-    {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}},
-    {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}},
-    {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}},
+    {{0, 1}, {0.65, 0.0}},
+    {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}},
+    {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}},
+    {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}},
+    {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}},
+    {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}},
+    {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}},
+    {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}},
     {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}},
     {{0.93, 0}, {1, 1.0}}
 }
@@ -310,14 +315,14 @@ end
 local function unitSetToProbabilityTable(unitSet)
     local result = {}
 
-    fillUnitTable(result, unitSet, 1, {{0, 1}, {0.35, 0.0}})
-    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.45, 0.0}})
-    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.55, 0.0}})
-    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.65, 0.0}})
-    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.75, 0.0}})
-    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.85, 0.0}})
-    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.875, 0.0}})
-    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.925, 0.0}})
+    fillUnitTable(result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
+    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
+    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
+    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
+    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
+    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
     fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
     fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
 
@@ -1298,6 +1303,67 @@ local function buildHiveTemplate(faction, template)
     return template
 end
 
+local function generateSpawnerProxyTemplate(name, health, result_units)
+    return {
+                type = "unit-spawner",
+                name = name,
+                icon = "__base__/graphics/icons/biter-spawner.png",
+                icon_size = 64,
+                icon_mipmaps = 4,
+                flags = {"placeable-player", "placeable-enemy", "not-repairable"},
+                max_health = health,
+                order="b-b-g",
+                subgroup="enemies",
+                loot = nil,
+                resistances = nil,
+                working_sound = nil,
+                dying_sound = nil,
+                damaged_trigger_effect = nil,
+                healing_per_tick = -1,
+                -- collision_box = {{-3,-3},{3,3}},
+                -- selection_box = {{-3,-3},{3,3}},
+                collision_box = nil,
+                selection_box = nil,
+                -- in ticks per 1 pu
+                pollution_absorption_absolute = 10,
+                pollution_absorption_proportional = 0.005,
+                map_generator_bounding_box = nil,
+                corpse = nil,
+                dying_explosion = nil,
+                dying_trigger_effect = nil,
+                max_count_of_owned_units = 0,
+                max_friends_around_to_spawn = 0,
+                enemy_map_color = {r=0,g=0,b=0,a=0},
+                -- enemy_map_color = {r=0,g=1,b=1,a=1},
+                animations = { filename = "__core__/graphics/empty.png", size = 1 },
+                -- animations ={
+                --     spawner_idle_animation(0, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+                --     spawner_idle_animation(1, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+                --     spawner_idle_animation(2, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+                --     spawner_idle_animation(3, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1})
+                -- },
+                integration = nil,
+                result_units = result_units,
+                -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
+                spawning_cooldown = {360, 150},
+                spawning_radius = 10,
+                spawning_spacing = 3,
+                max_spawn_shift = 0,
+                max_richness_for_spawn_shift = 100,
+                build_base_evolution_requirement = 0.0,
+                call_for_help_radius = 50
+            }
+end
+
+function swarmUtils.generateSpawnerProxy(result_units)
+
+    data:extend({
+            generateSpawnerProxyTemplate("spawner-proxy-1-rampant", 1 * 60 * 60, result_units),
+            generateSpawnerProxyTemplate("spawner-proxy-2-rampant", 2 * 60 * 60, result_units),
+            generateSpawnerProxyTemplate("spawner-proxy-3-rampant", 3 * 60 * 60, result_units)
+    })
+end
+
 function swarmUtils.processFactions()
     for i=1,#constants.FACTION_SET do
         local faction = constants.FACTION_SET[i]
@@ -1355,7 +1421,6 @@ function swarmUtils.processFactions()
 
 
         end
-
     end
 end
 

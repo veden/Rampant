@@ -187,6 +187,7 @@ function energyThief.addFactionAddon()
     chest.flags = {"not-repairable", "not-on-map", "hidden"}
     chest.subgroup = "enemies"
     chest.next_upgrade = nil
+    chest.backer_name = false
     chest.pictures = {
         layers={
             {

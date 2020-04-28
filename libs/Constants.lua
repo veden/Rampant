@@ -72,6 +72,10 @@ constants.RESOURCE_NORMALIZER = 1 / 1024
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 2500
 
+constants.DURATION_ACTIVE_NEST = 60 * constants.TICKS_A_SECOND
+
+constants.DURATION_ACTIVE_NEST_DIVIDER = 1 / constants.DURATION_ACTIVE_NEST
+
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
@@ -1510,6 +1514,12 @@ constants.FACTION_MUTATION_MAPPING["hive"] = {"utility", "biter-spawner", "spitt
 constants.FACTION_MUTATION_MAPPING["turret"] = {"trap"}
 constants.FACTION_MUTATION_MAPPING["trap"] = {"turret"}
 constants.FACTION_MUTATION_MAPPING["utility"] = {"hive", "biter-spawner", "spitter-spawner"}
+
+constants.LOOKUP_SPAWNER_PROXIES = {}
+constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-1-rampant"] = true
+constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-2-rampant"] = true
+constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-3-rampant"] = true
+
 
 constantsG =  constants
 return constants

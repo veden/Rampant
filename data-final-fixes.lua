@@ -4,8 +4,13 @@ local biterFunctions = require("prototypes/utils/BiterUtils")
 
 local swarmUtils = require("prototypes/SwarmUtils")
 
-if settings.startup["rampant-newEnemies"].value then    
+
+
+if settings.startup["rampant-newEnemies"].value then
     swarmUtils.processFactions()
+    swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["neutral-biter-spawner-v1-t10-rampant"].result_units)
+else
+    swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["biter-spawner"].result_units)
 end
 
 if settings.startup["rampant-removeBloodParticles"].value then
@@ -26,7 +31,7 @@ if settings.startup["rampant-unitSpawnerBreath"].value then
                 unitSpawner.flags = {}
             end
             unitSpawner.flags[#unitSpawner.flags+1] = "breaths-air"
-        end        
+        end
     end
 end
 

@@ -11,6 +11,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
+local baseUtils = require("BaseUtils")
 local config = require("__Rampant__/config")
 
 -- constants
@@ -52,6 +53,8 @@ local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
 local randomTickEvent = mathUtils.randomTickEvent
 
 local mRandom = math.random
+
+local createSpawnerProxies = baseUtils.createSpawnerProxies
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
@@ -218,6 +221,7 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    createSpawnerProxies(map, surface, chunk, foundUnits)
                     setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
@@ -263,6 +267,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    createSpawnerProxies(map, surface, chunk, foundUnits)
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
                     squad.cycles = 13
@@ -309,6 +314,7 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    createSpawnerProxies(map, surface, chunk, foundUnits)
                     local pending = natives.pendingAttack
                     pending.len = pending.len + 1
                     squad.cycles = 30
@@ -328,7 +334,7 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
             end
         end
     end
-    
+
     return (natives.points - AI_SQUAD_COST) > 0
 end
 
