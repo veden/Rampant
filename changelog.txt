@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.7
-Date: 12. 4 2020
+Date: 3. 4 2020
   Improvements:
-    - Added logic for switching between active surfaces and Rampant alerting when players enter new surfaces. Rampant can only handle one active surface still.
+    - Added logic for switching active surfaces and Rampant alerting when players enter new surfaces. Rampant can only handle one active surface still.
   Tweaks:
     - Spawners periodically spawn lower level units at higher evolutions
     - Reduced player pheromone cloud range by half (Player threshold setting from 7 to 20)
