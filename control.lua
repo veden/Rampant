@@ -366,7 +366,8 @@ local function rebuildMap()
 
     map.placeSpawnerProxyQuery = {
         name="spawner-proxy-rampant",
-        position=map.position3
+        position=map.position3,
+        force="neutral"
     }
 
     map.upgradeEntityQuery = {
@@ -1069,7 +1070,6 @@ script.on_nth_tick(INTERVAL_BUILDERS,
                        cleanBuilders(natives,
                                      game.get_surface(natives.activeSurface))
 end)
-
 
 script.on_nth_tick(INTERVAL_RESQUAD,
                    function ()

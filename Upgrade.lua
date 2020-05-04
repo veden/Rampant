@@ -140,6 +140,9 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         else
             gameSurfs = gameSurfaces
         end
+    end
+    if (global.version < 108) then
+        global.version = 108
 
         for _,player in pairs(game.connected_players) do
             if player and player.valid and not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value then
@@ -162,7 +165,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         end
 
         if not setNewSurface then
-            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.7")
+            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.8")
         end
     end
 

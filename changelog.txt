@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.8
+Date: 3. 4 2020
+  Improvements:
+    - Rampant now has a mechanism to drain pollution around spawners as before they were filling up and stopped absorbing pollution.
+  Bugfixes:
+    - Spawner pollution proxies being counted against enemy force spawner evolution
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.7
 Date: 3. 4 2020
   Improvements:
