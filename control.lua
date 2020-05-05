@@ -526,6 +526,7 @@ local function prepWorld(rebuild, surfaceName)
     end
 
     upgraded, natives = upgrade.attempt(natives, surfaceName, gameSurfaces)
+    gameSurfaces = global.gameSurfaces
     onModSettingsChange(nil)
     if natives.newEnemies then
         rebuildNativeTables(natives, game.get_surface(natives.activeSurface), game.create_random_generator(natives.enemySeed))
