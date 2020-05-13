@@ -731,7 +731,10 @@ local function onDeath(event)
                         end
                     end
                 end
-
+            elseif (entity.type == "resource") and (entity.force.name == "neutral") then
+                if (entity.amount == 0) then
+                    unregisterResource(entity, map)
+                end
             end
             if creditNatives and natives.safeBuildings and (natives.safeEntities[entityType] or natives.safeEntities[entity.name]) then
                 makeImmortalEntity(surface, entity)
@@ -1105,8 +1108,7 @@ script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
 
 script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
-                 defines.events.on_robot_mined_entity,
-                 defines.events.script_raised_destroy}, onMine)
+                 defines.events.on_robot_mined_entity}, onMine)
 script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity,
                  defines.events.script_raised_built,
@@ -1116,7 +1118,8 @@ script.on_event({defines.events.on_built_entity,
 script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
-script.on_event(defines.events.on_entity_died, onDeath)
+script.on_event({defines.events.on_entity_died,
+                 defines.events.script_raised_destroy}, onDeath)
 script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
