@@ -19,8 +19,6 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
-local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
 local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 
 -- imported functions
@@ -33,27 +31,27 @@ local getPassable = chunkPropertyUtils.getPassable
 function mapUtils.getChunkByXY(map, x, y)
     local chunkX = map[x]
     if chunkX then
-        return chunkX[y] or SENTINEL_IMPASSABLE_CHUNK
+        return chunkX[y] or -1
     end
-    return SENTINEL_IMPASSABLE_CHUNK
+    return -1
 end
 
 function mapUtils.getChunkByPosition(map, position)
     local chunkX = map[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
         local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-        return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
+        return chunkX[chunkY] or -1
     end
-    return SENTINEL_IMPASSABLE_CHUNK
+    return -1
 end
 
 function mapUtils.getChunkByUnalignedXY(map, x, y)
     local chunkX = map[mFloor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
         local chunkY = mFloor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-        return chunkX[chunkY] or SENTINEL_IMPASSABLE_CHUNK
+        return chunkX[chunkY] or -1
     end
-    return SENTINEL_IMPASSABLE_CHUNK
+    return -1
 end
 
 function mapUtils.positionToChunkXY(position)
@@ -75,33 +73,33 @@ function mapUtils.getNeighborChunks(map, x, y)
     local chunkYRow3 = y + CHUNK_SIZE
     local xChunks = map[x-CHUNK_SIZE]
     if xChunks then
-        neighbors[1] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[4] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[6] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = xChunks[chunkYRow1] or -1
+        neighbors[4] = xChunks[y] or -1
+        neighbors[6] = xChunks[chunkYRow3] or -1
     else
-        neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[6] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = -1
+        neighbors[4] = -1
+        neighbors[6] = -1
     end
 
     xChunks = map[x+CHUNK_SIZE]
     if xChunks then
-        neighbors[3] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[5] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[8] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = xChunks[chunkYRow1] or -1
+        neighbors[5] = xChunks[y] or -1
+        neighbors[8] = xChunks[chunkYRow3] or -1
     else
-        neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[5] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[8] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = -1
+        neighbors[5] = -1
+        neighbors[8] = -1
     end
 
     xChunks = map[x]
     if xChunks then
-        neighbors[2] = xChunks[chunkYRow1] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[7] = xChunks[chunkYRow3] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = xChunks[chunkYRow1] or -1
+        neighbors[7] = xChunks[chunkYRow3] or -1
     else
-        neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[7] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = -1
+        neighbors[7] = -1
     end
     return neighbors
 end
@@ -149,25 +147,25 @@ function mapUtils.getCardinalChunks(map, x, y)
     local neighbors = map.cardinalNeighbors
     local xChunks = map[x]
     if xChunks then
-        neighbors[1] = xChunks[y-CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
-        neighbors[4] = xChunks[y+CHUNK_SIZE] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = xChunks[y-CHUNK_SIZE] or -1
+        neighbors[4] = xChunks[y+CHUNK_SIZE] or -1
     else
-        neighbors[1] = SENTINEL_IMPASSABLE_CHUNK
-        neighbors[4] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[1] = -1
+        neighbors[4] = -1
     end
 
     xChunks = map[x-CHUNK_SIZE]
     if xChunks then
-        neighbors[2] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = xChunks[y] or -1
     else
-        neighbors[2] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[2] = -1
     end
 
     xChunks = map[x+CHUNK_SIZE]
     if xChunks then
-        neighbors[3] = xChunks[y] or SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = xChunks[y] or -1
     else
-        neighbors[3] = SENTINEL_IMPASSABLE_CHUNK
+        neighbors[3] = -1
     end
     return neighbors
 end

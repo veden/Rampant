@@ -20,10 +20,10 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 -- module code
 
 function aiPredicates.canAttack(natives, surface)
-    return ((natives.state == AI_STATE_AGGRESSIVE) or (natives.state == AI_STATE_RAIDING) or (natives.state == AI_STATE_ONSLAUGHT))
-        and not surface.peaceful_mode
-        and ((not natives.aiNocturnalMode) or
-                (natives.aiNocturnalMode and surface.darkness > 0.65))
+    local goodAI = ((natives.state == AI_STATE_AGGRESSIVE) or (natives.state == AI_STATE_RAIDING) or (natives.state == AI_STATE_ONSLAUGHT))
+    local notPeaceful = not surface.peaceful_mode
+    local noctural = (not natives.aiNocturnalMode) or (natives.aiNocturnalMode and surface.darkness > 0.65)
+    return goodAI and notPeaceful and noctural
 end
 
 function aiPredicates.canMigrate(natives, surface)

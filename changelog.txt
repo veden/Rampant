@@ -1,8 +1,21 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.11
 Date: 13. 4 2020
+  Improvements:
+    - Groups stolen from vanilla AI can now become settlers based on ai state
+    - AI now gains extra credits based on the number of spawners in pollution
+  Tweaks:
+    - Increased chance to 45% for both attack and settle on a map processing logic cycle
+    - Squads and settlers created per map scan capped at 7
   Bugfixes:
     - fixed script_raised_destroy not being pass to the onDeath handler
+    - fixed SENTINEL_IMPASSABLE_CHUNK not being defined in base entity upgrade handler
+    - fixed rapid in squad defense to rabid (Thanks to jnshi)
+    - fixed squads being able to record movement penalties for SENTINEL_IMPASSABLE_CHUNK
+    - fixed squads being able to be added to SENTINEL_IMPASSABLE_CHUNK
+    - fixed new unit scalers now have a minimum of 0.0001
+    - fixed tile changes using surface index instead of surface name
+    - fixed squad cap due to spawning not taking into account pending squads
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.10

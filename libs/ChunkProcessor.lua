@@ -13,8 +13,6 @@ local constants = require("Constants")
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
-local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
 local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
 
 -- imported functions
@@ -83,7 +81,7 @@ function chunkProcessor.processPendingChunks(map, surface, pendingStack, tick, r
 
             chunk = initialScan(chunk, surface, map, tick, rebuilding)
 
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk ~= -1) then
                 map[x][y] = chunk
                 processQueue[#processQueue+1] = chunk
             end
@@ -122,7 +120,7 @@ function chunkProcessor.processScanChunks(map, surface)
 
         chunk = chunkPassScan(chunk, surface, map)
 
-        if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk == -1) then
             map[x][y] = nil
 
             chunkCount = chunkCount + 1

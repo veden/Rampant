@@ -465,7 +465,7 @@ data:extend({
             description = "rampant-unitBiterHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-a[unit]",
             per_user = false
@@ -477,7 +477,7 @@ data:extend({
             description = "rampant-unitBiterHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-a[unit]",
             per_user = false
@@ -489,7 +489,7 @@ data:extend({
             description = "rampant-unitBiterSpeedScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-b[unit]",
             per_user = false
@@ -501,7 +501,7 @@ data:extend({
             description = "rampant-unitBiterDamageScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-c[unit]",
             per_user = false
@@ -513,7 +513,7 @@ data:extend({
             description = "rampant-unitBiterRangeScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-d[unit]",
             per_user = false
@@ -525,7 +525,7 @@ data:extend({
             description = "rampant-unitSpitterHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-e[unit]",
             per_user = false
@@ -537,7 +537,7 @@ data:extend({
             description = "rampant-unitSpitterHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-e[unit]",
             per_user = false
@@ -549,7 +549,7 @@ data:extend({
             description = "rampant-unitSpitterSpeedScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-f[unit]",
             per_user = false
@@ -561,7 +561,7 @@ data:extend({
             description = "rampant-unitSpitterDamageScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-g[unit]",
             per_user = false
@@ -573,7 +573,7 @@ data:extend({
             description = "rampant-unitSpitterRangeScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-h[unit]",
             per_user = false
@@ -585,7 +585,7 @@ data:extend({
             description = "rampant-unitDroneHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-i[unit]",
             per_user = false
@@ -597,7 +597,7 @@ data:extend({
             description = "rampant-unitDroneHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-i[unit]",
             per_user = false
@@ -609,7 +609,7 @@ data:extend({
             description = "rampant-unitDroneSpeedScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-j[unit]",
             per_user = false
@@ -621,7 +621,7 @@ data:extend({
             description = "rampant-unitDroneDamageScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-k[unit]",
             per_user = false
@@ -633,7 +633,7 @@ data:extend({
             description = "rampant-unitDroneRangeScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-l[unit]",
             per_user = false
@@ -645,7 +645,7 @@ data:extend({
             description = "rampant-unitWormHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-m[unit]",
             per_user = false
@@ -657,7 +657,7 @@ data:extend({
             description = "rampant-unitWormHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-m[unit]",
             per_user = false
@@ -669,7 +669,7 @@ data:extend({
             description = "rampant-unitWormDamageScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-n[unit]",
             per_user = false
@@ -681,7 +681,7 @@ data:extend({
             description = "rampant-unitWormRangeScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-o[unit]",
             per_user = false
@@ -693,7 +693,7 @@ data:extend({
             description = "rampant-unitSpawnerHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-p[unit]",
             per_user = false
@@ -705,7 +705,7 @@ data:extend({
             description = "rampant-unitSpawnerHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-p[unit]",
             per_user = false
@@ -717,7 +717,7 @@ data:extend({
             description = "rampant-unitSpawnerOwnedScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-q[unit]",
             per_user = false
@@ -729,7 +729,7 @@ data:extend({
             description = "rampant-unitSpawnerSpawnScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false
@@ -741,7 +741,7 @@ data:extend({
             description = "rampant-unitSpawnerRespawnScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false
@@ -754,7 +754,7 @@ data:extend({
             description = "rampant-unitHiveRespawnScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false
@@ -766,7 +766,7 @@ data:extend({
             description = "rampant-unitHiveHealthScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false
@@ -778,7 +778,7 @@ data:extend({
             description = "rampant-unitHiveHealingScaler",
             setting_type = "startup",
             default_value = 1.0,
-            minimum_value = 0.0,
+            minimum_value = 0.0001,
             maximum_value = 100000.0,
             order = "p[modifier]-r[unit]",
             per_user = false

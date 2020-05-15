@@ -31,8 +31,6 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
 
-local SENTINEL_IMPASSABLE_CHUNK  = constants.SENTINEL_IMPASSABLE_CHUNK
-
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
@@ -111,21 +109,23 @@ function mapProcessor.processMap(map, surface, tick)
 
     local chunkToBase = map.chunkToBase
 
+    local natives = map.natives
+    
     if (index == 1) then
         roll = mRandom()
         map.processRoll = roll
+        natives.remainingSquads = constants.AI_MAX_SQUADS_PER_CYCLE
+        print("squads", natives.squads.len, natives.pendingAttack.len, #natives.building)
     end
-
-    local natives = map.natives
 
     local newEnemies = natives.newEnemies
     local scentStaging = map.scentStaging
 
-    local squads = canAttack(natives, surface) and (0.11 <= roll) and (roll <= 0.35) and (natives.points >= AI_SQUAD_COST)
+    local squads = canAttack(natives, surface) and (roll <= 0.45) and (natives.points >= AI_SQUAD_COST)
     if squads and (natives.state == AI_STATE_AGGRESSIVE) and (tick < natives.canAttackTick) then
         squads = false
     end
-    local settlers = canMigrate(natives, surface) and (0.90 <= roll) and (natives.points >= AI_SETTLER_COST)
+    local settlers = canMigrate(natives, surface) and (roll <= 0.45) and (natives.points >= AI_SETTLER_COST)
 
     local processQueue = map.processQueue
     local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
@@ -230,7 +230,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
-            if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (playerChunk ~= -1) then
                 local i = 1
                 local vengence = (allowingAttacks and
                                       (natives.points >= AI_VENGENCE_SQUAD_COST) and
@@ -240,7 +240,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
                         local chunk = getChunkByXY(map, x, y)
 
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
+                        if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
                             processPheromone(map, chunk, scentStaging[i])
 
                             processNestActiveness(map, chunk, natives, surface)
@@ -258,7 +258,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
                         local chunk = getChunkByXY(map, x, y)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
+                        if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
                             commitPheromone(map, chunk, scentStaging[i], tick)
                         end
                         i = i + 1
@@ -273,7 +273,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
-            if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (playerChunk ~= -1) then
                 playerScent(playerChunk)
             end
         end

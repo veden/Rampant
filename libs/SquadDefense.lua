@@ -23,8 +23,6 @@ local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
 local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
 
-local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
 -- imported functions
 
 local mRandom = math.random
@@ -92,7 +90,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                                                                                                                       chunk.y),
                                                                                                     scoreRetreatLocation,
                                                                                                     map)
-            if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (exitPath ~= -1) then
                 local targetPosition = map.position
                 local targetPosition2 = map.position2
 
@@ -104,7 +102,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                     return
                 end
 
-                if (nextExitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (nextExitPath ~= -1) then
                     positionFromDirectionAndFlat(nextExitDirection, retreatPosition, targetPosition2)
 
                     local retreatPosition2 = findMovementPosition(surface, targetPosition2)
@@ -142,7 +140,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                         end
                     end
 
-                    if not newSquad.rapid then
+                    if not newSquad.rabid then
                         newSquad.frenzy = true
                         local squadPosition = newSquad.group.position
                         newSquad.frenzyPosition.x = squadPosition.x

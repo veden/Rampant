@@ -91,7 +91,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
+    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (natives.activeNests * 0.25) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
 
     if (natives.state == AI_STATE_ONSLAUGHT) then
         points = points * 2

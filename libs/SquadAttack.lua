@@ -12,6 +12,7 @@ local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 local chunkUtils = require("ChunkUtils")
+local aiPredicates = require("AIPredicates")
 
 -- constants
 
@@ -48,13 +49,13 @@ local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
-local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
 -- imported functions
 
 local mRandom = math.random
 local mMin = math.min
 local tRemove = table.remove
+
+local canMigrate = aiPredicates.canMigrate
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -134,12 +135,8 @@ local function settleMove(map, squad, surface)
     if (natives.state == AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
     end
-    if squad.chunk and (squad.chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (squad.chunk ~= chunk) then
-        addMovementPenalty(squad, squad.chunk)
-    end
-    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-        addSquadToChunk(map, chunk, squad)
-    end
+    addMovementPenalty(squad, squad.chunk)
+    addSquadToChunk(map, chunk, squad)
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
                                              squad.originPosition.x,
@@ -195,7 +192,7 @@ local function settleMove(map, squad, surface)
                                                                                                              scoreFunction,
                                                                                                              squad)
 
-        if (attackChunk == SENTINEL_IMPASSABLE_CHUNK) then
+        if (attackChunk == -1) then
             squad.cycles = 30
             cmd = map.wonderCommand
             group.set_command(cmd)
@@ -235,7 +232,7 @@ local function settleMove(map, squad, surface)
                 end
             end
 
-            if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then                
+            if (nextAttackChunk ~= -1) then                
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
                 position2 = findMovementPosition(surface, targetPosition2)
@@ -305,19 +302,15 @@ local function attackMove(map, squad, surface)
         or scoreAttackLocation
 
     local squadChunk = squad.chunk
-    if (squadChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (squadChunk ~= chunk) then
-        addMovementPenalty(squad, squadChunk)
-    end
-    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK)then
-        addSquadToChunk(map, chunk, squad)
-    end
+    addMovementPenalty(squad, squadChunk)
+    addSquadToChunk(map, chunk, squad)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
                                                                                                        chunk,
                                                                                                        getNeighborChunks(map, x, y),
                                                                                                        attackScorer,
                                                                                                        squad)
-    if (attackChunk == SENTINEL_IMPASSABLE_CHUNK) then
+    if (attackChunk == -1) then
         squad.cycles = 30
         cmd = map.wonderCommand
         group.set_command(cmd)
@@ -359,7 +352,7 @@ local function attackMove(map, squad, surface)
 
         local position2
 
-        if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (nextAttackChunk ~= -1) then
             positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
             position2 = findMovementPosition(surface, targetPosition2)
@@ -436,9 +429,7 @@ function squadAttack.squadsDispatch(map, surface)
                         attackMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                            addSquadToChunk(map, chunk, squad)
-                        end
+                        addSquadToChunk(map, chunk, squad)
                     end
                 elseif (status == SQUAD_SETTLING) then
                     x = x + 1
@@ -450,9 +441,7 @@ function squadAttack.squadsDispatch(map, surface)
                         settleMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                            addSquadToChunk(map, chunk, squad)
-                        end
+                        addSquadToChunk(map, chunk, squad)
                     end
                 elseif (status == SQUAD_RETREATING) then
                     if (groupState == DEFINES_GROUP_FINISHED) or
@@ -467,9 +456,7 @@ function squadAttack.squadsDispatch(map, surface)
                         squads[x] = squad
                     end
                     local chunk = getChunkByPosition(map, group.position)
-                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
-                        addSquadToChunk(map, chunk, squad)
-                    end
+                    addSquadToChunk(map, chunk, squad)
                 elseif (status == SQUAD_BUILDING) then
                     removeSquadFromChunk(map, squad)
                     natives.building[#natives.building+1] = squad
@@ -515,7 +502,8 @@ function squadAttack.squadsBeginAttack(natives, surface)
         local group = pendingStealGroups[i]
         if group and group.valid then
             if (group.state ~= DEFINES_GROUP_GATHERING) then
-                local squad = createSquad(group.position, surface, nil, false)
+                local settlers = canMigrate(natives, surface) and (mRandom() > 0.25)                
+                local squad = createSquad(group.position, surface, nil, settlers)
                 pendingAttack.len = pendingAttack.len + 1
                 pendingAttack[pendingAttack.len] = squad
                 cmd.group = squad.group

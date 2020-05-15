@@ -28,8 +28,6 @@ local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MA
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
 
-local SENTINEL_IMPASSABLE_CHUNK = constants.SENTINEL_IMPASSABLE_CHUNK
-
 -- imported functions
 
 local tRemove = table.remove
@@ -63,7 +61,7 @@ function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
+        if neighbor ~= -1 then
             squads = getSquadsOnChunk(map, neighbor)
             for squadIndex=1,#squads do
                 local squad = squads[squadIndex]
@@ -92,7 +90,7 @@ function unitGroupUtils.findNearbySquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
+        if neighbor ~= -1 then
             squads = getSquadsOnChunk(map, neighbor)
             for squadIndex=1,#squads do
                 local squad = squads[squadIndex]
@@ -125,7 +123,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         attackScoreFunction = 1,
         originPosition = {x = 0,
                           y = 0},
-        chunk = SENTINEL_IMPASSABLE_CHUNK
+        chunk = -1
     }
 
     if position then
@@ -242,7 +240,7 @@ function unitGroupUtils.regroupSquads(natives)
                     local status = squad.status
                     local chunk = squad.chunk
 
-                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    if (chunk ~= -1) then
                         local chunkSquads = getSquadsOnChunk(map, chunk)
                         for p=1,#chunkSquads do
                             local mergeSquad = chunkSquads[p]

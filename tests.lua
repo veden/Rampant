@@ -174,7 +174,7 @@ function tests.getOffsetChunk(x, y)
 end
 
 function tests.aiStats()
-    print(global.natives.points, game.tick, global.natives.state, global.natives.temperament, global.natives.stateTick, global.natives.temperamentTick)
+    print(global.natives.points, game.tick, global.natives.state, global.natives.temperament, global.natives.stateTick, global.natives.temperamentTick, global.natives.activeNests, global.natives.activeRaidNests)
 end
 
 function tests.fillableDirtTest()

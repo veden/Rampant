@@ -274,7 +274,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 
     if evolve then
         local chunk = getChunkByPosition(natives.map, originalEntity.position)
-        local makeHive = (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getResourceGenerator(natives.map, chunk) > 0) and (mRandom() < 0.2)
+        local makeHive = (chunk ~= -1) and (getResourceGenerator(natives.map, chunk) > 0) and (mRandom() < 0.2)
 
         return initialEntityUpgrade(baseAlignment, tier, maxTier, natives, (makeHive and "hive"))
     else

@@ -246,7 +246,7 @@ end
 function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     local chunkToSquad = map.chunkToSquad
 
-    if squad.chunk ~= chunk then
+    if (chunk ~= -1) and (squad.chunk ~= chunk) then
         chunkPropertyUtils.removeSquadFromChunk(map, squad)
         local squads = chunkToSquad[chunk]
         if not squads then
