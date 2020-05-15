@@ -48,6 +48,8 @@ local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
 local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
 
+local AI_MAX_SQUADS_PER_CYCLE = constants.AI_MAX_SQUADS_PER_CYCLE
+
 -- imported functions
 
 -- local scents = pheromoneUtils.scents
@@ -114,8 +116,7 @@ function mapProcessor.processMap(map, surface, tick)
     if (index == 1) then
         roll = mRandom()
         map.processRoll = roll
-        natives.remainingSquads = constants.AI_MAX_SQUADS_PER_CYCLE
-        print("squads", natives.squads.len, natives.pendingAttack.len, #natives.building)
+        natives.remainingSquads = AI_MAX_SQUADS_PER_CYCLE
     end
 
     local newEnemies = natives.newEnemies

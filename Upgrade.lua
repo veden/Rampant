@@ -161,6 +161,8 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
             end
         end
 
+        natives.remainingSquads = 0
+
         for i=1,natives.squads.len do
             natives.squads[i].chunk = -1
         end
