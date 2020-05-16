@@ -145,7 +145,7 @@ local function settleMove(map, squad, surface)
     local cmd
     local position
     local position2
-    
+
     if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
     then
         if not ((groupState == DEFINES_GROUP_FINISHED) or ((groupState == DEFINES_GROUP_GATHERING) and (squad.cycles <= 0))) then
@@ -159,8 +159,8 @@ local function settleMove(map, squad, surface)
         end
 
         targetPosition.x = position.x
-        targetPosition.y = position.y       
-        
+        targetPosition.y = position.y
+
         cmd = map.settleCommand
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
@@ -202,7 +202,7 @@ local function settleMove(map, squad, surface)
             position = findMovementPosition(surface, targetPosition)
 
             local attackPlayerThreshold = natives.attackPlayerThreshold
-            
+
             if not position then
                 squad.cycles = 30
                 cmd = map.wonderCommand
@@ -211,7 +211,7 @@ local function settleMove(map, squad, surface)
             else
                 targetPosition.x = position.x
                 targetPosition.y = position.y
-                
+
                 if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
                     (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
                 then
@@ -232,7 +232,7 @@ local function settleMove(map, squad, surface)
                 end
             end
 
-            if (nextAttackChunk ~= -1) then                
+            if (nextAttackChunk ~= -1) then
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
                 position2 = findMovementPosition(surface, targetPosition2)
@@ -492,17 +492,17 @@ end
 function squadAttack.squadsBeginAttack(natives, surface)
     local squads = natives.squads
     local pendingAttack = natives.pendingAttack
-    local pendingStealGroups = natives.pendingStealGroups    
+    local pendingStealGroups = natives.pendingStealGroups
 
     local cmd = natives.map.retreatCommand
 
     local x = 0
-    
+
     for i=1, pendingStealGroups.len do
         local group = pendingStealGroups[i]
         if group and group.valid then
             if (group.state ~= DEFINES_GROUP_GATHERING) then
-                local settlers = canMigrate(natives, surface) and (mRandom() > 0.25)                
+                local settlers = canMigrate(natives, surface) and (mRandom() > 0.25)
                 local squad = createSquad(group.position, surface, nil, settlers)
                 pendingAttack.len = pendingAttack.len + 1
                 pendingAttack[pendingAttack.len] = squad
@@ -519,12 +519,12 @@ function squadAttack.squadsBeginAttack(natives, surface)
     pendingStealGroups.len = x
 
     x = 0
-    
+
     for i=1,pendingAttack.len do
         local squad = pendingAttack[i]
         local group = squad.group
         if group and group.valid then
-            local groupState = group.state            
+            local groupState = group.state
             if (groupState ~= DEFINES_GROUP_FINISHED) and (squad.cycles ~= 0) then
                 squad.cycles = squad.cycles - 1
                 x = x + 1

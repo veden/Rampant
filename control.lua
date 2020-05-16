@@ -846,7 +846,7 @@ local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
     if entity and entity.valid and (entity.surface.name == natives.activeSurface) then
         natives.rocketLaunched = natives.rocketLaunched + 1
-        natives.points = natives.points + 2000
+        natives.points = natives.points + 5000
     end
 end
 
@@ -926,22 +926,29 @@ local function onUnitGroupCreated(event)
 end
 
 local function onCommandDebugger(event)
-    for i=1,natives.squads.len do
-        if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
-            local msg
-            if (event.result == defines.behavior_result.in_progress) then
-                msg = "progress"
-            elseif (event.result == defines.behavior_result.fail) then
-                msg = "fail"
-            elseif (event.result == defines.behavior_result.success) then
-                msg = "success"
-            elseif (event.result == defines.behavior_result.deleted) then
-                msg = "deleted"
-            end
-            print(msg, event.unit_number)
-            return
-        end
-    end
+    -- for i=1,natives.squads.len do
+    --     if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
+    --         local msg
+    --         if (event.result == defines.behavior_result.in_progress) then
+    --             msg = "progress"
+    --         elseif (event.result == defines.behavior_result.fail) then
+    --             msg = "fail"
+    --         elseif (event.result == defines.behavior_result.success) then
+    --             msg = "success"
+    --         elseif (event.result == defines.behavior_result.deleted) then
+    --             msg = "deleted"
+    --         end
+    --         print(msg, event.unit_number)
+    --         return
+    --     end
+    -- end
+    -- if not a then
+    --     a = 0
+    -- end
+    -- a = a + 1
+    -- if ((a % 50) == 0) then
+    --     print("here", a)
+    -- end        
 end
 
 local function onForceCreated(event)
@@ -1118,7 +1125,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.script_raised_built,
                  defines.events.script_raised_revive}, onBuild)
 
--- script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
+script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
 script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)

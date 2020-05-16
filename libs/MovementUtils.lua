@@ -53,21 +53,26 @@ function movementUtils.findMovementPositionDistort(surface, position)
     return distortPosition(pos, 8)
 end
 
-function movementUtils.addMovementPenalty(units, chunk)
-    if (chunk == -1) or (squadChunk == chunk) then
+function movementUtils.addMovementPenalty(squad, chunk)
+    if (chunk == -1) or (squad.chunk == chunk) then
         return
     end
-    local penalties = units.penalties
+    local penalties = squad.penalties
     for i=1,#penalties do
         local penalty = penalties[i]
         if (penalty.c == chunk) then
             penalty.v = (2 * penalty.v) + MOVEMENT_PENALTY_AMOUNT
+            print(penalty.v)
+            if (penalty.v > MOVEMENT_PENALTY_AMOUNT * 5) then
+                print("erel", penalty, squad.group.group_number)
+            end
             return
         end
     end
     if (#penalties == 7) then
         tableRemove(penalties, 7)
     end
+    print(squad.group.group_number)
     tableInsert(penalties,
                 1,
                 { v = MOVEMENT_PENALTY_AMOUNT,

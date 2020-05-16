@@ -146,8 +146,8 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                         newSquad.frenzyPosition.x = squadPosition.x
                         newSquad.frenzyPosition.y = squadPosition.y
                     end
-                    addSquadToChunk(map, chunk, newSquad)
                     addMovementPenalty(newSquad, chunk)
+                    addSquadToChunk(map, chunk, newSquad)
                 end
             end
         end

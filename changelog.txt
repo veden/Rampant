@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.12
+Date: 16. 4 2020
+  Tweaks:
+    - Changed ai credits per rocket launched to 5000
+  Bugfixes:
+    - fixed add movement penalty not using squad chunk
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.11
 Date: 13. 4 2020
   Improvements:

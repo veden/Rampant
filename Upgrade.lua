@@ -127,8 +127,8 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         natives.pendingStealGroups = {}
         natives.pendingStealGroups.len = 1
     end
-    if (global.version < 110) then
-        global.version = 110
+    if (global.version < 111) then
+        global.version = 111
 
         local gameSurfs
         if not gameSurfaces then
