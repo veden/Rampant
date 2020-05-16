@@ -66,6 +66,5 @@ mapSettings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN
 
 
 data.raw["utility-constants"]["default"].unit_group_pathfinding_resolution = -5
-data.raw["utility-constants"]["default"].unit_group_collision_mask = {"player-layer", "train-layer", "not-colliding-with-itself"}
 
 
