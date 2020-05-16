@@ -345,7 +345,7 @@ function chunkUtils.entityForPassScan(map, entity)
 
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
             map.chunkToPassScan[chunk] = true
         end
     end
@@ -420,7 +420,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base, surface)
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
                 setFunc(map, chunk, getFunc(map, chunk) + 1)
                 setChunkBase(map, chunk, base)
                 processNestActiveness(map, chunk, natives, surface)
@@ -475,7 +475,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
                 local count = getFunc(map, chunk)
                 if count then
                     if (count <= 1) then
@@ -517,7 +517,7 @@ function chunkUtils.accountPlayerEntity(entity, natives, addObject, creditNative
 
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
                 addPlayerBaseGenerator(map, chunk, entityValue)
             end
         end
@@ -533,7 +533,7 @@ function chunkUtils.unregisterResource(entity, map)
 
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
             addResourceGenerator(map, chunk, -RESOURCE_NORMALIZER)
         end
     end
@@ -544,7 +544,7 @@ function chunkUtils.registerResource(entity, map)
 
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
             addResourceGenerator(map, chunk, RESOURCE_NORMALIZER)
         end
     end

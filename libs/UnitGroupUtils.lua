@@ -63,7 +63,7 @@ function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
+        if neighbor.name ~= SENTINEL_IMPASSABLE_CHUNK.name then
             squads = getSquadsOnChunk(map, neighbor)
             for squadIndex=1,#squads do
                 local squad = squads[squadIndex]
@@ -92,7 +92,7 @@ function unitGroupUtils.findNearbySquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= SENTINEL_IMPASSABLE_CHUNK then
+        if neighbor.name ~= SENTINEL_IMPASSABLE_CHUNK.name then
             squads = getSquadsOnChunk(map, neighbor)
             for squadIndex=1,#squads do
                 local squad = squads[squadIndex]
@@ -242,7 +242,7 @@ function unitGroupUtils.regroupSquads(natives)
                     local status = squad.status
                     local chunk = squad.chunk
 
-                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                         local chunkSquads = getSquadsOnChunk(map, chunk)
                         for p=1,#chunkSquads do
                             local mergeSquad = chunkSquads[p]

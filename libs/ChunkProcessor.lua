@@ -83,7 +83,7 @@ function chunkProcessor.processPendingChunks(map, surface, pendingStack, tick, r
 
             chunk = initialScan(chunk, surface, map, tick, rebuilding)
 
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                 map[x][y] = chunk
                 processQueue[#processQueue+1] = chunk
             end
@@ -122,7 +122,7 @@ function chunkProcessor.processScanChunks(map, surface)
 
         chunk = chunkPassScan(chunk, surface, map)
 
-        if (chunk == SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
             map[x][y] = nil
 
             chunkCount = chunkCount + 1

@@ -134,10 +134,10 @@ local function settleMove(map, squad, surface)
     if (natives.state == AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
     end
-    if squad.chunk and (squad.chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (squad.chunk ~= chunk) then
+    if squad.chunk and (squad.chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (squad.chunk ~= chunk) then
         addMovementPenalty(squad, squad.chunk)
     end
-    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+    if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
         addSquadToChunk(map, chunk, squad)
     end
     local distance = euclideanDistancePoints(groupPosition.x,
@@ -195,7 +195,7 @@ local function settleMove(map, squad, surface)
                                                                                                              scoreFunction,
                                                                                                              squad)
 
-        if (attackChunk == SENTINEL_IMPASSABLE_CHUNK) then
+        if (attackChunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
             squad.cycles = 30
             cmd = map.wonderCommand
             group.set_command(cmd)
@@ -235,7 +235,7 @@ local function settleMove(map, squad, surface)
                 end
             end
 
-            if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then                
+            if (nextAttackChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then                
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
                 position2 = findMovementPosition(surface, targetPosition2)
@@ -305,10 +305,10 @@ local function attackMove(map, squad, surface)
         or scoreAttackLocation
 
     local squadChunk = squad.chunk
-    if (squadChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (squadChunk ~= chunk) then
+    if (squadChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (squadChunk ~= chunk) then
         addMovementPenalty(squad, squadChunk)
     end
-    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK)then
+    if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name)then
         addSquadToChunk(map, chunk, squad)
     end
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
@@ -317,7 +317,7 @@ local function attackMove(map, squad, surface)
                                                                                                        getNeighborChunks(map, x, y),
                                                                                                        attackScorer,
                                                                                                        squad)
-    if (attackChunk == SENTINEL_IMPASSABLE_CHUNK) then
+    if (attackChunk.name == SENTINEL_IMPASSABLE_CHUNK.name) then
         squad.cycles = 30
         cmd = map.wonderCommand
         group.set_command(cmd)
@@ -359,7 +359,7 @@ local function attackMove(map, squad, surface)
 
         local position2
 
-        if (nextAttackChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (nextAttackChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
 
             position2 = findMovementPosition(surface, targetPosition2)
@@ -436,7 +436,7 @@ function squadAttack.squadsDispatch(map, surface)
                         attackMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                             addSquadToChunk(map, chunk, squad)
                         end
                     end
@@ -450,7 +450,7 @@ function squadAttack.squadsDispatch(map, surface)
                         settleMove(map, squad, surface)
                     else
                         local chunk = getChunkByPosition(map, group.position)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                             addSquadToChunk(map, chunk, squad)
                         end
                     end
@@ -467,7 +467,7 @@ function squadAttack.squadsDispatch(map, surface)
                         squads[x] = squad
                     end
                     local chunk = getChunkByPosition(map, group.position)
-                    if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                    if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                         addSquadToChunk(map, chunk, squad)
                     end
                 elseif (status == SQUAD_BUILDING) then

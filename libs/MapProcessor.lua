@@ -230,7 +230,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
-            if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (playerChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                 local i = 1
                 local vengence = (allowingAttacks and
                                       (natives.points >= AI_VENGENCE_SQUAD_COST) and
@@ -240,7 +240,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
                         local chunk = getChunkByXY(map, x, y)
 
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
+                        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (chunk[CHUNK_TICK] ~= tick) then
                             processPheromone(map, chunk, scentStaging[i])
 
                             processNestActiveness(map, chunk, natives, surface)
@@ -258,7 +258,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
                         local chunk = getChunkByXY(map, x, y)
-                        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) and (chunk[CHUNK_TICK] ~= tick) then
+                        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (chunk[CHUNK_TICK] ~= tick) then
                             commitPheromone(map, chunk, scentStaging[i], tick)
                         end
                         i = i + 1
@@ -273,7 +273,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
         if validPlayer(player, natives) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
-            if (playerChunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (playerChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                 playerScent(playerChunk)
             end
         end

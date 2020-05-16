@@ -92,7 +92,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                                                                                                                       chunk.y),
                                                                                                     scoreRetreatLocation,
                                                                                                     map)
-            if (exitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (exitPath.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                 local targetPosition = map.position
                 local targetPosition2 = map.position2
 
@@ -104,7 +104,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                     return
                 end
 
-                if (nextExitPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (nextExitPath.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                     positionFromDirectionAndFlat(nextExitDirection, retreatPosition, targetPosition2)
 
                     local retreatPosition2 = findMovementPosition(surface, targetPosition2)

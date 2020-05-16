@@ -157,7 +157,7 @@ local function onIonCannonFired(event)
         natives.ionCannonBlasts = natives.ionCannonBlasts + 1
         natives.points = natives.points + 3000
         local chunk = getChunkByPosition(map, event.position)
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             rallyUnits(chunk, map, surface, event.tick)
         end
     end
@@ -622,7 +622,7 @@ local function onDeath(event)
             end
 
             if (entityType == "unit") then
-                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                     -- drop death pheromone where unit died
                     deathScent(map, chunk)
 
@@ -649,7 +649,7 @@ local function onDeath(event)
 
                 natives.points = natives.points + (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
 
-                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                     unregisterEnemyBaseStructure(map, entity)
 
                     rallyUnits(chunk, map, surface, tick)
@@ -687,7 +687,7 @@ local function onDeath(event)
             local creditNatives = false
             if (event.force ~= nil) and (event.force.name == "enemy") then
                 creditNatives = true
-                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                     victoryScent(map, chunk, entityType)
                 end
 
@@ -748,7 +748,7 @@ local function onEnemyBaseBuild(event)
 
     if entity.valid and (surface.name == natives.activeSurface) then
         local chunk = getChunkByPosition(map, entity.position)
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             local base
             if natives.newEnemies then
                 base = findNearbyBase(map, chunk)
@@ -784,7 +784,7 @@ local function onSurfaceTileChange(event)
             local position = tiles[i].position
             local chunk = getChunkByPosition(map, position)
 
-            if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+            if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                 map.chunkToPassScan[chunk] = true
             else
                 local x,y = positionToChunkXY(position)
@@ -848,7 +848,7 @@ local function onTriggerEntityCreated(event)
     local entity = event.entity
     if entity.valid and (entity.name  == "drain-trigger-rampant") then
         local chunk = getChunkByPosition(map, entity.position)
-        if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             map.chunkToDrained[chunk] = event.tick + 60
         end
         entity.destroy()
@@ -883,7 +883,7 @@ local function onEntitySpawned(event)
                 local canPlaceQuery = map.canPlaceQuery
 
                 local chunk = getChunkByPosition(map, disPos)
-                if (chunk ~= SENTINEL_IMPASSABLE_CHUNK) then
+                if (chunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
                     local base = findNearbyBase(map, chunk)
                     if not base then
                         base = createBase(natives,

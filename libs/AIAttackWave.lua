@@ -132,7 +132,7 @@ function aiAttackWave.rallyUnits(chunk, map, surface, tick)
             for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
-                    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
+                    if (rallyChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (getNestCount(map, rallyChunk) > 0) then
                         if not aiAttackWave.formVengenceSquad(map, surface, rallyChunk) then
                             return false
                         end
@@ -152,7 +152,7 @@ function aiAttackWave.formAttackWave(chunk, map, surface, tick)
             for y=cY - RALLY_CRY_DISTANCE, cY + RALLY_CRY_DISTANCE, 32 do
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
-                    if (rallyChunk ~= SENTINEL_IMPASSABLE_CHUNK) and (getNestCount(map, rallyChunk) > 0) then
+                    if (rallyChunk.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and (getNestCount(map, rallyChunk) > 0) then
                         if not aiAttackWave.formSquads(map, surface, rallyChunk, tick) then
                             return false
                         end
@@ -172,7 +172,7 @@ local function noNearbySettlers(map, chunk, tick)
         for y=cY - SETTLER_DISTANCE, cY + SETTLER_DISTANCE, 32 do
             if (x ~= cX) and (y ~= cY) then
                 local c = getChunkByXY(map, x, y)
-                if (c ~= SENTINEL_IMPASSABLE_CHUNK) and ((tick - getChunkSettlerTick(map, c)) < 0) then
+                if (c.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and ((tick - getChunkSettlerTick(map, c)) < 0) then
                     return false
                 end
             end
@@ -199,7 +199,7 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
                                                                   map)
         end
 
-        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) and noNearbySettlers(map, chunk, tick) then
+        if (squadPath.name ~= SENTINEL_IMPASSABLE_CHUNK.name) and noNearbySettlers(map, chunk, tick) then
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
@@ -248,7 +248,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
                                                                      map)
-        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (squadPath.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
@@ -295,7 +295,7 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
                                                                      map)
-        if (squadPath ~= SENTINEL_IMPASSABLE_CHUNK) then
+        if (squadPath.name ~= SENTINEL_IMPASSABLE_CHUNK.name) then
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
