@@ -142,7 +142,7 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
                         end
                     end
 
-                    if not newSquad.rapid then
+                    if not newSquad.rabid then
                         newSquad.frenzy = true
                         local squadPosition = newSquad.group.position
                         newSquad.frenzyPosition.x = squadPosition.x
