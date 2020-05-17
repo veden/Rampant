@@ -54,12 +54,21 @@ local function scoreRetreatLocation(map, neighborChunk)
                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radius, artilleryBlast)
+function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radius, artilleryBlast)
     if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and
         ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast)
     then
         local performRetreat = false
         local enemiesToSquad = nil
+
+        local squad
+        if group and group.valid then
+            squad = map.natives.groupNumberToSquad[group.group_number]
+            if not squad then
+                squad = createSquad(position, surface, group)
+                squad.kamikaze = mRandom() < calculateKamikazeThreshold(group.members, natives)
+            end
+        end
 
         if not squad then
             enemiesToSquad = map.enemiesToSquad
@@ -120,14 +129,11 @@ function aiDefense.retreatUnits(chunk, position, squad, map, surface, tick, radi
 
                 if not newSquad then
                     newSquad = createSquad(retreatPosition, surface)
-                    local squads = map.natives.squads
-                    squads.len = squads.len+1
-                    squads[squads.len] = newSquad
+                    map.natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
                 end
 
                 if newSquad then
                     newSquad.status = SQUAD_RETREATING
-                    newSquad.cycles = 13
 
                     local cmd = map.retreatCommand
                     cmd.group = newSquad.group

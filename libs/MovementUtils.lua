@@ -54,7 +54,7 @@ function movementUtils.findMovementPositionDistort(surface, position)
 end
 
 function movementUtils.addMovementPenalty(squad, chunk)
-    if (chunk == -1) or (squad.chunk == chunk) then
+    if (chunk == -1) then
         return
     end
     local penalties = squad.penalties
@@ -62,9 +62,8 @@ function movementUtils.addMovementPenalty(squad, chunk)
         local penalty = penalties[i]
         if (penalty.c == chunk) then
             penalty.v = (2 * penalty.v) + MOVEMENT_PENALTY_AMOUNT
-            print(penalty.v)
-            if (penalty.v > MOVEMENT_PENALTY_AMOUNT * 5) then
-                print("erel", penalty, squad.group.group_number)
+            if (penalty.v >= MOVEMENT_PENALTY_AMOUNT * 5) then
+                squad.kamikaze = true
             end
             return
         end
@@ -72,7 +71,6 @@ function movementUtils.addMovementPenalty(squad, chunk)
     if (#penalties == 7) then
         tableRemove(penalties, 7)
     end
-    print(squad.group.group_number)
     tableInsert(penalties,
                 1,
                 { v = MOVEMENT_PENALTY_AMOUNT,

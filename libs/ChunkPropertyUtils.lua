@@ -253,8 +253,7 @@ function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
             squads = {}
             chunkToSquad[chunk] = squads
         end
-        squads[#squads+1] = squad
-
+        squads[squad.groupNumber] = squad
         squad.chunk = chunk
     end
 end
@@ -262,17 +261,11 @@ end
 function chunkPropertyUtils.removeSquadFromChunk(map, squad)
     local chunkToSquad = map.chunkToSquad
     local chunk = squad.chunk
-    if chunk then
-        local squads = chunkToSquad[chunk]
-        if squads then
-            for i=#squads,1,-1 do
-                if (squads[i] == squad) then
-                    tRemove(squads, i)
-                end
-            end
-            if (#squads == 0) then
-                chunkToSquad[chunk] = nil
-            end
+    local squads = chunkToSquad[chunk]
+    if squads then
+        squads[squad.groupNumber] = nil
+        if (table_size(squads) == 0) then
+            chunkToSquad[chunk] = nil
         end
     end
 end

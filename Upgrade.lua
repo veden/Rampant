@@ -31,7 +31,6 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
     if not global.version or global.version < 106 then
         global.version = 106
         game.forces.enemy.kill_all_units()
-        natives.squads = {}
         natives.points = 0
         natives.state = constants.AI_STATE_AGGRESSIVE
 
@@ -79,11 +78,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
 
         natives.drainPylons = {}
 
-        natives.building = {}
-        natives.pendingAttack = {}
-
-        natives.cleanBuildingIndex = 1
-        natives.attackIndex = 1
+        natives.groupNumberToSquad = {}
 
         natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
 
@@ -107,9 +102,6 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
 
         natives.evolutionLevel = game.forces.enemy.evolution_factor
 
-        natives.pendingAttack.len = #natives.pendingAttack
-        natives.squads.len = #natives.squads
-
         natives.activeRaidNests = 0
         natives.activeNests = 0
         natives.destroyPlayerBuildings = 0
@@ -123,9 +115,6 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         natives.temperament = 0
         natives.temperamentScore = 0
         natives.stateTick = 0
-
-        natives.pendingStealGroups = {}
-        natives.pendingStealGroups.len = 1
     end
     if (global.version < 111) then
         global.version = 111
@@ -162,23 +151,20 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         end
 
         natives.remainingSquads = 0
-
-        for i=1,natives.squads.len do
-            natives.squads[i].chunk = -1
-        end
-
-        for i=1,natives.pendingAttack.len do
-            natives.pendingAttack[i].chunk = -1
-        end
-
-        for i=1,#natives.building do
-            natives.building[i].chunk = -1
-        end
+        natives.groupNumberToSquad = {}
+        game.forces.enemy.kill_all_units()
+        natives.squads = nil
+        natives.pendingAttack = nil
+        natives.building = nil
+    end
+    if (global.version < 112) then
+        global.version = 112
 
         if not setNewSurface then
-            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.11")
+            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.12")
         end
     end
+
 
     return starting ~= global.version, natives
 end

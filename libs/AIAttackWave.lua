@@ -181,10 +181,7 @@ end
 
 function aiAttackWave.formSettlers(map, surface, chunk, tick)
     local natives = map.natives
-    if (mRandom() < natives.formSquadThreshold) and
-        ((natives.squads.len + #natives.building) < AI_MAX_SQUAD_COUNT) and
-        (natives.remainingSquads > 0)
-    then
+    if (mRandom() < natives.formSquadThreshold) and (natives.remainingSquads > 0) then
 
         local squadPath, squadDirection
         if (natives.state == AI_STATE_SIEGE) then
@@ -224,12 +221,9 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
                 if (foundUnits > 0) then
                     createSpawnerProxies(map, surface, chunk, foundUnits)
                     setChunkSettlerTick(map, squadPath, tick + natives.settlerCooldown)
-                    local pending = natives.pendingAttack
-                    pending.len = pending.len + 1
-                    squad.cycles = 30
-                    natives.remainingSquads = natives.remainingSquads - 1                    
-                    pending[pending.len] = squad
+                    natives.remainingSquads = natives.remainingSquads - 1
                     natives.points = natives.points - AI_SETTLER_COST
+                    natives.groupNumberToSquad[squad.groupNumber] = squad
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -244,8 +238,7 @@ end
 
 function aiAttackWave.formVengenceSquad(map, surface, chunk)
     local natives = map.natives
-    if (mRandom() < natives.formSquadThreshold) and (natives.squads.len < AI_MAX_SQUAD_COUNT)
-    then
+    if (mRandom() < natives.formSquadThreshold) then
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
@@ -270,10 +263,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
                     createSpawnerProxies(map, surface, chunk, foundUnits)
-                    local pending = natives.pendingAttack
-                    pending.len = pending.len + 1
-                    squad.cycles = 13
-                    pending[pending.len] = squad
+                    natives.groupNumberToSquad[squad.groupNumber] = squad
                     natives.points = natives.points - AI_VENGENCE_SQUAD_COST
                 else
                     if (squad.group.valid) then
@@ -291,7 +281,6 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
     local natives = map.natives
     if attackWaveValidCandidate(chunk, natives, map) and
         (mRandom() < natives.formSquadThreshold) and
-        (natives.squads.len + natives.pendingAttack.len < AI_MAX_SQUAD_COUNT) and
         (natives.remainingSquads > 0)
     then
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -318,12 +307,9 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
                     createSpawnerProxies(map, surface, chunk, foundUnits)
-                    local pending = natives.pendingAttack
-                    pending.len = pending.len + 1
-                    squad.cycles = 30
-                    pending[pending.len] = squad
                     natives.points = natives.points - AI_SQUAD_COST
                     natives.remainingSquads = natives.remainingSquads - 1
+                    natives.groupNumberToSquad[squad.groupNumber] = squad
                     if tick and (natives.state == AI_STATE_AGGRESSIVE) then
                         natives.canAttackTick = randomTickEvent(tick,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,

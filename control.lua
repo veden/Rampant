@@ -20,6 +20,8 @@ local tests = require("tests")
 local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
 local config = require("config")
+local aiPredicates = require("libs/AIPredicates")
+
 
 -- constants
 
@@ -79,9 +81,11 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local canMigrate = aiPredicates.canMigrate
+
 local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
 
-local squadsDispatch = squadAttack.squadsDispatch
+local squadDispatch = squadAttack.squadDispatch
 
 local positionToChunkXY = mapUtils.positionToChunkXY
 
@@ -109,14 +113,12 @@ local recycleBases = baseUtils.recycleBases
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
-local cleanBuilders = unitGroupUtils.cleanBuilders
 local regroupSquads = unitGroupUtils.regroupSquads
-local convertUnitGroupToSquad = unitGroupUtils.convertUnitGroupToSquad
+
+local createSquad = unitGroupUtils.createSquad
 
 local createBase = baseUtils.createBase
 local findNearbyBase = baseUtils.findNearbyBase
-
-local squadsBeginAttack = squadAttack.squadsBeginAttack
 
 local processActiveNests = mapProcessor.processActiveNests
 
@@ -129,6 +131,8 @@ local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
 local registerResource = chunkUtils.registerResource
 local unregisterResource = chunkUtils.unregisterResource
+
+local cleanSquads = unitGroupUtils.cleanSquads
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
@@ -223,6 +227,9 @@ local function rebuildMap()
     map.nextChunkSort = 0
     map.nextChunkSortTick = 0
 
+    map.squadIterator = nil
+    map.regroupIterator = nil
+
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = {
             -1,
@@ -268,8 +275,6 @@ local function rebuildMap()
             -1
     }
 
-    -- map.mapOrdering = {}
-    -- map.mapOrdering.len = 0
     map.enemiesToSquad = {}
     map.enemiesToSquad.len = 0
     map.chunkRemovals = {}
@@ -631,7 +636,7 @@ local function onDeath(event)
 
                             retreatUnits(chunk,
                                          entityPosition,
-                                         convertUnitGroupToSquad(natives, entity.unit_group),
+                                         entity.unit_group,
                                          map,
                                          surface,
                                          tick,
@@ -747,7 +752,7 @@ end
 
 local function onEnemyBaseBuild(event)
     local entity = event.entity
-    if entity.valid then       
+    if entity.valid then
         local surface = entity.surface
 
         if (surface.name == natives.activeSurface) then
@@ -880,7 +885,7 @@ local function onEntitySpawned(event)
     local entity = event.entity
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
-        
+
         if (surface.name == natives.activeSurface) and (entity.type ~= "unit") then
             if natives.buildingHiveTypeLookup[entity.name] then
                 local spawner = event.spawner
@@ -919,15 +924,16 @@ local function onUnitGroupCreated(event)
     local group = event.group
     if (group.surface.name == natives.activeSurface) and (group.force.name == "enemy") then
         if not group.is_script_driven then
-            natives.pendingStealGroups.len = natives.pendingStealGroups.len + 1
-            natives.pendingStealGroups[natives.pendingStealGroups.len] = group
+            squad = createSquad(nil,
+                                nil,
+                                group,
+                                mRandom() < 0.75 and canMigrate(natives, game.get_surface(natives.activeSurface)))
+            natives.groupNumberToSquad[group.group_number] = squad
         end
     end
 end
 
-local function onCommandDebugger(event)
-    -- for i=1,natives.squads.len do
-    --     if (natives.squads[i].group.valid) and (natives.squads[i].group.group_number == event.unit_number) then
+local function onCommandComplete(event)
     --         local msg
     --         if (event.result == defines.behavior_result.in_progress) then
     --             msg = "progress"
@@ -938,17 +944,26 @@ local function onCommandDebugger(event)
     --         elseif (event.result == defines.behavior_result.deleted) then
     --             msg = "deleted"
     --         end
-    --         print(msg, event.unit_number)
-    --         return
-    --     end
-    -- end
-    -- if not a then
-    --     a = 0
-    -- end
-    -- a = a + 1
-    -- if ((a % 50) == 0) then
-    --     print("here", a)
-    -- end        
+
+    local unitNumber = event.unit_number
+    local squad = natives.groupNumberToSquad[unitNumber]
+    if squad then
+        local group = squad.group
+        if group and group.valid and (group.surface.name == natives.activeSurface) then
+            squadDispatch(map, group.surface, squad, unitNumber)
+        end
+    end
+end
+
+local function onGroupFinishedGathering(event)
+    local group = event.group
+    if group.valid then
+        local unitNumber = group.group_number
+        local squad = natives.groupNumberToSquad[unitNumber]
+        if squad and (group.surface.name == natives.activeSurface) then
+            squadDispatch(map, group.surface, squad, unitNumber)
+        end
+    end
 end
 
 local function onForceCreated(event)
@@ -1060,8 +1075,7 @@ script.on_nth_tick(INTERVAL_LOGIC,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
-                       squadsBeginAttack(natives,
-                                         game.get_surface(natives.activeSurface))
+                       map.squadIterator = cleanSquads(natives, map.squadIterator)
 
                        if natives.newEnemies then
                            recycleBases(natives, tick)
@@ -1073,21 +1087,9 @@ script.on_nth_tick(INTERVAL_TEMPERAMENT,
                        temperamentPlanner(natives)
 end)
 
-script.on_nth_tick(INTERVAL_SQUAD,
-                   function ()
-                       squadsDispatch(map,
-                                      game.get_surface(natives.activeSurface))
-end)
-
-script.on_nth_tick(INTERVAL_BUILDERS,
-                   function ()
-                       cleanBuilders(natives,
-                                     game.get_surface(natives.activeSurface))
-end)
-
 script.on_nth_tick(INTERVAL_RESQUAD,
-                   function ()
-                       regroupSquads(natives)
+                   function ()                       
+                       map.regroupIterator = regroupSquads(natives, map.regroupIterator)
 end)
 
 script.on_event(defines.events.on_tick,
@@ -1125,7 +1127,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.script_raised_built,
                  defines.events.script_raised_revive}, onBuild)
 
-script.on_event(defines.events.on_ai_command_completed, onCommandDebugger)
+script.on_event(defines.events.on_ai_command_completed, onCommandComplete)
 script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
@@ -1135,6 +1137,7 @@ script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
 script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
+script.on_event(defines.events.on_unit_group_finished_gathering, onGroupFinishedGathering)
 
 remote.add_interface("rampantTests",
                      {
