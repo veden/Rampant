@@ -76,6 +76,8 @@ local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
+local next = next
+
 local tRemove = table.remove
 
 local mRandom = math.random
@@ -95,50 +97,6 @@ local function evoToTier(natives, evolutionFactor)
     return v
 end
 
-function baseUtils.createSpawnerProxies(map, surface, chunk, foundUnits)
-    local query = map.placeSpawnerProxyQuery
-    if (foundUnits >= 60) then
-        query.name = "spawner-proxy-2-rampant"
-    elseif (foundUnits >= 120) then
-        query.name = "spawner-proxy-3-rampant"
-    else
-        query.name = "spawner-proxy-1-rampant"
-    end
-    local position3 = map.position3
-    local chunkX = chunk.x + 5
-    local chunkY = chunk.y + 5
-    position3.x = chunkX
-    position3.y = chunkY
-    local entity = surface.create_entity(query)
-    entity.destructible = false
-    position3.x = chunkX+CHUNK_SIZE
-    position3.y = chunkY
-    entity = surface.create_entity(query)
-    entity.destructible = false
-    position3.x = chunkX-CHUNK_SIZE
-    position3.y = chunkY
-    entity = surface.create_entity(query)
-    entity.destructible = false
-    position3.x = chunkX
-    position3.y = chunkY-CHUNK_SIZE
-    entity = surface.create_entity(query)
-    entity.destructible = false
-    position3.x = chunkX
-    position3.y = chunkY+CHUNK_SIZE
-    entity = surface.create_entity(query)
-    entity.destructible = false
-end
-
-function baseUtils.createSpawnerProxy(map, surface, chunk)
-    local query = map.placeSpawnerProxyQuery
-    query.name = "spawner-proxy-1-rampant"
-    local position3 = map.position3
-    position3.x = chunk.x + 5
-    position3.y = chunk.y + 5
-    local entity = surface.create_entity(query)
-    entity.destructible = false
-end
-
 function baseUtils.findNearbyBase(map, chunk)
     local x = chunk.x
     local y = chunk.y
@@ -150,8 +108,7 @@ function baseUtils.findNearbyBase(map, chunk)
 
     local bases = map.natives.bases
     local closet = MAGIC_MAXIMUM_NUMBER
-    for i=1, #bases do
-        local base = bases[i]
+    for _, base in pairs(bases) do
         local distance = euclideanDistancePoints(base.x, base.y, x, y)
         if (distance <= base.distanceThreshold) and (distance < closet) then
             closet = distance
@@ -283,7 +240,8 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 end
 
 local function findBaseInitialAlignment(natives, evoIndex)
-    local evoTop = gaussianRandomRange(evoIndex, evoIndex * 0.3, 0, evoIndex)
+    local dev = evoIndex * 0.3
+    local evoTop = gaussianRandomRange(evoIndex - dev, dev, 0, evoIndex)
 
     local result
     if mRandom() < 0.05 then
@@ -298,21 +256,23 @@ end
 function baseUtils.recycleBases(natives, tick)
     local baseIndex = natives.baseIndex
     local bases = natives.bases
-
-    local endIndex = mMin(baseIndex+BASE_QUEUE_SIZE, #bases)
-    for index = endIndex, baseIndex, -1 do
-        local base = bases[index]
-
-        if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
-            tRemove(bases, index)
+    local id, base = next(bases, natives.map.recycleBaseIterator)
+    for i=1,2 do
+        if not id then
+            natives.map.recycleBaseIterator = nil
+            return
+        else
+            if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
+                local nextId
+                nextId, base = next(bases, id)
+                bases[id] = nil
+                id = nextId
+            else
+                id, base = next(bases, id)
+            end
         end
     end
-
-    if (endIndex == #bases) then
-        natives.baseIndex = 1
-    else
-        natives.baseIndex = endIndex + 1
-    end
+    natives.map.recycleBaseIterator = id
 end
 
 
@@ -495,12 +455,14 @@ function baseUtils.createBase(natives, chunk, tick, rebuilding)
         temperamentTick = 0,
         createdTick = tick,
         temperament = 0,
-        points = 0
+        points = 0,
+        id = natives.baseId
     }
+    natives.baseId = natives.baseId + 1
 
     setChunkBase(natives.map, chunk, base)
 
-    natives.bases[#natives.bases+1] = base
+    natives.bases[base.id] = base
 
     return base
 end
@@ -653,8 +615,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     local evoIndex = evoToTier(natives, natives.evolutionLevel)
 
-    for i=1,#natives.bases do
-        local base = natives.bases[i]
+    for id,base in pairs(natives.bases) do
         for x=1,#base.alignment do
             local alignment = base.alignment[x]
             if not natives.buildingEvolveLookup[alignment] then

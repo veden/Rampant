@@ -15,6 +15,7 @@ local movementUtils = require("MovementUtils")
 
 local DEFINES_GROUP_FINISHED = defines.group_state.finished
 
+local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
 local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
 
 local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
@@ -36,6 +37,11 @@ local mRandom = math.random
 
 local findMovementPosition = movementUtils.findMovementPosition
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
+local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+
+local next = next
+local table_size = table_size
 
 local mLog = math.log10
 
@@ -139,15 +145,21 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
 end
 
 function unitGroupUtils.cleanSquads(natives, iterator)
+    local profiler = game.create_profiler()
     local squads = natives.groupNumberToSquad
     local map = natives.map
 
     local k, squad = next(squads, iterator)
     local nextK
-    for i=1,2 do
-        if not k then
-            return nil
-        elseif not squad.group.valid then
+    -- for i=1,2 do
+    if not k then
+        if (table_size(squads) == 0) then
+            -- this is needed as the next command remembers the max length a table has been
+            natives.groupNumberToSquad = {}
+        end
+    else
+        local group = squad.group
+        if not group.valid then
             removeSquadFromChunk(map, squad)
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
@@ -155,9 +167,39 @@ function unitGroupUtils.cleanSquads(natives, iterator)
             nextK,squad = next(squads, k)
             squads[k] = nil
             k = nextK
+            -- else
+            --     game.print({"", "3b", profiler})
+            --     profiler.restart()
+            --     local members = group.members
+            --     local memberCount = #members
+            --     if (memberCount == 0) then
+            --         game.print({"", "4a", profiler})
+            --         profiler.restart()
+            --         local deathGen = getDeathGenerator(map, squad.chunk)
+            --         local penalties = squad.penalties
+            --         for xc=1,mMin(#squad.penalties,5) do
+            --             addDeathGenerator(map,
+            --                               penalties[xc].c,
+            --                               deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
+            --         end
+            --         removeSquadFromChunk(map, squad)
+            --         group.destroy()
+            --         game.print({"", "4ea", profiler})
+            --         profiler.restart()
+            --     elseif (memberCount > AI_MAX_BITER_GROUP_SIZE) then
+            --         game.print({"", "4b", profiler})
+            --         profiler.restart()
+            --         unitGroupUtils.recycleBiters(natives, members)
+            --         removeSquadFromChunk(map, squad)
+            --         group.destroy()
+            --         game.print({"", "4eb", profiler})
+            --         profiler.restart()
+            --     end
+            --     game.print({"", "3be", profiler})
         end
     end
-    return k
+    -- end
+    map.squadIterator = k
 end
 
 function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
@@ -185,6 +227,7 @@ end
 function unitGroupUtils.regroupSquads(natives, iterator)
     local map = natives.map
     local squads = natives.groupNumberToSquad
+    local cmd = map.mergeGroupCommand
 
     local k, squad = iterator, nil
     for i=1,SQUAD_QUEUE_SIZE do
@@ -194,42 +237,45 @@ function unitGroupUtils.regroupSquads(natives, iterator)
         else
             local group = squad.group
             if group and group.valid then
+                cmd.group = group
                 local groupState = group.state
                 if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
                     (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
                 then
-                    local memberCount = #group.members
-                    if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
-                        local status = squad.status
-                        local chunk = squad.chunk
+                    -- local memberCount = #group.members
+                    -- if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
+                    local status = squad.status
+                    local chunk = squad.chunk
 
-                        if (chunk ~= -1) then
-                            for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
-                                if (mergeSquad ~= squad) then
-                                    local mergeGroup = mergeSquad.group
-                                    if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
-                                        local mergeGroupState = mergeGroup.state
-                                        if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
-                                            (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
-                                        then
-                                            local mergeMembers = mergeGroup.members
-                                            local mergeCount = #mergeMembers
-                                            if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
-                                                for memberIndex=1, mergeCount do
-                                                    group.add_member(mergeMembers[memberIndex])
-                                                end
-                                                mergeGroup.destroy()
-                                            end
-                                            squad.status = SQUAD_GUARDING
-                                            memberCount = memberCount + mergeCount
-                                            if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
-                                                break
-                                            end
-                                        end
+                    if (chunk ~= -1) then
+                        for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
+                            if (mergeSquad ~= squad) then
+                                local mergeGroup = mergeSquad.group
+                                if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
+                                    local mergeGroupState = mergeGroup.state
+                                    if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
+                                        (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
+                                    then
+                                        print("merging group")
+                                        mergeGroup.set_command(cmd)
+                                        -- local mergeMembers = mergeGroup.members
+                                        -- local mergeCount = #mergeMembers
+                                        -- if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
+                                        --     for memberIndex=1, mergeCount do
+                                        --         group.add_member(mergeMembers[memberIndex])
+                                        --     end
+                                        --     mergeGroup.destroy()
+                                        -- end
+                                        squad.status = SQUAD_GUARDING
+                                        -- memberCount = memberCount + mergeCount
+                                        -- if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
+                                        --     break
+                                        -- end
                                     end
                                 end
                             end
                         end
+                        -- end
                     end
                 end
             end

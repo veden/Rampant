@@ -22,9 +22,9 @@ local upgrade = require("Upgrade")
 local config = require("config")
 local aiPredicates = require("libs/AIPredicates")
 
-
 -- constants
 
+local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
@@ -32,8 +32,9 @@ local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
 local INTERVAL_SCAN = constants.INTERVAL_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
 local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
-local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
+-- local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
 local INTERVAL_TEMPERAMENT = constants.INTERVAL_TEMPERAMENT
+local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
@@ -52,6 +53,7 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
+local DEFINES_BEHAVIOR_RESULT_FAIL = defines.behavior_result.fail
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
@@ -91,6 +93,9 @@ local positionToChunkXY = mapUtils.positionToChunkXY
 
 local temperamentPlanner = aiPlanning.temperamentPlanner
 
+local processVengence = mapProcessor.processVengence
+local processSpawners = mapProcessor.processSpawners
+
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -122,6 +127,10 @@ local findNearbyBase = baseUtils.findNearbyBase
 
 local processActiveNests = mapProcessor.processActiveNests
 
+local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
+local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+
 local retreatUnits = squadDefense.retreatUnits
 
 local accountPlayerEntity = chunkUtils.accountPlayerEntity
@@ -137,16 +146,18 @@ local cleanSquads = unitGroupUtils.cleanSquads
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
+local mMin = math.min
 local mRandom = math.random
 
 local tRemove = table.remove
+
+local sFind = string.find
 
 -- local references to global
 
 local gameSurfaces -- used for manage which surfaces have been visited
 local map -- manages the chunks that make up the game world
 local natives -- manages the enemy units, structures, and ai
-local pendingChunks -- chunks that have yet to be processed by the mod
 
 -- hook functions
 
@@ -175,17 +186,17 @@ end
 local function onLoad()
     map = global.map
     natives = global.natives
-    pendingChunks = global.pendingChunks
     gameSurfaces = global.gameSurfaces
 
     hookEvents()
 end
 
 local function onChunkGenerated(event)
+    print("1", game.tick)
     -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
     -- are generated, which messes up the scoring.
     if (event.surface.name == natives.activeSurface) then
-        pendingChunks[#pendingChunks+1] = event
+        map.pendingChunks[event] = true
     end
 end
 
@@ -201,6 +212,7 @@ local function rebuildMap()
     map.processIndex = 1
     map.scanIndex = 1
 
+    map.pendingChunks = {}
     map.chunkToBase = {}
     map.chunkToNests = {}
     map.chunkToTurrets = {}
@@ -215,7 +227,6 @@ local function rebuildMap()
 
     map.chunkToRetreats = {}
     map.chunkToRallys = {}
-    map.chunkToSettler = {}
 
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
@@ -229,6 +240,11 @@ local function rebuildMap()
 
     map.squadIterator = nil
     map.regroupIterator = nil
+    map.deployVengenceIterator = nil
+    map.recycleBaseIterator = nil
+    map.processActiveSpawnerIterator = nil
+    map.processActiveRaidSpawnerIterator = nil
+    map.processMigrationIterator = nil
 
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = {
@@ -305,6 +321,10 @@ local function rebuildMap()
             "unit-spawner",
             "turret"
         }
+    }
+    map.createBuildCloudQuery = {
+        name = "build-clear-cloud-rampant",
+        position = map.position
     }
 
     map.activePlayerForces = {"player"}
@@ -434,6 +454,13 @@ local function rebuildMap()
         use_group_distraction = false
     }
 
+    map.mergeGroupCommand = {
+        type = DEFINES_COMMAND_GROUP,
+        group = nil,
+        distraction = DEFINES_DISTRACTION_NONE,
+        use_group_distraction = false
+    }
+
     map.fleeCommand = {
         type = DEFINES_COMMAND_FLEE,
         from = nil,
@@ -507,13 +534,9 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "newEnemies", settings.startup["rampant-newEnemies"].value)
     upgrade.compareTable(natives, "enemySeed", settings.startup["rampant-enemySeed"].value)
 
-    upgrade.compareTable(natives, "disableVanillaAI", settings.global["rampant-disableVanillaAI"].value)
-
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
 
     upgrade.compareTable(natives, "ENEMY_VARIATIONS", settings.startup["rampant-newEnemyVariations"].value)
-
-    game.forces.enemy.ai_controllable = not natives.disableVanillaAI
 
     return true
 end
@@ -548,10 +571,6 @@ local function prepWorld(rebuild, surfaceName)
         map.natives = natives
         natives.map = map
 
-        -- clear pending chunks, will be added when loop runs below
-        global.pendingChunks = {}
-        pendingChunks = global.pendingChunks
-
         -- queue all current chunks that wont be generated during play
         local surface = game.get_surface(natives.activeSurface)
         local tick = game.tick
@@ -569,7 +588,7 @@ local function prepWorld(rebuild, surfaceName)
             end
         end
 
-        processPendingChunks(map, surface, pendingChunks, tick, rebuild)
+        processPendingChunks(map, surface, tick, rebuild, true)
     end
 end
 
@@ -578,6 +597,7 @@ local function onConfigChanged()
 end
 
 local function onBuild(event)
+    print("2", game.tick)
     local entity = event.created_entity or event.entity
     if (entity.surface.name == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
@@ -594,6 +614,7 @@ local function onBuild(event)
 end
 
 local function onMine(event)
+    print("3", game.tick)
     local entity = event.entity
     local surface = entity.surface
     if (surface.name == natives.activeSurface) then
@@ -608,6 +629,7 @@ local function onMine(event)
 end
 
 local function onDeath(event)
+    print("4", game.tick)
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -634,14 +656,15 @@ local function onDeath(event)
 
                             natives.lostEnemyUnits = natives.lostEnemyUnits + 1
 
-                            retreatUnits(chunk,
-                                         entityPosition,
-                                         entity.unit_group,
-                                         map,
-                                         surface,
-                                         tick,
-                                         (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS,
-                                         artilleryBlast)
+                            -- retreatUnits(chunk,
+                            --              entityPosition,
+                            --              entity.unit_group,
+                            --              map,
+                            --              surface,
+                            --              tick,
+                            --              (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS-- ,
+                            --              -- artilleryBlast
+                            -- )
 
                             if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
                                 rallyUnits(chunk, map, surface, tick)
@@ -653,19 +676,20 @@ local function onDeath(event)
 
                     natives.points = natives.points + (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
 
-                    if (chunk ~= -1) then
-                        unregisterEnemyBaseStructure(map, entity)
+                    unregisterEnemyBaseStructure(map, entity)
 
+                    if (chunk ~= -1) then
                         rallyUnits(chunk, map, surface, tick)
 
-                        retreatUnits(chunk,
-                                     entityPosition,
-                                     nil,
-                                     map,
-                                     surface,
-                                     tick,
-                                     RETREAT_SPAWNER_GRAB_RADIUS,
-                                     (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret"))))
+                        -- retreatUnits(chunk,
+                        --              entityPosition,
+                        --              nil,
+                        --              map,
+                        --              surface,
+                        --              tick,
+                        --              RETREAT_SPAWNER_GRAB_RADIUS-- ,
+                        --              -- (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+                        -- )
                     end
                 end
 
@@ -751,6 +775,7 @@ local function onDeath(event)
 end
 
 local function onEnemyBaseBuild(event)
+    print("5", game.tick)
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -782,36 +807,35 @@ local function onEnemyBaseBuild(event)
 end
 
 local function onSurfaceTileChange(event)
+    print("6", game.tick)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
-    local surfaceName = game.surfaces[surfaceIndex].name
-    if (surfaceName == natives.activeSurface) and
-        ((event.item.name == "landfill") or (event.item.name == "waterfill")) and
-        event.item
-    then
-        local surface = game.get_surface(natives.activeSurface)
+    local surface = game.get_surface(natives.activeSurface)
+    if (surface.index == surfaceIndex) then
         local chunks = {}
         local tiles = event.tiles
-        for i=1,#tiles do
-            local position = tiles[i].position
-            local chunk = getChunkByPosition(map, position)
+        if (event.tile.name == "landfill") or sFind(event.tile.name, "water") then
+            for i=1,#tiles do
+                local position = tiles[i].position
+                local chunk = getChunkByPosition(map, position)
 
-            if (chunk ~= -1) then
-                map.chunkToPassScan[chunk] = true
-            else
-                local x,y = positionToChunkXY(position)
-                local addMe = true
-                for ci=1,#chunks do
-                    local c = chunks[ci]
-                    if (c.x == x) and (c.y == y) then
-                        addMe = false
-                        break
+                if (chunk ~= -1) then
+                    map.chunkToPassScan[chunk] = true
+                else
+                    local x,y = positionToChunkXY(position)
+                    local addMe = true
+                    for ci=1,#chunks do
+                        local c = chunks[ci]
+                        if (c.x == x) and (c.y == y) then
+                            addMe = false
+                            break
+                        end
                     end
-                end
-                if addMe then
-                    local chunkXY = {x=x,y=y}
-                    chunks[#chunks+1] = chunkXY
-                    onChunkGenerated({area = { left_top = chunkXY },
-                                      surface = surface})
+                    if addMe then
+                        local chunkXY = {x=x,y=y}
+                        chunks[#chunks+1] = chunkXY
+                        onChunkGenerated({area = { left_top = chunkXY },
+                                          surface = surface})
+                    end
                 end
             end
         end
@@ -819,6 +843,7 @@ local function onSurfaceTileChange(event)
 end
 
 local function onResourceDepleted(event)
+    print("7", game.tick)
     local entity = event.entity
     if (entity.surface.name == natives.activeSurface) then
         unregisterResource(entity, map)
@@ -826,7 +851,7 @@ local function onResourceDepleted(event)
 end
 
 local function onRobotCliff(event)
-
+    print("8", game.tick)
     local surface = event.robot.surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         entityForPassScan(map, event.cliff)
@@ -834,6 +859,7 @@ local function onRobotCliff(event)
 end
 
 local function onUsedCapsule(event)
+    print("9", game.tick)
     local surface = game.players[event.player_index].surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         map.position2Top.x = event.position.x-0.75
@@ -848,6 +874,7 @@ local function onUsedCapsule(event)
 end
 
 local function onRocketLaunch(event)
+    print("10", game.tick)
     local entity = event.rocket_silo or event.rocket
     if entity and entity.valid and (entity.surface.name == natives.activeSurface) then
         natives.rocketLaunched = natives.rocketLaunched + 1
@@ -856,6 +883,7 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
+    print("11", game.tick)
     local entity = event.entity
     if entity.valid and (entity.surface.name == natives.activeSurface) and (entity.name  == "drain-trigger-rampant") then
         local chunk = getChunkByPosition(map, entity.position)
@@ -868,13 +896,11 @@ end
 
 local function onInit()
     global.map = {}
-    global.pendingChunks = {}
     global.natives = {}
     global.gameSurfaces = {}
 
     map = global.map
     natives = global.natives
-    pendingChunks = global.pendingChunks
     gameSurfaces = global.gameSurfaces
 
     prepWorld(false, "nauvis")
@@ -882,6 +908,7 @@ local function onInit()
 end
 
 local function onEntitySpawned(event)
+    print("12", game.tick)
     local entity = event.entity
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
@@ -921,41 +948,76 @@ local function onEntitySpawned(event)
 end
 
 local function onUnitGroupCreated(event)
+    print("13", game.tick)
     local group = event.group
-    if (group.surface.name == natives.activeSurface) and (group.force.name == "enemy") then
+    local surface = group.surface
+    if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
         if not group.is_script_driven then
-            squad = createSquad(nil,
-                                nil,
-                                group,
-                                mRandom() < 0.75 and canMigrate(natives, game.get_surface(natives.activeSurface)))
-            natives.groupNumberToSquad[group.group_number] = squad
+            if not natives.aiNocturnalMode then
+                squad = createSquad(nil,
+                                    nil,
+                                    group,
+                                    mRandom() < 0.25 and canMigrate(natives, group.surface))
+                natives.groupNumberToSquad[group.group_number] = squad
+            elseif not (surface.darkness > 0.65) then
+                group.destroy()
+            else
+                squad = createSquad(nil,
+                                    nil,
+                                    group,
+                                    mRandom() < 0.25 and canMigrate(natives, group.surface))
+                natives.groupNumberToSquad[group.group_number] = squad
+            end
         end
     end
 end
 
 local function onCommandComplete(event)
-    --         local msg
-    --         if (event.result == defines.behavior_result.in_progress) then
-    --             msg = "progress"
-    --         elseif (event.result == defines.behavior_result.fail) then
-    --             msg = "fail"
-    --         elseif (event.result == defines.behavior_result.success) then
-    --             msg = "success"
-    --         elseif (event.result == defines.behavior_result.deleted) then
-    --             msg = "deleted"
-    --         end
-
+    print("14", game.tick)
     local unitNumber = event.unit_number
     local squad = natives.groupNumberToSquad[unitNumber]
     if squad then
+        -- local result = event.result
+        -- local msg
+        -- if (result == defines.behavior_result.in_progress) then
+        --     msg = "progress"
+        -- elseif (result == defines.behavior_result.fail) then
+        --     msg = "fail"
+        -- elseif (result == defines.behavior_result.success) then
+        --     msg = "success"
+        -- elseif (result == defines.behavior_result.deleted) then
+        --     msg = "deleted"
+        -- end
+        -- print(msg)
+
         local group = squad.group
         if group and group.valid and (group.surface.name == natives.activeSurface) then
-            squadDispatch(map, group.surface, squad, unitNumber)
+
+            if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
+                print("count", #group.members)
+                if (#group.members == 0) then
+                    print("dropping")
+                    local deathGen = getDeathGenerator(map, squad.chunk)
+                    local penalties = squad.penalties
+                    for xc=1,mMin(#squad.penalties,5) do
+                        addDeathGenerator(map,
+                                          penalties[xc].c,
+                                          deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
+                    end
+                    removeSquadFromChunk(map, squad)
+                    group.destroy()
+                else
+                    squadDispatch(map, group.surface, squad, unitNumber)
+                end
+            else
+                squadDispatch(map, group.surface, squad, unitNumber)
+            end
         end
     end
 end
 
 local function onGroupFinishedGathering(event)
+    print("15", game.tick)
     local group = event.group
     if group.valid then
         local unitNumber = group.group_number
@@ -967,10 +1029,12 @@ local function onGroupFinishedGathering(event)
 end
 
 local function onForceCreated(event)
+    print("16", game.tick)
     map.activePlayerForces[#map.activePlayerForces+1] = event.force.name
 end
 
 local function onForceMerged(event)
+    print("17", game.tick)
     for i=#map.activePlayerForces,1,-1 do
         if (map.activePlayerForces[i] == event.source_name) then
             tRemove(map.activePlayerForces, i)
@@ -980,6 +1044,7 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceRenamed(event)
+    print("18", game.tick)
     if event.old_name == natives.activeSurface then
         natives.activeSurface = event.new_name
     end
@@ -990,6 +1055,7 @@ local function onSurfaceRenamed(event)
 end
 
 local function onSurfaceCleared(event)
+    print("19", game.tick)
     local surface = game.get_surface(event.surface_index)
     if surface and surface.valid and (surface.name == natives.activeSurface) then
         prepWorld(true, natives.activeSurface)
@@ -997,6 +1063,7 @@ local function onSurfaceCleared(event)
 end
 
 local function onPlayerChangedSurface(event)
+    print("20", game.tick)
     local player = game.players[event.player_index]
     local surface
     if player and player.valid and not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value
@@ -1020,6 +1087,7 @@ local function onPlayerChangedSurface(event)
 end
 
 local function onSurfaceDeleted(event)
+    print("21", game.tick)
     local surface = game.get_surface(event.surface_index)
     if surface and surface.valid then
         if (surface.name == natives.activeSurface) then
@@ -1035,68 +1103,106 @@ end
 
 script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
                    function (event)
-
+                       print("22", game.tick)
+                       local profiler = game.create_profiler()
                        local gameRef = game
 
                        processPlayers(gameRef.connected_players,
                                       map,
                                       gameRef.get_surface(natives.activeSurface),
                                       event.tick)
+                       game.print({"", "player", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_MAP_PROCESS,
                    function (event)
-
+                       print("23", game.tick)                       
+                       local profiler = game.create_profiler()
                        local gameRef = game
 
-                       processMap(map,
-                                  gameRef.get_surface(natives.activeSurface),
-                                  event.tick)
+                       -- processMap(map,
+                       --            gameRef.get_surface(natives.activeSurface),
+                       --            event.tick)
+                       game.print({"", "map", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_SCAN,
                    function (event)
+                       print("24", game.tick)
+                       local profiler = game.create_profiler()
                        local tick = event.tick
                        local gameRef = game
                        local surface = gameRef.get_surface(natives.activeSurface)
 
-                       processPendingChunks(map, surface, pendingChunks, tick)
+                       processPendingChunks(map, surface, tick)
 
                        scanMap(map, surface, tick)
 
                        processScanChunks(map, surface)
+                       game.print({"", "scan", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
                    function (event)
+                       print("25", game.tick)
+                       local profiler = game.create_profiler()
                        local tick = event.tick
-
                        planning(natives,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
-                       map.squadIterator = cleanSquads(natives, map.squadIterator)
+                       cleanSquads(natives, map.squadIterator)
 
                        if natives.newEnemies then
                            recycleBases(natives, tick)
                        end
+                       game.print({"", "logic", profiler})
+end)
+
+script.on_nth_tick(INTERVAL_SPAWNER,
+                   function (event)
+                       print("26", game.tick)
+                       local profiler = game.create_profiler()
+                       processSpawners(map,
+                                       game.get_surface(natives.activeSurface),
+                                       event.tick)
+                       game.print({"", "spawners", profiler})
+end)
+
+script.on_nth_tick(INTERVAL_SQUAD,
+                   function (event)
+                       print("27", game.tick)
+                       local profiler = game.create_profiler()
+                       processVengence(map,
+                                       game.get_surface(natives.activeSurface),
+                                       event.tick)
+                       game.print({"", "vengence", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_TEMPERAMENT,
                    function (event)
+                       print("28", game.tick)
+                       local profiler = game.create_profiler()
                        temperamentPlanner(natives)
+                       game.print({"", "temperament", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_RESQUAD,
-                   function ()                       
+                   function ()
+                       print("29", game.tick)
+                       local profiler = game.create_profiler()
                        map.regroupIterator = regroupSquads(natives, map.regroupIterator)
+                       game.print({"", "regroup", profiler})
 end)
 
 script.on_event(defines.events.on_tick,
                 function (event)
-                    processActiveNests(map,
-                                       game.get_surface(natives.activeSurface),
-                                       event.tick)
+                    print("30", game.tick)                    
+                    local profiler = game.create_profiler()
+                    -- processActiveNests(map,
+                    --                    game.get_surface(natives.activeSurface),
+                    --                    event.tick)
+                    game.print({"", "processActiveNests", profiler})
 end)
 
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)

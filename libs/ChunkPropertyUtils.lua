@@ -79,20 +79,11 @@ end
 function chunkPropertyUtils.setNestCount(map, chunk, count)
     if (count <= 0) then
         map.chunkToNests[chunk] = nil
+        if (map.processMigrationIterator == chunk) then
+            map.processMigrationIterator = nil
+        end
     else
         map.chunkToNests[chunk] = count
-    end
-end
-
-function chunkPropertyUtils.getChunkSettlerTick(map, chunk)
-    return map.chunkToSettler[chunk] or 0
-end
-
-function chunkPropertyUtils.setChunkSettlerTick(map, chunk, tick)
-    if (tick <= 0) then
-        map.chunkToSettler[chunk] = nil
-    else
-        map.chunkToSettler[chunk] = tick
     end
 end
 
@@ -163,6 +154,9 @@ function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
         if (map.chunkToActiveRaidNest[chunk] ~= nil) then
             map.natives.activeRaidNests = map.natives.activeRaidNests - 1
         end
+        if (map.processActiveRaidSpawnerIterator == chunk) then
+            map.processActiveRaidSpawnerIterator = nil
+        end
         map.chunkToActiveRaidNest[chunk] = nil
     else
         if (map.chunkToActiveRaidNest[chunk] == nil) then
@@ -192,6 +186,9 @@ function chunkPropertyUtils.setNestActiveness(map, chunk, value)
     if (value <= 0) then
         if (map.chunkToActiveNest[chunk] ~= nil) then
             map.natives.activeNests = map.natives.activeNests - 1
+        end
+        if (map.processActiveSpawnerIterator == chunk) then
+            map.processActiveSpawnerIterator = nil
         end
         map.chunkToActiveNest[chunk] = nil
     else

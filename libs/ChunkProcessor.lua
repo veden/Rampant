@@ -27,6 +27,8 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 local tSort = table.sort
 
 local abs = math.abs
+local next = next
+local table_size = table_size
 
 local tRemove = table.remove
 
@@ -49,49 +51,67 @@ local function sorter(a, b)
     return (aDistance < bDistance)
 end
 
-function chunkProcessor.processPendingChunks(map, surface, pendingStack, tick, rebuilding)
+function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flush)
+    local profiler = game.create_profiler()
     local processQueue = map.processQueue
+    local pendingChunks = map.pendingChunks
 
     local area = map.area
 
     local topOffset = area[1]
     local bottomOffset = area[2]
 
-    for i=#pendingStack, 1, -1 do
-        local event = pendingStack[i]
-        pendingStack[i] = nil
-
-        local topLeft = event.area.left_top
-        local x = topLeft.x
-        local y = topLeft.y
-
-        topOffset[1] = x
-        topOffset[2] = y
-        bottomOffset[1] = x + CHUNK_SIZE
-        bottomOffset[2] = y + CHUNK_SIZE
-
-        if map[x] and map[x][y] then
-            mapScanChunk(map[x][y], surface, map)
+    local event = next(pendingChunks, map.chunkProcessorIterator)
+    local endCount = 5
+    if flush then
+        endCount = table_size(pendingChunks)
+    end
+    for i=1,endCount do
+        if not event then
+            map.chunkProcessorIterator = nil
+            if (table_size(pendingChunks) == 0) then
+                -- this is needed as the next command remembers the max length a table has been
+                map.pendingChunks = {}
+            end
+            break
         else
-            if map[x] == nil then
-                map[x] = {}
+            local topLeft = event.area.left_top
+            local x = topLeft.x
+            local y = topLeft.y
+
+            topOffset[1] = x
+            topOffset[2] = y
+            bottomOffset[1] = x + CHUNK_SIZE
+            bottomOffset[2] = y + CHUNK_SIZE
+
+            if map[x] and map[x][y] then
+                mapScanChunk(map[x][y], surface, map)
+            else
+                if map[x] == nil then
+                    map[x] = {}
+                end
+
+                local chunk = createChunk(x, y)
+
+                chunk = initialScan(chunk, surface, map, tick, rebuilding)
+
+                if (chunk ~= -1) then
+                    map[x][y] = chunk
+                    processQueue[#processQueue+1] = chunk
+                end
             end
-
-            local chunk = createChunk(x, y)
-
-            chunk = initialScan(chunk, surface, map, tick, rebuilding)
-
-            if (chunk ~= -1) then
-                map[x][y] = chunk
-                processQueue[#processQueue+1] = chunk
-            end
+            local newEvent,_ = next(pendingChunks, event)
+            pendingChunks[event] = nil
+            event = newEvent
         end
     end
+    map.chunkProcessorIterator = event
 
     if (#processQueue > map.nextChunkSort) or
-        (((tick - map.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and ((map.nextChunkSort - 75) ~= #processQueue))
+        (((tick - map.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and
+                ((map.nextChunkSort - 150) < #processQueue))
     then
-        map.nextChunkSort = #processQueue + 75
+        map.nextChunkSort = #processQueue + 150
         map.nextChunkSortTick = tick
         tSort(processQueue, sorter)
     end

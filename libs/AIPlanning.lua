@@ -71,7 +71,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     local attackWaveMaxSize = natives.attackWaveMaxSize
     natives.retreatThreshold = linearInterpolation(evolution_factor, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
-    natives.formSquadThreshold = mMax((0.25 * evolution_factor), 0.10)
+    natives.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
     natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.15)
     natives.attackWaveDeviation = (natives.attackWaveSize * 0.333)

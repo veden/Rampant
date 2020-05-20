@@ -58,15 +58,15 @@ constants.CHUNK_PASS_THRESHOLD = 0.25
 constants.INTERVAL_PLAYER_PROCESS = (settings.startup["rampant-liteMode"].value and 124) or 62
 constants.INTERVAL_MAP_PROCESS = (settings.startup["rampant-liteMode"].value and 8) or 5
 constants.INTERVAL_SCAN = (settings.startup["rampant-liteMode"].value and 42) or 21
-constants.INTERVAL_CHUNK = 17
 constants.INTERVAL_LOGIC = 60
 constants.INTERVAL_TEMPERAMENT = 121
-constants.INTERVAL_SQUAD = 41
+constants.INTERVAL_SQUAD = 17
 constants.INTERVAL_RESQUAD = 101
+constants.INTERVAL_SPAWNER = 31
 constants.INTERVAL_BUILDERS = 300
-constants.INTERVAL_SPAWNER = constants.TICKS_A_SECOND * 10
-constants.INTERVAL_RALLY = constants.TICKS_A_SECOND * 10
-constants.INTERVAL_RETREAT = constants.TICKS_A_SECOND * 10
+
+constants.COOLDOWN_RALLY = constants.TICKS_A_SECOND * 10
+constants.COOLDOWN_RETREAT = constants.TICKS_A_SECOND * 10
 
 constants.RESOURCE_NORMALIZER = 1 / 1024
 

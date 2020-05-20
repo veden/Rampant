@@ -19,8 +19,10 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 
 -- module code
 
-function aiPredicates.canAttack(natives, surface)
-    local goodAI = ((natives.state == AI_STATE_AGGRESSIVE) or (natives.state == AI_STATE_RAIDING) or (natives.state == AI_STATE_ONSLAUGHT))
+function aiPredicates.canAttack(natives, surface, tick)
+    local goodAI = (((natives.state == AI_STATE_AGGRESSIVE) and (natives.canAttackTick > tick)) or
+            (natives.state == AI_STATE_RAIDING) or
+            (natives.state == AI_STATE_ONSLAUGHT))
     local notPeaceful = not surface.peaceful_mode
     local noctural = (not natives.aiNocturnalMode) or (natives.aiNocturnalMode and surface.darkness > 0.65)
     return goodAI and notPeaceful and noctural

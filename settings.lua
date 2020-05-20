@@ -393,15 +393,15 @@ data:extend({
             per_user = false
         },
 
-        {
-            type = "bool-setting",
-            name = "rampant-disableVanillaAI",
-            description = "rampant-disableVanillaAI",
-            setting_type = 'runtime-global',
-            default_value = true,
-            order = "m[total]-a[ai]",
-            per_user = false
-        },
+        -- {
+        --     type = "bool-setting",
+        --     name = "rampant-disableVanillaAI",
+        --     description = "rampant-disableVanillaAI",
+        --     setting_type = 'runtime-global',
+        --     default_value = true,
+        --     order = "m[total]-a[ai]",
+        --     per_user = false
+        -- },
 
         {
             type = "bool-setting",

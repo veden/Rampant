@@ -21,7 +21,7 @@ local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local INTERVAL_RETREAT = constants.INTERVAL_RETREAT
+local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
 
@@ -54,23 +54,24 @@ local function scoreRetreatLocation(map, neighborChunk)
                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radius, artilleryBlast)
-    if (tick - getRetreatTick(map, chunk) > INTERVAL_RETREAT) and
-        ((getEnemyStructureCount(map, chunk) == 0) or artilleryBlast)
-    then
+function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radius)
+    if (tick - getRetreatTick(map, chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
         local performRetreat = false
         local enemiesToSquad = nil
 
         local squad
+        local groupMembers
         if group and group.valid then
             squad = map.natives.groupNumberToSquad[group.group_number]
             if not squad then
                 squad = createSquad(position, surface, group)
-                squad.kamikaze = mRandom() < calculateKamikazeThreshold(group.members, natives)
+                groupMembers = group.members
+                squad.kamikaze = mRandom() < calculateKamikazeThreshold(#groupMembers, natives)
             end
         end
 
         if not squad then
+            print("grabbing people", position.x, position.y)
             enemiesToSquad = map.enemiesToSquad
             local unitCount = 0
             local units = surface.find_enemy_units(position, radius)
@@ -83,16 +84,16 @@ function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radi
             end
             enemiesToSquad.len = unitCount
             if (mRandom() < calculateKamikazeThreshold(unitCount, map.natives)) then
-                setRetreatTick(map, chunk, tick)
-                return
-            end
-            performRetreat = unitCount > 6
+                performRetreat = false
+            else
+                performRetreat = unitCount > 6
+            end            
         elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-            performRetreat = #squad.group.members > 6
+            performRetreat = #groupMembers > 6
         end
 
+        setRetreatTick(map, chunk, tick)        
         if performRetreat then
-            setRetreatTick(map, chunk, tick)
             local exitPath,exitDirection,nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
                                                                                                     getNeighborChunks(map,
                                                                                                                       chunk.x,
@@ -140,7 +141,7 @@ function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radi
                     if enemiesToSquad then
                         membersToSquad(cmd, enemiesToSquad.len, enemiesToSquad, artilleryBlast)
                     else
-                        membersToSquad(cmd, #squad.group.members, squad.group.members, true)
+                        membersToSquad(cmd, #groupMembers, groupMembers, true)
                         if squad.rabid then
                             newSquad.rabid = true
                         end

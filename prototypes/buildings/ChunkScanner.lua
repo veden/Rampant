@@ -1,5 +1,6 @@
 local biterFunctions = require("prototypes/utils/BiterUtils")
 local constants = require("libs/Constants")
+local smokeUtils = require("prototypes/utils/SmokeUtils")
 
 data:extend({
         biterFunctions.makeBiter({
@@ -83,3 +84,39 @@ for t=1,11 do
         )
     end
 end
+
+
+smokeUtils.makeNewCloud(
+    {
+        name = "build-clear",
+        wind = false,
+        scale = 9,
+        duration = 540,
+        cooldown = 10,
+        tint = { r=0.7, g=0.2, b=0.7 }
+    },
+    {
+        type = "area",
+        radius = 17,
+        force = "not-same",
+        action_delivery =
+            {
+                type = "instant",
+                target_effects =
+                    {
+                        {
+                            type = "damage",
+                            damage = { amount = 8, type = "poison"}
+                        },
+                        {
+                            type = "damage",
+                            damage = { amount = 8, type = "acid"}
+                        },
+                        {
+                            type = "damage",
+                            damage = { amount = 8, type = "fire"}
+                        }
+                    }
+            }
+    }
+)

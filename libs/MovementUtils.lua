@@ -31,25 +31,25 @@ local distortPosition = mathUtils.distortPosition
 
 function movementUtils.findMovementPosition(surface, position)
     local pos = position
-    if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
-        pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 15, 2, true)
-    end
+    -- if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
+        pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
+    -- end
     return pos
 end
 
 function movementUtils.findMovementPositionEntity(entityName, surface, position)
     local pos = position
-    if not surface.can_place_entity({name=entityName, position=pos}) then
+    -- if not surface.can_place_entity({name=entityName, position=pos}) then
         pos = surface.find_non_colliding_position(entityName, pos, 5, 4, true)
-    end
+    -- end
     return pos
 end
 
 function movementUtils.findMovementPositionDistort(surface, position)
     local pos = position
-    if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
-        pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 15, 2, true)
-    end
+    -- if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
+        pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
+    -- end
     return distortPosition(pos, 8)
 end
 
@@ -176,7 +176,6 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
-
             if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
                 local score = scoreFunction(squad, neighborChunk)

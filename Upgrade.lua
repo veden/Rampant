@@ -35,6 +35,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         natives.state = constants.AI_STATE_AGGRESSIVE
 
         natives.safeEntities = {}
+        natives.vengenceQueue = {}
 
         natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
         natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
@@ -150,15 +151,30 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
             end
         end
 
-        natives.remainingSquads = 0
         natives.groupNumberToSquad = {}
         game.forces.enemy.kill_all_units()
         natives.squads = nil
         natives.pendingAttack = nil
         natives.building = nil
     end
-    if (global.version < 112) then
-        global.version = 112
+    if (global.version < 113) then
+        global.version = 113
+
+        natives.baseId = 0
+        
+        local newBases = {}
+        for i=1,#natives.bases do
+            local base = natives.bases
+            base.id = natives.baseId
+            newBases[base.id] = base
+            natives.baseId = natives.baseId + 1
+        end
+        natives.bases = newBases
+        global.pendingChunks = nil
+        
+        natives.vengenceQueue = {}
+
+        game.forces.enemy.ai_controllable = true
 
         if not setNewSurface then
             game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.12")
