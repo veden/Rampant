@@ -140,8 +140,8 @@ function tests.entitiesOnPlayerChunk()
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     local entities = game.get_surface(global.natives.activeSurface).find_entities_filtered({area={{chunkX, chunkY},
-                                                                                             {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
-                                                                                         force="player"})
+                                                                                                {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
+                                                                                            force="player"})
     for i=1, #entities do
         print(entities[i].name)
     end
@@ -153,8 +153,8 @@ function tests.findNearestPlayerEnemy()
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     local entity = game.get_surface(global.natives.activeSurface).find_nearest_enemy({position={chunkX, chunkY},
-                                                                                   max_distance=constants.CHUNK_SIZE,
-                                                                                   force = "enemy"})
+                                                                                      max_distance=constants.CHUNK_SIZE,
+                                                                                      force = "enemy"})
     if (entity ~= nil) then
         print(entity.name)
     end
@@ -216,7 +216,7 @@ end
 
 function tests.attackOrigin()
     local enemy = game.get_surface(global.natives.activeSurface).find_nearest_enemy({position={0,0},
-                                                                                  max_distance = 1000})
+                                                                                     max_distance = 1000})
     if (enemy ~= nil) and enemy.valid then
         print(enemy, enemy.unit_number)
         enemy.set_command({type=defines.command.go_to_location,
@@ -462,9 +462,9 @@ function tests.createEnergyTest(x)
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
     local entities = game.get_surface(global.natives.activeSurface).find_entities_filtered({area={{chunkX, chunkY},
-                                                                                             {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
-                                                                                         type = "electric-pole",
-                                                                                         force="player"})
+                                                                                                {chunkX + constants.CHUNK_SIZE, chunkY + constants.CHUNK_SIZE}},
+                                                                                            type = "electric-pole",
+                                                                                            force="player"})
     -- for i=1, #entities do
     --     print(entities[i].name)
     -- end
@@ -485,21 +485,60 @@ function tests.createEnergyTest(x)
     --     end
 end
 
+-- function tests.unitGroupBuild()
+--     local surface = game.get_surface(global.natives.activeSurface)
+--     local group = surface.create_unit_group({position={-32, -32}})
+
+--     for i=1,10 do
+--         group.add_member(surface.create_entity({name="small-biter", position={-32, -32}}))
+--     end
+
+--     group.set_command({
+--             type = defines.command.build_base,
+--             destination = {-64, -64},
+--             distraction = defines.distraction.by_enemy,
+--             ignore_planner = true
+--     })
+-- end
+
 function tests.unitGroupBuild()
     local surface = game.get_surface(global.natives.activeSurface)
     local group = surface.create_unit_group({position={-32, -32}})
 
     for i=1,10 do
         group.add_member(surface.create_entity({name="small-biter", position={-32, -32}}))
+        -- surface.create_entity({name="small-biter", position={-32, -32}})
     end
 
-    group.set_command({
-            type = defines.command.build_base,
-            destination = {-64, -64},
-            distraction = defines.distraction.by_enemy,
-            ignore_planner = true
+    local group2 = surface.create_unit_group({position={32, 32}})
+
+    for i=1,10 do
+        -- group2.add_member(surface.create_entity({name="small-biter", position={32, 32}}))
+        surface.create_entity({name="small-biter", position={32, 32}})
+    end
+
+    group.destroy()
+
+    -- group.set_command({
+    --         type = defines.command.build_base,
+    --         destination = {-64, -64},
+    --         distraction = defines.distraction.by_enemy,
+    --         ignore_planner = true
+    -- })
+
+    surface.set_multi_command({
+            command = {
+                type = defines.command.group,
+                group = group2,
+                distraction = defines.distraction.none,
+                use_group_distraction = false
+            },
+            unit_count = 900,
+            unit_search_distance = 32 * 8
     })
+
 end
+
 
 function tests.dumpEnvironment(x)
     print (serpent.dump(global[x]))

@@ -35,6 +35,8 @@ local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
 -- local INTERVAL_BUILDERS = constants.INTERVAL_BUILDERS
 local INTERVAL_TEMPERAMENT = constants.INTERVAL_TEMPERAMENT
 local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
+local INTERVAL_CHUNK_PROCESS = constants.INTERVAL_CHUNK_PROCESS
+local INTERVAL_PASS_SCAN = constants.INTERVAL_PASS_SCAN
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
@@ -192,7 +194,6 @@ local function onLoad()
 end
 
 local function onChunkGenerated(event)
-    print("1", game.tick)
     -- queue generated chunk for delayed processing, queuing is required because some mods (RSO) mess with chunk as they
     -- are generated, which messes up the scoring.
     if (event.surface.name == natives.activeSurface) then
@@ -346,36 +347,34 @@ local function rebuildMap()
         end
     end
 
-    map.filteredEntitiesPlayerQuery50 = { area=map.area, force=map.activePlayerForces, type={"wall",
-                                                                                             "transport-belt"}}
+    map.filteredEntitiesPlayerQueryLowest = { area=map.area, force=map.activePlayerForces, type={"wall",
+                                                                                                 "transport-belt"}}
 
-    map.filteredEntitiesPlayerQuery200 = { area=map.area, force=map.activePlayerForces, type={"splitter",
+    map.filteredEntitiesPlayerQueryLow = { area=map.area, force=map.activePlayerForces, type={"splitter",
                                                                                               "pump",
-                                                                                              "offshore-pump"}}
+                                                                                              "offshore-pump",
+                                                                                              "lamp",
+                                                                                              "solar-panel",
+                                                                                              "programmable-speaker",
+                                                                                              "accumulator",
+                                                                                              "assembling-machine",
+                                                                                              "turret",
+                                                                                              "ammo-turret"}}
 
-    map.filteredEntitiesPlayerQuery1000 = { area=map.area, force=map.activePlayerForces, type={"lamp",
-                                                                                               "solar-panel",
-                                                                                               "programmable-speaker",
-                                                                                               "accumulator",
-                                                                                               "assembling-machine",
-                                                                                               "turret",
-                                                                                               "ammo-turret"}}
-
-    map.filteredEntitiesPlayerQuery2000 = { area=map.area, force=map.activePlayerForces, type={"furnace",
+    map.filteredEntitiesPlayerQueryHigh = { area=map.area, force=map.activePlayerForces, type={"furnace",
                                                                                                "lab",
                                                                                                "roboport",
                                                                                                "beacon",
                                                                                                "radar",
-                                                                                               "electric-turret"}}
-
-    map.filteredEntitiesPlayerQuery3500 = { area=map.area, force=map.activePlayerForces, type={"boiler",
+                                                                                               "electric-turret",
+                                                                                               "boiler",
                                                                                                "generator",
                                                                                                "fluid-turret",
                                                                                                "mining-drill"}}
 
-    map.filteredEntitiesPlayerQuery12000 = { area=map.area, force=map.activePlayerForces, type={"artillery-turret",
-                                                                                                "reactor",
-                                                                                                "rocket-silo"}}
+    map.filteredEntitiesPlayerQueryHighest = { area=map.area, force=map.activePlayerForces, type={"artillery-turret",
+                                                                                                  "reactor",
+                                                                                                  "rocket-silo"}}
 
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
@@ -485,6 +484,10 @@ local function rebuildMap()
     map.formCommand = { command = map.formGroupCommand,
                         unit_count = 0,
                         unit_search_distance = TRIPLE_CHUNK_SIZE }
+
+    map.formLocalCommand = { command = map.formGroupCommand,
+                             unit_count = 0,
+                             unit_search_distance = CHUNK_SIZE }
 end
 
 
@@ -538,6 +541,9 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "ENEMY_VARIATIONS", settings.startup["rampant-newEnemyVariations"].value)
 
+    upgrade.compareTable(natives, "enableFullMapScan", settings.global["rampant-enableFullMapScan"].value)
+
+    
     return true
 end
 
@@ -597,7 +603,6 @@ local function onConfigChanged()
 end
 
 local function onBuild(event)
-    print("2", game.tick)
     local entity = event.created_entity or event.entity
     if (entity.surface.name == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
@@ -614,7 +619,6 @@ local function onBuild(event)
 end
 
 local function onMine(event)
-    print("3", game.tick)
     local entity = event.entity
     local surface = entity.surface
     if (surface.name == natives.activeSurface) then
@@ -629,7 +633,6 @@ local function onMine(event)
 end
 
 local function onDeath(event)
-    print("4", game.tick)
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -775,7 +778,6 @@ local function onDeath(event)
 end
 
 local function onEnemyBaseBuild(event)
-    print("5", game.tick)
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -807,7 +809,6 @@ local function onEnemyBaseBuild(event)
 end
 
 local function onSurfaceTileChange(event)
-    print("6", game.tick)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     local surface = game.get_surface(natives.activeSurface)
     if (surface.index == surfaceIndex) then
@@ -843,7 +844,6 @@ local function onSurfaceTileChange(event)
 end
 
 local function onResourceDepleted(event)
-    print("7", game.tick)
     local entity = event.entity
     if (entity.surface.name == natives.activeSurface) then
         unregisterResource(entity, map)
@@ -851,7 +851,6 @@ local function onResourceDepleted(event)
 end
 
 local function onRobotCliff(event)
-    print("8", game.tick)
     local surface = event.robot.surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         entityForPassScan(map, event.cliff)
@@ -859,7 +858,6 @@ local function onRobotCliff(event)
 end
 
 local function onUsedCapsule(event)
-    print("9", game.tick)
     local surface = game.players[event.player_index].surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         map.position2Top.x = event.position.x-0.75
@@ -874,7 +872,6 @@ local function onUsedCapsule(event)
 end
 
 local function onRocketLaunch(event)
-    print("10", game.tick)
     local entity = event.rocket_silo or event.rocket
     if entity and entity.valid and (entity.surface.name == natives.activeSurface) then
         natives.rocketLaunched = natives.rocketLaunched + 1
@@ -883,7 +880,6 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
-    print("11", game.tick)
     local entity = event.entity
     if entity.valid and (entity.surface.name == natives.activeSurface) and (entity.name  == "drain-trigger-rampant") then
         local chunk = getChunkByPosition(map, entity.position)
@@ -908,7 +904,6 @@ local function onInit()
 end
 
 local function onEntitySpawned(event)
-    print("12", game.tick)
     local entity = event.entity
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
@@ -948,7 +943,6 @@ local function onEntitySpawned(event)
 end
 
 local function onUnitGroupCreated(event)
-    print("13", game.tick)
     local group = event.group
     local surface = group.surface
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
@@ -973,7 +967,6 @@ local function onUnitGroupCreated(event)
 end
 
 local function onCommandComplete(event)
-    print("14", game.tick)
     local unitNumber = event.unit_number
     local squad = natives.groupNumberToSquad[unitNumber]
     if squad then
@@ -989,7 +982,6 @@ local function onCommandComplete(event)
         --     msg = "deleted"
         -- end
         -- print(msg)
-
         local group = squad.group
         if group and group.valid and (group.surface.name == natives.activeSurface) then
 
@@ -1017,7 +1009,6 @@ local function onCommandComplete(event)
 end
 
 local function onGroupFinishedGathering(event)
-    print("15", game.tick)
     local group = event.group
     if group.valid then
         local unitNumber = group.group_number
@@ -1029,12 +1020,10 @@ local function onGroupFinishedGathering(event)
 end
 
 local function onForceCreated(event)
-    print("16", game.tick)
     map.activePlayerForces[#map.activePlayerForces+1] = event.force.name
 end
 
 local function onForceMerged(event)
-    print("17", game.tick)
     for i=#map.activePlayerForces,1,-1 do
         if (map.activePlayerForces[i] == event.source_name) then
             tRemove(map.activePlayerForces, i)
@@ -1044,7 +1033,6 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceRenamed(event)
-    print("18", game.tick)
     if event.old_name == natives.activeSurface then
         natives.activeSurface = event.new_name
     end
@@ -1055,7 +1043,6 @@ local function onSurfaceRenamed(event)
 end
 
 local function onSurfaceCleared(event)
-    print("19", game.tick)
     local surface = game.get_surface(event.surface_index)
     if surface and surface.valid and (surface.name == natives.activeSurface) then
         prepWorld(true, natives.activeSurface)
@@ -1063,7 +1050,6 @@ local function onSurfaceCleared(event)
 end
 
 local function onPlayerChangedSurface(event)
-    print("20", game.tick)
     local player = game.players[event.player_index]
     local surface
     if player and player.valid and not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value
@@ -1087,7 +1073,6 @@ local function onPlayerChangedSurface(event)
 end
 
 local function onSurfaceDeleted(event)
-    print("21", game.tick)
     local surface = game.get_surface(event.surface_index)
     if surface and surface.valid then
         if (surface.name == natives.activeSurface) then
@@ -1103,7 +1088,6 @@ end
 
 script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
                    function (event)
-                       print("22", game.tick)
                        local profiler = game.create_profiler()
                        local gameRef = game
 
@@ -1116,35 +1100,43 @@ end)
 
 script.on_nth_tick(INTERVAL_MAP_PROCESS,
                    function (event)
-                       print("23", game.tick)                       
                        local profiler = game.create_profiler()
                        local gameRef = game
 
-                       -- processMap(map,
-                       --            gameRef.get_surface(natives.activeSurface),
-                       --            event.tick)
+                       processMap(map,
+                                  gameRef.get_surface(natives.activeSurface),
+                                  event.tick)
                        game.print({"", "map", profiler})
+end)
+
+script.on_nth_tick(INTERVAL_CHUNK_PROCESS,
+                   function (event)
+                       local profiler = game.create_profiler()
+                       processPendingChunks(map,
+                                            game.get_surface(natives.activeSurface),
+                                            event.tick)
+                       game.print({"", "chunk process", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_SCAN,
                    function (event)
-                       print("24", game.tick)
                        local profiler = game.create_profiler()
-                       local tick = event.tick
-                       local gameRef = game
-                       local surface = gameRef.get_surface(natives.activeSurface)
-
-                       processPendingChunks(map, surface, tick)
-
-                       scanMap(map, surface, tick)
-
-                       processScanChunks(map, surface)
+                       scanMap(map,
+                               game.get_surface(natives.activeSurface),
+                               event.tick)
                        game.print({"", "scan", profiler})
+end)
+
+script.on_nth_tick(INTERVAL_PASS_SCAN,
+                   function (event)
+                       local profiler = game.create_profiler()
+                       processScanChunks(map,
+                                         game.get_surface(natives.activeSurface))
+                       game.print({"", "passscan", profiler})
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
                    function (event)
-                       print("25", game.tick)
                        local profiler = game.create_profiler()
                        local tick = event.tick
                        planning(natives,
@@ -1161,7 +1153,6 @@ end)
 
 script.on_nth_tick(INTERVAL_SPAWNER,
                    function (event)
-                       print("26", game.tick)
                        local profiler = game.create_profiler()
                        processSpawners(map,
                                        game.get_surface(natives.activeSurface),
@@ -1171,7 +1162,6 @@ end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
                    function (event)
-                       print("27", game.tick)
                        local profiler = game.create_profiler()
                        processVengence(map,
                                        game.get_surface(natives.activeSurface),
@@ -1181,7 +1171,6 @@ end)
 
 script.on_nth_tick(INTERVAL_TEMPERAMENT,
                    function (event)
-                       print("28", game.tick)
                        local profiler = game.create_profiler()
                        temperamentPlanner(natives)
                        game.print({"", "temperament", profiler})
@@ -1189,7 +1178,6 @@ end)
 
 script.on_nth_tick(INTERVAL_RESQUAD,
                    function ()
-                       print("29", game.tick)
                        local profiler = game.create_profiler()
                        map.regroupIterator = regroupSquads(natives, map.regroupIterator)
                        game.print({"", "regroup", profiler})
@@ -1197,11 +1185,10 @@ end)
 
 script.on_event(defines.events.on_tick,
                 function (event)
-                    print("30", game.tick)                    
                     local profiler = game.create_profiler()
-                    -- processActiveNests(map,
-                    --                    game.get_surface(natives.activeSurface),
-                    --                    event.tick)
+                    processActiveNests(map,
+                                       game.get_surface(natives.activeSurface),
+                                       event.tick)
                     game.print({"", "processActiveNests", profiler})
 end)
 

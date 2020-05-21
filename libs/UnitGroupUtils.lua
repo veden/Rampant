@@ -227,7 +227,7 @@ end
 function unitGroupUtils.regroupSquads(natives, iterator)
     local map = natives.map
     local squads = natives.groupNumberToSquad
-    local cmd = map.mergeGroupCommand
+    local cmd = map.formLocalCommand
 
     local k, squad = iterator, nil
     for i=1,SQUAD_QUEUE_SIZE do
@@ -242,8 +242,6 @@ function unitGroupUtils.regroupSquads(natives, iterator)
                 if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
                     (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
                 then
-                    -- local memberCount = #group.members
-                    -- if (memberCount < AI_SQUAD_MERGE_THRESHOLD) then
                     local status = squad.status
                     local chunk = squad.chunk
 
@@ -256,26 +254,16 @@ function unitGroupUtils.regroupSquads(natives, iterator)
                                     if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
                                         (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
                                     then
+                                        mergeGroup.destroy()
                                         print("merging group")
-                                        mergeGroup.set_command(cmd)
-                                        -- local mergeMembers = mergeGroup.members
-                                        -- local mergeCount = #mergeMembers
-                                        -- if ((mergeCount + memberCount) < AI_MAX_BITER_GROUP_SIZE) then
-                                        --     for memberIndex=1, mergeCount do
-                                        --         group.add_member(mergeMembers[memberIndex])
-                                        --     end
-                                        --     mergeGroup.destroy()
-                                        -- end
-                                        squad.status = SQUAD_GUARDING
-                                        -- memberCount = memberCount + mergeCount
-                                        -- if (memberCount > AI_SQUAD_MERGE_THRESHOLD) then
-                                        --     break
-                                        -- end
+                                        map.formGroupCommand.group = group
+                                        cmd.unit_count = AI_MAX_BITER_GROUP_SIZE
+                                        surface.set_multi_command(cmd)
+                                        -- squad.status = SQUAD_GUARDING
                                     end
                                 end
                             end
                         end
-                        -- end
                     end
                 end
             end

@@ -189,7 +189,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
 
     local roll = mRandom()
 
-    local allowingAttacks = canAttack(natives, surface)
+    local allowingAttacks = canAttack(natives, surface, tick)
 
     local scentStaging = map.scentStaging
 
@@ -272,9 +272,9 @@ function mapProcessor.scanMap(map, surface, tick)
     local processQueue = map.processQueue
     local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
 
-    local isFullMapScan = settings.global["rampant-enableFullMapScan"].value
-
     local natives = map.natives
+
+    local isFullMapScan = natives.enableFullMapScan
 
     for x=index,endIndex do
         local chunk = processQueue[x]
@@ -284,7 +284,7 @@ function mapProcessor.scanMap(map, surface, tick)
 
         offset[1] = chunk.x + CHUNK_SIZE
         offset[2] = chunk.y + CHUNK_SIZE
-
+        
         local retreatTick = retreats[chunk]
         if retreatTick and ((tick - retreatTick) > COOLDOWN_RETREAT) then
             retreats[chunk] = nil
@@ -300,20 +300,20 @@ function mapProcessor.scanMap(map, surface, tick)
             drained[chunk] = nil
         end
 
-        local closeBy = findNearbySquad(map, chunk, chunk)
+        -- local closeBy = findNearbySquad(map, chunk, chunk)
 
-        if not closeBy then
-            local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
+        -- if not closeBy then
+        --     local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
 
-            if deadGroup then
-                recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
-            end
-        end
+        --     if deadGroup then
+        --         recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
+        --     end
+        -- end
 
-        if isFullMapScan then
-            mapScanChunk(chunk, surface, map)
-        end
-
+        -- if isFullMapScan then
+        --     mapScanChunk(chunk, surface, map)
+        -- end
+        
         processNestActiveness(map, chunk, natives, surface)
         queueNestSpawners(map, chunk, tick)
     end
@@ -380,9 +380,9 @@ local function processSpawners(map, surface, tick, natives, iteration, iterator,
             return
         else
             if canMigrate(natives, surface) then
-                formSettlers(map, surface, chunk, tick)                
+                formSettlers(map, surface, chunk, tick)
             elseif (canAttack(natives, surface, tick)) then
-                formSquads(map, surface, chunk, tick)            
+                formSquads(map, surface, chunk, tick)
             end
 
 

@@ -44,7 +44,7 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 13000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 221000
 
 constants.PROCESS_QUEUE_SIZE = 85
-constants.SCAN_QUEUE_SIZE = 10
+constants.SCAN_QUEUE_SIZE = 3
 constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
@@ -58,9 +58,11 @@ constants.CHUNK_PASS_THRESHOLD = 0.25
 constants.INTERVAL_PLAYER_PROCESS = (settings.startup["rampant-liteMode"].value and 124) or 62
 constants.INTERVAL_MAP_PROCESS = (settings.startup["rampant-liteMode"].value and 8) or 5
 constants.INTERVAL_SCAN = (settings.startup["rampant-liteMode"].value and 42) or 21
+constants.INTERVAL_CHUNK_PROCESS = 23
 constants.INTERVAL_LOGIC = 60
 constants.INTERVAL_TEMPERAMENT = 121
 constants.INTERVAL_SQUAD = 17
+constants.INTERVAL_PASS_SCAN = 29
 constants.INTERVAL_RESQUAD = 101
 constants.INTERVAL_SPAWNER = 31
 constants.INTERVAL_BUILDERS = 300
@@ -122,7 +124,7 @@ constants.RAIDING_MINIMUM_BASE_THRESHOLD = 550
 constants.AI_UNIT_REFUND = 3
 
 constants.AI_MAX_SQUAD_COUNT = 60
-constants.AI_MAX_BITER_GROUP_SIZE = 450
+constants.AI_MAX_BITER_GROUP_SIZE = 600
 
 constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
 
@@ -253,9 +255,9 @@ constants.BUILDING_PHEROMONES = {}
 constants.BUILDING_PHEROMONES["wall"] = constants.GENERATOR_PHEROMONE_LEVEL_1
 constants.BUILDING_PHEROMONES["transport-belt"] = constants.GENERATOR_PHEROMONE_LEVEL_1
 
-constants.BUILDING_PHEROMONES["splitter"] = constants.GENERATOR_PHEROMONE_LEVEL_2
-constants.BUILDING_PHEROMONES["pump"] = constants.GENERATOR_PHEROMONE_LEVEL_2
-constants.BUILDING_PHEROMONES["offshore-pump"] = constants.GENERATOR_PHEROMONE_LEVEL_2
+constants.BUILDING_PHEROMONES["splitter"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["pump"] = constants.GENERATOR_PHEROMONE_LEVEL_3
+constants.BUILDING_PHEROMONES["offshore-pump"] = constants.GENERATOR_PHEROMONE_LEVEL_3
 
 constants.BUILDING_PHEROMONES["lamp"] = constants.GENERATOR_PHEROMONE_LEVEL_3
 constants.BUILDING_PHEROMONES["solar-panel"] = constants.GENERATOR_PHEROMONE_LEVEL_3
@@ -265,12 +267,12 @@ constants.BUILDING_PHEROMONES["assembling-machine"] = constants.GENERATOR_PHEROM
 constants.BUILDING_PHEROMONES["turret"] = constants.GENERATOR_PHEROMONE_LEVEL_3
 constants.BUILDING_PHEROMONES["ammo-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_3
 
-constants.BUILDING_PHEROMONES["furnace"] = constants.GENERATOR_PHEROMONE_LEVEL_4
-constants.BUILDING_PHEROMONES["lab"] = constants.GENERATOR_PHEROMONE_LEVEL_4
-constants.BUILDING_PHEROMONES["roboport"] = constants.GENERATOR_PHEROMONE_LEVEL_4
-constants.BUILDING_PHEROMONES["beacon"] = constants.GENERATOR_PHEROMONE_LEVEL_4
-constants.BUILDING_PHEROMONES["radar"] = constants.GENERATOR_PHEROMONE_LEVEL_4
-constants.BUILDING_PHEROMONES["electric-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_4
+constants.BUILDING_PHEROMONES["furnace"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["lab"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["roboport"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["beacon"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["radar"] = constants.GENERATOR_PHEROMONE_LEVEL_5
+constants.BUILDING_PHEROMONES["electric-turret"] = constants.GENERATOR_PHEROMONE_LEVEL_5
 
 constants.BUILDING_PHEROMONES["boiler"] = constants.GENERATOR_PHEROMONE_LEVEL_5
 constants.BUILDING_PHEROMONES["generator"] = constants.GENERATOR_PHEROMONE_LEVEL_5
@@ -1502,12 +1504,6 @@ constants.FACTION_MUTATION_MAPPING["hive"] = {"utility", "biter-spawner", "spitt
 constants.FACTION_MUTATION_MAPPING["turret"] = {"trap"}
 constants.FACTION_MUTATION_MAPPING["trap"] = {"turret"}
 constants.FACTION_MUTATION_MAPPING["utility"] = {"hive", "biter-spawner", "spitter-spawner"}
-
-constants.LOOKUP_SPAWNER_PROXIES = {}
-constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-1-rampant"] = true
-constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-2-rampant"] = true
-constants.LOOKUP_SPAWNER_PROXIES["spawner-proxy-3-rampant"] = true
-
 
 constantsG =  constants
 return constants

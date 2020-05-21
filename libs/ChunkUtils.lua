@@ -190,12 +190,10 @@ local function scanPaths(chunk, surface, map)
 end
 
 local function scorePlayerBuildings(surface, map)
-    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery50) * GENERATOR_PHEROMONE_LEVEL_1) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery200) * GENERATOR_PHEROMONE_LEVEL_2) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery1000) * GENERATOR_PHEROMONE_LEVEL_3) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery2000) * GENERATOR_PHEROMONE_LEVEL_4) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery3500) * GENERATOR_PHEROMONE_LEVEL_5) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQuery12000) * GENERATOR_PHEROMONE_LEVEL_6)
+    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
+        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
 end
 
 function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
@@ -312,10 +310,9 @@ end
 
 function chunkUtils.mapScanChunk(chunk, surface, map)
     local playerObjects = scorePlayerBuildings(surface, map)
-    setPlayerBaseGenerator(map, chunk, playerObjects)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local natives = map.natives    
+    local natives = map.natives
     local buildingHiveTypeLookup = map.natives.buildingHiveTypeLookup
     local buildings = surface.find_entities_filtered(map.filteredEntitiesEnemyStructureQuery)
     local counts = map.chunkScanCounts

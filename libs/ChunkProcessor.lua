@@ -52,7 +52,6 @@ local function sorter(a, b)
 end
 
 function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flush)
-    local profiler = game.create_profiler()
     local processQueue = map.processQueue
     local pendingChunks = map.pendingChunks
 
@@ -104,6 +103,7 @@ function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flu
             pendingChunks[event] = nil
             event = newEvent
         end
+
     end
     map.chunkProcessorIterator = event
 
