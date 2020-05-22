@@ -59,20 +59,30 @@ for t=1,11 do
         data:extend(
             {
                 {
-                    type = "simple-entity-with-force",
+                    type = "land-mine",
                     name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
                     icon = "__base__/graphics/icons/steel-chest.png",
                     icon_size = 32,
                     flags = {},
-                    build_base_evolution_requirement = 0.8 * (t-1),
+                    build_base_evolution_requirement = 0.08 * (t-1),
                     order = "s-e-w-f",
-                    collision_mask = {"player-layer", "object-layer", "water-tile"},
+                    collision_mask = {"player-layer", "object-layer", "water-tile", "train-layer"},
                     minable = nil,
                     max_health = 100,
                     corpse = nil,
+                    timeout = 1,
+                    trigger_radius = 0,
                     collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                    selection_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                    picture =
+                    selection_box = nil,
+
+                    picture_safe =
+                        {
+                            filename = "__core__/graphics/empty.png",
+                            priority = "extra-high",
+                            width = 1,
+                            height = 1
+                        },
+                    picture_set =
                         {
                             filename = "__core__/graphics/empty.png",
                             priority = "extra-high",

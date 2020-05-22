@@ -626,6 +626,7 @@ local function onConfigChanged()
 end
 
 local function onBuild(event)
+    local profiler = game.create_profiler()
     local entity = event.created_entity or event.entity
     if (entity.surface.name == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
@@ -639,9 +640,11 @@ local function onBuild(event)
             end
         end
     end
+    -- game.print({"", "onBuild", profiler, event.tick})
 end
 
 local function onMine(event)
+    local profiler = game.create_profiler()
     local entity = event.entity
     local surface = entity.surface
     if (surface.name == natives.activeSurface) then
@@ -653,9 +656,11 @@ local function onMine(event)
             accountPlayerEntity(entity, natives, false, false)
         end
     end
+    -- game.print({"", "onMine", profiler, event.tick})
 end
 
 local function onDeath(event)
+    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -798,9 +803,11 @@ local function onDeath(event)
             end
         end
     end
+    -- game.print({"", "onDeath", profiler, event.tick})
 end
 
 local function onEnemyBaseBuild(event)
+    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -829,9 +836,11 @@ local function onEnemyBaseBuild(event)
             end
         end
     end
+    -- game.print({"", "baseBuild", profiler, event.tick})
 end
 
 local function onSurfaceTileChange(event)
+    local profiler = game.create_profiler()
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     local surface = game.get_surface(natives.activeSurface)
     if (surface.index == surfaceIndex) then
@@ -864,23 +873,29 @@ local function onSurfaceTileChange(event)
             end
         end
     end
+    -- game.print({"", "tileChange", profiler, event.tick})
 end
 
 local function onResourceDepleted(event)
+    local profiler = game.create_profiler()
     local entity = event.entity
     if (entity.surface.name == natives.activeSurface) then
         unregisterResource(entity, map)
     end
+    -- game.print({"", "resourceDepleted", profiler, event.tick})
 end
 
 local function onRobotCliff(event)
+    local profiler = game.create_profiler()
     local surface = event.robot.surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         entityForPassScan(map, event.cliff)
     end
+    -- game.print({"", "cliff", profiler, event.tick})
 end
 
 local function onUsedCapsule(event)
+    local profiler = game.create_profiler()
     local surface = game.players[event.player_index].surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         map.position2Top.x = event.position.x-0.75
@@ -892,6 +907,7 @@ local function onUsedCapsule(event)
             entityForPassScan(map, cliffs[i])
         end
     end
+    -- game.print({"", "capsule", profiler, event.tick})
 end
 
 local function onRocketLaunch(event)
@@ -903,6 +919,7 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
+    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid and (entity.surface.name == natives.activeSurface) and (entity.name  == "drain-trigger-rampant") then
         local chunk = getChunkByPosition(map, entity.position)
@@ -911,6 +928,7 @@ local function onTriggerEntityCreated(event)
         end
         entity.destroy()
     end
+    game.print({"", "trigger", profiler, event.tick})
 end
 
 local function onInit()
@@ -927,42 +945,41 @@ local function onInit()
 end
 
 local function onEntitySpawned(event)
-    local entity = event.entity
+    local profiler = game.create_profiler()
+    local entity = event.mine
+    local unitNumber = entity.unit_number
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
+        if (surface.name == natives.activeSurface) and natives.buildingHiveTypeLookup[entity.name] then
+            local disPos = mathUtils.distortPosition(entity.position, 8)
+            local canPlaceQuery = map.canPlaceQuery
 
-        if (surface.name == natives.activeSurface) and (entity.type ~= "unit") then
-            if natives.buildingHiveTypeLookup[entity.name] then
-                local spawner = event.spawner
+            local chunk = getChunkByPosition(map, disPos)
+            if (chunk ~= -1) then
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(natives,
+                                      chunk,
+                                      event.tick)
+                end
 
-                local disPos = mathUtils.distortPosition(entity.position, 8)
-                local canPlaceQuery = map.canPlaceQuery
+                entity = upgradeEntity(entity,
+                                       surface,
+                                       base.alignment,
+                                       natives,
+                                       disPos)
 
-                local chunk = getChunkByPosition(map, disPos)
-                if (chunk ~= -1) then
-                    local base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(natives,
-                                          chunk,
-                                          event.tick)
-                    end
-
-                    entity = upgradeEntity(entity,
-                                           surface,
-                                           base.alignment,
-                                           natives,
-                                           disPos)
-                    if entity and entity.valid then
-                        event.entity = registerEnemyBaseStructure(map, entity, base, surface)
-                    end
-                else
-                    entity.destroy()
+                if entity and entity.valid then
+                    event.entity = registerEnemyBaseStructure(map, entity, base, surface)
                 end
             else
                 entity.destroy()
             end
+        else
+            entity.destroy()
         end
     end
+    -- game.print({"", "spawned", profiler, event.tick, "  ", unitNumber})
 end
 
 local function onUnitGroupCreated(event)
@@ -1124,85 +1141,6 @@ end
 
 -- hooks
 
-script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       local gameRef = game
-
-                       processPlayers(gameRef.connected_players,
-                                      map,
-                                      gameRef.get_surface(natives.activeSurface),
-                                      event.tick)
-                       -- game.print({"", "player", profiler, tick})
-end)
-
-script.on_nth_tick(INTERVAL_CHUNK_PROCESS,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       processPendingChunks(map,
-                                            game.get_surface(natives.activeSurface),
-                                            event.tick)
-                       -- game.print({"", "chunk process", profiler, event.tick})
-end)
-
-script.on_nth_tick(INTERVAL_MAP_PROCESS,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       local tick = event.tick
-
-                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) then
-                           processMap(map,
-                                      game.get_surface(natives.activeSurface),
-                                      tick)
-                       else
-                           print("skipping MP", tick)
-                       end
-                       -- game.print({"", "map", profiler, event.tick})
-end)
-
-script.on_nth_tick(INTERVAL_MAP_STATIC_PROCESS,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       local tick = event.tick
-
-                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) then
-                           processStaticMap(map,
-                                            game.get_surface(natives.activeSurface),
-                                            tick)
-                       else
-                           print("skipping MSP", tick)
-                       end
-                       -- game.print({"", "mapStatic", profiler, event.tick})
-end)
-
-
-script.on_nth_tick(INTERVAL_SCAN,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       local tick = event.tick
-                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) and
-                           ((tick % INTERVAL_MAP_STATIC_PROCESS) ~= 0)
-                       then
-                           local picker = tick % 3
-                           if (picker == 0) then
-                               scanResourceMap(map,
-                                               game.get_surface(natives.activeSurface),
-                                               tick)
-                           elseif (picker == 1) then
-                               scanEnemyMap(map,
-                                            game.get_surface(natives.activeSurface),
-                                            tick)
-                           elseif (picker == 2) then
-                               scanPlayerMap(map,
-                                             game.get_surface(natives.activeSurface),
-                                             tick)
-                           end
-                       else
-                           print("skipping scan", event.tick)
-                       end
-                       -- game.print({"", "scan", profiler, event.tick})
-end)
-
 script.on_nth_tick(INTERVAL_PASS_SCAN,
                    function (event)
                        local profiler = game.create_profiler()
@@ -1294,12 +1232,33 @@ script.on_event(defines.events.on_tick,
                     --         end
                     --     end
                     -- end
+                    local gameRef = game
+                    local profiler = gameRef.create_profiler()
+                    local tick = event.tick
+                    local pick = tick % 7
+                    local surface = gameRef.get_surface(natives.activeSurface)
 
-                    -- local profiler = game.create_profiler()
-                    processActiveNests(map,
-                                       game.get_surface(natives.activeSurface),
-                                       event.tick)
-                    -- game.print({"", "processActiveNests", profiler, event.tick})
+                    if (pick == 0) then
+                        processPendingChunks(map,
+                                             surface,
+                                             event.tick)
+                    elseif (pick == 1) then
+                        processPlayers(gameRef.connected_players, map, surface, tick)
+                    elseif (pick == 2) then
+                        processMap(map, surface, tick)
+                    elseif (pick == 3) then
+                        processStaticMap(map, surface, tick)
+                    elseif (pick == 4) then
+                        scanResourceMap(map, surface, tick)
+                    elseif (pick == 5) then
+                        scanEnemyMap(map, surface, tick)
+                    elseif (pick == 6) then
+                        scanPlayerMap(map, surface, tick)
+                    end
+
+
+                    processActiveNests(map, surface, tick)
+                    -- game.print({"", "tick", profiler, event.tick})
 end)
 
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
@@ -1331,7 +1290,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.script_raised_revive}, onBuild)
 
 script.on_event(defines.events.on_ai_command_completed, onCommandComplete)
-script.on_event(defines.events.on_entity_spawned, onEntitySpawned)
+script.on_event(defines.events.on_land_mine_armed, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event({defines.events.on_entity_died,

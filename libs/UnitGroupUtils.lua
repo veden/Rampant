@@ -145,7 +145,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
 end
 
 function unitGroupUtils.cleanSquads(natives, iterator)
-    local profiler = game.create_profiler()
+    -- local profiler = game.create_profiler()
     local squads = natives.groupNumberToSquad
     local map = natives.map
 
@@ -233,46 +233,40 @@ function unitGroupUtils.regroupSquads(natives, surface, iterator)
     local cmd = map.formLocalCommand
 
     local k, squad = next(squads, iterator)
-    for i=1,SQUAD_QUEUE_SIZE do
-        if not k then
-            break
-        else
-            local group = squad.group
-            if group and group.valid then
-                cmd.command.group = group
-                local groupState = group.state
-                if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
-                    (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
-                then
-                    local status = squad.status
-                    local chunk = squad.chunk
+    if k then
+        local group = squad.group
+        if group and group.valid then
+            cmd.command.group = group
+            local groupState = group.state
+            if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
+                (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
+            then
+                local status = squad.status
+                local chunk = squad.chunk
 
-                    if (chunk ~= -1) then
-                        local merging = false
-                        for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
-                            if (mergeSquad ~= squad) then
-                                local mergeGroup = mergeSquad.group
-                                if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
-                                    local mergeGroupState = mergeGroup.state
-                                    if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
-                                        (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
-                                    then
-                                        merging = true
-                                        print("destroy mergeGroup", mergeGroup.position.x, mergeGroup.position.y, mergeGroup.valid, mergeGroup.group_number)
-                                        mergeGroup.destroy()
-                                    end
+                if (chunk ~= -1) then
+                    local merging = false
+                    for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
+                        if (mergeSquad ~= squad) then
+                            local mergeGroup = mergeSquad.group
+                            if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
+                                local mergeGroupState = mergeGroup.state
+                                if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
+                                    (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
+                                then
+                                    merging = true
+                                    mergeGroup.destroy()
                                 end
                             end
                         end
-                        if merging then
-                            print("merging group", group.position.x, group.position.y, group.valid, group.group_number)
-                            surface.set_multi_command(cmd)
-                        end
+                    end
+                    if merging then
+                        surface.set_multi_command(cmd)
                     end
                 end
             end
-            k,squad = next(squads, k)
         end
+        k,squad = next(squads, k)
     end
 
     map.regroupIterator = k
