@@ -40,6 +40,7 @@ local INTERVAL_CHUNK_PROCESS = constants.INTERVAL_CHUNK_PROCESS
 local INTERVAL_PASS_SCAN = constants.INTERVAL_PASS_SCAN
 local INTERVAL_NEST = constants.INTERVAL_NEST
 local INTERVAL_CLEANUP = constants.INTERVAL_CLEANUP
+local INTERVAL_MAP_STATIC_PROCESS = constants.INTERVAL_MAP_STATIC_PROCESS
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
@@ -104,6 +105,8 @@ local temperamentPlanner = aiPlanning.temperamentPlanner
 
 local processVengence = mapProcessor.processVengence
 local processSpawners = mapProcessor.processSpawners
+
+local processStaticMap = mapProcessor.processStaticMap
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 
@@ -226,7 +229,9 @@ local function rebuildMap()
     map.scanPlayerIndex = 1
     map.scanResourceIndex = 1
     map.scanEnemyIndex = 1
+    map.processStaticIndex = 1
     map.outgoingScanWave = true
+    map.outgoingStaticScanWave = true
 
     map.pendingChunks = {}
     map.chunkToBase = {}
@@ -1145,10 +1150,26 @@ script.on_nth_tick(INTERVAL_MAP_PROCESS,
                        game.print({"", "map", profiler, event.tick})
 end)
 
+script.on_nth_tick(INTERVAL_MAP_STATIC_PROCESS,
+                   function (event)
+                       local profiler = game.create_profiler()
+                       local tick = event.tick
+
+                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) then
+                           processStaticMap(map,
+                                            game.get_surface(natives.activeSurface),
+                                            tick)
+                       else
+                           print("skipping MSP", tick)
+                       end
+                       game.print({"", "mapStatic", profiler, event.tick})
+end)
+
+
 script.on_nth_tick(INTERVAL_SCAN,
                    function (event)
                        local profiler = game.create_profiler()
-                       local tick = event.tick                       
+                       local tick = event.tick
                        if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) then
                            local picker = tick % 3
                            if (picker == 0) then

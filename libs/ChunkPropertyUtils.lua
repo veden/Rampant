@@ -228,7 +228,7 @@ end
 
 function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     local gen = map.chunkToDeathGenerator[chunk]
-    if gen and (gen > 0) then
+    if gen then
         gen = gen * MOVEMENT_GENERATOR_PERSISTANCE
 
         if (gen >= -2) and (gen <= 2) then

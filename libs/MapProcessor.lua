@@ -35,6 +35,8 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local PROCESS_STATIC_QUEUE_SIZE = constants.PROCESS_STATIC_QUEUE_SIZE
+
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
@@ -53,6 +55,7 @@ local AI_MAX_SQUADS_PER_CYCLE = constants.AI_MAX_SQUADS_PER_CYCLE
 
 -- imported functions
 
+local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 local commitPheromone = pheromoneUtils.commitPheromone
 local playerScent = pheromoneUtils.playerScent
@@ -143,6 +146,39 @@ function mapProcessor.processMap(map, surface, tick)
         map.processIndex = endIndex + 1
     else
         map.processIndex = endIndex - 1
+    end
+end
+
+function mapProcessor.processStaticMap(map, surface, tick)
+    local index = map.processStaticIndex
+
+    local outgoingWave = map.outgoingStaticScanWave
+    local processQueue = map.processQueue
+    local processQueueLength = #processQueue
+
+    local step
+    local endIndex
+    if outgoingWave then
+        step = 1
+        endIndex = mMin(index + PROCESS_STATIC_QUEUE_SIZE, processQueueLength)
+    else
+        step = -1
+        endIndex = mMax(index - PROCESS_STATIC_QUEUE_SIZE, 1)
+    end
+
+    for x=index,endIndex,step do
+        local chunk = processQueue[x]
+        processStaticPheromone(map, chunk)
+    end
+
+    if (endIndex == processQueueLength) then
+        map.outgoingStaticScanWave = false
+    elseif (endIndex == 1) then
+        map.outgoingStaticScanWave = true
+    elseif outgoingWave then
+        map.processStaticIndex = endIndex + 1
+    else
+        map.processStaticIndex = endIndex - 1
     end
 end
 
