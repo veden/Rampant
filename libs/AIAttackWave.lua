@@ -221,6 +221,7 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
 
                 local scaledWaveSize = settlerWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
+                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
@@ -259,6 +260,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
 
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
+                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
@@ -300,10 +302,10 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
 
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
+                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    createSpawnerProxies(map, surface, chunk, foundUnits)
                     natives.points = natives.points - AI_SQUAD_COST
                     natives.groupNumberToSquad[squad.groupNumber] = squad
                     if tick and (natives.state == AI_STATE_AGGRESSIVE) then

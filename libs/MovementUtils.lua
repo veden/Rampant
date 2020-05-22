@@ -134,10 +134,6 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
         end
     end
 
-    if (nextHighestChunk == nil) then
-        nextHighestChunk = -1
-    end
-
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 

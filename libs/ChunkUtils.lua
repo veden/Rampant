@@ -15,8 +15,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 local HIVE_BUILDINGS_TYPES = constants.HIVE_BUILDINGS_TYPES
 
-local LOOKUP_SPAWNER_PROXIES = constants.LOOKUP_SPAWNER_PROXIES
-
 local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -190,10 +188,13 @@ local function scanPaths(chunk, surface, map)
 end
 
 local function scorePlayerBuildings(surface, map)
-    return (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
-        (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
+    if surface.count_entities_filtered(map.hasPlayerStructuresQuery) > 0 then
+        return (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
+            (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
+            (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
+            (surface.count_entities_filtered(map.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
+    end
+    return 0
 end
 
 function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
@@ -308,11 +309,17 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     return -1
 end
 
-function chunkUtils.mapScanChunk(chunk, surface, map)
+function chunkUtils.mapScanPlayerChunk(chunk, surface, map)
     local playerObjects = scorePlayerBuildings(surface, map)
+    setPlayerBaseGenerator(map, chunk, playerObjects)
+end
+
+function chunkUtils.mapScanResourceChunk(chunk, surface, map)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local natives = map.natives
+end
+
+function chunkUtils.mapScanEnemyChunk(chunk, surface, map)
     local buildingHiveTypeLookup = map.natives.buildingHiveTypeLookup
     local buildings = surface.find_entities_filtered(map.filteredEntitiesEnemyStructureQuery)
     local counts = map.chunkScanCounts
@@ -321,10 +328,8 @@ function chunkUtils.mapScanChunk(chunk, surface, map)
     end
     for i=1,#buildings do
         local building = buildings[i]
-        if not LOOKUP_SPAWNER_PROXIES[building.name] then
-            local hiveType = buildingHiveTypeLookup[building.name] or (((building.type == "turret") and "turret") or "biter-spawner")
-            counts[hiveType] = counts[hiveType] + 1
-        end
+        local hiveType = buildingHiveTypeLookup[building.name] or (((building.type == "turret") and "turret") or "biter-spawner")
+        counts[hiveType] = counts[hiveType] + 1
     end
 
     setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])

@@ -90,9 +90,6 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
         game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
 
-        game.map_settings.unit_group.member_disown_distance = constants.UNIT_GROUP_DISOWN_DISTANCE
-        game.map_settings.unit_group.tick_tolerance_when_member_arrives = constants.UNIT_GROUP_TICK_TOLERANCE
-
         game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
         game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
         game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
@@ -171,13 +168,16 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         end
         natives.bases = newBases
         global.pendingChunks = nil
+
+        game.map_settings.unit_group.member_disown_distance = 10
+        game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
         
         natives.vengenceQueue = {}
 
         game.forces.enemy.ai_controllable = true
 
         if not setNewSurface then
-            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.12")
+            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.13")
         end
     end
 

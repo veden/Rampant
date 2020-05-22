@@ -44,7 +44,11 @@ constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 13000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 221000
 
 constants.PROCESS_QUEUE_SIZE = 85
-constants.SCAN_QUEUE_SIZE = 3
+constants.SCAN_QUEUE_SIZE = 2
+constants.RESOURCE_QUEUE_SIZE = 10
+constants.ENEMY_QUEUE_SIZE = 10
+constants.PLAYER_QUEUE_SIZE = 10
+constants.CLEANUP_QUEUE_SIZE = 15
 constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
 constants.SQUAD_QUEUE_SIZE = 2
@@ -55,17 +59,18 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
 constants.CHUNK_PASS_THRESHOLD = 0.25
 
-constants.INTERVAL_PLAYER_PROCESS = (settings.startup["rampant-liteMode"].value and 124) or 62
-constants.INTERVAL_MAP_PROCESS = (settings.startup["rampant-liteMode"].value and 8) or 5
-constants.INTERVAL_SCAN = (settings.startup["rampant-liteMode"].value and 42) or 21
+constants.INTERVAL_PLAYER_PROCESS = 63
+constants.INTERVAL_MAP_PROCESS = 5
+constants.INTERVAL_SCAN = 19
 constants.INTERVAL_CHUNK_PROCESS = 23
-constants.INTERVAL_LOGIC = 60
+constants.INTERVAL_LOGIC = 59
 constants.INTERVAL_TEMPERAMENT = 121
-constants.INTERVAL_SQUAD = 17
+constants.INTERVAL_SQUAD = 14
+constants.INTERVAL_NEST = 16
 constants.INTERVAL_PASS_SCAN = 29
 constants.INTERVAL_RESQUAD = 101
-constants.INTERVAL_SPAWNER = 31
-constants.INTERVAL_BUILDERS = 300
+constants.INTERVAL_SPAWNER = 19
+constants.INTERVAL_CLEANUP = 34
 
 constants.COOLDOWN_RALLY = constants.TICKS_A_SECOND * 10
 constants.COOLDOWN_RETREAT = constants.TICKS_A_SECOND * 10

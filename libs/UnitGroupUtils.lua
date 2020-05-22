@@ -224,20 +224,20 @@ function unitGroupUtils.recycleBiters(natives, biters)
     natives.points = natives.points + (unitCount * natives.unitRefundAmount)
 end
 
-function unitGroupUtils.regroupSquads(natives, iterator)
+function unitGroupUtils.regroupSquads(natives, surface, iterator)
     local map = natives.map
     local squads = natives.groupNumberToSquad
     local cmd = map.formLocalCommand
 
-    local k, squad = iterator, nil
+    local k, squad = next(squads, iterator)
     for i=1,SQUAD_QUEUE_SIZE do
-        k,squad = next(squads, k)
         if not k then
+            map.regroupIterator = nil
             return nil
         else
             local group = squad.group
             if group and group.valid then
-                cmd.group = group
+                cmd.command.group = group
                 local groupState = group.state
                 if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
                     (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
@@ -246,6 +246,7 @@ function unitGroupUtils.regroupSquads(natives, iterator)
                     local chunk = squad.chunk
 
                     if (chunk ~= -1) then
+                        local merging = false
                         for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
                             if (mergeSquad ~= squad) then
                                 local mergeGroup = mergeSquad.group
@@ -254,23 +255,26 @@ function unitGroupUtils.regroupSquads(natives, iterator)
                                     if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
                                         (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
                                     then
+                                        merging = true
                                         mergeGroup.destroy()
-                                        print("merging group")
-                                        map.formGroupCommand.group = group
-                                        cmd.unit_count = AI_MAX_BITER_GROUP_SIZE
-                                        surface.set_multi_command(cmd)
-                                        -- squad.status = SQUAD_GUARDING
                                     end
                                 end
                             end
                         end
+                        if merging then
+                            print("merging group", group.position.x, group.position.y)
+                            print(serpent.dump(cmd))
+                            -- squad.status = SQUAD_GUARDING
+                            surface.set_multi_command(cmd)
+                        end
                     end
                 end
             end
+            k,squad = next(squads, k)
         end
     end
 
-    return k
+    map.regroupIterator = k
 end
 
 unitGroupUtilsG = unitGroupUtils

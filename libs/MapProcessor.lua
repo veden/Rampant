@@ -22,8 +22,12 @@ local DURATION_ACTIVE_NEST_DIVIDER = constants.DURATION_ACTIVE_NEST_DIVIDER
 local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
+local RESOURCE_QUEUE_SIZE = constants.RESOURCE_QUEUE_SIZE
+local ENEMY_QUEUE_SIZE = constants.ENEMY_QUEUE_SIZE
+local PLAYER_QUEUE_SIZE = constants.PLAYER_QUEUE_SIZE
 
 local SCAN_QUEUE_SIZE = constants.SCAN_QUEUE_SIZE
+local CLEANUP_QUEUE_SIZE = constants.CLEANUP_QUEUE_SIZE
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
@@ -70,12 +74,15 @@ local validPlayer = playerUtils.validPlayer
 
 local createSpawnerProxy = baseUtils.createSpawnerProxy
 
-local mapScanChunk = chunkUtils.mapScanChunk
+local addPlayerToChunk = chunkPropertyUtils.addPlayerToChunk
+
+local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
+local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
+local mapScanResourceChunk = chunkUtils.mapScanResourceChunk
 
 local getNestCount = chunkPropertyUtils.getNestCount
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getNestActiveness = chunkPropertyUtils.getNestActiveness
-local setNestActiveness = chunkPropertyUtils.setNestActiveness
 local getNestActiveTick = chunkPropertyUtils.getNestActiveTick
 local setNestActiveTick = chunkPropertyUtils.setNestActiveTick
 
@@ -89,6 +96,7 @@ local canMigrate = aiPredicates.canMigrate
 local findNearbySquad = unitGroupUtils.findNearbySquad
 
 local mMin = math.min
+local mMax = math.max
 
 local next = next
 local mRandom = math.random
@@ -103,50 +111,49 @@ local mRandom = math.random
     pheromone dissipate at a faster rate.
 --]]
 function mapProcessor.processMap(map, surface, tick)
-    local roll = map.processRoll
     local index = map.processIndex
 
-    if (index == 1) then
-        roll = mRandom()
-        map.processRoll = roll
-    end
-
-    local scentStaging = map.scentStaging
-
+    local outgoingWave = map.outgoingScanWave
     local processQueue = map.processQueue
-    local endIndex = mMin(index + PROCESS_QUEUE_SIZE, #processQueue)
-    local i = 1
+    local processQueueLength = #processQueue
 
-    for x=index,endIndex do
-        local chunk = processQueue[x]
-        if (chunk[CHUNK_TICK] ~= tick) then
-            processPheromone(map, chunk, scentStaging[i])
-        end
-        i = i + 1
-    end
-
-    i = 1
-    for x=index,endIndex do
-        local chunk = processQueue[x]
-        if (chunk[CHUNK_TICK] ~= tick) then
-            commitPheromone(map, chunk, scentStaging[i], tick)
-        end
-        i = i + 1
-    end
-
-    if (endIndex == #processQueue) then
-        map.processIndex = 1
+    local step
+    local endIndex
+    if outgoingWave then
+        step = 1
+        endIndex = mMin(index + PROCESS_QUEUE_SIZE, processQueueLength)
     else
+        step = -1
+        endIndex = mMax(index - PROCESS_QUEUE_SIZE, 1)
+    end
+
+    for x=index,endIndex,step do
+        local chunk = processQueue[x]
+        if (chunk[CHUNK_TICK] ~= tick) then
+            chunk[CHUNK_TICK] = tick
+            processPheromone(map, chunk)
+        end
+    end
+
+    if (endIndex == processQueueLength) then
+        map.outgoingScanWave = false
+    elseif (endIndex == 1) then
+        map.outgoingScanWave = true
+    elseif outgoingWave then
         map.processIndex = endIndex + 1
+    else
+        map.processIndex = endIndex - 1
     end
 end
 
 local function queueNestSpawners(map, chunk, tick)
-    local limitPerActiveChunkTick = map.natives.activeNests * DURATION_ACTIVE_NEST_DIVIDER
+    local limitPerActiveChunkTick = (map.natives.activeNests + map.natives.activeRaidNests) * DURATION_ACTIVE_NEST_DIVIDER
 
     local processActiveNest = map.processActiveNest
 
-    if ((getNestActiveness(map, chunk) > 0) and (getNestActiveTick(map, chunk) == 0)) then
+    if ((getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0)) and
+        (getNestActiveTick(map, chunk) == 0)
+    then
         local nextTick = tick + DURATION_ACTIVE_NEST
         local slot = processActiveNest[nextTick]
         if not slot then
@@ -200,7 +207,6 @@ function mapProcessor.processPlayers(players, map, surface, tick)
             local playerChunk = getChunkByPosition(map, player.character.position)
 
             if (playerChunk ~= -1) then
-                local i = 1
                 local vengence = allowingAttacks and
                     (natives.points >= AI_VENGENCE_SQUAD_COST) and
                     ((getEnemyStructureCount(map, playerChunk) > 0) or
@@ -211,32 +217,23 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                         local chunk = getChunkByXY(map, x, y)
 
                         if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
-                            processPheromone(map, chunk, scentStaging[i])
+                            chunk[CHUNK_TICK] = tick
+                            processPheromone(map, chunk)
 
-                            processNestActiveness(map, chunk, natives, surface)
-                            queueNestSpawners(map, chunk, tick)
+                            if (getNestCount(map, chunk) > 0) then
+                                processNestActiveness(map, chunk, natives, surface)
+                                queueNestSpawners(map, chunk, tick)
 
-                            if vengence and (getNestCount(map, chunk) > 0) then
-                                local count = natives.vengenceQueue[chunk]
-                                if not count then
-                                    count = 0
-                                    natives.vengenceQueue[chunk] = count
+                                if vengence then
+                                    local count = natives.vengenceQueue[chunk]
+                                    if not count then
+                                        count = 0
+                                        natives.vengenceQueue[chunk] = count
+                                    end
+                                    natives.vengenceQueue[chunk] = count + 1
                                 end
-                                natives.vengenceQueue[chunk] = count + 1
                             end
                         end
-                        i = i + 1
-                    end
-                end
-
-                i = 1
-                for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
-                    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
-                        local chunk = getChunkByXY(map, x, y)
-                        if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
-                            commitPheromone(map, chunk, scentStaging[i], tick)
-                        end
-                        i = i + 1
                     end
                 end
             end
@@ -249,42 +246,25 @@ function mapProcessor.processPlayers(players, map, surface, tick)
             local playerChunk = getChunkByPosition(map, player.character.position)
 
             if (playerChunk ~= -1) then
-                playerScent(playerChunk)
+                addPlayerToChunk(map, playerChunk, player.name)
             end
         end
     end
 end
 
---[[
-    Passive scan to find entities that have been generated outside the factorio event system
---]]
-function mapProcessor.scanMap(map, surface, tick)
-    local index = map.scanIndex
-
-    local unitCountQuery = map.filteredEntitiesEnemyUnitQuery
-    local offset = unitCountQuery.area[2]
-    local chunkBox = unitCountQuery.area[1]
+function mapProcessor.cleanUpMapTables(map, tick)
+    local index = map.cleanupIndex
 
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
     local drained = map.chunkToDrained
 
     local processQueue = map.processQueue
-    local endIndex = mMin(index + SCAN_QUEUE_SIZE, #processQueue)
-
-    local natives = map.natives
-
-    local isFullMapScan = natives.enableFullMapScan
+    local endIndex = mMin(index + CLEANUP_QUEUE_SIZE, #processQueue)
 
     for x=index,endIndex do
         local chunk = processQueue[x]
 
-        chunkBox[1] = chunk.x
-        chunkBox[2] = chunk.y
-
-        offset[1] = chunk.x + CHUNK_SIZE
-        offset[2] = chunk.y + CHUNK_SIZE
-        
         local retreatTick = retreats[chunk]
         if retreatTick and ((tick - retreatTick) > COOLDOWN_RETREAT) then
             retreats[chunk] = nil
@@ -299,29 +279,109 @@ function mapProcessor.scanMap(map, surface, tick)
         if drainTick and ((tick - drainTick) > 0) then
             drained[chunk] = nil
         end
-
-        -- local closeBy = findNearbySquad(map, chunk, chunk)
-
-        -- if not closeBy then
-        --     local deadGroup = surface.count_entities_filtered(unitCountQuery) > 300
-
-        --     if deadGroup then
-        --         recycleBiters(natives, surface.find_enemy_units(chunk, TRIPLE_CHUNK_SIZE))
-        --     end
-        -- end
-
-        -- if isFullMapScan then
-        --     mapScanChunk(chunk, surface, map)
-        -- end
-        
-        processNestActiveness(map, chunk, natives, surface)
-        queueNestSpawners(map, chunk, tick)
     end
 
     if (endIndex == #processQueue) then
-        map.scanIndex = 1
+        map.cleanupIndex = 1
     else
-        map.scanIndex = endIndex + 1
+        map.cleanupIndex = endIndex + 1
+    end
+end
+
+--[[
+    Passive scan to find entities that have been generated outside the factorio event system
+--]]
+function mapProcessor.scanPlayerMap(map, surface, tick)
+    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick) then
+        return
+    end
+    local index = map.scanPlayerIndex
+
+    local offset = map.area[2]
+    local chunkBox = map.area[1]
+
+    local processQueue = map.processQueue
+    local endIndex = mMin(index + PLAYER_QUEUE_SIZE, #processQueue)
+
+    for x=index,endIndex do
+        local chunk = processQueue[x]
+
+        chunkBox[1] = chunk.x
+        chunkBox[2] = chunk.y
+
+        offset[1] = chunk.x + CHUNK_SIZE
+        offset[2] = chunk.y + CHUNK_SIZE
+
+        mapScanPlayerChunk(chunk, surface, map)
+    end
+
+    if (endIndex == #processQueue) then
+        map.scanPlayerIndex = 1
+    else
+        map.scanPlayerIndex = endIndex + 1
+    end
+end
+
+function mapProcessor.scanEnemyMap(map, surface, tick)
+    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or (map.nextChunkProcess == tick) then
+        return
+    end
+
+    local index = map.scanEnemyIndex
+
+    local offset = map.area[2]
+    local chunkBox = map.area[1]
+
+    local processQueue = map.processQueue
+    local endIndex = mMin(index + ENEMY_QUEUE_SIZE, #processQueue)
+
+    for x=index,endIndex do
+        local chunk = processQueue[x]
+
+        chunkBox[1] = chunk.x
+        chunkBox[2] = chunk.y
+
+        offset[1] = chunk.x + CHUNK_SIZE
+        offset[2] = chunk.y + CHUNK_SIZE
+
+        mapScanEnemyChunk(chunk, surface, map)
+    end
+
+    if (endIndex == #processQueue) then
+        map.scanEnemyIndex = 1
+    else
+        map.scanEnemyIndex = endIndex + 1
+    end
+end
+
+function mapProcessor.scanResourceMap(map, surface, tick)
+    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick) then
+        return
+    end
+    local index = map.scanResourceIndex
+
+    local offset = map.area[2]
+    local chunkBox = map.area[1]
+
+    local processQueue = map.processQueue
+    local endIndex = mMin(index + RESOURCE_QUEUE_SIZE, #processQueue)
+
+    for x=index,endIndex do
+        local chunk = processQueue[x]
+
+        chunkBox[1] = chunk.x
+        chunkBox[2] = chunk.y
+
+        offset[1] = chunk.x + CHUNK_SIZE
+        offset[2] = chunk.y + CHUNK_SIZE
+
+        mapScanResourceChunk(chunk, surface, map)
+    end
+
+    if (endIndex == #processQueue) then
+        map.scanResourceIndex = 1
+    else
+        map.scanResourceIndex = endIndex + 1
     end
 end
 
@@ -332,7 +392,7 @@ function mapProcessor.processActiveNests(map, surface, tick)
         local natives = map.natives
         for i=1,#slot do
             local chunk = slot[i]
-            if (getNestActiveness(map, chunk) > 0) then
+            if (getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0) then
                 processNestActiveness(map, chunk, natives, surface)
                 local nextTick = tick + DURATION_ACTIVE_NEST
                 local nextSlot = processActiveNest[nextTick]
@@ -352,47 +412,63 @@ end
 function mapProcessor.processVengence(map, surface, tick)
     local natives = map.natives
     local ss = natives.vengenceQueue
-    -- local generated = 0
     local chunk, count = next(ss, map.deployVengenceIterator)
-    -- for i=1,3 do
     if not chunk then
         map.deployVengenceIterator = nil
-        -- break
+        if (table_size(ss) == 0) then
+            natives.vengenceQueue = {}
+        end
     else
-        -- generated = generated + 1
         formVengenceSquad(map, surface, chunk)
         local nextChunk
         nextChunk, count = next(ss, chunk)
         ss[chunk] = nil
         chunk = nextChunk
     end
-    -- end
     map.deployVengenceIterator = chunk
 end
 
-local function processSpawners(map, surface, tick, natives, iteration, iterator, chunks)
-
+function mapProcessor.processNests(map, surface, tick)
+    local natives = map.natives
     local bases = map.chunkToBase
-    local chunk, count = next(chunks, map[iterator])
-    for i=1,iteration do
+    local chunks = map.chunkToNests
+    local chunk, count = next(chunks, map.processNestIterator)
+    for i=1,5 do
         if not chunk then
-            map[iterator] = nil
+            map.processNestIterator = nil
             return
         else
-            if canMigrate(natives, surface) then
-                formSettlers(map, surface, chunk, tick)
-            elseif (canAttack(natives, surface, tick)) then
-                formSquads(map, surface, chunk, tick)
-            end
+            processNestActiveness(map, chunk, natives, surface)
+            queueNestSpawners(map, chunk, tick)
 
-
-            if (natives.newEnemies) then
+            if natives.newEnemies then
                 local base = bases[chunk]
                 if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
                     processBase(chunk, surface, natives, tick, base)
                 end
             end
 
+            chunk, count = next(chunks, chunk)
+        end
+    end
+    map.processNestIterator = chunk
+end
+
+local function processSpawners(map, surface, tick, natives, iteration, iterator, chunks)
+
+    local chunk, count = next(chunks, map[iterator])
+    local migrate = canMigrate(natives, surface)
+    local attack = canAttack(natives, surface, tick)
+    for i=1,iteration do
+        if not chunk then
+            map[iterator] = nil
+            return
+        else
+            if migrate then
+                formSettlers(map, surface, chunk, tick)
+            elseif attack then
+                formSquads(map, surface, chunk, tick)
+            end
             chunk, count = next(chunks, chunk)
         end
     end

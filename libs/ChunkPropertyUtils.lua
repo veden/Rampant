@@ -82,6 +82,9 @@ function chunkPropertyUtils.setNestCount(map, chunk, count)
         if (map.processMigrationIterator == chunk) then
             map.processMigrationIterator = nil
         end
+        if (map.processNestIterator == chunk) then
+            map.processNestIterator = nil
+        end
     else
         map.chunkToNests[chunk] = count
     end
@@ -234,6 +237,43 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
             map.chunkToDeathGenerator[chunk] = gen
         end
     end
+end
+
+function chunkPropertyUtils.addPlayerToChunk(map, chunk, name)
+    local playerChunks = map.playerToChunk
+    local playerCountChunks = map.chunkToPlayerCount
+    local playerChunk = playerChunks[name]
+    if not playerChunk then
+        playerChunks[name] = chunk
+        local playerCount = playerCountChunks[chunk]
+        if not playerCount then
+            playerCountChunks[chunk] = 1
+        else
+            playerCountChunks[chunk] = playerCount + 1
+        end
+    elseif (playerChunk ~= chunk) then
+        playerChunks[name] = chunk
+        local playerCount = playerCountChunks[playerChunk]
+        chunkPropertyUtils.setPlayersOnChunk(map, playerChunk, playerCount - 1)
+        playerCount = playerCountChunks[chunk]
+        if not playerCount then
+            playerCountChunks[chunk] = 1
+        else
+            playerCountChunks[chunk] = playerCount + 1
+        end
+    end
+end
+
+function chunkPropertyUtils.setPlayersOnChunk(map, chunk, value)
+    if (value <= 0) then
+        map.chunkToPlayerCount[chunk] = nil
+    else
+        map.chunkToPlayerCount[chunk] = value
+    end
+end
+
+function chunkPropertyUtils.getPlayersOnChunk(map, chunk)
+    return map.chunkToPlayerCount[chunk] or 0
 end
 
 function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)

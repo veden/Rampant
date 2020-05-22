@@ -165,6 +165,10 @@ local function settleMove(map, squad, surface)
 
         surface.create_entity(map.createBuildCloudQuery)
 
+        if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
+            print("fuck")
+        end
+
         group.set_command(cmd)
     else
         local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
@@ -186,9 +190,25 @@ local function settleMove(map, squad, surface)
                 positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
                 position = findMovementPosition(surface, targetPosition2)
+
+                if position and (euclideanDistanceNamed(position, group.position) > 200) then
+                    print("tp2", serpent.dump(targetPosition))
+                    print("tp3", serpent.dump(targetPosition2))
+                    print("tp", serpent.dump(position))
+                    print("gp", serpent.dump(group.position))
+                    print("fuck set2")
+                end
             else
                 positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
                 position = findMovementPosition(surface, targetPosition)
+
+                if position and (euclideanDistanceNamed(position, group.position) > 200) then
+                    print("tp2", serpent.dump(targetPosition))                    
+                    print("tp", serpent.dump(position))
+                    print("gp", serpent.dump(group.position))
+                    print("fuck set3")
+                end
+
             end
 
             if position then
@@ -220,6 +240,9 @@ local function settleMove(map, squad, surface)
             end
         else
             cmd = map.settleCommand
+            cmd.destination.x = groupPosition.x
+            cmd.destination.y = groupPosition.y
+            
             if squad.kamikaze then
                 cmd.distraction = DEFINES_DISTRACTION_NONE
             else
@@ -229,6 +252,12 @@ local function settleMove(map, squad, surface)
             squad.status = SQUAD_BUILDING
 
             surface.create_entity(map.createBuildCloudQuery)
+        end
+
+        if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
+            print("tp", serpent.dump(targetPosition))
+            print("gp", serpent.dump(group.position))
+            print("fuck set")
         end
 
         group.set_command(cmd)
@@ -299,6 +328,12 @@ local function attackMove(map, squad, surface)
         else
             cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
         end
+    end
+
+    if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
+        print("tp", serpent.dump(targetPosition))
+        print("gp", serpent.dump(group.position))
+        print("fuck atk")
     end
 
     group.set_command(cmd)

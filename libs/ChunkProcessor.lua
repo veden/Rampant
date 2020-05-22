@@ -17,8 +17,11 @@ local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
 
 -- imported functions
 
+local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
+local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
+local mapScanResourceChunk = chunkUtils.mapScanResourceChunk
+
 local createChunk = chunkUtils.createChunk
-local mapScanChunk = chunkUtils.mapScanChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
 
@@ -84,7 +87,10 @@ function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flu
             bottomOffset[2] = y + CHUNK_SIZE
 
             if map[x] and map[x][y] then
-                mapScanChunk(map[x][y], surface, map)
+                local chunk = map[x][y]
+                mapScanPlayerChunk(chunk, surface, map)
+                mapScanEnemyChunk(chunk, surface, map)
+                mapScanResourceChunk(chunk, surface, map)
             else
                 if map[x] == nil then
                     map[x] = {}

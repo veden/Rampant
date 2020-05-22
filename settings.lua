@@ -58,14 +58,14 @@ data:extend({
             per_user = false
         },
 
-        {
-            type = "bool-setting",
-            name = "rampant-liteMode",
-            setting_type = "startup",
-            default_value = false,
-            order = "b[modifier]-g[ai]",
-            per_user = false
-        },
+        -- {
+        --     type = "bool-setting",
+        --     name = "rampant-liteMode",
+        --     setting_type = "startup",
+        --     default_value = false,
+        --     order = "b[modifier]-g[ai]",
+        --     per_user = false
+        -- },
 
         {
             type = "double-setting",
@@ -432,14 +432,14 @@ data:extend({
             per_user = false
         },
 
-        {
-            type = "bool-setting",
-            name = "rampant-enableFullMapScan",
-            setting_type = "runtime-global",
-            default_value = true,
-            order = "n[modifier]-a[optimize]",
-            per_user = false
-        },
+        -- {
+        --     type = "bool-setting",
+        --     name = "rampant-enableFullMapScan",
+        --     setting_type = "runtime-global",
+        --     default_value = true,
+        --     order = "n[modifier]-a[optimize]",
+        --     per_user = false
+        -- },
 
         {
             type = "bool-setting",

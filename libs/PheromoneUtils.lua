@@ -11,6 +11,8 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+
 local CHUNK_TICK = constants.CHUNK_TICK
 local NEIGHBOR_DIVIDER = constants.NEIGHBOR_DIVIDER
 
@@ -38,6 +40,8 @@ local DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DOUBLE_DEATH_PHEROMONE
 
 -- imported functions
 
+local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
+
 local getNeighborChunks = mapUtils.getNeighborChunks
 
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
@@ -58,98 +62,81 @@ function pheromoneUtils.victoryScent(map, chunk, entityType)
     local value = VICTORY_SCENT[entityType]
     if value then
         addDeathGenerator(map, chunk, -value)
-        chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + value
+        -- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] + value
     end
 end
 
 function pheromoneUtils.deathScent(map, chunk)
-    chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT
+    -- chunk[MOVEMENT_PHEROMONE] = chunk[MOVEMENT_PHEROMONE] - DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT
     addDeathGenerator(map, chunk, DEATH_PHEROMONE_GENERATOR_AMOUNT)
 end
 
-function pheromoneUtils.playerScent(playerChunk)
-    playerChunk[PLAYER_PHEROMONE] = playerChunk[PLAYER_PHEROMONE] + PLAYER_PHEROMONE_GENERATOR_AMOUNT
+-- function pheromoneUtils.commitPheromone(map, chunk, staging, tick)
+--     decayDeathGenerator(map, chunk)
+
+--     chunk[MOVEMENT_PHEROMONE] = staging[MOVEMENT_PHEROMONE] - getDeathGenerator(map, chunk)
+--     chunk[PLAYER_PHEROMONE] = staging[PLAYER_PHEROMONE]
+-- end
+
+function pheromoneUtils.processStaticPheromone(map, chunk)
+
 end
 
-function pheromoneUtils.commitPheromone(map, chunk, staging, tick)
-    chunk[CHUNK_TICK] = tick
-
-    local resourceGenerator = getResourceGenerator(map, chunk)
-
-    decayDeathGenerator(map, chunk)
-
-    chunk[MOVEMENT_PHEROMONE] = staging[MOVEMENT_PHEROMONE] - getDeathGenerator(map, chunk)
-    chunk[BASE_PHEROMONE] = staging[BASE_PHEROMONE] + getPlayerBaseGenerator(map, chunk)
-    chunk[PLAYER_PHEROMONE] = staging[PLAYER_PHEROMONE]
-    if (resourceGenerator > 0) and (getEnemyStructureCount(map, chunk) == 0) then
-        chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE] + (linearInterpolation(resourceGenerator, 15000, 20000))
-    else
-        chunk[RESOURCE_PHEROMONE] = staging[RESOURCE_PHEROMONE]
-    end
-end
-
-function pheromoneUtils.processPheromone(map, chunk, staging)
-
-    local chunkMovement = chunk[MOVEMENT_PHEROMONE]
-    local chunkBase = chunk[BASE_PHEROMONE]
-    local chunkPlayer = chunk[PLAYER_PHEROMONE]
-    local chunkResource = chunk[RESOURCE_PHEROMONE]
+function pheromoneUtils.processPheromone(map, chunk)
+    local chunkMovement = -MAGIC_MAXIMUM_NUMBER
+    local chunkPlayer = -MAGIC_MAXIMUM_NUMBER
     local chunkPathRating = getPathRating(map, chunk)
 
-    local clear = (getEnemyStructureCount(map, chunk) == 0)
-
     local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
-
-    local movementTotal = 0
-    local baseTotal = 0
-    local playerTotal = 0
-    local resourceTotal = 0
-
-    local neighborCount = 0
 
     local neighbor
     local neighborPass
 
     local chunkPass = getPassable(map, chunk)
-
+    local pheromone
     if (chunkPass == CHUNK_ALL_DIRECTIONS) then
-        neighbor = tempNeighbors[2]        
+        neighbor = tempNeighbors[2]
         if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_NORTH_SOUTH)) then
-                neighborCount = neighborCount + 1
-                -- movementTotal = movementTotal + (neighbor[MOVEMENT_PHEROMONE] - chunkMovement)
-                -- baseTotal = baseTotal + (neighbor[BASE_PHEROMONE] - chunkBase)
-                -- playerTotal = playerTotal + (neighbor[PLAYER_PHEROMONE] - chunkPlayer)
-                -- resourceTotal = resourceTotal + (neighbor[RESOURCE_PHEROMONE] - chunkResource)
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[7]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_NORTH_SOUTH)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[4]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_EAST_WEST)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
@@ -157,47 +144,59 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
         if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_EAST_WEST)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[1]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if (neighborPass == CHUNK_ALL_DIRECTIONS) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[3]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if (neighborPass == CHUNK_ALL_DIRECTIONS) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[6]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if (neighborPass == CHUNK_ALL_DIRECTIONS) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
@@ -205,83 +204,94 @@ function pheromoneUtils.processPheromone(map, chunk, staging)
         if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if (neighborPass == CHUNK_ALL_DIRECTIONS) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
-
     elseif (chunkPass == CHUNK_EAST_WEST) then
 
         neighbor = tempNeighbors[4]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_EAST_WEST)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[5]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_EAST_WEST)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
-
     elseif (chunkPass == CHUNK_NORTH_SOUTH) then
 
         neighbor = tempNeighbors[2]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_NORTH_SOUTH)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
 
         neighbor = tempNeighbors[7]
-        if (neighbor ~= -1) then        
+        if (neighbor ~= -1) then
             neighborPass = getPassable(map, neighbor)
             if ((neighborPass == CHUNK_ALL_DIRECTIONS) or (neighborPass == CHUNK_NORTH_SOUTH)) then
-                neighborCount = neighborCount + 1
-                movementTotal = movementTotal + neighbor[MOVEMENT_PHEROMONE]
-                baseTotal = baseTotal + neighbor[BASE_PHEROMONE]
-                playerTotal = playerTotal + neighbor[PLAYER_PHEROMONE]
-                resourceTotal = resourceTotal + neighbor[RESOURCE_PHEROMONE]
+                pheromone = neighbor[MOVEMENT_PHEROMONE]
+                if chunkMovement < pheromone then
+                    chunkMovement = pheromone
+                end
+                pheromone = neighbor[PLAYER_PHEROMONE]
+                if chunkPlayer < pheromone then
+                    chunkPlayer = pheromone
+                end
             end
         end
     end
 
-    local neighborDiv = 0
-    if neighborCount ~= 0 then
-        neighborDiv = NEIGHBOR_DIVIDER[neighborCount]
-        chunkMovement = chunkMovement + (neighborDiv * (movementTotal - (chunkMovement * neighborCount)))
-        chunkBase = chunkBase + (neighborDiv * (baseTotal - (chunkBase * neighborCount)))
-        chunkPlayer = chunkPlayer + (neighborDiv * (playerTotal - (chunkPlayer * neighborCount)))
-        chunkResource = chunkResource + (neighborDiv * (resourceTotal - (chunkResource * neighborCount)))
+    chunkMovement = chunkMovement * 0.9    
+    local pheromone = getDeathGenerator(map, chunk)
+    if chunkMovement < pheromone then
+        chunk[MOVEMENT_PHEROMONE] = pheromone * chunkPathRating
+    else
+        chunk[MOVEMENT_PHEROMONE] = chunkMovement * chunkPathRating
     end
 
-    staging[MOVEMENT_PHEROMONE] = chunkMovement * MOVEMENT_PHEROMONE_PERSISTANCE * chunkPathRating
-    staging[BASE_PHEROMONE] = chunkBase * BASE_PHEROMONE_PERSISTANCE * chunkPathRating
-    staging[PLAYER_PHEROMONE] = chunkPlayer * PLAYER_PHEROMONE_PERSISTANCE * chunkPathRating
-    if clear then
-        staging[RESOURCE_PHEROMONE] = chunkResource * RESOURCE_PHEROMONE_PERSISTANCE * chunkPathRating
+    chunkPlayer = chunkPlayer * 0.9
+    local pheromone = getPlayersOnChunk(map, chunk) * PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    if chunkPlayer < pheromone then
+        chunk[PLAYER_PHEROMONE] = pheromone * chunkPathRating
     else
-        staging[RESOURCE_PHEROMONE] = chunkResource * 0.01
+        chunk[PLAYER_PHEROMONE] = chunkPlayer * chunkPathRating
     end
 end
 
