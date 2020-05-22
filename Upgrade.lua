@@ -173,6 +173,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
         
         natives.vengenceQueue = {}
+        natives.builderCount = 0
 
         game.forces.enemy.ai_controllable = true
 

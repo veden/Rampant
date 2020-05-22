@@ -75,8 +75,6 @@ local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
 
-local createSquad = unitGroupUtils.createSquad
-
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator

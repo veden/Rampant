@@ -44,6 +44,8 @@ local INTERVAL_MAP_STATIC_PROCESS = constants.INTERVAL_MAP_STATIC_PROCESS
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
+local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
+
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
 
@@ -970,23 +972,31 @@ local function onUnitGroupCreated(event)
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
         if not group.is_script_driven then
             if not natives.aiNocturnalMode then
-                squad = createSquad(nil,
-                                    nil,
-                                    group,
-                                    mRandom() < 0.25 and canMigrate(natives, group.surface))
+                local settler = mRandom() < 0.25 and
+                    canMigrate(natives, group.surface) and
+                    (natives.builderCount < AI_MAX_BUILDER_COUNT)
+
+                squad = createSquad(nil, nil, group, settler)
                 natives.groupNumberToSquad[group.group_number] = squad
+                if settler then
+                    natives.builderCount = natives.builderCount + 1
+                end
             elseif not (surface.darkness > 0.65) then
                 group.destroy()
             else
-                squad = createSquad(nil,
-                                    nil,
-                                    group,
-                                    mRandom() < 0.25 and canMigrate(natives, group.surface))
+                local settler = mRandom() < 0.25 and
+                    canMigrate(natives, group.surface) and
+                    (natives.builderCount < AI_MAX_BUILDER_COUNT)
+
+                squad = createSquad(nil, nil, group, settler)
                 natives.groupNumberToSquad[group.group_number] = squad
+                if settler then
+                    natives.builderCount = natives.builderCount + 1
+                end
             end
         end
     end
-    game.print({"", "squadCreated", profiler, event.tick})
+    -- game.print({"", "squadCreated", profiler, event.tick})
 end
 
 local function onCommandComplete(event)
@@ -1030,7 +1040,7 @@ local function onCommandComplete(event)
                 squadDispatch(map, group.surface, squad, unitNumber)
             end
         end
-        game.print({"", "aiCommand", profiler, event.tick})
+        -- game.print({"", "aiCommand", profiler, event.tick})
     end
 end
 
@@ -1044,7 +1054,7 @@ local function onGroupFinishedGathering(event)
             squadDispatch(map, group.surface, squad, unitNumber)
         end
     end
-    game.print({"", "finishedGather", profiler, event.tick})
+    -- game.print({"", "finishedGather", profiler, event.tick})
 end
 
 local function onForceCreated(event)
@@ -1123,7 +1133,7 @@ script.on_nth_tick(INTERVAL_PLAYER_PROCESS,
                                       map,
                                       gameRef.get_surface(natives.activeSurface),
                                       event.tick)
-                       game.print({"", "player", profiler, tick})
+                       -- game.print({"", "player", profiler, tick})
 end)
 
 script.on_nth_tick(INTERVAL_CHUNK_PROCESS,
@@ -1132,7 +1142,7 @@ script.on_nth_tick(INTERVAL_CHUNK_PROCESS,
                        processPendingChunks(map,
                                             game.get_surface(natives.activeSurface),
                                             event.tick)
-                       game.print({"", "chunk process", profiler, event.tick})
+                       -- game.print({"", "chunk process", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_MAP_PROCESS,
@@ -1147,7 +1157,7 @@ script.on_nth_tick(INTERVAL_MAP_PROCESS,
                        else
                            print("skipping MP", tick)
                        end
-                       game.print({"", "map", profiler, event.tick})
+                       -- game.print({"", "map", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_MAP_STATIC_PROCESS,
@@ -1155,14 +1165,14 @@ script.on_nth_tick(INTERVAL_MAP_STATIC_PROCESS,
                        local profiler = game.create_profiler()
                        local tick = event.tick
 
-                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) then
+                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) then
                            processStaticMap(map,
                                             game.get_surface(natives.activeSurface),
                                             tick)
                        else
                            print("skipping MSP", tick)
                        end
-                       game.print({"", "mapStatic", profiler, event.tick})
+                       -- game.print({"", "mapStatic", profiler, event.tick})
 end)
 
 
@@ -1170,7 +1180,9 @@ script.on_nth_tick(INTERVAL_SCAN,
                    function (event)
                        local profiler = game.create_profiler()
                        local tick = event.tick
-                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) then
+                       if ((tick % INTERVAL_PLAYER_PROCESS) ~= 0) and ((tick % INTERVAL_MAP_PROCESS) ~= 0) and
+                           ((tick % INTERVAL_MAP_STATIC_PROCESS) ~= 0)
+                       then
                            local picker = tick % 3
                            if (picker == 0) then
                                scanResourceMap(map,
@@ -1188,7 +1200,7 @@ script.on_nth_tick(INTERVAL_SCAN,
                        else
                            print("skipping scan", event.tick)
                        end
-                       game.print({"", "scan", profiler, event.tick})
+                       -- game.print({"", "scan", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_PASS_SCAN,
@@ -1196,7 +1208,7 @@ script.on_nth_tick(INTERVAL_PASS_SCAN,
                        local profiler = game.create_profiler()
                        processScanChunks(map,
                                          game.get_surface(natives.activeSurface))
-                       game.print({"", "passscan", profiler, event.tick})
+                       -- game.print({"", "passscan", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
@@ -1212,7 +1224,7 @@ script.on_nth_tick(INTERVAL_LOGIC,
                        if natives.newEnemies then
                            recycleBases(natives, tick)
                        end
-                       game.print({"", "logic", profiler, event.tick})
+                       -- game.print({"", "logic", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_NEST,
@@ -1221,7 +1233,7 @@ script.on_nth_tick(INTERVAL_NEST,
                        processNests(map,
                                     game.get_surface(natives.activeSurface),
                                     event.tick)
-                       game.print({"", "nest", profiler, event.tick})
+                       -- game.print({"", "nest", profiler, event.tick})
 end)
 
 
@@ -1230,7 +1242,7 @@ script.on_nth_tick(INTERVAL_CLEANUP,
                        local profiler = game.create_profiler()
                        cleanUpMapTables(map,
                                         event.tick)
-                       game.print({"", "cleanup", profiler, event.tick})
+                       -- game.print({"", "cleanup", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_SPAWNER,
@@ -1239,7 +1251,7 @@ script.on_nth_tick(INTERVAL_SPAWNER,
                        processSpawners(map,
                                        game.get_surface(natives.activeSurface),
                                        event.tick)
-                       game.print({"", "spawners", profiler, event.tick})
+                       -- game.print({"", "spawners", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
@@ -1248,14 +1260,14 @@ script.on_nth_tick(INTERVAL_SQUAD,
                        processVengence(map,
                                        game.get_surface(natives.activeSurface),
                                        event.tick)
-                       game.print({"", "vengence", profiler, event.tick})
+                       -- game.print({"", "vengence", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_TEMPERAMENT,
                    function (event)
                        local profiler = game.create_profiler()
                        temperamentPlanner(natives)
-                       game.print({"", "temperament", profiler, event.tick})
+                       -- game.print({"", "temperament", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_RESQUAD,
@@ -1264,7 +1276,7 @@ script.on_nth_tick(INTERVAL_RESQUAD,
                        regroupSquads(natives,
                                      game.get_surface(natives.activeSurface),
                                      map.regroupIterator)
-                       game.print({"", "regroup", profiler, event.tick})
+                       -- game.print({"", "regroup", profiler, event.tick})
 end)
 
 script.on_event(defines.events.on_tick,

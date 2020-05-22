@@ -24,6 +24,7 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
 local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
 
+local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
@@ -186,7 +187,10 @@ end
 function aiAttackWave.formSettlers(map, surface, chunk, tick)
 
     local natives = map.natives
-    if (mRandom() < natives.formSquadThreshold) and ((natives.points - AI_SETTLER_COST) > 0) then
+    if (natives.builderCount < AI_MAX_BUILDER_COUNT) and
+        (mRandom() < natives.formSquadThreshold) and
+        ((natives.points - AI_SETTLER_COST) > 0)
+    then
         local squadPath, squadDirection
         if (natives.state == AI_STATE_SIEGE) then
             squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -225,6 +229,7 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    natives.builderCount = natives.builderCount + 1
                     natives.points = natives.points - AI_SETTLER_COST
                     natives.groupNumberToSquad[squad.groupNumber] = squad
                 else

@@ -164,6 +164,9 @@ function unitGroupUtils.cleanSquads(natives, iterator)
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
             end
+            if squad.settlers then
+                natives.builderCount = natives.builderCount - 1
+            end
             nextK,squad = next(squads, k)
             squads[k] = nil
             k = nextK
@@ -232,8 +235,7 @@ function unitGroupUtils.regroupSquads(natives, surface, iterator)
     local k, squad = next(squads, iterator)
     for i=1,SQUAD_QUEUE_SIZE do
         if not k then
-            map.regroupIterator = nil
-            return nil
+            break
         else
             local group = squad.group
             if group and group.valid then
@@ -256,15 +258,14 @@ function unitGroupUtils.regroupSquads(natives, surface, iterator)
                                         (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
                                     then
                                         merging = true
+                                        print("destroy mergeGroup", mergeGroup.position.x, mergeGroup.position.y, mergeGroup.valid, mergeGroup.group_number)
                                         mergeGroup.destroy()
                                     end
                                 end
                             end
                         end
                         if merging then
-                            print("merging group", group.position.x, group.position.y)
-                            print(serpent.dump(cmd))
-                            -- squad.status = SQUAD_GUARDING
+                            print("merging group", group.position.x, group.position.y, group.valid, group.group_number)
                             surface.set_multi_command(cmd)
                         end
                     end

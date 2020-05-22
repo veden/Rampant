@@ -270,6 +270,12 @@
             'solid)))
 
 
+  (new button%
+       [parent mainFrame]
+       [label "Retry"]
+       (callback (lambda (button event)
+                   (showVisual dcMap (readState "/mnt/gallery/gameFiles/factorio/script-output/rampantState.txt")))))
+
   (new radio-box%
        [label "Show Layer"]
        [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "siegeScore" "retreatScore" "kamikazeScore" "pollution" "aNe" "aRNe" "squads" "baseCreated" "hives" "traps" "utility")]
