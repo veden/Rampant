@@ -244,7 +244,10 @@ end
 
 function aiAttackWave.formVengenceSquad(map, surface, chunk)
     local natives = map.natives
-    if (mRandom() < natives.formSquadThreshold) and ((natives.points - AI_VENGENCE_SQUAD_COST) > 0) then
+    if (natives.squadCount < AI_MAX_SQUAD_COUNT) and
+        (mRandom() < natives.formSquadThreshold) and
+        ((natives.points - AI_VENGENCE_SQUAD_COST) > 0)
+    then
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
@@ -283,7 +286,8 @@ end
 
 function aiAttackWave.formSquads(map, surface, chunk, tick)
     local natives = map.natives
-    if attackWaveValidCandidate(chunk, natives, map) and
+    if (natives.squadCount < AI_MAX_SQUAD_COUNT) and
+        attackWaveValidCandidate(chunk, natives, map) and
         (mRandom() < natives.formSquadThreshold) and
         ((natives.points - AI_SQUAD_COST) > 0)
     then
@@ -312,6 +316,7 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
                     natives.points = natives.points - AI_SQUAD_COST
+                    natives.squadCount = natives.squadCount + 1
                     natives.groupNumberToSquad[squad.groupNumber] = squad
                     if tick and (natives.state == AI_STATE_AGGRESSIVE) then
                         natives.canAttackTick = randomTickEvent(tick,

@@ -20,6 +20,8 @@ local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
+local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
+
 local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
 
 local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
@@ -87,20 +89,21 @@ local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 -- module code
 
-local function scoreResourceLocation(squad, neighborChunk)
-    local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE]
+local function scoreResourceLocation(map, squad, neighborChunk)
+    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
-local function scoreSiegeLocation(squad, neighborChunk)
-    local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+local function scoreSiegeLocation(map, squad, neighborChunk)
+    local settle = neighborChunk[BASE_PHEROMONE] +
+        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    
     return settle
 end
 
-local function scoreAttackLocation(natives, squad, neighborChunk)
-    local damage = (2 * neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] +
+local function scoreAttackLocation(map, squad, neighborChunk)
+    local damage = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-
     return damage
 end
 
@@ -124,7 +127,7 @@ local function settleMove(map, squad, surface)
     if (natives.state == AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
     end
-    addMovementPenalty(map, squad, squad.chunk)
+    addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
@@ -186,10 +189,10 @@ local function settleMove(map, squad, surface)
                 targetPosition.x = position.x
                 targetPosition.y = position.y
                 if nextAttackChunk then
-                    addMovementPenalty(map, squad, nextAttackChunk)
+                    addDeathGenerator(map, nextAttackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 else
-                    addMovementPenalty(map, squad, attackChunk)
-                end        
+                    addDeathGenerator(map, attackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                end
             else
                 cmd = map.wonderCommand
                 group.set_command(cmd)
@@ -247,10 +250,11 @@ local function attackMove(map, squad, surface)
     local chunk = getChunkByXY(map, x, y)
     local attackScorer = scoreAttackLocation
     if squad.kamikaze then
+        print("squadK", squad.kamikaze, squad.groupNumber)
         attackScorer = scoreAttackKamikazeLocation
     end
     local squadChunk = squad.chunk
-    addMovementPenalty(map, squad, squadChunk)
+    addDeathGenerator(map, squadChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
@@ -280,10 +284,10 @@ local function attackMove(map, squad, surface)
         targetPosition.x = position.x
         targetPosition.y = position.y
         if nextAttackChunk then
-            addMovementPenalty(map, squad, nextAttackChunk)
+            addDeathGenerator(map, nextAttackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         else
-            addMovementPenalty(map, squad, attackChunk)
-        end        
+            addDeathGenerator(map, attackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+        end
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and

@@ -12,19 +12,12 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
-local DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT
-local MOVEMENT_PENALTY_AMOUNT = constants.MOVEMENT_PENALTY_AMOUNT
-
-local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 -- imported functions
 
-local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local getNeighborChunks = mapUtils.getNeighborChunks
-
--- local recycleBiters = unitGroupUtils.recycleBiters
 
 local tableRemove = table.remove
 local tableInsert = table.insert
@@ -35,25 +28,19 @@ local distortPosition = mathUtils.distortPosition
 
 function movementUtils.findMovementPosition(surface, position)
     local pos = position
-    -- if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
     pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
-    -- end
     return pos
 end
 
 function movementUtils.findMovementPositionEntity(entityName, surface, position)
     local pos = position
-    -- if not surface.can_place_entity({name=entityName, position=pos}) then
     pos = surface.find_non_colliding_position(entityName, pos, 5, 4, true)
-    -- end
     return pos
 end
 
 function movementUtils.findMovementPositionDistort(surface, position)
     local pos = position
-    -- if not surface.can_place_entity({name="chunk-scanner-squad-movement-rampant", position=pos}) then
     pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
-    -- end
     return distortPosition(pos, 8)
 end
 
@@ -62,8 +49,13 @@ function movementUtils.addMovementPenalty(map, squad, chunk)
         return
     end
     -- addDeathGenerator(map, chunk, DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT * 10)
-    chunk[BASE_PHEROMONE] = 0
+    -- if squad.settlers then
+    --     chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] * 0.1
+    -- else
+    --     chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] * 0.1
+    -- end
     
+
     -- local penalties = squad.penalties
     -- for i=1,#penalties do
     --     local penalty = penalties[i]
@@ -104,12 +96,11 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
 
-    local natives = map.natives
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
-                local score = scoreFunction(natives, squad, neighborChunk)
+                local score = scoreFunction(map, squad, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -127,9 +118,9 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
-            if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and                    
+            if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(natives, squad, neighborChunk)
+                local score = scoreFunction(map, squad, neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -155,7 +146,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
-                local score = scoreFunction(squad, neighborChunk)
+                local score = scoreFunction(map, squad, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -165,7 +156,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         end
     end
 
-    if (chunk ~= -1) and (scoreFunction(squad, chunk) > highestScore) then
+    if (chunk ~= -1) and (scoreFunction(map, squad, chunk) > highestScore) then
         return chunk, 0, -1, 0
     end
 
@@ -179,7 +170,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(squad, neighborChunk)
+                local score = scoreFunction(map, squad, neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk

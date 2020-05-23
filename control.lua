@@ -45,6 +45,7 @@ local INTERVAL_MAP_STATIC_PROCESS = constants.INTERVAL_MAP_STATIC_PROCESS
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
 local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
+local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
@@ -116,6 +117,7 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local entityForPassScan = chunkUtils.entityForPassScan
 
+local addMovementPenalty = movementUtils.addMovementPenalty
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
 
@@ -466,6 +468,14 @@ local function rebuildMap()
         ticks_to_wait = 360
     }
 
+    map.wonder3Command = {
+        type = DEFINES_COMMAND_WANDER,
+        wander_in_group = true,
+        radius = TRIPLE_CHUNK_SIZE,
+        distraction = DEFINES_DISTRACTION_BY_ANYTHING,
+        ticks_to_wait = 60 * 30
+    }
+
     map.stopCommand = {
         type = DEFINES_COMMAND_STOP
     }
@@ -510,13 +520,13 @@ local function rebuildMap()
 
     map.formGroupCommand = { type = DEFINES_COMMAND_GROUP,
                              group = nil,
-                             distraction = DEFINES_DISTRACTION_ANYTHING,
+                             distraction = DEFINES_DISTRACTION_BY_ANYTHING,
                              use_group_distraction = false
     }
 
     map.formLocalGroupCommand = { type = DEFINES_COMMAND_GROUP,
                                   group = nil,
-                                  distraction = DEFINES_DISTRACTION_ANYTHING,
+                                  distraction = DEFINES_DISTRACTION_BY_ANYTHING,
                                   use_group_distraction = false
     }
 
@@ -1010,6 +1020,8 @@ local function onUnitGroupCreated(event)
                 natives.groupNumberToSquad[group.group_number] = squad
                 if settler then
                     natives.builderCount = natives.builderCount + 1
+                else
+                    natives.squadCount = natives.squadCount + 1
                 end
             elseif not (surface.darkness > 0.65) then
                 group.destroy()
@@ -1022,6 +1034,8 @@ local function onUnitGroupCreated(event)
                 natives.groupNumberToSquad[group.group_number] = squad
                 if settler then
                     natives.builderCount = natives.builderCount + 1
+                else
+                    natives.squadCount = natives.squadCount + 1
                 end
             end
         end
@@ -1035,31 +1049,10 @@ local function onCommandComplete(event)
     local squad = natives.groupNumberToSquad[unitNumber]
     if squad then
         local profiler = game.create_profiler()
-        -- local result = event.result
-        -- local msg
-        -- if (result == defines.behavior_result.in_progress) then
-        --     msg = "progress"
-        -- elseif (result == defines.behavior_result.fail) then
-        --     msg = "fail"
-        -- elseif (result == defines.behavior_result.success) then
-        --     msg = "success"
-        -- elseif (result == defines.behavior_result.deleted) then
-        --     msg = "deleted"
-        -- end
-        -- print(msg)
         local group = squad.group
         if group and group.valid and (group.surface.name == natives.activeSurface) then
-
             if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
                 if (#group.members == 0) then
-                    local deathGen = getDeathGenerator(map, squad.chunk)
-                    -- local penalties = squad.penalties
-                    -- for xc=1,mMin(#squad.penalties,5) do
-                    --     addDeathGenerator(map,
-                    --                       penalties[xc].c,
-                    --                       deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
-                    -- end
-                    removeSquadFromChunk(map, squad)
                     group.destroy()
                 else
                     squadDispatch(map, group.surface, squad, unitNumber)
@@ -1077,9 +1070,21 @@ local function onGroupFinishedGathering(event)
     local group = event.group
     if group.valid then
         local unitNumber = group.group_number
-        local squad = natives.groupNumberToSquad[unitNumber]
-        if squad and (group.surface.name == natives.activeSurface) then
-            squadDispatch(map, group.surface, squad, unitNumber)
+        if (group.surface.name == natives.activeSurface) then
+            local squad = natives.groupNumberToSquad[unitNumber]
+            if squad.settler then
+                if (natives.builderCount < AI_MAX_BUILDER_COUNT) then
+                    squadDispatch(map, group.surface, squad, unitNumber)
+                elseif not (group.command and group.command.type == DEFINES_COMMAND_WANDER) then
+                    group.set_command(map.wonder3Command)
+                end
+            else
+                if (natives.squadCount < AI_MAX_SQUAD_COUNT) then
+                    squadDispatch(map, group.surface, squad, unitNumber)
+                elseif not (group.command and group.command.type == DEFINES_COMMAND_WANDER) then
+                    group.set_command(map.wonder3Command)
+                end
+            end
         end
     end
     -- game.print({"", "finishedGather", profiler, event.tick})
@@ -1219,14 +1224,14 @@ script.on_nth_tick(INTERVAL_TEMPERAMENT,
                        -- game.print({"", "temperament", profiler, event.tick})
 end)
 
-script.on_nth_tick(INTERVAL_RESQUAD,
-                   function (event)
-                       local profiler = game.create_profiler()
-                       regroupSquads(natives,
-                                     game.get_surface(natives.activeSurface),
-                                     map.regroupIterator)
-                       -- game.print({"", "regroup", profiler, event.tick})
-end)
+-- script.on_nth_tick(INTERVAL_RESQUAD,
+--                    function (event)
+--                        local profiler = game.create_profiler()
+--                        regroupSquads(natives,
+--                                      game.get_surface(natives.activeSurface),
+--                                      map.regroupIterator)
+--                        -- game.print({"", "regroup", profiler, event.tick})
+-- end)
 
 script.on_event(defines.events.on_tick,
                 function (event)

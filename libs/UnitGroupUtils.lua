@@ -13,7 +13,7 @@ local movementUtils = require("MovementUtils")
 
 -- constants
 
-local DEFINES_GROUP_FINISHED = defines.group_state.finished
+local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
 local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
 local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
@@ -158,12 +158,15 @@ function unitGroupUtils.cleanSquads(natives, iterator)
     else
         local group = squad.group
         if not group.valid then
-            removeSquadFromChunk(map, squad)
+            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)            
+            removeSquadFromChunk(map, squad)            
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
             end
             if squad.settlers then
                 natives.builderCount = natives.builderCount - 1
+            else
+                natives.squadCount = natives.squadCount - 1
             end
             nextK,squad = next(squads, k)
             squads[k] = nil

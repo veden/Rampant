@@ -174,6 +174,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         
         natives.vengenceQueue = {}
         natives.builderCount = 0
+        natives.squadCount = 0
 
         game.forces.enemy.ai_controllable = true
 
