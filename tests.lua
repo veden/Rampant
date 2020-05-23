@@ -431,7 +431,7 @@ function tests.exportAiState()
                                    game.get_surface(global.natives.activeSurface).get_pollution(chunk),
                                    chunkPropertyUtils.getNestActiveness(global.map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
-                                   #chunkPropertyUtils.getSquadsOnChunk(global.map, chunk),
+                                   table_size(chunkPropertyUtils.getSquadsOnChunk(global.map, chunk)),
                                    alignmentCount,
                                    chunkPropertyUtils.getHiveCount(global.map, chunk),
                                    chunkPropertyUtils.getTrapCount(global.map, chunk),
@@ -538,7 +538,6 @@ function tests.unitGroupBuild()
     })
 
 end
-
 
 function tests.dumpEnvironment(x)
     print (serpent.dump(global[x]))

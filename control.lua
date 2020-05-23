@@ -373,34 +373,47 @@ local function rebuildMap()
         end
     end
 
-    map.filteredEntitiesPlayerQueryLowest = { area=map.area, force=map.activePlayerForces, type={"wall",
-                                                                                                 "transport-belt"}}
+    map.filteredEntitiesPlayerQueryLowest = { area=map.area,
+                                              force=map.activePlayerForces,
+                                              collision_mask = "player-layer",
+                                              type={"wall",
+                                                    "transport-belt"}}
 
-    map.filteredEntitiesPlayerQueryLow = { area=map.area, force=map.activePlayerForces, type={"splitter",
-                                                                                              "pump",
-                                                                                              "offshore-pump",
-                                                                                              "lamp",
-                                                                                              "solar-panel",
-                                                                                              "programmable-speaker",
-                                                                                              "accumulator",
-                                                                                              "assembling-machine",
-                                                                                              "turret",
-                                                                                              "ammo-turret"}}
+    map.filteredEntitiesPlayerQueryLow = { area=map.area,
+                                           force=map.activePlayerForces,
+                                           collision_mask = "player-layer",
+                                           type={"splitter",
+                                                 "pump",
+                                                 "offshore-pump",
+                                                 "lamp",
+                                                 "solar-panel",
+                                                 "programmable-speaker",
+                                                 "accumulator",
+                                                 "assembling-machine",
+                                                 "turret",
+                                                 "ammo-turret"}}
 
-    map.filteredEntitiesPlayerQueryHigh = { area=map.area, force=map.activePlayerForces, type={"furnace",
-                                                                                               "lab",
-                                                                                               "roboport",
-                                                                                               "beacon",
-                                                                                               "radar",
-                                                                                               "electric-turret",
-                                                                                               "boiler",
-                                                                                               "generator",
-                                                                                               "fluid-turret",
-                                                                                               "mining-drill"}}
+    map.filteredEntitiesPlayerQueryHigh = { area=map.area,
+                                            force=map.activePlayerForces,
+                                            collision_mask = "player-layer",
+                                            type={"furnace",
+                                                  "lab",
+                                                  "roboport",
+                                                  "beacon",
+                                                  "radar",
+                                                  "electric-turret",
+                                                  "boiler",
+                                                  "generator",
+                                                  "fluid-turret",
+                                                  "mining-drill"}}
 
-    map.filteredEntitiesPlayerQueryHighest = { area=map.area, force=map.activePlayerForces, type={"artillery-turret",
-                                                                                                  "reactor",
-                                                                                                  "rocket-silo"}}
+    map.filteredEntitiesPlayerQueryHighest = { area=map.area,
+                                               force=map.activePlayerForces,
+                                               collision_mask = "player-layer",
+                                               type={"artillery-turret",
+                                                     "reactor",
+                                                     "rocket-silo"}
+    }
 
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
@@ -1038,16 +1051,14 @@ local function onCommandComplete(event)
         if group and group.valid and (group.surface.name == natives.activeSurface) then
 
             if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
-                print("count", #group.members)
                 if (#group.members == 0) then
-                    print("dropping")
                     local deathGen = getDeathGenerator(map, squad.chunk)
-                    local penalties = squad.penalties
-                    for xc=1,mMin(#squad.penalties,5) do
-                        addDeathGenerator(map,
-                                          penalties[xc].c,
-                                          deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
-                    end
+                    -- local penalties = squad.penalties
+                    -- for xc=1,mMin(#squad.penalties,5) do
+                    --     addDeathGenerator(map,
+                    --                       penalties[xc].c,
+                    --                       deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
+                    -- end
                     removeSquadFromChunk(map, squad)
                     group.destroy()
                 else

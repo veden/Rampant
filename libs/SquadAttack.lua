@@ -89,31 +89,24 @@ local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 local function scoreResourceLocation(squad, neighborChunk)
     local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE]
-    return settle -- - lookupMovementPenalty(squad, neighborChunk)
-        - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(squad, neighborChunk)
     local settle = neighborChunk[MOVEMENT_PHEROMONE] + neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return settle -- - lookupMovementPenalty(squad, neighborChunk)
+    return settle
 end
 
 local function scoreAttackLocation(natives, squad, neighborChunk)
-    local damage
-    local movementPheromone = neighborChunk[MOVEMENT_PHEROMONE]
+    local damage = (2 * neighborChunk[MOVEMENT_PHEROMONE]) + neighborChunk[BASE_PHEROMONE] +
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
-    if (movementPheromone >= 0) then
-        damage = movementPheromone + (neighborChunk[BASE_PHEROMONE]) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    else
-        damage = (neighborChunk[BASE_PHEROMONE] * (1 - (movementPheromone / -natives.retreatThreshold))) + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) + (getPlayerBaseGenerator(natives.map, neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
-    end
-
-    return damage -- - lookupMovementPenalty(squad, neighborChunk)
+    return damage
 end
 
 local function scoreAttackKamikazeLocation(natives, squad, neighborChunk)
-    local damage = neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) + (getPlayerBaseGenerator(natives.map, neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
-    return damage -- - lookupMovementPenalty(squad, neighborChunk)
+    local damage = neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    return damage
 end
 
 
@@ -131,7 +124,7 @@ local function settleMove(map, squad, surface)
     if (natives.state == AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
     end
-    addMovementPenalty(squad, squad.chunk)
+    addMovementPenalty(map, squad, squad.chunk)
     addSquadToChunk(map, chunk, squad)
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
@@ -163,10 +156,6 @@ local function settleMove(map, squad, surface)
 
         surface.create_entity(map.createBuildCloudQuery)
 
-        if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
-            print("fuck")
-        end
-
         group.set_command(cmd)
     else
         local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
@@ -188,30 +177,19 @@ local function settleMove(map, squad, surface)
                 positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
                 positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
                 position = findMovementPosition(surface, targetPosition2)
-
-                if position and (euclideanDistanceNamed(position, group.position) > 200) then
-                    print("tp2", serpent.dump(targetPosition))
-                    print("tp3", serpent.dump(targetPosition2))
-                    print("tp", serpent.dump(position))
-                    print("gp", serpent.dump(group.position))
-                    print("fuck set2")
-                end
             else
                 positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
                 position = findMovementPosition(surface, targetPosition)
-
-                if position and (euclideanDistanceNamed(position, group.position) > 200) then
-                    print("tp2", serpent.dump(targetPosition))                    
-                    print("tp", serpent.dump(position))
-                    print("gp", serpent.dump(group.position))
-                    print("fuck set3")
-                end
-
             end
 
             if position then
                 targetPosition.x = position.x
                 targetPosition.y = position.y
+                if nextAttackChunk then
+                    addMovementPenalty(map, squad, nextAttackChunk)
+                else
+                    addMovementPenalty(map, squad, attackChunk)
+                end        
             else
                 cmd = map.wonderCommand
                 group.set_command(cmd)
@@ -240,7 +218,7 @@ local function settleMove(map, squad, surface)
             cmd = map.settleCommand
             cmd.destination.x = groupPosition.x
             cmd.destination.y = groupPosition.y
-            
+
             if squad.kamikaze then
                 cmd.distraction = DEFINES_DISTRACTION_NONE
             else
@@ -250,12 +228,6 @@ local function settleMove(map, squad, surface)
             squad.status = SQUAD_BUILDING
 
             surface.create_entity(map.createBuildCloudQuery)
-        end
-
-        if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
-            print("tp", serpent.dump(targetPosition))
-            print("gp", serpent.dump(group.position))
-            print("fuck set")
         end
 
         group.set_command(cmd)
@@ -278,7 +250,7 @@ local function attackMove(map, squad, surface)
         attackScorer = scoreAttackKamikazeLocation
     end
     local squadChunk = squad.chunk
-    addMovementPenalty(squad, squadChunk)
+    addMovementPenalty(map, squad, squadChunk)
     addSquadToChunk(map, chunk, squad)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
@@ -307,6 +279,11 @@ local function attackMove(map, squad, surface)
     else
         targetPosition.x = position.x
         targetPosition.y = position.y
+        if nextAttackChunk then
+            addMovementPenalty(map, squad, nextAttackChunk)
+        else
+            addMovementPenalty(map, squad, attackChunk)
+        end        
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
@@ -328,12 +305,6 @@ local function attackMove(map, squad, surface)
         end
     end
 
-    if (euclideanDistanceNamed(targetPosition, group.position) > 200) then
-        print("tp", serpent.dump(targetPosition))
-        print("gp", serpent.dump(group.position))
-        print("fuck atk")
-    end
-
     group.set_command(cmd)
 end
 
@@ -348,6 +319,8 @@ local function buildMove(map, squad, surface)
 
     position.x = groupPosition.x
     position.y = groupPosition.y
+
+    surface.create_entity(map.createBuildCloudQuery)
 
     group.set_command(map.compoundSettleCommand)
 end

@@ -98,11 +98,8 @@
                                      (cons (+ (string->number movement)
                                               (string->number resource))
                                            (cons (+ ;; (* 2 (string->number movement))
-                                                  (* (string->number base)
-                                                     (if (< (string->number movement) 0)
-                                                         (- 1 (/ (string->number movement)
-                                                                 -100000))
-                                                         1))
+                                                  (* 2 (string->number movement))
+                                                  (string->number base)
                                                   (* (string->number player) 2500))
                                                  (map string->number
                                                       (list x y movement base player resource passable tick rating nest
