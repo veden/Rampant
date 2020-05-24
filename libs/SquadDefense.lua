@@ -93,10 +93,16 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
         
         local newSquad = findNearbyRetreatingSquad(map, exitPath)
         local created = false
-
+        local natives = map.natives
+        
         if not newSquad then
-            created = true
-            newSquad = createSquad(position, surface)
+            if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
+                created = true
+                newSquad = createSquad(position, surface)                
+            else
+                print("cancelling retreat")
+                return
+            end            
         end
 
         map.fleeCommand.from = cause
@@ -113,8 +119,7 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
             return
         end
 
-        if created then
-            local natives = map.natives
+        if created then            
             natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
             natives.squadCount = natives.squadCount + 1
         end

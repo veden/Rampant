@@ -11,6 +11,9 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local VICTORY_SCENT_MULTIPLER = constants.VICTORY_SCENT_MULTIPLER
+local VICTORY_SCENT_BOUND = constants.VICTORY_SCENT_BOUND
+
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 local CHUNK_TICK = constants.CHUNK_TICK
@@ -36,6 +39,8 @@ local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMO
 
 -- imported functions
 
+local addVictoryGenerator = chunkPropertyUtils.addVictoryGenerator
+
 local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -52,15 +57,46 @@ local decayDeathGenerator = chunkPropertyUtils.decayDeathGenerator
 
 local linearInterpolation = mathUtils.linearInterpolation
 
+local getChunkByXY = mapUtils.getChunkByXY
+
 local mAbs = math.abs
+
+local next = next
 
 -- module code
 
 function pheromoneUtils.victoryScent(map, chunk, entityType)
     local value = VICTORY_SCENT[entityType]
     if value then
-        addDeathGenerator(map, chunk, -value)
+        addVictoryGenerator(map, chunk, value)
     end
+end
+
+function pheromoneUtils.disperseVictoryScent(map)
+    local iterator = map.victoryScentIterator
+    local chunkToVictory = map.chunkToVictory
+
+    local chunk,pheromone = next(chunkToVictory, iterator)
+    if chunk then
+        local chunkX = chunk.x
+        local chunkY = chunk.y
+        local i = 1
+        for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND do
+            for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND do
+                local c = getChunkByXY(map, x, y)
+                if (c ~= -1) then
+                    addDeathGenerator(map, c, -pheromone * VICTORY_SCENT_MULTIPLER[i])
+                end
+                i = i + 1                
+            end
+        end
+
+        local newChunk = next(chunkToVictory, chunk)
+        chunkToVictory[chunk] = nil
+        chunk = newChunk
+    end
+
+    map.victoryScentIterator = chunk
 end
 
 function pheromoneUtils.deathScent(map, chunk)

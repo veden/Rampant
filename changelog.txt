@@ -7,7 +7,9 @@ Date: 16. 4 2020
     - Integrated vanilla AI into Rampant for pollution management
     - Map processing sweep now does and forward and reverse pass
     - Better handling of death pheromone and squad coordination
+    - Added support for script_raised_set_tiles
   Tweaks:
+    - Reduced active raid nest contribution to AI state to 0.002
     - Changed ai credits per rocket launched to 5000
     - Refactored calculateKamikazeThreshold based on member count and current evolution
     - Reduced enemy unit lost contribution to AI state to 0.001

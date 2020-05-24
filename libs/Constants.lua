@@ -53,24 +53,26 @@ constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
 constants.PROCESS_STATIC_QUEUE_SIZE = 20
 constants.PROCESS_PLAYER_BOUND = 128
+constants.VICTORY_SCENT_BOUND = 128
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
 constants.CHUNK_PASS_THRESHOLD = 0.25
 
-constants.INTERVAL_PLAYER_PROCESS = 63
-constants.INTERVAL_MAP_PROCESS = 5
-constants.INTERVAL_MAP_STATIC_PROCESS = 11
-constants.INTERVAL_SCAN = 19
+-- constants.INTERVAL_PLAYER_PROCESS = 63
+-- constants.INTERVAL_MAP_PROCESS = 5
+-- constants.INTERVAL_MAP_STATIC_PROCESS = 11
+-- constants.INTERVAL_SCAN = 19
 constants.INTERVAL_CHUNK_PROCESS = 23
 constants.INTERVAL_LOGIC = 59
 constants.INTERVAL_TEMPERAMENT = 121
 constants.INTERVAL_SQUAD = 14
 constants.INTERVAL_NEST = 16
 constants.INTERVAL_PASS_SCAN = 29
-constants.INTERVAL_RESQUAD = 101
+-- constants.INTERVAL_RESQUAD = 101
 constants.INTERVAL_SPAWNER = 19
+constants.INTERVAL_VICTORY = 10
 constants.INTERVAL_CLEANUP = 34
 
 constants.COOLDOWN_RALLY = constants.TICKS_A_SECOND * 10
@@ -129,8 +131,6 @@ constants.RAIDING_MINIMUM_BASE_THRESHOLD = 550
 
 constants.AI_UNIT_REFUND = 3
 
-constants.AI_MAX_BUILDER_COUNT = 60
-constants.AI_MAX_SQUAD_COUNT = 100
 constants.AI_MAX_BITER_GROUP_SIZE = 600
 
 constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
@@ -139,7 +139,6 @@ constants.AI_MAX_SQUADS_PER_CYCLE = 7
 
 constants.AI_STATE_PEACEFUL = 1
 constants.AI_STATE_AGGRESSIVE = 2
--- constants.AI_STATE_NOCTURNAL = 3
 constants.AI_STATE_RAIDING = 4
 constants.AI_STATE_MIGRATING = 5
 constants.AI_STATE_SIEGE = 6
@@ -147,8 +146,6 @@ constants.AI_STATE_ONSLAUGHT = 7
 
 constants.BASE_AI_STATE_DORMANT = 0
 constants.BASE_AI_STATE_ACTIVE = 1
--- constants.BASE_AI_STATE_WORMS = 2
--- constants.BASE_AI_STATE_NESTS = 3
 constants.BASE_AI_STATE_OVERDRIVE = 2
 constants.BASE_AI_STATE_MUTATE = 3
 
@@ -158,8 +155,6 @@ constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = 3
 
 constants.AI_MIN_STATE_DURATION = 7
 constants.AI_MAX_STATE_DURATION = 17
--- constants.AI_MIN_STATE_DURATION = 0.2
--- constants.AI_MAX_STATE_DURATION = 0.2
 
 constants.AI_MIN_TEMPERAMENT_DURATION = 25
 constants.AI_MAX_TEMPERAMENT_DURATION = 32
@@ -1190,7 +1185,7 @@ if settings.startup["rampant-poisonEnemy"].value then
                 majorResistances = {"poison"},
                 minorWeaknesses = {"electric", "explosion", "laser"},
                 attributes = {"poisonDeathCloud"},
-                acceptRate = {1, 10, 0.4, 0.6},                
+                acceptRate = {1, 10, 0.4, 0.6},
                 drops = {"greenArtifact"},
                 buildSets = {
                     {"biter", 1, 10}
@@ -1217,7 +1212,7 @@ if settings.startup["rampant-poisonEnemy"].value then
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"greenArtifact"},
                 buildSets = {
-                    {"biter-spawner", 1, 10, 0.15, 0.3},            
+                    {"biter-spawner", 1, 10, 0.15, 0.3},
                     {"turret", 1, 10, 0.8, 0.57},
                     {"hive", 2, 10, 0.002, 0.02}
                 }
@@ -1490,6 +1485,29 @@ constants.HIVE_BUILDINGS_TYPES = {
     "biter-spawner",
     "hive"
 }
+
+constants.VICTORY_SCENT_MULTIPLER = {}
+for x=1,9 do
+    for y=1,9 do
+        local adjV
+        local v
+        if x <= 5 and y <= 5 then
+            v = math.min(x, y)
+        elseif x > 5 and y < 5 then
+            v = math.min((10-x), y)
+        elseif x < 5 and y > 5 then
+            v = math.min(x, (10-y))            
+        else
+            v = math.min((10-x), (10-y))
+        end
+        if v < 5 then
+            adjV = v / 5
+        else
+            adjV = 1
+        end
+        constants.VICTORY_SCENT_MULTIPLER[#constants.VICTORY_SCENT_MULTIPLER+1] = adjV
+    end
+end
 
 constants.HIVE_BUILDINGS_COST = {}
 constants.HIVE_BUILDINGS_COST["trap"] = constants.BASE_WORM_UPGRADE * 0.5

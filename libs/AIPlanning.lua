@@ -290,7 +290,7 @@ function aiPlanning.temperamentPlanner(natives)
     end
 
     if activeRaidNests > 0 then
-        local val = (0.008 * activeRaidNests)
+        local val = (0.002 * activeRaidNests)
         delta = delta - val
     else
         delta = delta - 0.5

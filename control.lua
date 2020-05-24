@@ -41,11 +41,10 @@ local INTERVAL_PASS_SCAN = constants.INTERVAL_PASS_SCAN
 local INTERVAL_NEST = constants.INTERVAL_NEST
 local INTERVAL_CLEANUP = constants.INTERVAL_CLEANUP
 local INTERVAL_MAP_STATIC_PROCESS = constants.INTERVAL_MAP_STATIC_PROCESS
+local INTERVAL_VICTORY = constants.INTERVAL_VICTORY
 
 local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
-local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
-local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
@@ -112,6 +111,8 @@ local processSpawners = mapProcessor.processSpawners
 local processStaticMap = mapProcessor.processStaticMap
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
+
+local disperseVictoryScent = pheromoneUtils.disperseVictoryScent
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -259,6 +260,7 @@ local function rebuildMap()
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
     map.chunkToDrained = {}
+    map.chunkToVictory = {}
     map.chunkToActiveNest = {}
     map.chunkToActiveRaidNest = {}
 
@@ -273,6 +275,7 @@ local function rebuildMap()
     map.processActiveRaidSpawnerIterator = nil
     map.processMigrationIterator = nil
     map.processNestIterator = nil
+    map.victoryScentIterator = nil
 
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     map.neighbors = {
@@ -442,8 +445,7 @@ local function rebuildMap()
     map.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = map.position,
-        radius = 2,
-        pathfind_flags = { prefer_straight_paths = true, cache = true },
+        pathfind_flags = { cache = false },
         distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
@@ -539,11 +541,11 @@ local function rebuildMap()
                         unit_search_distance = TRIPLE_CHUNK_SIZE }
 
     map.formLocalCommand = { command = map.formLocalGroupCommand,
-                             unit_count = AI_MAX_BITER_GROUP_SIZE,
+                             unit_count = natives.attackWaveMaxSize,
                              unit_search_distance = CHUNK_SIZE }
 
     map.formRetreatCommand = { command = map.compoundRetreatGroupCommand,
-                               unit_count = AI_MAX_BITER_GROUP_SIZE,
+                               unit_count = natives.attackWaveMaxSize,
                                unit_search_distance = CHUNK_SIZE }
 end
 
@@ -597,6 +599,8 @@ local function onModSettingsChange(event)
     natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
 
     upgrade.compareTable(natives, "ENEMY_VARIATIONS", settings.startup["rampant-newEnemyVariations"].value)
+    upgrade.compareTable(natives, "AI_MAX_SQUAD_COUNT", settings.global["rampant-maxNumberOfSquads"].value)
+    upgrade.compareTable(natives, "AI_MAX_BUILDER_COUNT", settings.global["rampant-maxNumberOfBuilders"].value)
 
     return true
 end
@@ -864,7 +868,7 @@ local function onSurfaceTileChange(event)
     if (surface.index == surfaceIndex) then
         local chunks = {}
         local tiles = event.tiles
-        if (event.tile.name == "landfill") or sFind(event.tile.name, "water") then
+        if event.tile and ((event.tile.name == "landfill") or sFind(event.tile.name, "water")) then
             for i=1,#tiles do
                 local position = tiles[i].position
                 local chunk = getChunkByPosition(map, position)
@@ -886,6 +890,34 @@ local function onSurfaceTileChange(event)
                         chunks[#chunks+1] = chunkXY
                         onChunkGenerated({area = { left_top = chunkXY },
                                           surface = surface})
+                    end
+                end
+            end
+        else
+            for i=1,#tiles do
+                local tile = tiles[i]
+                if (tile.name == "landfill") or sFind(tile.name, "water") then
+                    local position = tile.position
+                    local chunk = getChunkByPosition(map, position)
+
+                    if (chunk ~= -1) then
+                        map.chunkToPassScan[chunk] = true
+                    else
+                        local x,y = positionToChunkXY(position)
+                        local addMe = true
+                        for ci=1,#chunks do
+                            local c = chunks[ci]
+                            if (c.x == x) and (c.y == y) then
+                                addMe = false
+                                break
+                            end
+                        end
+                        if addMe then
+                            local chunkXY = {x=x,y=y}
+                            chunks[#chunks+1] = chunkXY
+                            onChunkGenerated({area = { left_top = chunkXY },
+                                              surface = surface})
+                        end
                     end
                 end
             end
@@ -994,11 +1026,18 @@ local function onUnitGroupCreated(event)
     local group = event.group
     local surface = group.surface
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
+        print("fuck", event.tick, natives.squadCount, natives.squadCount > natives.AI_MAX_SQUAD_COUNT, natives.builderCount, natives.builderCount > natives.AI_MAX_BUILDER_COUNT)
         if not group.is_script_driven then
             if not natives.aiNocturnalMode then
                 local settler = mRandom() < 0.25 and
                     canMigrate(natives, group.surface) and
-                    (natives.builderCount < AI_MAX_BUILDER_COUNT)
+                    (natives.builderCount < natives.AI_MAX_BUILDER_COUNT)
+
+                if not settler and natives.squadCount > natives.AI_MAX_SQUAD_COUNT then
+                    group.destroy()
+                    natives.points = natives.points + AI_SQUAD_COST
+                    return
+                end
 
                 squad = createSquad(nil, nil, group, settler)
                 natives.groupNumberToSquad[group.group_number] = squad
@@ -1008,13 +1047,22 @@ local function onUnitGroupCreated(event)
                 else
                     natives.squadCount = natives.squadCount + 1
                 end
-            elseif not (surface.darkness > 0.65) then
-                natives.points = natives.points + AI_SQUAD_COST
-                group.destroy()
             else
+                if not (surface.darkness > 0.65) then
+                    natives.points = natives.points + AI_SQUAD_COST
+                    group.destroy()
+                    return
+                end
+                
                 local settler = mRandom() < 0.25 and
                     canMigrate(natives, group.surface) and
-                    (natives.builderCount < AI_MAX_BUILDER_COUNT)
+                    (natives.builderCount < natives.AI_MAX_BUILDER_COUNT)
+
+                if not settler and natives.squadCount > natives.AI_MAX_SQUAD_COUNT then
+                    group.destroy()
+                    natives.points = natives.points + AI_SQUAD_COST
+                    return
+                end
 
                 squad = createSquad(nil, nil, group, settler)
                 natives.groupNumberToSquad[group.group_number] = squad
@@ -1055,21 +1103,17 @@ local function onGroupFinishedGathering(event)
         if (group.surface.name == natives.activeSurface) then
             local squad = natives.groupNumberToSquad[unitNumber]
             if squad.settler then
-                if (natives.builderCount < AI_MAX_BUILDER_COUNT) then
+                if (natives.builderCount < natives.AI_MAX_BUILDER_COUNT) then
                     squadDispatch(map, group.surface, squad, unitNumber)
                 else
-                    -- game.players[1].teleport(group.position, game.surfaces[1])
                     group.destroy()
-                    -- print("destroying settlers", event.tick)
                     natives.points = natives.points + AI_SETTLER_COST
                 end
             else
-                if (natives.squadCount < AI_MAX_SQUAD_COUNT) then
+                if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
                     squadDispatch(map, group.surface, squad, unitNumber)
                 else
-                    -- game.players[1].teleport(group.position, game.surfaces[1])
                     group.destroy()
-                    -- print("destroying squad", event.tick)
                     natives.points = natives.points + AI_SQUAD_COST
                 end
             end
@@ -1157,8 +1201,6 @@ script.on_nth_tick(INTERVAL_LOGIC,
                                 game.forces.enemy.evolution_factor,
                                 tick)
 
-                       cleanSquads(natives, map.squadIterator)
-
                        if natives.newEnemies then
                            recycleBases(natives, tick)
                        end
@@ -1183,6 +1225,11 @@ script.on_nth_tick(INTERVAL_SPAWNER,
                        processSpawners(map,
                                        game.get_surface(natives.activeSurface),
                                        event.tick)
+end)
+
+script.on_nth_tick(INTERVAL_VICTORY,
+                   function (event)
+                       disperseVictoryScent(map)
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
@@ -1222,7 +1269,7 @@ script.on_event(defines.events.on_tick,
                         scanPlayerMap(map, surface, tick)
                     end
 
-
+                    cleanSquads(natives, map.squadIterator)
                     processActiveNests(map, surface, tick)
 end)
 
@@ -1237,7 +1284,8 @@ script.on_configuration_changed(onConfigChanged)
 
 script.on_event(defines.events.on_resource_depleted, onResourceDepleted)
 script.on_event({defines.events.on_player_built_tile,
-                 defines.events.on_robot_built_tile}, onSurfaceTileChange)
+                 defines.events.on_robot_built_tile,
+                 defines.events.script_raised_set_tiles}, onSurfaceTileChange)
 
 script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 

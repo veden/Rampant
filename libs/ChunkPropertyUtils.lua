@@ -226,6 +226,10 @@ function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
     map.chunkToDeathGenerator[chunk] = (map.chunkToDeathGenerator[chunk] or 0) + value
 end
 
+function chunkPropertyUtils.addVictoryGenerator(map, chunk, value)
+    map.chunkToVictory[chunk] = (map.chunkToVictory[chunk] or 0) + value
+end
+
 function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     local gen = map.chunkToDeathGenerator[chunk]
     if gen then

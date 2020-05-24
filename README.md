@@ -1,5 +1,5 @@
 # Rampant Tactics
-Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Can completely replace the vanilla AI. Difficulty setting in mod options menu.  
+Factorio Mod - Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses nonhoming blockable biter projectiles. Adds new Enemies (disabled by default). Difficulty setting in mod options menu.  
 
 # Forum Post
 
@@ -35,7 +35,6 @@ Configure Options not in game menu:
 - Frenzy squads - When a unit group gets close to a player or start combat they switch to attacking everything in there path for a set radius or until there is nothing left  
 - Rabid squads - Is in a permanent frenzied state as soon as the group is formed  
 - Tactical Retreats - These will take place when a unit group is in a chunk that has reached a death threshold  
-- Unit Group Merging - If two squads occupy roughly the same area and are doing the same task then they will merge  
 - Unit Group Forming - Any chunks with spawners in it that is covered by a pollution or player clouds will form groups based on the evolution factor  
 - Probing Behavior Against Defenses - unit groups will attempt to avoid chunks that are soaked in death  
 - Player Hunting - Unit groups will track the player based on there emitted pheromone cloud  

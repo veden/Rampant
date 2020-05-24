@@ -435,7 +435,9 @@ function tests.exportAiState()
                                    alignmentCount,
                                    chunkPropertyUtils.getHiveCount(global.map, chunk),
                                    chunkPropertyUtils.getTrapCount(global.map, chunk),
-                                   chunkPropertyUtils.getUtilityCount(global.map, chunk)}, ",") .. "\n"
+                                   chunkPropertyUtils.getUtilityCount(global.map, chunk),
+                                   global.map.chunkToVictory[chunk] or 0
+                                  }, ",") .. "\n"
         end
         game.write_file("rampantState.txt", s, false)
     end

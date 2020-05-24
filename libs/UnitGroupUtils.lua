@@ -134,13 +134,10 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
 end
 
 function unitGroupUtils.cleanSquads(natives, iterator)
-    -- local profiler = game.create_profiler()
     local squads = natives.groupNumberToSquad
     local map = natives.map
 
     local k, squad = next(squads, iterator)
-    local nextK
-    -- for i=1,2 do
     if not k then
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
@@ -159,52 +156,14 @@ function unitGroupUtils.cleanSquads(natives, iterator)
             else
                 natives.squadCount = natives.squadCount - 1
             end
+            local nextK
             nextK,squad = next(squads, k)
             squads[k] = nil
             k = nextK
-            -- else
-            --     game.print({"", "3b", profiler})
-            --     profiler.restart()
-            --     local members = group.members
-            --     local memberCount = #members
-            --     if (memberCount == 0) then
-            --         game.print({"", "4a", profiler})
-            --         profiler.restart()
-            --         local deathGen = getDeathGenerator(map, squad.chunk)
-            --         local penalties = squad.penalties
-            --         for xc=1,mMin(#squad.penalties,5) do
-            --             addDeathGenerator(map,
-            --                               penalties[xc].c,
-            --                               deathGen * DIVISOR_DEATH_TRAIL_TABLE[xc])
-            --         end
-            --         removeSquadFromChunk(map, squad)
-            --         group.destroy()
-            --         game.print({"", "4ea", profiler})
-            --         profiler.restart()
-            --     elseif (memberCount > AI_MAX_BITER_GROUP_SIZE) then
-            --         game.print({"", "4b", profiler})
-            --         profiler.restart()
-            --         unitGroupUtils.recycleBiters(natives, members)
-            --         removeSquadFromChunk(map, squad)
-            --         group.destroy()
-            --         game.print({"", "4eb", profiler})
-            --         profiler.restart()
-            --     end
-            --     game.print({"", "3be", profiler})
         end
     end
-    -- end
     map.squadIterator = k
 end
-
--- function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
---     for i=1,size do
---         local member = members[i]
---         if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
---             member.set_command(cmd)
---         end
---     end
--- end
 
 function unitGroupUtils.calculateKamikazeThreshold(memberCount, natives)
     local threshold = (memberCount / natives.attackWaveMaxSize) * 0.2 + (natives.evolutionLevel * 0.2)

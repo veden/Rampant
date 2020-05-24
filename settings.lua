@@ -42,8 +42,30 @@ data:extend({
             name = "rampant-attackWaveMaxSize",
             setting_type = "runtime-global",
             minimum_value = 20,
-            maximum_value = 400,
+            maximum_value = 600,
             default_value = 150,
+            order = "b[modifier]-f[wave]",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
+            name = "rampant-maxNumberOfSquads",
+            setting_type = "runtime-global",
+            minimum_value = 1,
+            maximum_value = 300,
+            default_value = 50,
+            order = "b[modifier]-f[wave]",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
+            name = "rampant-maxNumberOfBuilders",
+            setting_type = "runtime-global",
+            minimum_value = 1,
+            maximum_value = 120,
+            default_value = 50,
             order = "b[modifier]-f[wave]",
             per_user = false
         },

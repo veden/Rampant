@@ -39,7 +39,8 @@
                             baseCreated
                             hives
                             traps
-                            utility)
+                            utility
+                            vg)
                 #:transparent)
 
         (struct Chunk (kamikazeScore
@@ -70,7 +71,8 @@
                        baseCreated
                        hives
                        traps
-                       utility)
+                       utility
+                       vg)
                 #:transparent)
 
         (require threading)
@@ -83,7 +85,7 @@
         (define (stringToChunk str)
           (match-let (((list movement base player resource passable tick rating x y nest
                              worms rally retreat resourceGen playerGen deathGen pollution aNe aRNe squads
-                             baseCreated hives traps utility) (string-split str ",")))
+                             baseCreated hives traps utility vg) (string-split str ",")))
             (apply Chunk
                    (cons (+ (string->number base)
                             (* (string->number player) 100))
@@ -103,7 +105,7 @@
                                                  (map string->number
                                                       (list x y movement base player resource passable tick rating nest
                                                             worms rally retreat resourceGen playerGen deathGen pollution aNe
-                                                            aRNe squads baseCreated hives traps utility))))))))))
+                                                            aRNe squads baseCreated hives traps utility vg))))))))))
         
         (define (chunk->string chunk)
           (string-append "x: " (~v (Chunk-x chunk)) "\n"
@@ -135,7 +137,8 @@
                          "bC: " (~v (Chunk-baseCreated chunk)) "\n"
                          "H: " (~v (Chunk-hives chunk)) "\n"
                          "T: " (~v (Chunk-traps chunk)) "\n"
-                         "U: " (~v (Chunk-utility chunk)) "\n"))
+                         "U: " (~v (Chunk-utility chunk)) "\n"
+                         "vg: " (~v (Chunk-vg chunk)) "\n"))
 
         (define (normalizeRange xs)
           (let* ((sDev (stddev xs))
@@ -176,7 +179,8 @@
                 (bC (map Chunk-baseCreated chunks))
                 (H (map Chunk-hives chunks))
                 (T (map Chunk-traps chunks))
-                (U (map Chunk-utility chunks)))
+                (U (map Chunk-utility chunks))
+                (vg (map Chunk-vg chunks)))
 
             (ChunkRange (MinMax (apply min xs) (apply max xs))
                         (MinMax (apply min ys) (apply max ys))
@@ -206,7 +210,8 @@
                         (MinMax (apply min bC) (apply max bC))
                         (MinMax (apply min H) (apply max H))
                         (MinMax (apply min T) (apply max T))
-                        (MinMax (apply min U) (apply max U)))
+                        (MinMax (apply min U) (apply max U))
+                        (MinMax (apply min vg) (apply max vg)))
             ))
 
         (define (readState filePath)

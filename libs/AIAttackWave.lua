@@ -23,11 +23,8 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
 local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
 
-local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
-
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
-local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
@@ -189,7 +186,7 @@ end
 function aiAttackWave.formSettlers(map, surface, chunk, tick)
 
     local natives = map.natives
-    if (natives.builderCount < AI_MAX_BUILDER_COUNT) and
+    if (natives.builderCount < natives.AI_MAX_BUILDER_COUNT) and
         (mRandom() < natives.formSquadThreshold) and
         ((natives.points - AI_SETTLER_COST) > 0)
     then
@@ -247,7 +244,7 @@ end
 
 function aiAttackWave.formVengenceSquad(map, surface, chunk)
     local natives = map.natives
-    if (natives.squadCount < AI_MAX_SQUAD_COUNT) and
+    if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) and
         (mRandom() < natives.formSquadThreshold) and
         ((natives.points - AI_VENGENCE_SQUAD_COST) > 0)
     then
@@ -277,6 +274,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                 if (foundUnits > 0) then
                     squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)                    
                     natives.groupNumberToSquad[squad.groupNumber] = squad
+                    natives.squadCount = natives.squadCount + 1
                     natives.points = natives.points - AI_VENGENCE_SQUAD_COST
                 else
                     if (squad.group.valid) then
@@ -290,7 +288,7 @@ end
 
 function aiAttackWave.formSquads(map, surface, chunk, tick)
     local natives = map.natives
-    if (natives.squadCount < AI_MAX_SQUAD_COUNT) and
+    if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) and
         attackWaveValidCandidate(chunk, natives, map) and
         (mRandom() < natives.formSquadThreshold) and
         ((natives.points - AI_SQUAD_COST) > 0)
