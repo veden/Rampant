@@ -59,7 +59,7 @@ local processPheromone = pheromoneUtils.processPheromone
 local commitPheromone = pheromoneUtils.commitPheromone
 local playerScent = pheromoneUtils.playerScent
 
-local getDeathGenerator = chunkPropertyUtils
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 local processBase = baseUtils.processBase
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness

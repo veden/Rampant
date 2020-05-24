@@ -146,6 +146,7 @@ local function settleMove(map, squad, surface)
     end
     addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
+    addMovementPenalty(map, squad, chunk)    
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
                                              squad.originPosition.x,
@@ -272,6 +273,7 @@ local function attackMove(map, squad, surface)
     local squadChunk = squad.chunk
     addDeathGenerator(map, squadChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
+    addMovementPenalty(map, squad, chunk)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
                                                                                                        chunk,

@@ -48,45 +48,28 @@ function movementUtils.addMovementPenalty(map, squad, chunk)
     if (chunk == -1) then
         return
     end
-    -- addDeathGenerator(map, chunk, DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT * 10)
-    -- if squad.settlers then
-    --     chunk[RESOURCE_PHEROMONE] = chunk[RESOURCE_PHEROMONE] * 0.1
-    -- else
-    --     chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] * 0.1
-    -- end
-    
-
-    -- local penalties = squad.penalties
-    -- for i=1,#penalties do
-    --     local penalty = penalties[i]
-    --     if (penalty.c == chunk) then
-    --         penalty.v = (2 * penalty.v) + MOVEMENT_PENALTY_AMOUNT
-    --         -- if (penalty.v >= MOVEMENT_PENALTY_AMOUNT * 10) then
-    --         print("movementThreshold", squad.group.group_number, penalty.v, squad.settlers, squad.kamikaze, squad.status)
-    --         -- squad.kamikaze = true
-    --         -- end
-    --         return
-    --     end
-    -- end
-    -- if (#penalties == 7) then
-    --     tableRemove(penalties, 7)
-    -- end
-    -- tableInsert(penalties,
-    --             1,
-    --             { v = MOVEMENT_PENALTY_AMOUNT,
-    --               c = chunk })
+    local penalties = squad.penalties
+    local penaltyCount = #penalties
+    for i=1,penaltyCount do
+        local penalty = penalties[i]
+        if (penalty.c == chunk) then
+            penalty.v = ((penaltyCount > 1) and penalty.v + 1) or penalty.v
+            if (penalty.v > 2) then
+                -- print("movementThreshold", #penalties, squad.group.group_number, penalty.v, squad.settlers, squad.kamikaze, squad.status)
+                -- game.players[1].teleport(chunk, game.surfaces[1])
+                squad.kamikaze = true
+            end
+            return
+        end
+    end
+    if (penaltyCount == 7) then
+        tableRemove(penalties, 7)
+    end
+    tableInsert(penalties,
+                1,
+                { v = 1,
+                  c = chunk })
 end
-
--- function movementUtils.lookupMovementPenalty(squad, chunk)
---     local penalties = squad.penalties
---     for i=1,#penalties do
---         local penalty = penalties[i]
---         if (penalty.c == chunk) then
---             return penalty.v
---         end
---     end
---     return 0
--- end
 
 --[[
     Expects all neighbors adjacent to a chunk

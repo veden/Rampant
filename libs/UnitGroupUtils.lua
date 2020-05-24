@@ -109,6 +109,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         group = unitGroup,
         status = SQUAD_GUARDING,
         rabid = false,
+        penalties = {},
         frenzy = false,
         settlers = settlers or false,
         kamikaze = false,

@@ -12,6 +12,8 @@ Date: 16. 4 2020
     - Refactored calculateKamikazeThreshold based on member count and current evolution
     - Reduced enemy unit lost contribution to AI state to 0.001
     - Reduced RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX to 190000
+    - Removed lite mode setting
+    - Removed disable vanilla ai setting
   Bugfixes:
     - fixed add movement penalty not using squad chunk
     - fixed landfill and waterfill getting registered properly
