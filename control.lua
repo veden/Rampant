@@ -46,6 +46,8 @@ local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
 local AI_MAX_BUILDER_COUNT = constants.AI_MAX_BUILDER_COUNT
 local AI_MAX_SQUAD_COUNT = constants.AI_MAX_SQUAD_COUNT
+local AI_SQUAD_COST = constants.AI_SQUAD_COST
+local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
@@ -186,7 +188,7 @@ local function onIonCannonFired(event)
     local surface = event.surface
     if (surface.name == natives.activeSurface) then
         natives.ionCannonBlasts = natives.ionCannonBlasts + 1
-        natives.points = natives.points + 3000
+        natives.points = natives.points + 4000
         local chunk = getChunkByPosition(map, event.position)
         if (chunk ~= -1) then
             rallyUnits(chunk, map, surface, event.tick)
@@ -1007,6 +1009,7 @@ local function onUnitGroupCreated(event)
                     natives.squadCount = natives.squadCount + 1
                 end
             elseif not (surface.darkness > 0.65) then
+                natives.points = natives.points + AI_SQUAD_COST
                 group.destroy()
             else
                 local settler = mRandom() < 0.25 and
@@ -1054,14 +1057,20 @@ local function onGroupFinishedGathering(event)
             if squad.settler then
                 if (natives.builderCount < AI_MAX_BUILDER_COUNT) then
                     squadDispatch(map, group.surface, squad, unitNumber)
-                elseif not (group.command and group.command.type == DEFINES_COMMAND_WANDER) then
-                    group.set_command(map.wonder3Command)
+                else
+                    -- game.players[1].teleport(group.position, game.surfaces[1])
+                    group.destroy()
+                    -- print("destroying settlers", event.tick)
+                    natives.points = natives.points + AI_SETTLER_COST
                 end
             else
                 if (natives.squadCount < AI_MAX_SQUAD_COUNT) then
                     squadDispatch(map, group.surface, squad, unitNumber)
-                elseif not (group.command and group.command.type == DEFINES_COMMAND_WANDER) then
-                    group.set_command(map.wonder3Command)
+                else
+                    -- game.players[1].teleport(group.position, game.surfaces[1])
+                    group.destroy()
+                    -- print("destroying squad", event.tick)
+                    natives.points = natives.points + AI_SQUAD_COST
                 end
             end
         end
