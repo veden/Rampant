@@ -3,22 +3,28 @@ Version: 0.18.13
 Date: 16. 4 2020
   Improvements:
     - Swapped to ai command completed for unit movements
-    - When squads reach a movement threshold for being in the same spots to much they switch to kamikaze mode
     - Added effect when spawners build to destroy build site
     - Integrated vanilla AI into Rampant for pollution management
     - Map processing sweep now does and forward and reverse pass
+    - Better handling of death pheromone and squad coordination
   Tweaks:
     - Changed ai credits per rocket launched to 5000
+    - Refactored calculateKamikazeThreshold based on member count and current evolution
+    - Reduced enemy unit lost contribution to AI state to 0.001
+    - Reduced RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX to 190000
   Bugfixes:
     - fixed add movement penalty not using squad chunk
     - fixed landfill and waterfill getting registered properly
     - fixed surface filter queries grabbing player buildings that didn't have a collision mask
+    - fixed worm icon in kill stats
+    - fixed units not counting for ai state shift
   Optimizations:
     - Cleaned up regroup squads
     - Cleaned up invalid group detection
     - Minimized use of group.members
     - Changed how settlers remove entities around build sites
     - Split map processing and unit group creation
+    - Refactored pheromone map
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.11

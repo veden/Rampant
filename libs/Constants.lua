@@ -40,14 +40,14 @@ constants.VERSION_88 = 88
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 13000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 221000
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 1000
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 130000
 
-constants.PROCESS_QUEUE_SIZE = 100
+constants.PROCESS_QUEUE_SIZE = 140
 constants.SCAN_QUEUE_SIZE = 2
-constants.RESOURCE_QUEUE_SIZE = 10
-constants.ENEMY_QUEUE_SIZE = 10
-constants.PLAYER_QUEUE_SIZE = 10
+constants.RESOURCE_QUEUE_SIZE = 7
+constants.ENEMY_QUEUE_SIZE = 7
+constants.PLAYER_QUEUE_SIZE = 7
 constants.CLEANUP_QUEUE_SIZE = 15
 constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
@@ -193,7 +193,6 @@ constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 2
 
 constants.NO_RETREAT_BASE_PERCENT = 0.10
 constants.NO_RETREAT_EVOLUTION_BONUS_MAX = 0.25
-constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX = 0.40
 
 -- pheromone amounts
 
@@ -211,14 +210,13 @@ constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.90
 
 -- chunk attributes
 
-constants.MOVEMENT_PHEROMONE = 1
-constants.BASE_PHEROMONE = 2
-constants.PLAYER_PHEROMONE = 3
-constants.RESOURCE_PHEROMONE = 4
+constants.BASE_PHEROMONE = 1
+constants.PLAYER_PHEROMONE = 2
+constants.RESOURCE_PHEROMONE = 3
 
 -- constants.PASSABLE = 5
 
-constants.CHUNK_TICK = 5
+constants.CHUNK_TICK = 4
 
 -- constants.PATH_RATING = 7
 

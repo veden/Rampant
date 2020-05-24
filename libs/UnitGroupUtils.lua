@@ -24,8 +24,6 @@ local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
-local NO_RETREAT_SQUAD_SIZE_BONUS_MAX = constants.NO_RETREAT_SQUAD_SIZE_BONUS_MAX
-
 local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
 local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
 
@@ -55,11 +53,9 @@ local getNeighborChunks = mapUtils.getNeighborChunks
 
 function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
-    local squads = getSquadsOnChunk(map, chunk)
-    for i=1,#squads do
-        local squad = squads[i]
+    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
         local unitGroup = squad.group
-        if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
+        if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
             return squad
         end
     end
@@ -69,11 +65,9 @@ function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
     for i=1,#neighbors do
         local neighbor = neighbors[i]
         if neighbor ~= -1 then
-            squads = getSquadsOnChunk(map, neighbor)
-            for squadIndex=1,#squads do
-                local squad = squads[squadIndex]
+            for _,squad in pairs(getSquadsOnChunk(map, neighbor)) do
                 local unitGroup = squad.group
-                if unitGroup and unitGroup.valid and (squad.status == SQUAD_RETREATING) then
+                if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
                     return squad
                 end
             end
@@ -84,9 +78,7 @@ end
 
 function unitGroupUtils.findNearbySquad(map, chunk)
 
-    local squads = getSquadsOnChunk(map, chunk)
-    for i=1,#squads do
-        local squad = squads[i]
+    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
         local unitGroup = squad.group
         if unitGroup and unitGroup.valid then
             return squad
@@ -98,9 +90,7 @@ function unitGroupUtils.findNearbySquad(map, chunk)
     for i=1,#neighbors do
         local neighbor = neighbors[i]
         if neighbor ~= -1 then
-            squads = getSquadsOnChunk(map, neighbor)
-            for squadIndex=1,#squads do
-                local squad = squads[squadIndex]
+            for _,squad in pairs(getSquadsOnChunk(map, neighbor)) do
                 local unitGroup = squad.group
                 if unitGroup and unitGroup.valid then
                     return squad
@@ -158,8 +148,8 @@ function unitGroupUtils.cleanSquads(natives, iterator)
     else
         local group = squad.group
         if not group.valid then
-            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)            
-            removeSquadFromChunk(map, squad)            
+            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            removeSquadFromChunk(map, squad)
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
             end
@@ -206,71 +196,18 @@ function unitGroupUtils.cleanSquads(natives, iterator)
     map.squadIterator = k
 end
 
-function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
-    for i=1,size do
-        local member = members[i]
-        if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
-            member.set_command(cmd)
-        end
-    end
-end
+-- function unitGroupUtils.membersToSquad(cmd, size, members, overwriteGroup)
+--     for i=1,size do
+--         local member = members[i]
+--         if member.valid and (overwriteGroup or (not overwriteGroup and not member.unit_group)) then
+--             member.set_command(cmd)
+--         end
+--     end
+-- end
 
 function unitGroupUtils.calculateKamikazeThreshold(memberCount, natives)
-    local squadSizeBonus = mLog((memberCount / natives.attackWaveMaxSize) + 0.1) + 1
-    return natives.kamikazeThreshold + (NO_RETREAT_SQUAD_SIZE_BONUS_MAX * squadSizeBonus)
-end
-
-function unitGroupUtils.recycleBiters(natives, biters)
-    local unitCount = #biters
-    for i=1,unitCount do
-        biters[i].destroy()
-    end
-    natives.points = natives.points + (unitCount * natives.unitRefundAmount)
-end
-
-function unitGroupUtils.regroupSquads(natives, surface, iterator)
-    local map = natives.map
-    local squads = natives.groupNumberToSquad
-    local cmd = map.formLocalCommand
-
-    local k, squad = next(squads, iterator)
-    if k then
-        local group = squad.group
-        if group and group.valid then
-            cmd.command.group = group
-            local groupState = group.state
-            if (groupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
-                (groupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
-            then
-                local status = squad.status
-                local chunk = squad.chunk
-
-                if (chunk ~= -1) then
-                    local merging = false
-                    for _,mergeSquad in pairs(getSquadsOnChunk(map, chunk)) do
-                        if (mergeSquad ~= squad) then
-                            local mergeGroup = mergeSquad.group
-                            if mergeGroup and mergeGroup.valid and (mergeSquad.status == status) then
-                                local mergeGroupState = mergeGroup.state
-                                if (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_TARGET) and
-                                    (mergeGroupState ~= DEFINES_GROUP_STATE_ATTACKING_DISTRACTION)
-                                then
-                                    merging = true
-                                    mergeGroup.destroy()
-                                end
-                            end
-                        end
-                    end
-                    if merging then
-                        surface.set_multi_command(cmd)
-                    end
-                end
-            end
-        end
-        k,squad = next(squads, k)
-    end
-
-    map.regroupIterator = k
+    local threshold = (memberCount / natives.attackWaveMaxSize) * 0.2 + (natives.evolutionLevel * 0.2)
+    return threshold
 end
 
 unitGroupUtilsG = unitGroupUtils

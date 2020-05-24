@@ -20,7 +20,6 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
 local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
@@ -294,7 +293,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
     end
 end
 
-function pheromoneUtils.processPheromone(map, chunk)
+function pheromoneUtils.processPheromone(map, chunk, player)
     local chunkPlayer = -MAGIC_MAXIMUM_NUMBER
     local chunkPathRating = getPathRating(map, chunk)
 
@@ -441,7 +440,9 @@ function pheromoneUtils.processPheromone(map, chunk)
         end
     end
 
-    decayDeathGenerator(map, chunk)
+    if not player then
+        decayDeathGenerator(map, chunk)
+    end
 
     chunkPlayer = chunkPlayer * 0.45
     local pheromone = getPlayersOnChunk(map, chunk) * PLAYER_PHEROMONE_GENERATOR_AMOUNT

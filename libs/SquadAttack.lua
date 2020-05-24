@@ -16,7 +16,6 @@ local chunkUtils = require("ChunkUtils")
 -- constants
 
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
@@ -89,13 +88,25 @@ local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 -- module code
 
+local function scoreResourceLocationKamikaze(map, squad, neighborChunk)
+    local settle = neighborChunk[RESOURCE_PHEROMONE]
+    return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+end
+
+local function scoreSiegeLocationKamikaze(map, squad, neighborChunk)
+    local settle = neighborChunk[BASE_PHEROMONE] +
+        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    
+    return settle
+end
+
 local function scoreResourceLocation(map, squad, neighborChunk)
     local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(map, squad, neighborChunk)
-    local settle = neighborChunk[BASE_PHEROMONE] +
+    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
         neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     
     return settle
@@ -125,7 +136,13 @@ local function settleMove(map, squad, surface)
     local groupState = group.state
     local natives = map.natives
     if (natives.state == AI_STATE_SIEGE) then
-        scoreFunction = scoreSiegeLocation
+        if squad.kamikaze then
+            scoreFunction = scoreSiegeLocationKamikaze
+        else
+            scoreFunction = scoreSiegeLocation
+        end
+    elseif squad.kamikaze then
+        scoreFunction = scoreResourceLocationKamikaze
     end
     addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
@@ -250,7 +267,6 @@ local function attackMove(map, squad, surface)
     local chunk = getChunkByXY(map, x, y)
     local attackScorer = scoreAttackLocation
     if squad.kamikaze then
-        print("squadK", squad.kamikaze, squad.groupNumber)
         attackScorer = scoreAttackKamikazeLocation
     end
     local squadChunk = squad.chunk

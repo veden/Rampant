@@ -164,7 +164,8 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, natives, useHi
                     break
                 end
             end
-        else
+        end
+        if not entity then
             local roll = mRandom()
             local initial = roll
 
@@ -208,7 +209,7 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, nativ
         elseif (#upgrades > 0) then
             entity = upgrades[mRandom(#upgrades)]
             if mRandom() < 0.55 then
-                break
+                return entity
             end
         end
     end
@@ -232,7 +233,6 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     if evolve then
         local chunk = getChunkByPosition(natives.map, originalEntity.position)
         local makeHive = (chunk ~= -1) and (getResourceGenerator(natives.map, chunk) > 0) and (mRandom() < 0.2)
-
         return initialEntityUpgrade(baseAlignment, tier, maxTier, natives, (makeHive and "hive"))
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, natives)
@@ -316,8 +316,7 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, disPos
         query.name = spawnerName
         return surface.create_entity(query)
     end
-
-    return nil
+    return entity
 end
 
 local function upgradeBase(natives, base)

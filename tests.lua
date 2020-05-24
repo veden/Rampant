@@ -412,7 +412,7 @@ function tests.exportAiState()
                 end
             end
             
-            s = s .. table.concat({chunk[constants.MOVEMENT_PHEROMONE],
+            s = s .. table.concat({0,
                                    chunk[constants.BASE_PHEROMONE],
                                    chunk[constants.PLAYER_PHEROMONE],
                                    chunk[constants.RESOURCE_PHEROMONE],

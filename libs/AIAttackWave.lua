@@ -18,7 +18,6 @@ local config = require("__Rampant__/config")
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
@@ -51,6 +50,8 @@ local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 local randomTickEvent = mathUtils.randomTickEvent
 
+local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
+
 local mRandom = math.random
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
@@ -71,6 +72,7 @@ local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 local createSquad = unitGroupUtils.createSquad
 local attackWaveScaling = config.attackWaveScaling
 local settlerWaveScaling = config.settlerWaveScaling
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
 -- module code
 
@@ -82,22 +84,22 @@ local function attackWaveValidCandidate(chunk, natives, map)
     return (isValid > 0)
 end
 
-local function scoreSettlerLocation(neighborChunk)
+local function scoreSettlerLocation(map, neighborChunk)
     return neighborChunk[RESOURCE_PHEROMONE] +
-        neighborChunk[MOVEMENT_PHEROMONE] +
+        -getDeathGenerator(map, neighborChunk) +
         -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreSiegeSettlerLocation(neighborChunk)
+local function scoreSiegeSettlerLocation(map, neighborChunk)
     return neighborChunk[RESOURCE_PHEROMONE] +
         neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[MOVEMENT_PHEROMONE] +
+        -getDeathGenerator(map, neighborChunk) +
         -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreUnitGroupLocation(neighborChunk)
+local function scoreUnitGroupLocation(map, neighborChunk)
     return neighborChunk[PLAYER_PHEROMONE] +
-        neighborChunk[MOVEMENT_PHEROMONE] +
+        -getDeathGenerator(map, neighborChunk) +
         neighborChunk[BASE_PHEROMONE]
 end
 
@@ -229,6 +231,7 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)                    
                     natives.builderCount = natives.builderCount + 1
                     natives.points = natives.points - AI_SETTLER_COST
                     natives.groupNumberToSquad[squad.groupNumber] = squad
@@ -272,6 +275,7 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)                    
                     natives.groupNumberToSquad[squad.groupNumber] = squad
                     natives.points = natives.points - AI_VENGENCE_SQUAD_COST
                 else
@@ -315,6 +319,7 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)
                     natives.points = natives.points - AI_SQUAD_COST
                     natives.squadCount = natives.squadCount + 1
                     natives.groupNumberToSquad[squad.groupNumber] = squad

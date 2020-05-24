@@ -38,7 +38,7 @@ function smokeUtils.makeNewCloud(attributes, attack)
                         shift = {-0.53125, -0.4375},
                         priority = "high",
                         animation_speed = 0.25,
-                        scale = (attributes.scale and attributes.scale * 0.75) or 2.25,
+                        scale = 1,
                         filename = "__base__/graphics/entity/smoke/smoke.png",
                         flags = { "smoke" }
                     }
@@ -59,14 +59,14 @@ function smokeUtils.makeNewCloud(attributes, attack)
                         animation_speed = 0.25,
                         filename = "__base__/graphics/entity/smoke/smoke.png",
                         flags = { "smoke" },
-                        scale = attributes.scale or 3,
+                        scale = 1,
                         tint = attributes.tint or { r = 0.7, g = 0.9, b = 0.2 }
                     },
                 created_effect =
                     {
                         {
                             type = "cluster",
-                            cluster_count = (attributes.scale and attributes.scale * 0.5) and 10,
+                            cluster_count = (attributes.scale and attributes.scale * 0.25) and 10,
                             distance = (attributes.scale and attributes.scale * 0.8) and 4,
                             distance_deviation = 5,
                             action_delivery =
@@ -83,7 +83,7 @@ function smokeUtils.makeNewCloud(attributes, attack)
                         },
                         {
                             type = "cluster",
-                            cluster_count = (attributes.scale and attributes.scale * 0.65) and 11,
+                            cluster_count = (attributes.scale and attributes.scale * 0.4) and 11,
                             distance = (attributes.scale and attributes.scale * 1.8) and 8 * 1.1,
                             distance_deviation = 2,
                             action_delivery =

@@ -193,7 +193,7 @@ function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks,
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) and canMoveChunkDirection(map, x, chunk, neighborChunk) and validFunction(map, chunk, neighborChunk) then
-            local score = scoreFunction(neighborChunk)
+            local score = scoreFunction(map, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -270,7 +270,7 @@ function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction,
     for x=1,8 do
         local neighborChunk = neighborChunks[x]
         if (neighborChunk ~= -1) and validFunction(map, neighborChunk) then
-            local score = scoreFunction(neighborChunk)
+            local score = scoreFunction(map, neighborChunk)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk

@@ -297,7 +297,7 @@ function aiPlanning.temperamentPlanner(natives)
     end
 
     if lostEnemyUnits > 0 then
-        local val = (0.04 * lostEnemyUnits)
+        local val = (0.001 * lostEnemyUnits)
         if (currentTemperament > 0) then
             delta = delta - val
         else

@@ -42,7 +42,6 @@ local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
@@ -60,6 +59,7 @@ local processPheromone = pheromoneUtils.processPheromone
 local commitPheromone = pheromoneUtils.commitPheromone
 local playerScent = pheromoneUtils.playerScent
 
+local getDeathGenerator = chunkPropertyUtils
 local processBase = baseUtils.processBase
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
@@ -246,7 +246,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
                 local vengence = allowingAttacks and
                     (natives.points >= AI_VENGENCE_SQUAD_COST) and
                     ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (playerChunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold))
+                            (-getDeathGenerator(map, playerChunk) < -natives.retreatThreshold))
 
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -254,7 +254,7 @@ function mapProcessor.processPlayers(players, map, surface, tick)
 
                         if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
                             chunk[CHUNK_TICK] = tick
-                            processPheromone(map, chunk)
+                            processPheromone(map, chunk, true)
 
                             if (getNestCount(map, chunk) > 0) then
                                 processNestActiveness(map, chunk, natives, surface)

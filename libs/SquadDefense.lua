@@ -9,11 +9,12 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
-local chunkPropetyUtils = require("ChunkPropertyUtils")
+local chunkUtils = require("ChunkUtils")
+local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
+local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 
@@ -27,7 +28,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 local mRandom = math.random
 
-local addSquadToChunk = chunkPropetyUtils.addSquadToChunk
+local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
@@ -40,124 +41,92 @@ local membersToSquad = unitGroupUtils.membersToSquad
 local scoreNeighborsForRetreat = movementUtils.scoreNeighborsForRetreat
 local findMovementPosition = movementUtils.findMovementPosition
 
-local getRetreatTick = chunkPropetyUtils.getRetreatTick
-local getPlayerBaseGenerator = chunkPropetyUtils.getPlayerBaseGenerator
-local setRetreatTick = chunkPropetyUtils.setRetreatTick
-local getEnemyStructureCount = chunkPropetyUtils.getEnemyStructureCount
+local getSquadsOnChunk = chunkPropertyUtils.getSquadsOnChunk
+local getRetreatTick = chunkPropertyUtils.getRetreatTick
+local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
+local setRetreatTick = chunkPropertyUtils.setRetreatTick
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
-                neighborChunk[MOVEMENT_PHEROMONE] +
+                -getDeathGenerator(map, neighborChunk) +
                 -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
                 -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, position, group, map, surface, tick, radius)
+function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
     if (tick - getRetreatTick(map, chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
-        local performRetreat = false
-        local enemiesToSquad = nil
 
-        local squad
-        local groupMembers
-        if group and group.valid then
-            squad = map.natives.groupNumberToSquad[group.group_number]
-            if not squad then
-                squad = createSquad(position, surface, group)
-                groupMembers = group.members
-                squad.kamikaze = mRandom() < calculateKamikazeThreshold(#groupMembers, natives)
-            end
+        setRetreatTick(map, chunk, tick)
+        local exitPath,exitDirection,nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
+                                                                                                getNeighborChunks(map,
+                                                                                                                  chunk.x,
+                                                                                                                  chunk.y),
+                                                                                                scoreRetreatLocation,
+                                                                                                map)
+        local position = map.position
+        local targetPosition2 = map.position2
+        local retreatPosition
+        position.x = chunk.x + 16
+        position.y = chunk.y + 16
+        if (exitPath == -1) then
+            return
+        elseif (nextExitPath ~= -1) then
+            positionFromDirectionAndFlat(exitDirection, position, targetPosition2)
+            positionFromDirectionAndFlat(nextExitDirection, targetPosition2, position)
+            retreatPosition = findMovementPosition(surface, position)
+            exitPath = nextExitPath
+        else
+            positionFromDirectionAndFlat(exitDirection, position, targetPosition2)
+            retreatPosition = findMovementPosition(surface, targetPosition2)
         end
 
-        if not squad then
-            print("grabbing people", position.x, position.y)
-            enemiesToSquad = map.enemiesToSquad
-            local unitCount = 0
-            local units = surface.find_enemy_units(position, radius)
-            for i=1,#units do
-                local unit = units[i]
-                if not unit.unit_group then
-                    unitCount = unitCount + 1
-                    enemiesToSquad[unitCount] = unit
-                end
-            end
-            enemiesToSquad.len = unitCount
-            if (mRandom() < calculateKamikazeThreshold(unitCount, map.natives)) then
-                performRetreat = false
-            else
-                performRetreat = unitCount > 6
-            end            
-        elseif squad.group and squad.group.valid and (squad.status ~= SQUAD_RETREATING) and not squad.kamikaze then
-            performRetreat = #groupMembers > 6
+        if retreatPosition then
+            position.x = retreatPosition.x
+            position.y = retreatPosition.y
+        else
+            return
+        end
+        
+        local newSquad = findNearbyRetreatingSquad(map, exitPath)
+        local created = false
+
+        if not newSquad then
+            created = true
+            newSquad = createSquad(position, surface)
         end
 
-        setRetreatTick(map, chunk, tick)        
-        if performRetreat then
-            local exitPath,exitDirection,nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
-                                                                                                    getNeighborChunks(map,
-                                                                                                                      chunk.x,
-                                                                                                                      chunk.y),
-                                                                                                    scoreRetreatLocation,
-                                                                                                    map)
-            if (exitPath ~= -1) then
-                local targetPosition = map.position
-                local targetPosition2 = map.position2
+        map.fleeCommand.from = cause
+        map.retreatCommand.group = newSquad.group
 
-                positionFromDirectionAndFlat(exitDirection, position, targetPosition)
+        map.formRetreatCommand.unit_search_distance = radius
 
-                local retreatPosition = findMovementPosition(surface, targetPosition)
-
-                if not retreatPosition then
-                    return
-                end
-
-                if (nextExitPath ~= -1) then
-                    positionFromDirectionAndFlat(nextExitDirection, retreatPosition, targetPosition2)
-
-                    local retreatPosition2 = findMovementPosition(surface, targetPosition2)
-
-                    if retreatPosition2 then
-                        retreatPosition.x = retreatPosition2.x
-                        retreatPosition.y = retreatPosition2.y
-                    end
-                end
-
-                -- in order for units in a group attacking to retreat, we have to create a new group and give the command to join
-                -- to each unit, this is the only way I have found to have snappy mid battle retreats even after 0.14.4
-
-                local newSquad = findNearbyRetreatingSquad(map, exitPath)
-
-                if not newSquad then
-                    newSquad = createSquad(retreatPosition, surface)
-                    map.natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
-                end
-
-                if newSquad then
-                    newSquad.status = SQUAD_RETREATING
-
-                    local cmd = map.retreatCommand
-                    cmd.group = newSquad.group
-                    if enemiesToSquad then
-                        membersToSquad(cmd, enemiesToSquad.len, enemiesToSquad, artilleryBlast)
-                    else
-                        membersToSquad(cmd, #groupMembers, groupMembers, true)
-                        if squad.rabid then
-                            newSquad.rabid = true
-                        end
-                    end
-
-                    if not newSquad.rabid then
-                        newSquad.frenzy = true
-                        local squadPosition = newSquad.group.position
-                        newSquad.frenzyPosition.x = squadPosition.x
-                        newSquad.frenzyPosition.y = squadPosition.y
-                    end
-                    addMovementPenalty(map, newSquad, chunk)
-                    addSquadToChunk(map, chunk, newSquad)
-                end
+        local foundUnits = surface.set_multi_command(map.formRetreatCommand)
+        
+        if (foundUnits == 0) then
+            if created then
+                newSquad.group.destroy()
             end
+            return
         end
+
+        if created then
+            local natives = map.natives
+            natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
+            natives.squadCount = natives.squadCount + 1
+        end
+
+        newSquad.status = SQUAD_RETREATING
+
+        addSquadToChunk(map, chunk, newSquad)
+
+        newSquad.frenzy = true
+        local squadPosition = newSquad.group.position
+        newSquad.frenzyPosition.x = squadPosition.x
+        newSquad.frenzyPosition.y = squadPosition.y
     end
 end
 

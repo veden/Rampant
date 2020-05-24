@@ -58,8 +58,6 @@ local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
 
 local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
 
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
-
 local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
@@ -492,15 +490,8 @@ local function rebuildMap()
     map.retreatCommand = {
         type = DEFINES_COMMAND_GROUP,
         group = nil,
-        distraction = DEFINES_DISTRACTION_NONE,
-        use_group_distraction = false
-    }
-
-    map.mergeGroupCommand = {
-        type = DEFINES_COMMAND_GROUP,
-        group = nil,
-        distraction = DEFINES_DISTRACTION_NONE,
-        use_group_distraction = false
+        distraction = DEFINES_DISTRACTION_BY_ANYTHING,
+        use_group_distraction = true
     }
 
     map.fleeCommand = {
@@ -509,12 +500,23 @@ local function rebuildMap()
         distraction = DEFINES_DISTRACTION_NONE
     }
 
+    map.compoundRetreatGroupCommand = {
+        type = DEFINES_COMMMAD_COMPOUND,
+        structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
+        commands = {
+            map.stopCommand,
+            map.fleeCommand,
+            map.retreatCommand
+        }
+    }
+
     map.compoundRetreatCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
+            map.stopCommand,
             map.fleeCommand,
-            map.retreatCommand
+            map.moveCommand
         }
     }
 
@@ -537,6 +539,10 @@ local function rebuildMap()
     map.formLocalCommand = { command = map.formLocalGroupCommand,
                              unit_count = AI_MAX_BITER_GROUP_SIZE,
                              unit_search_distance = CHUNK_SIZE }
+
+    map.formRetreatCommand = { command = map.compoundRetreatGroupCommand,
+                               unit_count = AI_MAX_BITER_GROUP_SIZE,
+                               unit_search_distance = CHUNK_SIZE }
 end
 
 
@@ -649,7 +655,6 @@ local function onConfigChanged()
 end
 
 local function onBuild(event)
-    local profiler = game.create_profiler()
     local entity = event.created_entity or event.entity
     if (entity.surface.name == natives.activeSurface) then
         if (entity.type == "resource") and (entity.force.name == "neutral") then
@@ -663,11 +668,9 @@ local function onBuild(event)
             end
         end
     end
-    -- game.print({"", "onBuild", profiler, event.tick})
 end
 
 local function onMine(event)
-    local profiler = game.create_profiler()
     local entity = event.entity
     local surface = entity.surface
     if (surface.name == natives.activeSurface) then
@@ -679,11 +682,9 @@ local function onMine(event)
             accountPlayerEntity(entity, natives, false, false)
         end
     end
-    -- game.print({"", "onMine", profiler, event.tick})
 end
 
 local function onDeath(event)
-    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -702,30 +703,25 @@ local function onDeath(event)
                 end
 
                 if (entityType == "unit") then
-                    if (chunk ~= -1) then
+                    if (chunk ~= -1) and event.force and (event.force.name ~= "enemy") then
                         -- drop death pheromone where unit died
                         deathScent(map, chunk)
 
-                        if event.force and (event.force.name ~= "enemy") and (chunk[MOVEMENT_PHEROMONE] < -natives.retreatThreshold) then
+                        if (-getDeathGenerator(map, chunk) < -natives.retreatThreshold) and cause and cause.valid then
+                            retreatUnits(chunk,
+                                         cause,
+                                         map,
+                                         surface,
+                                         tick,
+                                         (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
+                        end
 
-                            natives.lostEnemyUnits = natives.lostEnemyUnits + 1
+                        natives.lostEnemyUnits = natives.lostEnemyUnits + 1
 
-                            -- retreatUnits(chunk,
-                            --              entityPosition,
-                            --              entity.unit_group,
-                            --              map,
-                            --              surface,
-                            --              tick,
-                            --              (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS-- ,
-                            --              -- artilleryBlast
-                            -- )
-
-                            if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-                                rallyUnits(chunk, map, surface, tick)
-                            end
+                        if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
+                            rallyUnits(chunk, map, surface, tick)
                         end
                     end
-
                 elseif event.force and (event.force.name ~= "enemy") and ((entityType == "unit-spawner") or (entityType == "turret")) then
 
                     natives.points = natives.points + (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
@@ -735,36 +731,37 @@ local function onDeath(event)
                     if (chunk ~= -1) then
                         rallyUnits(chunk, map, surface, tick)
 
-                        -- retreatUnits(chunk,
-                        --              entityPosition,
-                        --              nil,
-                        --              map,
-                        --              surface,
-                        --              tick,
-                        --              RETREAT_SPAWNER_GRAB_RADIUS-- ,
-                        --              -- (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-                        -- )
+                        if cause and cause.valid then
+                            retreatUnits(chunk,
+                                         cause,
+                                         map,
+                                         surface,
+                                         tick,
+                                         RETREAT_SPAWNER_GRAB_RADIUS)
+                        end
+                    end
+                else
+                    local entityUnitNumber = entity.unit_number
+                    local pair = natives.drainPylons[entityUnitNumber]
+                    if pair then
+                        local target = pair[1]
+                        local pole = pair[2]
+                        if target == entity then
+                            natives.drainPylons[entityUnitNumber] = nil
+                            if pole.valid then
+                                natives.drainPylons[pole.unit_number] = nil
+                                pole.die()
+                            end
+                        elseif (pole == entity) then
+                            natives.drainPylons[entityUnitNumber] = nil
+                            if target.valid then
+                                natives.drainPylons[target.unit_number] = nil
+                                target.destroy()
+                            end
+                        end
                     end
                 end
 
-                local pair = natives.drainPylons[entity.unit_number]
-                if pair then
-                    local target = pair[1]
-                    local pole = pair[2]
-                    if target == entity then
-                        natives.drainPylons[entity.unit_number] = nil
-                        if pole.valid then
-                            natives.drainPylons[pole.unit_number] = nil
-                            pole.die()
-                        end
-                    elseif (pole == entity) then
-                        natives.drainPylons[entity.unit_number] = nil
-                        if target.valid then
-                            natives.drainPylons[target.unit_number] = nil
-                            target.destroy()
-                        end
-                    end
-                end
             elseif (entity.force.name ~= "enemy") then
                 local creditNatives = false
                 if (event.force ~= nil) and (event.force.name == "enemy") then
@@ -774,7 +771,7 @@ local function onDeath(event)
                     end
 
                     local drained = (entityType == "electric-turret") and map.chunkToDrained[chunk]
-                    if (cause ~= nil) or (drained and (drained - tick) > 0) then
+                    if cause or (drained and (drained - tick) > 0) then
                         if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
                             local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
                             if conversion then
@@ -826,11 +823,9 @@ local function onDeath(event)
             end
         end
     end
-    -- game.print({"", "onDeath", profiler, event.tick})
 end
 
 local function onEnemyBaseBuild(event)
-    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid then
         local surface = entity.surface
@@ -859,11 +854,9 @@ local function onEnemyBaseBuild(event)
             end
         end
     end
-    -- game.print({"", "baseBuild", profiler, event.tick})
 end
 
 local function onSurfaceTileChange(event)
-    local profiler = game.create_profiler()
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     local surface = game.get_surface(natives.activeSurface)
     if (surface.index == surfaceIndex) then
@@ -896,29 +889,23 @@ local function onSurfaceTileChange(event)
             end
         end
     end
-    -- game.print({"", "tileChange", profiler, event.tick})
 end
 
 local function onResourceDepleted(event)
-    local profiler = game.create_profiler()
     local entity = event.entity
     if (entity.surface.name == natives.activeSurface) then
         unregisterResource(entity, map)
     end
-    -- game.print({"", "resourceDepleted", profiler, event.tick})
 end
 
 local function onRobotCliff(event)
-    local profiler = game.create_profiler()
     local surface = event.robot.surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         entityForPassScan(map, event.cliff)
     end
-    -- game.print({"", "cliff", profiler, event.tick})
 end
 
 local function onUsedCapsule(event)
-    local profiler = game.create_profiler()
     local surface = game.players[event.player_index].surface
     if (surface.name == natives.activeSurface) and (event.item.name == "cliff-explosives") then
         map.position2Top.x = event.position.x-0.75
@@ -930,7 +917,6 @@ local function onUsedCapsule(event)
             entityForPassScan(map, cliffs[i])
         end
     end
-    -- game.print({"", "capsule", profiler, event.tick})
 end
 
 local function onRocketLaunch(event)
@@ -942,7 +928,6 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
-    local profiler = game.create_profiler()
     local entity = event.entity
     if entity.valid and (entity.surface.name == natives.activeSurface) and (entity.name  == "drain-trigger-rampant") then
         local chunk = getChunkByPosition(map, entity.position)
@@ -951,7 +936,6 @@ local function onTriggerEntityCreated(event)
         end
         entity.destroy()
     end
-    game.print({"", "trigger", profiler, event.tick})
 end
 
 local function onInit()
@@ -968,11 +952,11 @@ local function onInit()
 end
 
 local function onEntitySpawned(event)
-    local profiler = game.create_profiler()
     local entity = event.mine
     local unitNumber = entity.unit_number
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
+        local entityPosition = entity.position
         if (surface.name == natives.activeSurface) and natives.buildingHiveTypeLookup[entity.name] then
             local disPos = mathUtils.distortPosition(entity.position, 8)
             local canPlaceQuery = map.canPlaceQuery
@@ -1002,11 +986,9 @@ local function onEntitySpawned(event)
             entity.destroy()
         end
     end
-    -- game.print({"", "spawned", profiler, event.tick, "  ", unitNumber})
 end
 
 local function onUnitGroupCreated(event)
-    local profiler = game.create_profiler()
     local group = event.group
     local surface = group.surface
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
@@ -1018,6 +1000,7 @@ local function onUnitGroupCreated(event)
 
                 squad = createSquad(nil, nil, group, settler)
                 natives.groupNumberToSquad[group.group_number] = squad
+
                 if settler then
                     natives.builderCount = natives.builderCount + 1
                 else
@@ -1040,7 +1023,6 @@ local function onUnitGroupCreated(event)
             end
         end
     end
-    -- game.print({"", "squadCreated", profiler, event.tick})
 end
 
 local function onCommandComplete(event)
@@ -1048,7 +1030,6 @@ local function onCommandComplete(event)
     local unitNumber = event.unit_number
     local squad = natives.groupNumberToSquad[unitNumber]
     if squad then
-        local profiler = game.create_profiler()
         local group = squad.group
         if group and group.valid and (group.surface.name == natives.activeSurface) then
             if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
@@ -1061,12 +1042,10 @@ local function onCommandComplete(event)
                 squadDispatch(map, group.surface, squad, unitNumber)
             end
         end
-        -- game.print({"", "aiCommand", profiler, event.tick})
     end
 end
 
 local function onGroupFinishedGathering(event)
-    local profiler = game.create_profiler()
     local group = event.group
     if group.valid then
         local unitNumber = group.group_number
@@ -1087,7 +1066,6 @@ local function onGroupFinishedGathering(event)
             end
         end
     end
-    -- game.print({"", "finishedGather", profiler, event.tick})
 end
 
 local function onForceCreated(event)
@@ -1159,15 +1137,12 @@ end
 
 script.on_nth_tick(INTERVAL_PASS_SCAN,
                    function (event)
-                       local profiler = game.create_profiler()
                        processScanChunks(map,
                                          game.get_surface(natives.activeSurface))
-                       -- game.print({"", "passscan", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_LOGIC,
                    function (event)
-                       local profiler = game.create_profiler()
                        local tick = event.tick
                        planning(natives,
                                 game.forces.enemy.evolution_factor,
@@ -1178,78 +1153,44 @@ script.on_nth_tick(INTERVAL_LOGIC,
                        if natives.newEnemies then
                            recycleBases(natives, tick)
                        end
-                       -- game.print({"", "logic", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_NEST,
                    function (event)
-                       local profiler = game.create_profiler()
                        processNests(map,
                                     game.get_surface(natives.activeSurface),
                                     event.tick)
-                       -- game.print({"", "nest", profiler, event.tick})
 end)
 
 
 script.on_nth_tick(INTERVAL_CLEANUP,
                    function (event)
-                       local profiler = game.create_profiler()
                        cleanUpMapTables(map,
                                         event.tick)
-                       -- game.print({"", "cleanup", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_SPAWNER,
                    function (event)
-                       local profiler = game.create_profiler()
                        processSpawners(map,
                                        game.get_surface(natives.activeSurface),
                                        event.tick)
-                       -- game.print({"", "spawners", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
                    function (event)
-                       local profiler = game.create_profiler()
                        processVengence(map,
                                        game.get_surface(natives.activeSurface),
                                        event.tick)
-                       -- game.print({"", "vengence", profiler, event.tick})
 end)
 
 script.on_nth_tick(INTERVAL_TEMPERAMENT,
                    function (event)
-                       local profiler = game.create_profiler()
                        temperamentPlanner(natives)
-                       -- game.print({"", "temperament", profiler, event.tick})
 end)
-
--- script.on_nth_tick(INTERVAL_RESQUAD,
---                    function (event)
---                        local profiler = game.create_profiler()
---                        regroupSquads(natives,
---                                      game.get_surface(natives.activeSurface),
---                                      map.regroupIterator)
---                        -- game.print({"", "regroup", profiler, event.tick})
--- end)
 
 script.on_event(defines.events.on_tick,
                 function (event)
-                    -- if (event.tick > 36678750) then
-                    --     local allGroups = {}
-                    --     for _, unit in pairs(game.surfaces["nauvis"].find_entities_filtered{type = "unit", force = "enemy"}) do
-                    --         if unit and unit.unit_group then
-                    --             allGroups[unit.unit_group.group_number] = unit.unit_group
-                    --         end
-                    --     end
-                    --     for group_number, group in pairs(allGroups) do
-                    --         if group.position.x < -1000000 or group.position.x > 1000000 or group.position.y < -1000000 or group.position.y > 1000000 then
-                    --             game.print(tostring(group_number..": "..serpent.dump(group.position)))
-                    --         end
-                    --     end
-                    -- end
                     local gameRef = game
-                    local profiler = gameRef.create_profiler()
                     local tick = event.tick
                     local pick = tick % 7
                     local surface = gameRef.get_surface(natives.activeSurface)
@@ -1274,7 +1215,6 @@ script.on_event(defines.events.on_tick,
 
 
                     processActiveNests(map, surface, tick)
-                    -- game.print({"", "tick", profiler, event.tick})
 end)
 
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)

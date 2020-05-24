@@ -25,7 +25,6 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local MOVEMENT_PHEROMONE = constants.MOVEMENT_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
@@ -355,7 +354,6 @@ function chunkUtils.createChunk(topX, topY)
         x = topX,
         y = topY
     }
-    chunk[MOVEMENT_PHEROMONE] = 0
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[RESOURCE_PHEROMONE] = 0
@@ -364,17 +362,40 @@ function chunkUtils.createChunk(topX, topY)
     return chunk
 end
 
-function chunkUtils.colorChunk(x, y, tileType, surface)
-    local tiles = {}
+function chunkUtils.colorChunk(chunk, surface, color)
+    local lx = math.floor(chunk.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    local ly = math.floor(chunk.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+
+    local graphicId = rendering.draw_rectangle({
+            color = color or {0.1, 0.3, 0.1, 0.6},
+            width = 32 * 32,
+            filled = true,
+            left_top = {lx, ly},
+            right_bottom = {lx+32, ly+32},
+            surface = surface,
+            time_to_live = 180,
+            draw_on_ground = true,
+            visible = true
+    })
+end
+
+function chunkUtils.colorXY(x, y, surface, color)
     local lx = math.floor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local ly = math.floor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-    for xi=lx+5, lx + 27 do
-        for yi=ly+5, ly + 27 do
-            tiles[#tiles+1] = {name=tileType, position={xi, yi}}
-        end
-    end
-    surface.set_tiles(tiles, false)
+
+    local graphicId = rendering.draw_rectangle({
+            color = color or {0.1, 0.3, 0.1, 0.6},
+            width = 32 * 32,
+            filled = true,
+            left_top = {lx, ly},
+            right_bottom = {lx+32, ly+32},
+            surface = surface,
+            time_to_live = 180,
+            draw_on_ground = true,
+            visible = true
+    })
 end
+
 
 function chunkUtils.registerEnemyBaseStructure(map, entity, base, surface)
     local entityType = entity.type

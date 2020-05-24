@@ -420,7 +420,7 @@ function biterFunctions.makeWorm(attributes)
         type = "turret",
         name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/medium-worm.png",
-        icon_size = 32,
+        icon_size = 64, icon_mipmaps = 4,
         flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "breaths-air"},
         order="b-b-e",
         subgroup="enemies",
