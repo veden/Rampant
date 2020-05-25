@@ -55,7 +55,7 @@ function movementUtils.addMovementPenalty(map, squad, chunk)
         if (penalty.c == chunk) then
             penalty.v = ((penaltyCount > 1) and penalty.v + 1) or penalty.v
             if (penalty.v > 2) then
-                print("movementThreshold", #penalties, squad.group.group_number, penalty.v, squad.settlers, squad.kamikaze, squad.status)
+                -- print("movementThreshold", #penalties, squad.group.group_number, penalty.v, squad.settlers, squad.kamikaze, squad.status)
                 -- game.players[1].teleport(chunk, game.surfaces[1])
                 squad.kamikaze = true
             end
