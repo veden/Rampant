@@ -872,31 +872,33 @@ local function onSurfaceTileChange(event)
     if (surface.index == surfaceIndex) then
         local chunks = {}
         local tiles = event.tiles
-        if event.tile and ((event.tile.name == "landfill") or sFind(event.tile.name, "water")) then
-            for i=1,#tiles do
-                local position = tiles[i].position
-                local chunk = getChunkByPosition(map, position)
+        if event.tile then
+            if ((event.tile.name == "landfill") or sFind(event.tile.name, "water")) then
+                for i=1,#tiles do
+                    local position = tiles[i].position
+                    local chunk = getChunkByPosition(map, position)
 
-                if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk] = true
-                else
-                    local x,y = positionToChunkXY(position)
-                    local addMe = true
-                    for ci=1,#chunks do
-                        local c = chunks[ci]
-                        if (c.x == x) and (c.y == y) then
-                            addMe = false
-                            break
+                    if (chunk ~= -1) then
+                        map.chunkToPassScan[chunk] = true
+                    else
+                        local x,y = positionToChunkXY(position)
+                        local addMe = true
+                        for ci=1,#chunks do
+                            local c = chunks[ci]
+                            if (c.x == x) and (c.y == y) then
+                                addMe = false
+                                break
+                            end
+                        end
+                        if addMe then
+                            local chunkXY = {x=x,y=y}
+                            chunks[#chunks+1] = chunkXY
+                            onChunkGenerated({area = { left_top = chunkXY },
+                                              surface = surface})
                         end
                     end
-                    if addMe then
-                        local chunkXY = {x=x,y=y}
-                        chunks[#chunks+1] = chunkXY
-                        onChunkGenerated({area = { left_top = chunkXY },
-                                          surface = surface})
-                    end
                 end
-            end
+            end            
         else
             for i=1,#tiles do
                 local tile = tiles[i]
