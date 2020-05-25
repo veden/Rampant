@@ -2,13 +2,17 @@
 Version: 0.18.13
 Date: 16. 4 2020
   Improvements:
+    - Added neutral objects to scanning to decrease chunk rating based on number of things present
     - Swapped to ai command completed for unit movements
     - Added effect when spawners build to destroy build site
     - Integrated vanilla AI into Rampant for pollution management
     - Map processing sweep now does and forward and reverse pass
     - Better handling of death pheromone and squad coordination
     - Added support for script_raised_set_tiles
+    - Added setting option for max squads active
+    - Added setting option for max settlers active
   Tweaks:
+    - Increased Victory scent to x10 pheromone value
     - Reduced active raid nest contribution to AI state to 0.002
     - Changed ai credits per rocket launched to 5000
     - Refactored calculateKamikazeThreshold based on member count and current evolution

@@ -81,13 +81,13 @@ function pheromoneUtils.disperseVictoryScent(map)
         local chunkX = chunk.x
         local chunkY = chunk.y
         local i = 1
-        for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND do
-            for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND do
+        for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND,32 do
+            for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND,32 do
                 local c = getChunkByXY(map, x, y)
                 if (c ~= -1) then
-                    addDeathGenerator(map, c, -pheromone * VICTORY_SCENT_MULTIPLER[i])
+                    addDeathGenerator(map, c, -pheromone * VICTORY_SCENT_MULTIPLER[i] * getPathRating(map, c))
                 end
-                i = i + 1                
+                i = i + 1
             end
         end
 

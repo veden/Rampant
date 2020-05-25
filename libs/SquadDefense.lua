@@ -100,7 +100,6 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
                 created = true
                 newSquad = createSquad(position, surface)                
             else
-                print("cancelling retreat")
                 return
             end            
         end

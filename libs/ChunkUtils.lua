@@ -84,6 +84,8 @@ local setPathRating = chunkPropertyUtils.setPathRating
 
 local getChunkByXY = mapUtils.getChunkByXY
 
+local mMin = math.min
+local mMax = math.max
 local mFloor = math.floor
 
 local mRandom = math.random
@@ -197,11 +199,12 @@ local function scorePlayerBuildings(surface, map)
 end
 
 function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
-    local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
+    local waterTiles = (1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)) * 0.80
     local natives = map.natives
     local enemyBuildings = surface.find_entities_filtered(map.filteredEntitiesEnemyStructureQuery)
 
-    if (passScore >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
+    if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
+        local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = scorePlayerBuildings(surface, map)
@@ -276,7 +279,7 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
             setResourceGenerator(map, chunk, resources)
 
             setPassable(map, chunk, pass)
-            setPathRating(map, chunk, passScore)
+            setPathRating(map, chunk, waterTiles + neutralObjects)
 
             return chunk
         end
@@ -286,9 +289,10 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
 end
 
 function chunkUtils.chunkPassScan(chunk, surface, map)
-    local passScore = 1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)
+    local waterTiles = (1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)) * 0.80
 
-    if (passScore >= CHUNK_PASS_THRESHOLD) then
+    if (waterTiles >= CHUNK_PASS_THRESHOLD) then
+        local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = getPlayerBaseGenerator(map, chunk)
@@ -300,7 +304,7 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
         end
 
         setPassable(map, chunk, pass)
-        setPathRating(map, chunk, passScore)
+        setPathRating(map, chunk, waterTiles + neutralObjects)
 
         return chunk
     end
@@ -316,6 +320,9 @@ end
 function chunkUtils.mapScanResourceChunk(chunk, surface, map)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
+    local waterTiles = (1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)) * 0.80
+    local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
+    setPathRating(map, chunk, waterTiles + neutralObjects)
 end
 
 function chunkUtils.mapScanEnemyChunk(chunk, surface, map)

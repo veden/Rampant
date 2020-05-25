@@ -147,7 +147,8 @@
                               baseCreated
                               hives
                               traps
-                              utility) chunkMinMaxes))
+                              utility
+                              vg) chunkMinMaxes))
       
       (set! activeChunkSet chunks)
       (set! activeChunkMinMaxSet chunkMinMaxes)

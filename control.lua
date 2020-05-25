@@ -417,9 +417,13 @@ local function rebuildMap()
                                                collision_mask = "player-layer",
                                                type={"artillery-turret",
                                                      "reactor",
-                                                     "rocket-silo"}
-    }
+                                                     "rocket-silo"}}
 
+    map.filteredEntitiesChunkNeutral = { area=map.area,
+                                         collision_mask = "player-layer",
+                                         type={"tree",
+                                               "simple-entity"}}
+    
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
     map.filteredTilesPathQuery = { area=sharedArea, collision_mask="water-tile", limit = 1 }
@@ -1026,7 +1030,6 @@ local function onUnitGroupCreated(event)
     local group = event.group
     local surface = group.surface
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
-        print("fuck", event.tick, natives.squadCount, natives.squadCount > natives.AI_MAX_SQUAD_COUNT, natives.builderCount, natives.builderCount > natives.AI_MAX_BUILDER_COUNT)
         if not group.is_script_driven then
             if not natives.aiNocturnalMode then
                 local settler = mRandom() < 0.25 and
