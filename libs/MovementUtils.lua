@@ -185,7 +185,7 @@ function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks,
         end
     end
 
-    if (chunk ~= -1) and (scoreFunction(chunk) > highestScore) then
+    if (chunk ~= -1) and (scoreFunction(map, chunk) > highestScore) then
         return -1, -1
     end
 

@@ -423,7 +423,7 @@ local function rebuildMap()
                                          collision_mask = "player-layer",
                                          type={"tree",
                                                "simple-entity"}}
-    
+
     local sharedArea = {{0,0},{0,0}}
     map.filteredEntitiesCliffQuery = { area=sharedArea, type="cliff", limit = 1 }
     map.filteredTilesPathQuery = { area=sharedArea, collision_mask="water-tile", limit = 1 }
@@ -898,7 +898,7 @@ local function onSurfaceTileChange(event)
                         end
                     end
                 end
-            end            
+            end
         else
             for i=1,#tiles do
                 local tile = tiles[i]
@@ -1058,7 +1058,7 @@ local function onUnitGroupCreated(event)
                     group.destroy()
                     return
                 end
-                
+
                 local settler = mRandom() < 0.25 and
                     canMigrate(natives, group.surface) and
                     (natives.builderCount < natives.AI_MAX_BUILDER_COUNT)
@@ -1103,24 +1103,45 @@ end
 
 local function onGroupFinishedGathering(event)
     local group = event.group
-    if group.valid then
+    if group.valid and (group.force.name == "enemy") then
         local unitNumber = group.group_number
         if (group.surface.name == natives.activeSurface) then
             local squad = natives.groupNumberToSquad[unitNumber]
-            if squad.settler then
-                if (natives.builderCount < natives.AI_MAX_BUILDER_COUNT) then
-                    squadDispatch(map, group.surface, squad, unitNumber)
+            if squad then
+                if squad.settler then
+                    if (natives.builderCount < natives.AI_MAX_BUILDER_COUNT) then
+                        squadDispatch(map, group.surface, squad, unitNumber)
+                    else
+                        group.destroy()
+                        natives.points = natives.points + AI_SETTLER_COST
+                    end
                 else
-                    group.destroy()
-                    natives.points = natives.points + AI_SETTLER_COST
+                    if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
+                        squadDispatch(map, group.surface, squad, unitNumber)
+                    else
+                        group.destroy()
+                        natives.points = natives.points + AI_SQUAD_COST
+                    end
                 end
             else
-                if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
-                    squadDispatch(map, group.surface, squad, unitNumber)
-                else
+                local settler = mRandom() < 0.25 and
+                    canMigrate(natives, group.surface) and
+                    (natives.builderCount < natives.AI_MAX_BUILDER_COUNT)
+
+                if not settler and natives.squadCount > natives.AI_MAX_SQUAD_COUNT then
                     group.destroy()
                     natives.points = natives.points + AI_SQUAD_COST
+                    return
                 end
+
+                squad = createSquad(nil, nil, group, settler)
+                natives.groupNumberToSquad[group.group_number] = squad
+                if settler then
+                    natives.builderCount = natives.builderCount + 1
+                else
+                    natives.squadCount = natives.squadCount + 1
+                end
+                squadDispatch(map, group.surface, squad, unitNumber)
             end
         end
     end
