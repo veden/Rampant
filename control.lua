@@ -1022,8 +1022,6 @@ local function onEntitySpawned(event)
             else
                 entity.destroy()
             end
-        else
-            entity.destroy()
         end
     end
 end
