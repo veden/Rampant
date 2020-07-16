@@ -1025,14 +1025,7 @@ local function buildAttack(faction, template)
             end
         elseif (attack == "slow") then
             template.force = "not-same"
-            template.stickerAnimation = {
-                filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
-                priority = "extra-high",
-                width = 11,
-                height = 11,
-                frame_count = 13,
-                animation_speed = 0.4
-            }
+            template.stickerAnimation = data.raw['stickers']['slowdown-sticker'].animation
             template.areaEffects = function (attributes)
                 return {
                     {
