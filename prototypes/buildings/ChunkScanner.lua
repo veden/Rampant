@@ -116,15 +116,15 @@ smokeUtils.makeNewCloud(
                     {
                         {
                             type = "damage",
-                            damage = { amount = 4, type = "poison"}
+                            damage = { amount = 1.1, type = "poison"}
                         },
                         {
                             type = "damage",
-                            damage = { amount = 4, type = "acid"}
+                            damage = { amount = 1.1, type = "acid"}
                         },
                         {
                             type = "damage",
-                            damage = { amount = 4, type = "fire"}
+                            damage = { amount = 1.1, type = "fire"}
                         }
                     }
             }

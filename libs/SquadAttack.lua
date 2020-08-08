@@ -175,8 +175,6 @@ local function settleMove(map, squad, surface)
 
         squad.status = SQUAD_BUILDING
 
-        surface.create_entity(map.createBuildCloudQuery)
-
         group.set_command(cmd)
     else
         local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
@@ -248,7 +246,6 @@ local function settleMove(map, squad, surface)
 
             squad.status = SQUAD_BUILDING
 
-            surface.create_entity(map.createBuildCloudQuery)
         end
 
         group.set_command(cmd)
@@ -341,8 +338,6 @@ local function buildMove(map, squad, surface)
 
     position.x = groupPosition.x
     position.y = groupPosition.y
-
-    surface.create_entity(map.createBuildCloudQuery)
 
     group.set_command(map.compoundSettleCommand)
 end

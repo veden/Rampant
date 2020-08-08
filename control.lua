@@ -589,6 +589,7 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(natives, "deadZoneFrequency", settings.global["rampant-deadZoneFrequency"].value)
     upgrade.compareTable(natives, "raidAIToggle", settings.global["rampant-raidAIToggle"].value)
+    upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
 
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
     upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
@@ -1210,6 +1211,23 @@ local function onSurfaceDeleted(event)
     end
 end
 
+local function onBuilderArrived(event)
+    local builder = event.group
+    if not (builder and builder.valid) then
+        builder = event.unit
+        if not (builder and builder.valid and builder.force.name == "enemy") then
+            return
+        end
+    elseif (builder.force.name ~= "enemy") then
+        return
+    end
+    local targetPosition = map.position
+    targetPosition.x = builder.position.x
+    targetPosition.y = builder.position.y
+
+    builder.surface.create_entity(map.createBuildCloudQuery)
+end
+
 -- hooks
 
 script.on_nth_tick(INTERVAL_PASS_SCAN,
@@ -1337,6 +1355,8 @@ script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
 script.on_event(defines.events.on_unit_group_finished_gathering, onGroupFinishedGathering)
+
+script.on_event(defines.events.on_build_base_arrived, onBuilderArrived)
 
 remote.add_interface("rampantTests",
                      {

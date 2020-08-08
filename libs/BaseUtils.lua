@@ -107,11 +107,11 @@ function baseUtils.findNearbyBase(map, chunk)
     end
 
     local bases = map.natives.bases
-    local closet = MAGIC_MAXIMUM_NUMBER
+    local closest = MAGIC_MAXIMUM_NUMBER
     for _, base in pairs(bases) do
         local distance = euclideanDistancePoints(base.x, base.y, x, y)
-        if (distance <= base.distanceThreshold) and (distance < closet) then
-            closet = distance
+        if (distance <= base.distanceThreshold) and (distance < closest) then
+            closest = distance
             foundBase = base
         end
     end

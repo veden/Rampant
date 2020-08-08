@@ -115,7 +115,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
         local roll = mRandom()
         if (natives.temperament < 0.05) then -- 0 - 0.05
             if natives.enabledMigration then
-                natives.state = AI_STATE_SIEGE
+                natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
             else
                 if natives.raidAIToggle then
                     if (roll < 0.85) then
@@ -136,7 +136,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
         elseif (natives.temperament < 0.20) then -- 0.05 - 0.2
             if (natives.enabledMigration) then
                 if (roll < 0.4) then
-                    natives.state = AI_STATE_SIEGE
+                    natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
                 else
                     natives.state = AI_STATE_MIGRATING
                 end
@@ -202,7 +202,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
         else -- 0.8 - 1
             if (natives.enabledMigration and natives.raidAIToggle) then
                 if (roll < 0.3) then
-                    natives.state = AI_STATE_SIEGE
+                    natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.6) then
                     natives.state = AI_STATE_ONSLAUGHT
                 elseif (roll < 0.8) then
@@ -215,7 +215,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
                 end
             elseif (natives.enabledMigration) then
                 if (roll < 0.3) then
-                    natives.state = AI_STATE_SIEGE
+                    natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.7) then
                     natives.state = AI_STATE_ONSLAUGHT
                 else

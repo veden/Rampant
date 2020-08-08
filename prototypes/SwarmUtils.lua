@@ -52,7 +52,6 @@ local makeLaser = beamUtils.makeLaser
 local createAttackBall = acidBall.createAttackBall
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
-local makeUnitAlienLootTable = biterUtils.makeUnitAlienLootTabl
 local makeAcidSplashFire = fireUtils.makeAcidSplashFire
 
 local makeWormAlienLootTable = biterUtils.makeWormAlienLootTable
@@ -1028,10 +1027,25 @@ local function buildAttack(faction, template)
             template.stickerAnimation = {
                 filename = "__base__/graphics/entity/slowdown-sticker/slowdown-sticker.png",
                 priority = "extra-high",
-                width = 11,
-                height = 11,
-                frame_count = 13,
-                animation_speed = 0.4
+                line_length = 5,
+                width = 22,
+                height = 24,
+                frame_count = 50,
+                animation_speed = 0.5,
+                tint = {r = 0.3500, g = 0.663, b = 0.000, a = 0.694}, -- #4a900b1
+                shift = util.by_pixel (2,-1),
+                hr_version =
+                    {
+                        filename = "__base__/graphics/entity/slowdown-sticker/hr-slowdown-sticker.png",
+                        line_length = 5,
+                        width = 42,
+                        height = 48,
+                        frame_count = 50,
+                        animation_speed = 0.5,
+                        tint = {r = 0.3500, g = 0.663, b = 0.000, a = 0.694}, -- #ffa900b1
+                        shift = util.by_pixel(2, -0.5),
+                        scale = 0.5
+                    }
             }
             template.areaEffects = function (attributes)
                 return {
@@ -1305,54 +1319,54 @@ end
 
 local function generateSpawnerProxyTemplate(name, health, result_units)
     return {
-                type = "unit-spawner",
-                name = name,
-                icon = "__base__/graphics/icons/biter-spawner.png",
-                icon_size = 64,
-                icon_mipmaps = 4,
-                flags = {"placeable-player", "placeable-enemy", "not-repairable"},
-                max_health = health,
-                order="b-b-g",
-                subgroup="enemies",
-                loot = nil,
-                resistances = nil,
-                working_sound = nil,
-                dying_sound = nil,
-                damaged_trigger_effect = nil,
-                healing_per_tick = -1,
-                -- collision_box = {{-3,-3},{3,3}},
-                -- selection_box = {{-3,-3},{3,3}},
-                collision_box = nil,
-                selection_box = nil,
-                -- in ticks per 1 pu
-                pollution_absorption_absolute = 10,
-                pollution_absorption_proportional = 0.005,
-                map_generator_bounding_box = nil,
-                corpse = nil,
-                dying_explosion = nil,
-                dying_trigger_effect = nil,
-                max_count_of_owned_units = 0,
-                max_friends_around_to_spawn = 0,
-                enemy_map_color = {r=0,g=0,b=0,a=0},
-                -- enemy_map_color = {r=0,g=1,b=1,a=1},
-                animations = { filename = "__core__/graphics/empty.png", size = 1 },
-                -- animations ={
-                --     spawner_idle_animation(0, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-                --     spawner_idle_animation(1, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-                --     spawner_idle_animation(2, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-                --     spawner_idle_animation(3, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1})
-                -- },
-                integration = nil,
-                result_units = result_units,
-                -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-                spawning_cooldown = {360, 150},
-                spawning_radius = 10,
-                spawning_spacing = 3,
-                max_spawn_shift = 0,
-                max_richness_for_spawn_shift = 100,
-                build_base_evolution_requirement = 0.0,
-                call_for_help_radius = 50
-            }
+        type = "unit-spawner",
+        name = name,
+        icon = "__base__/graphics/icons/biter-spawner.png",
+        icon_size = 64,
+        icon_mipmaps = 4,
+        flags = {"placeable-player", "placeable-enemy", "not-repairable"},
+        max_health = health,
+        order="b-b-g",
+        subgroup="enemies",
+        loot = nil,
+        resistances = nil,
+        working_sound = nil,
+        dying_sound = nil,
+        damaged_trigger_effect = nil,
+        healing_per_tick = -1,
+        -- collision_box = {{-3,-3},{3,3}},
+        -- selection_box = {{-3,-3},{3,3}},
+        collision_box = nil,
+        selection_box = nil,
+        -- in ticks per 1 pu
+        pollution_absorption_absolute = 10,
+        pollution_absorption_proportional = 0.005,
+        map_generator_bounding_box = nil,
+        corpse = nil,
+        dying_explosion = nil,
+        dying_trigger_effect = nil,
+        max_count_of_owned_units = 0,
+        max_friends_around_to_spawn = 0,
+        enemy_map_color = {r=0,g=0,b=0,a=0},
+        -- enemy_map_color = {r=0,g=1,b=1,a=1},
+        animations = { filename = "__core__/graphics/empty.png", size = 1 },
+        -- animations ={
+        --     spawner_idle_animation(0, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+        --     spawner_idle_animation(1, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+        --     spawner_idle_animation(2, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
+        --     spawner_idle_animation(3, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1})
+        -- },
+        integration = nil,
+        result_units = result_units,
+        -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
+        spawning_cooldown = {360, 150},
+        spawning_radius = 10,
+        spawning_spacing = 3,
+        max_spawn_shift = 0,
+        max_richness_for_spawn_shift = 100,
+        build_base_evolution_requirement = 0.0,
+        call_for_help_radius = 50
+    }
 end
 
 function swarmUtils.generateSpawnerProxy(result_units)

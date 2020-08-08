@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.17
+Date: 8. 7 2020
+  Improvements:
+    - Re-added siege toggle
+  Tweaks:
+    - Reduced Purple cloud damage by 72.5%
+  Bugfixes:
+    - Purple cloud triggering before builders arrived
+    - Fixed factorio base update breaking slow sticker
+  Framework:
+    - Fixed spelling mistake in code
+    - Fixed duplicate definition of loot in spawner utils
+
+---------------------------------------------------------------------------------------------------
 Version: 0.18.16
 Date: 27. 4 2020
   Bugfixes:

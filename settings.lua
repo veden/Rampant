@@ -446,6 +446,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant-siegeAIToggle",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "m[total]-c[ai]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant-removeBloodParticles",
             description = "rampant-reduceBloodParticles",
             setting_type = "startup",
