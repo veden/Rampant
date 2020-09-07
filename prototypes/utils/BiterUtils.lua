@@ -401,7 +401,68 @@ function biterFunctions.makeUnitSpawner(attributes)
         max_spawn_shift = 0,
         max_richness_for_spawn_shift = 100,
         build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
-        call_for_help_radius = attributes.helpRadius or 50
+        call_for_help_radius = attributes.helpRadius or 50,
+        spawn_decorations_on_expansion = true,
+        spawn_decoration =
+            {
+                {
+                    decorative = "light-mud-decal",
+                    spawn_min = 0,
+                    spawn_max = 2,
+                    spawn_min_radius = 2,
+                    spawn_max_radius = 5,
+                },
+                {
+                    decorative = "dark-mud-decal",
+                    spawn_min = 0,
+                    spawn_max = 3,
+                    spawn_min_radius = 2,
+                    spawn_max_radius = 6,
+                },
+                {
+                    decorative = "enemy-decal",
+                    spawn_min = 3,
+                    spawn_max = 5,
+                    spawn_min_radius = 2,
+                    spawn_max_radius = 7,
+                },
+                {
+                    decorative = "enemy-decal-transparent",
+                    spawn_min = 4,
+                    spawn_max = 20,
+                    spawn_min_radius = 2,
+                    spawn_max_radius = 14,
+                    radius_curve = 0.9
+                },
+                {
+                    decorative = "muddy-stump",
+                    spawn_min = 2,
+                    spawn_max = 5,
+                    spawn_min_radius = 3,
+                    spawn_max_radius = 6,
+                },
+                {
+                    decorative = "red-croton",
+                    spawn_min = 2,
+                    spawn_max = 8,
+                    spawn_min_radius = 3,
+                    spawn_max_radius = 6,
+                },
+                {
+                    decorative = "red-pita",
+                    spawn_min = 1,
+                    spawn_max = 5,
+                    spawn_min_radius = 3,
+                    spawn_max_radius = 6,
+                },
+                {
+                    decorative = "lichen-decal",
+                    spawn_min = 1,
+                    spawn_max = 2,
+                    spawn_min_radius = 2,
+                    spawn_max_radius = 7
+                }
+            }
     }
     if attributes.autoplace then
         o["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
@@ -474,7 +535,39 @@ function biterFunctions.makeWorm(attributes)
 
         allow_turning_when_starting_attack = true,
         build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
-        call_for_help_radius = attributes.helpRadius or 60
+        call_for_help_radius = attributes.helpRadius or 60,
+        spawn_decorations_on_expansion = true,
+        spawn_decoration =
+            {
+                {
+                    decorative = "worms-decal",
+                    spawn_min = 1,
+                    spawn_max = 3,
+                    spawn_min_radius = 1,
+                    spawn_max_radius = 5
+                },
+                {
+                    decorative = "shroom-decal",
+                    spawn_min = 1,
+                    spawn_max = 2,
+                    spawn_min_radius = 1,
+                    spawn_max_radius = 2
+                },
+                {
+                    decorative = "enemy-decal",
+                    spawn_min = 1,
+                    spawn_max = 4,
+                    spawn_min_radius = 1,
+                    spawn_max_radius = 4,
+                },
+                {
+                    decorative = "enemy-decal-transparent",
+                    spawn_min = 3,
+                    spawn_max = 5,
+                    spawn_min_radius = 1,
+                    spawn_max_radius = 4,
+                },
+            }
     }
 
     if attributes.autoplace then
@@ -507,30 +600,80 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                         target_effects =
                             {
                                 {
-                                    repeat_count = 100,
-                                    type = "create-trivial-smoke",
-                                    smoke_name = "nuclear-smoke",
-                                    offset_deviation = {{-1, -1}, {1, 1}},
-                                    slow_down_factor = 1,
-                                    starting_frame = 3,
-                                    starting_frame_deviation = 5,
-                                    starting_frame_speed = 0,
-                                    starting_frame_speed_deviation = 5,
-                                    speed_from_center = 0.5,
-                                    speed_deviation = 0.2
+                                    type = "set-tile",
+                                    tile_name = "nuclear-ground",
+                                    radius = attributes.radius * 0.25,
+                                    apply_projection = true,
+                                    tile_collision_mask = { "water-tile" },
+                                },
+                                {
+                                    type = "destroy-cliffs",
+                                    radius = attributes.radius * 0.18,
+                                    explosion = "explosion"
                                 },
                                 {
                                     type = "create-entity",
-                                    entity_name = attributes.attackExplosion
+                                    entity_name = "nuke-explosion"
+                                },
+                                {
+                                    type = "camera-effect",
+                                    effect = "screen-burn",
+                                    duration = 60,
+                                    ease_in_duration = 5,
+                                    ease_out_duration = 60,
+                                    delay = 0,
+                                    strength = 6,
+                                    full_strength_max_distance = 200,
+                                    max_distance = 800
+                                },
+                                {
+                                    type = "play-sound",
+                                    sound = sounds.nuclear_explosion(0.9),
+                                    play_on_target_position = false,
+                                    -- min_distance = 200,
+                                    max_distance = 1000,
+                                    -- volume_modifier = 1,
+                                    audible_distance_modifier = 3
+                                },
+                                {
+                                    type = "play-sound",
+                                    sound = sounds.nuclear_explosion_aftershock(0.4),
+                                    play_on_target_position = false,
+                                    -- min_distance = 200,
+                                    max_distance = 1000,
+                                    -- volume_modifier = 1,
+                                    audible_distance_modifier = 3
                                 },
                                 {
                                     type = "damage",
-                                    damage = {amount = attributes.damage or 400, type = attributes.damageType or "explosion"}
+                                    damage = {amount = attributes.damage, type = "explosion"}
                                 },
                                 {
                                     type = "create-entity",
-                                    entity_name = attributes.attackScorchmark or "small-scorchmark",
-                                    check_buildability = true
+                                    entity_name = "huge-scorchmark",
+                                    check_buildability = true,
+                                },
+                                {
+                                    type = "invoke-tile-trigger",
+                                    repeat_count = 1,
+                                },
+                                {
+                                    type = "destroy-decoratives",
+                                    include_soft_decoratives = true, -- soft decoratives are decoratives with grows_through_rail_path = true
+                                    include_decals = true,
+                                    invoke_decorative_trigger = true,
+                                    decoratives_with_trigger_only = false, -- if true, destroys only decoratives that have trigger_effect set
+                                    radius = attributes.radius * 0.35 -- large radius for demostrative purposes
+                                },
+                                {
+                                    type = "create-decorative",
+                                    decorative = "nuclear-ground-patch",
+                                    spawn_min_radius = attributes.radius * 0.1,
+                                    spawn_max_radius = attributes.radius * 0.12,
+                                    spawn_min = 30,
+                                    spawn_max = 40,
+                                    apply_projection = true,
+                                    spread_evenly = true
                                 },
                                 {
                                     type = "nested-result",
@@ -538,13 +681,133 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                                         {
                                             type = "area",
                                             target_entities = false,
-                                            repeat_count = attributes.repeatCount or 2000,
-                                            radius = attributes.radius or 35,
+                                            trigger_from_target = true,
+                                            repeat_count = 100,
+                                            radius = attributes.radius * 0.10,
                                             action_delivery =
                                                 {
                                                     type = "projectile",
-                                                    projectile = blastWave or "atomic-bomb-wave",
-                                                    starting_speed = 0.5
+                                                    projectile = "atomic-bomb-ground-zero-projectile",
+                                                    starting_speed = 0.6 * 0.8,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 100,
+                                            radius = attributes.radius,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = "atomic-bomb-wave",
+                                                    starting_speed = 0.5 * 0.7,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            show_in_tooltip = false,
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 100,
+                                            radius = attributes.radius * 0.75,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = "atomic-bomb-wave-spawns-cluster-nuke-explosion",
+                                                    starting_speed = 0.5 * 0.7,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            show_in_tooltip = false,
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 50,
+                                            radius = attributes.radius * 0.07,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = "atomic-bomb-wave-spawns-fire-smoke-explosion",
+                                                    starting_speed = 0.5 * 0.65,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            show_in_tooltip = false,
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 100,
+                                            radius = attributes.radius * 0.07,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = "atomic-bomb-wave-spawns-nuke-shockwave-explosion",
+                                                    starting_speed = 0.5 * 0.65,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            show_in_tooltip = false,
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 100,
+                                            radius = attributes.radius * 0.85,
+                                            action_delivery =
+                                                {
+                                                    type = "projectile",
+                                                    projectile = "atomic-bomb-wave-spawns-nuclear-smoke",
+                                                    starting_speed = 0.5 * 0.65,
+                                                    starting_speed_deviation = nuke_shockwave_starting_speed_deviation,
+                                                }
+                                        }
+                                },
+                                {
+                                    type = "nested-result",
+                                    action =
+                                        {
+                                            type = "area",
+                                            show_in_tooltip = false,
+                                            target_entities = false,
+                                            trigger_from_target = true,
+                                            repeat_count = 10,
+                                            radius = attributes.radius * 0.18,
+                                            action_delivery =
+                                                {
+                                                    type = "instant",
+                                                    target_effects =
+                                                        {
+                                                            {
+                                                                type = "create-entity",
+                                                                entity_name = "nuclear-smouldering-smoke-source",
+                                                                tile_collision_mask = { "water-tile" }
+                                                            }
+                                                        }
                                                 }
                                         }
                                 }
