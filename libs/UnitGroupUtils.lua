@@ -133,38 +133,6 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
     return squad
 end
 
-function unitGroupUtils.cleanSquads(natives, iterator)
-    local squads = natives.groupNumberToSquad
-    local map = natives.map
-
-    local k, squad = next(squads, iterator)
-    if not k then
-        if (table_size(squads) == 0) then
-            -- this is needed as the next command remembers the max length a table has been
-            natives.groupNumberToSquad = {}
-        end
-    else
-        local group = squad.group
-        if not group.valid then
-            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-            removeSquadFromChunk(map, squad)
-            if (map.regroupIterator == k) then
-                map.regroupIterator = nil
-            end
-            if squad.settlers then
-                natives.builderCount = natives.builderCount - 1
-            else
-                natives.squadCount = natives.squadCount - 1
-            end
-            local nextK
-            nextK,squad = next(squads, k)
-            squads[k] = nil
-            k = nextK
-        end
-    end
-    map.squadIterator = k
-end
-
 function unitGroupUtils.calculateKamikazeThreshold(memberCount, natives)
     local threshold = (memberCount / natives.attackWaveMaxSize) * 0.2 + (natives.evolutionLevel * 0.2)
     return threshold

@@ -162,7 +162,7 @@ local makeImmortalEntity = chunkUtils.makeImmortalEntity
 local registerResource = chunkUtils.registerResource
 local unregisterResource = chunkUtils.unregisterResource
 
-local cleanSquads = unitGroupUtils.cleanSquads
+local cleanSquads = squadAttack.cleanSquads
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
@@ -449,7 +449,7 @@ local function rebuildMap()
     map.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = map.position,
-        pathfind_flags = { cache = false },
+        pathfind_flags = { cache = true },
         distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
 
@@ -463,15 +463,15 @@ local function rebuildMap()
     map.wonderCommand = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
-        radius = TRIPLE_CHUNK_SIZE,
-        ticks_to_wait = 3600
+        radius = TRIPLE_CHUNK_SIZE*2,
+        ticks_to_wait = 36000
     }
 
     map.wonder2Command = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
         radius = TRIPLE_CHUNK_SIZE,
-        ticks_to_wait = 360
+        ticks_to_wait = 36000
     }
 
     map.wonder3Command = {
@@ -479,7 +479,7 @@ local function rebuildMap()
         wander_in_group = true,
         radius = TRIPLE_CHUNK_SIZE,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING,
-        ticks_to_wait = 60 * 30
+        ticks_to_wait = 36000
     }
 
     map.stopCommand = {
@@ -557,9 +557,10 @@ end
 local function onModSettingsChange(event)
 
     if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or
-            (string.sub(event.setting, 1, 15) == "rampant-arsenal") or
-            (string.sub(event.setting, 1, 17) == "rampant-resources") or
-            (string.sub(event.setting, 1, 17) == "rampant-evolution"))
+        (string.sub(event.setting, 1, 15) == "rampant-arsenal") or
+        (string.sub(event.setting, 1, 17) == "rampant-resources") or
+        (string.sub(event.setting, 1, 17) == "rampant-evolution") or
+        (string.sub(event.setting, 1, 19) == "rampant-maintenance"))
     then
         return false
     end
@@ -1080,25 +1081,24 @@ local function onUnitGroupCreated(event)
     end
 end
 
-local function onCommandComplete(event)
-
-    local unitNumber = event.unit_number
-    local squad = natives.groupNumberToSquad[unitNumber]
-    if squad then
-        local group = squad.group
-        if group and group.valid and (group.surface.name == natives.activeSurface) then
-            if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
-                if (#group.members == 0) then
-                    group.destroy()
-                else
-                    squadDispatch(map, group.surface, squad, unitNumber)
-                end
-            else
-                squadDispatch(map, group.surface, squad, unitNumber)
-            end
-        end
-    end
-end
+-- local function onCommandComplete(event)
+--     local unitNumber = event.unit_number
+--     local squad = natives.groupNumberToSquad[unitNumber]
+--     if squad then
+--         local group = squad.group
+--         if group and group.valid and (group.surface.name == natives.activeSurface) then
+--             -- if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
+--             --     if (#group.members == 0) then
+--             --         group.destroy()
+--             --     else
+--             --         squadDispatch(map, group.surface, squad, unitNumber)
+--             --     end
+--             -- else
+--                 squadDispatch(map, group.surface, squad, unitNumber)
+--             -- end
+--         end
+--     end
+-- end
 
 local function onGroupFinishedGathering(event)
     local group = event.group
@@ -1293,6 +1293,8 @@ script.on_event(defines.events.on_tick,
                     local pick = tick % 7
                     local surface = gameRef.get_surface(natives.activeSurface)
 
+                    -- local profiler = game.create_profiler()
+
                     if (pick == 0) then
                         processPendingChunks(map,
                                              surface,
@@ -1313,6 +1315,8 @@ script.on_event(defines.events.on_tick,
 
                     cleanSquads(natives, map.squadIterator)
                     processActiveNests(map, surface, tick)
+                    
+                    -- game.print({"", "--dispatch4 ", profiler, ", ", game.tick, "       ", mRandom()})
 end)
 
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
@@ -1344,7 +1348,7 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.script_raised_built,
                  defines.events.script_raised_revive}, onBuild)
 
-script.on_event(defines.events.on_ai_command_completed, onCommandComplete)
+-- script.on_event(defines.events.on_ai_command_completed, onCommandComplete)
 script.on_event(defines.events.on_land_mine_armed, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
@@ -1355,6 +1359,7 @@ script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
 script.on_event(defines.events.on_unit_group_finished_gathering, onGroupFinishedGathering)
+-- script.on_event(defines.events.on_unit_removed_from_group, onUnitRemovedFromGroup)
 
 script.on_event(defines.events.on_build_base_arrived, onBuilderArrived)
 

@@ -77,6 +77,15 @@ if settings.startup["rampant-enableShrinkNestsAndWorms"].value then
 end
 
 
+for k, corpse in pairs(data.raw["corpse"]) do
+    corpse.time_before_removed = (string.find(k, "biter") or
+                                  string.find(k, "spitter") or
+                                  string.find(k, "hive") or
+                                  string.find(k, "worm")) and
+        settings.startup["rampant-unitAndSpawnerFadeTime"].value * 60
+end
+
+
 if settings.startup["rampant-addWallResistanceAcid"].value then
     vanillaBuildings.addWallAcidResistance()
 end

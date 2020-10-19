@@ -132,7 +132,7 @@ function mapProcessor.processMap(map, surface, tick)
 
     for x=index,endIndex,step do
         local chunk = processQueue[x]
-        if (chunk[CHUNK_TICK] ~= tick) then
+        if chunk and (chunk[CHUNK_TICK] ~= tick) then
             chunk[CHUNK_TICK] = tick
             processPheromone(map, chunk)
         end

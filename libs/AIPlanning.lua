@@ -274,7 +274,7 @@ function aiPlanning.temperamentPlanner(natives)
         delta = delta + val
 
         if destroyPlayerBuildings > 0 then
-            delta = delta - (200 * destroyPlayerBuildings)
+            delta = delta - (5 * destroyPlayerBuildings)
         end
 
     else
@@ -282,15 +282,15 @@ function aiPlanning.temperamentPlanner(natives)
 
         if destroyPlayerBuildings > 0 then
             if (currentTemperament > 0) then
-                delta = delta - (200 * destroyPlayerBuildings)
+                delta = delta - (5 * destroyPlayerBuildings)
             else
-                delta = delta + (200 * destroyPlayerBuildings)
+                delta = delta + (5 * destroyPlayerBuildings)
             end
         end
     end
 
     if activeRaidNests > 0 then
-        local val = (0.002 * activeRaidNests)
+        local val = (0.0075 * activeRaidNests)
         delta = delta - val
     else
         delta = delta - 0.5
@@ -306,7 +306,7 @@ function aiPlanning.temperamentPlanner(natives)
     end
 
     if lostEnemyBuilding > 0 then
-        delta = delta + (20 * lostEnemyBuilding)
+        delta = delta + (5 * lostEnemyBuilding)
     end
 
     if (builtEnemyBuilding > 0) then
@@ -347,7 +347,7 @@ function aiPlanning.temperamentPlanner(natives)
     natives.ionCannonBlasts = 0
     natives.artilleryBlasts = 0
 
-    natives.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + (natives.evolutionLevel * delta)))
+    natives.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + (mMin(natives.evolutionLevel, 0.1) * delta)))
     natives.temperament = ((natives.temperamentScore + 10000) * 0.00005)
     -- print(natives.temperament, natives.temperamentScore)
     -- print("--")

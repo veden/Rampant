@@ -90,18 +90,18 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
         else
             return
         end
-        
+
         local newSquad = findNearbyRetreatingSquad(map, exitPath)
         local created = false
         local natives = map.natives
-        
+
         if not newSquad then
             if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
                 created = true
-                newSquad = createSquad(position, surface)                
+                newSquad = createSquad(position, surface)
             else
                 return
-            end            
+            end
         end
 
         map.fleeCommand.from = cause
@@ -110,7 +110,7 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
         map.formRetreatCommand.unit_search_distance = radius
 
         local foundUnits = surface.set_multi_command(map.formRetreatCommand)
-        
+
         if (foundUnits == 0) then
             if created then
                 newSquad.group.destroy()
@@ -118,7 +118,7 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
             return
         end
 
-        if created then            
+        if created then
             natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
             natives.squadCount = natives.squadCount + 1
         end

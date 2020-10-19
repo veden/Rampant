@@ -96,7 +96,7 @@ end
 local function scoreSiegeLocationKamikaze(map, squad, neighborChunk)
     local settle = neighborChunk[BASE_PHEROMONE] +
         neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    
+
     return settle
 end
 
@@ -108,7 +108,7 @@ end
 local function scoreSiegeLocation(map, squad, neighborChunk)
     local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
         neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    
+
     return settle
 end
 
@@ -146,7 +146,7 @@ local function settleMove(map, squad, surface)
     end
     addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
-    addMovementPenalty(map, squad, chunk)    
+    addMovementPenalty(map, squad, chunk)
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
                                              squad.originPosition.x,
@@ -174,6 +174,13 @@ local function settleMove(map, squad, surface)
         end
 
         squad.status = SQUAD_BUILDING
+
+        -- remove in 1.1            
+        if (#group.members == 0) then
+            -- print("killing")
+            group.destroy()
+            return
+        end
 
         group.set_command(cmd)
     else
@@ -244,8 +251,14 @@ local function settleMove(map, squad, surface)
                 cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
             end
 
-            squad.status = SQUAD_BUILDING
+            -- remove in 1.1
+            if (#group.members == 0) then
+                -- print("killing")
+                group.destroy()
+                return
+            end
 
+            squad.status = SQUAD_BUILDING
         end
 
         group.set_command(cmd)
@@ -342,8 +355,41 @@ local function buildMove(map, squad, surface)
     group.set_command(map.compoundSettleCommand)
 end
 
+function squadAttack.cleanSquads(natives, iterator)
+    local squads = natives.groupNumberToSquad
+    local map = natives.map
+
+    local k, squad = next(squads, iterator)
+    if not k then
+        if (table_size(squads) == 0) then
+            -- this is needed as the next command remembers the max length a table has been
+            natives.groupNumberToSquad = {}
+        end
+    else
+        local group = squad.group
+        if not group.valid then
+            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            removeSquadFromChunk(map, squad)
+            if (map.regroupIterator == k) then
+                map.regroupIterator = nil
+            end
+            if squad.settlers then
+                natives.builderCount = natives.builderCount - 1
+            else
+                natives.squadCount = natives.squadCount - 1
+            end
+            local nextK
+            nextK,squad = next(squads, k)
+            squads[k] = nil
+            k = nextK
+        elseif (group.state == 4) then
+            squadAttack.squadDispatch(map, group.surface, squad, squad.groupNumber)
+        end
+    end
+    map.squadIterator = k
+end
+
 function squadAttack.squadDispatch(map, surface, squad)
-    -- local profiler = game.create_profiler()
     local group = squad.group
     if group and group.valid then
         local status = squad.status
@@ -370,9 +416,8 @@ function squadAttack.squadDispatch(map, surface, squad)
                 squad.status = SQUAD_RAIDING
                 attackMove(map, squad, surface)
             end
-        end
+        end        
     end
-    -- game.print({"", "--dispatch4 ", profiler})
 end
 
 squadAttackG = squadAttack

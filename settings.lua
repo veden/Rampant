@@ -71,6 +71,17 @@ data:extend({
         },
 
         {
+            type = "int-setting",
+            name = "rampant-unitAndSpawnerFadeTime",
+            setting_type = "startup",
+            minimum_value = 1,
+            maximum_value = 300 * 60,
+            default_value = 5 * 60,
+            order = "b[modifier]-f[wave]",
+            per_user = false
+        },
+
+        {
             type = "bool-setting",
             name = "rampant-permanentNocturnal",
             description = "rampant-permanentNocturnal",
@@ -787,7 +798,7 @@ data:extend({
             default_value = 1.0,
             minimum_value = 0.0001,
             maximum_value = 100000.0,
-            order = "p[modifier]-r[unit]",
+            order = "p[modifier]-r[zunit]",
             per_user = false
         },
 
@@ -799,7 +810,7 @@ data:extend({
             default_value = 1.0,
             minimum_value = 0.0001,
             maximum_value = 100000.0,
-            order = "p[modifier]-r[unit]",
+            order = "p[modifier]-r[zunit]",
             per_user = false
         },
 
@@ -811,7 +822,7 @@ data:extend({
             default_value = 1.0,
             minimum_value = 0.0001,
             maximum_value = 100000.0,
-            order = "p[modifier]-r[unit]",
+            order = "p[modifier]-r[zunit]",
             per_user = false
         },
 

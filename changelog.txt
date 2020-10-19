@@ -1,9 +1,23 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.0
-Date: 06. 09. 2020
+Date: 18. 10. 2020
   Improvements:
     - Added spawner creep from vanilla to Rampant spawners and worms
     - Added nuclear biters atomic shockwave
+    - Added corpse expiration time setting in mod settings
+  Tweaks:
+    - Increased active raid nest contribution to AI temperament to 0.0075
+    - Reduced destroyed player buildings effect on AI temperament to 5
+    - Reduced destroyed enemy buildings effect on AI temperament to 5
+    - Increased minimum logic cycle contribution change to AI temperament to 10%
+    - Increased units to spawn around new enemy spawners by 6 and units owned by 2
+    - Added caching to goto_location command
+  Bugfixes:
+    - Missing EN locale for acid pool on vanilla worm and spitter attack
+    - Temporary unit group size check on build command to prevent infinite loop until factorio 1.1 is released
+    - Fixed mod settings ordering for hive settings
+  Optimizations:
+    - Removed ai command completed event as cost was too high
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.17

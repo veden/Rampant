@@ -63,10 +63,12 @@ end
 
 function tests.activeSquads()
     print("-----")
-    print("Squads", global.natives.squads.len)
-    for i=1, global.natives.squads.len do
+    print(defines.group_state.gathering .. " is equal to gathering")
+    print(defines.group_state.finished .. " is equal to finished")
+    -- print("Squads", global.natives.groupNumberToSquad)
+    for un, squad in pairs(global.natives.groupNumberToSquad) do
         print("-")
-        local squad = global.natives.squads[i]
+        -- local squad = global.natives.squads[i]
         local squadHealth = 0
         local squadMakeup = {}
         if squad.group.valid then
@@ -86,53 +88,54 @@ function tests.activeSquads()
             -- print(serpent.dump(squad))
         end
     end
-    print("---")
-    print("pending", global.natives.pendingAttack.len)    
-    for i=1, global.natives.pendingAttack.len do
-        print("-")
-        local squad = global.natives.pendingAttack[i]
-        local squadHealth = 0
-        local squadMakeup = {}
-        if squad.group.valid then
-            -- for x=1,#squad.group.members do
-            --     local member = squad.group.members[x].prototype
-            --     if not squadMakeup[member.name] then
-            --         squadMakeup[member.name] = 0
-            --     end
+    -- print("---")
+    -- print("pending", global.natives.pendingAttack.len)
+    -- for i=1, global.natives.pendingAttack.len do
+    --     print("-")
+    --     local squad = global.natives.pendingAttack[i]
+    --     local squadHealth = 0
+    --     local squadMakeup = {}
+    --     if squad.group.valid then
+    --         -- for x=1,#squad.group.members do
+    --         --     local member = squad.group.members[x].prototype
+    --         --     if not squadMakeup[member.name] then
+    --         --         squadMakeup[member.name] = 0
+    --         --     end
 
-            --     squadHealth = squadHealth + member.max_health
-            --     squadMakeup[member.name] = squadMakeup[member.name] + 1
-            -- end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, -- squadHealth,
-                  squad.group.group_number)
-            -- print(serpent.dump(squadResistances))
-            -- print(serpent.dump(squadMakeup))
-            -- print(serpent.dump(squad))
-        end
-    end
-    print("---")
-    print("building", #global.natives.building)
-    for i=1, #global.natives.building do
-        print("-")
-        local squad = global.natives.building[i]
-        local squadHealth = 0
-        local squadMakeup = {}
-        if squad.group.valid then
-            -- for x=1,#squad.group.members do
-            --     local member = squad.group.members[x].prototype
-            --     if not squadMakeup[member.name] then
-            --         squadMakeup[member.name] = 0
-            --     end
+    --         --     squadHealth = squadHealth + member.max_health
+    --         --     squadMakeup[member.name] = squadMakeup[member.name] + 1
+    --         -- end
+    --         print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, -- squadHealth,
+    --               squad.group.group_number)
+    --         -- print(serpent.dump(squadResistances))
+    --         -- print(serpent.dump(squadMakeup))
+    --         -- print(serpent.dump(squad))
+    --     end
+    -- end
+    -- print("---")
+    -- print("building", #global.natives.building)
+    -- for i=1, #global.natives.building do
+    --     print("-")
+    --     local squad = global.natives.building[i]
+    --     local squadHealth = 0
+    --     local squadMakeup = {}
+    --     if squad.group.valid then
+    --         -- for x=1,#squad.group.members do
+    --         --     local member = squad.group.members[x].prototype
+    --         --     if not squadMakeup[member.name] then
+    --         --         squadMakeup[member.name] = 0
+    --         --     end
 
-            --     squadHealth = squadHealth + member.max_health
-            --     squadMakeup[member.name] = squadMakeup[member.name] + 1
-            -- end
-            print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squad.group.group_number, squadHealth)
-            -- print(serpent.dump(squadResistances))
-            -- print(serpent.dump(squadMakeup))
-            -- print(serpent.dump(squad))
-        end
-    end        
+    --         --     squadHealth = squadHealth + member.max_health
+    --         --     squadMakeup[member.name] = squadMakeup[member.name] + 1
+    --         -- end
+    --         print(math.floor(squad.group.position.x * 0.03125), math.floor(squad.group.position.y * 0.03125), squad.status, squad.group.state, #squad.group.members, squad.cycles, squad.group.group_number, squadHealth)
+    --         -- print(serpent.dump(squadResistances))
+    --         -- print(serpent.dump(squadMakeup))
+    --         -- print(serpent.dump(squad))
+    --     end
+    -- end
+
 end
 
 function tests.entitiesOnPlayerChunk()
@@ -261,7 +264,7 @@ function tests.baseStats()
         local base = natives.bases[i]
         print(base.x,
               base.y,
-              base.distanceThreshold,              
+              base.distanceThreshold,
               base.tick,
               base.points,
               base.temperament,
@@ -404,14 +407,14 @@ function tests.exportAiState()
             local base = chunkPropertyUtils.getChunkBase(global.map, chunk)
             local alignmentCount = 0
 
-            if base then                
+            if base then
                 if (#base.alignment == 2) then
                     alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + (lookupIndexFaction(base.alignment[1]) * 100) + lookupIndexFaction(base.alignment[2])
                 else
                     alignmentCount = (math.abs(base.x) * 10000) + (math.abs(base.y) * 10000) + lookupIndexFaction(base.alignment[1])
                 end
             end
-            
+
             s = s .. table.concat({0,
                                    chunk[constants.BASE_PHEROMONE],
                                    chunk[constants.PLAYER_PHEROMONE],
