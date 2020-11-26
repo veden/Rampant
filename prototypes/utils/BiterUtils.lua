@@ -1,6 +1,6 @@
 local biterFunctions = {}
 
-local sounds = require("__base__.prototypes.entity.demo-sounds")
+local sounds = require("__base__.prototypes.entity.sounds")
 local particleUtils = require("ParticleUtils")
 local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")

@@ -8,7 +8,7 @@ function projectileUtils.makeProjectile(attributes, attack)
                 name = n,
                 flags = {"not-on-map"},
                 collision_box = attributes.attackCollisionBox or {{-0.01, -0.01}, {0.01, 0.01}},
-                collision_mask = attributes.attackCollisionMask or {"layer-11"},
+                collision_mask = attributes.attackCollisionMask or {"layer-13"},
                 direction_only = attributes.attackDirectionOnly,
                 piercing_damage = attributes.attackPiercingDamage or 0,
                 acceleration = attributes.attackAcceleration or 0.02,
