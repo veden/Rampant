@@ -11,7 +11,7 @@ for _, robot in pairs(data.raw["logistic-robot"]) do
     -- if not robot.collision_mask then
     --     robot.collision_mask = {}
     -- end
-    -- robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+    -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 
     if (settings.startup["rampant-unkillableLogisticRobots"].value) then
         robot.resistances = {}
@@ -28,7 +28,7 @@ for _, robot in pairs(data.raw["construction-robot"]) do
     -- if not robot.collision_mask then
     --     robot.collision_mask = {}
     -- end
-    -- robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+    -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 
     if (settings.startup["rampant-unkillableConstructionRobots"].value) then
         robot.resistances = {}        
@@ -45,7 +45,7 @@ end
 --     if not robot.collision_mask then
 --         robot.collision_mask = {}
 --     end
---     robot.collision_mask[#robot.collision_mask+1] = "layer-11"
+--     robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 -- end
 
 --[[
