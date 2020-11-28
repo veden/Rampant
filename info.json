@@ -6,5 +6,5 @@
     "author" : "Veden",
     "homepage" : "https://forums.factorio.com/viewtopic.php?f=94&t=31445",
     "description" : "Improves the enemies tactics by using potential fields/pheromones allowing probing of defenses, retreats, reinforcements, counterattacking, breaching, raids, rallying death cry, and player hunting. Uses blockable biter projectiles. Adds new Enemies (disabled by default). Difficulty setting in mod options menu.",
-    "dependencies" : ["base >= 1.1.0", "? bobenemies", "? Natural_Evolution_Enemies >= 0.17.0", "? Clockwork", "? Orbital Ion Cannon", "? RampantArsenal", "? RampantResources", "? ArmouredBiters"]
+    "dependencies" : ["base >= 1.1.0", "? bobenemies", "? Natural_Evolution_Enemies >= 0.17.0", "? Clockwork", "? Orbital Ion Cannon", "? RampantArsenal", "? RampantResources", "? ArmouredBiters", "? Krastorio2"]
 }
