@@ -314,6 +314,9 @@ function baseUtils.upgradeEntity(entity, surface, baseAlignment, natives, disPos
         end
 
         query.name = spawnerName
+        if remote.interfaces["kr-creep"] then
+            remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
+        end
         return surface.create_entity(query)
     end
     return entity
