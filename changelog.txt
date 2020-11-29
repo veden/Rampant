@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 19. 10. 2020
+  Contributions:
+    - Astorin added RU locale
+    - oralordos updated Rampant to Factorio 1.1.0
+    - oralordos added support for Krastorio2 creep
+  Tweaks:
+    - AI Temperament per logic cycle normalized to full contribution
+    - Increased active raid nest contribution to 0.00675
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.0
 Date: 18. 10. 2020
   Improvements:

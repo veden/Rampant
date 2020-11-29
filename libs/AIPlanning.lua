@@ -270,34 +270,34 @@ function aiPlanning.temperamentPlanner(natives)
     local delta = 0
 
     if activeNests > 0 then
-        local val = (1.5 * activeNests)
+        local val = (0.75 * activeNests)
         delta = delta + val
 
         if destroyPlayerBuildings > 0 then
-            delta = delta - (5 * destroyPlayerBuildings)
+            delta = delta - (2.5 * destroyPlayerBuildings)
         end
 
     else
-        delta = delta - 1
+        delta = delta - 0.5
 
         if destroyPlayerBuildings > 0 then
             if (currentTemperament > 0) then
-                delta = delta - (5 * destroyPlayerBuildings)
+                delta = delta - (2.5 * destroyPlayerBuildings)
             else
-                delta = delta + (5 * destroyPlayerBuildings)
+                delta = delta + (2.5 * destroyPlayerBuildings)
             end
         end
     end
 
     if activeRaidNests > 0 then
-        local val = (0.0075 * activeRaidNests)
+        local val = (0.00675 * activeRaidNests)
         delta = delta - val
     else
-        delta = delta - 0.5
+        delta = delta - 0.25
     end
 
     if lostEnemyUnits > 0 then
-        local val = (0.001 * lostEnemyUnits)
+        local val = (0.0005 * lostEnemyUnits)
         if (currentTemperament > 0) then
             delta = delta - val
         else
@@ -306,32 +306,32 @@ function aiPlanning.temperamentPlanner(natives)
     end
 
     if lostEnemyBuilding > 0 then
-        delta = delta + (5 * lostEnemyBuilding)
+        delta = delta + (2.5 * lostEnemyBuilding)
     end
 
     if (builtEnemyBuilding > 0) then
-        local val = (50 * builtEnemyBuilding)
+        local val = (25 * builtEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
             delta = delta + val
         end
     else
-        delta = delta - 0.5
+        delta = delta - 0.25
     end
 
     if (rocketLaunched > 0) then
-        local val = (100 * rocketLaunched)
+        local val = (50 * rocketLaunched)
         delta = delta + val
     end
 
     if (ionCannonBlasts > 0) then
-        local val = (50 * ionCannonBlasts)
+        local val = (25 * ionCannonBlasts)
         delta = delta + val
     end
 
     if (artilleryBlasts > 0) then
-        local val = (50 * artilleryBlasts)
+        local val = (25 * artilleryBlasts)
         delta = delta + val
     end
 
@@ -347,7 +347,7 @@ function aiPlanning.temperamentPlanner(natives)
     natives.ionCannonBlasts = 0
     natives.artilleryBlasts = 0
 
-    natives.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + (mMin(natives.evolutionLevel, 0.1) * delta)))
+    natives.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
     natives.temperament = ((natives.temperamentScore + 10000) * 0.00005)
     -- print(natives.temperament, natives.temperamentScore)
     -- print("--")
