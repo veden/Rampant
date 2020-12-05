@@ -130,6 +130,10 @@ function mapProcessor.processMap(map, surface, tick)
         endIndex = mMax(index - PROCESS_QUEUE_SIZE, 1)
     end
 
+    if (processQueueLength == 0) then
+        return
+    end
+    
     for x=index,endIndex,step do
         local chunk = processQueue[x]
         if chunk and (chunk[CHUNK_TICK] ~= tick) then
@@ -166,6 +170,10 @@ function mapProcessor.processStaticMap(map, surface, tick)
         endIndex = mMax(index - PROCESS_STATIC_QUEUE_SIZE, 1)
     end
 
+    if (processQueueLength == 0) then
+        return
+    end
+    
     for x=index,endIndex,step do
         local chunk = processQueue[x]
         processStaticPheromone(map, chunk)
@@ -294,9 +302,14 @@ function mapProcessor.cleanUpMapTables(map, tick)
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
     local drained = map.chunkToDrained
-
     local processQueue = map.processQueue
-    local endIndex = mMin(index + CLEANUP_QUEUE_SIZE, #processQueue)
+    local processQueueLength = #processQueue
+
+    local endIndex = mMin(index + CLEANUP_QUEUE_SIZE, processQueueLength)
+
+    if (processQueueLength == 0) then
+        return
+    end
 
     for x=index,endIndex do
         local chunk = processQueue[x]
@@ -317,7 +330,7 @@ function mapProcessor.cleanUpMapTables(map, tick)
         end
     end
 
-    if (endIndex == #processQueue) then
+    if (endIndex == processQueueLength) then
         map.cleanupIndex = 1
     else
         map.cleanupIndex = endIndex + 1
@@ -335,9 +348,14 @@ function mapProcessor.scanPlayerMap(map, surface, tick)
 
     local offset = map.area[2]
     local chunkBox = map.area[1]
-
     local processQueue = map.processQueue
-    local endIndex = mMin(index + PLAYER_QUEUE_SIZE, #processQueue)
+    local processQueueLength = #processQueue
+    
+    local endIndex = mMin(index + PLAYER_QUEUE_SIZE, processQueueLength)
+
+    if (processQueueLength == 0) then
+        return
+    end
 
     for x=index,endIndex do
         local chunk = processQueue[x]
@@ -351,7 +369,7 @@ function mapProcessor.scanPlayerMap(map, surface, tick)
         mapScanPlayerChunk(chunk, surface, map)
     end
 
-    if (endIndex == #processQueue) then
+    if (endIndex == processQueueLength) then
         map.scanPlayerIndex = 1
     else
         map.scanPlayerIndex = endIndex + 1
@@ -367,10 +385,15 @@ function mapProcessor.scanEnemyMap(map, surface, tick)
 
     local offset = map.area[2]
     local chunkBox = map.area[1]
-
     local processQueue = map.processQueue
+    local processQueueLength = #processQueue
+    
     local endIndex = mMin(index + ENEMY_QUEUE_SIZE, #processQueue)
 
+    if (processQueueLength == 0) then
+        return
+    end
+    
     for x=index,endIndex do
         local chunk = processQueue[x]
 
@@ -383,7 +406,7 @@ function mapProcessor.scanEnemyMap(map, surface, tick)
         mapScanEnemyChunk(chunk, surface, map)
     end
 
-    if (endIndex == #processQueue) then
+    if (endIndex == processQueueLength) then
         map.scanEnemyIndex = 1
     else
         map.scanEnemyIndex = endIndex + 1
@@ -398,10 +421,15 @@ function mapProcessor.scanResourceMap(map, surface, tick)
 
     local offset = map.area[2]
     local chunkBox = map.area[1]
+    local processQueue = map.processQueue    
+    local processQueueLength = #processQueue
+    
+    local endIndex = mMin(index + RESOURCE_QUEUE_SIZE, processQueueLength)
 
-    local processQueue = map.processQueue
-    local endIndex = mMin(index + RESOURCE_QUEUE_SIZE, #processQueue)
-
+    if (processQueueLength == 0) then
+        return
+    end
+    
     for x=index,endIndex do
         local chunk = processQueue[x]
 
@@ -414,7 +442,7 @@ function mapProcessor.scanResourceMap(map, surface, tick)
         mapScanResourceChunk(chunk, surface, map)
     end
 
-    if (endIndex == #processQueue) then
+    if (endIndex == processQueueLength) then
         map.scanResourceIndex = 1
     else
         map.scanResourceIndex = endIndex + 1
