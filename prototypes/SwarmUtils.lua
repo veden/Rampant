@@ -111,7 +111,7 @@ local bloodFountains = {
 }
 
 local nuclearAttackNumeric = {
-    ["damage"] = { 50, 60, 80, 100, 120, 130, 140, 150, 180, 240 },
+    ["damage"] = { 15, 15, 25, 25, 35, 35, 45, 45, 55, 55 },
     ["repeatCount"] = { 150, 175, 250, 300, 350, 400, 450, 500, 550, 600 },
     ["radius"] = { 5, 10, 10, 12, 14, 16, 16, 18, 18, 20 },
     ["explosionDistance"] = { 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 },
@@ -119,8 +119,8 @@ local nuclearAttackNumeric = {
 }
 
 local bombAttackNumeric = {
-    ["damage"] = { 100, 200, 300, 400, 600, 800, 1000, 1200, 1500, 2000 },
-    ["radius"] = { 3.5, 3.5, 4, 5, 6, 6, 7, 7, 7.5, 8 },
+    ["damage"] = { 25, 25, 25, 25, 30, 30, 40, 40, 50, 50 },
+    ["radius"] = { 1.75, 1.75, 2, 2.5, 3, 3, 3.5, 3.5, 3.75, 4 },
     ["explosionDistance"] = { 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 3, 3 },
     ["explosionCount"] = { 2, 3, 4, 5, 6, 8, 10, 12, 13, 14 }
 }
@@ -181,14 +181,14 @@ local acidPuddleAttributeNumeric = {
 }
 
 local spitterAttributeNumeric = {
-    ["range"] = { 13, 13, 14, 14, 15, 15, 16, 16, 17, 17 },
+    ["range"] = { 11, 11, 11, 12, 12, 12, 13, 13, 14, 14 },
     ["radius"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5 },
     ["cooldown"] = { 100, 100, 97, 97, 95, 95, 93, 93, 90, 90 },
     ["warmup"] = { 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 },
     ["stickerDuration"] = { 600, 610, 620, 630, 640, 650, 660, 670, 680, 690 },
     ["damagePerTick"] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 },
-    ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
-    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
+    ["stickerDamagePerTick"] = { 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25 },
+    ["stickerMovementModifier"] = { 0.97, 0.96, 0.95, 0.94, 0.93, 0.92, 0.91, 0.90, 0.89, 0.88 },
     ["damage"] = { 4, 7.5, 11.25, 15, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
     ["particleHoizontalSpeed"] = { 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1 },
@@ -598,6 +598,8 @@ local function fillEntityTemplate(entity)
                                 }
                             }
                     end
+                elseif (attribute == "killsSelf") then
+                    entity.healthDamage = entity.health * 3
                 elseif (attribute == "unstable") then
                     entity["healing"] = entity["healing"] * -1
                 elseif (attribute == "checkBuildability") then

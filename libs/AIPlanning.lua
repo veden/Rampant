@@ -73,7 +73,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
-    natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.15)
+    natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
     natives.attackWaveDeviation = (natives.attackWaveSize * 0.333)
     natives.attackWaveUpperBound = natives.attackWaveSize + (natives.attackWaveSize * 0.35)
 
@@ -201,7 +201,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
             end
         else -- 0.8 - 1
             if (natives.enabledMigration and natives.raidAIToggle) then
-                if (roll < 0.3) then
+                if (roll < 0.15) then
                     natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.6) then
                     natives.state = AI_STATE_ONSLAUGHT
@@ -214,7 +214,7 @@ function aiPlanning.planning(natives, evolution_factor, tick)
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             elseif (natives.enabledMigration) then
-                if (roll < 0.3) then
+                if (roll < 0.15) then
                     natives.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.7) then
                     natives.state = AI_STATE_ONSLAUGHT
@@ -249,6 +249,14 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 
         -- print("changing state", natives.state)
 
+        natives.destroyPlayerBuildings = 0
+        natives.lostEnemyUnits = 0
+        natives.lostEnemyBuilding = 0
+        natives.rocketLaunched = 0
+        natives.builtEnemyBuilding = 0
+        natives.ionCannonBlasts = 0
+        natives.artilleryBlasts = 0
+
         natives.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
@@ -270,34 +278,41 @@ function aiPlanning.temperamentPlanner(natives)
     local delta = 0
 
     if activeNests > 0 then
-        local val = (0.75 * activeNests)
+        local val = (0.375 * activeNests)
         delta = delta + val
-
-        if destroyPlayerBuildings > 0 then
-            delta = delta - (2.5 * destroyPlayerBuildings)
-        end
-
-    else
-        delta = delta - 0.5
-
-        if destroyPlayerBuildings > 0 then
-            if (currentTemperament > 0) then
-                delta = delta - (2.5 * destroyPlayerBuildings)
-            else
-                delta = delta + (2.5 * destroyPlayerBuildings)
-            end
-        end
-    end
-
-    if activeRaidNests > 0 then
-        local val = (0.00675 * activeRaidNests)
-        delta = delta - val
     else
         delta = delta - 0.25
     end
 
+    if destroyPlayerBuildings > 0 then
+        if currentTemperament > 0 then
+            delta = delta - (0.25 * destroyPlayerBuildings)
+        else
+            delta = delta + (0.25 * destroyPlayerBuildings)
+        end
+    end
+
+    if activeRaidNests > 0 then
+        local val = (0.003825 * activeRaidNests)
+        delta = delta - val
+    else
+        delta = delta - 0.125
+    end
+
     if lostEnemyUnits > 0 then
-        local val = (0.0005 * lostEnemyUnits)
+        local multipler
+        if natives.evolutionLevel < 0.3 then
+            multipler = 0.0005
+        elseif natives.evolutionLevel < 0.5 then
+            multipler = 0.000385
+        elseif natives.evolutionLevel < 0.7 then
+            multipler = 0.00025
+        elseif natives.evolutionLevel < 0.9 then
+            multipler = 0.00012
+        elseif natives.evolutionLevel < 0.9 then
+            multipler = 0.00006
+        end
+        local val = (multipler * lostEnemyUnits)
         if (currentTemperament > 0) then
             delta = delta - val
         else
@@ -306,51 +321,57 @@ function aiPlanning.temperamentPlanner(natives)
     end
 
     if lostEnemyBuilding > 0 then
-        delta = delta + (2.5 * lostEnemyBuilding)
+        local val = (1.25 * lostEnemyBuilding)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end        
     end
 
     if (builtEnemyBuilding > 0) then
-        local val = (25 * builtEnemyBuilding)
+        local val = (0.075 * builtEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
             delta = delta + val
         end
     else
-        delta = delta - 0.25
+        delta = delta - 0.125
     end
 
     if (rocketLaunched > 0) then
-        local val = (50 * rocketLaunched)
+        local val = (5 * rocketLaunched)
         delta = delta + val
     end
 
     if (ionCannonBlasts > 0) then
-        local val = (25 * ionCannonBlasts)
+        local val = (2.5 * ionCannonBlasts)
         delta = delta + val
     end
 
     if (artilleryBlasts > 0) then
-        local val = (25 * artilleryBlasts)
+        local val = (2.5 * artilleryBlasts)
         delta = delta + val
     end
 
-    -- print(natives.activeNests, natives.activeRaidNests, natives.destroyPlayerBuildings, natives.lostEnemyUnits,
-    --       natives.lostEnemyBuilding, natives.rocketLaunched, natives.builtEnemyBuilding, natives.ionCannonBlasts,
-    --       natives.artilleryBlasts)
+    print("temperament", natives.activeNests, natives.activeRaidNests, natives.destroyPlayerBuildings, natives.lostEnemyUnits,
+          natives.lostEnemyBuilding, natives.rocketLaunched, natives.builtEnemyBuilding, natives.ionCannonBlasts,
+          natives.artilleryBlasts)
 
-    natives.destroyPlayerBuildings = 0
-    natives.lostEnemyUnits = 0
-    natives.lostEnemyBuilding = 0
-    natives.rocketLaunched = 0
-    natives.builtEnemyBuilding = 0
-    natives.ionCannonBlasts = 0
-    natives.artilleryBlasts = 0
+    -- natives.destroyPlayerBuildings = 0
+    -- natives.lostEnemyUnits = 0
+    -- natives.lostEnemyBuilding = 0
+    -- natives.rocketLaunched = 0
+    -- natives.builtEnemyBuilding = 0
+    -- natives.ionCannonBlasts = 0
+    -- natives.artilleryBlasts = 0
 
     natives.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
     natives.temperament = ((natives.temperamentScore + 10000) * 0.00005)
-    -- print(natives.temperament, natives.temperamentScore)
-    -- print("--")
+
+    print("tempResult", natives.temperament, natives.temperamentScore)
+    print("--")
 end
 
 aiPlanningG = aiPlanning

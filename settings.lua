@@ -43,7 +43,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = 20,
             maximum_value = 600,
-            default_value = 150,
+            default_value = 75,
             order = "b[modifier]-f[wave]",
             per_user = false
         },
@@ -75,8 +75,17 @@ data:extend({
             name = "rampant-unitAndSpawnerFadeTime",
             setting_type = "startup",
             minimum_value = 1,
-            maximum_value = 300 * 60,
+            maximum_value = 30000000 * 60,
             default_value = 5 * 60,
+            order = "b[modifier]-f[wave]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-enableFadeTime",
+            setting_type = "startup",
+            default_value = true,
             order = "b[modifier]-f[wave]",
             per_user = false
         },

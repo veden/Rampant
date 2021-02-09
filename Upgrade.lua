@@ -179,10 +179,9 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         game.forces.enemy.ai_controllable = true
 
         if not setNewSurface then
-            game.get_surface(natives.activeSurface).print("Rampant - Version 0.18.13")
+            game.get_surface(natives.activeSurface).print("Rampant - Version 1.0.3")
         end
     end
-
 
     return starting ~= global.version, natives
 end

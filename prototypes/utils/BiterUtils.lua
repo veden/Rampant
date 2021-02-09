@@ -597,7 +597,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                 action_delivery =
                     {
                         type = "instant",
-                        target_effects =
+                        source_effects =
                             {
                                 {
                                     type = "set-tile",
@@ -822,7 +822,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                 action_delivery =
                     {
                         type = "instant",
-                        target_effects= {
+                        source_effects= {
                             {
                                 type="create-entity",
                                 entity_name = attributes.attackExplosion,
@@ -842,8 +842,13 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                 type = "direct",
                 action_delivery = {
                     type = "instant",
-                    target_effects =
+                    source_effects =
                         {
+                            {
+                                    type = "damage",
+                                    affects_target = true,
+                                    damage = {amount = attributes.healthDamage or 5, type = "explosion"}
+                            },
                             {
                                 type = "create-entity",
                                 entity_name = attributes.attackExplosion
@@ -884,7 +889,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                 action_delivery =
                     {
                         type = "instant",
-                        target_effects= {
+                        source_effects= {
                             {
                                 type="create-entity",
                                 entity_name = attributes.attackExplosion,

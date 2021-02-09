@@ -1,4 +1,35 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.3
+Date: 06. 02. 2021
+  Improvements:
+    - AI temperament logic now will calm down after you destroy enough units and/or nests
+  Tweaks:
+    - Reduced spitter range by 2 across all new enemy tiers
+    - Increased spitter projectile collision box by 5x
+    - Decreased movement debuff from spitter acid puddle by roughly 70%
+    - Decreased acid pool sticker damage by 50%
+    - Decreased suicide biter damage 90% and radius by roughly 50%
+    - Decreased nuclear biter damage 90%
+    - Decreased default max wave size to 75 units
+    - Increased evolution requirement for suicide and nuclear biters to 35% and 45%
+    - Decreased squad size ramp up to evolution_factor^1.4
+    - Increased unit lost temperament contribution to 0.03
+    - Decreased active spawner temperament contribution to 0.25
+    - Increased builder squad cost to 400
+    - Decreased siege ai state chance to 15% at peak temperament
+    - Halved AI temperament rate of change
+  Bugfixes:
+    - Fixed suicide and nuclear enemies explosion centered on target instead self
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.2
+Date: 06. 12. 2020
+  Improvements:
+    - Added setting for enabling fade time of corpses
+  Bugfixes:
+    - Fixed missing fade time for spawners
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.1
 Date: 19. 10. 2020
   Contributions:

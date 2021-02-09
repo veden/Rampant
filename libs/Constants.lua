@@ -121,7 +121,7 @@ constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
 constants.RECOVER_WORM_COST = constants.AI_SQUAD_COST * 0.5
 constants.AI_VENGENCE_SQUAD_COST = 45
-constants.AI_SETTLER_COST = 200
+constants.AI_SETTLER_COST = 400
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 12500
@@ -1227,7 +1227,7 @@ if settings.startup["rampant-suicideEnemy"].value then
         tint = {r=0.8, g=0.8, b=0.8, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
         acceptRate = {1, 10, 0.05, 0.15},
-        evo = 0.12,
+        evo = 0.35,
         units = {
             {
                 type = "biter",
@@ -1235,7 +1235,7 @@ if settings.startup["rampant-suicideEnemy"].value then
                 name = "biter",
                 majorWeaknesses = {"explosion"},
                 minorResistances = {"poison"},
-                attributes = {"lowestHealth", "quickSpawning", "quickMovement"},
+                attributes = {"lowestHealth", "quickSpawning", "quickMovement", "killsSelf"},
                 drops = {"yellowArtifact"}
             }
         },
@@ -1286,14 +1286,14 @@ if settings.startup["rampant-nuclearEnemy"].value then
         tint = {r=0.6, g=0.6, b=0.4, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
-        evo = 0.2,
+        evo = 0.45,
         units = {
             {
                 type = "biter",
                 attackAttributes = {"nuclear"},
                 name = "biter",
                 majorWeaknesses = {"explosion"},
-                attributes = {"lowestHealth", "quickSpawning", "quickMovement"},
+                attributes = {"lowestHealth", "quickSpawning", "quickMovement", "killsSelf"},
                 drops = {"yellowArtifact"}
             }
         },

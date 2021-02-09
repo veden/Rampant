@@ -76,15 +76,38 @@ if settings.startup["rampant-enableShrinkNestsAndWorms"].value then
     end
 end
 
+-- if not settings.startup["rampant-newEnemies"].value then
+--     unit = data.raw["unit"]["small-biter"]
+--     if string.find(k, "biter") then
+--         unit.max_health = unit.max_health * settings.startup["rampant-unitBiterHealthScaler"].value
+--         unit.max_health = unit.healing_per_tick * settings.startup["rampant-unitBiterHealingScaler"].value
+--         unit.range = unit.range * settings.startup["rampant-unitBiterRangeScaler"].value
 
-for k, corpse in pairs(data.raw["corpse"]) do
-    corpse.time_before_removed = (string.find(k, "biter") or
-                                  string.find(k, "spitter") or
-                                  string.find(k, "hive") or
-                                  string.find(k, "worm")) and
-        settings.startup["rampant-unitAndSpawnerFadeTime"].value * 60
+--     else if string.find(k, "spitter") then
+
+--     end
+
+--     for k, spawner in pairs(data.raw["unit-spawner"]) do
+--         if string.find(k, "hive") or string.find(k, "spawner") then
+
+--         end
+--     end
+
+--     for k, unit in pairs(data.raw["turret"]) do
+--         if string.find(k, "worm") then
+
+--         end
+--     end
+-- end
+
+if settings.startup["rampant-enableFadeTime"].value then
+    for k, corpse in pairs(data.raw["corpse"]) do
+        if (string.find(k, "biter") or string.find(k, "spitter") or string.find(k, "hive") or
+            string.find(k, "worm") or string.find(k, "spawner")) then
+            corpse.time_before_removed = settings.startup["rampant-unitAndSpawnerFadeTime"].value * 60
+        end
+    end
 end
-
 
 if settings.startup["rampant-addWallResistanceAcid"].value then
     vanillaBuildings.addWallAcidResistance()

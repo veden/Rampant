@@ -14,6 +14,8 @@
   (let ((packagePath (string->path (string-append folder
                                                   packageName
                                                   ".zip"))))
+    (delete-directory/files (string->path (string-append folder
+                                                         packageName)))
     (when (file-exists? packagePath)
       (delete-file packagePath)))
   (zip (string-append folder
