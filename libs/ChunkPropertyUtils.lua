@@ -17,10 +17,7 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
 -- imported functions
 
-local tRemove = table.remove
-
 local mMin = math.min
-local mMax = math.max
 
 -- module code
 

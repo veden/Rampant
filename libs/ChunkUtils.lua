@@ -15,7 +15,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 local HIVE_BUILDINGS_TYPES = constants.HIVE_BUILDINGS_TYPES
 
-local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
@@ -42,9 +41,7 @@ local RESOURCE_NORMALIZER = constants.RESOURCE_NORMALIZER
 local CHUNK_TICK = constants.CHUNK_TICK
 
 local GENERATOR_PHEROMONE_LEVEL_1 = constants.GENERATOR_PHEROMONE_LEVEL_1
-local GENERATOR_PHEROMONE_LEVEL_2 = constants.GENERATOR_PHEROMONE_LEVEL_2
 local GENERATOR_PHEROMONE_LEVEL_3 = constants.GENERATOR_PHEROMONE_LEVEL_3
-local GENERATOR_PHEROMONE_LEVEL_4 = constants.GENERATOR_PHEROMONE_LEVEL_4
 local GENERATOR_PHEROMONE_LEVEL_5 = constants.GENERATOR_PHEROMONE_LEVEL_5
 local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
 
@@ -87,8 +84,6 @@ local getChunkByXY = mapUtils.getChunkByXY
 local mMin = math.min
 local mMax = math.max
 local mFloor = math.floor
-
-local mRandom = math.random
 
 -- module code
 
@@ -204,7 +199,9 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
     local enemyBuildings = surface.find_entities_filtered(map.filteredEntitiesEnemyStructureQuery)
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
-        local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
+        local neutralObjects = mMax(0,
+                                    mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005),
+                                         1) * 0.20)
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = scorePlayerBuildings(surface, map)
@@ -263,7 +260,8 @@ function chunkUtils.initialScan(chunk, surface, map, tick, rebuilding)
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        local hiveType = buildingHiveTypeLookup[building.name] or (((building.type == "turret") and "turret") or "biter-spawner")
+                        local hiveType = buildingHiveTypeLookup[building.name] or
+                            (((building.type == "turret") and "turret") or "biter-spawner")
                         counts[hiveType] = counts[hiveType] + 1
                     end
 
@@ -292,7 +290,9 @@ function chunkUtils.chunkPassScan(chunk, surface, map)
     local waterTiles = (1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)) * 0.80
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) then
-        local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
+        local neutralObjects = mMax(0,
+                                    mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005),
+                                         1) * 0.20)
         local pass = scanPaths(chunk, surface, map)
 
         local playerObjects = getPlayerBaseGenerator(map, chunk)
@@ -321,7 +321,9 @@ function chunkUtils.mapScanResourceChunk(chunk, surface, map)
     local resources = surface.count_entities_filtered(map.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
     local waterTiles = (1 - (surface.count_tiles_filtered(map.filteredTilesQuery) * 0.0009765625)) * 0.80
-    local neutralObjects = mMax(0, mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005), 1) * 0.20)
+    local neutralObjects = mMax(0,
+                                mMin(1 - (surface.count_entities_filtered(map.filteredEntitiesChunkNeutral) * 0.005),
+                                     1) * 0.20)
     setPathRating(map, chunk, waterTiles + neutralObjects)
 end
 
@@ -334,7 +336,8 @@ function chunkUtils.mapScanEnemyChunk(chunk, surface, map)
     end
     for i=1,#buildings do
         local building = buildings[i]
-        local hiveType = buildingHiveTypeLookup[building.name] or (((building.type == "turret") and "turret") or "biter-spawner")
+        local hiveType = buildingHiveTypeLookup[building.name] or
+            (((building.type == "turret") and "turret") or "biter-spawner")
         counts[hiveType] = counts[hiveType] + 1
     end
 
@@ -373,7 +376,7 @@ function chunkUtils.colorChunk(chunk, surface, color)
     local lx = math.floor(chunk.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local ly = math.floor(chunk.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 
-    local graphicId = rendering.draw_rectangle({
+    rendering.draw_rectangle({
             color = color or {0.1, 0.3, 0.1, 0.6},
             width = 32 * 32,
             filled = true,
@@ -390,7 +393,7 @@ function chunkUtils.colorXY(x, y, surface, color)
     local lx = math.floor(x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local ly = math.floor(y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 
-    local graphicId = rendering.draw_rectangle({
+    rendering.draw_rectangle({
             color = color or {0.1, 0.3, 0.1, 0.6},
             width = 32 * 32,
             filled = true,

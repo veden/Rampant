@@ -30,9 +30,7 @@ local AI_MAX_POINTS = constants.AI_MAX_POINTS
 local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
 
 local AI_MIN_STATE_DURATION = constants.AI_MIN_STATE_DURATION
-local AI_MIN_TEMPERAMENT_DURATION = constants.AI_MIN_TEMPERAMENT_DURATION
 local AI_MAX_STATE_DURATION = constants.AI_MAX_STATE_DURATION
-local AI_MAX_TEMPERAMENT_DURATION = constants.AI_MAX_TEMPERAMENT_DURATION
 
 local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
 local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
@@ -61,7 +59,8 @@ function aiPlanning.planning(natives, evolution_factor, tick)
 
     local maxPoints = mMax(AI_MAX_POINTS * evolution_factor, MINIMUM_AI_POINTS)
 
-    if not natives.ranIncompatibleMessage and natives.newEnemies and (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
+    if not natives.ranIncompatibleMessage and natives.newEnemies and
+        (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
         natives.ranIncompatibleMessage = true
         game.print({"description.rampant-bobs-nee-newEnemies"})
     end
@@ -69,7 +68,9 @@ function aiPlanning.planning(natives, evolution_factor, tick)
     local maxOverflowPoints = maxPoints * 3
 
     local attackWaveMaxSize = natives.attackWaveMaxSize
-    natives.retreatThreshold = linearInterpolation(evolution_factor, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN, RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
+    natives.retreatThreshold = linearInterpolation(evolution_factor,
+                                                   RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
+                                                   RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     natives.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
@@ -83,15 +84,20 @@ function aiPlanning.planning(natives, evolution_factor, tick)
         natives.attackWaveUpperBound = 3
     end
 
-    natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMinSize, natives.expansionMaxSize)
+    natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667,
+                                                  natives.expansionMinSize,
+                                                  natives.expansionMaxSize)
     natives.settlerWaveDeviation = (natives.settlerWaveSize * 0.33)
 
-    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667, natives.expansionMaxTime, natives.expansionMinTime))
+    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667,
+                                                         natives.expansionMaxTime,
+                                                         natives.expansionMinTime))
 
     natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (natives.activeNests * 0.25) + ((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler)
+    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (natives.activeNests * 0.25) +
+        (((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * natives.aiPointsScaler))
 
     if (natives.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
@@ -326,7 +332,7 @@ function aiPlanning.temperamentPlanner(natives)
             delta = delta - val
         else
             delta = delta + val
-        end        
+        end
     end
 
     if (builtEnemyBuilding > 0) then
@@ -355,7 +361,8 @@ function aiPlanning.temperamentPlanner(natives)
         delta = delta + val
     end
 
-    print("temperament", natives.activeNests, natives.activeRaidNests, natives.destroyPlayerBuildings, natives.lostEnemyUnits,
+    print("temperament", natives.activeNests, natives.activeRaidNests, natives.destroyPlayerBuildings,
+          natives.lostEnemyUnits,
           natives.lostEnemyBuilding, natives.rocketLaunched, natives.builtEnemyBuilding, natives.ionCannonBlasts,
           natives.artilleryBlasts)
 

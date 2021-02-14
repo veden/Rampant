@@ -11,7 +11,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
-local baseUtils = require("BaseUtils")
 local config = require("__Rampant__/config")
 
 -- constants
@@ -35,7 +34,6 @@ local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
-local SETTLER_DISTANCE = constants.SETTLER_DISTANCE
 
 local RESOURCE_MINIMUM_FORMATION_DELTA = constants.RESOURCE_MINIMUM_FORMATION_DELTA
 
@@ -125,38 +123,38 @@ local function visitPattern(o, cX, cY, distance)
     local endY
     local stepY
     if (o == 0) then
-        startX = cX - RALLY_CRY_DISTANCE
-        endX = cX + RALLY_CRY_DISTANCE
+        startX = cX - distance
+        endX = cX + distance
         stepX = 32
-        startY = cY - RALLY_CRY_DISTANCE
-        endY = cY + RALLY_CRY_DISTANCE
+        startY = cY - distance
+        endY = cY + distance
         stepY = 32
     elseif (o == 1) then
-        startX = cX + RALLY_CRY_DISTANCE
-        endX = cX - RALLY_CRY_DISTANCE
+        startX = cX + distance
+        endX = cX - distance
         stepX = -32
-        startY = cY + RALLY_CRY_DISTANCE
-        endY = cY - RALLY_CRY_DISTANCE
+        startY = cY + distance
+        endY = cY - distance
         stepY = -32
     elseif (o == 2) then
-        startX = cX - RALLY_CRY_DISTANCE
-        endX = cX + RALLY_CRY_DISTANCE
+        startX = cX - distance
+        endX = cX + distance
         stepX = 32
-        startY = cY + RALLY_CRY_DISTANCE
-        endY = cY - RALLY_CRY_DISTANCE
+        startY = cY + distance
+        endY = cY - distance
         stepY = -32
     elseif (o == 3) then
-        startX = cX + RALLY_CRY_DISTANCE
-        endX = cX - RALLY_CRY_DISTANCE
+        startX = cX + distance
+        endX = cX - distance
         stepX = -32
-        startY = cY - RALLY_CRY_DISTANCE
-        endY = cY + RALLY_CRY_DISTANCE
+        startY = cY - distance
+        endY = cY + distance
         stepY = 32
     end
     return startX, endX, stepX, startY, endY, stepY
 end
 
-function aiAttackWave.rallyUnits(chunk, map, surface, tick)
+function aiAttackWave.rallyUnits(chunk, map, tick)
     if ((tick - getRallyTick(map, chunk) > COOLDOWN_RALLY) and (map.natives.points >= AI_VENGENCE_SQUAD_COST)) then
         setRallyTick(map, chunk, tick)
         local cX = chunk.x
@@ -183,7 +181,7 @@ function aiAttackWave.rallyUnits(chunk, map, surface, tick)
     end
 end
 
-function aiAttackWave.formSettlers(map, surface, chunk, tick)
+function aiAttackWave.formSettlers(map, surface, chunk)
 
     local natives = map.natives
     if (natives.builderCount < natives.AI_MAX_BUILDER_COUNT) and
@@ -224,11 +222,10 @@ function aiAttackWave.formSettlers(map, surface, chunk, tick)
 
                 local scaledWaveSize = settlerWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
-                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)                    
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)
                     natives.builderCount = natives.builderCount + 1
                     natives.points = natives.points - AI_SETTLER_COST
                     natives.groupNumberToSquad[squad.groupNumber] = squad
@@ -268,11 +265,10 @@ function aiAttackWave.formVengenceSquad(map, surface, chunk)
 
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
-                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)                    
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, natives)
                     natives.groupNumberToSquad[squad.groupNumber] = squad
                     natives.squadCount = natives.squadCount + 1
                     natives.points = natives.points - AI_VENGENCE_SQUAD_COST
@@ -313,7 +309,6 @@ function aiAttackWave.formSquads(map, surface, chunk, tick)
 
                 local scaledWaveSize = attackWaveScaling(natives)
                 map.formGroupCommand.group = squad.group
-                local group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then

@@ -8,7 +8,6 @@ local movementUtils = {}
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
@@ -44,7 +43,7 @@ function movementUtils.findMovementPositionDistort(surface, position)
     return distortPosition(pos, 8)
 end
 
-function movementUtils.addMovementPenalty(map, squad, chunk)
+function movementUtils.addMovementPenalty(squad, chunk)
     if (chunk == -1) then
         return
     end
@@ -55,8 +54,6 @@ function movementUtils.addMovementPenalty(map, squad, chunk)
         if (penalty.c == chunk) then
             penalty.v = ((penaltyCount > 1) and penalty.v + 1) or penalty.v
             if (penalty.v > 2) then
-                -- print("movementThreshold", #penalties, squad.group.group_number, penalty.v, squad.settlers, squad.kamikaze, squad.status)
-                -- game.players[1].teleport(chunk, game.surfaces[1])
                 squad.kamikaze = true
             end
             return
@@ -74,7 +71,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction, squad)
+function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -83,7 +80,7 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
-                local score = scoreFunction(map, squad, neighborChunk)
+                local score = scoreFunction(map, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -103,7 +100,7 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(map, squad, neighborChunk)
+                local score = scoreFunction(map, neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -120,7 +117,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction, squad)
+function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection = 0
@@ -129,7 +126,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
-                local score = scoreFunction(map, squad, neighborChunk)
+                local score = scoreFunction(map, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -139,7 +136,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         end
     end
 
-    if (chunk ~= -1) and (scoreFunction(map, squad, chunk) > highestScore) then
+    if (chunk ~= -1) and (scoreFunction(map, chunk) > highestScore) then
         return chunk, 0, -1, 0
     end
 
@@ -153,7 +150,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(map, squad, neighborChunk)
+                local score = scoreFunction(map, neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -175,7 +172,10 @@ function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks,
     local highestDirection
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= -1) and canMoveChunkDirection(map, x, chunk, neighborChunk) and validFunction(map, chunk, neighborChunk) then
+        if (neighborChunk ~= -1) and
+            canMoveChunkDirection(map, x, chunk, neighborChunk) and
+            validFunction(map, chunk, neighborChunk)
+        then
             local score = scoreFunction(map, neighborChunk)
             if (score > highestScore) then
                 highestScore = score

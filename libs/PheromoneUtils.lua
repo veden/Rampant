@@ -16,9 +16,6 @@ local VICTORY_SCENT_BOUND = constants.VICTORY_SCENT_BOUND
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
-local CHUNK_TICK = constants.CHUNK_TICK
-local NEIGHBOR_DIVIDER = constants.NEIGHBOR_DIVIDER
-
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
 local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
@@ -27,13 +24,9 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
-local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 local VICTORY_SCENT = constants.VICTORY_SCENT
 
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
-
-local PLAYER_PHEROMONE_PERSISTANCE = constants.PLAYER_PHEROMONE_PERSISTANCE
-local RESOURCE_PHEROMONE_PERSISTANCE = constants.RESOURCE_PHEROMONE_PERSISTANCE
 
 local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
 
@@ -50,7 +43,6 @@ local getPathRating = chunkPropertyUtils.getPathRating
 local getPassable = chunkPropertyUtils.getPassable
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 
 local decayDeathGenerator = chunkPropertyUtils.decayDeathGenerator
@@ -58,8 +50,6 @@ local decayDeathGenerator = chunkPropertyUtils.decayDeathGenerator
 local linearInterpolation = mathUtils.linearInterpolation
 
 local getChunkByXY = mapUtils.getChunkByXY
-
-local mAbs = math.abs
 
 local next = next
 
@@ -302,7 +292,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
     end
 
     chunkBase = chunkBase * 0.9
-    local pheromone = getPlayerBaseGenerator(map, chunk)
+    pheromone = getPlayerBaseGenerator(map, chunk)
     if chunkBase < pheromone then
         chunk[BASE_PHEROMONE] = pheromone * chunkPathRating
     else
@@ -310,7 +300,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
     end
 
     chunkResource = chunkResource * 0.9
-    local pheromone = getResourceGenerator(map, chunk)
+    pheromone = getResourceGenerator(map, chunk)
     if (pheromone > 0) and clear then
         pheromone = linearInterpolation(pheromone, 15000, 20000)
     end
@@ -481,7 +471,7 @@ function pheromoneUtils.processPheromone(map, chunk, player)
     end
 
     chunkPlayer = chunkPlayer * 0.45
-    local pheromone = getPlayersOnChunk(map, chunk) * PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    pheromone = getPlayersOnChunk(map, chunk) * PLAYER_PHEROMONE_GENERATOR_AMOUNT
     if chunkPlayer < pheromone then
         chunk[PLAYER_PHEROMONE] = pheromone * chunkPathRating
     else

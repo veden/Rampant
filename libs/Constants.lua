@@ -1113,7 +1113,8 @@ if settings.startup["rampant-trollEnemy"].value then
                 name = "biter",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
-                attributes = {"highestHealth", "longReach", "bigger", "highestRegen", "slowMovement", "altBiterArmored"},
+                attributes = {"highestHealth", "longReach", "bigger",
+                              "highestRegen", "slowMovement", "altBiterArmored"},
                 drops = {"greenArtifact"}
             }
         },
@@ -1226,7 +1227,7 @@ if settings.startup["rampant-suicideEnemy"].value then
         type = "suicide",
         tint = {r=0.8, g=0.8, b=0.8, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
-        acceptRate = {1, 10, 0.05, 0.15},
+        acceptRate = {3, 10, 0.05, 0.15},
         evo = 0.35,
         units = {
             {
@@ -1285,7 +1286,7 @@ if settings.startup["rampant-nuclearEnemy"].value then
         type = "nuclear",
         tint = {r=0.6, g=0.6, b=0.4, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
-        acceptRate = {3, 10, 0.1, 0.125},
+        acceptRate = {4, 10, 0.1, 0.125},
         evo = 0.45,
         units = {
             {
@@ -1496,7 +1497,7 @@ for x=1,9 do
         elseif x > 5 and y < 5 then
             v = math.min((10-x), y)
         elseif x < 5 and y > 5 then
-            v = math.min(x, (10-y))            
+            v = math.min(x, (10-y))
         else
             v = math.min((10-x), (10-y))
         end

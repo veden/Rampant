@@ -7,18 +7,8 @@ local mathUtils = require("libs/MathUtils")
 
 -- constants
 
-local CONVERSION_TABLE = constants.CONVERSION_TABLE
-
-local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
-
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
 local CHUNK_SIZE = constants.CHUNK_SIZE
-
-local ATTACK_SCORE = constants.ATTACK_SCORE
-
-local SQUAD_GUARDING = constants.SQUAD_GUARDING
-
-local AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_OVERFLOW_POINTS
 
 -- imported functions
 
@@ -55,7 +45,8 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         natives.regroupIndex = 1
         natives.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
 
-        game.map_settings.path_finder.min_steps_to_check_path_find_termination = constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
+        game.map_settings.path_finder.min_steps_to_check_path_find_termination =
+            constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 
         natives.evolutionTableAlignment = {}
         natives.bases = {}
@@ -129,7 +120,9 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         end
 
         for _,player in pairs(game.connected_players) do
-            if player and player.valid and not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value then
+            if player and player.valid and
+                not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value
+            then
                 local surface = player.surface
                 if (natives.activeSurface ~= surface.name) then
                     local playerName = player.name
@@ -158,9 +151,9 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
         global.version = 113
 
         natives.baseId = 0
-        
+
         local newBases = {}
-        for i=1,#natives.bases do
+        for _=1,#natives.bases do
             local base = natives.bases
             base.id = natives.baseId
             newBases[base.id] = base
@@ -171,7 +164,7 @@ function upgrade.attempt(natives, setNewSurface, gameSurfaces)
 
         game.map_settings.unit_group.member_disown_distance = 10
         game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
-        
+
         natives.vengenceQueue = {}
         natives.builderCount = 0
         natives.squadCount = 0

@@ -8,42 +8,13 @@ local unitGroupUtils = {}
 local mapUtils = require("MapUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
-local chunkUtils = require("ChunkUtils")
-local movementUtils = require("MovementUtils")
 
 -- constants
-
-local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
-
-local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
-local SQUAD_QUEUE_SIZE = constants.SQUAD_QUEUE_SIZE
-
-local DEFINES_GROUP_STATE_ATTACKING_TARGET = defines.group_state.attacking_target
-local DEFINES_GROUP_STATE_ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 
-local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
-local AI_SQUAD_MERGE_THRESHOLD = constants.AI_SQUAD_MERGE_THRESHOLD
-
 -- imported functions
-
-local tRemove = table.remove
-
-local mRandom = math.random
-
-local findMovementPosition = movementUtils.findMovementPosition
-local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
-local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
-
-local next = next
-local table_size = table_size
-
-local mLog = math.log10
-
-local mMin = math.min
 
 local getSquadsOnChunk = chunkPropertyUtils.getSquadsOnChunk
 

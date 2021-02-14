@@ -14,8 +14,6 @@ local mapUtils = require("MapUtils")
 
 local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
-local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
-
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
@@ -42,26 +40,18 @@ local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
 local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
-local BASE_ALIGNMENT_EVOLUTION_BASELINE = constants.BASE_ALIGNMENT_EVOLUTION_BASELINE
-
-local BASE_QUEUE_SIZE = constants.BASE_QUEUE_SIZE
 local BASE_COLLECTION_THRESHOLD = constants.BASE_COLLECTION_THRESHOLD
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
-local CHUNK_AND_HALF_SIZE = constants.CHUNK_AND_HALF_SIZE
-
-local EVOLUTION_INCREMENTS = constants.EVOLUTION_INCREMENTS
 
 -- imported functions
 
 local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
-local roundToFloor = mathUtils.roundToFloor
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local gaussianRandomRange = mathUtils.gaussianRandomRange
-local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local linearInterpolation = mathUtils.linearInterpolation
 
@@ -77,8 +67,6 @@ local setChunkBase = chunkPropertyUtils.setChunkBase
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
 local next = next
-
-local tRemove = table.remove
 
 local mRandom = math.random
 
@@ -167,7 +155,6 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, natives, useHi
         end
         if not entity then
             local roll = mRandom()
-            local initial = roll
 
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
@@ -219,7 +206,7 @@ end
 local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, natives, evolve)
 
     local adjCurrentEvo = mMax(
-        ((baseAlignment ~= entityAlignment) and 0) or currentEvo,
+        ((baseAlignment ~= natives.enemyAlignmentLookup[originalEntity.name]) and 0) or currentEvo,
         0
     )
 
@@ -254,10 +241,9 @@ local function findBaseInitialAlignment(natives, evoIndex)
 end
 
 function baseUtils.recycleBases(natives, tick)
-    local baseIndex = natives.baseIndex
     local bases = natives.bases
     local id, base = next(bases, natives.map.recycleBaseIterator)
-    for i=1,2 do
+    for _=1,2 do
         if not id then
             natives.map.recycleBaseIterator = nil
             return
@@ -357,8 +343,6 @@ function baseUtils.processBase(chunk, surface, natives, tick, base)
 
     point.x = chunk.x + (CHUNK_SIZE * mRandom())
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
-
-    local baseAlignment = base.alignment
 
     if (base.state == BASE_AI_STATE_ACTIVE) then
         local entity = surface.find_entities_filtered(map.filteredEntitiesPointQueryLimited)
@@ -469,12 +453,7 @@ function baseUtils.createBase(natives, chunk, tick, rebuilding)
     return base
 end
 
-function baseUtils.rebuildNativeTables(natives, surface, rg)
-    local createEntityStmt = {
-        name = nil,
-        position = {0,0}
-    }
-
+function baseUtils.rebuildNativeTables(natives, rg)
     local alignmentSet = {}
     natives.evolutionTableAlignment = alignmentSet
     local buildingSpaceLookup = {}
@@ -493,8 +472,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
     natives.buildingHiveTypeLookup = buildingHiveTypeLookup
 
     for i=1,10 do
-        local evo = (((i - 1) * 0.1) ^ 0.5) - 0.05
-        evoToTierMapping[#evoToTierMapping+1] = evo
+        evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
     end
 
     for i=1,#FACTION_SET do
@@ -506,10 +484,6 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
         buildingEvolveLookup[faction.type] = factionBuildingPicker
 
         for t=1,10 do
-            if (t == 1) then
-                evo = faction.evo
-            end
-
             local alignments = alignmentSet[t]
             if not alignments then
                 alignments = {}
@@ -573,16 +547,18 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
                 local buildingAcceptRate = building.acceptRate
 
-                local low = buildingAcceptRate[1]
-                local high = buildingAcceptRate[2]
-                if (low <= t) and (t <= high) then
+                local buildingLow = buildingAcceptRate[1]
+                local buildingHigh = buildingAcceptRate[2]
+                if (buildingLow <= t) and (t <= buildingHigh) then
                     for vi=1,#variationSet do
                         local variation = variationSet[vi]
                         buildingSet[#buildingSet+1] = variation
                     end
                     tieredBuildingPickerSet[#tieredBuildingPickerSet+1] = {
                         distort(rg,
-                                linearInterpolation((t - low) / (high - low), buildingAcceptRate[3], buildingAcceptRate[4])),
+                                linearInterpolation((t - buildingLow) / (buildingHigh - buildingLow),
+                                    buildingAcceptRate[3],
+                                    buildingAcceptRate[4])),
                         variationSet,
                         building.type
                     }
@@ -617,7 +593,7 @@ function baseUtils.rebuildNativeTables(natives, surface, rg)
 
     local evoIndex = evoToTier(natives, natives.evolutionLevel)
 
-    for id,base in pairs(natives.bases) do
+    for _,base in pairs(natives.bases) do
         for x=1,#base.alignment do
             local alignment = base.alignment[x]
             if not natives.buildingEvolveLookup[alignment] then

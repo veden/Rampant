@@ -4,7 +4,6 @@ local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local unitUtils = require("libs/UnitUtils")
 local baseUtils = require("libs/BaseUtils")
 local mapUtils = require("libs/MapUtils")
-local movementUtils = require("libs/MovementUtils")
 local mathUtils = require("libs/MathUtils")
 local unitGroupUtils = require("libs/UnitGroupUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
@@ -24,26 +23,15 @@ local aiPredicates = require("libs/AIPredicates")
 
 -- constants
 
-local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local INTERVAL_LOGIC = constants.INTERVAL_LOGIC
-local INTERVAL_PLAYER_PROCESS = constants.INTERVAL_PLAYER_PROCESS
-local INTERVAL_MAP_PROCESS = constants.INTERVAL_MAP_PROCESS
-local INTERVAL_ENEMY_SCAN = constants.INTERVAL_ENEMY_SCAN
-local INTERVAL_SCAN = constants.INTERVAL_SCAN
-local INTERVAL_PLAYER_SCAN = constants.INTERVAL_PLAYER_SCAN
 local INTERVAL_SQUAD = constants.INTERVAL_SQUAD
-local INTERVAL_RESQUAD = constants.INTERVAL_RESQUAD
 local INTERVAL_TEMPERAMENT = constants.INTERVAL_TEMPERAMENT
 local INTERVAL_SPAWNER = constants.INTERVAL_SPAWNER
-local INTERVAL_CHUNK_PROCESS = constants.INTERVAL_CHUNK_PROCESS
 local INTERVAL_PASS_SCAN = constants.INTERVAL_PASS_SCAN
 local INTERVAL_NEST = constants.INTERVAL_NEST
 local INTERVAL_CLEANUP = constants.INTERVAL_CLEANUP
-local INTERVAL_MAP_STATIC_PROCESS = constants.INTERVAL_MAP_STATIC_PROCESS
 local INTERVAL_VICTORY = constants.INTERVAL_VICTORY
-
-local HIVE_BUILDINGS = constants.HIVE_BUILDINGS
 
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
@@ -51,19 +39,12 @@ local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
 
-local DOUBLE_CHUNK_SIZE = constants.DOUBLE_CHUNK_SIZE
-
-local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
-
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
-
-local WATER_TILE_NAMES = constants.WATER_TILE_NAMES
 
 local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
-local DEFINES_BEHAVIOR_RESULT_FAIL = defines.behavior_result.fail
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
@@ -74,8 +55,6 @@ local DEFINES_COMMAND_FLEE = defines.command.flee
 local DEFINES_COMMAND_STOP = defines.command.stop
 
 local DEFINES_COMPOUND_COMMAND_RETURN_LAST = defines.compound_command.return_last
-local DEFINES_COMPOUND_COMMAND_AND = defines.compound_command.logical_and
-local DEFINES_COMPOUND_COMMAND_OR = defines.compound_command.logical_or
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -110,15 +89,12 @@ local processSpawners = mapProcessor.processSpawners
 
 local processStaticMap = mapProcessor.processStaticMap
 
-local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-
 local disperseVictoryScent = pheromoneUtils.disperseVictoryScent
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
 local entityForPassScan = chunkUtils.entityForPassScan
 
-local addMovementPenalty = movementUtils.addMovementPenalty
 local processPendingChunks = chunkProcessor.processPendingChunks
 local processScanChunks = chunkProcessor.processScanChunks
 
@@ -139,8 +115,6 @@ local recycleBases = baseUtils.recycleBases
 local deathScent = pheromoneUtils.deathScent
 local victoryScent = pheromoneUtils.victoryScent
 
-local regroupSquads = unitGroupUtils.regroupSquads
-
 local createSquad = unitGroupUtils.createSquad
 
 local createBase = baseUtils.createBase
@@ -148,8 +122,6 @@ local findNearbyBase = baseUtils.findNearbyBase
 
 local processActiveNests = mapProcessor.processActiveNests
 
-local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
-local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
 local retreatUnits = squadDefense.retreatUnits
@@ -167,7 +139,6 @@ local cleanSquads = squadAttack.cleanSquads
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
-local mMin = math.min
 local mRandom = math.random
 
 local tRemove = table.remove
@@ -192,7 +163,7 @@ local function onIonCannonFired(event)
         natives.points = natives.points + 4000
         local chunk = getChunkByPosition(map, event.position)
         if (chunk ~= -1) then
-            rallyUnits(chunk, map, surface, event.tick)
+            rallyUnits(chunk, map, event.tick)
         end
     end
 end
@@ -568,9 +539,15 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "safeBuildings", settings.global["rampant-safeBuildings"].value)
 
     upgrade.compareTable(natives.safeEntities, "curved-rail", settings.global["rampant-safeBuildings-curvedRail"].value)
-    upgrade.compareTable(natives.safeEntities, "straight-rail", settings.global["rampant-safeBuildings-straightRail"].value)
-    upgrade.compareTable(natives.safeEntities, "rail-signal", settings.global["rampant-safeBuildings-railSignals"].value)
-    upgrade.compareTable(natives.safeEntities, "rail-chain-signal", settings.global["rampant-safeBuildings-railChainSignals"].value)
+    upgrade.compareTable(natives.safeEntities,
+                         "straight-rail",
+                         settings.global["rampant-safeBuildings-straightRail"].value)
+    upgrade.compareTable(natives.safeEntities,
+                         "rail-signal",
+                         settings.global["rampant-safeBuildings-railSignals"].value)
+    upgrade.compareTable(natives.safeEntities,
+                         "rail-chain-signal",
+                         settings.global["rampant-safeBuildings-railChainSignals"].value)
     upgrade.compareTable(natives.safeEntities, "train-stop", settings.global["rampant-safeBuildings-trainStops"].value)
     upgrade.compareTable(natives.safeEntities, "lamp", settings.global["rampant-safeBuildings-lamps"].value)
 
@@ -593,7 +570,9 @@ local function onModSettingsChange(event)
     upgrade.compareTable(natives, "siegeAIToggle", settings.global["rampant-siegeAIToggle"].value)
 
     upgrade.compareTable(natives, "attackPlayerThreshold", settings.global["rampant-attackPlayerThreshold"].value)
-    upgrade.compareTable(natives, "attackUsePlayer", settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
+    upgrade.compareTable(natives,
+                         "attackUsePlayer",
+                         settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
 
     upgrade.compareTable(natives, "attackWaveMaxSize", settings.global["rampant-attackWaveMaxSize"].value)
     upgrade.compareTable(natives, "aiNocturnalMode", settings.global["rampant-permanentNocturnal"].value)
@@ -625,7 +604,7 @@ local function prepWorld(rebuild, surfaceName)
     gameSurfaces = global.gameSurfaces
     onModSettingsChange(nil)
     if natives.newEnemies then
-        rebuildNativeTables(natives, game.get_surface(natives.activeSurface), game.create_random_generator(natives.enemySeed))
+        rebuildNativeTables(natives, game.create_random_generator(natives.enemySeed))
     else
         natives.buildingHiveTypeLookup = {}
         natives.buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
@@ -708,7 +687,8 @@ local function onDeath(event)
             local entityType = entity.type
             if (entity.force.name == "enemy") then
 
-                local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+                local artilleryBlast = (cause and
+                                        ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
                 if artilleryBlast then
                     natives.artilleryBlasts = natives.artilleryBlasts + 1
@@ -731,17 +711,19 @@ local function onDeath(event)
                         natives.lostEnemyUnits = natives.lostEnemyUnits + 1
 
                         if (mRandom() < natives.rallyThreshold) and not surface.peaceful_mode then
-                            rallyUnits(chunk, map, surface, tick)
+                            rallyUnits(chunk, map, tick)
                         end
                     end
-                elseif event.force and (event.force.name ~= "enemy") and ((entityType == "unit-spawner") or (entityType == "turret")) then
+                elseif event.force and (event.force.name ~= "enemy") and
+                    ((entityType == "unit-spawner") or (entityType == "turret")) then
 
-                    natives.points = natives.points + (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
+                    natives.points = natives.points +
+                        (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
 
                     unregisterEnemyBaseStructure(map, entity)
 
                     if (chunk ~= -1) then
-                        rallyUnits(chunk, map, surface, tick)
+                        rallyUnits(chunk, map, tick)
 
                         if cause and cause.valid then
                             retreatUnits(chunk,
@@ -787,9 +769,11 @@ local function onDeath(event)
                         if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
                             local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
                             if conversion then
-                                local newEntity = surface.create_entity({position=entity.position,
-                                                                         name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
-                                                                         direction=entity.direction})
+                                local newEntity = surface.create_entity({
+                                        position=entity.position,
+                                        name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+                                        direction=entity.direction
+                                })
                                 if (conversion == "pole") then
                                     local targetEntity = surface.create_entity({position=entity.position,
                                                                                 name="pylon-target-rampant",
@@ -807,12 +791,18 @@ local function onDeath(event)
                                         end
                                         for _,v in pairs(wires.red) do
                                             if (v.valid) then
-                                                newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_RED, target_entity = v});
+                                                newEntity.connect_neighbour({
+                                                        wire = DEFINES_WIRE_TYPE_RED,
+                                                        target_entity = v
+                                                });
                                             end
                                         end
                                         for _,v in pairs(wires.green) do
                                             if (v.valid) then
-                                                newEntity.connect_neighbour({wire = DEFINES_WIRE_TYPE_GREEN, target_entity = v});
+                                                newEntity.connect_neighbour({
+                                                        wire = DEFINES_WIRE_TYPE_GREEN,
+                                                        target_entity = v
+                                                });
                                             end
                                         end
                                     end
@@ -827,7 +817,9 @@ local function onDeath(event)
                         unregisterResource(entity, map)
                     end
                 end
-                if creditNatives and natives.safeBuildings and (natives.safeEntities[entityType] or natives.safeEntities[entity.name]) then
+                if creditNatives and natives.safeBuildings and
+                    (natives.safeEntities[entityType] or natives.safeEntities[entity.name])
+                then
                     makeImmortalEntity(surface, entity)
                 else
                     accountPlayerEntity(entity, natives, false, creditNatives)
@@ -971,7 +963,9 @@ end
 
 local function onTriggerEntityCreated(event)
     local entity = event.entity
-    if entity.valid and (entity.surface.name == natives.activeSurface) and (entity.name  == "drain-trigger-rampant") then
+    if entity.valid and (entity.surface.name == natives.activeSurface) and
+        (entity.name  == "drain-trigger-rampant")
+    then
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             map.chunkToDrained[chunk] = event.tick + 60
@@ -995,13 +989,10 @@ end
 
 local function onEntitySpawned(event)
     local entity = event.mine
-    local unitNumber = entity.unit_number
     if natives.newEnemies and entity.valid then
         local surface = entity.surface
-        local entityPosition = entity.position
         if (surface.name == natives.activeSurface) and natives.buildingHiveTypeLookup[entity.name] then
             local disPos = mathUtils.distortPosition(entity.position, 8)
-            local canPlaceQuery = map.canPlaceQuery
 
             local chunk = getChunkByPosition(map, disPos)
             if (chunk ~= -1) then
@@ -1031,6 +1022,7 @@ end
 local function onUnitGroupCreated(event)
     local group = event.group
     local surface = group.surface
+    local squad
     if (surface.name == natives.activeSurface) and (group.force.name == "enemy") then
         if not group.is_script_driven then
             if not natives.aiNocturnalMode then
@@ -1080,25 +1072,6 @@ local function onUnitGroupCreated(event)
         end
     end
 end
-
--- local function onCommandComplete(event)
---     local unitNumber = event.unit_number
---     local squad = natives.groupNumberToSquad[unitNumber]
---     if squad then
---         local group = squad.group
---         if group and group.valid and (group.surface.name == natives.activeSurface) then
---             -- if (event.result == DEFINES_BEHAVIOR_RESULT_FAIL) then
---             --     if (#group.members == 0) then
---             --         group.destroy()
---             --     else
---             --         squadDispatch(map, group.surface, squad, unitNumber)
---             --     end
---             -- else
---                 squadDispatch(map, group.surface, squad, unitNumber)
---             -- end
---         end
---     end
--- end
 
 local function onGroupFinishedGathering(event)
     local group = event.group
@@ -1179,7 +1152,8 @@ end
 local function onPlayerChangedSurface(event)
     local player = game.players[event.player_index]
     local surface
-    if player and player.valid and not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value
+    if player and player.valid and
+        not settings.get_player_settings(player)["rampant-suppress-surface-change-warnings"].value
     then
         surface = player.surface
         if (natives.activeSurface ~= surface.name) then
@@ -1231,7 +1205,7 @@ end
 -- hooks
 
 script.on_nth_tick(INTERVAL_PASS_SCAN,
-                   function (event)
+                   function ()
                        processScanChunks(map,
                                          game.get_surface(natives.activeSurface))
 end)
@@ -1270,19 +1244,17 @@ script.on_nth_tick(INTERVAL_SPAWNER,
 end)
 
 script.on_nth_tick(INTERVAL_VICTORY,
-                   function (event)
+                   function ()
                        disperseVictoryScent(map)
 end)
 
 script.on_nth_tick(INTERVAL_SQUAD,
-                   function (event)
-                       processVengence(map,
-                                       game.get_surface(natives.activeSurface),
-                                       event.tick)
+                   function ()
+                       processVengence(map, game.get_surface(natives.activeSurface))
 end)
 
 script.on_nth_tick(INTERVAL_TEMPERAMENT,
-                   function (event)
+                   function ()
                        temperamentPlanner(natives)
 end)
 
@@ -1302,9 +1274,9 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, map, surface, tick)
                     elseif (pick == 2) then
-                        processMap(map, surface, tick)
+                        processMap(map, tick)
                     elseif (pick == 3) then
-                        processStaticMap(map, surface, tick)
+                        processStaticMap(map)
                     elseif (pick == 4) then
                         scanResourceMap(map, surface, tick)
                     elseif (pick == 5) then
@@ -1315,11 +1287,12 @@ script.on_event(defines.events.on_tick,
 
                     cleanSquads(natives, map.squadIterator)
                     processActiveNests(map, surface, tick)
-                    
+
                     -- game.print({"", "--dispatch4 ", profiler, ", ", game.tick, "       ", mRandom()})
 end)
 
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
+-- script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
 script.on_event(defines.events.on_surface_renamed, onSurfaceRenamed)
 script.on_event(defines.events.on_player_changed_surface, onPlayerChangedSurface)
 
@@ -1403,7 +1376,7 @@ interop.setActiveSurface = function (surfaceName)
 end
 commands.add_command("GetRampantAISurface",
                      {"description.rampant-get-surface"},
-                     function (event)
+                     function ()
                          for _,player in pairs(game.connected_players) do
                              if (player.valid) then
                                  player.print({"description.rampant-get-surface",

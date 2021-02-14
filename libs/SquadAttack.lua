@@ -7,11 +7,9 @@ local squadAttack = {}
 
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
-local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
-local chunkUtils = require("ChunkUtils")
 
 -- constants
 
@@ -21,12 +19,6 @@ local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
-local ATTACK_SCORE_KAMIKAZE = constants.ATTACK_SCORE_KAMIKAZE
-
-local DIVISOR_DEATH_TRAIL_TABLE = constants.DIVISOR_DEATH_TRAIL_TABLE
-
-local BASE_CLEAN_DISTANCE = constants.BASE_CLEAN_DISTANCE
-
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
 
 local SQUAD_RAIDING = constants.SQUAD_RAIDING
@@ -34,27 +26,15 @@ local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local AI_MAX_BITER_GROUP_SIZE = constants.AI_MAX_BITER_GROUP_SIZE
-
-local ATTACK_QUEUE_SIZE = constants.ATTACK_QUEUE_SIZE
-
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
-local DEFINES_GROUP_FINISHED = defines.group_state.finished
-local DEFINES_GROUP_GATHERING = defines.group_state.gathering
-local DEFINES_GROUP_MOVING = defines.group_state.moving
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
-
-local mRandom = math.random
-local mMin = math.min
-local tRemove = table.remove
-
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -71,9 +51,6 @@ local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 local getChunkByXY = mapUtils.getChunkByXY
 local positionToChunkXY = mapUtils.positionToChunkXY
 local addMovementPenalty = movementUtils.addMovementPenalty
-local lookupMovementPenalty = movementUtils.lookupMovementPenalty
-local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
-local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
 
 local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
@@ -81,48 +58,45 @@ local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
-local getChunkByPosition = mapUtils.getChunkByPosition
-
 local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
 local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 -- module code
 
-local function scoreResourceLocationKamikaze(map, squad, neighborChunk)
+local function scoreResourceLocationKamikaze(_, neighborChunk)
     local settle = neighborChunk[RESOURCE_PHEROMONE]
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
-local function scoreSiegeLocationKamikaze(map, squad, neighborChunk)
+local function scoreSiegeLocationKamikaze(_, neighborChunk)
     local settle = neighborChunk[BASE_PHEROMONE] +
         neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
     return settle
 end
 
-local function scoreResourceLocation(map, squad, neighborChunk)
+local function scoreResourceLocation(map, neighborChunk)
     local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
-local function scoreSiegeLocation(map, squad, neighborChunk)
+local function scoreSiegeLocation(map, neighborChunk)
     local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
         neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
     return settle
 end
 
-local function scoreAttackLocation(map, squad, neighborChunk)
+local function scoreAttackLocation(map, neighborChunk)
     local damage = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage
 end
 
-local function scoreAttackKamikazeLocation(natives, squad, neighborChunk)
+local function scoreAttackKamikazeLocation(_, neighborChunk)
     local damage = neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage
 end
-
 
 local function settleMove(map, squad, surface)
     local targetPosition = map.position
@@ -133,7 +107,6 @@ local function settleMove(map, squad, surface)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    local groupState = group.state
     local natives = map.natives
     if (natives.state == AI_STATE_SIEGE) then
         if squad.kamikaze then
@@ -146,14 +119,13 @@ local function settleMove(map, squad, surface)
     end
     addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
-    addMovementPenalty(map, squad, chunk)
+    addMovementPenalty(squad, chunk)
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
                                              squad.originPosition.x,
                                              squad.originPosition.y)
     local cmd
     local position
-    local position2
 
     if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
     then
@@ -175,21 +147,15 @@ local function settleMove(map, squad, surface)
 
         squad.status = SQUAD_BUILDING
 
-        -- remove in 1.1            
-        if (#group.members == 0) then
-            -- print("killing")
-            group.destroy()
-            return
-        end
-
         group.set_command(cmd)
     else
-        local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(map,
-                                                                                                             chunk,
-                                                                                                             getNeighborChunks(map, x, y),
-                                                                                                             scoreFunction,
-                                                                                                             squad)
-
+        local attackChunk,
+            attackDirection,
+            nextAttackChunk,
+            nextAttackDirection = scoreNeighborsForSettling(map,
+                                                            chunk,
+                                                            getNeighborChunks(map, x, y),
+                                                            scoreFunction)
 
         if (attackChunk == -1) then
             cmd = map.wonderCommand
@@ -251,13 +217,6 @@ local function settleMove(map, squad, surface)
                 cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
             end
 
-            -- remove in 1.1
-            if (#group.members == 0) then
-                -- print("killing")
-                group.destroy()
-                return
-            end
-
             squad.status = SQUAD_BUILDING
         end
 
@@ -283,13 +242,14 @@ local function attackMove(map, squad, surface)
     local squadChunk = squad.chunk
     addDeathGenerator(map, squadChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
-    addMovementPenalty(map, squad, chunk)
+    addMovementPenalty(squad, chunk)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
-    local attackChunk, attackDirection, nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
-                                                                                                       chunk,
-                                                                                                       getNeighborChunks(map, x, y),
-                                                                                                       attackScorer,
-                                                                                                       squad)
+    local attackChunk, attackDirection,
+        nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
+                                                                       chunk,
+                                                                       getNeighborChunks(map, x, y),
+                                                                       attackScorer)
+    local cmd
     if (attackChunk == -1) then
         cmd = map.wonderCommand
         group.set_command(cmd)
@@ -379,7 +339,7 @@ function squadAttack.cleanSquads(natives, iterator)
                 natives.squadCount = natives.squadCount - 1
             end
             local nextK
-            nextK,squad = next(squads, k)
+            nextK = next(squads, k)
             squads[k] = nil
             k = nextK
         elseif (group.state == 4) then
@@ -416,7 +376,7 @@ function squadAttack.squadDispatch(map, surface, squad)
                 squad.status = SQUAD_RAIDING
                 attackMove(map, squad, surface)
             end
-        end        
+        end
     end
 end
 

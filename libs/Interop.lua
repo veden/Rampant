@@ -3,8 +3,6 @@ if interopG then
 end
 local interop = {}
 
-local unitGroupUtils = require("UnitGroupUtils")
-
 function interop.addAIPoints(value)
     global.natives.points = global.natives.points + value
 end

@@ -20,6 +20,12 @@ Date: 06. 02. 2021
     - Halved AI temperament rate of change
   Bugfixes:
     - Fixed suicide and nuclear enemies explosion centered on target instead self
+    - Fixed process spawners reading missing globals
+    - Fixed potential desync in squad attack movement
+    - Fixed potential desync in unit group creation event
+    - Fixed potential desync in building native tables
+    - Fixed find entity upgrade incorrectly calculating evolution
+    
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2

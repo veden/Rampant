@@ -68,7 +68,7 @@ function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flu
     if flush then
         endCount = table_size(pendingChunks)
     end
-    for i=1,endCount do
+    for _=1,endCount do
         if not event then
             map.chunkProcessorIterator = nil
             if (table_size(pendingChunks) == 0) then

@@ -38,15 +38,15 @@ function mathUtils.randomTickEvent(tick, low, high)
 end
 
 function mathUtils.distort(xorRandom, num, stdDev, min, max)
-    local min = min or num * 0.70
-    local max = max or num * 1.30
+    local amin = min or num * 0.70
+    local amax = max or num * 1.30
     local sd = stdDev or 0.17
     if (num < 0) then
         local t = min
-        min = max
-        max = t
+        amin = max
+        amax = t
     end
-    return mathUtils.roundToNearest(mathUtils.gaussianRandomRangeRG(num, num * sd, min, max, xorRandom), 0.01)
+    return mathUtils.roundToNearest(mathUtils.gaussianRandomRangeRG(num, num * sd, amin, amax, xorRandom), 0.01)
 end
 
 function mathUtils.linearInterpolation(percent, min, max)
