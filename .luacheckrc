@@ -1,5 +1,6 @@
 globals = {
         "game",
+        "data",
         "remote",
         "settings",
         "commands",

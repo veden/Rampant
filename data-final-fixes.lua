@@ -1,9 +1,6 @@
 local vanillaBuildings = require("prototypes/buildings/UpdatesVanilla")
 
-local biterFunctions = require("prototypes/utils/BiterUtils")
-
 local swarmUtils = require("prototypes/SwarmUtils")
-
 
 
 if settings.startup["rampant-newEnemies"].value then

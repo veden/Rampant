@@ -1,7 +1,6 @@
 local swarmUtils = {}
 -- imports
 
-local droneUtils = require("utils/DroneUtils")
 local bombUtils = require("utils/BombUtils")
 local attackFlame = require("utils/AttackFlame")
 local energyThiefFaction = require("EnergyThief")
@@ -18,15 +17,7 @@ local fireUtils = require("utils/FireUtils")
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
 
-
-local unitSpawnerUtils = require("UnitSpawnerUtils")
-local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
-
-
 -- imported functions
-
-local addFactionAddon = energyThiefFaction.addFactionAddon
-local addFactionAddon = poisonFaction.addFactionAddon
 
 local roundToNearest = mathUtils.roundToNearest
 
@@ -35,7 +26,6 @@ local mMin = math.min
 
 local distort = mathUtils.distort
 
-local mFloor = math.floor
 local deepcopy = util.table.deepcopy
 
 local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
@@ -66,11 +56,6 @@ local createStreamAttack = biterUtils.createStreamAttack
 local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local makeBloodFountains = particleUtils.makeBloodFountains
-
-local makeBiterCorpse = biterUtils.makeBiterCorpse
-local makeUnitSpawnerCorpse = biterUtils.makeUnitSpawnerCorpse
-local makeWormCorpse = biterUtils.makeWormCorpse
-local makeSpitterCorpse = biterUtils.makeSpitterCorpse
 
 local makeBubble = beamUtils.makeBubble
 local makeBeam = beamUtils.makeBeam
@@ -123,11 +108,6 @@ local bombAttackNumeric = {
     ["radius"] = { 1.75, 1.75, 2, 2.5, 3, 3, 3.5, 3.5, 3.75, 4 },
     ["explosionDistance"] = { 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 3, 3 },
     ["explosionCount"] = { 2, 3, 4, 5, 6, 8, 10, 12, 13, 14 }
-}
-
-local slowStickerNumeric = {
-    ["stickerMovementModifier"] = { 0.8, 0.8, 0.75, 0.75, 0.7, 0.7, 0.65, 0.65, 0.5, 0.5 },
-    ["stickerDuration"] = { 1800, 1800, 1900, 1900, 2000, 2000, 2100, 2100, 2200, 2200 }
 }
 
 local streamAttackNumeric = {
@@ -511,7 +491,7 @@ local function fillEntityTemplate(entity)
             if not entity.loot then
                 entity.loot = {}
             end
-            for k,lootTable in pairs(entity.drops) do
+            for _,lootTable in pairs(entity.drops) do
                 entity.loot[#entity.loot+1] = lootTable[tier]
             end
         elseif (key == "explosion") then
@@ -709,20 +689,20 @@ function swarmUtils.buildUnits(template)
             elseif (unit.type == "biter") then
                 entity = makeBiter(unit)
             elseif (unit.type == "drone") then
-                if not death then
-                    death = {
-                        type = "direct",
-                        action_delivery =
-                            {
-                                type = "instant",
-                                target_effects =
-                                    {
-                                        type = "create-entity",
-                                        entity_name = "massive-explosion"
-                                    }
-                            }
-                    }
-                end
+                -- if not unit.death then
+                --     unit.death = {
+                --         type = "direct",
+                --         action_delivery =
+                --             {
+                --                 type = "instant",
+                --                 target_effects =
+                --                     {
+                --                         type = "create-entity",
+                --                         entity_name = "massive-explosion"
+                --                     }
+                --             }
+                --     }
+                -- end
                 entity = makeDrone(unit)
             end
 
@@ -742,7 +722,6 @@ local function buildEntities(entityTemplates)
 
     for tier=1, 10 do
         local effectiveLevel = TIER_UPGRADE_SET_10[tier]
-        local result = {}
 
         local entityTemplate = entityTemplates[effectiveLevel]
 
@@ -1136,7 +1115,6 @@ local function buildUnitTemplate(faction, unit)
 
     template.resistances = {}
 
-    local attackAnimation
     if (template.type == "biter") then
         template.attackAnimation = biterattackanimation
     elseif (template.type == "spitter") then
@@ -1195,8 +1173,8 @@ local function buildTurretTemplate(faction, turret)
     return template
 end
 
-local function buildUnitSpawnerTemplate(faction, template, unitSets)
-    local template = deepcopy(template)
+local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
+    local template = deepcopy(incomingTemplate)
 
     template.name = faction.type .. "-" .. template.name
     template.tint = faction.tint
@@ -1252,8 +1230,8 @@ local function buildUnitSpawnerTemplate(faction, template, unitSets)
     return template
 end
 
-local function buildHiveTemplate(faction, template)
-    local template = deepcopy(template)
+local function buildHiveTemplate(faction, incomingTemplate)
+    local template = deepcopy(incomingTemplate)
 
     template.name = faction.type .. "-" .. template.name
     template.tint = faction.tint
@@ -1277,8 +1255,6 @@ local function buildHiveTemplate(faction, template)
     template.resistances = {}
 
     local unitSet = {}
-
-    local buildingVariations = settings.startup["rampant-newEnemyVariations"].value
 
     for t=1,10 do
         local unitSetTier = unitSet[t]

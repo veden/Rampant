@@ -42,8 +42,8 @@ function mathUtils.distort(xorRandom, num, stdDev, min, max)
     local amax = max or num * 1.30
     local sd = stdDev or 0.17
     if (num < 0) then
-        local t = min
-        amin = max
+        local t = amin
+        amin = amax
         amax = t
     end
     return mathUtils.roundToNearest(mathUtils.gaussianRandomRangeRG(num, num * sd, amin, amax, xorRandom), 0.01)
