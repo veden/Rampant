@@ -219,7 +219,6 @@ function aiAttackWave.formSettlers(map, chunk)
                                                         10,
                                                         universe.expansionMaxDistance)
 
-
                 local scaledWaveSize = settlerWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group
                 universe.formCommand.unit_count = scaledWaveSize

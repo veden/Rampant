@@ -71,8 +71,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
 
     local attackWaveMaxSize = universe.attackWaveMaxSize
     universe.retreatThreshold = linearInterpolation(evolution_factor,
-                                                   RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
-                                                   RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
+                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
+                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     universe.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
     universe.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
@@ -87,19 +87,19 @@ function aiPlanning.planning(map, evolution_factor, tick)
     end
 
     universe.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667,
-                                                  universe.expansionMinSize,
-                                                  universe.expansionMaxSize)
+                                                   universe.expansionMinSize,
+                                                   universe.expansionMaxSize)
     universe.settlerWaveDeviation = (universe.settlerWaveSize * 0.33)
 
     universe.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667,
-                                                         universe.expansionMaxTime,
-                                                         universe.expansionMinTime))
+                                                          universe.expansionMaxTime,
+                                                          universe.expansionMinTime))
 
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.25) +
-        (((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * universe.aiPointsScaler))
+    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.028702) +
+        (((AI_POINT_GENERATOR_AMOUNT * 0.080367) * (evolution_factor ^ 2.5)) * universe.aiPointsScaler))
 
     if (map.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
@@ -128,17 +128,11 @@ function aiPlanning.planning(map, evolution_factor, tick)
                 if universe.raidAIToggle then
                     if (roll < 0.85) then
                         map.state = AI_STATE_AGGRESSIVE
-                        map.canAttackTick = randomTickEvent(tick,
-                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     else
                         map.state = AI_STATE_RAIDING
                     end
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
         elseif (map.temperament < 0.20) then -- 0.05 - 0.2
@@ -152,26 +146,17 @@ function aiPlanning.planning(map, evolution_factor, tick)
                 if universe.raidAIToggle then
                     if (roll < 0.95) then
                         map.state = AI_STATE_AGGRESSIVE
-                        map.canAttackTick = randomTickEvent(tick,
-                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                                AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     else
                         map.state = AI_STATE_RAIDING
                     end
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
         elseif (map.temperament < 0.4) then -- 0.2 - 0.4
             if (universe.enabledMigration) then
                 if (roll < 0.2) then
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 elseif (roll < 0.8) then
                     map.state = AI_STATE_MIGRATING
                 else
@@ -180,28 +165,19 @@ function aiPlanning.planning(map, evolution_factor, tick)
             else
                 if (roll < 0.6) then
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 else
                     map.state = AI_STATE_PEACEFUL
                 end
             end
         elseif (map.temperament < 0.6) then -- 0.4 - 0.6
-            if (roll < 0.5) then
+            if (roll < 0.4) then
                 map.state = AI_STATE_AGGRESSIVE
-                map.canAttackTick = randomTickEvent(tick,
-                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
             else
                 map.state = AI_STATE_PEACEFUL
             end
         elseif (map.temperament < 0.8) then -- 0.6 - 0.8
             if (roll < 0.6) then
                 map.state = AI_STATE_AGGRESSIVE
-                map.canAttackTick = randomTickEvent(tick,
-                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                        AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
             elseif (roll < 0.8) then
                 map.state = AI_STATE_ONSLAUGHT
             else
@@ -217,9 +193,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
                     map.state = AI_STATE_RAIDING
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             elseif (universe.enabledMigration) then
                 if (roll < 0.15) then
@@ -228,9 +201,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             elseif (universe.raidAIToggle) then
                 if (roll < 0.4) then
@@ -239,18 +209,12 @@ function aiPlanning.planning(map, evolution_factor, tick)
                     map.state = AI_STATE_RAIDING
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             else
                 if (roll < 0.6) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
-                    map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
         end
@@ -286,39 +250,39 @@ function aiPlanning.temperamentPlanner(map)
     local delta = 0
 
     if activeNests > 0 then
-        local val = (0.375 * activeNests)
+        local val = (0.021695 * activeNests)
         delta = delta + val
     else
-        delta = delta - 0.25
+        delta = delta - 0.014463
     end
 
     if destroyPlayerBuildings > 0 then
         if currentTemperament > 0 then
-            delta = delta - (0.25 * destroyPlayerBuildings)
+            delta = delta - (0.014463 * destroyPlayerBuildings)
         else
-            delta = delta + (0.25 * destroyPlayerBuildings)
+            delta = delta + (0.014463 * destroyPlayerBuildings)
         end
     end
 
     if activeRaidNests > 0 then
-        local val = (0.003825 * activeRaidNests)
+        local val = (0.000221 * activeRaidNests)
         delta = delta - val
     else
-        delta = delta - 0.125
+        delta = delta - 0.007232
     end
 
     if lostEnemyUnits > 0 then
         local multipler
         if map.evolutionLevel < 0.3 then
-            multipler = 0.0005
+            multipler = 0.000434
         elseif map.evolutionLevel < 0.5 then
-            multipler = 0.000385
+            multipler = 0.000217
         elseif map.evolutionLevel < 0.7 then
-            multipler = 0.00025
+            multipler = 0.000108
         elseif map.evolutionLevel < 0.9 then
-            multipler = 0.00012
+            multipler = 0.000054
         elseif map.evolutionLevel < 0.9 then
-            multipler = 0.00006
+            multipler = 0.000027
         end
         local val = (multipler * lostEnemyUnits)
         if (currentTemperament > 0) then
@@ -329,7 +293,7 @@ function aiPlanning.temperamentPlanner(map)
     end
 
     if lostEnemyBuilding > 0 then
-        local val = (1.25 * lostEnemyBuilding)
+        local val = (0.072317 * lostEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
@@ -338,35 +302,33 @@ function aiPlanning.temperamentPlanner(map)
     end
 
     if (builtEnemyBuilding > 0) then
-        local val = (0.075 * builtEnemyBuilding)
+        local val = (0.004339 * builtEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
             delta = delta + val
         end
     else
-        delta = delta - 0.125
+        delta = delta - 0.007232
     end
 
     if (rocketLaunched > 0) then
-        local val = (5 * rocketLaunched)
+        local val = (0.289268 * rocketLaunched)
         delta = delta + val
     end
 
     if (ionCannonBlasts > 0) then
-        local val = (2.5 * ionCannonBlasts)
+        local val = (0.144634 * ionCannonBlasts)
         delta = delta + val
     end
 
     if (artilleryBlasts > 0) then
-        local val = (2.5 * artilleryBlasts)
+        local val = (0.144634 * artilleryBlasts)
         delta = delta + val
     end
 
-    -- print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
-    --       map.lostEnemyUnits,
-    --       map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding, map.ionCannonBlasts,
-    --       map.artilleryBlasts)
+    map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
+    map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 
     -- map.destroyPlayerBuildings = 0
     -- map.lostEnemyUnits = 0
@@ -376,11 +338,14 @@ function aiPlanning.temperamentPlanner(map)
     -- map.ionCannonBlasts = 0
     -- map.artilleryBlasts = 0
 
-    map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
-    map.temperament = ((map.temperamentScore + 10000) * 0.00005)
+    -- if game.tick % 240 == 0 then
+    --     print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
+    --           map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
+    --           map.ionCannonBlasts, map.artilleryBlasts)
 
-    -- print("tempResult", map.temperament, map.temperamentScore)
-    -- print("--")
+    --     print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
+    --     print("--")
+    -- end
 end
 
 aiPlanningG = aiPlanning

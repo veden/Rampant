@@ -305,7 +305,8 @@ end
 
 local function buildMove(map, squad)
     local group = squad.group
-    local position = map.universe.position
+    local universe = map.universe
+    local position = universe.position
     local groupPosition = findMovementPosition(map.surface, group.position)
 
     if not groupPosition then
@@ -315,7 +316,7 @@ local function buildMove(map, squad)
     position.x = groupPosition.x
     position.y = groupPosition.y
 
-    group.set_command(map.compoundSettleCommand)
+    group.set_command(universe.compoundSettleCommand)
 end
 
 function squadAttack.cleanSquads(map)

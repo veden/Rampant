@@ -256,7 +256,6 @@ local function prepMap(surface)
     end
 
     map.processedChunks = 0
-    map.mapIterator = nil
     map.processQueue = {}
     map.processIndex = 1
     map.cleanupIndex = 1
@@ -365,7 +364,7 @@ local function prepMap(surface)
         end
     end
 
-    processPendingChunks(map, tick, universe)
+    processPendingChunks(map, tick, true)
 end
 
 local function onConfigChanged()
@@ -777,7 +776,7 @@ local function onUsedCapsule(event)
         map.position2Top.y = event.position.y-0.75
         map.position2Bottom.x = event.position.x+0.75
         map.position2Bottom.y = event.position.y+0.75
-        local cliffs = surface.find_entities_filtered(map.cliffQuery)
+        local cliffs = surface.find_entities_filtered(universe.cliffQuery)
         for i=1,#cliffs do
             entityForPassScan(map, cliffs[i])
         end
@@ -959,7 +958,6 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceCreated(event)
-    print("new surface", event.surface_index)
     prepMap(game.surfaces[event.surface_index])
 end
 
@@ -1009,37 +1007,37 @@ script.on_event(defines.events.on_tick,
                     end
 
                     if (pick == 0) then
-                        processPendingChunks(map, tick, universe)
+                        processPendingChunks(map, tick)
                         processScanChunks(map)
-                    elseif (pick == 1) then
-                        processPlayers(gameRef.connected_players, map, tick)
-                        cleanUpMapTables(map, tick)
-                    elseif (pick == 2) then
-                        processMap(map, tick)
                         universe.processedChunks = universe.processedChunks + PROCESS_QUEUE_SIZE
                         planning(map, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
                             recycleBases(map, tick)
                         end
+                        cleanUpMapTables(map, tick)
+                    elseif (pick == 1) then
+                        processPlayers(gameRef.connected_players, map, tick)
+                    elseif (pick == 2) then
+                        processMap(map, tick)
                     elseif (pick == 3) then
                         processStaticMap(map)
                         disperseVictoryScent(map)
                         cleanSquads(map)
+                        processVengence(map)
                     elseif (pick == 4) then
                         scanResourceMap(map, tick)
-                        processVengence(map)
                     elseif (pick == 5) then
                         scanEnemyMap(map, tick)
                         processSpawners(map, tick)
-                        temperamentPlanner(map)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
                         processNests(map, tick)
+                        temperamentPlanner(map)
                     end
 
                     processActiveNests(map, tick)
 
-                    -- game.print({"", "--dispatch4 ", profiler, ", ", game.tick, "       ", mRandom()})
+                    -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
 end)
 
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)

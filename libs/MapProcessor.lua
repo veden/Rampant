@@ -490,7 +490,7 @@ function mapProcessor.processNests(map, tick)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        if map.universe.newEnemies then
+        if map.universe.NEW_ENEMIES then
             local base = bases[chunk]
             if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
                 processBase(chunk, map, tick, base)

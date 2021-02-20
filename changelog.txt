@@ -20,6 +20,7 @@ Date: 06. 02. 2021
     - Increased builder squad cost to 400
     - Decreased siege ai state chance to 15% at peak temperament
     - Halved AI temperament rate of change
+    - Increased ai state duration minimum to 10 and maximum to 25 minutes
   Bugfixes:
     - Fixed suicide and nuclear enemies explosion centered on target instead self
     - Fixed process spawners reading missing globals
@@ -27,7 +28,8 @@ Date: 06. 02. 2021
     - Fixed potential desync in unit group creation event
     - Fixed potential desync in building native tables
     - Fixed find entity upgrade incorrectly calculating evolution
-    - Fixed bug with the mod new game+    
+    - Fixed bug with the mod new game+
+    - Fixed existing spawner upgrading in place over time
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2

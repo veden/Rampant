@@ -343,22 +343,24 @@ function baseUtils.processBase(chunk, map, tick, base)
     end
 
     local surface = map.surface
-    local point = map.position
     local universe = map.universe
+    local point = universe.position
 
     point.x = chunk.x + (CHUNK_SIZE * mRandom())
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     if (base.state == BASE_AI_STATE_ACTIVE) then
-        local entity = surface.find_entities_filtered(map.filteredEntitiesPointQueryLimited)
-        local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
-        if entity and (base.points >= cost) then
-            local newEntity = baseUtils.upgradeEntity(entity,
-                                                      surface,
-                                                      base.alignment,
-                                                      map)
-            if newEntity then
-                base.points = base.points - cost
+        local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
+        if #entities ~= 0 then
+            local entity = entities[1]
+            local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
+            if (base.points >= cost) then
+                local newEntity = baseUtils.upgradeEntity(entity,
+                                                          base.alignment,
+                                                          map)
+                if newEntity then
+                    base.points = base.points - cost
+                end
             end
         end
     elseif (base.state == BASE_AI_STATE_MUTATE) then

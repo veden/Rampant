@@ -32,13 +32,11 @@ end
 
 function aiPredicates.canMigrate(map)
     local surface = map.surface
-    local nocturalMode = map.universe.aiNocturnalMode
-    local goodAI = ((map.state == AI_STATE_MIGRATING) or (map.state == AI_STATE_SIEGE))
-    local noctural = ((not nocturalMode) or (nocturalMode and surface.darkness > 0.65))
-    return goodAI
-        and map.expansion
-        and not surface.peaceful_mode
-        and noctural
+    local universe = map.universe
+    local nocturalMode = universe.aiNocturnalMode
+    local goodAI = (map.state == AI_STATE_MIGRATING) or (map.state == AI_STATE_SIEGE)
+    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
+    return goodAI and universe.expansion and not surface.peaceful_mode and noctural
 end
 
 aiPredicatesG = aiPredicates

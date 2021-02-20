@@ -225,7 +225,7 @@ function chunkUtils.initialScan(chunk, map, tick)
             end
 
             if (#enemyBuildings > 0) then
-                if universe.newEnemies then
+                if universe.NEW_ENEMIES then
                     local base = findNearbyBase(map, chunk)
                     if base then
                         setChunkBase(map, chunk, base)
@@ -245,7 +245,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
                         if not buildingHiveTypeLookup[enemyBuilding.name] then
-                            local newEntity = upgradeEntity(enemyBuilding, surface, alignment, map, nil, true)
+                            local newEntity = upgradeEntity(enemyBuilding, alignment, map, nil, true)
                             if newEntity then
                                 local hiveType = buildingHiveTypeLookup[newEntity.name]
                                 counts[hiveType] = counts[hiveType] + 1

@@ -338,6 +338,7 @@ function upgrade.attempt(universe)
         universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
         universe.aiNocturnalMode = settings.global["rampant--permanentNocturnal"].value
 
+        universe.mapIterator = nil
         universe.retreatThreshold = 0
         universe.rallyThreshold = 0
         universe.formSquadThreshold = 0
