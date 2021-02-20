@@ -324,14 +324,19 @@ end
 
 function upgrade.attempt(universe)
     local starting = global.version
-    if not global.version or global.version < 106 then
-        global.version = 106
+    if not global.version or global.version < 114 then
+        global.version = 114
+
+        if not universe then
+            universe = {}
+            global.universe = universe
+        end
         game.forces.enemy.kill_all_units()
 
         universe.safeEntities = {}
 
-        universe.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
-        universe.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
+        universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
+        universe.aiNocturnalMode = settings.global["rampant--permanentNocturnal"].value
 
         universe.retreatThreshold = 0
         universe.rallyThreshold = 0
@@ -341,7 +346,7 @@ function upgrade.attempt(universe)
         universe.attackWaveUpperBound = 0
         universe.unitRefundAmount = 0
         universe.regroupIndex = 1
-        universe.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
+        universe.randomGenerator = game.create_random_generator(settings.startup["rampant--enemySeed"].value+1024)
 
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
             constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
@@ -363,7 +368,7 @@ function upgrade.attempt(universe)
         universe.settlerWaveDeviation = 0
         universe.settlerWaveSize = 0
 
-        universe.enabledMigration = universe.expansion and settings.global["rampant-enableMigration"].value
+        universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
 
         universe.enemyAlignmentLookup = {}
 
@@ -375,30 +380,24 @@ function upgrade.attempt(universe)
         game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
         game.map_settings.max_failed_behavior_count = 3
-
-        universe.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
-
-        universe.evolutionLevel = game.forces.enemy.evolution_factor
-    end
-    if (global.version < 113) then
-        global.version = 113
-
-        global.pendingChunks = nil
-
         game.map_settings.unit_group.member_disown_distance = 10
         game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
+        game.forces.enemy.ai_controllable = true
+
+        universe.evolutionLevel = game.forces.enemy.evolution_factor
+        global.pendingChunks = nil
+        global.natives = nil
+        global.map = nil
 
         universe.builderCount = 0
         universe.squadCount = 0
-
-        game.forces.enemy.ai_controllable = true
 
         addCommandSet(universe)
 
         game.print("Rampant - Version 1.0.3")
     end
 
-    return starting ~= global.version
+    return (starting ~= global.version) and global.version
 end
 
 function upgrade.compareTable(entities, option, new)

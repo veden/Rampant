@@ -77,7 +77,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
     universe.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
-    map.attackWaveSize = universe.attackWaveSize
     universe.attackWaveDeviation = (universe.attackWaveSize * 0.333)
     universe.attackWaveUpperBound = universe.attackWaveSize + (universe.attackWaveSize * 0.35)
 
@@ -364,10 +363,10 @@ function aiPlanning.temperamentPlanner(map)
         delta = delta + val
     end
 
-    print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
-          map.lostEnemyUnits,
-          map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding, map.ionCannonBlasts,
-          map.artilleryBlasts)
+    -- print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
+    --       map.lostEnemyUnits,
+    --       map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding, map.ionCannonBlasts,
+    --       map.artilleryBlasts)
 
     -- map.destroyPlayerBuildings = 0
     -- map.lostEnemyUnits = 0
@@ -380,8 +379,8 @@ function aiPlanning.temperamentPlanner(map)
     map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
     map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 
-    print("tempResult", map.temperament, map.temperamentScore)
-    print("--")
+    -- print("tempResult", map.temperament, map.temperamentScore)
+    -- print("--")
 end
 
 aiPlanningG = aiPlanning

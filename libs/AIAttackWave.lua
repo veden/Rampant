@@ -206,7 +206,7 @@ function aiAttackWave.formSettlers(map, chunk)
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
-                                                                                                    map.position,
+                                                                                                    universe.position,
                                                                                                     0.98),
                                                                       CHUNK_SIZE,
                                                                       4,
@@ -221,11 +221,11 @@ function aiAttackWave.formSettlers(map, chunk)
 
 
                 local scaledWaveSize = settlerWaveScaling(universe)
-                map.formGroupCommand.group = squad.group
-                map.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(map.formCommand)
+                universe.formGroupCommand.group = squad.group
+                universe.formCommand.unit_count = scaledWaveSize
+                local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     universe.builderCount = universe.builderCount + 1
                     map.points = map.points - AI_SETTLER_COST
                     map.groupNumberToSquad[squad.groupNumber] = squad
@@ -254,7 +254,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
-                                                                                                    map.position,
+                                                                                                    universe.position,
                                                                                                     0.98),
                                                                       CHUNK_SIZE,
                                                                       4,
@@ -265,11 +265,11 @@ function aiAttackWave.formVengenceSquad(map, chunk)
                 squad.rabid = mRandom() < 0.03
 
                 local scaledWaveSize = attackWaveScaling(universe)
-                map.formGroupCommand.group = squad.group
-                map.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(map.formCommand)
+                universe.formGroupCommand.group = squad.group
+                universe.formCommand.unit_count = scaledWaveSize
+                local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     map.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
                     map.points = map.points - AI_VENGENCE_SQUAD_COST
@@ -299,7 +299,7 @@ function aiAttackWave.formSquads(map, chunk, tick)
             local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
-                                                                                                    map.position,
+                                                                                                    universe.position,
                                                                                                     0.98),
                                                                       CHUNK_SIZE,
                                                                       4,
@@ -310,11 +310,11 @@ function aiAttackWave.formSquads(map, chunk, tick)
                 squad.rabid = mRandom() < 0.03
 
                 local scaledWaveSize = attackWaveScaling(universe)
-                map.formGroupCommand.group = squad.group
-                map.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(map.formCommand)
+                universe.formGroupCommand.group = squad.group
+                universe.formCommand.unit_count = scaledWaveSize
+                local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     map.points = map.points - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
                     map.groupNumberToSquad[squad.groupNumber] = squad

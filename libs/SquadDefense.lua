@@ -59,8 +59,9 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
                                                                                          chunk.y),
                                                                        scoreRetreatLocation,
                                                                        map)
-        local position = map.position
-        local targetPosition2 = map.position2
+        local universe = map.universe
+        local position = universe.position
+        local targetPosition2 = universe.position2
         local retreatPosition
         position.x = chunk.x + 16
         position.y = chunk.y + 16
@@ -85,7 +86,6 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         local newSquad = findNearbyRetreatingSquad(map, exitPath)
-        local universe = map.universe
         local created = false
 
         if not newSquad then
@@ -97,12 +97,12 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
             end
         end
 
-        map.fleeCommand.from = cause
-        map.retreatCommand.group = newSquad.group
+        universe.fleeCommand.from = cause
+        universe.retreatCommand.group = newSquad.group
 
-        map.formRetreatCommand.unit_search_distance = radius
+        universe.formRetreatCommand.unit_search_distance = radius
 
-        local foundUnits = surface.set_multi_command(map.formRetreatCommand)
+        local foundUnits = surface.set_multi_command(universe.formRetreatCommand)
 
         if (foundUnits == 0) then
             if created then

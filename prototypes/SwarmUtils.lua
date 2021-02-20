@@ -30,7 +30,7 @@ local deepcopy = util.table.deepcopy
 
 local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
 
-local xorRandom = mathUtils.xorRandom(settings.startup["rampant-enemySeed"].value)
+local xorRandom = mathUtils.xorRandom(settings.startup["rampant--enemySeed"].value)
 
 local biterattackanimation = unitUtils.biterattackanimation
 
@@ -353,49 +353,49 @@ end
 
 local function scaleAttributes (entity)
     if (entity.type == "biter") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitBiterHealthScaler"].value
-        entity["movement"] = entity["movement"] * settings.startup["rampant-unitBiterSpeedScaler"].value
-        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant-unitBiterSpeedScaler"].value
-        entity["damage"] = entity["damage"] * settings.startup["rampant-unitBiterDamageScaler"].value
-        entity["range"] = entity["range"] * settings.startup["rampant-unitBiterRangeScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitBiterHealingScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitBiterHealthScaler"].value
+        entity["movement"] = entity["movement"] * settings.startup["rampant--unitBiterSpeedScaler"].value
+        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant--unitBiterSpeedScaler"].value
+        entity["damage"] = entity["damage"] * settings.startup["rampant--unitBiterDamageScaler"].value
+        entity["range"] = entity["range"] * settings.startup["rampant--unitBiterRangeScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitBiterHealingScaler"].value
     elseif (entity.type == "spitter") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitSpitterHealthScaler"].value
-        entity["movement"] = entity["movement"] * settings.startup["rampant-unitSpitterSpeedScaler"].value
-        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant-unitSpitterSpeedScaler"].value
-        entity["damage"] = entity["damage"] * settings.startup["rampant-unitSpitterDamageScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitSpitterHealthScaler"].value
+        entity["movement"] = entity["movement"] * settings.startup["rampant--unitSpitterSpeedScaler"].value
+        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant--unitSpitterSpeedScaler"].value
+        entity["damage"] = entity["damage"] * settings.startup["rampant--unitSpitterDamageScaler"].value
         if entity["stickerDamagePerTick"] then
-            entity["stickerDamagePerTick"] = entity["stickerDamagePerTick"] * settings.startup["rampant-unitSpitterDamageScaler"].value
+            entity["stickerDamagePerTick"] = entity["stickerDamagePerTick"] * settings.startup["rampant--unitSpitterDamageScaler"].value
         end
-        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitSpitterDamageScaler"].value
-        entity["range"] = entity["range"] * settings.startup["rampant-unitSpitterRangeScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitSpitterHealingScaler"].value
+        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant--unitSpitterDamageScaler"].value
+        entity["range"] = entity["range"] * settings.startup["rampant--unitSpitterRangeScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitSpitterHealingScaler"].value
     elseif (entity.type == "drone") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitDroneHealthScaler"].value
-        entity["movement"] = entity["movement"] * settings.startup["rampant-unitDroneSpeedScaler"].value
-        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant-unitDroneSpeedScaler"].value
-        entity["damage"] = entity["damage"] * settings.startup["rampant-unitDroneDamageScaler"].value
-        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitDroneDamageScaler"].value
-        entity["range"] = entity["range"] * settings.startup["rampant-unitDroneRangeScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitDroneHealingScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitDroneHealthScaler"].value
+        entity["movement"] = entity["movement"] * settings.startup["rampant--unitDroneSpeedScaler"].value
+        entity["distancePerFrame"] = entity["distancePerFrame"] * settings.startup["rampant--unitDroneSpeedScaler"].value
+        entity["damage"] = entity["damage"] * settings.startup["rampant--unitDroneDamageScaler"].value
+        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant--unitDroneDamageScaler"].value
+        entity["range"] = entity["range"] * settings.startup["rampant--unitDroneRangeScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitDroneHealingScaler"].value
     elseif (entity.type == "biter-spawner") or (entity.type == "spitter-spawner") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitSpawnerHealthScaler"].value
-        entity["unitsOwned"] = entity["unitsOwned"] * settings.startup["rampant-unitSpawnerOwnedScaler"].value
-        entity["unitsToSpawn"] = entity["unitsToSpawn"] * settings.startup["rampant-unitSpawnerSpawnScaler"].value
-        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
-        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant-unitSpawnerRespawnScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitSpawnerHealingScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitSpawnerHealthScaler"].value
+        entity["unitsOwned"] = entity["unitsOwned"] * settings.startup["rampant--unitSpawnerOwnedScaler"].value
+        entity["unitsToSpawn"] = entity["unitsToSpawn"] * settings.startup["rampant--unitSpawnerSpawnScaler"].value
+        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant--unitSpawnerRespawnScaler"].value
+        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant--unitSpawnerRespawnScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitSpawnerHealingScaler"].value
     elseif (entity.type == "turret") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitWormHealthScaler"].value
-        entity["damage"] = entity["damage"] * settings.startup["rampant-unitWormDamageScaler"].value
-        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant-unitWormDamageScaler"].value
-        entity["range"] = entity["range"] * settings.startup["rampant-unitWormRangeScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitWormHealingScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitWormHealthScaler"].value
+        entity["damage"] = entity["damage"] * settings.startup["rampant--unitWormDamageScaler"].value
+        entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant--unitWormDamageScaler"].value
+        entity["range"] = entity["range"] * settings.startup["rampant--unitWormRangeScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitWormHealingScaler"].value
     elseif (entity.type == "hive") then
-        entity["health"] = entity["health"] * settings.startup["rampant-unitHiveHealthScaler"].value
-        entity["healing"] = entity["healing"] * settings.startup["rampant-unitHiveHealingScaler"].value
-        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant-unitHiveRespawnScaler"].value
-        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant-unitHiveRespawnScaler"].value
+        entity["health"] = entity["health"] * settings.startup["rampant--unitHiveHealthScaler"].value
+        entity["healing"] = entity["healing"] * settings.startup["rampant--unitHiveHealingScaler"].value
+        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * settings.startup["rampant--unitHiveRespawnScaler"].value
+        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant--unitHiveRespawnScaler"].value
     end
 end
 
@@ -666,7 +666,7 @@ end
 function swarmUtils.buildUnits(template)
     local unitSet = {}
 
-    local variations = settings.startup["rampant-newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, 10 do
         local effectiveLevel = TIER_UPGRADE_SET_10[tier]
@@ -741,7 +741,7 @@ local function buildEntities(entityTemplates)
 end
 
 function swarmUtils.buildEntitySpawner(template)
-    local variations = settings.startup["rampant-newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, 10 do
         local effectiveLevel = TIER_UPGRADE_SET_10[tier]
@@ -766,7 +766,7 @@ function swarmUtils.buildEntitySpawner(template)
 end
 
 function swarmUtils.buildUnitSpawner(template)
-    local variations = settings.startup["rampant-newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, 10 do
         local effectiveLevel = TIER_UPGRADE_SET_10[tier]
@@ -793,7 +793,7 @@ function swarmUtils.buildUnitSpawner(template)
 end
 
 function swarmUtils.buildWorm(template)
-    local variations = settings.startup["rampant-newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, 10 do
         local effectiveLevel = TIER_UPGRADE_SET_10[tier]
@@ -1199,7 +1199,7 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
 
     local unitSet = {}
 
-    -- local unitVariations = settings.startup["rampant-newEnemyVariations"].value
+    -- local unitVariations = settings.startup["rampant--newEnemyVariations"].value
 
     for t=1,10 do
         for i=1,#template.buildSets do

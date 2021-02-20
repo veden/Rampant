@@ -3,14 +3,10 @@ if stringUtilsG then
 end
 local stringUtils = {}
 
-local sFind = string.find
+local sSub = string.sub
 
-function stringUtils.isRampant(str)
-    return sFind(str, "rampant", -#"rampant")
-end
-
-function stringUtils.isSpawnerEgg(str)
-    return sFind(str, "spawner", -#"spawner")
+function stringUtils.isRampantSetting(str)
+    return sSub(str, 1, #"rampant--") == "rampant--"
 end
 
 stringUtilsG = stringUtils

@@ -234,7 +234,7 @@ function biterFunctions.makeBiter(attributes)
         order = "b-b-a",
         subgroup="enemies",
         healing_per_tick = attributes.healing,
-        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         water_reflection = biter_water_reflection(attributes.scale),
         resistances = resistances,
         collision_box = {
@@ -260,8 +260,8 @@ function biterFunctions.makeBiter(attributes)
         corpse = makeBiterCorpse(attributes),
         dying_explosion = attributes.explosion,
         dying_trigger_effect = attributes.dyingEffect,
-        enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value,
+        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
+        affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         dying_sound = sounds.biter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         running_sound_animation_positions = {2,},
@@ -310,14 +310,14 @@ function biterFunctions.makeSpitter(attributes)
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = makeSpitterCorpse(attributes),
         dying_explosion = attributes.explosion,
-        enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
+        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         dying_trigger_effect = attributes.dyingEffect,
         dying_sound =  sounds.spitter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
-        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        affected_by_tiles = settings.startup["rampant-unitsAffectedByTiles"].value,
+        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
     }
@@ -368,7 +368,7 @@ function biterFunctions.makeUnitSpawner(attributes)
                     volume = 0.4 + (0.05 * attributes.effectiveLevel)
                 }
             },
-        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         healing_per_tick = attributes.healing or 0.02,
         collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}},
         selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}},
@@ -381,7 +381,7 @@ function biterFunctions.makeUnitSpawner(attributes)
         dying_trigger_effect = attributes.dyingEffect,
         max_count_of_owned_units = attributes.unitsOwned or 7,
         max_friends_around_to_spawn = attributes.unitsToSpawn or 5,
-        enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
+        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         animations =
             {
                 spawner_idle_animation(0, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
@@ -515,7 +515,7 @@ function biterFunctions.makeWorm(attributes)
         prepared_alternative_animation = wormPreparedAlternativeAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         prepared_alternative_sound = sounds.worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
 
-        damaged_trigger_effect = ((not settings.startup["rampant-removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
+        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
 
         starting_attack_speed = 0.034,
         starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
@@ -529,7 +529,7 @@ function biterFunctions.makeWorm(attributes)
         integration = worm_integration(attributes.scale),
         attack_parameters = attributes.attack,
         secondary_animation = true,
-        enemy_map_color = ((not settings.startup["rampant-oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
+        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         random_animation_offset = true,
         attack_from_start_frame = true,
 

@@ -244,7 +244,7 @@ function chunkUtils.initialScan(chunk, map, tick)
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
-                        if not isRampant(enemyBuilding.name) then
+                        if not buildingHiveTypeLookup[enemyBuilding.name] then
                             local newEntity = upgradeEntity(enemyBuilding, surface, alignment, map, nil, true)
                             if newEntity then
                                 local hiveType = buildingHiveTypeLookup[newEntity.name]

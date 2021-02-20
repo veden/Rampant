@@ -2,7 +2,7 @@ local vanillaUpdates = require("prototypes/utils/UpdatesVanilla")
 local attackBall = require("prototypes/utils/AttackBall")
 local constants = require("libs/Constants")
 
-if settings.startup["rampant-useDumbProjectiles"].value or settings.startup["rampant-newEnemies"].value then
+if settings.startup["rampant--useDumbProjectiles"].value or settings.startup["rampant--newEnemies"].value then
     attackBall.generateVanilla()
     vanillaUpdates.useDumbProjectiles()
 end
@@ -13,7 +13,7 @@ for _, robot in pairs(data.raw["logistic-robot"]) do
     -- end
     -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 
-    if (settings.startup["rampant-unkillableLogisticRobots"].value) then
+    if (settings.startup["rampant--unkillableLogisticRobots"].value) then
         robot.resistances = {}
         for damageType, _ in pairs(data.raw["damage-type"]) do
             robot.resistances[damageType] = {
@@ -30,7 +30,7 @@ for _, robot in pairs(data.raw["construction-robot"]) do
     -- end
     -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 
-    if (settings.startup["rampant-unkillableConstructionRobots"].value) then
+    if (settings.startup["rampant--unkillableConstructionRobots"].value) then
         robot.resistances = {}        
         for damageType, _ in pairs(data.raw["damage-type"]) do
             robot.resistances[damageType] = {

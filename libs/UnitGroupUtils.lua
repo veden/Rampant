@@ -104,8 +104,8 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
     return squad
 end
 
-function unitGroupUtils.calculateKamikazeThreshold(memberCount, map)
-    local threshold = (memberCount / map.attackWaveMaxSize) * 0.2 + (map.evolutionLevel * 0.2)
+function unitGroupUtils.calculateKamikazeThreshold(memberCount, universe)
+    local threshold = (memberCount / universe.attackWaveMaxSize) * 0.2 + (universe.evolutionLevel * 0.2)
     return threshold
 end
 

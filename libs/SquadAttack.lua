@@ -99,8 +99,9 @@ local function scoreAttackKamikazeLocation(_, neighborChunk)
 end
 
 local function settleMove(map, squad)
-    local targetPosition = map.position
-    local targetPosition2 = map.position2
+    local universe = map.universe
+    local targetPosition = universe.position
+    local targetPosition2 = universe.position2
     local group = squad.group
 
     local groupPosition = group.position
@@ -138,7 +139,7 @@ local function settleMove(map, squad)
         targetPosition.x = position.x
         targetPosition.y = position.y
 
-        cmd = map.settleCommand
+        cmd = universe.settleCommand
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
@@ -158,11 +159,11 @@ local function settleMove(map, squad)
                                                             scoreFunction)
 
         if (attackChunk == -1) then
-            cmd = map.wonderCommand
+            cmd = universe.wonderCommand
             group.set_command(cmd)
             return
         elseif (attackDirection ~= 0) then
-            local attackPlayerThreshold = map.universe.attackPlayerThreshold
+            local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
                 attackChunk = nextAttackChunk
@@ -183,7 +184,7 @@ local function settleMove(map, squad)
                     addDeathGenerator(map, attackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
-                cmd = map.wonderCommand
+                cmd = universe.wonderCommand
                 group.set_command(cmd)
                 return
             end
@@ -191,7 +192,7 @@ local function settleMove(map, squad)
             if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
                 (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
             then
-                cmd = map.attackCommand
+                cmd = universe.attackCommand
 
                 if not squad.rabid then
                     squad.frenzy = true
@@ -199,7 +200,7 @@ local function settleMove(map, squad)
                     squad.frenzyPosition.y = groupPosition.y
                 end
             else
-                cmd = map.moveCommand
+                cmd = universe.moveCommand
                 if squad.rabid or squad.kamikaze then
                     cmd.distraction = DEFINES_DISTRACTION_NONE
                 else
@@ -207,7 +208,7 @@ local function settleMove(map, squad)
                 end
             end
         else
-            cmd = map.settleCommand
+            cmd = universe.settleCommand
             cmd.destination.x = groupPosition.x
             cmd.destination.y = groupPosition.y
 
@@ -226,8 +227,9 @@ end
 
 local function attackMove(map, squad)
 
-    local targetPosition = map.position
-    local targetPosition2 = map.position2
+    local universe = map.universe
+    local targetPosition = universe.position
+    local targetPosition2 = universe.position2
 
     local group = squad.group
 
@@ -252,7 +254,7 @@ local function attackMove(map, squad)
                                                                        attackScorer)
     local cmd
     if (attackChunk == -1) then
-        cmd = map.wonderCommand
+        cmd = universe.wonderCommand
         group.set_command(cmd)
         return
     elseif (nextAttackChunk ~= -1) then
@@ -266,7 +268,7 @@ local function attackMove(map, squad)
     end
 
     if not position then
-        cmd = map.wonderCommand
+        cmd = universe.wonderCommand
         group.set_command(cmd)
         return
     else
@@ -280,9 +282,9 @@ local function attackMove(map, squad)
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
-        (attackChunk[PLAYER_PHEROMONE] >= map.universe.attackPlayerThreshold)
+        (attackChunk[PLAYER_PHEROMONE] >= universe.attackPlayerThreshold)
     then
-        cmd = map.attackCommand
+        cmd = universe.attackCommand
 
         if not squad.rabid then
             squad.frenzy = true
@@ -290,7 +292,7 @@ local function attackMove(map, squad)
             squad.frenzyPosition.y = groupPosition.y
         end
     else
-        cmd = map.moveCommand
+        cmd = universe.moveCommand
         if squad.rabid or squad.frenzy then
             cmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
         else
@@ -303,7 +305,7 @@ end
 
 local function buildMove(map, squad)
     local group = squad.group
-    local position = map.position
+    local position = map.universe.position
     local groupPosition = findMovementPosition(map.surface, group.position)
 
     if not groupPosition then
@@ -345,7 +347,7 @@ function squadAttack.cleanSquads(map)
             squads[k] = nil
             k = nextK
         elseif (group.state == 4) then
-            squadAttack.squadDispatch(map, group.surface, squad, squad.groupNumber)
+            squadAttack.squadDispatch(map, squad, squad.groupNumber)
         end
     end
     map.squadIterator = k

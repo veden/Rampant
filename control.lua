@@ -20,6 +20,7 @@ local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
 local config = require("config")
 local aiPredicates = require("libs/AIPredicates")
+local stringUtils = require("libs/StringUtils")
 
 -- constants
 
@@ -42,6 +43,8 @@ local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
 local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
+
+local isRampantSetting = stringUtils.isRampantSetting
 
 local canMigrate = aiPredicates.canMigrate
 
@@ -158,41 +161,35 @@ end
 
 local function onModSettingsChange(event)
 
-    if event and ((string.sub(event.setting, 1, 7) ~= "rampant") or
-        (string.sub(event.setting, 1, 15) == "rampant-arsenal") or
-        (string.sub(event.setting, 1, 17) == "rampant-resources") or
-        (string.sub(event.setting, 1, 17) == "rampant-evolution") or
-        (string.sub(event.setting, 1, 19) == "rampant-maintenance") or
-        (string.sub(event.setting, 1, 16) == "rampant-industry"))
-    then
-        return false
+    if not isRampantSetting(event.setting) then
+        return
     end
 
     upgrade.compareTable(universe,
                          "safeBuildings",
-                         settings.global["rampant-safeBuildings"].value)
+                         settings.global["rampant--safeBuildings"].value)
     upgrade.compareTable(universe.safeEntities,
                          "curved-rail",
-                         settings.global["rampant-safeBuildings-curvedRail"].value)
+                         settings.global["rampant--safeBuildings-curvedRail"].value)
     upgrade.compareTable(universe.safeEntities,
                          "straight-rail",
-                         settings.global["rampant-safeBuildings-straightRail"].value)
+                         settings.global["rampant--safeBuildings-straightRail"].value)
     upgrade.compareTable(universe.safeEntities,
                          "rail-signal",
-                         settings.global["rampant-safeBuildings-railSignals"].value)
+                         settings.global["rampant--safeBuildings-railSignals"].value)
     upgrade.compareTable(universe.safeEntities,
                          "rail-chain-signal",
-                         settings.global["rampant-safeBuildings-railChainSignals"].value)
+                         settings.global["rampant--safeBuildings-railChainSignals"].value)
     upgrade.compareTable(universe.safeEntities,
                          "train-stop",
-                         settings.global["rampant-safeBuildings-trainStops"].value)
+                         settings.global["rampant--safeBuildings-trainStops"].value)
     upgrade.compareTable(universe.safeEntities,
                          "lamp",
-                         settings.global["rampant-safeBuildings-lamps"].value)
+                         settings.global["rampant--safeBuildings-lamps"].value)
 
     local changed, newValue = upgrade.compareTable(universe.safeEntities,
                                                    "big-electric-pole",
-                                                   settings.global["rampant-safeBuildings-bigElectricPole"].value)
+                                                   settings.global["rampant--safeBuildings-bigElectricPole"].value)
     if changed then
         universe.safeEntities["big-electric-pole"] = newValue
         universe.safeEntities["big-electric-pole-2"] = newValue
@@ -206,45 +203,45 @@ local function onModSettingsChange(event)
 
     upgrade.compareTable(universe,
                          "deadZoneFrequency",
-                         settings.global["rampant-deadZoneFrequency"].value)
+                         settings.global["rampant--deadZoneFrequency"].value)
     upgrade.compareTable(universe,
                          "raidAIToggle",
-                         settings.global["rampant-raidAIToggle"].value)
+                         settings.global["rampant--raidAIToggle"].value)
     upgrade.compareTable(universe,
                          "siegeAIToggle",
-                         settings.global["rampant-siegeAIToggle"].value)
+                         settings.global["rampant--siegeAIToggle"].value)
 
     upgrade.compareTable(universe,
                          "attackPlayerThreshold",
-                         settings.global["rampant-attackPlayerThreshold"].value)
+                         settings.global["rampant--attackPlayerThreshold"].value)
     upgrade.compareTable(universe,
                          "attackUsePlayer",
-                         settings.global["rampant-attackWaveGenerationUsePlayerProximity"].value)
+                         settings.global["rampant--attackWaveGenerationUsePlayerProximity"].value)
 
     upgrade.compareTable(universe,
                          "attackWaveMaxSize",
-                         settings.global["rampant-attackWaveMaxSize"].value)
+                         settings.global["rampant--attackWaveMaxSize"].value)
     upgrade.compareTable(universe,
                          "aiNocturnalMode",
-                         settings.global["rampant-permanentNocturnal"].value)
+                         settings.global["rampant--permanentNocturnal"].value)
     upgrade.compareTable(universe,
                          "aiPointsScaler",
-                         settings.global["rampant-aiPointsScaler"].value)
+                         settings.global["rampant--aiPointsScaler"].value)
 
-    universe.enabledMigration = universe.expansion and settings.global["rampant-enableMigration"].value
+    universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
 
     upgrade.compareTable(universe,
                          "AI_MAX_SQUAD_COUNT",
-                         settings.global["rampant-maxNumberOfSquads"].value)
+                         settings.global["rampant--maxNumberOfSquads"].value)
     upgrade.compareTable(universe,
                          "AI_MAX_BUILDER_COUNT",
-                         settings.global["rampant-maxNumberOfBuilders"].value)
+                         settings.global["rampant--maxNumberOfBuilders"].value)
 
     return true
 end
 
-local function prepWorld(surface)
-    surface.print("Rampant - Indexing chunks, please wait.")
+local function prepMap(surface)
+    surface.print("Rampant - Indexing surface:" .. tostring(surface.index) .. ", please wait.")
 
     local surfaceIndex = surface.index
 
@@ -258,7 +255,6 @@ local function prepWorld(surface)
         universe.maps[surfaceIndex] = map
     end
 
-    map.totalChunks = 0
     map.processedChunks = 0
     map.mapIterator = nil
     map.processQueue = {}
@@ -373,19 +369,94 @@ local function prepWorld(surface)
 end
 
 local function onConfigChanged()
-    if upgrade.attempt(universe) then
-        onModSettingsChange(nil)
+    local version = upgrade.attempt(universe)
+    if version then
+        if not universe then
+            universe = global.universe
+        end
+
+        upgrade.compareTable(universe,
+                             "safeBuildings",
+                             settings.global["rampant--safeBuildings"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "curved-rail",
+                             settings.global["rampant--safeBuildings-curvedRail"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "straight-rail",
+                             settings.global["rampant--safeBuildings-straightRail"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "rail-signal",
+                             settings.global["rampant--safeBuildings-railSignals"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "rail-chain-signal",
+                             settings.global["rampant--safeBuildings-railChainSignals"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "train-stop",
+                             settings.global["rampant--safeBuildings-trainStops"].value)
+        upgrade.compareTable(universe.safeEntities,
+                             "lamp",
+                             settings.global["rampant--safeBuildings-lamps"].value)
+
+        local changed, newValue = upgrade.compareTable(universe.safeEntities,
+                                                       "big-electric-pole",
+                                                       settings.global["rampant--safeBuildings-bigElectricPole"].value)
+        if changed then
+            universe.safeEntities["big-electric-pole"] = newValue
+            universe.safeEntities["big-electric-pole-2"] = newValue
+            universe.safeEntities["big-electric-pole-3"] = newValue
+            universe.safeEntities["big-electric-pole-4"] = newValue
+            universe.safeEntities["lighted-big-electric-pole-4"] = newValue
+            universe.safeEntities["lighted-big-electric-pole-3"] = newValue
+            universe.safeEntities["lighted-big-electric-pole-2"] = newValue
+            universe.safeEntities["lighted-big-electric-pole"] = newValue
+        end
+
+        upgrade.compareTable(universe,
+                             "deadZoneFrequency",
+                             settings.global["rampant--deadZoneFrequency"].value)
+        upgrade.compareTable(universe,
+                             "raidAIToggle",
+                             settings.global["rampant--raidAIToggle"].value)
+        upgrade.compareTable(universe,
+                             "siegeAIToggle",
+                             settings.global["rampant--siegeAIToggle"].value)
+
+        upgrade.compareTable(universe,
+                             "attackPlayerThreshold",
+                             settings.global["rampant--attackPlayerThreshold"].value)
+        upgrade.compareTable(universe,
+                             "attackUsePlayer",
+                             settings.global["rampant--attackWaveGenerationUsePlayerProximity"].value)
+
+        upgrade.compareTable(universe,
+                             "attackWaveMaxSize",
+                             settings.global["rampant--attackWaveMaxSize"].value)
+        upgrade.compareTable(universe,
+                             "aiNocturnalMode",
+                             settings.global["rampant--permanentNocturnal"].value)
+        upgrade.compareTable(universe,
+                             "aiPointsScaler",
+                             settings.global["rampant--aiPointsScaler"].value)
+
+        universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
+
+        upgrade.compareTable(universe,
+                             "AI_MAX_SQUAD_COUNT",
+                             settings.global["rampant--maxNumberOfSquads"].value)
+        upgrade.compareTable(universe,
+                             "AI_MAX_BUILDER_COUNT",
+                             settings.global["rampant--maxNumberOfBuilders"].value)
     end
 
     upgrade.compareTable(universe,
                          "ENEMY_SEED",
-                         settings.startup["rampant-enemySeed"].value)
+                         settings.startup["rampant--enemySeed"].value)
     upgrade.compareTable(universe,
                          "ENEMY_VARIATIONS",
-                         settings.startup["rampant-newEnemyVariations"].value)
+                         settings.startup["rampant--newEnemyVariations"].value)
     upgrade.compareTable(universe,
                          "NEW_ENEMIES",
-                         settings.startup["rampant-newEnemies"].value)
+                         settings.startup["rampant--newEnemies"].value)
 
     if universe.NEW_ENEMIES then
         rebuildNativeTables(universe, game.create_random_generator(universe.ENEMY_SEED))
@@ -397,6 +468,12 @@ local function onConfigChanged()
         universe.buildingHiveTypeLookup["medium-worm-turret"] = "turret"
         universe.buildingHiveTypeLookup["big-worm-turret"] = "turret"
         universe.buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
+    end
+
+    if version and (version <= 114) then
+        for _,surface in pairs(game.surfaces) do
+            prepMap(surface)
+        end
     end
 end
 
@@ -455,7 +532,7 @@ local function onDeath(event)
                     -- drop death pheromone where unit died
                     deathScent(map, chunk)
 
-                    if (-getDeathGenerator(map, chunk) < -map.retreatThreshold) and cause and cause.valid then
+                    if (-getDeathGenerator(map, chunk) < -universe.retreatThreshold) and cause and cause.valid then
                         retreatUnits(chunk,
                                      cause,
                                      map,
@@ -465,7 +542,7 @@ local function onDeath(event)
 
                     map.lostEnemyUnits = map.lostEnemyUnits + 1
 
-                    if (mRandom() < map.rallyThreshold) and not surface.peaceful_mode then
+                    if (mRandom() < universe.rallyThreshold) and not surface.peaceful_mode then
                         rallyUnits(chunk, map, tick)
                     end
                 end
@@ -735,7 +812,6 @@ local function onInit()
 
     hookEvents()
     onConfigChanged()
-    prepWorld(game.surfaces["nauvis"])
 end
 
 local function onEntitySpawned(event)
@@ -883,17 +959,15 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceCreated(event)
-
-end
-
-local function onSurfaceCleared(event)
-    local surfaceIndex = event.surface_index
-    -- universe.maps[surfaceIndex] = nil
-    -- universe[surfaceIndex] = nil
+    print("new surface", event.surface_index)
+    prepMap(game.surfaces[event.surface_index])
 end
 
 local function onSurfaceDeleted(event)
     local surfaceIndex = event.surface_index
+    if (universe.mapIterator == surfaceIndex) then
+        universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
+    end
     universe.maps[surfaceIndex] = nil
 end
 
@@ -923,21 +997,15 @@ script.on_event(defines.events.on_tick,
                     local pick = tick % 7
 
                     -- local profiler = game.create_profiler()
-                    local map = universe.activeMap
-                    if (not map) or (map.processedChunks > #map.processQueue) then
-                        print("swapping map", map, universe.mapIterator)
-                        universe.mapIterator, map = next(universe.maps, universe.mapIterator)
-                        if map then
-                            print("existing map", map, universe.mapIterator)
-                            map.processedChunks = 0
-                            universe.activeMap = map
-                        else
-                            print("grabbing next map", map, universe.mapIterator)
-                            universe.mapIterator, map = next(universe.maps, universe.mapIterator)
-                            map.processedChunks = 0
-                            universe.activeMap = map
-                        end
 
+                    local map = universe.activeMap
+                    if (not map) or (universe.processedChunks > #map.processQueue) then
+                        universe.mapIterator, map = next(universe.maps, universe.mapIterator)
+                        if not map then
+                            universe.mapIterator, map = next(universe.maps, universe.mapIterator)
+                        end
+                        universe.processedChunks = 0
+                        universe.activeMap = map
                     end
 
                     if (pick == 0) then
@@ -948,7 +1016,7 @@ script.on_event(defines.events.on_tick,
                         cleanUpMapTables(map, tick)
                     elseif (pick == 2) then
                         processMap(map, tick)
-                        map.processChunks = map.processChunks + PROCESS_QUEUE_SIZE
+                        universe.processedChunks = universe.processedChunks + PROCESS_QUEUE_SIZE
                         planning(map, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
                             recycleBases(map, tick)
@@ -970,11 +1038,13 @@ script.on_event(defines.events.on_tick,
                     end
 
                     processActiveNests(map, tick)
+
                     -- game.print({"", "--dispatch4 ", profiler, ", ", game.tick, "       ", mRandom()})
 end)
 
-script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
+script.on_event(defines.events.on_surface_cleared, onSurfaceCreated)
+script.on_event(defines.events.on_surface_created, onSurfaceCreated)
 
 script.on_init(onInit)
 script.on_load(onLoad)

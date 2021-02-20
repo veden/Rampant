@@ -12,7 +12,7 @@ function projectileUtils.makeProjectile(attributes, attack)
                 direction_only = attributes.attackDirectionOnly,
                 piercing_damage = attributes.attackPiercingDamage or 0,
                 acceleration = attributes.attackAcceleration or 0.02,
-                force_condition = (settings.startup["rampant-disableCollidingProjectiles"].value and "not-same") or nil,
+                force_condition = (settings.startup["rampant--disableCollidingProjectiles"].value and "not-same") or nil,
                 action = attack,
                 animation =
                     {

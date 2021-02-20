@@ -435,8 +435,8 @@ end
 
 local tiers10 = {}
 
-local tierStart = settings.startup["rampant-tierStart"].value
-local tierEnd = settings.startup["rampant-tierEnd"].value
+local tierStart = settings.startup["rampant--tierStart"].value
+local tierEnd = settings.startup["rampant--tierEnd"].value
 
 local function buildTier(size, tiers)
     local step = (tierEnd - tierStart) / (size - 1)
@@ -451,7 +451,7 @@ buildTier(10, tiers10)
 
 constants.TIER_UPGRADE_SET_10 = tiers10
 
-local variations = settings.startup["rampant-newEnemyVariations"].value
+local variations = settings.startup["rampant--newEnemyVariations"].value
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
@@ -548,7 +548,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
     }
 }
 
-if settings.startup["rampant-acidEnemy"].value then
+if settings.startup["rampant--acidEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "acid",
         tint = {r=1, g=1, b=1, a=1},
@@ -629,7 +629,7 @@ if settings.startup["rampant-acidEnemy"].value then
     }
 end
 
-if settings.startup["rampant-laserEnemy"].value then
+if settings.startup["rampant--laserEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "laser",
         tint = {r=0.3, g=0.3, b=0.42, a=1},
@@ -704,7 +704,7 @@ if settings.startup["rampant-laserEnemy"].value then
     }
 end
 
-if settings.startup["rampant-fireEnemy"].value then
+if settings.startup["rampant--fireEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fire",
         tint = {r=1, g=1, b=1, a=1},
@@ -785,7 +785,7 @@ if settings.startup["rampant-fireEnemy"].value then
     }
 end
 
-if settings.startup["rampant-infernoEnemy"].value then
+if settings.startup["rampant--infernoEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "inferno",
         tint = {r=0.7, g=0.45, b=0.5, a=1},
@@ -844,7 +844,7 @@ if settings.startup["rampant-infernoEnemy"].value then
     }
 end
 
-if settings.startup["rampant-waspEnemy"].value then
+if settings.startup["rampant--waspEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "wasp",
         tint = {r=0.6, g=0.9, b=0.9, a=1},
@@ -909,7 +909,7 @@ if settings.startup["rampant-waspEnemy"].value then
     }
 end
 
-if settings.startup["rampant-spawnerEnemy"].value then
+if settings.startup["rampant--spawnerEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "spawner",
         tint = {r=0.7, g=0, b=0.7, a=1},
@@ -981,7 +981,7 @@ if settings.startup["rampant-spawnerEnemy"].value then
     }
 end
 
-if settings.startup["rampant-electricEnemy"].value then
+if settings.startup["rampant--electricEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "electric",
         tint = {r=0.7, g=0.7, b=1.0, a=1.0},
@@ -1040,7 +1040,7 @@ if settings.startup["rampant-electricEnemy"].value then
     }
 end
 
-if settings.startup["rampant-physicalEnemy"].value then
+if settings.startup["rampant--physicalEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "physical",
         tint = {r=0.9, g=0.9, b=0.9, a=1},
@@ -1099,7 +1099,7 @@ if settings.startup["rampant-physicalEnemy"].value then
     }
 end
 
-if settings.startup["rampant-trollEnemy"].value then
+if settings.startup["rampant--trollEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "troll",
         tint = {r=0.4, g=0.4, b=0.4, a=1},
@@ -1159,7 +1159,7 @@ if settings.startup["rampant-trollEnemy"].value then
     }
 end
 
-if settings.startup["rampant-poisonEnemy"].value then
+if settings.startup["rampant--poisonEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "poison",
         tint = {r=0.4, g=0.6, b=0.5, a=1},
@@ -1222,7 +1222,7 @@ if settings.startup["rampant-poisonEnemy"].value then
     }
 end
 
-if settings.startup["rampant-suicideEnemy"].value then
+if settings.startup["rampant--suicideEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "suicide",
         tint = {r=0.8, g=0.8, b=0.8, a=1},
@@ -1281,7 +1281,7 @@ if settings.startup["rampant-suicideEnemy"].value then
     }
 end
 
-if settings.startup["rampant-nuclearEnemy"].value then
+if settings.startup["rampant--nuclearEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
         tint = {r=0.6, g=0.6, b=0.4, a=1},
@@ -1339,7 +1339,7 @@ if settings.startup["rampant-nuclearEnemy"].value then
     }
 end
 
-if settings.startup["rampant-energyThiefEnemy"].value then
+if settings.startup["rampant--energyThiefEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "energy-thief",
         tint = {r=0.4, g=0.5, b=0.7, a=1},
@@ -1397,7 +1397,7 @@ if settings.startup["rampant-energyThiefEnemy"].value then
     }
 end
 
-if settings.startup["rampant-fastEnemy"].value then
+if settings.startup["rampant--fastEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fast",
         tint = {r=0.26, g=0.66, b=0.62, a=1},

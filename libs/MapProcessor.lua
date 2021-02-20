@@ -224,6 +224,7 @@ function mapProcessor.processPlayers(players, map, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     local allowingAttacks = canAttack(map, tick)
+    local universe = map.universe
 
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#players > 0) then
@@ -235,7 +236,7 @@ function mapProcessor.processPlayers(players, map, tick)
                 local vengence = allowingAttacks and
                     (map.points >= AI_VENGENCE_SQUAD_COST) and
                     ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (-getDeathGenerator(map, playerChunk) < -map.retreatThreshold))
+                            (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
 
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do

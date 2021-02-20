@@ -7,7 +7,7 @@ local projectileUtils = require("ProjectileUtils")
 
 -- constants
 
-local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant-disallowFriendlyFire"].value
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
 
 -- imported functions
 

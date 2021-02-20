@@ -3,6 +3,8 @@ Version: 1.0.3
 Date: 06. 02. 2021
   Improvements:
     - AI temperament logic now will calm down after you destroy enough units and/or nests
+    - Rampant now functions on all surfaces
+    - Rampant no longer clears surface information on mod changes
   Tweaks:
     - Reduced spitter range by 2 across all new enemy tiers
     - Increased spitter projectile collision box by 5x
@@ -25,7 +27,7 @@ Date: 06. 02. 2021
     - Fixed potential desync in unit group creation event
     - Fixed potential desync in building native tables
     - Fixed find entity upgrade incorrectly calculating evolution
-    
+    - Fixed bug with the mod new game+    
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2
