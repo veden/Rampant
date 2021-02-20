@@ -19,24 +19,26 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 
 -- module code
 
-function aiPredicates.canAttack(native, tick)
-    local surface = native.surface
-    local goodAI = (((native.state == AI_STATE_AGGRESSIVE) and (native.canAttackTick > tick)) or
-            (native.state == AI_STATE_RAIDING) or
-            (native.state == AI_STATE_ONSLAUGHT))
+function aiPredicates.canAttack(map, tick)
+    local surface = map.surface
+    local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.canAttackTick > tick)) or
+            (map.state == AI_STATE_RAIDING) or
+            (map.state == AI_STATE_ONSLAUGHT))
     local notPeaceful = not surface.peaceful_mode
-    local noctural = (not native.aiNocturnalMode) or (native.aiNocturnalMode and surface.darkness > 0.65)
+    local nocturalMode = map.universe.aiNocturnalMode
+    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
     return goodAI and notPeaceful and noctural
 end
 
-function aiPredicates.canMigrate(native)
-    local surface = native.surface
-    return ((native.state == AI_STATE_MIGRATING) or
-            (native.state == AI_STATE_SIEGE))
-        and native.expansion
+function aiPredicates.canMigrate(map)
+    local surface = map.surface
+    local nocturalMode = map.universe.aiNocturnalMode
+    local goodAI = ((map.state == AI_STATE_MIGRATING) or (map.state == AI_STATE_SIEGE))
+    local noctural = ((not nocturalMode) or (nocturalMode and surface.darkness > 0.65))
+    return goodAI
+        and map.expansion
         and not surface.peaceful_mode
-        and ((not native.aiNocturnalMode) or
-                (native.aiNocturnalMode and surface.darkness > 0.65))
+        and noctural
 end
 
 aiPredicatesG = aiPredicates

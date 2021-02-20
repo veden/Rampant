@@ -322,67 +322,50 @@ local function addCommandSet(queriesAndCommands)
     }
 end
 
-function upgrade.attempt(natives, queriesAndCommands)
+function upgrade.attempt(universe)
     local starting = global.version
     if not global.version or global.version < 106 then
         global.version = 106
         game.forces.enemy.kill_all_units()
-        natives.points = 0
-        natives.state = constants.AI_STATE_AGGRESSIVE
 
-        natives.safeEntities = {}
-        natives.vengenceQueue = {}
+        universe.safeEntities = {}
 
-        natives.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
-        natives.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
+        universe.aiPointsScaler = settings.global["rampant-aiPointsScaler"].value
+        universe.aiNocturnalMode = settings.global["rampant-permanentNocturnal"].value
 
-        -- needs to be on inner logic tick loop interval
-        -- natives.stateTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-        -- natives.temperamentTick = roundToNearest(game.tick + INTERVAL_LOGIC, INTERVAL_LOGIC)
-
-        -- used to precompute some values per logic cycle
-        natives.retreatThreshold = 0
-        natives.rallyThreshold = 0
-        natives.formSquadThreshold = 0
-        natives.attackWaveSize = 0
-        natives.attackWaveDeviation = 0
-        natives.attackWaveUpperBound = 0
-        natives.unitRefundAmount = 0
-        natives.regroupIndex = 1
-        natives.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
+        universe.retreatThreshold = 0
+        universe.rallyThreshold = 0
+        universe.formSquadThreshold = 0
+        universe.attackWaveSize = 0
+        universe.attackWaveDeviation = 0
+        universe.attackWaveUpperBound = 0
+        universe.unitRefundAmount = 0
+        universe.regroupIndex = 1
+        universe.randomGenerator = game.create_random_generator(settings.startup["rampant-enemySeed"].value+1024)
 
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
             constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 
-        natives.evolutionTableAlignment = {}
-        natives.bases = {}
-        natives.baseIndex = 1
-        natives.baseIncrement = 0
+        universe.evolutionTableAlignment = {}
 
-        natives.kamikazeThreshold = 0
-        natives.attackWaveLowerBound = 1
+        universe.kamikazeThreshold = 0
+        universe.attackWaveLowerBound = 1
 
-        natives.expansion = game.map_settings.enemy_expansion.enabled
-        natives.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        natives.expansionMaxDistanceDerivation = natives.expansionMaxDistance * 0.33
-        natives.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
-        natives.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
-        natives.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
-        natives.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
+        universe.expansion = game.map_settings.enemy_expansion.enabled
+        universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
+        universe.expansionMaxDistanceDerivation = universe.expansionMaxDistance * 0.33
+        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
+        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
+        universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
+        universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
 
-        natives.settlerCooldown = 0
-        natives.settlerWaveDeviation = 0
-        natives.settlerWaveSize = 0
+        universe.settlerCooldown = 0
+        universe.settlerWaveDeviation = 0
+        universe.settlerWaveSize = 0
 
-        natives.drainPylons = {}
+        universe.enabledMigration = universe.expansion and settings.global["rampant-enableMigration"].value
 
-        natives.groupNumberToSquad = {}
-
-        natives.enabledMigration = natives.expansion and settings.global["rampant-enableMigration"].value
-
-        natives.enemyAlignmentLookup = {}
-
-        natives.canAttackTick = 0
+        universe.enemyAlignmentLookup = {}
 
         game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
         game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
@@ -393,58 +376,24 @@ function upgrade.attempt(natives, queriesAndCommands)
 
         game.map_settings.max_failed_behavior_count = 3
 
-        natives.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
+        universe.ENEMY_VARIATIONS = settings.startup["rampant-newEnemyVariations"].value
 
-        natives.evolutionLevel = game.forces.enemy.evolution_factor
-
-        natives.activeRaidNests = 0
-        natives.activeNests = 0
-        natives.destroyPlayerBuildings = 0
-        natives.lostEnemyUnits = 0
-        natives.lostEnemyBuilding = 0
-        natives.rocketLaunched = 0
-        natives.builtEnemyBuilding = 0
-        natives.ionCannonBlasts = 0
-        natives.artilleryBlasts = 0
-
-        natives.temperament = 0
-        natives.temperamentScore = 0
-        natives.stateTick = 0
-    end
-    if (global.version < 111) then
-        global.version = 111
-
-        natives.groupNumberToSquad = {}
-        game.forces.enemy.kill_all_units()
-        natives.squads = nil
-        natives.pendingAttack = nil
-        natives.building = nil
+        universe.evolutionLevel = game.forces.enemy.evolution_factor
     end
     if (global.version < 113) then
         global.version = 113
 
-        natives.baseId = 0
-
-        local newBases = {}
-        for _=1,#natives.bases do
-            local base = natives.bases
-            base.id = natives.baseId
-            newBases[base.id] = base
-            natives.baseId = natives.baseId + 1
-        end
-        natives.bases = newBases
         global.pendingChunks = nil
 
         game.map_settings.unit_group.member_disown_distance = 10
         game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
 
-        natives.vengenceQueue = {}
-        natives.builderCount = 0
-        natives.squadCount = 0
+        universe.builderCount = 0
+        universe.squadCount = 0
 
         game.forces.enemy.ai_controllable = true
 
-        addCommandSet(queriesAndCommands)
+        addCommandSet(universe)
 
         game.print("Rampant - Version 1.0.3")
     end

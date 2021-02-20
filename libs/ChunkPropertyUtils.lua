@@ -152,7 +152,7 @@ end
 function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
     if (value <= 0) then
         if (map.chunkToActiveRaidNest[chunk] ~= nil) then
-            map.native.activeRaidNests = map.native.activeRaidNests - 1
+            map.activeRaidNests = map.activeRaidNests - 1
         end
         if (map.processActiveRaidSpawnerIterator == chunk) then
             map.processActiveRaidSpawnerIterator = nil
@@ -160,7 +160,7 @@ function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
         map.chunkToActiveRaidNest[chunk] = nil
     else
         if (map.chunkToActiveRaidNest[chunk] == nil) then
-            map.native.activeRaidNests = map.native.activeRaidNests + 1
+            map.activeRaidNests = map.activeRaidNests + 1
         end
         map.chunkToActiveRaidNest[chunk] = value
     end
@@ -185,7 +185,7 @@ end
 function chunkPropertyUtils.setNestActiveness(map, chunk, value)
     if (value <= 0) then
         if (map.chunkToActiveNest[chunk] ~= nil) then
-            map.native.activeNests = map.native.activeNests - 1
+            map.activeNests = map.activeNests - 1
         end
         if (map.processActiveSpawnerIterator == chunk) then
             map.processActiveSpawnerIterator = nil
@@ -193,7 +193,7 @@ function chunkPropertyUtils.setNestActiveness(map, chunk, value)
         map.chunkToActiveNest[chunk] = nil
     else
         if (map.chunkToActiveNest[chunk] == nil) then
-            map.native.activeNests = map.native.activeNests + 1
+            map.activeNests = map.activeNests + 1
         end
         map.chunkToActiveNest[chunk] = value
     end
@@ -327,14 +327,14 @@ end
 function chunkPropertyUtils.processNestActiveness(map, chunk)
     local nests = chunkPropertyUtils.getNestCount(map, chunk)
     if (nests > 0) then
-        local native = map.native
-        local surface = native.surface
+        local surface = map.surface
         local activeness = chunkPropertyUtils.getNestActiveness(map, chunk)
+        local universe = map.universe
         local raidActiveness = chunkPropertyUtils.getRaidNestActiveness(map, chunk)
-        if native.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > native.attackPlayerThreshold) then
+        if universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > universe.attackPlayerThreshold) then
             chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
         elseif (chunk[BASE_PHEROMONE] > 0) then
-            local position = map.position
+            local position = universe.position
             if (surface.get_pollution(chunk) > 0) then
                 chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
             else

@@ -107,8 +107,7 @@ local function settleMove(map, squad)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    local native = map.native
-    if (native.state == AI_STATE_SIEGE) then
+    if (map.state == AI_STATE_SIEGE) then
         if squad.kamikaze then
             scoreFunction = scoreSiegeLocationKamikaze
         else
@@ -163,7 +162,7 @@ local function settleMove(map, squad)
             group.set_command(cmd)
             return
         elseif (attackDirection ~= 0) then
-            local attackPlayerThreshold = native.attackPlayerThreshold
+            local attackPlayerThreshold = map.universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
                 attackChunk = nextAttackChunk
@@ -281,7 +280,7 @@ local function attackMove(map, squad)
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
-        (attackChunk[PLAYER_PHEROMONE] >= map.native.attackPlayerThreshold)
+        (attackChunk[PLAYER_PHEROMONE] >= map.universe.attackPlayerThreshold)
     then
         cmd = map.attackCommand
 
@@ -317,16 +316,15 @@ local function buildMove(map, squad)
     group.set_command(map.compoundSettleCommand)
 end
 
-function squadAttack.cleanSquads(natives, native)
-    local squads = native.groupNumberToSquad
-    local map = native.map
+function squadAttack.cleanSquads(map)
+    local squads = map.groupNumberToSquad
     local iterator = map.squadIterator
 
     local k, squad = next(squads, iterator)
     if not k then
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            native.groupNumberToSquad = {}
+            map.groupNumberToSquad = {}
         end
     else
         local group = squad.group
@@ -336,10 +334,11 @@ function squadAttack.cleanSquads(natives, native)
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
             end
+            local universe = map.universe
             if squad.settlers then
-                natives.builderCount = natives.builderCount - 1
+                universe.builderCount = universe.builderCount - 1
             else
-                natives.squadCount = natives.squadCount - 1
+                universe.squadCount = universe.squadCount - 1
             end
             local nextK
             nextK = next(squads, k)

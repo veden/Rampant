@@ -71,9 +71,9 @@ local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
 -- module code
 
-local function attackWaveValidCandidate(chunk, native, map)
+local function attackWaveValidCandidate(chunk, map)
     local isValid = getNestActiveness(map, chunk)
-    if native.state == AI_STATE_RAIDING then
+    if map.state == AI_STATE_RAIDING then
         isValid = isValid + getRaidNestActiveness(map, chunk)
     end
     return (isValid > 0)
@@ -155,12 +155,12 @@ local function visitPattern(o, cX, cY, distance)
 end
 
 function aiAttackWave.rallyUnits(chunk, map, tick)
-    if ((tick - getRallyTick(map, chunk) > COOLDOWN_RALLY) and (map.native.points >= AI_VENGENCE_SQUAD_COST)) then
+    if ((tick - getRallyTick(map, chunk) > COOLDOWN_RALLY) and (map.points >= AI_VENGENCE_SQUAD_COST)) then
         setRallyTick(map, chunk, tick)
         local cX = chunk.x
         local cY = chunk.y
         local startX, endX, stepX, startY, endY, stepY = visitPattern(tick % 4, cX, cY, RALLY_CRY_DISTANCE)
-        local vengenceQueue = map.native.vengenceQueue
+        local vengenceQueue = map.vengenceQueue
         for x=startX, endX, stepX do
             for y=startY, endY, stepY do
                 if (x ~= cX) and (y ~= cY) then
@@ -182,14 +182,14 @@ function aiAttackWave.rallyUnits(chunk, map, tick)
 end
 
 function aiAttackWave.formSettlers(map, chunk)
-    local native = map.native
-    if (native.builderCount < native.AI_MAX_BUILDER_COUNT) and
-        (mRandom() < native.formSquadThreshold) and
-        ((native.points - AI_SETTLER_COST) > 0)
+    local universe = map.universe
+    if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+        (mRandom() < universe.formSquadThreshold) and
+        ((map.points - AI_SETTLER_COST) > 0)
     then
         local surface = map.surface
         local squadPath, squadDirection
-        if (native.state == AI_STATE_SIEGE) then
+        if (map.state == AI_STATE_SIEGE) then
             squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                    validSiegeSettlerLocation,
                                                                    scoreSiegeSettlerLocation,
@@ -214,21 +214,21 @@ function aiAttackWave.formSettlers(map, chunk)
             if squadPosition then
                 local squad = createSquad(squadPosition, surface, nil, true)
 
-                squad.maxDistance = gaussianRandomRange(native.expansionMaxDistance * 0.5,
-                                                        native.expansionMaxDistanceDerivation,
+                squad.maxDistance = gaussianRandomRange(universe.expansionMaxDistance * 0.5,
+                                                        universe.expansionMaxDistanceDerivation,
                                                         10,
-                                                        native.expansionMaxDistance)
+                                                        universe.expansionMaxDistance)
 
 
-                local scaledWaveSize = settlerWaveScaling(native)
+                local scaledWaveSize = settlerWaveScaling(universe)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, native)
-                    native.builderCount = native.builderCount + 1
-                    native.points = native.points - AI_SETTLER_COST
-                    native.groupNumberToSquad[squad.groupNumber] = squad
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    universe.builderCount = universe.builderCount + 1
+                    map.points = map.points - AI_SETTLER_COST
+                    map.groupNumberToSquad[squad.groupNumber] = squad
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -240,10 +240,10 @@ function aiAttackWave.formSettlers(map, chunk)
 end
 
 function aiAttackWave.formVengenceSquad(map, chunk)
-    local native = map.native
-    if (native.squadCount < native.AI_MAX_SQUAD_COUNT) and
-        (mRandom() < native.formSquadThreshold) and
-        ((native.points - AI_VENGENCE_SQUAD_COST) > 0)
+    local universe = map.universe
+    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
+        (mRandom() < universe.formSquadThreshold) and
+        ((map.points - AI_VENGENCE_SQUAD_COST) > 0)
     then
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -264,15 +264,15 @@ function aiAttackWave.formVengenceSquad(map, chunk)
 
                 squad.rabid = mRandom() < 0.03
 
-                local scaledWaveSize = attackWaveScaling(native)
+                local scaledWaveSize = attackWaveScaling(universe)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, native)
-                    native.groupNumberToSquad[squad.groupNumber] = squad
-                    native.squadCount = native.squadCount + 1
-                    native.points = native.points - AI_VENGENCE_SQUAD_COST
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    map.groupNumberToSquad[squad.groupNumber] = squad
+                    universe.squadCount = universe.squadCount + 1
+                    map.points = map.points - AI_VENGENCE_SQUAD_COST
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -284,13 +284,13 @@ function aiAttackWave.formVengenceSquad(map, chunk)
 end
 
 function aiAttackWave.formSquads(map, chunk, tick)
-    local native = map.native
-    if (native.squadCount < native.AI_MAX_SQUAD_COUNT) and
-        attackWaveValidCandidate(chunk, native, map) and
-        (mRandom() < native.formSquadThreshold) and
-        ((native.points - AI_SQUAD_COST) > 0)
+    local universe = map.universe
+    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
+        attackWaveValidCandidate(chunk, map) and
+        (mRandom() < universe.formSquadThreshold) and
+        ((map.points - AI_SQUAD_COST) > 0)
     then
-        local surface = native.surface
+        local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
                                                                      scoreUnitGroupLocation,
@@ -309,17 +309,17 @@ function aiAttackWave.formSquads(map, chunk, tick)
 
                 squad.rabid = mRandom() < 0.03
 
-                local scaledWaveSize = attackWaveScaling(native)
+                local scaledWaveSize = attackWaveScaling(universe)
                 map.formGroupCommand.group = squad.group
                 map.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(map.formCommand)
                 if (foundUnits > 0) then
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, native)
-                    native.points = native.points - AI_SQUAD_COST
-                    native.squadCount = native.squadCount + 1
-                    native.groupNumberToSquad[squad.groupNumber] = squad
-                    if tick and (native.state == AI_STATE_AGGRESSIVE) then
-                        native.canAttackTick = randomTickEvent(tick,
+                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, map)
+                    map.points = map.points - AI_SQUAD_COST
+                    universe.squadCount = universe.squadCount + 1
+                    map.groupNumberToSquad[squad.groupNumber] = squad
+                    if tick and (map.state == AI_STATE_AGGRESSIVE) then
+                        map.canAttackTick = randomTickEvent(tick,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     end

@@ -89,7 +89,7 @@ local mFloor = math.floor
 
 local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
-    local overlapArray = map.queriesAndCommands.chunkOverlapArray
+    local overlapArray = map.universe.chunkOverlapArray
 
     overlapArray[1] = -1 --LeftTop
     overlapArray[2] = -1 --RightTop
@@ -136,9 +136,9 @@ local function scanPaths(chunk, map)
     local x = chunk.x
     local y = chunk.y
 
-    local queriesAndCommands = map.queriesAndCommands
-    local filteredEntitiesCliffQuery = queriesAndCommands.filteredEntitiesCliffQuery
-    local filteredTilesPathQuery = queriesAndCommands.filteredTilesPathQuery
+    local universe = map.universe
+    local filteredEntitiesCliffQuery = universe.filteredEntitiesCliffQuery
+    local filteredTilesPathQuery = universe.filteredTilesPathQuery
     local count_entities_filtered = surface.count_entities_filtered
     local count_tiles_filtered = surface.count_tiles_filtered
 
@@ -187,26 +187,25 @@ end
 
 local function scorePlayerBuildings(map)
     local surface = map.surface
-    local queriesAndCommands = map.queriesAndCommands
-    if surface.count_entities_filtered(queriesAndCommands.hasPlayerStructuresQuery) > 0 then
-        return (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
-            (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
-            (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
-            (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
+    local universe = map.universe
+    if surface.count_entities_filtered(universe.hasPlayerStructuresQuery) > 0 then
+        return (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
+            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
+            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
+            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
     end
     return 0
 end
 
 function chunkUtils.initialScan(chunk, map, tick)
     local surface = map.surface
-    local queriesAndCommands = map.queriesAndCommands
-    local waterTiles = (1 - (surface.count_tiles_filtered(queriesAndCommands.filteredTilesQuery) * 0.0009765625)) * 0.80
-    local native = map.native
-    local enemyBuildings = surface.find_entities_filtered(queriesAndCommands.filteredEntitiesEnemyStructureQuery)
+    local universe = map.universe
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
+    local enemyBuildings = surface.find_entities_filtered(universe.filteredEntitiesEnemyStructureQuery)
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
         local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesChunkNeutral) * 0.005),
+                                    mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
         local pass = scanPaths(chunk, map)
 
@@ -217,25 +216,25 @@ function chunkUtils.initialScan(chunk, map, tick)
         end
 
         if (pass ~= CHUNK_IMPASSABLE) then
-            local resources = surface.count_entities_filtered(queriesAndCommands.countResourcesQuery) * RESOURCE_NORMALIZER
+            local resources = surface.count_entities_filtered(universe.countResourcesQuery) * RESOURCE_NORMALIZER
 
-            local buildingHiveTypeLookup = native.buildingHiveTypeLookup
+            local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
             local counts = map.chunkScanCounts
             for i=1,#HIVE_BUILDINGS_TYPES do
                 counts[HIVE_BUILDINGS_TYPES[i]] = 0
             end
 
             if (#enemyBuildings > 0) then
-                if native.newEnemies then
+                if universe.newEnemies then
                     local base = findNearbyBase(map, chunk)
                     if base then
                         setChunkBase(map, chunk, base)
                     else
-                        base = createBase(native, chunk, tick)
+                        base = createBase(map, chunk, tick)
                     end
                     local alignment = base.alignment
 
-                    local unitList = surface.find_entities_filtered(queriesAndCommands.filteredEntitiesUnitQuery)
+                    local unitList = surface.find_entities_filtered(universe.filteredEntitiesUnitQuery)
                     for i=1,#unitList do
                         local unit = unitList[i]
                         if (unit.valid) then
@@ -246,7 +245,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
                         if not isRampant(enemyBuilding.name) then
-                            local newEntity = upgradeEntity(enemyBuilding, surface, alignment, native, nil, true)
+                            local newEntity = upgradeEntity(enemyBuilding, surface, alignment, map, nil, true)
                             if newEntity then
                                 local hiveType = buildingHiveTypeLookup[newEntity.name]
                                 counts[hiveType] = counts[hiveType] + 1
@@ -294,12 +293,12 @@ end
 
 function chunkUtils.chunkPassScan(chunk, map)
     local surface = map.surface
-    local queriesAndCommands = map.queriesAndCommands
-    local waterTiles = (1 - (surface.count_tiles_filtered(queriesAndCommands.filteredTilesQuery) * 0.0009765625)) * 0.80
+    local universe = map.universe
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) then
         local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesChunkNeutral) * 0.005),
+                                    mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
         local pass = scanPaths(chunk, map)
 
@@ -327,20 +326,20 @@ end
 
 function chunkUtils.mapScanResourceChunk(chunk, map)
     local surface = map.surface
-    local queriesAndCommands = map.queriesAndCommands
-    local resources = surface.count_entities_filtered(queriesAndCommands.countResourcesQuery) * RESOURCE_NORMALIZER
+    local universe = map.universe
+    local resources = surface.count_entities_filtered(universe.countResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local waterTiles = (1 - (surface.count_tiles_filtered(queriesAndCommands.filteredTilesQuery) * 0.0009765625)) * 0.80
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
     local neutralObjects = mMax(0,
-                                mMin(1 - (surface.count_entities_filtered(queriesAndCommands.filteredEntitiesChunkNeutral) * 0.005),
+                                mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
                                      1) * 0.20)
     setPathRating(map, chunk, waterTiles + neutralObjects)
 end
 
 function chunkUtils.mapScanEnemyChunk(chunk, map)
-    local buildingHiveTypeLookup = map.native.buildingHiveTypeLookup
-    local queriesAndCommands = map.queriesAndCommands
-    local buildings = map.surface.find_entities_filtered(queriesAndCommands.filteredEntitiesEnemyStructureQuery)
+    local universe = map.universe
+    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
+    local buildings = map.surface.find_entities_filtered(universe.filteredEntitiesEnemyStructureQuery)
     local counts = map.chunkScanCounts
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
@@ -423,37 +422,37 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
 
-        local native = map.native
         local getFunc
         local setFunc
-        local hiveTypeLookup = native.buildingHiveTypeLookup
+        local universe = map.universe
+        local hiveTypeLookup = universe.buildingHiveTypeLookup
         local hiveType = hiveTypeLookup[entity.name]
         if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-            native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
             getFunc = getNestCount
             setFunc = setNestCount
         elseif (hiveType == "turret") then
-            native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
             getFunc = getTurretCount
             setFunc = setTurretCount
         elseif (hiveType == "trap") then
             getFunc = getTrapCount
             setFunc = setTrapCount
         elseif (hiveType == "utility") then
-            native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
             getFunc = getUtilityCount
             setFunc = setUtilityCount
         elseif (hiveType == "hive") then
-            native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
             getFunc = getHiveCount
             setFunc = setHiveCount
         else
             if (entityType == "turret") then
-                native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+                map.builtEnemyBuilding = map.builtEnemyBuilding + 1
                 getFunc = getTurretCount
                 setFunc = setTurretCount
             elseif (entityType == "unit-spawner") then
-                native.builtEnemyBuilding = native.builtEnemyBuilding + 1
+                map.builtEnemyBuilding = map.builtEnemyBuilding + 1
                 getFunc = getNestCount
                 setFunc = setNestCount
             end
@@ -476,39 +475,37 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
-
-        local native = map.native
         local getFunc
         local setFunc
-        local hiveTypeLookup = map.native.buildingHiveTypeLookup
+        local hiveTypeLookup = map.universe.buildingHiveTypeLookup
         local hiveType = hiveTypeLookup[entity.name]
         if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-            native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
             getFunc = getNestCount
             setFunc = setNestCount
         elseif (hiveType == "turret") then
-            native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
             getFunc = getTurretCount
             setFunc = setTurretCount
         elseif (hiveType == "trap") then
             getFunc = getTrapCount
             setFunc = setTrapCount
         elseif (hiveType == "utility") then
-            native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
             getFunc = getUtilityCount
             setFunc = setUtilityCount
         elseif (hiveType == "hive") then
-            native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
             getFunc = getHiveCount
             setFunc = setHiveCount
         else
             if (entityType == "turret") then
-                native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+                map.lostEnemyBuilding = map.lostEnemyBuilding + 1
                 getFunc = getTurretCount
                 setFunc = setTurretCount
             elseif (entityType == "unit-spawner") then
                 hiveType = "biter-spawner"
-                native.lostEnemyBuilding = native.lostEnemyBuilding + 1
+                map.lostEnemyBuilding = map.lostEnemyBuilding + 1
                 getFunc = getNestCount
                 setFunc = setNestCount
             end
@@ -538,19 +535,18 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
     end
 end
 
-function chunkUtils.accountPlayerEntity(entity, native, addObject, creditNatives)
+function chunkUtils.accountPlayerEntity(entity, map, addObject, creditNatives)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
-        local map = native.map
         local entityValue = BUILDING_PHEROMONES[entity.type]
 
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
             if creditNatives then
-                native.destroyPlayerBuildings = native.destroyPlayerBuildings + 1
-                if (native.state == AI_STATE_ONSLAUGHT) then
-                    native.points = native.points + entityValue
+                map.destroyPlayerBuildings = map.destroyPlayerBuildings + 1
+                if (map.state == AI_STATE_ONSLAUGHT) then
+                    map.points = map.points + entityValue
                 else
-                    native.points = native.points + (entityValue * 0.12)
+                    map.points = map.points + (entityValue * 0.12)
                 end
             end
             entityValue = -entityValue

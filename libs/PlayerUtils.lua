@@ -9,10 +9,10 @@ local playerUtils = {}
 
 -- module code
 
-function playerUtils.validPlayer(player, natives)
+function playerUtils.validPlayer(player)
     if player and player.valid then
         local char = player.character
-        return char and char.valid and (char.surface.name == natives.activeSurface)
+        return char and char.valid
     end
     return false
 end

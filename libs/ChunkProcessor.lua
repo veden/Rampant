@@ -58,8 +58,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     local processQueue = map.processQueue
     local pendingChunks = map.pendingChunks
 
-    local surface = map.surface
-    local area = map.queriesAndCommands.area
+    local area = map.universe.area
 
     local topOffset = area[1]
     local bottomOffset = area[2]
@@ -89,9 +88,9 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
 
             if map[x] and map[x][y] then
                 local chunk = map[x][y]
-                mapScanPlayerChunk(chunk, surface, map)
-                mapScanEnemyChunk(chunk, surface, map)
-                mapScanResourceChunk(chunk, surface, map)
+                mapScanPlayerChunk(chunk, map)
+                mapScanEnemyChunk(chunk, map)
+                mapScanResourceChunk(chunk, map)
             else
                 if map[x] == nil then
                     map[x] = {}
@@ -125,7 +124,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
 end
 
 function chunkProcessor.processScanChunks(map)
-    local area = map.queriesAndCommands.area
+    local area = map.universe.area
 
     local topOffset = area[1]
     local bottomOffset = area[2]

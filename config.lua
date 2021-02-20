@@ -18,21 +18,21 @@ config.ionCannonPresent = settings.startup["ion-cannon-radius"] ~= nil
 
 --[[
     attackWaveScaling is used to calculate the attack wave size from the evolutionFactor
-    default is natives.attackWaveMaxSize * (evolutionFactor ^ 1.666667)
+    default is universe.attackWaveMaxSize * (evolutionFactor ^ 1.666667)
     DOES NOT affect vanilla biters waves
 --]]
-config.attackWaveScaling = function (natives)
-    return mCeil(gaussianRandomRange(natives.attackWaveSize,
-                                     natives.attackWaveDeviation,
+config.attackWaveScaling = function (universe)
+    return mCeil(gaussianRandomRange(universe.attackWaveSize,
+                                     universe.attackWaveDeviation,
                                      1,
-                                     natives.attackWaveUpperBound))
+                                     universe.attackWaveUpperBound))
 end
 
-config.settlerWaveScaling = function (natives)
-    return mCeil(gaussianRandomRange(natives.settlerWaveSize,
-                                     natives.settlerWaveDeviation,
-                                     natives.expansionMinSize,
-                                     natives.expansionMaxSize))
+config.settlerWaveScaling = function (universe)
+    return mCeil(gaussianRandomRange(universe.settlerWaveSize,
+                                     universe.settlerWaveDeviation,
+                                     universe.expansionMinSize,
+                                     universe.expansionMaxSize))
 end
 
 return config

@@ -68,7 +68,7 @@ end
     6 7 8
 ]]--
 function mapUtils.getNeighborChunks(map, x, y)
-    local neighbors = map.neighbors
+    local neighbors = map.universe.neighbors
     local chunkYRow1 = y - CHUNK_SIZE
     local chunkYRow3 = y + CHUNK_SIZE
     local xChunks = map[x-CHUNK_SIZE]
@@ -144,7 +144,7 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
 end
 
 function mapUtils.getCardinalChunks(map, x, y)
-    local neighbors = map.cardinalNeighbors
+    local neighbors = map.universe.cardinalNeighbors
     local xChunks = map[x]
     if xChunks then
         neighbors[1] = xChunks[y-CHUNK_SIZE] or -1

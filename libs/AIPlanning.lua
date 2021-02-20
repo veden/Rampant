@@ -54,234 +54,236 @@ local mMin = math.min
 
 -- module code
 
-function aiPlanning.planning(natives, native, evolution_factor, tick)
-    native.evolutionLevel = evolution_factor
-    natives.evolutionLevel = evolution_factor
+function aiPlanning.planning(map, evolution_factor, tick)
+    local universe = map.universe
+    map.evolutionLevel = evolution_factor
+    universe.evolutionLevel = evolution_factor
 
     local maxPoints = mMax(AI_MAX_POINTS * evolution_factor, MINIMUM_AI_POINTS)
 
-    if not native.ranIncompatibleMessage and native.newEnemies and
+    if not universe.ranIncompatibleMessage and universe.newEnemies and
         (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
-        natives.ranIncompatibleMessage = true
+        universe.ranIncompatibleMessage = true
         game.print({"description.rampant-bobs-nee-newEnemies"})
     end
 
     local maxOverflowPoints = maxPoints * 3
 
-    local attackWaveMaxSize = natives.attackWaveMaxSize
-    natives.retreatThreshold = linearInterpolation(evolution_factor,
+    local attackWaveMaxSize = universe.attackWaveMaxSize
+    universe.retreatThreshold = linearInterpolation(evolution_factor,
                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
-    natives.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
-    natives.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
+    universe.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
+    universe.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
 
-    natives.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
-    natives.attackWaveDeviation = (native.attackWaveSize * 0.333)
-    natives.attackWaveUpperBound = native.attackWaveSize + (native.attackWaveSize * 0.35)
+    universe.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
+    map.attackWaveSize = universe.attackWaveSize
+    universe.attackWaveDeviation = (universe.attackWaveSize * 0.333)
+    universe.attackWaveUpperBound = universe.attackWaveSize + (universe.attackWaveSize * 0.35)
 
-    if (natives.attackWaveSize < 1) then
-        natives.attackWaveSize = 2
-        natives.attackWaveDeviation = 1
-        natives.attackWaveUpperBound = 3
+    if (universe.attackWaveSize < 1) then
+        universe.attackWaveSize = 2
+        universe.attackWaveDeviation = 1
+        universe.attackWaveUpperBound = 3
     end
 
-    natives.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667,
-                                                  native.expansionMinSize,
-                                                  native.expansionMaxSize)
-    natives.settlerWaveDeviation = (native.settlerWaveSize * 0.33)
+    universe.settlerWaveSize = linearInterpolation(evolution_factor ^ 1.66667,
+                                                  universe.expansionMinSize,
+                                                  universe.expansionMaxSize)
+    universe.settlerWaveDeviation = (universe.settlerWaveSize * 0.33)
 
-    natives.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667,
-                                                         native.expansionMaxTime,
-                                                         native.expansionMinTime))
+    universe.settlerCooldown = mFloor(linearInterpolation(evolution_factor ^ 1.66667,
+                                                         universe.expansionMaxTime,
+                                                         universe.expansionMinTime))
 
-    natives.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
-    natives.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
+    universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
+    universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (native.activeNests * 0.25) +
-        (((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * native.aiPointsScaler))
+    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.25) +
+        (((AI_POINT_GENERATOR_AMOUNT * 0.7) * (evolution_factor ^ 2.5)) * universe.aiPointsScaler))
 
-    if (native.state == AI_STATE_ONSLAUGHT) then
+    if (map.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
     end
 
-    native.baseIncrement = points
+    map.baseIncrement = points
 
-    local currentPoints = native.points
+    local currentPoints = map.points
 
     if (currentPoints < maxPoints) then
-        native.points = currentPoints + points
+        map.points = currentPoints + points
     end
 
     if (currentPoints > maxOverflowPoints) then
-        native.points = maxOverflowPoints
+        map.points = maxOverflowPoints
     end
 
-    if (native.stateTick <= tick) then
-        -- local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * native.aiAggressiveness
+    if (map.stateTick <= tick) then
+        -- local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * map.aiAggressiveness
 
         local roll = mRandom()
-        if (native.temperament < 0.05) then -- 0 - 0.05
-            if natives.enabledMigration then
-                native.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
+        if (map.temperament < 0.05) then -- 0 - 0.05
+            if universe.enabledMigration then
+                map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
             else
-                if natives.raidAIToggle then
+                if universe.raidAIToggle then
                     if (roll < 0.85) then
-                        native.state = AI_STATE_AGGRESSIVE
-                        native.canAttackTick = randomTickEvent(tick,
+                        map.state = AI_STATE_AGGRESSIVE
+                        map.canAttackTick = randomTickEvent(tick,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     else
-                        native.state = AI_STATE_RAIDING
+                        map.state = AI_STATE_RAIDING
                     end
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
-        elseif (native.temperament < 0.20) then -- 0.05 - 0.2
-            if (natives.enabledMigration) then
+        elseif (map.temperament < 0.20) then -- 0.05 - 0.2
+            if (universe.enabledMigration) then
                 if (roll < 0.4) then
-                    native.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
+                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
                 else
-                    native.state = AI_STATE_MIGRATING
+                    map.state = AI_STATE_MIGRATING
                 end
             else
-                if natives.raidAIToggle then
+                if universe.raidAIToggle then
                     if (roll < 0.95) then
-                        native.state = AI_STATE_AGGRESSIVE
-                        native.canAttackTick = randomTickEvent(tick,
+                        map.state = AI_STATE_AGGRESSIVE
+                        map.canAttackTick = randomTickEvent(tick,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                                 AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     else
-                        native.state = AI_STATE_RAIDING
+                        map.state = AI_STATE_RAIDING
                     end
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
-        elseif (native.temperament < 0.4) then -- 0.2 - 0.4
-            if (natives.enabledMigration) then
+        elseif (map.temperament < 0.4) then -- 0.2 - 0.4
+            if (universe.enabledMigration) then
                 if (roll < 0.2) then
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 elseif (roll < 0.8) then
-                    native.state = AI_STATE_MIGRATING
+                    map.state = AI_STATE_MIGRATING
                 else
-                    native.state = AI_STATE_PEACEFUL
+                    map.state = AI_STATE_PEACEFUL
                 end
             else
                 if (roll < 0.6) then
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 else
-                    native.state = AI_STATE_PEACEFUL
+                    map.state = AI_STATE_PEACEFUL
                 end
             end
-        elseif (native.temperament < 0.6) then -- 0.4 - 0.6
+        elseif (map.temperament < 0.6) then -- 0.4 - 0.6
             if (roll < 0.5) then
-                native.state = AI_STATE_AGGRESSIVE
-                native.canAttackTick = randomTickEvent(tick,
+                map.state = AI_STATE_AGGRESSIVE
+                map.canAttackTick = randomTickEvent(tick,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
             else
-                native.state = AI_STATE_PEACEFUL
+                map.state = AI_STATE_PEACEFUL
             end
-        elseif (native.temperament < 0.8) then -- 0.6 - 0.8
+        elseif (map.temperament < 0.8) then -- 0.6 - 0.8
             if (roll < 0.6) then
-                native.state = AI_STATE_AGGRESSIVE
-                native.canAttackTick = randomTickEvent(tick,
+                map.state = AI_STATE_AGGRESSIVE
+                map.canAttackTick = randomTickEvent(tick,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                         AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
             elseif (roll < 0.8) then
-                native.state = AI_STATE_ONSLAUGHT
+                map.state = AI_STATE_ONSLAUGHT
             else
-                native.state = AI_STATE_PEACEFUL
+                map.state = AI_STATE_PEACEFUL
             end
         else -- 0.8 - 1
-            if (natives.enabledMigration and natives.raidAIToggle) then
+            if (universe.enabledMigration and universe.raidAIToggle) then
                 if (roll < 0.15) then
-                    native.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
+                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.6) then
-                    native.state = AI_STATE_ONSLAUGHT
+                    map.state = AI_STATE_ONSLAUGHT
                 elseif (roll < 0.8) then
-                    native.state = AI_STATE_RAIDING
+                    map.state = AI_STATE_RAIDING
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
-            elseif (natives.enabledMigration) then
+            elseif (universe.enabledMigration) then
                 if (roll < 0.15) then
-                    native.state = (natives.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
+                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
                 elseif (roll < 0.7) then
-                    native.state = AI_STATE_ONSLAUGHT
+                    map.state = AI_STATE_ONSLAUGHT
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
-            elseif (natives.raidAIToggle) then
+            elseif (universe.raidAIToggle) then
                 if (roll < 0.4) then
-                    native.state = AI_STATE_ONSLAUGHT
+                    map.state = AI_STATE_ONSLAUGHT
                 elseif (roll < 0.7) then
-                    native.state = AI_STATE_RAIDING
+                    map.state = AI_STATE_RAIDING
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             else
                 if (roll < 0.6) then
-                    native.state = AI_STATE_ONSLAUGHT
+                    map.state = AI_STATE_ONSLAUGHT
                 else
-                    native.state = AI_STATE_AGGRESSIVE
-                    native.canAttackTick = randomTickEvent(tick,
+                    map.state = AI_STATE_AGGRESSIVE
+                    map.canAttackTick = randomTickEvent(tick,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                 end
             end
         end
 
-        -- print("changing state", native.state)
+        -- print("changing state", map.state)
 
-        native.destroyPlayerBuildings = 0
-        native.lostEnemyUnits = 0
-        native.lostEnemyBuilding = 0
-        native.rocketLaunched = 0
-        native.builtEnemyBuilding = 0
-        native.ionCannonBlasts = 0
-        native.artilleryBlasts = 0
+        map.destroyPlayerBuildings = 0
+        map.lostEnemyUnits = 0
+        map.lostEnemyBuilding = 0
+        map.rocketLaunched = 0
+        map.builtEnemyBuilding = 0
+        map.ionCannonBlasts = 0
+        map.artilleryBlasts = 0
 
-        native.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+        map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
     end
 
 end
 
 
-function aiPlanning.temperamentPlanner(native)
-    local destroyPlayerBuildings = native.destroyPlayerBuildings
-    local lostEnemyUnits = native.lostEnemyUnits
-    local lostEnemyBuilding = native.lostEnemyBuilding
-    local rocketLaunched = native.rocketLaunched
-    local builtEnemyBuilding = native.builtEnemyBuilding
-    local ionCannonBlasts = native.ionCannonBlasts
-    local artilleryBlasts = native.artilleryBlasts
-    local activeNests = native.activeNests
-    local activeRaidNests = native.activeRaidNests
+function aiPlanning.temperamentPlanner(map)
+    local destroyPlayerBuildings = map.destroyPlayerBuildings
+    local lostEnemyUnits = map.lostEnemyUnits
+    local lostEnemyBuilding = map.lostEnemyBuilding
+    local rocketLaunched = map.rocketLaunched
+    local builtEnemyBuilding = map.builtEnemyBuilding
+    local ionCannonBlasts = map.ionCannonBlasts
+    local artilleryBlasts = map.artilleryBlasts
+    local activeNests = map.activeNests
+    local activeRaidNests = map.activeRaidNests
 
-    local currentTemperament = native.temperamentScore
+    local currentTemperament = map.temperamentScore
     local delta = 0
 
     if activeNests > 0 then
@@ -308,15 +310,15 @@ function aiPlanning.temperamentPlanner(native)
 
     if lostEnemyUnits > 0 then
         local multipler
-        if native.evolutionLevel < 0.3 then
+        if map.evolutionLevel < 0.3 then
             multipler = 0.0005
-        elseif native.evolutionLevel < 0.5 then
+        elseif map.evolutionLevel < 0.5 then
             multipler = 0.000385
-        elseif native.evolutionLevel < 0.7 then
+        elseif map.evolutionLevel < 0.7 then
             multipler = 0.00025
-        elseif native.evolutionLevel < 0.9 then
+        elseif map.evolutionLevel < 0.9 then
             multipler = 0.00012
-        elseif native.evolutionLevel < 0.9 then
+        elseif map.evolutionLevel < 0.9 then
             multipler = 0.00006
         end
         local val = (multipler * lostEnemyUnits)
@@ -362,23 +364,23 @@ function aiPlanning.temperamentPlanner(native)
         delta = delta + val
     end
 
-    print("temperament", native.activeNests, native.activeRaidNests, native.destroyPlayerBuildings,
-          native.lostEnemyUnits,
-          native.lostEnemyBuilding, native.rocketLaunched, native.builtEnemyBuilding, native.ionCannonBlasts,
-          native.artilleryBlasts)
+    print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
+          map.lostEnemyUnits,
+          map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding, map.ionCannonBlasts,
+          map.artilleryBlasts)
 
-    -- native.destroyPlayerBuildings = 0
-    -- native.lostEnemyUnits = 0
-    -- native.lostEnemyBuilding = 0
-    -- native.rocketLaunched = 0
-    -- native.builtEnemyBuilding = 0
-    -- native.ionCannonBlasts = 0
-    -- native.artilleryBlasts = 0
+    -- map.destroyPlayerBuildings = 0
+    -- map.lostEnemyUnits = 0
+    -- map.lostEnemyBuilding = 0
+    -- map.rocketLaunched = 0
+    -- map.builtEnemyBuilding = 0
+    -- map.ionCannonBlasts = 0
+    -- map.artilleryBlasts = 0
 
-    native.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
-    native.temperament = ((native.temperamentScore + 10000) * 0.00005)
+    map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
+    map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 
-    print("tempResult", native.temperament, native.temperamentScore)
+    print("tempResult", map.temperament, map.temperamentScore)
     print("--")
 end
 

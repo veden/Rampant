@@ -72,10 +72,10 @@ local mRandom = math.random
 
 -- module code
 
-local function evoToTier(native, evolutionFactor)
+local function evoToTier(universe, evolutionFactor)
     local v
     for i=10,1,-1 do
-        if native.evoToTierMapping[i] <= evolutionFactor then
+        if universe.evoToTierMapping[i] <= evolutionFactor then
             v = i
             if mRandom() <= 0.65 then
                 break
@@ -94,7 +94,7 @@ function baseUtils.findNearbyBase(map, chunk)
         return foundBase
     end
 
-    local bases = map.native.bases
+    local bases = map.bases
     local closest = MAGIC_MAXIMUM_NUMBER
     for _, base in pairs(bases) do
         local distance = euclideanDistancePoints(base.x, base.y, x, y)
@@ -107,9 +107,10 @@ function baseUtils.findNearbyBase(map, chunk)
     return foundBase
 end
 
-local function findBaseMutation(native, targetEvolution)
-    local tier = evoToTier(native, targetEvolution or native.evolutionLevel)
-    local alignments = native.evolutionTableAlignment[tier]
+local function findBaseMutation(map, targetEvolution)
+    local universe = map.universe
+    local tier = evoToTier(universe, targetEvolution or map.evolutionLevel)
+    local alignments = universe.evolutionTableAlignment[tier]
 
     local roll = mRandom()
     for i=1,#alignments do
@@ -124,8 +125,8 @@ local function findBaseMutation(native, targetEvolution)
     return alignments[#alignments]
 end
 
-local function initialEntityUpgrade(baseAlignment, tier, maxTier, native, useHiveType)
-    local evolutionTable = native.buildingEvolveLookup
+local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType)
+    local evolutionTable = map.universe.buildingEvolveLookup
     local entity
 
     local useTier
@@ -172,9 +173,10 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, native, useHiv
     return entity
 end
 
-local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, native)
-    local buildingHiveTypeLookup = native.buildingHiveTypeLookup
-    local evolutionTable = native.upgradeLookup
+local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
+    local universe = map.universe
+    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
+    local evolutionTable = universe.upgradeLookup
     local entity
 
     local hiveType = buildingHiveTypeLookup[originalEntity.name]
@@ -203,49 +205,49 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, nativ
     return entity
 end
 
-local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, native, evolve)
-
+local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
+    local universe = map.universe
     local adjCurrentEvo = mMax(
-        ((baseAlignment ~= native.enemyAlignmentLookup[originalEntity.name]) and 0) or currentEvo,
+        ((baseAlignment ~= universe.enemyAlignmentLookup[originalEntity.name]) and 0) or currentEvo,
         0
     )
 
-    local tier = evoToTier(native, adjCurrentEvo)
-    local maxTier = evoToTier(native, evoIndex)
+    local tier = evoToTier(universe, adjCurrentEvo)
+    local maxTier = evoToTier(universe, evoIndex)
 
     if (tier > maxTier) then
         return nil
     end
 
     if evolve then
-        local chunk = getChunkByPosition(native.map, originalEntity.position)
-        local makeHive = (chunk ~= -1) and (getResourceGenerator(native.map, chunk) > 0) and (mRandom() < 0.2)
-        return initialEntityUpgrade(baseAlignment, tier, maxTier, native, (makeHive and "hive"))
+        local chunk = getChunkByPosition(map, originalEntity.position)
+        local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (mRandom() < 0.2)
+        return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"))
     else
-        return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, native)
+        return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
     end
 end
 
-local function findBaseInitialAlignment(native, evoIndex)
+local function findBaseInitialAlignment(map, evoIndex)
     local dev = evoIndex * 0.3
     local evoTop = gaussianRandomRange(evoIndex - dev, dev, 0, evoIndex)
 
     local result
     if mRandom() < 0.05 then
-        result = {findBaseMutation(native, evoTop), findBaseMutation(native, evoTop)}
+        result = {findBaseMutation(map, evoTop), findBaseMutation(map, evoTop)}
     else
-        result = {findBaseMutation(native, evoTop)}
+        result = {findBaseMutation(map, evoTop)}
     end
 
     return result
 end
 
-function baseUtils.recycleBases(native, tick)
-    local bases = native.bases
-    local id, base = next(bases, native.map.recycleBaseIterator)
+function baseUtils.recycleBases(map, tick)
+    local bases = map.bases
+    local id, base = next(bases, map.recycleBaseIterator)
     -- for _=1,2 do
     if not id then
-        native.map.recycleBaseIterator = nil
+        map.recycleBaseIterator = nil
         return
     else
         if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
@@ -258,14 +260,15 @@ function baseUtils.recycleBases(native, tick)
         end
     end
     -- end
-    native.map.recycleBaseIterator = id
+    map.recycleBaseIterator = id
 end
 
 
-function baseUtils.upgradeEntity(entity, baseAlignment, native, disPos, evolve)
-    local surface = native.surface
+function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
+    local surface = map.surface
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
+    local universe = map.universe
 
     if not baseAlignment[1] then
         entity.destroy()
@@ -273,19 +276,19 @@ function baseUtils.upgradeEntity(entity, baseAlignment, native, disPos, evolve)
     end
 
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distance, native.evolutionLevel)
+    local evoIndex = mMax(distance, map.evolutionLevel)
 
     local spawnerName = findEntityUpgrade(baseAlignment[mRandom(#baseAlignment)],
                                           currentEvo,
                                           evoIndex,
                                           entity,
-                                          native,
+                                          map,
                                           evolve)
 
     if spawnerName then
         entity.destroy()
-        local name = native.buildingSpaceLookup[spawnerName] or spawnerName
-        local query = native.map.upgradeEntityQuery
+        local name = universe.buildingSpaceLookup[spawnerName] or spawnerName
+        local query = universe.upgradeEntityQuery
         query.name = name
         query.position = disPos or position
 
@@ -309,67 +312,67 @@ function baseUtils.upgradeEntity(entity, baseAlignment, native, disPos, evolve)
     return entity
 end
 
-local function upgradeBase(native, base)
+local function upgradeBase(map, base)
     local baseAlignment = base.alignment
 
     local roll = mRandom()
     if baseAlignment[2] then
         if (roll < 0.05) then
             baseAlignment[2] = nil
-            baseAlignment[1] = findBaseMutation(native)
+            baseAlignment[1] = findBaseMutation(map)
         elseif (roll < 0.25) then
-            baseAlignment[1] = findBaseMutation(native)
+            baseAlignment[1] = findBaseMutation(map)
         else
-            baseAlignment[2] = findBaseMutation(native)
+            baseAlignment[2] = findBaseMutation(map)
         end
         return true
     else
         if (roll < 0.85) then
-            base.alignment[1] = findBaseMutation(native)
+            base.alignment[1] = findBaseMutation(map)
         else
-            base.alignment[2] = findBaseMutation(native)
+            base.alignment[2] = findBaseMutation(map)
         end
         return true
     end
 end
 
-function baseUtils.processBase(chunk, native, tick, base)
+function baseUtils.processBase(chunk, map, tick, base)
     if not base.alignment[1] then
         base.state = BASE_AI_STATE_DORMANT
         return
     end
 
-    local surface = native.surface
-    local map = native.map
+    local surface = map.surface
     local point = map.position
+    local universe = map.universe
 
     point.x = chunk.x + (CHUNK_SIZE * mRandom())
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     if (base.state == BASE_AI_STATE_ACTIVE) then
         local entity = surface.find_entities_filtered(map.filteredEntitiesPointQueryLimited)
-        local cost = (native.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
+        local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
         if entity and (base.points >= cost) then
             local newEntity = baseUtils.upgradeEntity(entity,
                                                       surface,
                                                       base.alignment,
-                                                      native)
+                                                      map)
             if newEntity then
                 base.points = base.points - cost
             end
         end
     elseif (base.state == BASE_AI_STATE_MUTATE) then
         if (base.points >= BASE_UPGRADE) then
-            if upgradeBase(native, base) then
+            if upgradeBase(map, base) then
                 base.points = base.points - BASE_UPGRADE
             end
         end
     end
 
     if (base.state == BASE_AI_STATE_OVERDRIVE) then
-        base.points = base.points + (native.baseIncrement * 5)
+        base.points = base.points + (map.baseIncrement * 5)
     elseif (base.state ~= BASE_AI_STATE_DORMANT) then
-        base.points = base.points + native.baseIncrement
+        base.points = base.points + map.baseIncrement
     end
 
     if (base.temperamentTick <= tick) then
@@ -380,8 +383,8 @@ function baseUtils.processBase(chunk, native, tick, base)
     end
 
     if (base.stateTick <= tick) then
-        local roll = mRandom() * mMax(1 - native.evolutionLevel, 0.15)
-        if (roll > native.temperament) then
+        local roll = mRandom() * mMax(1 - map.evolutionLevel, 0.15)
+        if (roll > map.temperament) then
             base.state = BASE_AI_STATE_DORMANT
         else
             roll = mRandom()
@@ -405,7 +408,7 @@ function baseUtils.processBase(chunk, native, tick, base)
     base.tick = tick
 end
 
-function baseUtils.createBase(native, chunk, tick, rebuilding)
+function baseUtils.createBase(map, chunk, tick, rebuilding)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
@@ -413,16 +416,16 @@ function baseUtils.createBase(native, chunk, tick, rebuilding)
     local meanLevel = mFloor(distance * 0.005)
 
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distanceIndex, native.evolutionLevel)
+    local evoIndex = mMax(distanceIndex, map.evolutionLevel)
 
     local baseTick = tick
 
     local alignment
-    if (not rebuilding) and (mRandom() < native.deadZoneFrequency) then
+    if (not rebuilding) and (mRandom() < map.universe.deadZoneFrequency) then
         alignment = {}
         baseTick = BASE_DEADZONE_TTL
     else
-        alignment = findBaseInitialAlignment(native, evoIndex) or {"neutral"}
+        alignment = findBaseInitialAlignment(map, evoIndex) or {"neutral"}
     end
 
     local baseLevel = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
@@ -444,34 +447,34 @@ function baseUtils.createBase(native, chunk, tick, rebuilding)
         createdTick = tick,
         temperament = 0,
         points = 0,
-        id = native.baseId
+        id = map.baseId
     }
-    native.baseId = native.baseId + 1
+    map.baseId = map.baseId + 1
 
-    setChunkBase(native.map, chunk, base)
+    setChunkBase(map, chunk, base)
 
-    native.bases[base.id] = base
+    map.bases[base.id] = base
 
     return base
 end
 
-function baseUtils.rebuildNativeTables(native, rg)
+function baseUtils.rebuildNativeTables(universe, rg)
     local alignmentSet = {}
-    native.evolutionTableAlignment = alignmentSet
+    universe.evolutionTableAlignment = alignmentSet
     local buildingSpaceLookup = {}
-    native.buildingSpaceLookup = buildingSpaceLookup
+    universe.buildingSpaceLookup = buildingSpaceLookup
     local enemyAlignmentLookup = {}
-    native.enemyAlignmentLookup = enemyAlignmentLookup
+    universe.enemyAlignmentLookup = enemyAlignmentLookup
     local evoToTierMapping = {}
-    native.evoToTierMapping = evoToTierMapping
+    universe.evoToTierMapping = evoToTierMapping
     local upgradeLookup = {}
-    native.upgradeLookup = upgradeLookup
+    universe.upgradeLookup = upgradeLookup
     local buildingEvolveLookup = {}
-    native.buildingEvolveLookup = buildingEvolveLookup
+    universe.buildingEvolveLookup = buildingEvolveLookup
     local costLookup = {}
-    native.costLookup = costLookup
+    universe.costLookup = costLookup
     local buildingHiveTypeLookup = {}
-    native.buildingHiveTypeLookup = buildingHiveTypeLookup
+    universe.buildingHiveTypeLookup = buildingHiveTypeLookup
 
     for i=1,10 do
         evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
@@ -534,7 +537,7 @@ function baseUtils.rebuildNativeTables(native, rg)
                 end
 
                 local variationSet = {}
-                for v=1,native.ENEMY_VARIATIONS do
+                for v=1,universe.ENEMY_VARIATIONS do
                     local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                     enemyAlignmentLookup[entry] = faction.type
                     local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
@@ -593,17 +596,17 @@ function baseUtils.rebuildNativeTables(native, rg)
         end
     end
 
-    local evoIndex = evoToTier(native, native.evolutionLevel)
+    -- local evoIndex = evoToTier(universe, universe.evolutionLevel)
 
-    for _,base in pairs(native.bases) do
-        for x=1,#base.alignment do
-            local alignment = base.alignment[x]
-            if not native.buildingEvolveLookup[alignment] then
-                base.alignment = findBaseInitialAlignment(native, evoIndex)
-                break
-            end
-        end
-    end
+    -- for _,base in pairs(universe.bases) do
+    --     for x=1,#base.alignment do
+    --         local alignment = base.alignment[x]
+    --         if not universe.buildingEvolveLookup[alignment] then
+    --             base.alignment = findBaseInitialAlignment(universe, evoIndex)
+    --             break
+    --         end
+    --     end
+    -- end
 end
 
 baseUtilsG = baseUtils

@@ -178,7 +178,7 @@ end
 
 local function queueNestSpawners(map, chunk, tick)
     local limitPerActiveChunkTick =
-        (map.native.activeNests + map.native.activeRaidNests) * DURATION_ACTIVE_NEST_DIVIDER
+        (map.activeNests + map.activeRaidNests) * DURATION_ACTIVE_NEST_DIVIDER
 
     local processActiveNest = map.processActiveNest
 
@@ -223,21 +223,19 @@ end
 function mapProcessor.processPlayers(players, map, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
-    local native = map.native
-
-    local allowingAttacks = canAttack(native, tick)
+    local allowingAttacks = canAttack(map, tick)
 
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#players > 0) then
         local player = players[mRandom(#players)]
-        if validPlayer(player, native) then
+        if validPlayer(player) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
             if (playerChunk ~= -1) then
                 local vengence = allowingAttacks and
-                    (native.points >= AI_VENGENCE_SQUAD_COST) and
+                    (map.points >= AI_VENGENCE_SQUAD_COST) and
                     ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (-getDeathGenerator(map, playerChunk) < -native.retreatThreshold))
+                            (-getDeathGenerator(map, playerChunk) < -map.retreatThreshold))
 
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -252,12 +250,12 @@ function mapProcessor.processPlayers(players, map, tick)
                                 queueNestSpawners(map, chunk, tick)
 
                                 if vengence then
-                                    local count = native.vengenceQueue[chunk]
+                                    local count = map.vengenceQueue[chunk]
                                     if not count then
                                         count = 0
-                                        native.vengenceQueue[chunk] = count
+                                        map.vengenceQueue[chunk] = count
                                     end
-                                    native.vengenceQueue[chunk] = count + 1
+                                    map.vengenceQueue[chunk] = count + 1
                                 end
                             end
                         end
@@ -269,7 +267,7 @@ function mapProcessor.processPlayers(players, map, tick)
 
     for i=1,#players do
         local player = players[i]
-        if validPlayer(player, native) then
+        if validPlayer(player) then
             local playerChunk = getChunkByPosition(map, player.character.position)
 
             if (playerChunk ~= -1) then
@@ -331,8 +329,9 @@ function mapProcessor.scanPlayerMap(map, tick)
     end
     local index = map.scanPlayerIndex
 
-    local offset = map.area[2]
-    local chunkBox = map.area[1]
+    local area = map.universe.area
+    local offset = area[2]
+    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -368,8 +367,9 @@ function mapProcessor.scanEnemyMap(map, tick)
 
     local index = map.scanEnemyIndex
 
-    local offset = map.area[2]
-    local chunkBox = map.area[1]
+    local area = map.universe.area
+    local offset = area[2]
+    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -406,8 +406,9 @@ function mapProcessor.scanResourceMap(map, tick)
     end
     local index = map.scanResourceIndex
 
-    local offset = map.area[2]
-    local chunkBox = map.area[1]
+    local area = map.universe.area
+    local offset = area[2]
+    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -460,13 +461,12 @@ function mapProcessor.processActiveNests(map, tick)
 end
 
 function mapProcessor.processVengence(map)
-    local native = map.native
-    local ss = native.vengenceQueue
+    local ss = map.vengenceQueue
     local chunk = next(ss, map.deployVengenceIterator)
     if not chunk then
         map.deployVengenceIterator = nil
         if (tableSize(ss) == 0) then
-            native.vengenceQueue = {}
+            map.vengenceQueue = {}
         end
     else
         formVengenceSquad(map, chunk)
@@ -479,7 +479,6 @@ function mapProcessor.processVengence(map)
 end
 
 function mapProcessor.processNests(map, tick)
-    local native = map.native
     local bases = map.chunkToBase
     local chunks = map.chunkToNests
     local chunk = next(chunks, map.processNestIterator)
@@ -490,10 +489,10 @@ function mapProcessor.processNests(map, tick)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        if native.newEnemies then
+        if map.universe.newEnemies then
             local base = bases[chunk]
             if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
-                processBase(chunk, native, tick, base)
+                processBase(chunk, map, tick, base)
             end
         end
 
@@ -503,10 +502,9 @@ function mapProcessor.processNests(map, tick)
 end
 
 local function processSpawners(map, tick, iterator, chunks)
-    local native = map.native
     local chunk = next(chunks, map[iterator])
-    local migrate = canMigrate(native)
-    local attack = canAttack(native, tick)
+    local migrate = canMigrate(map)
+    local attack = canAttack(map, tick)
     if not chunk then
         map[iterator] = nil
         return
@@ -522,18 +520,17 @@ local function processSpawners(map, tick, iterator, chunks)
 end
 
 function mapProcessor.processSpawners(map, tick)
-    local native = map.native
 
-    if (native.state ~= AI_STATE_PEACEFUL) then
-        if (native.state == AI_STATE_MIGRATING) or
-            ((native.state == AI_STATE_SIEGE) and native.temperament <= 0.5)
+    if (map.state ~= AI_STATE_PEACEFUL) then
+        if (map.state == AI_STATE_MIGRATING) or
+            ((map.state == AI_STATE_SIEGE) and map.temperament <= 0.5)
         then
             processSpawners(map,
                             tick,
                             "processMigrationIterator",
                             map.chunkToNests)
         else
-            if (native.state ~= AI_STATE_AGGRESSIVE) then
+            if (map.state ~= AI_STATE_AGGRESSIVE) then
                 processSpawners(map,
                                 tick,
                                 "processActiveSpawnerIterator",

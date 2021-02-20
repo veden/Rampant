@@ -85,11 +85,11 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         local newSquad = findNearbyRetreatingSquad(map, exitPath)
+        local universe = map.universe
         local created = false
-        local native = map.native
 
         if not newSquad then
-            if (native.squadCount < native.AI_MAX_SQUAD_COUNT) then
+            if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 created = true
                 newSquad = createSquad(position, surface)
             else
@@ -112,8 +112,8 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            native.groupNumberToSquad[newSquad.groupNumber] = newSquad
-            native.squadCount = native.squadCount + 1
+            map.groupNumberToSquad[newSquad.groupNumber] = newSquad
+            universe.squadCount = universe.squadCount + 1
         end
 
         newSquad.status = SQUAD_RETREATING
