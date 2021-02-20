@@ -98,7 +98,7 @@ local function scoreAttackKamikazeLocation(_, neighborChunk)
     return damage
 end
 
-local function settleMove(map, squad, surface)
+local function settleMove(map, squad)
     local targetPosition = map.position
     local targetPosition2 = map.position2
     local group = squad.group
@@ -107,8 +107,8 @@ local function settleMove(map, squad, surface)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    local natives = map.natives
-    if (natives.state == AI_STATE_SIEGE) then
+    local native = map.native
+    if (native.state == AI_STATE_SIEGE) then
         if squad.kamikaze then
             scoreFunction = scoreSiegeLocationKamikaze
         else
@@ -126,6 +126,7 @@ local function settleMove(map, squad, surface)
                                              squad.originPosition.y)
     local cmd
     local position
+    local surface = map.surface
 
     if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
     then
@@ -162,7 +163,7 @@ local function settleMove(map, squad, surface)
             group.set_command(cmd)
             return
         elseif (attackDirection ~= 0) then
-            local attackPlayerThreshold = natives.attackPlayerThreshold
+            local attackPlayerThreshold = native.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
                 attackChunk = nextAttackChunk
@@ -224,13 +225,14 @@ local function settleMove(map, squad, surface)
     end
 end
 
-local function attackMove(map, squad, surface)
+local function attackMove(map, squad)
 
     local targetPosition = map.position
     local targetPosition2 = map.position2
 
     local group = squad.group
 
+    local surface = map.surface
     local position
     local groupPosition = group.position
     local x, y = positionToChunkXY(groupPosition)
@@ -279,7 +281,7 @@ local function attackMove(map, squad, surface)
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
-        (attackChunk[PLAYER_PHEROMONE] >= map.natives.attackPlayerThreshold)
+        (attackChunk[PLAYER_PHEROMONE] >= map.native.attackPlayerThreshold)
     then
         cmd = map.attackCommand
 
@@ -300,10 +302,10 @@ local function attackMove(map, squad, surface)
     group.set_command(cmd)
 end
 
-local function buildMove(map, squad, surface)
+local function buildMove(map, squad)
     local group = squad.group
     local position = map.position
-    local groupPosition = findMovementPosition(surface, group.position)
+    local groupPosition = findMovementPosition(map.surface, group.position)
 
     if not groupPosition then
         groupPosition = group.position
@@ -315,15 +317,16 @@ local function buildMove(map, squad, surface)
     group.set_command(map.compoundSettleCommand)
 end
 
-function squadAttack.cleanSquads(natives, iterator)
-    local squads = natives.groupNumberToSquad
-    local map = natives.map
+function squadAttack.cleanSquads(natives, native)
+    local squads = native.groupNumberToSquad
+    local map = native.map
+    local iterator = map.squadIterator
 
     local k, squad = next(squads, iterator)
     if not k then
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            natives.groupNumberToSquad = {}
+            native.groupNumberToSquad = {}
         end
     else
         local group = squad.group
@@ -349,32 +352,32 @@ function squadAttack.cleanSquads(natives, iterator)
     map.squadIterator = k
 end
 
-function squadAttack.squadDispatch(map, surface, squad)
+function squadAttack.squadDispatch(map, squad)
     local group = squad.group
     if group and group.valid then
         local status = squad.status
         if (status == SQUAD_RAIDING) then
-            attackMove(map, squad, surface)
+            attackMove(map, squad)
         elseif (status == SQUAD_SETTLING) then
-            settleMove(map, squad, surface)
+            settleMove(map, squad)
         elseif (status == SQUAD_RETREATING) then
             if squad.settlers then
                 squad.status = SQUAD_SETTLING
-                settleMove(map, squad, surface)
+                settleMove(map, squad)
             else
                 squad.status = SQUAD_RAIDING
-                attackMove(map, squad, surface)
+                attackMove(map, squad)
             end
         elseif (status == SQUAD_BUILDING) then
             removeSquadFromChunk(map, squad)
-            buildMove(map, squad, surface)
+            buildMove(map, squad)
         elseif (status == SQUAD_GUARDING) then
             if squad.settlers then
                 squad.status = SQUAD_SETTLING
-                settleMove(map, squad, surface)
+                settleMove(map, squad)
             else
                 squad.status = SQUAD_RAIDING
-                attackMove(map, squad, surface)
+                attackMove(map, squad)
             end
         end
     end

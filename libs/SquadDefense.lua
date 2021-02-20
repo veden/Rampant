@@ -48,7 +48,7 @@ local function scoreRetreatLocation(map, neighborChunk)
             -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
+function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
     if (tick - getRetreatTick(map, chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
 
         setRetreatTick(map, chunk, tick)
@@ -64,6 +64,7 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
         local retreatPosition
         position.x = chunk.x + 16
         position.y = chunk.y + 16
+        local surface = map.surface
         if (exitPath == -1) then
             return
         elseif (nextExitPath ~= -1) then
@@ -85,10 +86,10 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
 
         local newSquad = findNearbyRetreatingSquad(map, exitPath)
         local created = false
-        local natives = map.natives
+        local native = map.native
 
         if not newSquad then
-            if (natives.squadCount < natives.AI_MAX_SQUAD_COUNT) then
+            if (native.squadCount < native.AI_MAX_SQUAD_COUNT) then
                 created = true
                 newSquad = createSquad(position, surface)
             else
@@ -111,8 +112,8 @@ function aiDefense.retreatUnits(chunk, cause, map, surface, tick, radius)
         end
 
         if created then
-            natives.groupNumberToSquad[newSquad.groupNumber] = newSquad
-            natives.squadCount = natives.squadCount + 1
+            native.groupNumberToSquad[newSquad.groupNumber] = newSquad
+            native.squadCount = native.squadCount + 1
         end
 
         newSquad.status = SQUAD_RETREATING

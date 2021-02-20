@@ -54,17 +54,18 @@ local function sorter(a, b)
     return (aDistance < bDistance)
 end
 
-function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flush)
+function chunkProcessor.processPendingChunks(map, tick, flush)
     local processQueue = map.processQueue
     local pendingChunks = map.pendingChunks
 
-    local area = map.area
+    local surface = map.surface
+    local area = map.queriesAndCommands.area
 
     local topOffset = area[1]
     local bottomOffset = area[2]
 
     local event = next(pendingChunks, map.chunkProcessorIterator)
-    local endCount = 5
+    local endCount = 2
     if flush then
         endCount = table_size(pendingChunks)
     end
@@ -98,7 +99,7 @@ function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flu
 
                 local chunk = createChunk(x, y)
 
-                chunk = initialScan(chunk, surface, map, tick, rebuilding)
+                chunk = initialScan(chunk, map, tick)
 
                 if (chunk ~= -1) then
                     map[x][y] = chunk
@@ -123,8 +124,8 @@ function chunkProcessor.processPendingChunks(map, surface, tick, rebuilding, flu
     end
 end
 
-function chunkProcessor.processScanChunks(map, surface)
-    local area = map.area
+function chunkProcessor.processScanChunks(map)
+    local area = map.queriesAndCommands.area
 
     local topOffset = area[1]
     local bottomOffset = area[2]
@@ -144,7 +145,7 @@ function chunkProcessor.processScanChunks(map, surface)
         bottomOffset[1] = x + CHUNK_SIZE
         bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = chunkPassScan(chunk, surface, map)
+        chunk = chunkPassScan(chunk, map)
 
         if (chunk == -1) then
             map[x][y] = nil
