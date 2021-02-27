@@ -31,7 +31,7 @@ for _, robot in pairs(data.raw["construction-robot"]) do
     -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
 
     if (settings.startup["rampant--unkillableConstructionRobots"].value) then
-        robot.resistances = {}        
+        robot.resistances = {}
         for damageType, _ in pairs(data.raw["damage-type"]) do
             robot.resistances[damageType] = {
                 type = damageType,
@@ -66,5 +66,3 @@ mapSettings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN
 
 
 data.raw["utility-constants"]["default"].unit_group_pathfinding_resolution = -5
-
-

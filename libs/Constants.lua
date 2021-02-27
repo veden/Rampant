@@ -115,7 +115,7 @@ constants.MAX_TICKS_BEFORE_SORT_CHUNKS = 60 * 60 * 30 -- 1 tick = 1/60 sec * 60 
 
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
-constants.MINIMUM_AI_POINTS = 100
+constants.MINIMUM_AI_POINTS = 200
 constants.AI_POINT_GENERATOR_AMOUNT = 0.688863
 constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
@@ -1227,7 +1227,7 @@ if settings.startup["rampant--suicideEnemy"].value then
         type = "suicide",
         tint = {r=0.8, g=0.8, b=0.8, a=1},
         tint2 = {r=0.95, g=0.95, b=0, a=1},
-        acceptRate = {3, 10, 0.05, 0.15},
+        acceptRate = {2, 10, 0.05, 0.15},
         evo = 0.35,
         units = {
             {

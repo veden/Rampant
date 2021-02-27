@@ -97,7 +97,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-02.png",
-                                    line_length = 6,
                                     width = 8,
                                     height = 6,
                                     line_length = 6,
@@ -120,7 +119,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-03.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -143,7 +141,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-04.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -166,7 +163,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-05.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 4,
                                     line_length = 6,
@@ -189,7 +185,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-06.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -212,7 +207,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-07.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -235,7 +229,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-08.png",
-                                    line_length = 6,
                                     width = 10,
                                     height = 8,
                                     line_length = 6,
@@ -324,7 +317,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-12.png",
-                                    line_length = 6,
                                     width = 8,
                                     height = 8,
                                     line_length = 6,
@@ -372,7 +364,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-02.png",
-                                    line_length = 6,
                                     width = 8,
                                     height = 6,
                                     line_length = 6,
@@ -395,7 +386,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-03.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -418,7 +408,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-04.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 6,
                                     line_length = 6,
@@ -441,7 +430,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-05.png",
-                                    line_length = 6,
                                     width = 6,
                                     height = 4,
                                     line_length = 6,
@@ -508,7 +496,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-08.png",
-                                    line_length = 6,
                                     width = 10,
                                     height = 8,
                                     line_length = 6,
@@ -597,7 +584,6 @@ local function makeBloodParticle(attributes)
                             hr_version =
                                 {
                                     filename = "__base__/graphics/particle/blood-particle/hr-blood-particle-12.png",
-                                    line_length = 6,
                                     width = 8,
                                     height = 8,
                                     line_length = 6,

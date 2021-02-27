@@ -202,6 +202,10 @@ local function onModSettingsChange(event)
     end
 
     upgrade.compareTable(universe,
+                         "temperamentRateModifier",
+                         settings.global["rampant--temperamentRateModifier"].value)
+
+    upgrade.compareTable(universe,
                          "deadZoneFrequency",
                          settings.global["rampant--deadZoneFrequency"].value)
     upgrade.compareTable(universe,
@@ -373,79 +377,9 @@ local function onConfigChanged()
         if not universe then
             universe = global.universe
         end
-
-        upgrade.compareTable(universe,
-                             "safeBuildings",
-                             settings.global["rampant--safeBuildings"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "curved-rail",
-                             settings.global["rampant--safeBuildings-curvedRail"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "straight-rail",
-                             settings.global["rampant--safeBuildings-straightRail"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "rail-signal",
-                             settings.global["rampant--safeBuildings-railSignals"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "rail-chain-signal",
-                             settings.global["rampant--safeBuildings-railChainSignals"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "train-stop",
-                             settings.global["rampant--safeBuildings-trainStops"].value)
-        upgrade.compareTable(universe.safeEntities,
-                             "lamp",
-                             settings.global["rampant--safeBuildings-lamps"].value)
-
-        local changed, newValue = upgrade.compareTable(universe.safeEntities,
-                                                       "big-electric-pole",
-                                                       settings.global["rampant--safeBuildings-bigElectricPole"].value)
-        if changed then
-            universe.safeEntities["big-electric-pole"] = newValue
-            universe.safeEntities["big-electric-pole-2"] = newValue
-            universe.safeEntities["big-electric-pole-3"] = newValue
-            universe.safeEntities["big-electric-pole-4"] = newValue
-            universe.safeEntities["lighted-big-electric-pole-4"] = newValue
-            universe.safeEntities["lighted-big-electric-pole-3"] = newValue
-            universe.safeEntities["lighted-big-electric-pole-2"] = newValue
-            universe.safeEntities["lighted-big-electric-pole"] = newValue
-        end
-
-        upgrade.compareTable(universe,
-                             "deadZoneFrequency",
-                             settings.global["rampant--deadZoneFrequency"].value)
-        upgrade.compareTable(universe,
-                             "raidAIToggle",
-                             settings.global["rampant--raidAIToggle"].value)
-        upgrade.compareTable(universe,
-                             "siegeAIToggle",
-                             settings.global["rampant--siegeAIToggle"].value)
-
-        upgrade.compareTable(universe,
-                             "attackPlayerThreshold",
-                             settings.global["rampant--attackPlayerThreshold"].value)
-        upgrade.compareTable(universe,
-                             "attackUsePlayer",
-                             settings.global["rampant--attackWaveGenerationUsePlayerProximity"].value)
-
-        upgrade.compareTable(universe,
-                             "attackWaveMaxSize",
-                             settings.global["rampant--attackWaveMaxSize"].value)
-        upgrade.compareTable(universe,
-                             "aiNocturnalMode",
-                             settings.global["rampant--permanentNocturnal"].value)
-        upgrade.compareTable(universe,
-                             "aiPointsScaler",
-                             settings.global["rampant--aiPointsScaler"].value)
-
-        universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
-
-        upgrade.compareTable(universe,
-                             "AI_MAX_SQUAD_COUNT",
-                             settings.global["rampant--maxNumberOfSquads"].value)
-        upgrade.compareTable(universe,
-                             "AI_MAX_BUILDER_COUNT",
-                             settings.global["rampant--maxNumberOfBuilders"].value)
     end
+
+    onModSettingsChange({setting="rampant--"})
 
     upgrade.compareTable(universe,
                          "ENEMY_SEED",
@@ -772,10 +706,12 @@ local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
     local map = universe.maps[surface.index]
     if (event.item.name == "cliff-explosives") then
-        map.position2Top.x = event.position.x-0.75
-        map.position2Top.y = event.position.y-0.75
-        map.position2Bottom.x = event.position.x+0.75
-        map.position2Bottom.y = event.position.y+0.75
+        local position2Top = universe.position2Top
+        local position2Bottom = universe.position2Bottom
+        position2Top.x = event.position.x-0.75
+        position2Top.y = event.position.y-0.75
+        position2Bottom.x = event.position.x+0.75
+        position2Bottom.y = event.position.y+0.75
         local cliffs = surface.find_entities_filtered(universe.cliffQuery)
         for i=1,#cliffs do
             entityForPassScan(map, cliffs[i])
@@ -902,20 +838,19 @@ end
 local function onGroupFinishedGathering(event)
     local group = event.group
     if group.valid and (group.force.name == "enemy") then
-        local unitNumber = group.group_number
         local map = universe.maps[group.surface.index]
-        local squad = map.groupNumberToSquad[unitNumber]
+        local squad = map.groupNumberToSquad[group.group_number]
         if squad then
             if squad.settler then
                 if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
-                    squadDispatch(map, squad, unitNumber)
+                    squadDispatch(map, squad)
                 else
                     group.destroy()
                     map.points = map.points + AI_SETTLER_COST
                 end
             else
                 if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
-                    squadDispatch(map, squad, unitNumber)
+                    squadDispatch(map, squad)
                 else
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
@@ -939,7 +874,7 @@ local function onGroupFinishedGathering(event)
             else
                 universe.squadCount = universe.squadCount + 1
             end
-            squadDispatch(map, squad, unitNumber)
+            squadDispatch(map, squad)
         end
     end
 end

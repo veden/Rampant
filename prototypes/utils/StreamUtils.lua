@@ -13,7 +13,7 @@ function streamUtils.makeStream(attributes)
                 flags = {"not-on-map"},
                 stream_light = {intensity = 1, size = 4},
                 ground_light = {intensity = 0.8, size = 4},
-                
+
                 smoke_sources =
                     {
                         {
@@ -35,10 +35,10 @@ function streamUtils.makeStream(attributes)
                 particle_loop_frame_count = 3,
                 particle_fade_out_threshold = 0.9,
                 particle_loop_exit_threshold = 0.25,
-                action = attributes.actions,                
-                
-                spine_animation = 
-                    { 
+                action = attributes.actions,
+
+                spine_animation =
+                    {
                         filename = "__base__/graphics/entity/flamethrower-fire-stream/flamethrower-fire-stream-spine.png",
                         blend_mode = "additive",
                         tint = attributes.tint2,
@@ -51,7 +51,7 @@ function streamUtils.makeStream(attributes)
                         animation_speed = 2,
                         shift = {0, 0},
                     },
-                
+
                 shadow =
                     {
                         filename = "__Rampant__/graphics/acid-projectile-purple/acid-projectile-purple-shadow.png",
@@ -62,7 +62,7 @@ function streamUtils.makeStream(attributes)
                         priority = "high",
                         shift = {-0.09, 0.395}
                     },
-                
+
                 particle =
                     {
                         filename = "__base__/graphics/entity/flamethrower-fire-stream/flamethrower-explosion.png",
@@ -75,8 +75,8 @@ function streamUtils.makeStream(attributes)
                     },
                 oriented_particle = true,
                 shadow_scale_enabled = true
-            }            
-        }        
+            }
+        }
     )
     return name
 end
@@ -96,7 +96,7 @@ function streamUtils.makeAcidStream(info)
         particle_spawn_timeout = attributes.particleTimeout or 6,
         particle_vertical_acceleration = attributes.particleVerticalAcceleration or 0.01,
         particle_horizontal_speed = attributes.particleHoizontalSpeed or 0.6,
-        particle_horizontal_speed_deviation = attributes.particleHoizontalSpeedDeviation or 0.0025,        
+        particle_horizontal_speed_deviation = attributes.particleHoizontalSpeedDeviation or 0.0025,
         particle_spawn_interval = 1,
         -- particle_spawn_timeout = attributes.particle_spawn_timeout,
         -- particle_vertical_acceleration = 0.005 * 0.60 *1.5, --x

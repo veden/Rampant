@@ -1,5 +1,6 @@
 globals = {
         "game",
+        "util",
         "data",
         "remote",
         "settings",
@@ -30,3 +31,5 @@ globals = {
         "unitUtilsG",
         "baseUtilsG"
 }
+
+max_line_length = false

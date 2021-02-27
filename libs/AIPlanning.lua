@@ -21,9 +21,6 @@ local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
-local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
-local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
-
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
@@ -327,6 +324,7 @@ function aiPlanning.temperamentPlanner(map)
         delta = delta + val
     end
 
+    delta = delta * map.universe.temperamentRateModifier
     map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
     map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 

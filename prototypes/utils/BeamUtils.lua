@@ -92,8 +92,8 @@ function beamUtils.makeBeam(attributes)
                                 }
                         }
                 },
-            start = 
-                { 
+            start =
+                {
                     filename = "__base__/graphics/entity/beam/tileable-beam-START.png",
                     line_length = 4,
                     width = 52,
@@ -114,8 +114,8 @@ function beamUtils.makeBeam(attributes)
                         scale = 0.5,
                     }
                 },
-            ending = 
-                { 
+            ending =
+                {
                     filename = "__base__/graphics/entity/beam/tileable-beam-END.png",
                     line_length = 4,
                     width = 49,
@@ -124,7 +124,7 @@ function beamUtils.makeBeam(attributes)
                     axially_symmetrical = false,
                     direction_count = 1,
                     shift = {-0.046875, 0},
-                    hr_version = { 
+                    hr_version = {
                         filename = "__base__/graphics/entity/beam/hr-tileable-beam-END.png",
                         line_length = 4,
                         width = 91,
@@ -134,7 +134,7 @@ function beamUtils.makeBeam(attributes)
                         direction_count = 1,
                         shift = {-0.078125, -0.046875},
                         scale = 0.5,
-                    } 
+                    }
                 },
             head =
                 {

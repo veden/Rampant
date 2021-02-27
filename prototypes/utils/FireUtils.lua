@@ -25,31 +25,31 @@ function fireUtils.makeSpreadEffect(attributes)
                 flags = {"placeable-off-grid", "not-on-map"},
 
                 damage_per_tick = { amount = attributes.fireDamagePerTick or 45/60, type = attributes.fireDamagePerTickType or "fire"  },
-                
+
                 spawn_entity = name,
                 maximum_spread_count = 100,
-                
+
                 spread_delay = 300,
                 spread_delay_deviation = 180,
                 flame_alpha = 0.35,
                 flame_alpha_deviation = 0.05,
-                
+
                 tree_dying_factor = 0.8,
                 emissions_per_second = 0.005,
-                
+
                 fade_in_duration = 120,
                 fade_out_duration = 100,
                 smoke_fade_in_duration = 100,
                 smoke_fade_out_duration = 130,
                 delay_between_initial_flames = 20,
-                
+
                 small_tree_fire_pictures = create_small_tree_flame_animations({ blend_mode = "additive", animation_speed = 0.5, scale = 0.7 * 0.75, tint2 = attributes.tint2 }),
-                
+
                 pictures = create_fire_pictures({ blend_mode = "additive", animation_speed = 1, scale = 0.5 * 1.25, tint2 = attributes.tint2}),
-                
-                smoke_source_pictures = 
+
+                smoke_source_pictures =
                     {
-                        { 
+                        {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-1.png",
                             line_length = 8,
                             width = 101,
@@ -62,7 +62,7 @@ function fireUtils.makeSpreadEffect(attributes)
                             animation_speed = 0.5,
                             tint = makeColor(0,1,0, 0.75),
                         },
-                        { 
+                        {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-2.png",
                             line_length = 8,
                             width = 99,
@@ -76,7 +76,7 @@ function fireUtils.makeSpreadEffect(attributes)
                             tint = makeColor(0,1,0, 0.75),
                         },
                     },
-                
+
                 trivial_smoke =
                     {
                         {
@@ -90,14 +90,14 @@ function fireUtils.makeSpreadEffect(attributes)
                             height = -0.5,
                         }
                     },
-                
+
                 light = {intensity = 1, size = 20},
 
                 working_sound =
                     {
                         sound = { filename = "__base__/sound/furnace.ogg" },
                         max_sounds_per_type = 3
-                    },	
+                    },
     }})
     return name
 end
@@ -117,22 +117,22 @@ function fireUtils.makeFire(attributes)
                 maximum_damage_multiplier = attributes.damageMaxMultipler or 6,
                 damage_multiplier_increase_per_added_fuel = attributes.mutliplerIncrease or 1,
                 damage_multiplier_decrease_per_tick = attributes.mutliplerDecrease or 0.005,
-                
+
                 spawn_entity = spawnEntityName,
-                
+
                 spread_delay = 300,
                 spread_delay_deviation = 180,
                 maximum_spread_count = 100,
-                
+
                 flame_alpha = 0.35,
                 flame_alpha_deviation = 0.05,
-                
+
                 emissions_per_second = 0.005,
-                
+
                 add_fuel_cooldown = 10,
                 fade_in_duration = 30,
                 fade_out_duration = 30,
-                
+
                 initial_lifetime = 120,
                 lifetime_increase_by = 150,
                 lifetime_increase_cooldown = 1,
@@ -140,7 +140,7 @@ function fireUtils.makeFire(attributes)
                 delay_between_initial_flames = 10,
                 --initial_flame_count = 1,
                 burnt_patch_lifetime = 1800,
-                
+
                 on_fuel_added_action =
                     {
                         type = "direct",
@@ -161,12 +161,12 @@ function fireUtils.makeFire(attributes)
                                     }
                             }
                     },
-                
+
                 pictures = create_fire_pictures({ blend_mode = "normal", animation_speed = 1, scale = 0.5, tint2 = attributes.tint2}),
-                
-                smoke_source_pictures = 
+
+                smoke_source_pictures =
                     {
-                        { 
+                        {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-1.png",
                             line_length = 8,
                             width = 101,
@@ -177,7 +177,7 @@ function fireUtils.makeFire(attributes)
                             shift = {-0.109375, -1.1875},
                             animation_speed = 0.5,
                         },
-                        { 
+                        {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-2.png",
                             line_length = 8,
                             width = 99,
@@ -189,7 +189,7 @@ function fireUtils.makeFire(attributes)
                             animation_speed = 0.5,
                         },
                     },
-                
+
                 burnt_patch_pictures = create_burnt_patch_pictures(attributes),
                 burnt_patch_alpha_default = 0.4,
                 burnt_patch_alpha_variations = {
@@ -218,15 +218,15 @@ function fireUtils.makeFire(attributes)
                             height = -0.5,
                         }
                     },
-                
+
                 light = {intensity = 1, size = 20},
-                
+
                 working_sound =
                     {
                         sound = { filename = "__base__/sound/furnace.ogg" },
                         max_sounds_per_type = 3
-                    },	
-                
+                    },
+
                  }
                 }
     )
@@ -236,7 +236,7 @@ end
 function fireUtils.makeAcidSplashFire(attributes, stickerName)
 
     local name = attributes.name .. "-acid-fire-rampant"
-    
+
     local acidFire = {
         type = "fire",
         name = name,
@@ -284,8 +284,8 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
             {
                 sound = { filename = "__base__/sound/furnace.ogg" },
                 max_sounds_per_type = 3
-            },      
-        
+            },
+
         on_damage_tick_effect =
             {
                 type = "area",

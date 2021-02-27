@@ -348,7 +348,7 @@ function squadAttack.cleanSquads(map)
             squads[k] = nil
             k = nextK
         elseif (group.state == 4) then
-            squadAttack.squadDispatch(map, squad, squad.groupNumber)
+            squadAttack.squadDispatch(map, squad)
         end
     end
     map.squadIterator = k

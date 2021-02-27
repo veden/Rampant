@@ -47,7 +47,7 @@ function AttackBall.createAttackBall(attributes)
     if attributes.attackPointEffects then
         targetEffects = (attributes.attackPointEffects and attributes.attackPointEffects(attributes))
     else
-        local rec = {			            
+        local rec = {
             {
                 type = "damage",
                 damage = templateDirectDamage
@@ -91,7 +91,7 @@ function AttackBall.createAttackBall(attributes)
         end
         targetEffects = rec
     end
-    
+
     local templateActions = {
         templateArea,
         {
@@ -104,7 +104,7 @@ function AttackBall.createAttackBall(attributes)
     }
 
     local name
-    local template
+    -- local template
     if (attributes.attackType == "stream") then
         -- template = {
         --     name = attributes.name,

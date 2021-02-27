@@ -19,13 +19,13 @@ function imageUtils.create_burnt_patch_pictures(attributes)
         direction_count = 1,
         shift = {-0.09375, 0.125},
     }
-    
+
     local variations = {}
-    
+
     for y=1,(base.frame_count / base.line_length) do
         for x=1,base.line_length do
-            table.insert(variations, 
-                         { 
+            table.insert(variations,
+                         {
                              filename = base.filename,
                              width = base.width,
                              height = base.height,
@@ -93,7 +93,7 @@ function imageUtils.create_small_tree_flame_animations(opts)
             tint = fire_tint,
             flags = fire_flags
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/tree-fire-flame-03-a.png",
             line_length = 8,
             width = 38,
@@ -108,7 +108,7 @@ function imageUtils.create_small_tree_flame_animations(opts)
             tint = fire_tint,
             flags = fire_flags
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/tree-fire-flame-03-b.png",
             line_length = 8,
             width = 34,
@@ -123,7 +123,7 @@ function imageUtils.create_small_tree_flame_animations(opts)
             tint = fire_tint,
             flags = fire_flags
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/tree-fire-flame-03-c.png",
             line_length = 8,
             width = 39,
@@ -139,7 +139,7 @@ function imageUtils.create_small_tree_flame_animations(opts)
             flags = fire_flags
         }
     }
-    
+
     return foreach(retval, function(tab)
                        if tab.shift and tab.scale then tab.shift = { tab.shift[1] * tab.scale, tab.shift[2] * tab.scale } end
     end)
@@ -152,7 +152,7 @@ function imageUtils.create_fire_pictures(opts)
     local fire_tint = opts.tint2
     local fire_flags = { "compressed" }
     local retval = {
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
             line_length = 8,
             width = 60,
@@ -167,7 +167,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.0390625, -0.90625 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-12.png",
             line_length = 8,
             width = 63,
@@ -182,7 +182,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.015625, -0.914065 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-11.png",
             line_length = 8,
             width = 61,
@@ -197,7 +197,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.0078125, -0.90625 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-10.png",
             line_length = 8,
             width = 65,
@@ -212,7 +212,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.0625, -0.64844 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-09.png",
             line_length = 8,
             width = 64,
@@ -227,7 +227,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.03125, -0.695315 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-08.png",
             line_length = 8,
             width = 50,
@@ -242,7 +242,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { -0.0546875, -0.77344 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-07.png",
             line_length = 8,
             width = 54,
@@ -257,7 +257,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0.015625, -0.640625 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-06.png",
             line_length = 8,
             width = 65,
@@ -272,7 +272,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0, -0.83594 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-05.png",
             line_length = 8,
             width = 59,
@@ -287,7 +287,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0.03125, -0.882815 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-04.png",
             line_length = 8,
             width = 67,
@@ -302,7 +302,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0.015625, -1.109375 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-03.png",
             line_length = 8,
             width = 74,
@@ -317,7 +317,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0.046875, -0.984375 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-02.png",
             line_length = 8,
             width = 74,
@@ -332,7 +332,7 @@ function imageUtils.create_fire_pictures(opts)
             flags = fire_flags,
             shift = { 0.0078125, -0.96875 }
         },
-        { 
+        {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-01.png",
             line_length = 8,
             width = 66,

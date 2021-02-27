@@ -2,7 +2,7 @@ local projectileUtils = {}
 
 function projectileUtils.makeProjectile(attributes, attack)
     local n = attributes.name .. "-projectile-rampant"
-    
+
     data:extend({{
                 type = "projectile",
                 name = n,

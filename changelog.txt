@@ -5,7 +5,9 @@ Date: 06. 02. 2021
     - AI temperament logic now will calm down after you destroy enough units and/or nests
     - Rampant now functions on all surfaces
     - Rampant no longer clears surface information on mod changes
+    - Added a temperament modifer setting to adjust how quickly the ai will reach extremes in attacking and expansion.
   Tweaks:
+    - Increased minimum points the AI can work with to 200
     - Reduced spitter range by 2 across all new enemy tiers
     - Increased spitter projectile collision box by 5x
     - Decreased movement debuff from spitter acid puddle by roughly 70%
@@ -13,7 +15,7 @@ Date: 06. 02. 2021
     - Decreased suicide biter damage 90% and radius by roughly 50%
     - Decreased nuclear biter damage 90%
     - Decreased default max wave size to 75 units
-    - Increased evolution requirement for suicide and nuclear biters to 35% and 45%
+    - Increased evolution requirement for suicide and nuclear biters to 20% and 45%
     - Decreased squad size ramp up to evolution_factor^1.4
     - Increased unit lost temperament contribution to 0.03
     - Decreased active spawner temperament contribution to 0.25
@@ -21,15 +23,17 @@ Date: 06. 02. 2021
     - Decreased siege ai state chance to 15% at peak temperament
     - Halved AI temperament rate of change
     - Increased ai state duration minimum to 10 and maximum to 25 minutes
+    - Changed default enemy seed to non-zero
   Bugfixes:
     - Fixed suicide and nuclear enemies explosion centered on target instead self
-    - Fixed process spawners reading missing globals
+    - Fixed process spawners function reading missing globals
     - Fixed potential desync in squad attack movement
     - Fixed potential desync in unit group creation event
     - Fixed potential desync in building native tables
     - Fixed find entity upgrade incorrectly calculating evolution
     - Fixed bug with the mod new game+
     - Fixed existing spawner upgrading in place over time
+    - Fixed add wall acid resistance setting would overwrite higher resistance and not effect gates
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2

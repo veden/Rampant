@@ -198,7 +198,7 @@ function wormUtils.wormPreparedAnimation(scale, tint, tint2)
                                 frame_count = 9,
                                 scale = 0.5 * scale,
                                 direction_count = 1,
-                                tint = tint,          
+                                tint = tint,
                                 shift = util.mul_shift(util.by_pixel(-3, -41), scale),
                             }
                     },
@@ -860,7 +860,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                                     frame_count = 24,
                                     shift = util.mul_shift(util.by_pixel(16, -48), scale),
                                     direction_count = 1,
-                                    tint = tint,            
+                                    tint = tint,
                                     scale = 0.5 * scale,
                                 }
                         },

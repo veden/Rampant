@@ -11,7 +11,7 @@ local poison = {}
 local makeCloud = smokeUtils.makeCloud
 
 function poison.addFactionAddon()
-   
+
     for i=1,10 do
         makeCloud(
             {
@@ -67,7 +67,7 @@ function poison.addFactionAddon()
             }
         )
     end
-    
+
 end
 
 return poison

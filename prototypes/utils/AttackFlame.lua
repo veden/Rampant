@@ -3,7 +3,6 @@ local attackFlame = {}
 -- imported
 
 local streamUtils = require("StreamUtils")
-local colorUtils = require("ColorUtils")
 local fireUtils = require("FireUtils")
 local stickerUtils = require("StickerUtils")
 
@@ -13,7 +12,6 @@ local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"]
 
 -- imported functions
 
-local makeColor = colorUtils.makeColor
 local makeStream = streamUtils.makeStream
 local makeFire = fireUtils.makeFire
 local makeSticker = stickerUtils.makeSticker
@@ -22,7 +20,7 @@ local makeSpreadEffect = fireUtils.makeSpreadEffect
 -- module code
 
 function attackFlame.createAttackFlame(attributes)
-    
+
     local spawnEntityName = makeSpreadEffect({
             name = attributes.name,
             tint2 = attributes.tint2,
@@ -49,7 +47,7 @@ function attackFlame.createAttackFlame(attributes)
             tint2 = attributes.tint2,
             fireSpreadRadius = attributes.fireSpreadRadius
     })
-    
+
     return makeStream({
             name = attributes.name,
             tint2 = attributes.tint2 or {r=0, g=1, b=1, a=0.5},

@@ -90,16 +90,6 @@ data:extend({
             per_user = false
         },
 
-        {
-            type = "bool-setting",
-            name = "rampant--permanentNocturnal",
-            description = "rampant--permanentNocturnal",
-            setting_type = "runtime-global",
-            default_value = false,
-            order = "b[modifier]-g[ai]",
-            per_user = false
-        },
-
         -- {
         --     type = "bool-setting",
         --     name = "rampant--liteMode",
@@ -108,18 +98,6 @@ data:extend({
         --     order = "b[modifier]-g[ai]",
         --     per_user = false
         -- },
-
-        {
-            type = "double-setting",
-            name = "rampant--aiPointsScaler",
-            description = "rampant--aiPointsScaler",
-            setting_type = "runtime-global",
-            default_value = 1.0,
-            minimum_value = 0.0,
-            maximum_value = 100.0,
-            order = "b[modifier]-h[ai]",
-            per_user = false
-        },
 
         {
             type = "bool-setting",
@@ -260,8 +238,8 @@ data:extend({
             name = "rampant--enemySeed",
             description = "rampant--enemySeed",
             setting_type = "startup",
-            minimum_value = 0,
-            default_value = 0,
+            minimum_value = 1,
+            default_value = 1024567,
             order = "l[modifer]-b[unit]",
             per_user = false
         },
@@ -451,7 +429,7 @@ data:extend({
             description = "rampant--enableMigration",
             setting_type = 'runtime-global',
             default_value = true,
-            order = "m[total]-b[ai]",
+            order = "m[total]-c[ai]",
             per_user = false
         },
 
@@ -470,6 +448,39 @@ data:extend({
             setting_type = "runtime-global",
             default_value = true,
             order = "m[total]-c[ai]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant--permanentNocturnal",
+            description = "rampant--permanentNocturnal",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-a[ai]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant--aiPointsScaler",
+            description = "rampant--aiPointsScaler",
+            setting_type = "runtime-global",
+            default_value = 1.0,
+            minimum_value = 0.0,
+            maximum_value = 100.0,
+            order = "m[total]-b[ai]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant--temperamentRateModifier",
+            setting_type = "runtime-global",
+            default_value = 1,
+            minimum_value = 0.001,
+            maximum_value = 100.0,
+            order = "m[total]-b[ai]",
             per_user = false
         },
 

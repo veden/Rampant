@@ -5,7 +5,6 @@ local chunkUtils = {}
 
 -- imports
 
-local stringUtils = require("StringUtils")
 local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
@@ -47,7 +46,6 @@ local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 -- imported functions
 
-local isRampant = stringUtils.isRampant
 local setNestCount = chunkPropertyUtils.setNestCount
 local setPlayerBaseGenerator = chunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = chunkPropertyUtils.addPlayerBaseGenerator
