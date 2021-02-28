@@ -824,7 +824,7 @@ local function onUnitGroupCreated(event)
                 end
 
                 squad = createSquad(nil, nil, group, settler)
-                universe.groupNumberToSquad[group.group_number] = squad
+                map.groupNumberToSquad[group.group_number] = squad
                 if settler then
                     universe.builderCount = universe.builderCount + 1
                 else

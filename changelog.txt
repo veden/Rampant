@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.4
+Date: 28. 02. 2021
+  Bugfixes:
+    - Fixed multipler not being defined above 0.9 evolution
+    - Fixed nil indexing on unit group creation
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.3
 Date: 06. 02. 2021
   Improvements:

@@ -280,6 +280,8 @@ function aiPlanning.temperamentPlanner(map)
             multipler = 0.000054
         elseif map.evolutionLevel < 0.9 then
             multipler = 0.000027
+        else
+            multipler = 0.0000135
         end
         local val = (multipler * lostEnemyUnits)
         if (currentTemperament > 0) then
