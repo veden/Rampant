@@ -104,10 +104,10 @@ local nuclearAttackNumeric = {
 }
 
 local bombAttackNumeric = {
-    ["damage"] = { 25, 25, 25, 25, 30, 30, 40, 40, 50, 50 },
+    ["damage"] = { 50, 75, 100, 125, 180, 240, 400, 480, 650, 700 },
     ["radius"] = { 1.75, 1.75, 2, 2.5, 3, 3, 3.5, 3.5, 3.75, 4 },
     ["explosionDistance"] = { 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 3, 3 },
-    ["explosionCount"] = { 2, 3, 4, 5, 6, 8, 10, 12, 13, 14 }
+    ["explosionCount"] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 }
 
 local streamAttackNumeric = {

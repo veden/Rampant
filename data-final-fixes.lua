@@ -46,9 +46,7 @@ for k, unit in pairs(data.raw["unit"]) do
 
         unit.ai_settings = {
             destroy_when_commands_fail = false,
-            allow_try_return_to_spawner = true,
-            path_resolution_modifier = -5,
-            do_seperation = true
+            allow_try_return_to_spawner = true
         }
     end
 end

@@ -120,7 +120,11 @@ function aiPlanning.planning(map, evolution_factor, tick)
         local roll = mRandom()
         if (map.temperament < 0.05) then -- 0 - 0.05
             if universe.enabledMigration then
-                map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
+                if (roll < 0.7) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
+                else
+                    map.state = AI_STATE_MIGRATING
+                end
             else
                 if universe.raidAIToggle then
                     if (roll < 0.85) then
@@ -134,8 +138,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
             end
         elseif (map.temperament < 0.20) then -- 0.05 - 0.2
             if (universe.enabledMigration) then
-                if (roll < 0.4) then
-                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_MIGRATING
+                if (roll < 0.4) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
                 else
                     map.state = AI_STATE_MIGRATING
                 end
@@ -173,27 +177,29 @@ function aiPlanning.planning(map, evolution_factor, tick)
                 map.state = AI_STATE_PEACEFUL
             end
         elseif (map.temperament < 0.8) then -- 0.6 - 0.8
-            if (roll < 0.6) then
+            if (roll < 0.4) then
                 map.state = AI_STATE_AGGRESSIVE
-            elseif (roll < 0.8) then
+            elseif (roll < 0.6) then
                 map.state = AI_STATE_ONSLAUGHT
+            elseif (roll < 0.8) then
+                map.state = AI_STATE_RAIDING
             else
                 map.state = AI_STATE_PEACEFUL
             end
-        else -- 0.8 - 1
+        elseif (map.temperament < 0.95) then -- 0.8 - 0.95
             if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.15) then
-                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
-                elseif (roll < 0.6) then
-                    map.state = AI_STATE_ONSLAUGHT
-                elseif (roll < 0.8) then
+                if (roll < 0.15) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
+                elseif (roll < 0.4) then
                     map.state = AI_STATE_RAIDING
+                elseif (roll < 0.8) then
+                    map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
                 end
             elseif (universe.enabledMigration) then
-                if (roll < 0.15) then
-                    map.state = (universe.siegeAIToggle and AI_STATE_SIEGE) or AI_STATE_ONSLAUGHT
+                if (roll < 0.15) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
                 elseif (roll < 0.7) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
@@ -213,6 +219,30 @@ function aiPlanning.planning(map, evolution_factor, tick)
                 else
                     map.state = AI_STATE_AGGRESSIVE
                 end
+            end
+        else
+            if (universe.enabledMigration and universe.raidAIToggle) then
+                if (roll < 0.2) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
+                elseif (roll < 0.6) then
+                    map.state = AI_STATE_RAIDING
+                else
+                    map.state = AI_STATE_ONSLAUGHT
+                end
+            elseif (universe.enabledMigration) then
+                if (roll < 0.2) and universe.siegeAIToggle then
+                    map.state = AI_STATE_SIEGE
+                else
+                    map.state = AI_STATE_ONSLAUGHT
+                end
+            elseif (universe.raidAIToggle) then
+                if (roll < 0.4) then
+                    map.state = AI_STATE_ONSLAUGHT
+                else
+                    map.state = AI_STATE_RAIDING
+                end
+            else
+                map.state = AI_STATE_ONSLAUGHT
             end
         end
 
@@ -247,7 +277,7 @@ function aiPlanning.temperamentPlanner(map)
     local delta = 0
 
     if activeNests > 0 then
-        local val = (0.021695 * activeNests)
+        local val = (0.03 * activeNests)
         delta = delta + val
     else
         delta = delta - 0.014463

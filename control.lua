@@ -131,7 +131,7 @@ local function onIonCannonFired(event)
     --]]
     local map = universe.maps[event.surface.index]
     map.ionCannonBlasts = map.ionCannonBlasts + 1
-    map.points = map.point + 4000
+    map.points = map.points + 4000
 
     local chunk = getChunkByPosition(map, event.position)
     if (chunk ~= -1) then
@@ -1017,6 +1017,8 @@ script.on_event(defines.events.on_unit_group_finished_gathering, onGroupFinished
 
 script.on_event(defines.events.on_build_base_arrived, onBuilderArrived)
 
+-- testing
+
 remote.add_interface("rampantTests",
                      {
                          pheromoneLevels = tests.pheromoneLevels,
@@ -1051,5 +1053,3 @@ remote.add_interface("rampantTests",
                          scanChunkPaths = tests.scanChunkPaths
                      }
 )
-
--- remote.add_interface("rampant", interop)

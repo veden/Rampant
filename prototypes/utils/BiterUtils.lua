@@ -229,7 +229,7 @@ function biterFunctions.makeBiter(attributes)
         icon = "__base__/graphics/icons/small-biter.png",
         icon_size = 64,
         icon_mipmaps = 4,
-        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "not-repairable", "breaths-air"},
         max_health = attributes.health,
         order = "b-b-a",
         subgroup="enemies",
@@ -266,7 +266,7 @@ function biterFunctions.makeBiter(attributes)
         working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
         running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
-        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
+        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true }
     }
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
@@ -287,7 +287,7 @@ function biterFunctions.makeSpitter(attributes)
         icon = "__base__/graphics/icons/small-spitter.png",
         icon_size = 64,
         icon_mipmaps = 4,
-        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "breaths-air"},
+        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "not-repairable", "breaths-air"},
         max_health = attributes.health,
         order = "b-b-a",
         subgroup="enemies",
@@ -319,7 +319,7 @@ function biterFunctions.makeSpitter(attributes)
         damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
-        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true, path_resolution_modifier = -5, do_seperation = true }
+        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true }
     }
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
@@ -482,7 +482,7 @@ function biterFunctions.makeWorm(attributes)
         name = attributes.name .. "-rampant",
         icon = "__base__/graphics/icons/medium-worm.png",
         icon_size = 64, icon_mipmaps = 4,
-        flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "breaths-air"},
+        flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "not-repairable", "breaths-air"},
         order="b-b-e",
         subgroup="enemies",
         max_health = attributes.health,
@@ -582,6 +582,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
         type = "projectile",
         range = attributes.range or 0.5,
         cooldown = attributes.cooldown or 35,
+        range_mode = "bounding-box-to-bounding-box",
         ammo_category = "melee",
         ammo_type = {
             category = "biological"
@@ -1093,6 +1094,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
         {
             type = "beam",
             ammo_category = "biological",
+            range_mode = "bounding-box-to-bounding-box",
             cooldown = attributes.cooldown or 20,
             warmup = attributes.warmup,
             min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
@@ -1121,6 +1123,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
     return {
         type = "projectile",
         ammo_category = "biological",
+        range_mode = "bounding-box-to-bounding-box",
         cooldown = attributes.cooldown or 15,
         warmup = attributes.warmup,
         cooldown_deviation = 0.15,
@@ -1168,6 +1171,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
         range = attackAttributes.range or 0.5,
         cooldown = attackAttributes.cooldown or 35,
         cooldown_deviation = 0.15,
+        range_mode = "bounding-box-to-bounding-box",
         ammo_category = "melee",
         ammo_type = {
             category = "melee",
@@ -1274,7 +1278,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
         warmup = attributes.warmup or 0,
 
         damage_modifier = attributes.damageModifier or 1.0,
-
+        range_mode = "bounding-box-to-bounding-box",
         lead_target_for_projectile_speed = attributes.particleHoizontalSpeed or 0.6,
 
         projectile_creation_parameters = spitter_shoot_shiftings(attributes.scale, attributes.scale * 20),

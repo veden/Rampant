@@ -1,4 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.5
+Date: 28. 03. 2021
+  Tweaks:
+    - Increased max ai points by 24%
+    - Added chance for normal migration at minimum temperament
+    - Added raiding at medium-high temperament
+    - Increased raiding chance at high temperament
+    - Added a max temperament stage that is all raiding, onslaught, and siege
+    - Increased active nest contribution to temperament by 38%
+  Bugfixes:
+    - Fixed ion cannon event typo in points
+    - Fixed suicide biters explosions being lots of small explosions to one big explosion
+    - Fixed unit movement resolution modifer being to low to path effectively
+    - Fixed range_mode not being set on new enemies for bounding box to bounding box
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 28. 02. 2021
   Bugfixes:

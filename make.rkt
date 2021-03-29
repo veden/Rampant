@@ -2,7 +2,7 @@
 (require json)
 
 (define modFolder "/mnt/gallery/gameFiles/factorio/mods/")
-(define zipModFolder "/data/games/factorio2/mods/")
+(define serverModFolder "/home/veden/Downloads/factorio/mods/")
 (define configuration (call-with-input-file "info.json"
                         (lambda (port)
                           (string->jsexpr (port->string port)))))
@@ -14,8 +14,10 @@
   (let ((packagePath (string->path (string-append folder
                                                   packageName
                                                   ".zip"))))
-    (delete-directory/files (string->path (string-append folder
-                                                         packageName)))
+    (when (file-exists? (string->path (string-append folder
+                                                     packageName)))
+      (delete-directory/files (string->path (string-append folder
+                                                           packageName))))
     (when (file-exists? packagePath)
       (delete-file packagePath)))
   (zip (string-append folder
@@ -91,7 +93,9 @@
                                    (hash-ref configuration 'version)))
 
   (print (string-append "copying " (hash-ref configuration 'name) (hash-ref configuration 'version)))
-  (copyFiles modFolder))
+  (copyFiles modFolder)
+  ;; (copyFiles serverModFolder)
+  )
 
 (define (zipIt)
   (set! configuration (call-with-input-file "info.json"
