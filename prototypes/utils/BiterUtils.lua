@@ -846,9 +846,9 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                     source_effects =
                         {
                             {
-                                    type = "damage",
-                                    affects_target = true,
-                                    damage = {amount = attributes.healthDamage or 5, type = "explosion"}
+                                type = "damage",
+                                affects_target = true,
+                                damage = {amount = attributes.healthDamage or 5, type = "explosion"}
                             },
                             {
                                 type = "create-entity",
@@ -881,47 +881,47 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
                         }
 
                 },
-            },
-            {
-                type = "cluster",
-                cluster_count = attributes.explosionCount,
-                distance = attributes.explosionDistance,
-                distance_deviation = 3,
-                action_delivery =
-                    {
-                        type = "instant",
-                        source_effects= {
-                            {
-                                type="create-entity",
-                                entity_name = attributes.attackExplosion,
-                            },
-                            {
-                                type = "create-entity",
-                                entity_name = attributes.attackScorchmark or "small-scorchmark",
-                                check_buildability = true
-                            },
-                            {
-                                type = "nested-result",
-                                action = {
-                                    type = "area",
-                                    radius = attributes.radius,
-                                    action_delivery = {
-                                        type = "instant",
-                                        target_effects = {
-                                            {
-                                                type = "damage",
-                                                damage = {
-                                                    amount = attributes.damage,
-                                                    type = attributes.damageType or "explosion"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-            }
+            }-- ,
+            -- {
+            --     type = "cluster",
+            --     cluster_count = attributes.explosionCount,
+            --     distance = attributes.explosionDistance,
+            --     distance_deviation = 3,
+            --     action_delivery =
+            --         {
+            --             type = "instant",
+            --             source_effects= {
+            --                 {
+            --                     type="create-entity",
+            --                     entity_name = attributes.attackExplosion,
+            --                 },
+            --                 {
+            --                     type = "create-entity",
+            --                     entity_name = attributes.attackScorchmark or "small-scorchmark",
+            --                     check_buildability = true
+            --                 },
+            --                 {
+            --                     type = "nested-result",
+            --                     action = {
+            --                         type = "area",
+            --                         radius = attributes.radius,
+            --                         action_delivery = {
+            --                             type = "instant",
+            --                             target_effects = {
+            --                                 {
+            --                                     type = "damage",
+            --                                     damage = {
+            --                                         amount = attributes.damage,
+            --                                         type = attributes.damageType or "explosion"
+            --                                     }
+            --                                 }
+            --                             }
+            --                         }
+            --                     }
+            --                 }
+            --             }
+            --         }
+            -- }
 
         }
 
