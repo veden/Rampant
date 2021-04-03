@@ -550,7 +550,7 @@ if settings.startup["rampant--acidEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "acid",
         tint = {r=1, g=1, b=1, a=1},
-        tint2 = {r=0, g=0.9, b=0, a=1},
+        tint2 = {r=0.4, g=0.9, b=0.4, a=1},
         acceptRate = {1, 10, 0.1, 0.2},
         evo = 0,
         units = {
@@ -631,7 +631,7 @@ if settings.startup["rampant--laserEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "laser",
         tint = {r=0.3, g=0.3, b=0.42, a=1},
-        tint2 = {r=0, g=0.6, b=0.8, a=1},
+        tint2 = {r=0, g=1, b=1, a=1},
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.10,
         units = {
@@ -706,7 +706,7 @@ if settings.startup["rampant--fireEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fire",
         tint = {r=1, g=1, b=1, a=1},
-        tint2 = {r=0.9, g=0, b=0, a=1},
+        tint2 = {r=0.9, g=0.2, b=0.2, a=1},
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -786,8 +786,8 @@ end
 if settings.startup["rampant--infernoEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "inferno",
-        tint = {r=0.7, g=0.45, b=0.5, a=1},
-        tint2 = {r=0.9, g=0, b=0, a=1},
+        tint = {r=0.5, g=0.1, b=0.1, a=1},
+        tint2 = {r=0.9, g=0.1, b=0.1, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -845,8 +845,8 @@ end
 if settings.startup["rampant--waspEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "wasp",
-        tint = {r=0.6, g=0.9, b=0.9, a=1},
-        tint2 = {r=0.85, g=0.85, b=0, a=1},
+        tint = {r=1, g=1, b=0, a=1},
+        tint2 = {r=0, g=0, b=0, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -910,8 +910,8 @@ end
 if settings.startup["rampant--spawnerEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "spawner",
-        tint = {r=0.7, g=0, b=0.7, a=1},
-        tint2 = {r=0.8, g=0, b=0.8, a=1},
+        tint = {r=0.7, g=0.1, b=0.7, a=1},
+        tint2 = {r=1, g=0.4, b=1, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -982,8 +982,8 @@ end
 if settings.startup["rampant--electricEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "electric",
-        tint = {r=0.7, g=0.7, b=1.0, a=1.0},
-        tint2 = {r=0, g=0, b=1, a=1},
+        tint = {r=0.7, g=0.7, b=1.0, a=1},
+        tint2 = {r=0.2, g=0.2, b=1, a=1},
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.1,
         units = {
@@ -1101,7 +1101,7 @@ if settings.startup["rampant--trollEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "troll",
         tint = {r=0.4, g=0.4, b=0.4, a=1},
-        tint2 = {r=0.6, g=0.6, b=0.6, a=1},
+        tint2 = {r=1, g=0.2, b=0.2, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.17,
         units = {
@@ -1224,7 +1224,7 @@ if settings.startup["rampant--suicideEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "suicide",
         tint = {r=0.8, g=0.8, b=0.8, a=1},
-        tint2 = {r=0.95, g=0.95, b=0, a=1},
+        tint2 = {r=1, g=0.5, b=0, a=1},
         acceptRate = {2, 10, 0.05, 0.15},
         evo = 0.35,
         units = {
@@ -1282,8 +1282,8 @@ end
 if settings.startup["rampant--nuclearEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
-        tint = {r=0.6, g=0.6, b=0.4, a=1},
-        tint2 = {r=0.95, g=0.95, b=0, a=1},
+        tint = {r=0.1, g=0.95, b=0.1, a=1},
+        tint2 = {r=1, g=0.5, b=0, a=1},
         acceptRate = {4, 10, 0.1, 0.125},
         evo = 0.45,
         units = {
@@ -1340,8 +1340,8 @@ end
 if settings.startup["rampant--energyThiefEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "energy-thief",
-        tint = {r=0.4, g=0.5, b=0.7, a=1},
-        tint2 = {r=0, g=0, b=0.7, a=1},
+        tint = {r=0.2, g=0.2, b=0.4, a=1},
+        tint2 = {r=0.1, g=0.1, b=0.1, a=1},
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -1398,8 +1398,8 @@ end
 if settings.startup["rampant--fastEnemy"].value then
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fast",
-        tint = {r=0.26, g=0.66, b=0.62, a=1},
-        tint2 = {r=0, g=0.85, b=0.80, a=1},
+        tint = {r=0.9, g=0.9, b=0.9, a=1},
+        tint2 = {r=1, g=1, b=0.1, a=1},
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {

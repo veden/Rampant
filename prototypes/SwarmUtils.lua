@@ -529,13 +529,17 @@ local function fillEntityTemplate(entity)
                 elseif (attribute == "lowestHealth") then
                     entity["health"] = entity["health"] * 0.50
                 elseif (attribute == "quickCooldown") then
-                    entity["cooldown"] = entity["cooldown"] * 0.85
+                    entity["cooldown"] = entity["cooldown"] * 0.50
+                    entity["damage"] = entity["damage"] * 0.65
+                    if entity["damagePerTick"] then
+                        entity["damagePerTick"] = entity["damagePerTick"] * 0.65
+                    end
                 elseif (attribute == "slowMovement") then
                     entity["movement"] = entity["movement"] * 0.35
                     entity["distancePerFrame"] = entity["distancePerFrame"] * 0.65
                 elseif (attribute == "quickMovement") then
-                    entity["movement"] = entity["movement"] * 1.05
-                    entity["distancePerFrame"] = entity["distancePerFrame"] * 1.15
+                    entity["movement"] = entity["movement"] * 1.25
+                    entity["distancePerFrame"] = entity["distancePerFrame"] * 1.35
                 elseif (attribute == "quickSpawning") then
                     if entity["spawningCooldownStart"] then
                         entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * 0.85
