@@ -63,8 +63,8 @@ end
 
 function generateLocal()
     --    local names = {"Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
-    local names = {"Neutral", "Acid", "Physical", "Electric", "Suicide", "Nuclear", "Fire", "Inferno", "Troll", "Fast", "Laser", "Wasp", "Spawner", "Energy Thief", "Poison", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
-    local sizes = {"Larva", "Pupae", "Worker", "Grunt", "Soldier", "General", "Overlord", "Titan", "Leviathan", "Juggernaut"}
+    local names = {"Common", "Acidic", "Brutal", "Electric", "Suicide", "Nuclear", "Fire", "Inferno", "Regenerative", "Fast", "Laser", "Wasp", "Spawner", "Sapper", "Poison", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"}
+    local sizes = {"Larva", "Pupae", "Worker", "Grunt", "Soldier", "Elite", "Champion", "Overlord", "Titan", "Leviathan"}
 
 
     local HIVE_BUILDINGS_TYPES = {
@@ -192,6 +192,7 @@ function generateLocal()
             print("fire-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
             print("fire-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
             print("fire-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
+            print("fire-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
             print("fire-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
             print("fire-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
         end

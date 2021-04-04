@@ -69,6 +69,19 @@ local makeUnitSpawner = biterUtils.makeUnitSpawner
 
 -- module code
 
+local scorchmarkTiers = {
+    "small-scorchmark",
+    "small-scorchmark",
+    "medium-scorchmark",
+    "medium-scorchmark",
+    "medium-scorchmark",
+    "big-scorchmark",
+    "big-scorchmark",
+    "big-scorchmark",
+    "huge-scorchmark",
+    "huge-scorchmark"
+}
+
 local explosionTiers = {
     "explosion",
     "explosion",
@@ -104,7 +117,7 @@ local nuclearAttackNumeric = {
 }
 
 local bombAttackNumeric = {
-    ["damage"] = { 50, 75, 100, 125, 180, 240, 400, 480, 650, 700 },
+    ["damage"] = { 75, 112, 150, 187, 270, 360, 600, 720, 975, 1050 },
     ["radius"] = { 1.75, 1.75, 2, 2.5, 3, 3, 3.5, 3.5, 3.75, 4 },
     ["explosionDistance"] = { 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 3, 3 },
     ["explosionCount"] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
@@ -521,6 +534,7 @@ local function fillEntityTemplate(entity)
             end
         elseif (key == "explosionTiers") then
             entity.attackExplosion = entity.explosionTiers[tier]
+            entity.attackScorchmark = entity.scorchmarkTiers[tier]
         elseif (key == "attributes") then
             for i=1,#entity[key] do
                 local attribute = entity[key][i]
@@ -920,6 +934,7 @@ local function buildAttack(faction, template)
             end
         elseif (attack == "physical") then
             template.explosionTiers = explosionTiers
+            template.scorchmarkTiers = scorchmarkTiers            
             template.damageType = "physical"
             template.fireDamagePerTickType = "physical"
             template.stickerDamagePerTickType = "physical"
@@ -927,7 +942,7 @@ local function buildAttack(faction, template)
                 return {
                     {
                         type= "create-entity",
-                        entity_name = "small-scorchmark"
+                        entity_name = attributes.attackScorchmark
                     },
                     {
                         type= "create-entity",
@@ -1047,6 +1062,7 @@ local function buildAttack(faction, template)
         elseif (attack == "nuclear") then
             template.addon[#template.addon+1] = nuclearAttackNumeric
             template.explosionTiers = explosionTiers
+            template.scorchmarkTiers = scorchmarkTiers            
             template.nuclear = true
             template.attackGenerator = function (attack)
                 return createSuicideAttack(attack,
@@ -1058,6 +1074,7 @@ local function buildAttack(faction, template)
         elseif (attack == "bomb") then
             template.addon[#template.addon+1] = bombAttackNumeric
             template.explosionTiers = explosionTiers
+            template.scorchmarkTiers = scorchmarkTiers
             template.attackGenerator = function (attack)
                 return createSuicideAttack(attack,
                                            nil,

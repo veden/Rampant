@@ -57,7 +57,7 @@ function poison.addFactionAddon()
                                                     target_effects =
                                                         {
                                                             type = "damage",
-                                                            damage = { amount = 1.2 * i, type = "poison"}
+                                                            damage = { amount = 0.9 * i, type = "poison"}
                                                         }
                                                 }
                                         }

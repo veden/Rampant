@@ -1,4 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.7
+Date: 03. 04. 2021
+  Contributions:
+    - Metallumere has added more distinct colors for each faction.
+    - Metallumere has changed the names of sizes and some faction names to more common terms
+    - Metallumere has increased attack speed of fast faction while keeping total DPS the same
+    - Metallumere has increased movement speed of fast, nuclear, and suicide factions
+  Tweaks:
+    - Decreased Poison faction cloud damage by 25%
+    - Increased suicide biters damage by 50%
+    - Added scorchmark scaling to new enemies
+  Bugfixes:
+    - Fixed nocturnal biters mod setting description. As vanilla attacks have been integrated
+    - Fixed missing locale for fire spitter acid pool
+    - Fixed tooltip for suicide and nuclear biters 
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.6
 Date: 28. 03. 2021
   Tweaks:
