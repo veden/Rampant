@@ -52,15 +52,15 @@ function movementUtils.addMovementPenalty(squad, chunk)
     for i=1,penaltyCount do
         local penalty = penalties[i]
         if (penalty.c == chunk) then
-            penalty.v = ((penaltyCount > 1) and penalty.v + 1) or penalty.v
+            penalty.v = penalty.v + 1
             if (penalty.v > 2) then
                 squad.kamikaze = true
             end
             return
         end
     end
-    if (penaltyCount == 7) then
-        tableRemove(penalties, 7)
+    if (penaltyCount == 10) then
+        tableRemove(penalties, 10)
     end
     tableInsert(penalties,
                 1,

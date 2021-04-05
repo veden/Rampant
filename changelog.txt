@@ -10,10 +10,14 @@ Date: 03. 04. 2021
     - Decreased Poison faction cloud damage by 25%
     - Increased suicide biters damage by 50%
     - Added scorchmark scaling to new enemies
+    - Increased squad used chunks that are tracked by 30%
+    - Reduced movement penalty on chunks added by squad movement by 50%
   Bugfixes:
     - Fixed nocturnal biters mod setting description. As vanilla attacks have been integrated
     - Fixed missing locale for fire spitter acid pool
-    - Fixed tooltip for suicide and nuclear biters 
+    - Fixed tooltip for suicide and nuclear biters
+    - Fixed removing a faction mid play-through caused a crash
+    - Fixed squads not getting commands processed every ticks
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.6

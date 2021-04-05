@@ -957,7 +957,6 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 3) then
                         processStaticMap(map)
                         disperseVictoryScent(map)
-                        cleanSquads(map)
                         processVengence(map)
                     elseif (pick == 4) then
                         scanResourceMap(map, tick)
@@ -971,6 +970,7 @@ script.on_event(defines.events.on_tick,
                     end
 
                     processActiveNests(map, tick)
+                    cleanSquads(map)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
 end)

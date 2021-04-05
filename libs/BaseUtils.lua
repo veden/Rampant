@@ -598,17 +598,21 @@ function baseUtils.rebuildNativeTables(universe, rg)
         end
     end
 
-    -- local evoIndex = evoToTier(universe, universe.evolutionLevel)
+    local evoIndex = evoToTier(universe, universe.evolutionLevel)
 
-    -- for _,base in pairs(universe.bases) do
-    --     for x=1,#base.alignment do
-    --         local alignment = base.alignment[x]
-    --         if not universe.buildingEvolveLookup[alignment] then
-    --             base.alignment = findBaseInitialAlignment(universe, evoIndex)
-    --             break
-    --         end
-    --     end
-    -- end
+    if universe.maps then
+        for _,map in pairs(universe.maps) do
+            for _,base in pairs(map.bases) do
+                for x=1,#base.alignment do
+                    local alignment = base.alignment[x]
+                    if not universe.buildingEvolveLookup[alignment] then
+                        base.alignment = findBaseInitialAlignment(universe, evoIndex)
+                        break
+                    end
+                end
+            end
+        end
+    end
 end
 
 baseUtilsG = baseUtils

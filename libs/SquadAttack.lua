@@ -18,6 +18,7 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
 local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
+local FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
 local SQUAD_BUILDING = constants.SQUAD_BUILDING
 
@@ -117,7 +118,7 @@ local function settleMove(map, squad)
     elseif squad.kamikaze then
         scoreFunction = scoreResourceLocationKamikaze
     end
-    addDeathGenerator(map, chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+    addDeathGenerator(map, chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
     addMovementPenalty(squad, chunk)
     local distance = euclideanDistancePoints(groupPosition.x,
@@ -179,9 +180,9 @@ local function settleMove(map, squad)
                 targetPosition.x = position.x
                 targetPosition.y = position.y
                 if nextAttackChunk then
-                    addDeathGenerator(map, nextAttackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 else
-                    addDeathGenerator(map, attackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
                 cmd = universe.wonderCommand
@@ -243,7 +244,7 @@ local function attackMove(map, squad)
         attackScorer = scoreAttackKamikazeLocation
     end
     local squadChunk = squad.chunk
-    addDeathGenerator(map, squadChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+    addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     addSquadToChunk(map, chunk, squad)
     addMovementPenalty(squad, chunk)
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
@@ -275,9 +276,9 @@ local function attackMove(map, squad)
         targetPosition.x = position.x
         targetPosition.y = position.y
         if nextAttackChunk then
-            addDeathGenerator(map, nextAttackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         else
-            addDeathGenerator(map, attackChunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         end
     end
 
@@ -332,7 +333,7 @@ function squadAttack.cleanSquads(map)
     else
         local group = squad.group
         if not group.valid then
-            addDeathGenerator(map, squad.chunk, TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             removeSquadFromChunk(map, squad)
             if (map.regroupIterator == k) then
                 map.regroupIterator = nil
