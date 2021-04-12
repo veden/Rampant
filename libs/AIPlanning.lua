@@ -95,8 +95,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = mFloor((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.028702) +
-        (((AI_POINT_GENERATOR_AMOUNT * 0.080367) * (evolution_factor ^ 2.5)) * universe.aiPointsScaler))
+    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.028702) +
+        (((AI_POINT_GENERATOR_AMOUNT * 0.080367) * mMax(evolution_factor ^ 2.5, 0.1)) * universe.aiPointsScaler))
 
     if (map.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
@@ -368,14 +368,14 @@ function aiPlanning.temperamentPlanner(map)
     -- map.ionCannonBlasts = 0
     -- map.artilleryBlasts = 0
 
-    -- if game.tick % 240 == 0 then
-    --     print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
-    --           map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
-    --           map.ionCannonBlasts, map.artilleryBlasts)
+    if game.tick % 240 == 0 then
+        print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
+              map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
+              map.ionCannonBlasts, map.artilleryBlasts)
 
-    --     print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
-    --     print("--")
-    -- end
+        print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
+        print("--")
+    end
 end
 
 aiPlanningG = aiPlanning
