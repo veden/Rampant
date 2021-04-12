@@ -368,14 +368,14 @@ function aiPlanning.temperamentPlanner(map)
     -- map.ionCannonBlasts = 0
     -- map.artilleryBlasts = 0
 
-    if game.tick % 240 == 0 then
-        print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
-              map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
-              map.ionCannonBlasts, map.artilleryBlasts)
+    -- if game.tick % 240 == 0 then
+    --     print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
+    --           map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
+    --           map.ionCannonBlasts, map.artilleryBlasts)
 
-        print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
-        print("--")
-    end
+    --     print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
+    --     print("--")
+    -- end
 end
 
 aiPlanningG = aiPlanning
