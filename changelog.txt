@@ -12,8 +12,8 @@ Date: 03. 04. 2021
     - Added scorchmark scaling to new enemies
     - Increased squad used chunks that are tracked by 30%
     - Reduced movement penalty on chunks added by squad movement by 50%
-    - Halved AI points gained per tick
     - Increased minimum AI points allow for one settler group
+    - Reworked AI point gain
   Bugfixes:
     - Fixed nocturnal biters mod setting description. As vanilla attacks have been integrated
     - Fixed missing locale for fire spitter acid pool
@@ -21,6 +21,7 @@ Date: 03. 04. 2021
     - Fixed removing a faction mid play-through caused a crash
     - Fixed squads not getting commands processed every ticks
     - Fixed AI not gaining points at low levels of evolution
+    - Fixed temperament not starting at 0.5
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.6

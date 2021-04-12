@@ -348,7 +348,7 @@ local function prepMap(surface)
     map.ionCannonBlasts = 0
     map.artilleryBlasts = 0
 
-    map.temperament = 0
+    map.temperament = 0.5
     map.temperamentScore = 0
     map.stateTick = 0
 

@@ -95,8 +95,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.028702) +
-        (((AI_POINT_GENERATOR_AMOUNT * 0.080367) * mMax(evolution_factor ^ 2.5, 0.1)) * universe.aiPointsScaler))
+    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.001) +
+        (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1))) * universe.aiPointsScaler
 
     if (map.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
