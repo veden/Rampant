@@ -370,8 +370,9 @@ function upgrade.attempt(universe)
         universe.settlerWaveSize = 0
 
         universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
-        universe.peacefulAIToggle = not universe.enabledMigration or settings.global["rampant--peacefulAIToggle"].value
+        universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
         universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
+        universe.debugTemperament = settings.global["rampant--debugTemperament"].value
 
         universe.enemyAlignmentLookup = {}
 
@@ -397,7 +398,7 @@ function upgrade.attempt(universe)
 
         addCommandSet(universe)
 
-        game.print("Rampant - Version 1.0.3")
+        game.print("Rampant - Version 1.0.8")
     end
 
     return (starting ~= global.version) and global.version

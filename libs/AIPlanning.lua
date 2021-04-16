@@ -71,7 +71,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
                                                     RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
                                                     RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
     universe.rallyThreshold = BASE_RALLY_CHANCE + (evolution_factor * BONUS_RALLY_CHANCE)
-    universe.formSquadThreshold = mMax((0.20 * evolution_factor), 0.05)
+    universe.formSquadThreshold = mMax((0.35 * evolution_factor), 0.1)
 
     universe.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
     universe.attackWaveDeviation = (universe.attackWaveSize * 0.333)
@@ -115,8 +115,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
     end
 
     if (map.stateTick <= tick) then
-        -- local roll = mRandom() * mMax(1 - evolution_factor, 0.15) * map.aiAggressiveness
-
         local roll = mRandom()
         if (map.temperament < 0.05) then -- 0 - 0.05
             if universe.enabledMigration then
@@ -160,21 +158,31 @@ function aiPlanning.planning(map, evolution_factor, tick)
                     map.state = AI_STATE_AGGRESSIVE
                 elseif (roll < 0.8) then
                     map.state = AI_STATE_MIGRATING
-                else
+                elseif universe.peacefulAIToggle then
                     map.state = AI_STATE_PEACEFUL
+                else
+                    map.state = AI_STATE_MIGRATING
                 end
             else
                 if (roll < 0.6) then
                     map.state = AI_STATE_AGGRESSIVE
-                else
+                elseif universe.peacefulAIToggle then
                     map.state = AI_STATE_PEACEFUL
+                else
+                    map.state = AI_STATE_AGGRESSIVE
                 end
             end
         elseif (map.temperament < 0.6) then -- 0.4 - 0.6
             if (roll < 0.4) then
                 map.state = AI_STATE_AGGRESSIVE
-            else
+            elseif universe.peacefulAIToggle then
                 map.state = AI_STATE_PEACEFUL
+            else
+                if universe.enabledMigration then
+                    map.state = AI_STATE_MIGRATING
+                else
+                    map.state = AI_STATE_AGGRESSIVE
+                end
             end
         elseif (map.temperament < 0.8) then -- 0.6 - 0.8
             if (roll < 0.4) then
@@ -183,8 +191,10 @@ function aiPlanning.planning(map, evolution_factor, tick)
                 map.state = AI_STATE_ONSLAUGHT
             elseif (roll < 0.8) then
                 map.state = AI_STATE_RAIDING
-            else
+            elseif universe.peacefulAIToggle then
                 map.state = AI_STATE_PEACEFUL
+            else
+                map.state = AI_STATE_AGGRESSIVE
             end
         elseif (map.temperament < 0.95) then -- 0.8 - 0.95
             if (universe.enabledMigration and universe.raidAIToggle) then
@@ -246,8 +256,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
             end
         end
 
-        -- print("changing state", map.state)
-
         map.destroyPlayerBuildings = 0
         map.lostEnemyUnits = 0
         map.lostEnemyBuilding = 0
@@ -255,20 +263,12 @@ function aiPlanning.planning(map, evolution_factor, tick)
         map.builtEnemyBuilding = 0
         map.ionCannonBlasts = 0
         map.artilleryBlasts = 0
-        
-        if map.state == AI_STATE_PEACEFUL and (not universe.peacefulAIToggle) then
-            if universe.printAIStateChanges then
-                game.print("Forcing AI_STATE_PEACEFUL to AI_STATE_MIGRATING")
-            end
-            map.state = AI_STATE_MIGRATING
-        end
 
         map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
 
         if universe.printAIStateChanges then
-            game.print(map.surface.name .. ": AI state is now: " .. map.state .. " " .. constants.stateEnglish[map.state] .. " Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
+            game.print(map.surface.name .. ": AI state is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
         end
-        
     end
 
 end
@@ -368,26 +368,22 @@ function aiPlanning.temperamentPlanner(map)
         delta = delta + val
     end
 
-    delta = delta * map.universe.temperamentRateModifier
+    local universe = map.universe
+
+    delta = delta * universe.temperamentRateModifier
     map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
     map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 
-    -- map.destroyPlayerBuildings = 0
-    -- map.lostEnemyUnits = 0
-    -- map.lostEnemyBuilding = 0
-    -- map.rocketLaunched = 0
-    -- map.builtEnemyBuilding = 0
-    -- map.ionCannonBlasts = 0
-    -- map.artilleryBlasts = 0
-
-    -- if game.tick % 240 == 0 then
-    --     print("temperament", map.activeNests, map.activeRaidNests, map.destroyPlayerBuildings,
-    --           map.lostEnemyUnits, map.lostEnemyBuilding, map.rocketLaunched, map.builtEnemyBuilding,
-    --           map.ionCannonBlasts, map.artilleryBlasts)
-
-    --     print("tempResult", map.temperament, map.temperamentScore, map.points, map.state, map.surface.index)
-    --     print("--")
-    -- end
+    if universe.debugTemperament then
+        if game.tick % 240 == 0 then
+            game.print("Rampant Stats:")
+            game.print("aN:" .. map.activeNests .. ", aRN:" .. map.activeRaidNests .. ", dPB:" .. map.destroyPlayerBuildings ..
+                       ", lEU:" .. map.lostEnemyUnits .. ", lEB:" .. map.lostEnemyBuilding .. ", rL:" .. map.rocketLaunched .. ", bEB:" .. map.builtEnemyBuilding ..
+                       ", iCB:" .. map.ionCannonBlasts .. ", aB:" .. map.artilleryBlasts)
+            game.print("temp: " .. map.temperament .. ", tempScore:" .. map.temperamentScore .. ", points:" .. map.points .. ", state:" .. constants.stateEnglish[map.state] .. ", surface:" .. map.surface.index)
+            game.print("aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount .. ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize .. ", formGroup:" .. universe.formSquadThreshold)
+        end
+    end
 end
 
 aiPlanningG = aiPlanning

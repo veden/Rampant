@@ -98,19 +98,19 @@ function generateLocal()
 
     for t = 1, 10 do
         for i=1,#HIVE_BUILDINGS_TYPES do
-            print("entity-proxy-" .. HIVE_BUILDINGS_TYPES[i] .. "-t" .. t .. "-rampant=" .. HIVE_BUILDINGS_NAMES[i] .. ": " .. sizes[t] .. " class")
+            print("entity-proxy-" .. HIVE_BUILDINGS_TYPES[i] .. "-t" .. t .. "-rampant=" .. HIVE_BUILDINGS_NAMES[i] .. ": " .. "t" .. t .. " " .. sizes[t] .. " class")
         end
 
         local size = sizes[t]
         for v = 1, 20 do
-            print("neutral-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("neutral-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("neutral-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("neutral-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("neutral-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("neutral-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("neutral-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("neutral-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("neutral-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("neutral-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -120,15 +120,15 @@ function generateLocal()
         local size = sizes[t]
 
         for v = 1, 20 do
-            print("acid-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("acid-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("acid-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("acid-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("acid-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("acid-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("acid-biter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("acid-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("acid-biter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -137,10 +137,10 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("physical-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("physical-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("physical-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("physical-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("physical-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("physical-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("physical-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("physical-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -149,10 +149,10 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("electric-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("electric-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("electric-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("electric-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("electric-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("electric-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("electric-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("electric-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -161,11 +161,11 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("suicide-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("suicide-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("suicide-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("suicide-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("suicide-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("suicide-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("suicide-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("suicide-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("suicide-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("suicide-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -174,11 +174,11 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("nuclear-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("nuclear-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("nuclear-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("nuclear-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("nuclear-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("nuclear-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("nuclear-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("nuclear-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("nuclear-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("nuclear-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -187,14 +187,14 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("fire-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("fire-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("fire-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("fire-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("fire-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("fire-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("fire-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("fire-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("fire-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("fire-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -203,10 +203,10 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("inferno-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("inferno-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("inferno-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("inferno-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("inferno-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("inferno-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("inferno-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("inferno-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -215,12 +215,12 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("troll-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("troll-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("troll-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("troll-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("troll-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("troll-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("troll-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("troll-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("troll-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("troll-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("troll-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("troll-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -229,14 +229,14 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("fast-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("fast-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("fast-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("fast-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("fast-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("fast-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("fast-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("fast-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
+            print("fast-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("fast-worm-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -245,12 +245,12 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("laser-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("laser-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("laser-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("laser-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("laser-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("laser-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("laser-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("laser-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("laser-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("laser-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("laser-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("laser-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -259,14 +259,14 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("wasp-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("wasp-wasp-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. ": " .. size .. " class")
-            print("wasp-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("wasp-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("wasp-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("wasp-worm-drone-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. ": " .. size .. " class")
-            print("wasp-wasp-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("wasp-worm-wasp-v" .. v .. "-t" .. t .. "-drone-rampant=Wasp: " .. size .. " class")
+            print("wasp-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-wasp-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. ": " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-worm-drone-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. ": " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-wasp-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("wasp-worm-wasp-v" .. v .. "-t" .. t .. "-drone-rampant=Wasp: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -275,17 +275,17 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("spawner-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("spawner-drone-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " eggs: " .. size .. " class")
-            print("spawner-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. size .. " class")
-            print("spawner-worm-egg-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " eggs: " .. size .. " class")
-            print("spawner-worm-egg-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("spawner-spawn-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("spawner-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. size .. " class")
-            print("spawner-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
-            print("spawner-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("spawner-egg-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. size .. " class")
-            print("spawner-egg-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " egg: " .. size .. " class")
+            print("spawner-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-drone-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " eggs: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-spitter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-worm-egg-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " eggs: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-worm-egg-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-spawn-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " spitter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-spitter-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-egg-v" .. v .. "-t" .. t .. "-acid-fire-rampant=Acid pool: " .. "t" .. t .. " " .. size .. " class")
+            print("spawner-egg-v" .. v .. "-t" .. t .. "-drone-rampant=" .. name .. " egg: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -294,10 +294,10 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("energy-thief-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("energy-thief-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("energy-thief-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("energy-thief-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("energy-thief-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("energy-thief-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("energy-thief-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 
@@ -306,10 +306,10 @@ function generateLocal()
     for t = 1, 10 do
         local size = sizes[t]
         for v = 1, 20 do
-            print("poison-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. size .. " class")
-            print("poison-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. size .. " class")
-            print("poison-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. size .. " class")
-            print("poison-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. size .. " class")
+            print("poison-hive-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " hive: " .. "t" .. t .. " " .. size .. " class")
+            print("poison-biter-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter: " .. "t" .. t .. " " .. size .. " class")
+            print("poison-biter-spawner-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " biter nest: " .. "t" .. t .. " " .. size .. " class")
+            print("poison-worm-v" .. v .. "-t" .. t .. "-rampant=" .. name .. " worm: " .. "t" .. t .. " " .. size .. " class")
         end
     end
 

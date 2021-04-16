@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.8
+Date: 16. 04. 2021
+  Contributions:
+    - Dagathor has added a mod settings option for disabled the peaceful AI states of Rampant
+    - Dagathor has added a mod settings option for displaying the Rampant state information on state change
+    - Astorin has provided a corrected RU locale
+  Improvements:
+    - Added a debug map setting for AI temperament
+  Tweaks:
+    - Increased form group chance minimum by 100% and maximum by 75%
+    - Changed nest processing for siege state to work across all spawners not just active nests
+  Bugfixes:
+    - Fixed temperament not starting at 0.5
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.7
 Date: 03. 04. 2021
   Contributions:

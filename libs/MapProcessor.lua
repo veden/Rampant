@@ -236,7 +236,7 @@ function mapProcessor.processPlayers(players, map, tick)
                 local vengence = allowingAttacks and
                     (map.points >= AI_VENGENCE_SQUAD_COST) and
                     ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
+                        (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
 
                 for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                     for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -523,29 +523,38 @@ end
 function mapProcessor.processSpawners(map, tick)
 
     if (map.state ~= AI_STATE_PEACEFUL) then
-        if (map.state == AI_STATE_MIGRATING) or
-            ((map.state == AI_STATE_SIEGE) and map.temperament <= 0.5)
-        then
+        if (map.state == AI_STATE_MIGRATING) then
             processSpawners(map,
                             tick,
                             "processMigrationIterator",
                             map.chunkToNests)
+        elseif (map.state == AI_STATE_AGGRESSIVE) then
+            processSpawners(map,
+                            tick,
+                            "processActiveSpawnerIterator",
+                            map.chunkToActiveNest)
+        elseif (map.state == AI_STATE_SIEGE) then
+            processSpawners(map,
+                            tick,
+                            "processMigrationIterator",
+                            map.chunkToNests)
+            processSpawners(map,
+                            tick,
+                            "processActiveSpawnerIterator",
+                            map.chunkToActiveNest)
+            processSpawners(map,
+                            tick,
+                            "processActiveRaidSpawnerIterator",
+                            map.chunkToActiveRaidNest)
         else
-            if (map.state ~= AI_STATE_AGGRESSIVE) then
-                processSpawners(map,
-                                tick,
-                                "processActiveSpawnerIterator",
-                                map.chunkToActiveNest)
-                processSpawners(map,
-                                tick,
-                                "processActiveRaidSpawnerIterator",
-                                map.chunkToActiveRaidNest)
-            else
-                processSpawners(map,
-                                tick,
-                                "processActiveSpawnerIterator",
-                                map.chunkToActiveNest)
-            end
+            processSpawners(map,
+                            tick,
+                            "processActiveSpawnerIterator",
+                            map.chunkToActiveNest)
+            processSpawners(map,
+                            tick,
+                            "processActiveRaidSpawnerIterator",
+                            map.chunkToActiveRaidNest)
         end
     end
 end
