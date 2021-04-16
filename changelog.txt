@@ -9,9 +9,8 @@ Date: 16. 04. 2021
     - Added a debug map setting for AI temperament
   Tweaks:
     - Increased form group chance minimum by 100% and maximum by 75%
-    - Changed nest processing for siege state to work across all spawners not just active nests
   Bugfixes:
-    - Fixed temperament not starting at 0.5
+    - Changed nest processing for siege state to work across all spawners not just active nests
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.7
