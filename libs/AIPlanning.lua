@@ -266,7 +266,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
         map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
 
         if universe.printAIStateChanges then
-            game.print("AI state is now: " .. map.state .. " " .. constants.stateEnglish[map.state] .. " Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
+            game.print(map.surface.name .. ": AI state is now: " .. map.state .. " " .. constants.stateEnglish[map.state] .. " Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
         end
         
     end
