@@ -255,8 +255,20 @@ function aiPlanning.planning(map, evolution_factor, tick)
         map.builtEnemyBuilding = 0
         map.ionCannonBlasts = 0
         map.artilleryBlasts = 0
+        
+        if map.state == AI_STATE_PEACEFUL and (not universe.peacefulAIToggle) then
+            if universe.printAIStateChanges then
+                game.print("Forcing AI_STATE_PEACEFUL to AI_STATE_MIGRATING")
+            end
+            map.state = AI_STATE_MIGRATING
+        end
 
         map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+
+        if universe.printAIStateChanges then
+            game.print("AI state is now: " .. map.state .. " " .. constants.stateEnglish[map.state] .. " Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
+        end
+        
     end
 
 end

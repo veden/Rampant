@@ -450,7 +450,25 @@ data:extend({
             order = "m[total]-c[ai]",
             per_user = false
         },
-
+        
+        {
+            type = "bool-setting",
+            name = "rampant--peacefulAIToggle",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "m[total]-c[ai]",
+            per_user = false
+        },
+        
+        {
+            type = "bool-setting",
+            name = "rampant--printAIStateChanges",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-c[ai]z",
+            per_user = false
+        },
+        
         {
             type = "bool-setting",
             name = "rampant--permanentNocturnal",

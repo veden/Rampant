@@ -233,6 +233,8 @@ local function onModSettingsChange(event)
                          settings.global["rampant--aiPointsScaler"].value)
 
     universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
+    universe.peacefulAIToggle = not universe.enabledMigration or settings.global["rampant--peacefulAIToggle"].value
+    universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
 
     upgrade.compareTable(universe,
                          "AI_MAX_SQUAD_COUNT",

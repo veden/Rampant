@@ -144,6 +144,14 @@ constants.AI_STATE_MIGRATING = 5
 constants.AI_STATE_SIEGE = 6
 constants.AI_STATE_ONSLAUGHT = 7
 
+constants.stateEnglish = {}
+constants.stateEnglish[constants.AI_STATE_PEACEFUL] = "AI_STATE_PEACEFUL"
+constants.stateEnglish[constants.AI_STATE_AGGRESSIVE] = "AI_STATE_AGGRESSIVE"
+constants.stateEnglish[constants.AI_STATE_RAIDING] = "AI_STATE_RAIDING"
+constants.stateEnglish[constants.AI_STATE_MIGRATING] = "AI_STATE_MIGRATING"
+constants.stateEnglish[constants.AI_STATE_SIEGE] = "AI_STATE_SIEGE"
+constants.stateEnglish[constants.AI_STATE_ONSLAUGHT] = "AI_STATE_ONSLAUGHT"
+
 constants.BASE_AI_STATE_DORMANT = 0
 constants.BASE_AI_STATE_ACTIVE = 1
 constants.BASE_AI_STATE_OVERDRIVE = 2
