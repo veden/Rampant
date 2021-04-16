@@ -2,8 +2,9 @@
 Version: 1.0.8
 Date: 16. 04. 2021
   Contributions:
-    - Dagathor has added a mod settings option for disabled the peaceful AI states of Rampant
-    - Dagathor has added a mod settings option for displaying the Rampant state information on state change
+    - Dagothur has added a mod settings option for disabled the peaceful AI states of Rampant
+    - Dagothur has added a mod settings option for displaying the Rampant state information on state change
+    - Dagothur has added a tier level to new enemies names
     - Astorin has provided a corrected RU locale
   Improvements:
     - Added a debug map setting for AI temperament
