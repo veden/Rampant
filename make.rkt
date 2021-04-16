@@ -13,13 +13,15 @@
 (define (makeZip folder)
   (let ((packagePath (string->path (string-append folder
                                                   packageName
-                                                  ".zip"))))
-    (when (file-exists? (string->path (string-append folder
-                                                     packageName)))
-      (delete-directory/files (string->path (string-append folder
-                                                           packageName))))
+                                                  ".zip")))
+        (unzippedPath (string->path (string-append folder
+                                                   packageName))))
+    
+    (delete-directory/files unzippedPath)
+    
     (when (file-exists? packagePath)
       (delete-file packagePath)))
+
   (zip (string-append folder
                       packageName
                       ".zip")
@@ -76,7 +78,7 @@
     (copyFile "changelog.txt" modFolder)
     (copyFile "Upgrade.lua" modFolder)
     (copyFile "tests.lua" modFolder)
-    (copyFile "thumbnail.png" modFolder)      
+    (copyFile "thumbnail.png" modFolder)
     (copyDirectory "libs" modFolder)
     (copyDirectory "locale" modFolder)
     (copyDirectory "migrations" modFolder)
