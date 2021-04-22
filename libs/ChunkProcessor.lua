@@ -135,25 +135,23 @@ function chunkProcessor.processScanChunks(map)
 
     local chunkToPassScan = map.chunkToPassScan
 
-    for chunk,_ in pairs(chunkToPassScan) do
-        local x = chunk.x
-        local y = chunk.y
+    for preScanChunk in pairs(chunkToPassScan) do
+        local x = preScanChunk.x
+        local y = preScanChunk.y
 
         topOffset[1] = x
         topOffset[2] = y
         bottomOffset[1] = x + CHUNK_SIZE
         bottomOffset[2] = y + CHUNK_SIZE
 
-        chunk = chunkPassScan(chunk, map)
-
-        if (chunk == -1) then
+        if (chunkPassScan(preScanChunk, map) == -1) then
             map[x][y] = nil
 
             chunkCount = chunkCount + 1
-            removals[chunkCount] = chunk
+            removals[chunkCount] = preScanChunk
         end
 
-        chunkToPassScan[chunk] = nil
+        chunkToPassScan[preScanChunk] = nil
     end
 
     if (chunkCount > 0) then
