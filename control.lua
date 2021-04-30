@@ -132,7 +132,10 @@ local function onIonCannonFired(event)
     local map = universe.maps[event.surface.index]
     map.ionCannonBlasts = map.ionCannonBlasts + 1
     map.points = map.points + 4000
-
+    if universe.aiPointsPrintGainsToChat then
+        game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " .. string.format("%.2f", map.points))      
+    end
+    
     local chunk = getChunkByPosition(map, event.position)
     if (chunk ~= -1) then
         rallyUnits(chunk, map, event.tick)
@@ -164,6 +167,8 @@ local function onModSettingsChange(event)
     if not isRampantSetting(event.setting) then
         return
     end
+
+    --game.print("onModSettingsChange() processing for Rampant")
 
     upgrade.compareTable(universe,
                          "safeBuildings",
@@ -232,6 +237,11 @@ local function onModSettingsChange(event)
                          "aiPointsScaler",
                          settings.global["rampant--aiPointsScaler"].value)
 
+
+    universe.aiPointsIdleAwardValue = settings.global["rampant--aiPointsIdleAwardValue"].value
+    universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
+    universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
+    
     universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
     universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
     universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
@@ -485,9 +495,18 @@ local function onDeath(event)
             elseif event.force and (event.force.name ~= "enemy") and
                 ((entityType == "unit-spawner") or (entityType == "turret"))
             then
-                map.points = map.points +
-                    (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
-
+                if (entityType == "unit-spawner") then
+                    map.points = map.points + RECOVER_NEST_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
+                    end
+                else
+                    map.points = map.points + RECOVER_WORM_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))  
+                    end
+                end                
+                    
                 unregisterEnemyBaseStructure(map, entity)
 
                 if (chunk ~= -1) then
@@ -728,6 +747,9 @@ local function onRocketLaunch(event)
         local map = universe.maps[entity.surface.index]
         map.rocketLaunched = map.rocketLaunched + 1
         map.points = map.points + 5000
+        if universe.aiPointsPrintGainsToChat then
+            game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", map.points))   
+        end
     end
 end
 
@@ -798,6 +820,9 @@ local function onUnitGroupCreated(event)
                 if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))   
+                    end
                     return
                 end
 
@@ -812,6 +837,9 @@ local function onUnitGroupCreated(event)
             else
                 if not (surface.darkness > 0.65) then
                     map.points = map.points + AI_SQUAD_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))           
+                    end
                     group.destroy()
                     return
                 end
@@ -823,6 +851,9 @@ local function onUnitGroupCreated(event)
                 if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                    end
                     return
                 end
 
@@ -850,6 +881,9 @@ local function onGroupFinishedGathering(event)
                 else
                     group.destroy()
                     map.points = map.points + AI_SETTLER_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", map.points))
+                    end
                 end
             else
                 if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
@@ -857,6 +891,9 @@ local function onGroupFinishedGathering(event)
                 else
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                    end
                 end
             end
         else
@@ -867,6 +904,9 @@ local function onGroupFinishedGathering(event)
             if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
                 group.destroy()
                 map.points = map.points + AI_SQUAD_COST
+                if universe.aiPointsPrintGainsToChat then
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                end
                 return
             end
 
@@ -920,7 +960,12 @@ local function onBuilderArrived(event)
     local targetPosition = universe.position
     targetPosition.x = builder.position.x
     targetPosition.y = builder.position.y
-
+    
+    --local map = universe.maps[event.surface.index] -- crashes
+    if universe.aiPointsPrintSpendingToChat then    
+        --game.print(map.surface.name .. ": Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]") -- crashes
+        game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
+    end
     builder.surface.create_entity(universe.createBuildCloudQuery)
 end
 

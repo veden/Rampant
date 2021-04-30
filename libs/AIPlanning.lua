@@ -94,6 +94,30 @@ function aiPlanning.planning(map, evolution_factor, tick)
 
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
+    
+    if (map.lastPoints ~= nil) then
+        -- game.print(map.points .. " " .. map.lastPoints)
+        if (map.points ~= map.lastPoints) then
+            if (false) then
+                game.print(map.surface.name .. ": map.points = " .. string.format("%.2f", map.points) .. " ( " .. string.format("%.2f", map.points - map.lastPoints) .. " change)")
+            end           
+            map.lastPointsUpdateTick = tick
+        else
+            if (universe.aiPointsIdleAwardValue > 0 and tick - map.lastPointsUpdateTick > 3600) then -- if our setting is enabled and we haven't generated non-passive points in the last minute
+                local targetPoints = map.points + universe.aiPointsIdleAwardValue
+                if (targetPoints < maxOverflowPoints) then
+                    map.points = targetPoints
+                    map.lastPointsUpdateTick = tick
+                    
+                    if (universe.aiPointsPrintGainsToChat) then
+                        game.print(map.surface.name .. ": Points: +" .. universe.aiPointsIdleAwardValue .. ". [Idle Biters] Total: " .. string.format("%.2f", map.points) .. " (" .. string.format("%.2f", maxOverflowPoints) .. " is max)")
+                    end
+                end             
+            end
+        end
+    else
+        map.lastPointsUpdateTick = tick
+    end
 
     local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.001) +
         (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1))) * universe.aiPointsScaler
@@ -113,6 +137,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
     if (currentPoints > maxOverflowPoints) then
         map.points = maxOverflowPoints
     end
+
+    map.lastPoints = map.points
 
     if (map.stateTick <= tick) then
         local roll = mRandom()
@@ -267,11 +293,23 @@ function aiPlanning.planning(map, evolution_factor, tick)
         map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
 
         if universe.printAIStateChanges then
-            game.print(map.surface.name .. ": AI state is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. (map.stateTick - tick) / 60 .. " seconds")
+            game.print(map.surface.name .. ": AI is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. string.format("%.2f", (map.stateTick - tick) / (60*60)) .. " minutes @ " .. getTimeStringFromTick(map.stateTick) .. " playtime")
         end
     end
 
 end
+
+function getTimeStringFromTick(tick)
+
+    local tickToSeconds = tick / 60
+    
+    local days = math.floor(tickToSeconds / 86400)
+    local hours = math.floor((tickToSeconds % 86400) / 3600)
+    local minutes = math.floor((tickToSeconds % 3600) / 60)
+    local seconds = math.floor(tickToSeconds % 60)
+    return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
+end
+
 
 
 function aiPlanning.temperamentPlanner(map)
