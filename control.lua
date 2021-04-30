@@ -1101,3 +1101,29 @@ remote.add_interface("rampantTests",
                          scanChunkPaths = tests.scanChunkPaths
                      }
 )
+
+function rampantSetAIState(event)
+    local surfaceIndex = game.players[event.player_index].surface.index
+    local map = universe.maps[surfaceIndex]
+    
+    game.print(map.surface.name .. " is in " .. constants.stateEnglish[map.state])
+    
+    if event.parameter then
+        local target = tonumber(event.parameter)
+        
+        if (target == nil) then
+            game.print("invalid param")
+            return
+        end
+        
+        if (target ~= constants.AI_STATE_PEACEFUL and target ~= constants.AI_STATE_AGGRESSIVE and target ~= constants.AI_STATE_RAIDING and target ~= constants.AI_STATE_MIGRATING and target ~= constants.AI_STATE_SIEGE and target ~= constants.AI_STATE_ONSLAUGHT) then
+            game.print(target .. " is not a valid state")
+            return
+        else
+            map.state = target
+            game.print(map.surface.name .. " is now in " .. constants.stateEnglish[map.state])
+        end
+    end
+end
+
+commands.add_command('rampantSetAIState', "", rampantSetAIState)

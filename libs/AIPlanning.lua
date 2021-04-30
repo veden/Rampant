@@ -413,7 +413,7 @@ function aiPlanning.temperamentPlanner(map)
             game.print("aN:" .. map.activeNests .. ", aRN:" .. map.activeRaidNests .. ", dPB:" .. map.destroyPlayerBuildings ..
                        ", lEU:" .. map.lostEnemyUnits .. ", lEB:" .. map.lostEnemyBuilding .. ", rL:" .. map.rocketLaunched .. ", bEB:" .. map.builtEnemyBuilding ..
                        ", iCB:" .. map.ionCannonBlasts .. ", aB:" .. map.artilleryBlasts)
-            game.print("temp: " .. map.temperament .. ", tempScore:" .. map.temperamentScore .. ", points:" .. map.points .. ", state:" .. constants.stateEnglish[map.state] .. ", surface:" .. map.surface.index)
+            game.print("temp: " .. map.temperament .. ", tempScore:" .. map.temperamentScore .. ", points:" .. map.points .. ", state:" .. constants.stateEnglish[map.state] .. ", surface:" .. map.surface.index .. " [" .. map.surface.name .. "]")
             game.print("aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount .. ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize .. ", formGroup:" .. universe.formSquadThreshold)
         end
     end
