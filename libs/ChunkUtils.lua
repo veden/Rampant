@@ -73,6 +73,7 @@ local createBase = baseUtils.createBase
 
 local upgradeEntity = baseUtils.upgradeEntity
 
+local getChunkBase = chunkPropertyUtils.getChunkBase
 local setChunkBase = chunkPropertyUtils.setChunkBase
 local setPassable = chunkPropertyUtils.setPassable
 local setPathRating = chunkPropertyUtils.setPathRating
@@ -469,7 +470,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     return entity
 end
 
-function chunkUtils.unregisterEnemyBaseStructure(map, entity)
+function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType)
     local entityType = entity.type
     if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
         local overlapArray = getEntityOverlapChunks(map, entity)
@@ -520,6 +521,10 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity)
                             setNestActiveness(map, chunk, 0)
                         end
                         setFunc(map, chunk, 0)
+                        local base = getChunkBase(map, chunk)
+                        if base then
+                            base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 1
+                        end
                         if (getEnemyStructureCount(map, chunk) == 0) then
                             setChunkBase(map, chunk, nil)
                         end

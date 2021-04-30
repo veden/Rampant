@@ -397,8 +397,21 @@ function upgrade.attempt(universe)
         universe.squadCount = 0
 
         addCommandSet(universe)
+    end
+    if global.version < 116 then
+        global.version = 116
 
-        game.print("Rampant - Version 1.0.8")
+        universe.maxPoints = 0
+
+        if (universe.maps) then
+            for _,map in pairs(universe.maps) do
+                for _,base in pairs(map.bases) do
+                    base.damagedBy = {}
+                end
+            end
+        end
+
+        game.print("Rampant - Version 1.0.10")
     end
 
     return (starting ~= global.version) and global.version

@@ -81,6 +81,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         status = SQUAD_GUARDING,
         rabid = false,
         penalties = {},
+        base = nil,
         frenzy = false,
         settlers = settlers or false,
         kamikaze = false,

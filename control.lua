@@ -335,7 +335,6 @@ local function prepMap(surface)
     map.squads = nil
     map.pendingAttack = nil
     map.building = nil
-    map.groupNumberToSquad = {}
 
     map.evolutionLevel = game.forces.enemy.evolution_factor
     map.canAttackTick = 0
@@ -406,8 +405,11 @@ local function onConfigChanged()
         universe.buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
     end
 
-    if version and (version <= 114) then
-        for _,surface in pairs(game.surfaces) do
+    for _,surface in pairs(game.surfaces) do
+        if not universe.maps then
+            universe.maps = {}
+        end
+        if not universe.maps[surface.index] then
             prepMap(surface)
         end
     end
@@ -465,6 +467,18 @@ local function onDeath(event)
 
             if (entityType == "unit") then
                 if (chunk ~= -1) and event.force and (event.force.name ~= "enemy") then
+
+                    local group = entity.unit_group
+                    if group then
+                        local damageType = event.damage_type
+                        local squad = map.groupNumberToSquad[group.group_number]
+                        if squad then
+                            local base = squad.base
+                            if base then
+                                base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 0.01
+                            end
+                        end
+                    end
                     -- drop death pheromone where unit died
                     deathScent(map, chunk)
 
@@ -488,7 +502,7 @@ local function onDeath(event)
                 map.points = map.points +
                     (((entityType == "unit-spawner") and RECOVER_NEST_COST) or RECOVER_WORM_COST)
 
-                unregisterEnemyBaseStructure(map, entity)
+                unregisterEnemyBaseStructure(map, entity, event.damage_type)
 
                 if (chunk ~= -1) then
                     rallyUnits(chunk, map, tick)
@@ -804,6 +818,13 @@ local function onUnitGroupCreated(event)
                 squad = createSquad(nil, nil, group, settler)
                 map.groupNumberToSquad[group.group_number] = squad
 
+                if universe.NEW_ENEMIES then
+                    local chunk = getChunkByPosition(map, group.position)
+                    if (chunk ~= -1) then
+                        squad.base = findNearbyBase(map, chunk)
+                    end
+                end
+
                 if settler then
                     universe.builderCount = universe.builderCount + 1
                 else
@@ -828,6 +849,14 @@ local function onUnitGroupCreated(event)
 
                 squad = createSquad(nil, nil, group, settler)
                 map.groupNumberToSquad[group.group_number] = squad
+
+                if universe.NEW_ENEMIES then
+                    local chunk = getChunkByPosition(group.position)
+                    if (chunk ~= -1) then
+                        squad.base = findNearbyBase(map, chunk)
+                    end
+                end
+
                 if settler then
                     universe.builderCount = universe.builderCount + 1
                 else
