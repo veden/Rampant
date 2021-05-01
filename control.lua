@@ -522,7 +522,6 @@ local function onDeath(event)
                     end
                 end                
                     
-                unregisterEnemyBaseStructure(map, entity)
                 unregisterEnemyBaseStructure(map, entity, event.damage_type)
 
                 if (chunk ~= -1) then
