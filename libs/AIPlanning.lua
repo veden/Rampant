@@ -95,25 +95,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
     
-    if (universe.aiPointsIdleAwardValue > 0) then -- if our setting is enabled
-        if (map.lastPoints ~= nil) then -- ensures we're initialized
-            if (map.points ~= map.lastPoints) then       
-                map.lastPointsUpdateTick = tick
-            elseif (tick - map.lastPointsUpdateTick > 3600) then -- no points generated in the last minute
-                local targetPoints = map.points + universe.aiPointsIdleAwardValue
-                if (targetPoints < maxOverflowPoints) then
-                    map.points = targetPoints
-                    map.lastPointsUpdateTick = tick                    
-                    if (universe.aiPointsPrintGainsToChat) then
-                        game.print(map.surface.name .. ": Points: +" .. universe.aiPointsIdleAwardValue .. ". [Idle Biters] Total: " .. string.format("%.2f", map.points) .. " (" .. string.format("%.2f", maxOverflowPoints) .. " is max)")
-                    end
-                end             
-            end
-        else
-            map.lastPointsUpdateTick = tick -- only runs once, initializes the var
-        end
-    end
-    
     local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.001) +
         (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1))) * universe.aiPointsScaler
 
@@ -132,8 +113,6 @@ function aiPlanning.planning(map, evolution_factor, tick)
     if (currentPoints > maxOverflowPoints) then
         map.points = maxOverflowPoints
     end
-
-    map.lastPoints = map.points
 
     if (map.stateTick <= tick) then
         local roll = mRandom()

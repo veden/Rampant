@@ -501,24 +501,12 @@ data:extend({
         },
         
         {
-            type = "double-setting",
-            name = "rampant--aiPointsIdleAwardValue",
-            description = "rampant--aiPointsIdleAwardValue",
-            setting_type = "runtime-global",
-            default_value = 0.0,
-            minimum_value = 0.0,
-            maximum_value = 400.0,
-            order = "m[total]-b[ai]2",
-            per_user = false
-        },
-        
-        {
             type = "bool-setting",
             name = "rampant--aiPointsPrintSpendingToChat",
             description = "rampant--aiPointsPrintSpendingToChat",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-b[ai]3",
+            order = "m[total]-b[ai]2",
             per_user = false
         },      
 
@@ -528,7 +516,7 @@ data:extend({
             description = "rampant--aiPointsPrintGainsToChat",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-b[ai]4",
+            order = "m[total]-b[ai]3",
             per_user = false
         },
         

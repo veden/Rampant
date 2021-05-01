@@ -237,8 +237,6 @@ local function onModSettingsChange(event)
                          "aiPointsScaler",
                          settings.global["rampant--aiPointsScaler"].value)
 
-
-    universe.aiPointsIdleAwardValue = settings.global["rampant--aiPointsIdleAwardValue"].value
     universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
     universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
     
