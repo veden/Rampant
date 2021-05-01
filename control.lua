@@ -654,6 +654,17 @@ local function onEnemyBaseBuild(event)
             if entity and entity.valid then
                 event.entity = registerEnemyBaseStructure(map, entity, base)
             end
+        else
+            local x,y = positionToChunkXY(entity.position)
+            onChunkGenerated({
+                    surface = entity.surface,
+                    area = {
+                        left_top = {
+                            x = x,
+                            y = y
+                        }
+                    }
+            })
         end
     end
 end
@@ -814,6 +825,16 @@ local function onEntitySpawned(event)
                     event.entity = registerEnemyBaseStructure(map, entity, base)
                 end
             else
+                local x,y = positionToChunkXY(entity.position)
+                onChunkGenerated({
+                    surface = entity.surface,
+                    area = {
+                        left_top = {
+                            x = x,
+                            y = y
+                        }
+                    }
+                })
                 entity.destroy()
             end
         end
@@ -1132,7 +1153,7 @@ remote.add_interface("rampantTests",
                      }
 )
 
-function rampantSetAIState(event)
+local function rampantSetAIState(event)
     local surfaceIndex = game.players[event.player_index].surface.index
     local map = universe.maps[surfaceIndex]
 

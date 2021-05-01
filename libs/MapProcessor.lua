@@ -536,16 +536,16 @@ function mapProcessor.processSpawners(map, tick)
         elseif (map.state == AI_STATE_SIEGE) then
             processSpawners(map,
                             tick,
-                            "processMigrationIterator",
-                            map.chunkToNests)
-            processSpawners(map,
-                            tick,
                             "processActiveSpawnerIterator",
                             map.chunkToActiveNest)
             processSpawners(map,
                             tick,
                             "processActiveRaidSpawnerIterator",
                             map.chunkToActiveRaidNest)
+            processSpawners(map,
+                            tick,
+                            "processMigrationIterator",
+                            map.chunkToNests)
         else
             processSpawners(map,
                             tick,

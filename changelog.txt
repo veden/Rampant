@@ -1,10 +1,11 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.0.10
+Version: 1.1.0
 Date: 29. 04. 2021
   Contributions:
     - Astorin removed old unused ru.cfg locale
     - Dagothur added a mod setting to print ai point gains to chat
     - Dagothur added a mod setting to print ai point usage to chat
+    - Dagothur added a /rampantSetAIState to modify the ai state
   Improvements:
     - Increased ai baseline point accumulation based on temperament
   Tweaks:
@@ -13,13 +14,15 @@ Date: 29. 04. 2021
     - Increased baseline ai point accumulation for active nests by x3
     - Increased baseline ai point accumulation at min and max temperament by 0.2
     - Increased raid nest contribution to temperament by x2.7
-    - Increased siege chance at max ai temperament by 25%
+    - Increased siege chance at temperament above 50% by 50%
     - Decreased settler cost to ai by 33%
     - Increased base ai min and max duration by ~x1.8
     - Increased biter base point gain by x3.5
+    - AI Siege state now tries to expand active spawners then raid spawners then all spawners
   Bugfixes:
     - Settlers not spawning as they should do to incorrect weighting on spawn locations
-    - Fixed new enemies factions not mutating or upgrading structures overtime
+    - Fixed new enemies factions not mutating or upgrading structures over time
+    - Spawners built on impassable chunks now get tracked properly
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.9

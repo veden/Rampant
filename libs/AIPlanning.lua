@@ -51,6 +51,18 @@ local mMin = math.min
 
 -- module code
 
+local function getTimeStringFromTick(tick)
+
+    local tickToSeconds = tick / 60
+
+    local days = math.floor(tickToSeconds / 86400)
+    local hours = math.floor((tickToSeconds % 86400) / 3600)
+    local minutes = math.floor((tickToSeconds % 3600) / 60)
+    local seconds = math.floor(tickToSeconds % 60)
+    return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
+end
+
+
 function aiPlanning.planning(map, evolution_factor, tick)
     local universe = map.universe
     map.evolutionLevel = evolution_factor
@@ -209,33 +221,33 @@ function aiPlanning.planning(map, evolution_factor, tick)
             end
         elseif (map.temperament < 0.95) then -- 0.8 - 0.95
             if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.15) and universe.siegeAIToggle then
+                if (roll < 0.20) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
-                elseif (roll < 0.4) then
+                elseif (roll < 0.45) then
                     map.state = AI_STATE_RAIDING
-                elseif (roll < 0.8) then
+                elseif (roll < 0.85) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
                 end
             elseif (universe.enabledMigration) then
-                if (roll < 0.15) and universe.siegeAIToggle then
+                if (roll < 0.20) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
-                elseif (roll < 0.7) then
+                elseif (roll < 0.75) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
                 end
             elseif (universe.raidAIToggle) then
-                if (roll < 0.4) then
+                if (roll < 0.45) then
                     map.state = AI_STATE_ONSLAUGHT
-                elseif (roll < 0.7) then
+                elseif (roll < 0.75) then
                     map.state = AI_STATE_RAIDING
                 else
                     map.state = AI_STATE_AGGRESSIVE
                 end
             else
-                if (roll < 0.6) then
+                if (roll < 0.65) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_AGGRESSIVE
@@ -243,21 +255,21 @@ function aiPlanning.planning(map, evolution_factor, tick)
             end
         else
             if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.25) and universe.siegeAIToggle then
+                if (roll < 0.30) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
-                elseif (roll < 0.6) then
+                elseif (roll < 0.65) then
                     map.state = AI_STATE_RAIDING
                 else
                     map.state = AI_STATE_ONSLAUGHT
                 end
             elseif (universe.enabledMigration) then
-                if (roll < 0.25) and universe.siegeAIToggle then
+                if (roll < 0.30) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
                 else
                     map.state = AI_STATE_ONSLAUGHT
                 end
             elseif (universe.raidAIToggle) then
-                if (roll < 0.4) then
+                if (roll < 0.45) then
                     map.state = AI_STATE_ONSLAUGHT
                 else
                     map.state = AI_STATE_RAIDING
@@ -281,21 +293,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
             game.print(map.surface.name .. ": AI is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. string.format("%.2f", (map.stateTick - tick) / (60*60)) .. " minutes @ " .. getTimeStringFromTick(map.stateTick) .. " playtime")
         end
     end
-
 end
-
-function getTimeStringFromTick(tick)
-
-    local tickToSeconds = tick / 60
-
-    local days = math.floor(tickToSeconds / 86400)
-    local hours = math.floor((tickToSeconds % 86400) / 3600)
-    local minutes = math.floor((tickToSeconds % 3600) / 60)
-    local seconds = math.floor(tickToSeconds % 60)
-    return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
-end
-
-
 
 function aiPlanning.temperamentPlanner(map)
     local destroyPlayerBuildings = map.destroyPlayerBuildings
