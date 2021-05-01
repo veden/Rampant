@@ -550,12 +550,12 @@ function chunkUtils.accountPlayerEntity(entity, map, addObject, creditNatives)
                 if (map.state == AI_STATE_ONSLAUGHT) then
                     map.points = map.points + entityValue
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))   
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
                     end
                 else
                     map.points = map.points + (entityValue * 0.12)
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))    
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
                     end
                 end
             end

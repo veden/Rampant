@@ -364,13 +364,13 @@ function baseUtils.processBase(chunk, map, tick, base)
     end
 
     -- if (base.deathEvents > 1000) then
-    if (upgradeRoll > 0.95) then
-        if (base.points >= BASE_UPGRADE) then
-            if upgradeBase(map, base) then
-                base.points = base.points - BASE_UPGRADE
-            end
+    -- if (upgradeRoll > 0.95) then
+    if (base.points >= BASE_UPGRADE) then
+        if upgradeBase(map, base) then
+            base.points = base.points - BASE_UPGRADE
         end
     end
+    -- end
     --     base.damagedBy = {}
     --     base.deathEvents = 0
     -- end

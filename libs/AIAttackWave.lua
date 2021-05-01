@@ -231,7 +231,7 @@ function aiAttackWave.formSettlers(map, chunk)
                     squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     universe.builderCount = universe.builderCount + 1
                     map.points = map.points - AI_SETTLER_COST
-                    if universe.aiPointsPrintSpendingToChat then    
+                    if universe.aiPointsPrintSpendingToChat then
                         game.print(map.surface.name .. ": Points: -" .. AI_SETTLER_COST .. ". [Settler] Total: " .. string.format("%.2f", map.points) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")
                     end
                     map.groupNumberToSquad[squad.groupNumber] = squad
@@ -282,7 +282,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
                     map.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
                     map.points = map.points - AI_VENGENCE_SQUAD_COST
-                    if universe.aiPointsPrintSpendingToChat then    
+                    if universe.aiPointsPrintSpendingToChat then
                         game.print(map.surface.name .. ": Points: -" .. AI_VENGENCE_SQUAD_COST .. ". [Vengence] Total: " .. string.format("%.2f", map.points) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")
                     end
                 else
@@ -338,7 +338,7 @@ function aiAttackWave.formSquads(map, chunk, tick)
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
                     end
-                    if universe.aiPointsPrintSpendingToChat then    
+                    if universe.aiPointsPrintSpendingToChat then
                         game.print(map.surface.name .. ": Points: -" .. AI_SQUAD_COST .. ". [Squad] Total: " .. string.format("%.2f", map.points) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")
                     end
                 else

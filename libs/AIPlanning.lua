@@ -287,7 +287,7 @@ end
 function getTimeStringFromTick(tick)
 
     local tickToSeconds = tick / 60
-    
+
     local days = math.floor(tickToSeconds / 86400)
     local hours = math.floor((tickToSeconds % 86400) / 3600)
     local minutes = math.floor((tickToSeconds % 3600) / 60)

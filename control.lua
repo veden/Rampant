@@ -133,9 +133,9 @@ local function onIonCannonFired(event)
     map.ionCannonBlasts = map.ionCannonBlasts + 1
     map.points = map.points + 4000
     if universe.aiPointsPrintGainsToChat then
-        game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " .. string.format("%.2f", map.points))      
+        game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " .. string.format("%.2f", map.points))
     end
-    
+
     local chunk = getChunkByPosition(map, event.position)
     if (chunk ~= -1) then
         rallyUnits(chunk, map, event.tick)
@@ -239,7 +239,7 @@ local function onModSettingsChange(event)
 
     universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
     universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
-    
+
     universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
     universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
     universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
@@ -518,10 +518,10 @@ local function onDeath(event)
                 else
                     map.points = map.points + RECOVER_WORM_COST
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))  
+                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
                     end
-                end                
-                    
+                end
+
                 unregisterEnemyBaseStructure(map, entity, event.damage_type)
 
                 if (chunk ~= -1) then
@@ -763,7 +763,7 @@ local function onRocketLaunch(event)
         map.rocketLaunched = map.rocketLaunched + 1
         map.points = map.points + 5000
         if universe.aiPointsPrintGainsToChat then
-            game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", map.points))   
+            game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", map.points))
         end
     end
 end
@@ -836,7 +836,7 @@ local function onUnitGroupCreated(event)
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))   
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
                     end
                     return
                 end
@@ -860,7 +860,7 @@ local function onUnitGroupCreated(event)
                 if not (surface.darkness > 0.65) then
                     map.points = map.points + AI_SQUAD_COST
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))           
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
                     end
                     group.destroy()
                     return
@@ -874,7 +874,7 @@ local function onUnitGroupCreated(event)
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
                     end
                     return
                 end
@@ -922,7 +922,7 @@ local function onGroupFinishedGathering(event)
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
                     end
                 end
             end
@@ -935,7 +935,7 @@ local function onGroupFinishedGathering(event)
                 group.destroy()
                 map.points = map.points + AI_SQUAD_COST
                 if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))       
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
                 end
                 return
             end
@@ -990,9 +990,9 @@ local function onBuilderArrived(event)
     local targetPosition = universe.position
     targetPosition.x = builder.position.x
     targetPosition.y = builder.position.y
-    
+
     --local map = universe.maps[event.surface.index] -- crashes
-    if universe.aiPointsPrintSpendingToChat then    
+    if universe.aiPointsPrintSpendingToChat then
         --game.print(map.surface.name .. ": Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]") -- crashes
         game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
     end
@@ -1135,17 +1135,17 @@ remote.add_interface("rampantTests",
 function rampantSetAIState(event)
     local surfaceIndex = game.players[event.player_index].surface.index
     local map = universe.maps[surfaceIndex]
-    
+
     game.print(map.surface.name .. " is in " .. constants.stateEnglish[map.state])
-    
+
     if event.parameter then
         local target = tonumber(event.parameter)
-        
+
         if (target == nil) then
             game.print("invalid param")
             return
         end
-        
+
         if (target ~= constants.AI_STATE_PEACEFUL and target ~= constants.AI_STATE_AGGRESSIVE and target ~= constants.AI_STATE_RAIDING and target ~= constants.AI_STATE_MIGRATING and target ~= constants.AI_STATE_SIEGE and target ~= constants.AI_STATE_ONSLAUGHT) then
             game.print(target .. " is not a valid state")
             return

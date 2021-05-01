@@ -499,16 +499,16 @@ data:extend({
             order = "m[total]-b[ai]1",
             per_user = false
         },
-        
+
         {
             type = "bool-setting",
             name = "rampant--aiPointsPrintSpendingToChat",
             description = "rampant--aiPointsPrintSpendingToChat",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-b[ai]2",
+            order = "m[total]-c[ai]z",
             per_user = false
-        },      
+        },
 
         {
             type = "bool-setting",
@@ -516,10 +516,10 @@ data:extend({
             description = "rampant--aiPointsPrintGainsToChat",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-b[ai]3",
+            order = "m[total]-c[ai]z",
             per_user = false
         },
-        
+
         {
             type = "double-setting",
             name = "rampant--temperamentRateModifier",
@@ -530,7 +530,7 @@ data:extend({
             order = "m[total]-b[ai]",
             per_user = false
         },
-        
+
         {
             type = "bool-setting",
             name = "rampant--removeBloodParticles",

@@ -3,6 +3,8 @@ Version: 1.0.10
 Date: 29. 04. 2021
   Contributions:
     - Astorin removed old unused ru.cfg locale
+    - Dagothur added a mod setting to print ai point gains to chat
+    - Dagothur added a mod setting to print ai point usage to chat
   Improvements:
     - Increased ai baseline point accumulation based on temperament
   Tweaks:
