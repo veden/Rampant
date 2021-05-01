@@ -1,8 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.10
 Date: 29. 04. 2021
-  Features:
-    - Added new enemies adaptation to damage type that kills them. So if you kill biters with physical damage you will start seeing biters that are resistant to physical damage.
   Improvements:
     - Increased ai baseline point accumulation based on temperament
   Tweaks:
@@ -14,6 +12,7 @@ Date: 29. 04. 2021
     - Increased siege chance at max ai temperament by 25%
     - Decreased settler cost to ai by 33%
     - Increased base ai min and max duration by ~x1.8
+    - Increased biter base point gain by x3.5
   Bugfixes:
     - Settlers not spawning as they should do to incorrect weighting on spawn locations
     - Fixed new enemies factions not mutating or upgrading structures overtime

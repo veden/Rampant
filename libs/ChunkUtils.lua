@@ -521,10 +521,11 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType)
                             setNestActiveness(map, chunk, 0)
                         end
                         setFunc(map, chunk, 0)
-                        local base = getChunkBase(map, chunk)
-                        if base then
-                            base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 1
-                        end
+                        -- local base = getChunkBase(map, chunk)
+                        -- if base then
+                        --     base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 1
+                        --     base.deathEvents = base.deathEvents + 1
+                        -- end
                         if (getEnemyStructureCount(map, chunk) == 0) then
                             setChunkBase(map, chunk, nil)
                         end

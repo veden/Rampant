@@ -225,9 +225,9 @@ function aiAttackWave.formSettlers(map, chunk)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    if universe.NEW_ENEMIES then
-                        squad.base = findNearbyBase(map, chunk)
-                    end
+                    -- if universe.NEW_ENEMIES then
+                    --     squad.base = findNearbyBase(map, chunk)
+                    -- end
                     squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     universe.builderCount = universe.builderCount + 1
                     map.points = map.points - AI_SETTLER_COST
@@ -272,9 +272,9 @@ function aiAttackWave.formVengenceSquad(map, chunk)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    if universe.NEW_ENEMIES then
-                        squad.base = findNearbyBase(map, chunk)
-                    end
+                    -- if universe.NEW_ENEMIES then
+                    --     squad.base = findNearbyBase(map, chunk)
+                    -- end
                     squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     map.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
@@ -320,9 +320,9 @@ function aiAttackWave.formSquads(map, chunk, tick)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    if universe.NEW_ENEMIES then
-                        squad.base = findNearbyBase(map, chunk)
-                    end
+                    -- if universe.NEW_ENEMIES then
+                    --     squad.base = findNearbyBase(map, chunk)
+                    -- end
                     squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
                     map.points = map.points - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
