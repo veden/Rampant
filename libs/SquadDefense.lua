@@ -10,6 +10,7 @@ local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local baseUtils = require("BaseUtils")
 
 -- constants
 
@@ -23,6 +24,8 @@ local SQUAD_RETREATING = constants.SQUAD_RETREATING
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
+
+local findNearbyBase = baseUtils.findNearbyBase
 
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 
@@ -112,6 +115,9 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
+            -- if universe.NEW_ENEMIES then
+            --     newSquad.base = findNearbyBase(map, chunk)
+            -- end
             map.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end

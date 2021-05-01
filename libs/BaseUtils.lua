@@ -16,11 +16,7 @@ local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
-local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
-local BASE_AI_STATE_WORMS = constants.BASE_AI_STATE_WORMS
-local BASE_AI_STATE_NESTS = constants.BASE_AI_STATE_NESTS
-local BASE_AI_STATE_OVERDRIVE = constants.BASE_AI_STATE_OVERDRIVE
 local BASE_AI_STATE_MUTATE = constants.BASE_AI_STATE_MUTATE
 
 local FACTION_SET = constants.FACTION_SET
@@ -28,9 +24,7 @@ local FACTION_SET = constants.FACTION_SET
 local BASE_DEADZONE_TTL = constants.BASE_DEADZONE_TTL
 
 local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
-local BASE_AI_MIN_TEMPERAMENT_DURATION = constants.BASE_AI_MIN_TEMPERAMENT_DURATION
 local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
-local BASE_AI_MAX_TEMPERAMENT_DURATION = constants.BASE_AI_MAX_TEMPERAMENT_DURATION
 
 local BASE_UPGRADE = constants.BASE_UPGRADE
 
@@ -103,6 +97,8 @@ function baseUtils.findNearbyBase(map, chunk)
             foundBase = base
         end
     end
+
+    -- print("base found", foundBase)
 
     return foundBase
 end
@@ -338,7 +334,6 @@ end
 
 function baseUtils.processBase(chunk, map, tick, base)
     if not base.alignment[1] then
-        base.state = BASE_AI_STATE_DORMANT
         return
     end
 
@@ -349,7 +344,10 @@ function baseUtils.processBase(chunk, map, tick, base)
     point.x = chunk.x + (CHUNK_SIZE * mRandom())
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
-    if (base.state == BASE_AI_STATE_ACTIVE) then
+    local upgradeRoll = mRandom()
+    if ((base.state == BASE_AI_STATE_MUTATE) and (upgradeRoll < 0.02)) or
+        ((base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.1))
+    then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
@@ -363,44 +361,35 @@ function baseUtils.processBase(chunk, map, tick, base)
                 end
             end
         end
-    elseif (base.state == BASE_AI_STATE_MUTATE) then
+    end
+
+    -- if (base.deathEvents > 1000) then
+    if (upgradeRoll > 0.95) then
         if (base.points >= BASE_UPGRADE) then
             if upgradeBase(map, base) then
                 base.points = base.points - BASE_UPGRADE
             end
         end
     end
+    --     base.damagedBy = {}
+    --     base.deathEvents = 0
+    -- end
 
-    if (base.state == BASE_AI_STATE_OVERDRIVE) then
-        base.points = base.points + (map.baseIncrement * 5)
-    elseif (base.state ~= BASE_AI_STATE_DORMANT) then
-        base.points = base.points + map.baseIncrement
+    base.points = base.points + map.baseIncrement
+
+    if (base.points > universe.maxPoints) then
+        base.points = universe.maxPoints
     end
 
-    if (base.temperamentTick <= tick) then
-        base.temperament = mRandom()
-        base.temperamentTick = randomTickEvent(tick,
-                                               BASE_AI_MIN_TEMPERAMENT_DURATION,
-                                               BASE_AI_MAX_TEMPERAMENT_DURATION)
-    end
+    -- print("baseStats", base.points, base.state, base.deathEvents-- , serpent.dump(base.damagedBy)
+    -- )
 
     if (base.stateTick <= tick) then
-        local roll = mRandom() * mMax(1 - map.evolutionLevel, 0.15)
-        if (roll > map.temperament) then
-            base.state = BASE_AI_STATE_DORMANT
+        local roll = mRandom()
+        if (roll < 0.85) then
+            base.state = BASE_AI_STATE_ACTIVE
         else
-            roll = mRandom()
-            if (roll < 0.70) then
-                base.state = BASE_AI_STATE_ACTIVE
-            elseif (roll < 0.80) then
-                base.state = BASE_AI_STATE_NESTS
-            elseif (roll < 0.90) then
-                base.state = BASE_AI_STATE_WORMS
-            elseif (roll < 0.975) then
-                base.state = BASE_AI_STATE_OVERDRIVE
-            else
-                base.state = BASE_AI_STATE_MUTATE
-            end
+            base.state = BASE_AI_STATE_MUTATE
         end
         base.stateTick = randomTickEvent(tick,
                                          BASE_AI_MIN_STATE_DURATION,
@@ -443,11 +432,10 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
         distanceThreshold = distanceThreshold,
         tick = baseTick,
         alignment = alignment,
-        state = BASE_AI_STATE_DORMANT,
+        state = BASE_AI_STATE_ACTIVE,
+        damagedBy = {},
         stateTick = 0,
-        temperamentTick = 0,
         createdTick = tick,
-        temperament = 0,
         points = 0,
         id = map.baseId
     }

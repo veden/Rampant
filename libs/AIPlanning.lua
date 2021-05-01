@@ -57,6 +57,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.evolutionLevel = evolution_factor
 
     local maxPoints = mMax(AI_MAX_POINTS * evolution_factor, MINIMUM_AI_POINTS)
+    universe.maxPoints = maxPoints
 
     if not universe.ranIncompatibleMessage and universe.newEnemies and
         (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
@@ -94,15 +95,25 @@ function aiPlanning.planning(map, evolution_factor, tick)
 
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
-    
-    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.001) +
-        (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1))) * universe.aiPointsScaler
+
+    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.003) +
+        (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1)))
+
+    if (map.temperament < 0.05) or (map.temperament > 0.95) then
+        points = points + 0.3
+    elseif (map.temperament < 0.25) or (map.temperament > 0.75) then
+        points = points + 0.2
+    elseif (map.temperament < 0.40) or (map.temperament > 0.60) then
+        points = points + 0.1
+    end
 
     if (map.state == AI_STATE_ONSLAUGHT) then
         points = points * 2
     end
 
-    map.baseIncrement = points
+    points = points * universe.aiPointsScaler
+
+    map.baseIncrement = points * 3.5
 
     local currentPoints = map.points
 
@@ -232,7 +243,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
             end
         else
             if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.2) and universe.siegeAIToggle then
+                if (roll < 0.25) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
                 elseif (roll < 0.6) then
                     map.state = AI_STATE_RAIDING
@@ -240,7 +251,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
                     map.state = AI_STATE_ONSLAUGHT
                 end
             elseif (universe.enabledMigration) then
-                if (roll < 0.2) and universe.siegeAIToggle then
+                if (roll < 0.25) and universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
                 else
                     map.state = AI_STATE_ONSLAUGHT
@@ -316,10 +327,10 @@ function aiPlanning.temperamentPlanner(map)
     end
 
     if activeRaidNests > 0 then
-        local val = (0.000221 * activeRaidNests)
+        local val = (0.0006 * activeRaidNests)
         delta = delta - val
     else
-        delta = delta - 0.007232
+        delta = delta - 0.01
     end
 
     if lostEnemyUnits > 0 then

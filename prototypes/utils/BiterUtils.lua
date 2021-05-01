@@ -1067,7 +1067,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
         projectile_creation_distance = 0.6,
         range = attributes.range or 20,
         min_attack_distance = (attributes.range and (attributes.range - 2)) or 20,
-        lead_target_for_projectile_speed = 0.6,
+        lead_target_for_projectile_speed = 0.95,
         use_shooter_direction = true,
         ammo_type =
             {
