@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.10
 Date: 29. 04. 2021
+  Contributions:
+    - Astorin removed old unused ru.cfg locale
   Improvements:
     - Increased ai baseline point accumulation based on temperament
   Tweaks:
