@@ -509,6 +509,18 @@ data:extend({
             order = "m[total]-c[ai]z",
             per_user = false
         },
+		
+        {
+            type = "double-setting",
+            name = "rampant--aiPointsIdleAwardValue",
+            description = "rampant--aiPointsIdleAwardValue",
+            setting_type = "runtime-global",
+            default_value = 0.0,
+            minimum_value = 0.0,
+            maximum_value = 400.0,
+            order = "m[total]-b[ai]2",
+            per_user = false
+        },
 
         {
             type = "bool-setting",

@@ -339,6 +339,7 @@ function upgrade.attempt(universe)
 
         universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
         universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
+		universe.aiPointsIdleAwardValue = settings.global["rampant--aiPointsIdleAwardValue"].value
 
         universe.aiNocturnalMode = settings.global["rampant--permanentNocturnal"].value
 
