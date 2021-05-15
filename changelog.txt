@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.2.0
 Date: 23. 11. 2021
+  Contributions:
+    - Astorin has provide an updated RU locale up through Rampant 1.1.1
   Improvements:
     - Removed bounding box check when placing enemy buildings or upgrading buildings inplace
     - Limited base faction mutations to 2 (configurable) with a small probability to be granted additional mutations or be locked into those factions forever
