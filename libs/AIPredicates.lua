@@ -21,7 +21,7 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 
 function aiPredicates.canAttack(map, tick)
     local surface = map.surface
-    local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.canAttackTick > tick)) or
+    local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.canAttackTick < tick)) or
             (map.state == AI_STATE_RAIDING) or
             (map.state == AI_STATE_ONSLAUGHT))
     local notPeaceful = not surface.peaceful_mode
