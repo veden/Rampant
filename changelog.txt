@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+Date: 02. 05. 2021
+  Contributions:
+    - Dagothur fixed factions removed mid-playthrough causing crash
+    - Dagothur fixed aggressive ai state not creating attack groups
+
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 29. 04. 2021
   Contributions:
