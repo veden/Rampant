@@ -594,7 +594,7 @@ function baseUtils.rebuildNativeTables(universe, rg)
                 for x=1,#base.alignment do
                     local alignment = base.alignment[x]
                     if not universe.buildingEvolveLookup[alignment] then
-                        base.alignment = findBaseInitialAlignment(universe, evoIndex)
+                        base.alignment = findBaseInitialAlignment(map, evoIndex)
                         break
                     end
                 end
