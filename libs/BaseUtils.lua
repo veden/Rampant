@@ -321,15 +321,74 @@ local function upgradeBase(map, base)
         else
             baseAlignment[2] = findBaseMutation(map)
         end
-        return true
     else
         if (roll < 0.85) then
             base.alignment[1] = findBaseMutation(map)
         else
             base.alignment[2] = findBaseMutation(map)
         end
-        return true
     end
+end
+
+local function pickMutationFromDamageType(map, damageType, roll, base)
+    local baseAlignment = base.alignment
+
+    if (damageType == "physical") then
+
+    elseif (damageType == "impact") then
+
+    elseif (damageType == "poison") then
+
+    elseif (damageType == "explosion") then
+
+    elseif (damageType == "fire") then
+
+    elseif (damageType == "laser") then
+
+    elseif (damageType == "acid") then
+
+    elseif (damageType == "electric") then
+
+    else
+        if baseAlignment[2] then
+            if (roll < 0.05) then
+                baseAlignment[2] = nil
+                baseAlignment[1] = findBaseMutation(map)
+            elseif (roll < 0.25) then
+                baseAlignment[1] = findBaseMutation(map)
+            else
+                baseAlignment[2] = findBaseMutation(map)
+            end
+        else
+            if (roll < 0.85) then
+                base.alignment[1] = findBaseMutation(map)
+            else
+                base.alignment[2] = findBaseMutation(map)
+            end
+        end
+    end
+end
+
+local function upgradeBaseBasedOnDamage(map, base)
+
+    local total = 0
+
+    for _,amount in pairs(base.damagedBy) do
+        total = total + amount
+    end
+    local mutationAmount = total * 0.15
+    base.damagedBy["mutation"] = mutationAmount
+    total = total + mutationAmount
+    local pickedDamage
+    local roll = mRandom()
+    for damageType,amount in pairs(base.damagedBy) do
+        if (roll - (amount / total) < 0) then
+            pickedDamage = damageType
+            break
+        end
+    end
+
+    pickMutationFromDamageType(map, pickedDamage, roll, base)
 end
 
 function baseUtils.processBase(chunk, map, tick, base)
@@ -345,9 +404,7 @@ function baseUtils.processBase(chunk, map, tick, base)
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     local upgradeRoll = mRandom()
-    if ((base.state == BASE_AI_STATE_MUTATE) and (upgradeRoll < 0.02)) or
-        ((base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.1))
-    then
+    if (upgradeRoll < 0.05) then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
@@ -363,17 +420,11 @@ function baseUtils.processBase(chunk, map, tick, base)
         end
     end
 
-    -- if (base.deathEvents > 1000) then
-    -- if (upgradeRoll > 0.95) then
-    if (base.points >= BASE_UPGRADE) then
-        if upgradeBase(map, base) then
-            base.points = base.points - BASE_UPGRADE
-        end
+    if ((upgradeRoll > 0.95) and (base.deathEvents > 3000)) then
+        upgradeBaseBasedOnDamage(map, base)
+        base.damagedBy = {}
+        base.deathEvents = 0
     end
-    -- end
-    --     base.damagedBy = {}
-    --     base.deathEvents = 0
-    -- end
 
     base.points = base.points + map.baseIncrement
 
@@ -385,12 +436,12 @@ function baseUtils.processBase(chunk, map, tick, base)
     -- )
 
     if (base.stateTick <= tick) then
-        local roll = mRandom()
-        if (roll < 0.85) then
-            base.state = BASE_AI_STATE_ACTIVE
-        else
-            base.state = BASE_AI_STATE_MUTATE
-        end
+        -- local roll = mRandom()
+        -- if (roll < 0.85) then
+        base.state = BASE_AI_STATE_ACTIVE
+        -- else
+        --     base.state = BASE_AI_STATE_MUTATE
+        -- end
         base.stateTick = randomTickEvent(tick,
                                          BASE_AI_MIN_STATE_DURATION,
                                          BASE_AI_MAX_STATE_DURATION)

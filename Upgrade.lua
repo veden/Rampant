@@ -407,16 +407,16 @@ function upgrade.attempt(universe)
 
         universe.maxPoints = 0
 
-        -- if (universe.maps) then
-        --     for _,map in pairs(universe.maps) do
-        --         for _,base in pairs(map.bases) do
-        --             base.damagedBy = {}
-        --             base.deathEvents = 0
-        --         end
-        --     end
-        -- end
+        if (universe.maps) then
+            for _,map in pairs(universe.maps) do
+                for _,base in pairs(map.bases) do
+                    base.damagedBy = {}
+                    base.deathEvents = 0
+                end
+            end
+        end
 
-        game.print("Rampant - Version 1.1.0")
+        game.print("Rampant - Version 1.1.2")
     end
 
     return (starting ~= global.version) and global.version
