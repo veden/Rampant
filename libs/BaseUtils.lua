@@ -16,6 +16,8 @@ local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
+local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
+
 local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
 local BASE_AI_STATE_MUTATE = constants.BASE_AI_STATE_MUTATE
 
@@ -333,22 +335,25 @@ end
 local function pickMutationFromDamageType(map, damageType, roll, base)
     local baseAlignment = base.alignment
 
-    if (damageType == "physical") then
+    local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
 
-    elseif (damageType == "impact") then
-
-    elseif (damageType == "poison") then
-
-    elseif (damageType == "explosion") then
-
-    elseif (damageType == "fire") then
-
-    elseif (damageType == "laser") then
-
-    elseif (damageType == "acid") then
-
-    elseif (damageType == "electric") then
-
+    if (damageFactions) then
+        if baseAlignment[2] then
+            if (roll < 0.05) then
+                baseAlignment[2] = nil
+                baseAlignment[1] = damageFactions[math.random(#damageFactions)]
+            elseif (roll < 0.25) then
+                baseAlignment[1] = damageFactions[math.random(#damageFactions)]
+            else
+                baseAlignment[2] = damageFactions[math.random(#damageFactions)]
+            end
+        else
+            if (roll < 0.85) then
+                base.alignment[1] = damageFactions[math.random(#damageFactions)]
+            else
+                base.alignment[2] = damageFactions[math.random(#damageFactions)]
+            end
+        end
     else
         if baseAlignment[2] then
             if (roll < 0.05) then

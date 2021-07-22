@@ -472,6 +472,33 @@ for tier=1, 10 do
     end
 end
 
+constants.FACTIONS_BY_DAMAGE_TYPE = {
+    ["physical"] = {
+        
+    },
+    ["impact"] = {
+
+    },
+    ["poison"] = {
+
+    },
+    ["explosion"] = {
+
+    },
+    ["fire"] = {
+
+    },
+    ["laser"] = {
+
+    },
+    ["acid"] = {
+
+    },
+    ["electric"] = {
+
+    }
+}
+
 constants.FACTION_SET = {}
 
 constants.FACTION_SET[#constants.FACTION_SET+1] = {
