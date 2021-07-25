@@ -310,27 +310,27 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
     return entity
 end
 
-local function upgradeBase(map, base)
-    local baseAlignment = base.alignment
+-- local function upgradeBase(map, base)
+--     local baseAlignment = base.alignment
 
-    local roll = mRandom()
-    if baseAlignment[2] then
-        if (roll < 0.05) then
-            baseAlignment[2] = nil
-            baseAlignment[1] = findBaseMutation(map)
-        elseif (roll < 0.25) then
-            baseAlignment[1] = findBaseMutation(map)
-        else
-            baseAlignment[2] = findBaseMutation(map)
-        end
-    else
-        if (roll < 0.85) then
-            base.alignment[1] = findBaseMutation(map)
-        else
-            base.alignment[2] = findBaseMutation(map)
-        end
-    end
-end
+--     local roll = mRandom()
+--     if baseAlignment[2] then
+--         if (roll < 0.05) then
+--             baseAlignment[2] = nil
+--             baseAlignment[1] = findBaseMutation(map)
+--         elseif (roll < 0.25) then
+--             baseAlignment[1] = findBaseMutation(map)
+--         else
+--             baseAlignment[2] = findBaseMutation(map)
+--         end
+--     else
+--         if (roll < 0.85) then
+--             base.alignment[1] = findBaseMutation(map)
+--         else
+--             base.alignment[2] = findBaseMutation(map)
+--         end
+--     end
+-- end
 
 local function pickMutationFromDamageType(map, damageType, roll, base)
     local baseAlignment = base.alignment
@@ -381,13 +381,16 @@ local function upgradeBaseBasedOnDamage(map, base)
     for _,amount in pairs(base.damagedBy) do
         total = total + amount
     end
-    local mutationAmount = total * 0.15
+    local mutationAmount = total * 0.176471
     base.damagedBy["mutation"] = mutationAmount
     total = total + mutationAmount
     local pickedDamage
     local roll = mRandom()
+    for damageTypeName,amount in pairs(base.damagedBy) do
+        base.damagedBy[damageTypeName] = amount / total
+    end
     for damageType,amount in pairs(base.damagedBy) do
-        if (roll - (amount / total) < 0) then
+        if (roll - (amount / total) <= 0) then
             pickedDamage = damageType
             break
         end
@@ -425,7 +428,18 @@ function baseUtils.processBase(chunk, map, tick, base)
         end
     end
 
-    if ((upgradeRoll > 0.95) and (base.deathEvents > 3000)) then
+    local deathThreshold
+    if (map.evolutionLevel < 0.5) then
+        deathThreshold = 1
+    elseif (map.evolutionLevel < 0.7) then
+        deathThreshold = 4500
+    elseif (map.evolutionLevel < 0.9) then
+        deathThreshold = 6000
+    else
+        deathThreshold = 7500
+    end
+
+    if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
         upgradeBaseBasedOnDamage(map, base)
         base.damagedBy = {}
         base.deathEvents = 0
@@ -490,6 +504,7 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
         alignment = alignment,
         state = BASE_AI_STATE_ACTIVE,
         damagedBy = {},
+        deathEvents = 0,
         stateTick = 0,
         createdTick = tick,
         points = 0,

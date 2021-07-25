@@ -516,8 +516,9 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType)
                 local count = getFunc(map, chunk)
                 if count then
                     local base = getChunkBase(map, chunk)
-                    if base then
-                        base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 1
+                    if damageType and base then
+                        local damageTypeName = damageType.name
+                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
                         base.deathEvents = base.deathEvents + 3
                     end
                     if (count <= 1) then

@@ -480,10 +480,11 @@ local function onDeath(event)
                     if group then
                         local damageType = event.damage_type
                         local squad = map.groupNumberToSquad[group.group_number]
-                        if squad then
+                        if damageType and squad then
                             local base = squad.base
                             if base then
-                                base.damagedBy[damageType] = (base.damagedBy[damageType] or 0) + 0.01
+                                local damageTypeName = damageType.name
+                                base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
                                 base.deathEvents = base.deathEvents + 1
                             end
                         end

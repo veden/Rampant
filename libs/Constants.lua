@@ -474,28 +474,56 @@ end
 
 constants.FACTIONS_BY_DAMAGE_TYPE = {
     ["physical"] = {
-        
+        "physical",
+        "troll",
+        "acid",
+        "fast",
+        "spawner"
     },
     ["impact"] = {
-
+        "nuclear",
+        "suicide",
+        "spawner",
+        "physical",
+        "troll"
     },
     ["poison"] = {
-
+        "poison",
+        "suicide",
+        "nuclear",
+        "acid"
     },
     ["explosion"] = {
-
+        "fast",
+        "troll",
+        "physical",
+        "acid"
     },
     ["fire"] = {
-
+        "fire",
+        "inferno",
+        "poison",
+        "fast"
     },
     ["laser"] = {
-
+        "laser",
+        "energy-thief",
+        "electric",
+        "wasp",
+        "spawner"
     },
     ["acid"] = {
-
+        "acid",
+        "inferno",
+        "fire",
+        "poison"
     },
     ["electric"] = {
-
+        "laser",
+        "energy-thief",
+        "electric",
+        "wasp",
+        "spawner"
     }
 }
 
