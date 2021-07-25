@@ -5,6 +5,7 @@ Date: 24. 07. 2021
     - Rampant new enemies now adapt to the damage type they are killed with
   Tweaks:
     - Reduced default max number of active squads to 25 and active builders to 10
+    - Added kux ion cannon optional dependency in info.json
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.1
