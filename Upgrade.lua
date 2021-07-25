@@ -416,7 +416,7 @@ function upgrade.attempt(universe)
             end
         end
 
-        game.print("Rampant - Version 1.1.2")
+        game.print("Rampant - Version 1.1.3")
     end
 
     return (starting ~= global.version) and global.version

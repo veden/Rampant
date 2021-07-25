@@ -211,6 +211,9 @@ local function onModSettingsChange(event)
                          settings.global["rampant--temperamentRateModifier"].value)
 
     upgrade.compareTable(universe,
+                         "adaptationModifier",
+                         settings.global["rampant--adaptationModifier"].value)
+    upgrade.compareTable(universe,
                          "deadZoneFrequency",
                          settings.global["rampant--deadZoneFrequency"].value)
     upgrade.compareTable(universe,

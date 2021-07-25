@@ -337,7 +337,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
 
     local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
 
-    if (damageFactions) then
+    if (damageFactions and (#damageFactions > 0)) then
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
@@ -430,7 +430,7 @@ function baseUtils.processBase(chunk, map, tick, base)
 
     local deathThreshold
     if (map.evolutionLevel < 0.5) then
-        deathThreshold = 1
+        deathThreshold = 3000
     elseif (map.evolutionLevel < 0.7) then
         deathThreshold = 4500
     elseif (map.evolutionLevel < 0.9) then
@@ -439,8 +439,11 @@ function baseUtils.processBase(chunk, map, tick, base)
         deathThreshold = 7500
     end
 
+    deathThreshold = universe.adaptationModifier * deathThreshold
+
     if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
         upgradeBaseBasedOnDamage(map, base)
+        -- print("upgraded")
         base.damagedBy = {}
         base.deathEvents = 0
     end

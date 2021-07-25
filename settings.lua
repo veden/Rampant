@@ -210,6 +210,16 @@ data:extend({
             per_user = false
         },
 
+        {
+            type = "double-setting",
+            name = "rampant--adaptationModifier",
+            setting_type = "runtime-global",
+            default_value = 1,
+            minimum_value = 0.001,
+            maximum_value = 100.0,
+            order = "m[total]-b[ai]",
+            per_user = false
+        },
 
         {
             type = "double-setting",
@@ -222,6 +232,7 @@ data:extend({
             order = "d[modifier]-a[ai]",
             per_user = false
         },
+
 
         {
             type = "bool-setting",
