@@ -609,10 +609,10 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
 }
 
 if settings.startup["rampant--acidEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]] = "acid"
-    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]] = "acid"
-    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]] = "acid"
-    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]] = "acid"
+    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "acid"
+    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "acid"
+    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "acid"
+    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "acid"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "acid",
         tint = {r=1, g=1, b=1, a=1},
@@ -694,8 +694,8 @@ if settings.startup["rampant--acidEnemy"].value then
 end
 
 if settings.startup["rampant--laserEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]] = "laser"
-    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]] = "laser"
+    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "laser"
+    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "laser"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "laser",
         tint = {r=0.3, g=0.3, b=0.42, a=1},
@@ -771,8 +771,8 @@ if settings.startup["rampant--laserEnemy"].value then
 end
 
 if settings.startup["rampant--fireEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]] = "fire"
-    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]] = "fire"
+    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "fire"
+    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "fire"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fire",
         tint = {r=1, g=1, b=1, a=1},
@@ -854,8 +854,8 @@ if settings.startup["rampant--fireEnemy"].value then
 end
 
 if settings.startup["rampant--infernoEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]] = "inferno"
-    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]] = "inferno"
+    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "inferno"
+    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "inferno"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "inferno",
         tint = {r=0.5, g=0.1, b=0.1, a=1},
@@ -915,8 +915,8 @@ if settings.startup["rampant--infernoEnemy"].value then
 end
 
 if settings.startup["rampant--waspEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]] = "wasp"
-    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]] = "wasp"
+    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "wasp"
+    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "wasp"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "wasp",
         tint = {r=1, g=1, b=0, a=1},
@@ -982,10 +982,10 @@ if settings.startup["rampant--waspEnemy"].value then
 end
 
 if settings.startup["rampant--spawnerEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]] = "spawner"
-    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]] = "spawner"
-    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]] = "spawner"
-    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]] = "spawner"
+    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "spawner"
+    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "spawner"
+    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "spawner"
+    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "spawner"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "spawner",
         tint = {r=0.7, g=0.1, b=0.7, a=1},
@@ -1058,8 +1058,8 @@ if settings.startup["rampant--spawnerEnemy"].value then
 end
 
 if settings.startup["rampant--electricEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]] = "electric"
-    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]] = "electric"
+    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "electric"
+    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "electric"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "electric",
         tint = {r=0.7, g=0.7, b=1.0, a=1},
@@ -1119,9 +1119,9 @@ if settings.startup["rampant--electricEnemy"].value then
 end
 
 if settings.startup["rampant--physicalEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]] = "physical"
-    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]] = "physical"
-    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]] = "physical"
+    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "physical"
+    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "physical"
+    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "physical"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "physical",
         tint = {r=0.9, g=0.9, b=0.9, a=1},
@@ -1181,9 +1181,9 @@ if settings.startup["rampant--physicalEnemy"].value then
 end
 
 if settings.startup["rampant--trollEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]] = "troll"
-    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]] = "troll"
-    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]] = "troll"
+    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "troll"
+    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "troll"
+    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "troll"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "troll",
         tint = {r=0.4, g=0.4, b=0.4, a=1},
@@ -1244,9 +1244,9 @@ if settings.startup["rampant--trollEnemy"].value then
 end
 
 if settings.startup["rampant--poisonEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]] = "poison"
-    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]] = "poison"
-    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]] = "poison"
+    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "poison"
+    constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "poison"
+    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "poison"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "poison",
         tint = {r=0.4, g=0.6, b=0.5, a=1},
@@ -1310,8 +1310,8 @@ if settings.startup["rampant--poisonEnemy"].value then
 end
 
 if settings.startup["rampant--suicideEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]] = "suicide"
-    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]] = "suicide"
+    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "suicide"
+    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "suicide"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "suicide",
         tint = {r=0.8, g=0.8, b=0.8, a=1},
@@ -1371,8 +1371,8 @@ if settings.startup["rampant--suicideEnemy"].value then
 end
 
 if settings.startup["rampant--nuclearEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]] = "nuclear"
-    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]] = "nuclear"
+    constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "nuclear"
+    constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "nuclear"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
         tint = {r=0.1, g=0.95, b=0.1, a=1},
@@ -1431,8 +1431,8 @@ if settings.startup["rampant--nuclearEnemy"].value then
 end
 
 if settings.startup["rampant--energyThiefEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]] = "energy-thief"
-    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]] = "energy-thief"
+    constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "energy-thief"
+    constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "energy-thief"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "energy-thief",
         tint = {r=0.2, g=0.2, b=0.4, a=1},
@@ -1491,9 +1491,9 @@ if settings.startup["rampant--energyThiefEnemy"].value then
 end
 
 if settings.startup["rampant--fastEnemy"].value then
-    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]] = "fast"
-    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]] = "fast"
-    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]] = "fast"
+    constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "fast"
+    constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "fast"
+    constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "fast"
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fast",
         tint = {r=0.9, g=0.9, b=0.9, a=1},

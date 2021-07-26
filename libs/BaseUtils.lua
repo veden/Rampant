@@ -19,7 +19,6 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
 
 local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
-local BASE_AI_STATE_MUTATE = constants.BASE_AI_STATE_MUTATE
 
 local FACTION_SET = constants.FACTION_SET
 
@@ -27,8 +26,6 @@ local BASE_DEADZONE_TTL = constants.BASE_DEADZONE_TTL
 
 local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
 local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
-
-local BASE_UPGRADE = constants.BASE_UPGRADE
 
 local HIVE_BUILDINGS_COST = constants.HIVE_BUILDINGS_COST
 
@@ -336,40 +333,59 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
     local baseAlignment = base.alignment
 
     local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
+    local mutation
 
     if (damageFactions and (#damageFactions > 0)) then
+        mutation = damageFactions[math.random(#damageFactions)]
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
-                baseAlignment[1] = damageFactions[math.random(#damageFactions)]
+                baseAlignment[1] = mutation
             elseif (roll < 0.25) then
-                baseAlignment[1] = damageFactions[math.random(#damageFactions)]
+                baseAlignment[1] = mutation
             else
-                baseAlignment[2] = damageFactions[math.random(#damageFactions)]
+                baseAlignment[2] = mutation
             end
         else
             if (roll < 0.85) then
-                base.alignment[1] = damageFactions[math.random(#damageFactions)]
+                base.alignment[1] = mutation
             else
-                base.alignment[2] = damageFactions[math.random(#damageFactions)]
+                base.alignment[2] = mutation
             end
         end
     else
+        mutation = findBaseMutation(map)
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
-                baseAlignment[1] = findBaseMutation(map)
+                baseAlignment[1] = mutation
             elseif (roll < 0.25) then
-                baseAlignment[1] = findBaseMutation(map)
+                baseAlignment[1] = mutation
             else
-                baseAlignment[2] = findBaseMutation(map)
+                baseAlignment[2] = mutation
             end
         else
             if (roll < 0.85) then
-                base.alignment[1] = findBaseMutation(map)
+                base.alignment[1] = mutation
             else
-                base.alignment[2] = findBaseMutation(map)
+                base.alignment[2] = mutation
             end
+        end
+    end
+    if (map.universe.printBaseAdaptation) then
+        if (baseAlignment[2]) then
+            game.print({"description.rampant--adaptation2DebugMessage",
+                        damageType,
+                        {"description.rampant--"..baseAlignment[1].."EnemyName"},
+                        {"description.rampant--"..baseAlignment[2].."EnemyName"},
+                        base.x,
+                        base.y})
+        else
+            game.print({"description.rampant--adaptation1DebugMessage",
+                        damageType,
+                        {"description.rampant--"..baseAlignment[1].."EnemyName"},
+                        base.x,
+                        base.y})
         end
     end
 end
@@ -443,7 +459,6 @@ function baseUtils.processBase(chunk, map, tick, base)
 
     if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
         upgradeBaseBasedOnDamage(map, base)
-        -- print("upgraded")
         base.damagedBy = {}
         base.deathEvents = 0
     end
@@ -502,7 +517,7 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
     local base = {
         x = x,
         y = y,
-        distanceThreshold = distanceThreshold,
+        distanceThreshold = distanceThreshold * map.universe.baseDistanceModifier,
         tick = baseTick,
         alignment = alignment,
         state = BASE_AI_STATE_ACTIVE,

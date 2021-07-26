@@ -211,6 +211,12 @@ local function onModSettingsChange(event)
                          settings.global["rampant--temperamentRateModifier"].value)
 
     upgrade.compareTable(universe,
+                         "baseDistanceModifier",
+                         settings.global["rampant--baseDistanceModifier"].value)
+    upgrade.compareTable(universe,
+                         "printBaseAdaptation",
+                         settings.global["rampant--printBaseAdaptation"].value)
+    upgrade.compareTable(universe,
                          "adaptationModifier",
                          settings.global["rampant--adaptationModifier"].value)
     upgrade.compareTable(universe,
@@ -831,13 +837,13 @@ local function onEntitySpawned(event)
             else
                 local x,y = positionToChunkXY(entity.position)
                 onChunkGenerated({
-                    surface = entity.surface,
-                    area = {
-                        left_top = {
-                            x = x,
-                            y = y
+                        surface = entity.surface,
+                        area = {
+                            left_top = {
+                                x = x,
+                                y = y
+                            }
                         }
-                    }
                 })
                 entity.destroy()
             end

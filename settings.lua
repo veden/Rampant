@@ -482,6 +482,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant--printBaseAdaptation",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-c[ai]z",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant--debugTemperament",
             setting_type = "runtime-global",
             default_value = false,
@@ -534,6 +543,17 @@ data:extend({
         {
             type = "double-setting",
             name = "rampant--temperamentRateModifier",
+            setting_type = "runtime-global",
+            default_value = 1,
+            minimum_value = 0.001,
+            maximum_value = 100.0,
+            order = "m[total]-b[ai]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant--baseDistanceModifier",
             setting_type = "runtime-global",
             default_value = 1,
             minimum_value = 0.001,
