@@ -3,7 +3,7 @@ Factorio Mod - Improves the enemies tactics by using potential fields/pheromones
 
 # Site
 
-https://mods.factorio.com/mod/Rampant  
+https://mods.factorio.com/mod/Rampant
 
 # Forum Post
 
