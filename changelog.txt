@@ -18,6 +18,7 @@ Date: 23. 11. 2021
     - Fixed new enemy regional base recycling would only process half the bases
     - Fixed new enemy adaptation due to damage type not correctly calculating probability for adaptation
     - Fixed squad cleanup would periodically skip a squad when cleaning up dead unit groups
+    - Fixed enemy destroying a player structure only processing half of the chunks it should have been
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4
