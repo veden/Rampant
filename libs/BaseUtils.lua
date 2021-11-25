@@ -280,7 +280,7 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
                                           map,
                                           evolve)
 
-    if spawnerName then
+    if spawnerName and (spawnerName ~= entity.name) then
         entity.destroy()
         local name = universe.buildingSpaceLookup[spawnerName] or spawnerName
         local query = universe.upgradeEntityQuery

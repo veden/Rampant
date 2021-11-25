@@ -5,6 +5,7 @@ Date: 23. 11. 2021
     - Fixed vengence squads only processing half the expected chunks
     - Fixed nest processing only processing half the nests (Thank you Dimm2101)
     - Fixed active and raid nest processing only processing half the nests (Thank you Dimm2101)
+    - Fixed new enemy building upgrade could replace an entity with the same entity (Thank you Dimm2101)
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4
