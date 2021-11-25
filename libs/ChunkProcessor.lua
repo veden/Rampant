@@ -63,7 +63,10 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     local topOffset = area[1]
     local bottomOffset = area[2]
 
-    local event = next(pendingChunks, map.chunkProcessorIterator)
+    local event = map.chunkProcessorIterator
+    if not event then
+        event = next(pendingChunks, nil)
+    end
     local endCount = 2
     if flush then
         endCount = table_size(pendingChunks)
@@ -77,6 +80,10 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             end
             break
         else
+            if (event.tick > tick) then
+                map.chunkProcessorIterator = event
+                return
+            end
             local topLeft = event.area.left_top
             local x = topLeft.x
             local y = topLeft.y
@@ -92,7 +99,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
                 mapScanEnemyChunk(chunk, map)
                 mapScanResourceChunk(chunk, map)
             else
-                if map[x] == nil then
+                if not map[x] then
                     map[x] = {}
                 end
 
@@ -105,17 +112,16 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
                     processQueue[#processQueue+1] = chunk
                 end
             end
-            local newEvent,_ = next(pendingChunks, event)
+            local newEvent = next(pendingChunks, event)
             pendingChunks[event] = nil
             event = newEvent
         end
-
     end
     map.chunkProcessorIterator = event
 
     if (#processQueue > map.nextChunkSort) or
         (((tick - map.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and
-                ((map.nextChunkSort - 150) < #processQueue))
+            ((map.nextChunkSort - 150) < #processQueue))
     then
         map.nextChunkSort = #processQueue + 150
         map.nextChunkSortTick = tick
