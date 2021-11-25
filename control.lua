@@ -159,7 +159,7 @@ local function onChunkGenerated(event)
     -- queue generated chunk for delayed processing, queuing is required because
     -- some mods (RSO) mess with chunk as they are generated, which messes up the
     -- scoring.
-    event.tick = (event.tick or game.tick) + 110
+    event.tick = (event.tick or game.tick) + 120
     universe.maps[event.surface.index].pendingChunks[event] = true
 end
 
