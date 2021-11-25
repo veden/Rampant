@@ -365,7 +365,7 @@ local function upgradeBaseBasedOnDamage(map, base)
         total = total + amount
     end
     local mutationAmount = total * 0.176471
-    base.damagedBy["mutation"] = mutationAmount
+    base.damagedBy["RandomMutation"] = mutationAmount
     total = total + mutationAmount
     local pickedDamage
     local roll = mRandom()
@@ -373,7 +373,7 @@ local function upgradeBaseBasedOnDamage(map, base)
         base.damagedBy[damageTypeName] = amount / total
     end
     for damageType,amount in pairs(base.damagedBy) do
-        if (roll - (amount / total) <= 0) then
+        if ((roll - amount) <= 0) then
             pickedDamage = damageType
             break
         end
