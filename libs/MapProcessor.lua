@@ -497,20 +497,16 @@ end
 
 local function processSpawners(map, tick, iterator, chunks)
     local chunk = next(chunks, map[iterator])
-    local migrate = canMigrate(map)
-    local attack = canAttack(map, tick)
-    if not chunk then
-        map[iterator] = nil
-        return
-    else
+    map[iterator] = chunk
+    if chunk then
+        local migrate = canMigrate(map)
+        local attack = canAttack(map, tick)
         if migrate then
             formSettlers(map, chunk)
         elseif attack then
             formSquads(map, chunk, tick)
         end
-        chunk = next(chunks, chunk)
     end
-    map[iterator] = chunk
 end
 
 function mapProcessor.processSpawners(map, tick)
