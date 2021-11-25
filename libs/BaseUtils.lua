@@ -235,25 +235,25 @@ local function findBaseInitialAlignment(map, evoIndex)
     return result
 end
 
+
 function baseUtils.recycleBases(map, tick)
     local bases = map.bases
-    local id, base = next(bases, map.recycleBaseIterator)
+    local id = map.recycleBaseIterator
+    local base
+    if not id then
+        id, base = next(bases, nil)
+    else
+        base = bases[id]
+    end
     if not id then
         map.recycleBaseIterator = nil
-        return
     else
+        map.recycleBaseIterator = next(bases, id)
         if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
-            local nextId
-            nextId = next(bases, id)
             bases[id] = nil
-            id = nextId
-        else
-            id = next(bases, id)
         end
     end
-    map.recycleBaseIterator = id
 end
-
 
 function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
     local surface = map.surface
