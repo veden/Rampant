@@ -283,18 +283,6 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
         local query = universe.upgradeEntityQuery
         query.name = name
         query.position = disPos or position
-
-        if not surface.can_place_entity(query) then
-            local newPosition = surface.find_non_colliding_position(
-                name,
-                disPos or position,
-                CHUNK_SIZE,
-                1,
-                true
-            )
-            query.position = newPosition or disPos or position
-        end
-
         query.name = spawnerName
         if remote.interfaces["kr-creep"] then
             remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)

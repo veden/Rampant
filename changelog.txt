@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.5
 Date: 23. 11. 2021
+  Improvements:
+    - Removed bounding box check when placing enemy buildings or upgrading buildings inplace
   Tweaks:
     - Doubled the processing rate of regional faction bases with new enemies
     - Added a small chance (0.5%) that Hives can spawn outside resource patches (Thank you Dimm2101)
