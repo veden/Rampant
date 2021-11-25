@@ -895,10 +895,6 @@ local function onUnitGroupCreated(event)
                 end
             else
                 if not (surface.darkness > 0.65) then
-                    map.points = map.points + AI_SQUAD_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                    end
                     group.destroy()
                     return
                 end
