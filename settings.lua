@@ -61,6 +61,17 @@ data:extend({
 
         {
             type = "int-setting",
+            name = "rampant--max-base-mutations",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            maximum_value = 9999999999,
+            default_value = 2,
+            order = "b[modifier]-i[wave]",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
             name = "rampant--maxNumberOfBuilders",
             setting_type = "runtime-global",
             minimum_value = 1,

@@ -336,19 +336,23 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
         end
     end
     if (map.universe.printBaseAdaptation) then
-        if (baseAlignment[2]) then
+        if baseAlignment[2] then
             game.print({"description.rampant--adaptation2DebugMessage",
                         damageType,
                         {"description.rampant--"..baseAlignment[1].."EnemyName"},
                         {"description.rampant--"..baseAlignment[2].."EnemyName"},
                         base.x,
-                        base.y})
+                        base.y,
+                        base.mutations,
+                        map.universe.MAX_BASE_MUTATIONS})
         else
             game.print({"description.rampant--adaptation1DebugMessage",
                         damageType,
                         {"description.rampant--"..baseAlignment[1].."EnemyName"},
                         base.x,
-                        base.y})
+                        base.y,
+                        base.mutations,
+                        map.universe.MAX_BASE_MUTATIONS})
         end
     end
 end
@@ -421,7 +425,17 @@ function baseUtils.processBase(chunk, map, tick, base)
     deathThreshold = universe.adaptationModifier * deathThreshold
 
     if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
-        upgradeBaseBasedOnDamage(map, base)
+        if (base.mutations < universe.MAX_BASE_MUTATIONS) then
+            upgradeBaseBasedOnDamage(map, base)
+            base.mutations = base.mutations + 1
+        elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
+            local roll = mRandom()
+            if (roll < 0.001) then
+                base.mutations = 0
+            elseif (roll > 0.999) then
+                base.mutations = base.mutations + 1
+            end
+        end
         base.damagedBy = {}
         base.deathEvents = 0
     end
@@ -486,6 +500,7 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
         state = BASE_AI_STATE_ACTIVE,
         damagedBy = {},
         deathEvents = 0,
+        mutations = 0,
         stateTick = 0,
         createdTick = tick,
         points = 0,

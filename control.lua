@@ -192,6 +192,9 @@ local function onModSettingsChange(event)
     upgrade.compareTable(universe.safeEntities,
                          "lamp",
                          settings.global["rampant--safeBuildings-lamps"].value)
+    upgrade.compareTable(universe,
+                         "MAX_BASE_MUTATIONS",
+                         settings.global["rampant--max-base-mutations"].value)
 
     local changed, newValue = upgrade.compareTable(universe.safeEntities,
                                                    "big-electric-pole",
