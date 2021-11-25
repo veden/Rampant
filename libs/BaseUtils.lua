@@ -215,6 +215,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
         local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (mRandom() < 0.2)
+        makeHive = makeHive or (not makeHive and (mRandom() < 0.005))
         return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"))
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
