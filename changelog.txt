@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.1.5
+Version: 1.2.0
 Date: 23. 11. 2021
   Improvements:
     - Removed bounding box check when placing enemy buildings or upgrading buildings inplace
