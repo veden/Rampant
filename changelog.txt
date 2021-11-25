@@ -2,6 +2,7 @@
 Version: 1.1.5
 Date: 23. 11. 2021
   Bugfixes:
+    - Fixed vengence squads only processing half the expected chunks
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4

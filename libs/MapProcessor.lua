@@ -463,20 +463,20 @@ end
 
 function mapProcessor.processVengence(map)
     local ss = map.vengenceQueue
-    local chunk = next(ss, map.deployVengenceIterator)
+    local chunk = map.deployVengenceIterator
+    if not chunk then
+        chunk = next(ss, nil)
+    end
     if not chunk then
         map.deployVengenceIterator = nil
         if (tableSize(ss) == 0) then
             map.vengenceQueue = {}
         end
     else
+        map.deployVengenceIterator = next(ss, chunk)
         formVengenceSquad(map, chunk)
-        local nextChunk
-        nextChunk = next(ss, chunk)
         ss[chunk] = nil
-        chunk = nextChunk
     end
-    map.deployVengenceIterator = chunk
 end
 
 function mapProcessor.processNests(map, tick)
