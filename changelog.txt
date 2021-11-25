@@ -17,6 +17,7 @@ Date: 23. 11. 2021
     - Fixed new enemy building upgrade could replace an entity with the same entity (Thank you Dimm2101)
     - Fixed new enemy regional base recycling would only process half the bases
     - Fixed new enemy adaptation due to damage type not correctly calculating probability for adaptation
+    - Fixed squad cleanup would periodically skip a squad when cleaning up dead unit groups
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4

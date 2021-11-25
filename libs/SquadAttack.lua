@@ -322,15 +322,21 @@ end
 
 function squadAttack.cleanSquads(map)
     local squads = map.groupNumberToSquad
-    local iterator = map.squadIterator
-
-    local k, squad = next(squads, iterator)
+    local k = map.squadIterator
+    local squad
     if not k then
+        k, squad = next(squads, k)
+    else
+        squad = squads[k]
+    end
+    if not k then
+        map.squadIterator = nil
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
             map.groupNumberToSquad = {}
         end
     else
+        map.squadIterator = next(squads, k)
         local group = squad.group
         if not group.valid then
             addDeathGenerator(map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
@@ -344,15 +350,11 @@ function squadAttack.cleanSquads(map)
             else
                 universe.squadCount = universe.squadCount - 1
             end
-            local nextK
-            nextK = next(squads, k)
             squads[k] = nil
-            k = nextK
         elseif (group.state == 4) then
             squadAttack.squadDispatch(map, squad)
         end
     end
-    map.squadIterator = k
 end
 
 function squadAttack.squadDispatch(map, squad)
