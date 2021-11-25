@@ -137,7 +137,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
 
     points = points * universe.aiPointsScaler
 
-    map.baseIncrement = points
+    map.baseIncrement = points * 1.5
 
     local currentPoints = map.points
 
