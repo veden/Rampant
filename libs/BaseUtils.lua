@@ -97,8 +97,6 @@ function baseUtils.findNearbyBase(map, chunk)
         end
     end
 
-    -- print("base found", foundBase)
-
     return foundBase
 end
 
@@ -240,7 +238,6 @@ end
 function baseUtils.recycleBases(map, tick)
     local bases = map.bases
     local id, base = next(bases, map.recycleBaseIterator)
-    -- for _=1,2 do
     if not id then
         map.recycleBaseIterator = nil
         return
@@ -254,7 +251,6 @@ function baseUtils.recycleBases(map, tick)
             id = next(bases, id)
         end
     end
-    -- end
     map.recycleBaseIterator = id
 end
 
@@ -306,28 +302,6 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
     end
     return entity
 end
-
--- local function upgradeBase(map, base)
---     local baseAlignment = base.alignment
-
---     local roll = mRandom()
---     if baseAlignment[2] then
---         if (roll < 0.05) then
---             baseAlignment[2] = nil
---             baseAlignment[1] = findBaseMutation(map)
---         elseif (roll < 0.25) then
---             baseAlignment[1] = findBaseMutation(map)
---         else
---             baseAlignment[2] = findBaseMutation(map)
---         end
---     else
---         if (roll < 0.85) then
---             base.alignment[1] = findBaseMutation(map)
---         else
---             base.alignment[2] = findBaseMutation(map)
---         end
---     end
--- end
 
 local function pickMutationFromDamageType(map, damageType, roll, base)
     local baseAlignment = base.alignment
