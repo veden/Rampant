@@ -19,6 +19,7 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
 
 local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
+local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 
 local FACTION_SET = constants.FACTION_SET
 
@@ -395,7 +396,7 @@ function baseUtils.processBase(chunk, map, tick, base)
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     local upgradeRoll = mRandom()
-    if (upgradeRoll < 0.05) then
+    if (base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.05) then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
@@ -446,16 +447,13 @@ function baseUtils.processBase(chunk, map, tick, base)
         base.points = universe.maxPoints
     end
 
-    -- print("baseStats", base.points, base.state, base.deathEvents-- , serpent.dump(base.damagedBy)
-    -- )
-
     if (base.stateTick <= tick) then
-        -- local roll = mRandom()
-        -- if (roll < 0.85) then
-        base.state = BASE_AI_STATE_ACTIVE
-        -- else
-        --     base.state = BASE_AI_STATE_MUTATE
-        -- end
+        local roll = mRandom()
+        if (roll < 0.85) then
+            base.state = BASE_AI_STATE_ACTIVE
+        else
+            base.state = BASE_AI_STATE_DORMANT
+        end
         base.stateTick = randomTickEvent(tick,
                                          BASE_AI_MIN_STATE_DURATION,
                                          BASE_AI_MAX_STATE_DURATION)
