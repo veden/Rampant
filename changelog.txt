@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.5
 Date: 23. 11. 2021
+  Tweaks:
+    - Doubled the processing rate of regional faction bases with new enemies
   Bugfixes:
     - Fixed vengence squads only processing half the expected chunks
     - Fixed nest processing only processing half the nests (Thank you Dimm2101)
