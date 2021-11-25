@@ -283,6 +283,8 @@ local function prepMap(surface)
         universe.maps[surfaceIndex] = map
     end
 
+    map.maxAggressiveGroups = 1
+    map.sentAggressiveGroups = 0
     map.processedChunks = 0
     map.processQueue = {}
     map.processIndex = 1
@@ -1075,7 +1077,7 @@ script.on_event(defines.events.on_tick,
                         scanResourceMap(map, tick)
                     elseif (pick == 5) then
                         scanEnemyMap(map, tick)
-                        processSpawners(map, tick)
+                        processSpawners(map)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
                         processNests(map, tick)

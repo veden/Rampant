@@ -19,9 +19,9 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 
 -- module code
 
-function aiPredicates.canAttack(map, tick)
+function aiPredicates.canAttack(map)
     local surface = map.surface
-    local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.canAttackTick < tick)) or
+    local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.sentAggressiveGroups < map.maxAggressiveGroups)) or
             (map.state == AI_STATE_RAIDING) or
             (map.state == AI_STATE_ONSLAUGHT))
     local notPeaceful = not surface.peaceful_mode

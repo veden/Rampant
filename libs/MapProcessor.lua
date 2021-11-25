@@ -223,7 +223,7 @@ end
 function mapProcessor.processPlayers(players, map, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
-    local allowingAttacks = canAttack(map, tick)
+    local allowingAttacks = canAttack(map)
     local universe = map.universe
 
     -- not looping everyone because the cost is high enough already in multiplayer
@@ -495,53 +495,46 @@ function mapProcessor.processNests(map, tick)
     end
 end
 
-local function processSpawners(map, tick, iterator, chunks)
+local function processSpawners(map, iterator, chunks)
     local chunk = next(chunks, map[iterator])
     map[iterator] = chunk
     if chunk then
         local migrate = canMigrate(map)
-        local attack = canAttack(map, tick)
+        local attack = canAttack(map)
         if migrate then
             formSettlers(map, chunk)
         elseif attack then
-            formSquads(map, chunk, tick)
+            formSquads(map, chunk)
         end
     end
 end
 
-function mapProcessor.processSpawners(map, tick)
+function mapProcessor.processSpawners(map)
 
     if (map.state ~= AI_STATE_PEACEFUL) then
         if (map.state == AI_STATE_MIGRATING) then
             processSpawners(map,
-                            tick,
                             "processMigrationIterator",
                             map.chunkToNests)
         elseif (map.state == AI_STATE_AGGRESSIVE) then
             processSpawners(map,
-                            tick,
                             "processActiveSpawnerIterator",
                             map.chunkToActiveNest)
         elseif (map.state == AI_STATE_SIEGE) then
             processSpawners(map,
-                            tick,
                             "processActiveSpawnerIterator",
                             map.chunkToActiveNest)
             processSpawners(map,
-                            tick,
                             "processActiveRaidSpawnerIterator",
                             map.chunkToActiveRaidNest)
             processSpawners(map,
-                            tick,
                             "processMigrationIterator",
                             map.chunkToNests)
         else
             processSpawners(map,
-                            tick,
                             "processActiveSpawnerIterator",
                             map.chunkToActiveNest)
             processSpawners(map,
-                            tick,
                             "processActiveRaidSpawnerIterator",
                             map.chunkToActiveRaidNest)
         end

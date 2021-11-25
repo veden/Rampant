@@ -20,9 +20,6 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
 
-local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
-local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
-
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
@@ -43,8 +40,6 @@ local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 -- imported functions
 
 local findNearbyBase = baseUtils.findNearbyBase
-
-local randomTickEvent = mathUtils.randomTickEvent
 
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
@@ -295,7 +290,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
     end
 end
 
-function aiAttackWave.formSquads(map, chunk, tick)
+function aiAttackWave.formSquads(map, chunk)
     local universe = map.universe
     if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
         attackWaveValidCandidate(chunk, map) and
@@ -333,10 +328,8 @@ function aiAttackWave.formSquads(map, chunk, tick)
                     map.points = map.points - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
                     map.groupNumberToSquad[squad.groupNumber] = squad
-                    if tick and (map.state == AI_STATE_AGGRESSIVE) then
-                        map.canAttackTick = randomTickEvent(tick,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
+                    if (map.state == AI_STATE_AGGRESSIVE) then
+                        map.sentAggressiveGroups = map.sentAggressiveGroups + 1
                     end
                     if universe.aiPointsPrintSpendingToChat then
                         game.print(map.surface.name .. ": Points: -" .. AI_SQUAD_COST .. ". [Squad] Total: " .. string.format("%.2f", map.points) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")

@@ -11,6 +11,9 @@ local mathUtils = require("MathUtils")
 
 -- constants
 
+local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
+local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
+local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
 local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
 local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
 
@@ -43,6 +46,7 @@ local randomTickEvent = mathUtils.randomTickEvent
 local linearInterpolation = mathUtils.linearInterpolation
 
 local mFloor = math.floor
+local mCeil = math.ceil
 
 local mRandom = math.random
 
@@ -89,6 +93,14 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.attackWaveSize = attackWaveMaxSize * (evolution_factor ^ 1.4)
     universe.attackWaveDeviation = (universe.attackWaveSize * 0.333)
     universe.attackWaveUpperBound = universe.attackWaveSize + (universe.attackWaveSize * 0.35)
+
+    if (map.canAttackTick < tick) then
+        map.maxAggressiveGroups = mCeil(map.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
+        map.sentAggressiveGroups = 0
+        map.canAttackTick = randomTickEvent(tick,
+                                            AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
+                                            AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
+    end
 
     if (universe.attackWaveSize < 1) then
         universe.attackWaveSize = 2
