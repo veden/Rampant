@@ -581,7 +581,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
     local o = {
         type = "projectile",
         range = -- attributes.range or
-            0.5,
+            1,
         cooldown = attributes.cooldown or 35,
         range_mode = "bounding-box-to-bounding-box",
         ammo_category = "melee",
