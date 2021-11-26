@@ -227,8 +227,8 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 end
 
 local function findBaseInitialAlignment(map, evoIndex)
-    local dev = evoIndex * 0.3
-    local evoTop = gaussianRandomRange(evoIndex - dev, dev, 0, evoIndex)
+    local dev = evoIndex * 0.15
+    local evoTop = gaussianRandomRange(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex)
 
     local result
     if mRandom() < 0.05 then
