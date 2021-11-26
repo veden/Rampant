@@ -73,7 +73,7 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     for i=10,1,-1 do
         if universe.evoToTierMapping[i] <= evolutionFactor then
             v = i
-            if (skipsRemaining == 0) or (mRandom() <= 0.65) then
+            if (skipsRemaining == 0) or (mRandom() <= 0.75) then
                 break
             end
             skipsRemaining = skipsRemaining - 1
