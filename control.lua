@@ -323,9 +323,6 @@ local function prepMap(surface)
     map.chunkToActiveNest = {}
     map.chunkToActiveRaidNest = {}
 
-    map.nextChunkSort = 0
-    map.nextChunkSortTick = 0
-
     map.pendingUpgradeIterator = nil
     map.squadIterator = nil
     map.regroupIterator = nil
@@ -382,7 +379,6 @@ local function prepMap(surface)
     -- queue all current chunks that wont be generated during play
     local tick = game.tick
     local position = {0,0}
-    map.nextChunkSort = 0
     for chunk in surface.get_chunks() do
         local x = chunk.x
         local y = chunk.y

@@ -60,21 +60,6 @@ constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
 
 constants.CHUNK_PASS_THRESHOLD = 0.2
 
--- constants.INTERVAL_PLAYER_PROCESS = 63
--- constants.INTERVAL_MAP_PROCESS = 5
--- constants.INTERVAL_MAP_STATIC_PROCESS = 11
--- constants.INTERVAL_SCAN = 19
--- constants.INTERVAL_CHUNK_PROCESS = 23
--- constants.INTERVAL_LOGIC = 59
--- constants.INTERVAL_TEMPERAMENT = 121
--- constants.INTERVAL_SQUAD = 14
--- constants.INTERVAL_NEST = 16
--- constants.INTERVAL_PASS_SCAN = 29
--- constants.INTERVAL_RESQUAD = 101
--- constants.INTERVAL_SPAWNER = 19
--- constants.INTERVAL_VICTORY = 10
--- constants.INTERVAL_CLEANUP = 34
-
 constants.COOLDOWN_RALLY = constants.TICKS_A_SECOND * 10
 constants.COOLDOWN_RETREAT = constants.TICKS_A_SECOND * 10
 
@@ -110,8 +95,6 @@ constants.EVOLUTION_INCREMENTS = 0.05
 constants.DIVISOR_DEATH_TRAIL_TABLE = { 0.75, 0.65, 0.55, 0.45, 0.35 }
 
 -- ai
-
-constants.MAX_TICKS_BEFORE_SORT_CHUNKS = 60 * 60 * 30 -- 1 tick = 1/60 sec * 60 = 1 second
 
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 

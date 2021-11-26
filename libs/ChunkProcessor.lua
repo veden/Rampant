@@ -6,14 +6,11 @@ local chunkProcessor = {}
 -- imports
 
 local chunkUtils = require("ChunkUtils")
-local mathUtils = require("MathUtils")
 local constants = require("Constants")
 
 -- constants
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
-
-local MAX_TICKS_BEFORE_SORT_CHUNKS = constants.MAX_TICKS_BEFORE_SORT_CHUNKS
 
 -- imported functions
 
@@ -25,33 +22,29 @@ local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
 
-local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
-
-local tSort = table.sort
-
-local abs = math.abs
 local next = next
 local table_size = table_size
 
 local tRemove = table.remove
+local tInsert = table.insert
+local mCeil = math.ceil
 
 -- module code
 
-local origin = {x=0,y=0}
-
-local function sorter(a, b)
-    local aDistance = euclideanDistanceNamed(a, origin)
-    local bDistance = euclideanDistanceNamed(b, origin)
-
-    if (aDistance == bDistance) then
-        if (a.x == b.x) then
-            return (abs(a.y) < abs(b.y))
-        else
-            return (abs(a.x) < abs(b.x))
+local function findInsertionPoint(processQueue, chunk)
+    local low = 1
+    local high = #processQueue
+    local pivot
+    while (low <= high) do
+        pivot = mCeil((low + high) * 0.5)
+        local pivotChunk = processQueue[pivot]
+        if (pivotChunk.dOrgin > chunk.dOrgin) then
+            high = pivot - 1
+        elseif (pivotChunk.dOrgin <= chunk.dOrgin) then
+            low = pivot + 1
         end
     end
-
-    return (aDistance < bDistance)
+    return low
 end
 
 function chunkProcessor.processPendingChunks(map, tick, flush)
@@ -109,7 +102,11 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
 
                 if (chunk ~= -1) then
                     map[x][y] = chunk
-                    processQueue[#processQueue+1] = chunk
+                    tInsert(
+                        processQueue,
+                        findInsertionPoint(processQueue, chunk),
+                        chunk
+                    )
                 end
             end
             local newEvent = next(pendingChunks, event)
@@ -118,15 +115,6 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
         end
     end
     map.chunkProcessorIterator = event
-
-    if (#processQueue > map.nextChunkSort) or
-        (((tick - map.nextChunkSortTick) > MAX_TICKS_BEFORE_SORT_CHUNKS) and
-            ((map.nextChunkSort - 150) < #processQueue))
-    then
-        map.nextChunkSort = #processQueue + 150
-        map.nextChunkSortTick = tick
-        tSort(processQueue, sorter)
-    end
 end
 
 function chunkProcessor.processScanChunks(map)

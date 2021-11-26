@@ -9,6 +9,7 @@ local baseUtils = require("BaseUtils")
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local mathUtils = require("MathUtils")
 
 -- constants
 
@@ -72,6 +73,8 @@ local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
 
 local upgradeEntity = baseUtils.upgradeEntity
+
+local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
 local setChunkBase = chunkPropertyUtils.setChunkBase
@@ -373,7 +376,8 @@ end
 function chunkUtils.createChunk(topX, topY)
     local chunk = {
         x = topX,
-        y = topY
+        y = topY,
+        dOrgin = euclideanDistancePoints(topX, topY, 0, 0)
     }
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0

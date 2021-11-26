@@ -3,6 +3,7 @@ local upgrade = {}
 -- imports
 
 local constants = require("libs/Constants")
+local mathUtils = require("libs/MathUtils")
 
 -- constants
 
@@ -25,6 +26,8 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
+
+local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 -- module code
 
@@ -424,6 +427,10 @@ function upgrade.attempt(universe)
         if (universe.maps) then
             for _,map in pairs(universe.maps) do
                 map.pendingUpgrades = {}
+                for i=1,#map.processQueue do
+                    local chunk = map.processQueue[i]
+                    map.processQueue[i].dOrgin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
+                end
                 for _,base in pairs(map.bases) do
                     base.mutations = 0
                 end
