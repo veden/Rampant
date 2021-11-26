@@ -432,8 +432,6 @@ function chunkUtils.processPendingUpgrades(map, tick)
     end
     if entity then
         if entity.valid then
-            -- print("upgrading", entity.unit_number, tick, table_size(pendingUpgrades))
-            -- constants.gpsDebug(entity.position.x, entity.position.y, entity.unit_number)
             map.pendingUpgradeIterator = next(pendingUpgrades, entity)
             pendingUpgrades[entity] = nil
             local universe = map.universe
@@ -456,8 +454,6 @@ function chunkUtils.processPendingUpgrades(map, tick)
                                           tick)
                     end
                     if base then
-                        -- print("registering", tick)
-                        -- constants.gpsDebug(entity.position.x, entity.position.y, "registered")
                         chunkUtils.registerEnemyBaseStructure(map, createdEntity, base)
                     end
                 else
@@ -476,7 +472,6 @@ function chunkUtils.processPendingUpgrades(map, tick)
                 end
             end
         else
-            -- print("skipping invalid", tick)
             map.pendingUpgradeIterator = next(pendingUpgrades, entity)
             pendingUpgrades[entity] = nil
         end
