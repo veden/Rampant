@@ -14,7 +14,6 @@ local squadDefense = require("libs/SquadDefense")
 local squadAttack = require("libs/SquadAttack")
 local aiAttackWave = require("libs/AIAttackWave")
 local aiPlanning = require("libs/AIPlanning")
--- local interop = require("libs/Interop")
 local tests = require("tests")
 local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
@@ -168,8 +167,6 @@ local function onModSettingsChange(event)
     if not isRampantSetting(event.setting) then
         return
     end
-
-    --game.print("onModSettingsChange() processing for Rampant")
 
     upgrade.compareTable(universe,
                          "safeBuildings",
@@ -1019,9 +1016,7 @@ local function onBuilderArrived(event)
     targetPosition.x = builder.position.x
     targetPosition.y = builder.position.y
 
-    --local map = universe.maps[event.surface.index] -- crashes
     if universe.aiPointsPrintSpendingToChat then
-        --game.print(map.surface.name .. ": Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]") -- crashes
         game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
     end
     builder.surface.create_entity(universe.createBuildCloudQuery)

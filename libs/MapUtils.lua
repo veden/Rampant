@@ -15,8 +15,6 @@ local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
--- local PASSABLE = constants.PASSABLE
-
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
@@ -112,7 +110,6 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local canMove = false
     local startPassable = getPassable(map, startChunk)
     local endPassable = getPassable(map, endChunk)
-    -- print(direction, startPassable, endPassable)
     if (startPassable == CHUNK_ALL_DIRECTIONS) then
         if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
             canMove = (endPassable == CHUNK_ALL_DIRECTIONS)

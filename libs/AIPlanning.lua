@@ -7,7 +7,6 @@ local aiPlanning = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
--- local aiPredicates = require("AIPredicates")
 
 -- constants
 

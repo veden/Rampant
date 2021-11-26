@@ -154,7 +154,6 @@ function chunkProcessor.processScanChunks(map)
             for ri=chunkCount,1,-1 do
                 if (removals[ri] == processQueue[i]) then
                     tRemove(processQueue, i)
-                    -- tRemove(removals, ri)
                     break
                 end
             end
