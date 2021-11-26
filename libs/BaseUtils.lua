@@ -269,7 +269,17 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, reg
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distance, map.evolutionLevel)
 
-    local spawnerName = findEntityUpgrade(baseAlignment[mRandom(#baseAlignment)],
+    local pickedBaseAlignment
+    if (#baseAlignment == 2) then
+        if mRandom() < 0.75 then
+            pickedBaseAlignment = baseAlignment[2]
+        else
+            pickedBaseAlignment = baseAlignment[1]
+        end
+    else
+        pickedBaseAlignment = baseAlignment[1]
+    end
+    local spawnerName = findEntityUpgrade(pickedBaseAlignment,
                                           currentEvo,
                                           evoIndex,
                                           entity,

@@ -11,6 +11,7 @@ Date: 23. 11. 2021
     - Optimized regional base upgrades so that the work is spread over many ticks reducing lag spikes
     - Optimized adding new chunks to the Rampant in-memory state map
   Tweaks:
+    - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures
     - Doubled the processing rate of regional faction bases with new enemies
     - Added a small chance (0.5%) that Hives can spawn outside resource patches (Thank you Dimm2101)
     - Increased suicide and nuclear biters attack range from 0.5 to 1
