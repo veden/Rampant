@@ -10,6 +10,7 @@ Date: 23. 11. 2021
     - Number of groups that can be active in aggressive AI state now scales with the number of active nests. Rougly for every 30 pollution covered nests you will get an additional attack group.
     - Optimized regional base upgrades so that the work is spread over many ticks reducing lag spikes
     - Optimized adding new chunks to the Rampant in-memory state map
+    - Added minimum building cost upgrade check before base upgrade performs scanning
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures

@@ -12,6 +12,7 @@ local mapUtils = require("MapUtils")
 
 -- constants
 
+local MINIMUM_BUILDING_COST = constants.MINIMUM_BUILDING_COST
 local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
 local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
@@ -402,7 +403,7 @@ function baseUtils.processBase(chunk, map, tick, base)
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     local upgradeRoll = mRandom()
-    if (base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.30) then
+    if (base.state == BASE_AI_STATE_ACTIVE) and (base.points >= MINIMUM_BUILDING_COST) and (upgradeRoll < 0.30) then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]

@@ -1598,6 +1598,13 @@ constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRAD
 constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
 
+constants.MINIMUM_BUILDING_COST = constants.MAGIC_MAXIMUM_NUMBER
+for _,cost in pairs(constants.HIVE_BUILDINGS_COST) do
+    if cost < constants.MINIMUM_BUILDING_COST then
+        constants.MINIMUM_BUILDING_COST = cost
+    end
+end
+
 constants.FACTION_MUTATION_MAPPING = {}
 constants.FACTION_MUTATION_MAPPING["spitter-spawner"] = {"biter-spawner", "hive"}
 constants.FACTION_MUTATION_MAPPING["biter-spawner"] = {"spitter-spawner", "hive"}
