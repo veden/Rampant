@@ -59,10 +59,10 @@ local function getTimeStringFromTick(tick)
 
     local tickToSeconds = tick / 60
 
-    local days = math.floor(tickToSeconds / 86400)
-    local hours = math.floor((tickToSeconds % 86400) / 3600)
-    local minutes = math.floor((tickToSeconds % 3600) / 60)
-    local seconds = math.floor(tickToSeconds % 60)
+    local days = mFloor(tickToSeconds / 86400)
+    local hours = mFloor((tickToSeconds % 86400) / 3600)
+    local minutes = mFloor((tickToSeconds % 3600) / 60)
+    local seconds = mFloor(tickToSeconds % 60)
     return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
 end
 
