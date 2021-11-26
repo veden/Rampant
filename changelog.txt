@@ -28,6 +28,7 @@ Date: 23. 11. 2021
     - Fixed unit groups spawned by factorio in noctural mode during the day would give points to the AI (Thanks Deathlymad)
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
+    - Added debug mod settings for showing enemy structures being upgraded in place
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4

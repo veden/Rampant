@@ -252,6 +252,7 @@ local function onModSettingsChange(event)
 
     universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
     universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
+    universe.printBaseUpgrades = settings.global["rampant--printBaseUpgrades"].value
 
     universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
     universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value

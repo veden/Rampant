@@ -402,6 +402,9 @@ function baseUtils.processBase(chunk, map, tick, base)
                                                           base.alignment,
                                                           map)
                 if newEntity then
+                    if universe.printBaseUpgrades then
+                        surface.print("[gps=".. entity.position.x ..",".. entity.position.y .."] " .. "Scheduled upgrade for ".. entity.name .. " to " .. newEntity)
+                    end
                     base.points = base.points - cost
                 end
             end
