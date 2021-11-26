@@ -418,11 +418,12 @@ function upgrade.attempt(universe)
 
         game.print("Rampant - Version 1.1.4")
     end
-    if global.version < 118 then
-        global.version = 118
+    if global.version < 120 then
+        global.version = 120
 
         if (universe.maps) then
             for _,map in pairs(universe.maps) do
+                map.pendingUpgrades = {}
                 for _,base in pairs(map.bases) do
                     base.mutations = 0
                 end

@@ -78,7 +78,9 @@ local setChunkBase = chunkPropertyUtils.setChunkBase
 local setPassable = chunkPropertyUtils.setPassable
 local setPathRating = chunkPropertyUtils.setPathRating
 
+local getChunkByPosition = mapUtils.getChunkByPosition
 local getChunkByXY = mapUtils.getChunkByXY
+local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 
 local mMin = math.min
 local mMax = math.max
@@ -87,7 +89,7 @@ local mFloor = math.floor
 -- module code
 
 local function getEntityOverlapChunks(map, entity)
-    local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box;
+    local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box
     local overlapArray = map.universe.chunkOverlapArray
 
     overlapArray[1] = -1 --LeftTop
@@ -246,7 +248,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                         if not buildingHiveTypeLookup[enemyBuilding.name] then
                             local newEntity = upgradeEntity(enemyBuilding, alignment, map, nil, true)
                             if newEntity then
-                                local hiveType = buildingHiveTypeLookup[newEntity.name]
+                                local hiveType = buildingHiveTypeLookup[newEntity]
                                 counts[hiveType] = counts[hiveType] + 1
                             end
                         else
@@ -415,6 +417,67 @@ function chunkUtils.colorXY(x, y, surface, color)
     })
 end
 
+function chunkUtils.processPendingUpgrades(map, tick)
+    local pendingUpgrades = map.pendingUpgrades
+    local entity = map.pendingUpgradeIterator
+    local entityData
+    if not entity then
+        entity, entityData = next(pendingUpgrades, nil)
+    else
+        entityData = pendingUpgrades[entity]
+    end
+    if entity then
+        if entity.valid then
+            -- print("upgrading", entity.unit_number, tick, table_size(pendingUpgrades))
+            -- constants.gpsDebug(entity.position.x, entity.position.y, entity.unit_number)
+            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
+            pendingUpgrades[entity] = nil
+            local universe = map.universe
+            local query = universe.upgradeEntityQuery
+            query.position = entityData.position or entity.position
+            query.name = entityData.name
+            local surface = entity.surface
+            entity.destroy()
+            if remote.interfaces["kr-creep"] then
+                remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
+            end
+            local createdEntity = surface.create_entity(query)
+            if createdEntity and createdEntity.valid and entityData.register then
+                local chunk = getChunkByPosition(map, createdEntity.position)
+                if (chunk ~= -1) then
+                    local base = findNearbyBase(map, chunk)
+                    if not base then
+                        base = createBase(map,
+                                          chunk,
+                                          tick)
+                    end
+                    if base then
+                        -- print("registering", tick)
+                        -- constants.gpsDebug(entity.position.x, entity.position.y, "registered")
+                        chunkUtils.registerEnemyBaseStructure(map, createdEntity, base)
+                    end
+                else
+                    queueGeneratedChunk(
+                        universe,
+                        {
+                            surface = createdEntity.surface,
+                            area = {
+                                left_top = {
+                                    x = createdEntity.position.x,
+                                    y = createdEntity.position.y
+                                }
+                            }
+                        }
+                    )
+                end
+            end
+        else
+            -- print("skipping invalid", tick)
+            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
+            pendingUpgrades[entity] = nil
+        end
+    end
+end
 
 function chunkUtils.registerEnemyBaseStructure(map, entity, base)
     local entityType = entity.type

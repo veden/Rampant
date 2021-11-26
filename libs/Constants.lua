@@ -1624,7 +1624,7 @@ constants.FACTION_MUTATION_MAPPING["trap"] = {"turret"}
 constants.FACTION_MUTATION_MAPPING["utility"] = {"hive", "biter-spawner", "spitter-spawner"}
 
 function constants.gpsDebug(x, y, msg)
-    game.print("[gps=".. x .. "," .. y .. "]", msg)
+    game.print("[gps=".. x .. "," .. y .. "]" .. msg)
 end
 
 constantsG =  constants

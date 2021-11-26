@@ -51,6 +51,11 @@ function mapUtils.positionToChunkXY(position)
     return chunkX, chunkY
 end
 
+function mapUtils.queueGeneratedChunk(universe, event)
+    event.tick = (event.tick or game.tick) + 120
+    universe.maps[event.surface.index].pendingChunks[event] = true
+end
+
 --[[
     1 2 3
     \|/

@@ -257,11 +257,9 @@ function baseUtils.recycleBases(map, tick)
     end
 end
 
-function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
-    local surface = map.surface
+function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, register)
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
-    local universe = map.universe
 
     if not baseAlignment[1] then
         entity.destroy()
@@ -279,18 +277,16 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve)
                                           evolve)
 
     if spawnerName and (spawnerName ~= entity.name) then
-        entity.destroy()
-        local name = universe.buildingSpaceLookup[spawnerName] or spawnerName
-        local query = universe.upgradeEntityQuery
-        query.name = name
-        query.position = disPos or position
-        query.name = spawnerName
-        if remote.interfaces["kr-creep"] then
-            remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
-        end
-        return surface.create_entity(query)
+        local entityData = {
+            ["name"] = spawnerName,
+            ["position"] = disPos,
+            ["register"] = register
+        }
+        map.pendingUpgrades[entity] = entityData
+        return spawnerName
     end
-    return entity
+
+    return nil
 end
 
 local function pickMutationFromDamageType(map, damageType, roll, base)

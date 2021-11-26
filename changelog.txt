@@ -8,6 +8,7 @@ Date: 23. 11. 2021
     - Limited base faction mutations to 2 (configurable) with a small probability to be granted additional mutations or be locked into those factions forever
     - Readded regional bases going dormant in regards to upgrading structures to allow for a buildup of base points to upgrade larger structures like hives. DOES NOT EFFECT ATTACK WAVES.
     - Number of groups that can be active in aggressive AI state now scales with the number of active nests. Rougly for every 30 pollution covered nests you will get an additional attack group.
+    - Optimized regional base upgrades so that the work is spread over many ticks reducing lag spikes
   Tweaks:
     - Doubled the processing rate of regional faction bases with new enemies
     - Added a small chance (0.5%) that Hives can spawn outside resource patches (Thank you Dimm2101)

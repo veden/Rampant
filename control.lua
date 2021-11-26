@@ -44,8 +44,10 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local isRampantSetting = stringUtils.isRampantSetting
 
+local processPendingUpgrades = chunkUtils.processPendingUpgrades
 local canMigrate = aiPredicates.canMigrate
 
 local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
@@ -102,7 +104,6 @@ local retreatUnits = squadDefense.retreatUnits
 
 local accountPlayerEntity = chunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
-local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local makeImmortalEntity = chunkUtils.makeImmortalEntity
 
 local registerResource = chunkUtils.registerResource
@@ -159,8 +160,7 @@ local function onChunkGenerated(event)
     -- queue generated chunk for delayed processing, queuing is required because
     -- some mods (RSO) mess with chunk as they are generated, which messes up the
     -- scoring.
-    event.tick = (event.tick or game.tick) + 120
-    universe.maps[event.surface.index].pendingChunks[event] = true
+    queueGeneratedChunk(universe, event)
 end
 
 local function onModSettingsChange(event)
@@ -296,6 +296,7 @@ local function prepMap(surface)
     map.outgoingScanWave = true
     map.outgoingStaticScanWave = true
 
+    map.pendingUpgrades = {}
     map.pendingChunks = {}
     map.chunkToBase = {}
     map.chunkToNests = {}
@@ -325,6 +326,7 @@ local function prepMap(surface)
     map.nextChunkSort = 0
     map.nextChunkSortTick = 0
 
+    map.pendingUpgradeIterator = nil
     map.squadIterator = nil
     map.regroupIterator = nil
     map.deployVengenceIterator = nil
@@ -661,14 +663,12 @@ local function onEnemyBaseBuild(event)
                                       chunk,
                                       event.tick)
                 end
-                entity = upgradeEntity(entity,
-                                       base.alignment,
-                                       map,
-                                       nil,
-                                       true)
-            end
-            if entity and entity.valid then
-                event.entity = registerEnemyBaseStructure(map, entity, base)
+                upgradeEntity(entity,
+                              base.alignment,
+                              map,
+                              nil,
+                              true,
+                              true)
             end
         else
             local x,y = positionToChunkXY(entity.position)
@@ -832,14 +832,12 @@ local function onEntitySpawned(event)
                                       event.tick)
                 end
 
-                entity = upgradeEntity(entity,
-                                       base.alignment,
-                                       map,
-                                       disPos)
-
-                if entity and entity.valid then
-                    event.entity = registerEnemyBaseStructure(map, entity, base)
-                end
+                upgradeEntity(entity,
+                              base.alignment,
+                              map,
+                              disPos,
+                              true,
+                              true)
             else
                 local x,y = positionToChunkXY(entity.position)
                 onChunkGenerated({
@@ -1081,6 +1079,7 @@ script.on_event(defines.events.on_tick,
                     end
 
                     processActiveNests(map, tick)
+                    processPendingUpgrades(map, tick)
                     cleanSquads(map)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
