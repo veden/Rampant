@@ -1591,7 +1591,7 @@ for x=1,9 do
 end
 
 constants.HIVE_BUILDINGS_COST = {}
-constants.HIVE_BUILDINGS_COST["trap"] = constants.BASE_WORM_UPGRADE * 0.5
+constants.HIVE_BUILDINGS_COST["trap"] = constants.BASE_WORM_UPGRADE
 constants.HIVE_BUILDINGS_COST["turret"] = constants.BASE_WORM_UPGRADE
 constants.HIVE_BUILDINGS_COST["utility"] = constants.BASE_SPAWNER_UPGRADE * 1.5
 constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRADE
