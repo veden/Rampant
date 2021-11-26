@@ -399,12 +399,13 @@ end
 function tests.exportAiState()
 
     local printState = function ()
-        local chunks = global.map.processQueue
+        local map = global.universe.maps[game.players[1].surface.index]
+        local chunks = map.processQueue
         local s = ""
         for i=1,#chunks do
             local chunk = chunks[i]
 
-            local base = chunkPropertyUtils.getChunkBase(global.map, chunk)
+            local base = chunkPropertyUtils.getChunkBase(map, chunk)
             local alignmentCount = 0
 
             if base then
@@ -419,27 +420,27 @@ function tests.exportAiState()
                                    chunk[constants.BASE_PHEROMONE],
                                    chunk[constants.PLAYER_PHEROMONE],
                                    chunk[constants.RESOURCE_PHEROMONE],
-                                   chunkPropertyUtils.getPassable(global.map, chunk),
+                                   chunkPropertyUtils.getPassable(map, chunk),
                                    chunk[constants.CHUNK_TICK],
-                                   chunkPropertyUtils.getPathRating(global.map, chunk),
+                                   chunkPropertyUtils.getPathRating(map, chunk),
                                    chunk.x,
                                    chunk.y,
-                                   chunkPropertyUtils.getNestCount(global.map, chunk),
-                                   chunkPropertyUtils.getTurretCount(global.map, chunk),
-                                   chunkPropertyUtils.getRallyTick(global.map, chunk),
-                                   chunkPropertyUtils.getRetreatTick(global.map, chunk),
-                                   chunkPropertyUtils.getResourceGenerator(global.map, chunk),
-                                   chunkPropertyUtils.getPlayerBaseGenerator(global.map, chunk),
-                                   chunkPropertyUtils.getDeathGenerator(global.map, chunk),
-                                   game.get_surface(global.natives.activeSurface).get_pollution(chunk),
-                                   chunkPropertyUtils.getNestActiveness(global.map, chunk),
-                                   chunkPropertyUtils.getRaidNestActiveness(global.map, chunk),
-                                   table_size(chunkPropertyUtils.getSquadsOnChunk(global.map, chunk)),
+                                   chunkPropertyUtils.getNestCount(map, chunk),
+                                   chunkPropertyUtils.getTurretCount(map, chunk),
+                                   chunkPropertyUtils.getRallyTick(map, chunk),
+                                   chunkPropertyUtils.getRetreatTick(map, chunk),
+                                   chunkPropertyUtils.getResourceGenerator(map, chunk),
+                                   chunkPropertyUtils.getPlayerBaseGenerator(map, chunk),
+                                   chunkPropertyUtils.getDeathGenerator(map, chunk),
+                                   game.get_surface(game.players[1].surface.index).get_pollution(chunk),
+                                   chunkPropertyUtils.getNestActiveness(map, chunk),
+                                   chunkPropertyUtils.getRaidNestActiveness(map, chunk),
+                                   table_size(chunkPropertyUtils.getSquadsOnChunk(map, chunk)),
                                    alignmentCount,
-                                   chunkPropertyUtils.getHiveCount(global.map, chunk),
-                                   chunkPropertyUtils.getTrapCount(global.map, chunk),
-                                   chunkPropertyUtils.getUtilityCount(global.map, chunk),
-                                   global.map.chunkToVictory[chunk] or 0
+                                   chunkPropertyUtils.getHiveCount(map, chunk),
+                                   chunkPropertyUtils.getTrapCount(map, chunk),
+                                   chunkPropertyUtils.getUtilityCount(map, chunk),
+                                   map.chunkToVictory[chunk] or 0
                                   }, ",") .. "\n"
         end
         game.write_file("rampantState.txt", s, false)
