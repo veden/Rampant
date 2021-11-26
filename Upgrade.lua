@@ -29,7 +29,22 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
+local mAbs = math.abs
+local tSort = table.sort
+
 -- module code
+
+local function sorter(a, b)
+    if (a.dOrigin == b.dOrigin) then
+        if (a.x == b.x) then
+            return (mAbs(a.y) < mAbs(b.y))
+        else
+            return (mAbs(a.x) < mAbs(b.x))
+        end
+    end
+
+    return (a.dOrigin < b.dOrigin)
+end
 
 local function addCommandSet(queriesAndCommands)
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
@@ -429,8 +444,9 @@ function upgrade.attempt(universe)
                 map.pendingUpgrades = {}
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
-                    map.processQueue[i].dOrgin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
+                    map.processQueue[i].dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
                 end
+                tSort(map.processQueue, sorter)
                 for _,base in pairs(map.bases) do
                     base.mutations = 0
                 end

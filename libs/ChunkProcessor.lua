@@ -38,9 +38,9 @@ local function findInsertionPoint(processQueue, chunk)
     while (low <= high) do
         pivot = mCeil((low + high) * 0.5)
         local pivotChunk = processQueue[pivot]
-        if (pivotChunk.dOrgin > chunk.dOrgin) then
+        if (pivotChunk.dOrigin > chunk.dOrigin) then
             high = pivot - 1
-        elseif (pivotChunk.dOrgin <= chunk.dOrgin) then
+        elseif (pivotChunk.dOrigin <= chunk.dOrigin) then
             low = pivot + 1
         end
     end

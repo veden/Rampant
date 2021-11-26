@@ -377,7 +377,7 @@ function chunkUtils.createChunk(topX, topY)
     local chunk = {
         x = topX,
         y = topY,
-        dOrgin = euclideanDistancePoints(topX, topY, 0, 0)
+        dOrigin = euclideanDistancePoints(topX, topY, 0, 0)
     }
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
