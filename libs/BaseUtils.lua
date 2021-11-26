@@ -67,14 +67,16 @@ local mRandom = math.random
 
 -- module code
 
-local function evoToTier(universe, evolutionFactor)
+local function evoToTier(universe, evolutionFactor, maxSkips)
     local v
+    local skipsRemaining = maxSkips
     for i=10,1,-1 do
         if universe.evoToTierMapping[i] <= evolutionFactor then
             v = i
-            if mRandom() <= 0.65 then
+            if (skipsRemaining == 0) or (mRandom() <= 0.65) then
                 break
             end
+            skipsRemaining = skipsRemaining - 1
         end
     end
     return v
@@ -104,7 +106,7 @@ end
 
 local function findBaseMutation(map, targetEvolution)
     local universe = map.universe
-    local tier = evoToTier(universe, targetEvolution or map.evolutionLevel)
+    local tier = evoToTier(universe, targetEvolution or map.evolutionLevel, 2)
     local alignments = universe.evolutionTableAlignment[tier]
 
     local roll = mRandom()
@@ -207,8 +209,8 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
         0
     )
 
-    local tier = evoToTier(universe, adjCurrentEvo)
-    local maxTier = evoToTier(universe, evoIndex)
+    local tier = evoToTier(universe, adjCurrentEvo, 5)
+    local maxTier = evoToTier(universe, evoIndex, 4)
 
     if (tier > maxTier) then
         return nil
@@ -661,7 +663,7 @@ function baseUtils.rebuildNativeTables(universe, rg)
         end
     end
 
-    local evoIndex = evoToTier(universe, universe.evolutionLevel)
+    local evoIndex = evoToTier(universe, universe.evolutionLevel, 2)
 
     if universe.maps then
         for _,map in pairs(universe.maps) do
