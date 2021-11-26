@@ -402,7 +402,7 @@ function baseUtils.processBase(chunk, map, tick, base)
     point.y = chunk.y + (CHUNK_SIZE * mRandom())
 
     local upgradeRoll = mRandom()
-    if (base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.05) then
+    if (base.state == BASE_AI_STATE_ACTIVE) and (upgradeRoll < 0.30) then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
