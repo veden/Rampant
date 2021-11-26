@@ -1077,6 +1077,7 @@ script.on_event(defines.events.on_tick,
 
                     processActiveNests(map, tick)
                     processPendingUpgrades(map, tick)
+                    processPendingUpgrades(map, tick)
                     cleanSquads(map)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
