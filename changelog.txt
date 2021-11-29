@@ -11,7 +11,6 @@ Date: 23. 11. 2021
     - Optimized regional base upgrades so that the work is spread over many ticks reducing lag spikes
     - Optimized adding new chunks to the Rampant in-memory state map
     - Added minimum building cost upgrade check before base upgrade performs scanning
-    - Added command timeout for unit groups in case a command hangs or unit groups are stuck gathering (Thank you Dimm2101)
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures
@@ -34,6 +33,7 @@ Date: 23. 11. 2021
     - Fixed squad cleanup would periodically skip a squad when cleaning up dead unit groups
     - Fixed enemy destroying a player structure only processing half of the chunks it should have been
     - Fixed unit groups spawned by factorio in noctural mode during the day would give points to the AI (Thanks Deathlymad)
+    - Added command timeout for unit groups in case a command hangs or unit groups are stuck gathering (Thank you Dimm2101)
     - Corrected spelling of wonder command to wander command
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
