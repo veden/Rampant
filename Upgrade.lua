@@ -438,6 +438,8 @@ function upgrade.attempt(universe)
             local tick = game.tick
             for _,map in pairs(universe.maps) do
                 map.pendingUpgrades = {}
+                map.sentAggressiveGroups = 0
+                map.maxAggressiveGroups = 1
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
                     map.processQueue[i].dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
