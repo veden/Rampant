@@ -160,7 +160,7 @@ local function settleMove(map, squad)
                                                             scoreFunction)
 
         if (attackChunk == -1) then
-            cmd = universe.wonderCommand
+            cmd = universe.wanderCommand
             group.set_command(cmd)
             return
         elseif (attackDirection ~= 0) then
@@ -185,7 +185,7 @@ local function settleMove(map, squad)
                     addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
-                cmd = universe.wonderCommand
+                cmd = universe.wanderCommand
                 group.set_command(cmd)
                 return
             end
@@ -255,7 +255,7 @@ local function attackMove(map, squad)
                                                                        attackScorer)
     local cmd
     if (attackChunk == -1) then
-        cmd = universe.wonderCommand
+        cmd = universe.wanderCommand
         group.set_command(cmd)
         return
     elseif (nextAttackChunk ~= -1) then
@@ -269,7 +269,7 @@ local function attackMove(map, squad)
     end
 
     if not position then
-        cmd = universe.wonderCommand
+        cmd = universe.wanderCommand
         group.set_command(cmd)
         return
     else

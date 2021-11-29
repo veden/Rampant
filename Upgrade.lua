@@ -277,7 +277,7 @@ local function addCommandSet(queriesAndCommands)
         ignore_planner = true
     }
 
-    queriesAndCommands.wonderCommand = {
+    queriesAndCommands.wanderCommand = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
         radius = TRIPLE_CHUNK_SIZE*2,
