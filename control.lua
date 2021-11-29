@@ -47,7 +47,7 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local isRampantSetting = stringUtils.isRampantSetting
 
-local processPendingUpgrades = chunkUtils.processPendingUpgrades
+local processPendingUpgrades = chunkProcessor.processPendingUpgrades
 local canMigrate = aiPredicates.canMigrate
 
 local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal

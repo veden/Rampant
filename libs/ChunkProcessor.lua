@@ -7,12 +7,20 @@ local chunkProcessor = {}
 
 local chunkUtils = require("ChunkUtils")
 local constants = require("Constants")
+local baseUtils = require("BaseUtils")
+local mapUtils = require("MapUtils")
 
 -- constants
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
+
+local queueGeneratedChunk = mapUtils.queueGeneratedChunk
+local getChunkByPosition = mapUtils.getChunkByPosition
+
+local findNearbyBase = baseUtils.findNearbyBase
+local createBase = baseUtils.createBase
 
 local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
 local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
@@ -115,6 +123,63 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
         end
     end
     map.chunkProcessorIterator = event
+end
+
+function chunkProcessor.processPendingUpgrades(map, tick)
+    local pendingUpgrades = map.pendingUpgrades
+    local entity = map.pendingUpgradeIterator
+    local entityData
+    if not entity then
+        entity, entityData = next(pendingUpgrades, nil)
+    else
+        entityData = pendingUpgrades[entity]
+    end
+    if entity then
+        if entity.valid then
+            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
+            pendingUpgrades[entity] = nil
+            local universe = map.universe
+            local query = universe.upgradeEntityQuery
+            query.position = entityData.position or entity.position
+            query.name = entityData.name
+            local surface = entity.surface
+            entity.destroy()
+            if remote.interfaces["kr-creep"] then
+                remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
+            end
+            local createdEntity = surface.create_entity(query)
+            if createdEntity and createdEntity.valid and entityData.register then
+                local chunk = getChunkByPosition(map, createdEntity.position)
+                if (chunk ~= -1) then
+                    local base = findNearbyBase(map, chunk)
+                    if not base then
+                        base = createBase(map,
+                                          chunk,
+                                          tick)
+                    end
+                    if base then
+                        chunkUtils.registerEnemyBaseStructure(map, createdEntity, base)
+                    end
+                else
+                    queueGeneratedChunk(
+                        universe,
+                        {
+                            surface = createdEntity.surface,
+                            area = {
+                                left_top = {
+                                    x = createdEntity.position.x,
+                                    y = createdEntity.position.y
+                                }
+                            }
+                        }
+                    )
+                end
+            end
+        else
+            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
+            pendingUpgrades[entity] = nil
+        end
+    end
 end
 
 function chunkProcessor.processScanChunks(map)
