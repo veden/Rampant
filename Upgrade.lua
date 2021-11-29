@@ -429,17 +429,6 @@ function upgrade.attempt(universe)
         global.version = 116
 
         universe.maxPoints = 0
-
-        if (universe.maps) then
-            for _,map in pairs(universe.maps) do
-                for _,base in pairs(map.bases) do
-                    base.damagedBy = {}
-                    base.deathEvents = 0
-                end
-            end
-        end
-
-        game.print("Rampant - Version 1.1.4")
     end
     if global.version < 121 then
         global.version = 121
@@ -458,6 +447,8 @@ function upgrade.attempt(universe)
                 end
                 tSort(map.processQueue, sorter)
                 for _,base in pairs(map.bases) do
+                    base.damagedBy = {}
+                    base.deathEvents = 0
                     base.mutations = 0
                 end
             end
