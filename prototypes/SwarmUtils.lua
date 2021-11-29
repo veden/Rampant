@@ -60,6 +60,7 @@ local makeBloodFountains = particleUtils.makeBloodFountains
 local makeBubble = beamUtils.makeBubble
 local makeBeam = beamUtils.makeBeam
 local createElectricAttack = biterUtils.createElectricAttack
+local createBeamAttack = biterUtils.createBeamAttack
 
 local makeBiter = biterUtils.makeBiter
 local makeDrone = droneUtils.makeDrone
@@ -630,8 +631,8 @@ local function fillEntityTemplate(entity)
                                             type = "projectile",
                                             projectile = createCapsuleProjectile(attack,
                                                                                  attack.faction .. "-" .. attribute[2]
-                                                                                     .. "-v" .. attack.variation .. "-t"
-                                                                                     .. attack.effectiveLevel .. "-rampant"),
+                                                                                 .. "-v" .. attack.variation .. "-t"
+                                                                                 .. attack.effectiveLevel .. "-rampant"),
                                             direction_deviation = 0.6,
                                             starting_speed = 0.25,
                                             max_range = attack.range,
@@ -920,21 +921,20 @@ local function buildAttack(faction, template)
                             type = "instant",
                             target_effects =
                                 {
-                                    type = "create-entity",
-                                    trigger_created_entity = true,
-                                    entity_name = "drain-trigger-rampant"
+                                    type = "script",
+                                    effect_id = "rampant-drain-trigger"
                                 }
                         },
                         {
                             type = "beam",
                             beam = electricBeam or "electric-beam",
-                            duration = attributes.duration or 20
+                            duration = attributes.duration * 2
                         }
                     }
             end
         elseif (attack == "physical") then
             template.explosionTiers = explosionTiers
-            template.scorchmarkTiers = scorchmarkTiers            
+            template.scorchmarkTiers = scorchmarkTiers
             template.damageType = "physical"
             template.fireDamagePerTickType = "physical"
             template.stickerDamagePerTickType = "physical"
@@ -984,7 +984,7 @@ local function buildAttack(faction, template)
                                                                                                  attack.tint,
                                                                                                  attack.tint2)) or nil)
             end
-        elseif (attack == "beam") then
+        elseif (attack == "scatterBeam") then
             template.addon[#template.addon+1] = beamAttackNumeric
             template.attackGenerator = function (attack)
                 return createElectricAttack(attack,
@@ -992,6 +992,15 @@ local function buildAttack(faction, template)
                                             (template.attackAnimation and template.attackAnimation(attack.scale,
                                                                                                    attack.tint,
                                                                                                    attack.tint2)) or nil)
+            end
+        elseif (attack == "beam") then
+            template.addon[#template.addon+1] = beamAttackNumeric
+            template.attackGenerator = function (attack)
+                return createBeamAttack(attack,
+                                        makeBeam(attack),
+                                        (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                               attack.tint,
+                                                                                               attack.tint2)) or nil)
             end
         elseif (attack == "cluster") then
             template.addon[#template.addon+1] = clusterAttackNumeric
@@ -1062,7 +1071,7 @@ local function buildAttack(faction, template)
         elseif (attack == "nuclear") then
             template.addon[#template.addon+1] = nuclearAttackNumeric
             template.explosionTiers = explosionTiers
-            template.scorchmarkTiers = scorchmarkTiers            
+            template.scorchmarkTiers = scorchmarkTiers
             template.nuclear = true
             template.attackGenerator = function (attack)
                 return createSuicideAttack(attack,

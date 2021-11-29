@@ -1055,7 +1055,7 @@ if settings.startup["rampant--electricEnemy"].value then
         units = {
             {
                 type = "biter",
-                attackAttributes = {"beam", "electric"},
+                attackAttributes = {"scatterBeam", "electric"},
                 name = "biter",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},

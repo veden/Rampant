@@ -791,14 +791,15 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
-    local entity = event.entity
-    if entity.valid and (entity.name  == "drain-trigger-rampant") then
-        local map = universe.maps[entity.surface.index]
-        local chunk = getChunkByPosition(map, entity.position)
-        if (chunk ~= -1) then
-            map.chunkToDrained[chunk] = event.tick + 60
+    if (event.effect_id == "rampant-drain-trigger") then
+        local entity = event.target_entity
+        if (entity.valid) then
+            local map = universe.maps[event.surface_index]
+            local chunk = getChunkByPosition(map, entity.position)
+            if (chunk ~= -1) then
+                map.chunkToDrained[chunk] = event.tick + 60
+            end
         end
-        entity.destroy()
     end
 end
 
@@ -1097,7 +1098,7 @@ script.on_event({defines.events.on_player_built_tile,
 
 script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 
-script.on_event(defines.events.on_trigger_created_entity, onTriggerEntityCreated)
+script.on_event(defines.events.on_script_trigger_effect, onTriggerEntityCreated)
 
 script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
 

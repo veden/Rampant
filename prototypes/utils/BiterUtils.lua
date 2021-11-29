@@ -1056,6 +1056,35 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
         }
 end
 
+function biterFunctions.createBeamAttack(attributes, electricBeam, animation)
+    return
+        {
+            type = "beam",
+            ammo_category = "biological",
+            range_mode = "bounding-box-to-bounding-box",
+            cooldown = attributes.cooldown or 20,
+            warmup = attributes.warmup,
+            damage_modifier = 2.5,
+            min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
+            range = (attributes.range and (attributes.range + 2)) or 15,
+            ammo_type =
+                {
+                    category = "biological",
+                    action =
+                        {
+                            type = "direct",
+                            action_delivery = (attributes.actions and attributes.actions(attributes, electricBeam)) or
+                                {
+                                    type = "beam",
+                                    beam = electricBeam or "electric-beam",
+                                    duration = attributes.duration or 20
+                                }
+                        }
+                },
+            animation = animation
+        }
+end
+
 function biterFunctions.createProjectileAttack(attributes, projectile, animation)
     return {
         type = "projectile",
