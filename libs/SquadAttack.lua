@@ -13,6 +13,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
@@ -319,7 +320,7 @@ local function buildMove(map, squad)
     group.set_command(universe.compoundSettleCommand)
 end
 
-function squadAttack.cleanSquads(map)
+function squadAttack.cleanSquads(map, tick)
     local squads = map.groupNumberToSquad
     local k = map.squadIterator
     local squad
@@ -351,20 +352,28 @@ function squadAttack.cleanSquads(map)
             end
             squads[k] = nil
         elseif (group.state == 4) then
-            squadAttack.squadDispatch(map, squad)
+            squadAttack.squadDispatch(map, squad, tick)
+        elseif (squad.commandTick and (squad.commandTick < tick)) then
+            local cmd = map.universe.wander2Command
+            squad.commandTick = tick + COMMAND_TIMEOUT
+            group.set_command(cmd)
+            group.start_moving()
         end
     end
 end
 
-function squadAttack.squadDispatch(map, squad)
+function squadAttack.squadDispatch(map, squad, tick)
     local group = squad.group
     if group and group.valid then
         local status = squad.status
         if (status == SQUAD_RAIDING) then
+            squad.commandTick = tick + COMMAND_TIMEOUT
             attackMove(map, squad)
         elseif (status == SQUAD_SETTLING) then
+            squad.commandTick = tick + COMMAND_TIMEOUT
             settleMove(map, squad)
         elseif (status == SQUAD_RETREATING) then
+            squad.commandTick = tick + COMMAND_TIMEOUT
             if squad.settlers then
                 squad.status = SQUAD_SETTLING
                 settleMove(map, squad)
@@ -373,9 +382,11 @@ function squadAttack.squadDispatch(map, squad)
                 attackMove(map, squad)
             end
         elseif (status == SQUAD_BUILDING) then
+            squad.commandTick = tick + COMMAND_TIMEOUT
             removeSquadFromChunk(map, squad)
             buildMove(map, squad)
         elseif (status == SQUAD_GUARDING) then
+            squad.commandTick = tick + COMMAND_TIMEOUT
             if squad.settlers then
                 squad.status = SQUAD_SETTLING
                 settleMove(map, squad)

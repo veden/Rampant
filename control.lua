@@ -23,6 +23,7 @@ local stringUtils = require("libs/StringUtils")
 
 -- constants
 
+local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
@@ -932,7 +933,7 @@ local function onGroupFinishedGathering(event)
         if squad then
             if squad.settler then
                 if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
-                    squadDispatch(map, squad)
+                    squadDispatch(map, squad, event.tick)
                 else
                     group.destroy()
                     map.points = map.points + AI_SETTLER_COST
@@ -942,7 +943,7 @@ local function onGroupFinishedGathering(event)
                 end
             else
                 if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
-                    squadDispatch(map, squad)
+                    squadDispatch(map, squad, event.tick)
                 else
                     group.destroy()
                     map.points = map.points + AI_SQUAD_COST
@@ -972,7 +973,7 @@ local function onGroupFinishedGathering(event)
             else
                 universe.squadCount = universe.squadCount + 1
             end
-            squadDispatch(map, squad)
+            squadDispatch(map, squad, event.tick)
         end
     end
 end
@@ -1016,6 +1017,8 @@ local function onBuilderArrived(event)
     targetPosition.x = builder.position.x
     targetPosition.y = builder.position.y
 
+    local squad = universe.maps[builder.surface.index].groupNumberToSquad[builder.group_number]
+    squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     if universe.aiPointsPrintSpendingToChat then
         game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
     end
@@ -1073,7 +1076,7 @@ script.on_event(defines.events.on_tick,
                     processActiveNests(map, tick)
                     processPendingUpgrades(map, tick)
                     processPendingUpgrades(map, tick)
-                    cleanSquads(map)
+                    cleanSquads(map, tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
 end)

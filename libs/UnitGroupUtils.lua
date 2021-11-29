@@ -91,6 +91,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         groupNumber = unitGroup.group_number,
         originPosition = {x = 0,
                           y = 0},
+        commandTick = nil,
         chunk = -1
     }
 

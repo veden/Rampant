@@ -284,6 +284,13 @@ local function addCommandSet(queriesAndCommands)
         ticks_to_wait = 36000
     }
 
+    queriesAndCommands.wander2Command = {
+        type = DEFINES_COMMAND_WANDER,
+        wander_in_group = true,
+        radius = TRIPLE_CHUNK_SIZE*2,
+        ticks_to_wait = 2 * 60
+    }
+
     queriesAndCommands.stopCommand = {
         type = DEFINES_COMMAND_STOP
     }
@@ -417,8 +424,6 @@ function upgrade.attempt(universe)
 
         universe.builderCount = 0
         universe.squadCount = 0
-
-        addCommandSet(universe)
     end
     if global.version < 116 then
         global.version = 116
@@ -436,15 +441,20 @@ function upgrade.attempt(universe)
 
         game.print("Rampant - Version 1.1.4")
     end
-    if global.version < 120 then
-        global.version = 120
+    if global.version < 121 then
+        global.version = 121
 
+        addCommandSet(universe)
         if (universe.maps) then
+            local tick = game.tick
             for _,map in pairs(universe.maps) do
                 map.pendingUpgrades = {}
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
                     map.processQueue[i].dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
+                end
+                for _,squad in pairs(map.groupNumberToSquad) do
+                    squad.commandTick = tick
                 end
                 tSort(map.processQueue, sorter)
                 for _,base in pairs(map.bases) do
