@@ -281,7 +281,7 @@ local function addCommandSet(queriesAndCommands)
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
         radius = TRIPLE_CHUNK_SIZE*2,
-        ticks_to_wait = 36000
+        ticks_to_wait = 20 * 60
     }
 
     queriesAndCommands.wander2Command = {
