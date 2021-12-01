@@ -55,6 +55,7 @@ local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 local processBase = baseUtils.processBase
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
+local getChunkBase = chunkPropertyUtils.getChunkBase
 
 local formSquads = aiAttackWave.formSquads
 local formVengenceSquad = aiAttackWave.formVengenceSquad
@@ -487,7 +488,7 @@ function mapProcessor.processNests(map, tick)
         queueNestSpawners(map, chunk, tick)
 
         if map.universe.NEW_ENEMIES then
-            local base = map.chunkToBase[chunk]
+            local base = getChunkBase(map, chunk)
             if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
                 processBase(chunk, map, tick, base)
             end
