@@ -4,6 +4,7 @@ local upgrade = {}
 
 local constants = require("libs/Constants")
 local mathUtils = require("libs/MathUtils")
+local mapUtils = require("libs/MapUtils")
 
 -- constants
 
@@ -26,6 +27,8 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
+
+local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -440,9 +443,29 @@ function upgrade.attempt(universe)
                 map.pendingUpgrades = {}
                 map.sentAggressiveGroups = 0
                 map.maxAggressiveGroups = 1
+                for chunkXY in map.surface.get_chunks() do
+                    local x = chunkXY.x * 32
+                    local y = chunkXY.y * 32
+                    if not map[x] then
+                        map[x] = {}
+                    end
+                    if not map[x][y] then
+                        queueGeneratedChunk(universe,
+                            {
+                                surface = map.surface,
+                                area = {
+                                    left_top = {
+                                        x = x,
+                                        y = y
+                                    }
+                                }
+                            }
+                        )
+                    end
+                end
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
-                    map.processQueue[i].dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
+                    chunk.dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
                 end
                 for _,squad in pairs(map.groupNumberToSquad) do
                     squad.commandTick = tick
