@@ -519,36 +519,8 @@ local function onDeath(event)
                         rallyUnits(chunk, map, tick)
                     end
                 end
-            elseif event.force and (event.force.name ~= "enemy") and
-                ((entityType == "unit-spawner") or (entityType == "turret"))
-            then
 
-                if (entityType == "unit-spawner") then
-                    map.points = map.points + RECOVER_NEST_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
-                    end
-                else
-                    map.points = map.points + RECOVER_WORM_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
-                    end
-                end
-
-                unregisterEnemyBaseStructure(map, entity, event.damage_type)
-
-                if (chunk ~= -1) then
-                    rallyUnits(chunk, map, tick)
-
-                    if cause and cause.valid then
-                        retreatUnits(chunk,
-                                     cause,
-                                     map,
-                                     tick,
-                                     RETREAT_SPAWNER_GRAB_RADIUS)
-                    end
-                end
-            else
+            elseif map.drainPylons[entity.unit_number] then
                 local entityUnitNumber = entity.unit_number
                 local pair = map.drainPylons[entityUnitNumber]
                 if pair then
@@ -568,6 +540,34 @@ local function onDeath(event)
                         end
                     end
                 end
+
+            else
+                if (event.force and (event.force.name ~= "enemy")) then
+                    if (entityType == "unit-spawner") then
+                        map.points = map.points + RECOVER_NEST_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
+                        end
+                    else
+                        map.points = map.points + RECOVER_WORM_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
+                        end
+                    end
+                    if (chunk ~= -1) then
+                        rallyUnits(chunk, map, tick)
+
+                        if cause and cause.valid then
+                            retreatUnits(chunk,
+                                         cause,
+                                         map,
+                                         tick,
+                                         RETREAT_SPAWNER_GRAB_RADIUS)
+                        end
+                    end
+                end
+
+                unregisterEnemyBaseStructure(map, entity, event.damage_type)
             end
 
         elseif (entity.force.name ~= "enemy") then
@@ -658,6 +658,7 @@ local function onEnemyBaseBuild(event)
                                       chunk,
                                       event.tick)
                 end
+
                 upgradeEntity(entity,
                               base.alignment,
                               map,
