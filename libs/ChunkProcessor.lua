@@ -22,10 +22,6 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 local findNearbyBase = baseUtils.findNearbyBase
 local createBase = baseUtils.createBase
 
-local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
-local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
-local mapScanResourceChunk = chunkUtils.mapScanResourceChunk
-
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
@@ -55,6 +51,17 @@ local function findInsertionPoint(processQueue, chunk)
     return low
 end
 
+local function removeProcessQueueChunk(map, chunk)
+    local processQueue = map.processQueue
+    local insertionPoint = findInsertionPoint(processQueue, chunk)
+    for i=insertionPoint,1,-1 do
+        if (processQueue[i] == chunk) then
+            constants.gpsDebug(chunk.x+16, chunk.y+16, "removeProcessQueueChunk")
+            tRemove(processQueue, i)
+        end
+    end
+end
+
 function chunkProcessor.processPendingChunks(map, tick, flush)
     local processQueue = map.processQueue
     local pendingChunks = map.pendingChunks
@@ -71,6 +78,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     local endCount = 2
     if flush then
         endCount = table_size(pendingChunks)
+        event = next(pendingChunks, nil)
     end
     for _=1,endCount do
         if not event then
@@ -81,7 +89,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             end
             break
         else
-            if (event.tick > tick) then
+            if not flush and (event.tick > tick) then
                 map.chunkProcessorIterator = event
                 return
             end
@@ -94,20 +102,18 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             bottomOffset[1] = x + CHUNK_SIZE
             bottomOffset[2] = y + CHUNK_SIZE
 
-            if map[x] and map[x][y] then
-                local chunk = map[x][y]
-                mapScanPlayerChunk(chunk, map)
-                mapScanEnemyChunk(chunk, map)
-                mapScanResourceChunk(chunk, map)
-            else
-                if not map[x] then
-                    map[x] = {}
+            if not map[x] then
+                map[x] = {}
+            end
+
+            if map[x][y] then
+                local chunk = initialScan(map[x][y], map, tick)
+                if (chunk == -1) then
+                    map[x][y] = nil
+                    removeProcessQueueChunk(processQueue, map[x][y])
                 end
-
-                local chunk = createChunk(x, y)
-
-                chunk = initialScan(chunk, map, tick)
-
+            else
+                local chunk = initialScan(createChunk(x, y), map, tick)
                 if (chunk ~= -1) then
                     map[x][y] = chunk
                     tInsert(
@@ -117,6 +123,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
                     )
                 end
             end
+
             local newEvent = next(pendingChunks, event)
             pendingChunks[event] = nil
             event = newEvent
@@ -215,13 +222,8 @@ function chunkProcessor.processScanChunks(map)
 
     if (chunkCount > 0) then
         local processQueue = map.processQueue
-        for i=#processQueue,1,-1 do
-            for ri=chunkCount,1,-1 do
-                if (removals[ri] == processQueue[i]) then
-                    tRemove(processQueue, i)
-                    break
-                end
-            end
+        for ri=chunkCount,1,-1 do
+            removeProcessQueueChunk(processQueue, removals[ri])
         end
     end
 end
