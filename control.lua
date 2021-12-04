@@ -684,6 +684,7 @@ local function onEnemyBaseBuild(event)
             local x,y = positionToChunkXY(entity.position)
             onChunkGenerated({
                     surface = entity.surface,
+                    tick = event.tick,
                     area = {
                         left_top = {
                             x = x,
@@ -723,6 +724,7 @@ local function onSurfaceTileChange(event)
                         local chunkXY = {x=x,y=y}
                         chunks[#chunks+1] = chunkXY
                         onChunkGenerated({area = { left_top = chunkXY },
+                                          tick = event.tick,
                                           surface = surface})
                     end
                 end
@@ -751,6 +753,7 @@ local function onSurfaceTileChange(event)
                         local chunkXY = {x=x,y=y}
                         chunks[#chunks+1] = chunkXY
                         onChunkGenerated({area = { left_top = chunkXY },
+                                          tick = event.tick,
                                           surface = surface})
                     end
                 end
