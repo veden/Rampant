@@ -855,6 +855,7 @@ local function onEntitySpawned(event)
                 local x,y = positionToChunkXY(entity.position)
                 onChunkGenerated({
                         surface = entity.surface,
+                        tick = event.tick,
                         area = {
                             left_top = {
                                 x = x,
