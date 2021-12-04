@@ -254,12 +254,13 @@ function baseUtils.recycleBases(map)
     end
 end
 
-function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, register)
+function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
 
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distance, map.evolutionLevel)
+    local baseAlignment = base.alignment
 
     local pickedBaseAlignment
     if (#baseAlignment == 2) then
@@ -282,7 +283,8 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, reg
         local entityData = {
             ["name"] = spawnerName,
             ["position"] = disPos,
-            ["register"] = register
+            ["register"] = register,
+            ["base"] = base
         }
         map.pendingUpgrades[entity] = entityData
         return spawnerName
@@ -400,7 +402,7 @@ function baseUtils.processBase(chunk, map, tick, base)
             local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
                 local newEntity = baseUtils.upgradeEntity(entity,
-                                                          base.alignment,
+                                                          base,
                                                           map)
                 if newEntity then
                     if universe.printBaseUpgrades then

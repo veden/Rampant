@@ -235,7 +235,6 @@ function chunkUtils.initialScan(chunk, map, tick)
                     if not base then
                         base = createBase(map, chunk, tick)
                     end
-                    local alignment = base.alignment
 
                     local unitList = surface.find_entities_filtered(universe.filteredEntitiesUnitQuery)
                     for i=1,#unitList do
@@ -250,7 +249,7 @@ function chunkUtils.initialScan(chunk, map, tick)
 
                         chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, tick, base)
                         if not buildingHiveTypeLookup[enemyBuilding.name] then
-                            upgradeEntity(enemyBuilding, alignment, map, nil, true)
+                            upgradeEntity(enemyBuilding, base, map, nil, true)
                         end
                     end
                 else

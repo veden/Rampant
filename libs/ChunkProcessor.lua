@@ -154,7 +154,7 @@ function chunkProcessor.processPendingUpgrades(map, tick)
             end
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(map, createdEntity, tick)
+                registerEnemyBaseStructure(map, createdEntity, tick, entityData.base)
             end
         else
             map.pendingUpgradeIterator = next(pendingUpgrades, entity)

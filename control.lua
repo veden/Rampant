@@ -674,7 +674,7 @@ local function onEnemyBaseBuild(event)
                 registerEnemyBaseStructure(map, entity, event.tick, base)
 
                 upgradeEntity(entity,
-                              base.alignment,
+                              base,
                               map,
                               nil,
                               true,
@@ -846,7 +846,7 @@ local function onEntitySpawned(event)
                 registerEnemyBaseStructure(map, entity, event.tick, base)
 
                 upgradeEntity(entity,
-                              base.alignment,
+                              base,
                               map,
                               disPos,
                               true,
