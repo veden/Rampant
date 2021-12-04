@@ -28,7 +28,6 @@
        #:path-prefix packageName
        (string->path "info.json")
        (string->path "control.lua")
-       (string->path "config.lua")
        (string->path "data.lua")
        (string->path "data-updates.lua")
        (string->path "data-final-fixes.lua")
@@ -69,7 +68,6 @@
     (sleep 0.1)
     (make-directory packagePath)
     (copyFile "control.lua" modFolder)
-    (copyFile "config.lua" modFolder)
     (copyFile "info.json" modFolder)
     (copyFile "data.lua" modFolder)
     (copyFile "data-updates.lua" modFolder)

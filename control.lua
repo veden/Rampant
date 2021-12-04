@@ -17,7 +17,6 @@ local aiPlanning = require("libs/AIPlanning")
 local tests = require("tests")
 local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
-local config = require("config")
 local aiPredicates = require("libs/AIPredicates")
 local stringUtils = require("libs/StringUtils")
 
@@ -101,7 +100,6 @@ local findNearbyBase = baseUtils.findNearbyBase
 local processActiveNests = mapProcessor.processActiveNests
 
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
-local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local retreatUnits = squadDefense.retreatUnits
 
@@ -147,7 +145,7 @@ local function onIonCannonFired(event)
 end
 
 local function hookEvents()
-    if config.ionCannonPresent then
+    if settings.startup["ion-cannon-radius"] ~= nil then
         script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
                         onIonCannonFired)
     end

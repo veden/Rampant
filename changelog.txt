@@ -43,6 +43,7 @@ Date: 23. 11. 2021
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
     - Added debug mod settings for showing enemy structures being upgraded in place
+    - Moved config methods into relevant code files
   Removals:
     - Removed map deadzones as they were breaking regional bases
 

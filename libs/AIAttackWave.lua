@@ -11,7 +11,6 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
-local config = require("__Rampant__/config")
 local baseUtils = require("BaseUtils")
 
 -- constants
@@ -61,11 +60,25 @@ local getChunkByXY = mapUtils.getChunkByXY
 local scoreNeighborsForFormation = movementUtils.scoreNeighborsForFormation
 local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 local createSquad = unitGroupUtils.createSquad
-local attackWaveScaling = config.attackWaveScaling
-local settlerWaveScaling = config.settlerWaveScaling
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
+local mCeil = math.ceil
+
 -- module code
+
+local function settlerWaveScaling(universe)
+    return mCeil(gaussianRandomRange(universe.settlerWaveSize,
+                                     universe.settlerWaveDeviation,
+                                     universe.expansionMinSize,
+                                     universe.expansionMaxSize))
+end
+
+local function attackWaveScaling(universe)
+    return mCeil(gaussianRandomRange(universe.attackWaveSize,
+                                     universe.attackWaveDeviation,
+                                     1,
+                                     universe.attackWaveUpperBound))
+end
 
 local function attackWaveValidCandidate(chunk, map)
     local isValid = getNestActiveness(map, chunk)
