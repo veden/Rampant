@@ -121,15 +121,6 @@ data:extend({
 
         {
             type = "bool-setting",
-            name = "rampant--safeBuildings",
-            setting_type = "runtime-global",
-            default_value = false,
-            order = "c[modifier]-a[safe]",
-            per_user = false
-        },
-
-        {
-            type = "bool-setting",
             name = "rampant--safeBuildings-curvedRail",
             setting_type = "runtime-global",
             default_value = false,

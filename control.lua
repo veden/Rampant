@@ -168,9 +168,6 @@ local function onModSettingsChange(event)
         return
     end
 
-    upgrade.compareTable(universe,
-                         "safeBuildings",
-                         settings.global["rampant--safeBuildings"].value)
     upgrade.compareTable(universe.safeEntities,
                          "curved-rail",
                          settings.global["rampant--safeBuildings-curvedRail"].value)
@@ -445,10 +442,8 @@ local function onBuild(event)
             registerResource(entity, map)
         else
             accountPlayerEntity(entity, map, true, false)
-            if universe.safeBuildings then
-                if universe.safeEntities[entity.type] or universe.safeEntities[entity.name] then
-                    entity.destructible = false
-                end
+            if universe.safeEntities[entity.type] or universe.safeEntities[entity.name] then
+                entity.destructible = false
             end
         end
     end
@@ -643,8 +638,7 @@ local function onDeath(event)
                     unregisterResource(entity, map)
                 end
             end
-            if creditNatives and universe.safeBuildings and
-                (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
+            if creditNatives and (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
             then
                 makeImmortalEntity(surface, entity)
             else

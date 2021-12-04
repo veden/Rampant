@@ -47,6 +47,7 @@ Date: 23. 11. 2021
     - Moved config methods into relevant code files
   Removals:
     - Removed map deadzones as they were breaking regional bases
+    - Removed make building safe mod option, now each individual toggle works as people are expecting
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4
