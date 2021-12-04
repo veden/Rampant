@@ -162,7 +162,7 @@ end
 
 function chunkPropertyUtils.removeChunkBase(map, chunk, base)
     if map.chunkToBase[chunk] then
-        base.chunkCount = base.chunkCount + 1
+        base.chunkCount = base.chunkCount - 1
         map.chunkToBase[chunk] = nil
     end
 end

@@ -460,25 +460,27 @@ function upgrade.attempt(universe)
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
                     chunk.dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
-                    local base = getChunkBase(map, chunk)
-                    if base then
-                        if not map.bases[base.id] then
-                            map.bases[base.id] = base
-                        end
-                        if not base.damagedBy then
-                            base.damagedBy = {}
-                        end
-                        if not base.deathEvents then
-                            base.deathEvents = 0
-                        end
-                        if not base.chunkCount then
-                            base.chunkCount = 0
-                        end
-                        if not base.mutations then
-                            base.mutations = 0
-                        end
-                        if not base.alignment[1] then
-                            basesToRemove[base.id] = true
+                    if universe.NEW_ENEMIES then
+                        local base = getChunkBase(map, chunk)
+                        if base then
+                            if not map.bases[base.id] then
+                                map.bases[base.id] = base
+                            end
+                            if not base.damagedBy then
+                                base.damagedBy = {}
+                            end
+                            if not base.deathEvents then
+                                base.deathEvents = 0
+                            end
+                            if not base.chunkCount then
+                                base.chunkCount = 0
+                            end
+                            if not base.mutations then
+                                base.mutations = 0
+                            end
+                            if not base.alignment[1] then
+                                basesToRemove[base.id] = true
+                            end
                         end
                     end
                 end
@@ -512,31 +514,21 @@ function upgrade.attempt(universe)
                     end
                 end
                 processPendingChunks(map, tick, true)
-                for i=1,#map.processQueue do
-                    local chunk = map.processQueue[i]
-                    local base = getChunkBase(map, chunk)
-
-                    if (getEnemyStructureCount(map, chunk) > 0) then
-                        base.chunkCount = (base.chunkCount or 0) + 1
+                if universe.NEW_ENEMIES then
+                    for baseId in pairs(basesToRemove) do
+                        map.bases[baseId] = nil
                     end
-
-                    if base and (not base.alignment[1]) then
-                        removeChunkBase(map, chunk, base)
-                    end
-                    if (getEnemyStructureCount(map, chunk) > 0) and not base then
-                        local newBase = findNearbyBase(map, chunk)
-                        if not newBase then
-                            createBase(map, chunk, tick)
-                        else
+                    map.chunkToBases = {}
+                    for i=1,#map.processQueue do
+                        local chunk = map.processQueue[i]
+                        if (getEnemyStructureCount(map, chunk) > 0) then
+                            local newBase = findNearbyBase(map, chunk)
+                            if not newBase then
+                                createBase(map, chunk, tick)
+                            end
                             setChunkBase(map, chunk, newBase)
                         end
                     end
-                    if base and getEnemyStructureCount(map, chunk) == 0 then
-                        removeChunkBase(map, chunk, base)
-                    end
-                end
-                for baseId in pairs(basesToRemove) do
-                    map.bases[baseId] = nil
                 end
                 for _,squad in pairs(map.groupNumberToSquad) do
                     squad.commandTick = tick
