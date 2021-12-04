@@ -50,7 +50,7 @@ function mapUtils.positionToChunkXY(position)
 end
 
 function mapUtils.queueGeneratedChunk(universe, event)
-    event.tick = (event.tick or game.tick) + 120
+    event.tick = (event.tick or game.tick) + 20
     universe.maps[event.surface.index].pendingChunks[event] = true
 end
 
