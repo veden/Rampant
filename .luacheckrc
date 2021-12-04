@@ -29,7 +29,8 @@ globals = {
         "stringUtilsG",
         "unitGroupUtilsG",
         "unitUtilsG",
-        "baseUtilsG"
+        "baseUtilsG",
+        "queryUtilsG"
 }
 
 max_line_length = false

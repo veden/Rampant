@@ -24,8 +24,6 @@ local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
 
 local FACTION_SET = constants.FACTION_SET
 
-local BASE_DEADZONE_TTL = constants.BASE_DEADZONE_TTL
-
 local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
 local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
 
@@ -34,8 +32,6 @@ local HIVE_BUILDINGS_COST = constants.HIVE_BUILDINGS_COST
 local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
 local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
-
-local BASE_COLLECTION_THRESHOLD = constants.BASE_COLLECTION_THRESHOLD
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
@@ -57,7 +53,6 @@ local mMax = math.max
 local distort = mathUtils.distort
 
 local getChunkBase = chunkPropertyUtils.getChunkBase
-local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
@@ -213,7 +208,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     local maxTier = evoToTier(universe, evoIndex, 4)
 
     if (tier > maxTier) then
-        return nil
+        maxTier = tier
     end
 
     if evolve then
@@ -240,8 +235,7 @@ local function findBaseInitialAlignment(map, evoIndex)
     return result
 end
 
-
-function baseUtils.recycleBases(map, tick)
+function baseUtils.recycleBases(map)
     local bases = map.bases
     local id = map.recycleBaseIterator
     local base
@@ -254,7 +248,7 @@ function baseUtils.recycleBases(map, tick)
         map.recycleBaseIterator = nil
     else
         map.recycleBaseIterator = next(bases, id)
-        if ((tick - base.tick) > BASE_COLLECTION_THRESHOLD) then
+        if base.chunkCount == 0 then
             bases[id] = nil
         end
     end
@@ -263,11 +257,6 @@ end
 function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, register)
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
-
-    if not baseAlignment[1] then
-        entity.destroy()
-        return nil
-    end
 
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distance, map.evolutionLevel)
@@ -289,7 +278,7 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, reg
                                           map,
                                           evolve)
 
-    if spawnerName and (spawnerName ~= entity.name) then
+    if (spawnerName ~= entity.name) then
         local entityData = {
             ["name"] = spawnerName,
             ["position"] = disPos,
@@ -298,7 +287,6 @@ function baseUtils.upgradeEntity(entity, baseAlignment, map, disPos, evolve, reg
         map.pendingUpgrades[entity] = entityData
         return spawnerName
     end
-
     return nil
 end
 
@@ -474,7 +462,7 @@ function baseUtils.processBase(chunk, map, tick, base)
     base.tick = tick
 end
 
-function baseUtils.createBase(map, chunk, tick, rebuilding)
+function baseUtils.createBase(map, chunk, tick)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
@@ -486,13 +474,7 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
 
     local baseTick = tick
 
-    local alignment
-    if (not rebuilding) and (mRandom() < map.universe.deadZoneFrequency) then
-        alignment = {}
-        baseTick = BASE_DEADZONE_TTL
-    else
-        alignment = findBaseInitialAlignment(map, evoIndex) or {"neutral"}
-    end
+    local alignment = findBaseInitialAlignment(map, evoIndex) or {"neutral"}
 
     local baseLevel = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
     local baseDistanceThreshold = gaussianRandomRange(BASE_DISTANCE_THRESHOLD,
@@ -512,13 +494,12 @@ function baseUtils.createBase(map, chunk, tick, rebuilding)
         deathEvents = 0,
         mutations = 0,
         stateTick = 0,
+        chunkCount = 0,
         createdTick = tick,
         points = 0,
         id = map.baseId
     }
     map.baseId = map.baseId + 1
-
-    setChunkBase(map, chunk, base)
 
     map.bases[base.id] = base
 

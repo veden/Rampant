@@ -10,6 +10,7 @@ local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mathUtils = require("MathUtils")
+local queryUtils = require("QueryUtils")
 
 -- constants
 
@@ -47,26 +48,32 @@ local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 -- imported functions
 
-local setNestCount = chunkPropertyUtils.setNestCount
+local setAreaInQuery = queryUtils.setAreaInQuery
+
 local setPlayerBaseGenerator = chunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = chunkPropertyUtils.addPlayerBaseGenerator
 local setResourceGenerator = chunkPropertyUtils.setResourceGenerator
 local addResourceGenerator = chunkPropertyUtils.addResourceGenerator
-local setHiveCount = chunkPropertyUtils.setHiveCount
-local setTrapCount = chunkPropertyUtils.setTrapCount
-local setTurretCount = chunkPropertyUtils.setTurretCount
-local setUtilityCount = chunkPropertyUtils.setUtilityCount
+
+local addNestCount = chunkPropertyUtils.addNestCount
+local removeNestCount = chunkPropertyUtils.removeNestCount
+local addHiveCount = chunkPropertyUtils.addHiveCount
+local removeHiveCount = chunkPropertyUtils.removeHiveCount
+local addTrapCount = chunkPropertyUtils.addTrapCount
+local removeTrapCount = chunkPropertyUtils.removeTrapCount
+local addTurretCount = chunkPropertyUtils.addTurretCount
+local removeTurretCount = chunkPropertyUtils.removeTurretCount
+local addUtilityCount = chunkPropertyUtils.addUtilityCount
+local removeUtilityCount = chunkPropertyUtils.removeUtilityCount
+
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local getNestCount = chunkPropertyUtils.getNestCount
-local getHiveCount = chunkPropertyUtils.getHiveCount
-local getTrapCount = chunkPropertyUtils.getTrapCount
-local getUtilityCount = chunkPropertyUtils.getUtilityCount
-local getTurretCount = chunkPropertyUtils.getTurretCount
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
 
+local removeChunkBase = chunkPropertyUtils.removeChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local findNearbyBase = baseUtils.findNearbyBase
@@ -100,16 +107,12 @@ local function getEntityOverlapChunks(map, entity)
 
     if boundingBox then
         local center = entity.position
-        local topXOffset
-        local topYOffset
 
-        local bottomXOffset
-        local bottomYOffset
+        local topXOffset = boundingBox.left_top.x
+        local topYOffset = boundingBox.left_top.y
 
-        topXOffset = boundingBox.left_top.x
-        topYOffset = boundingBox.left_top.y
-        bottomXOffset = boundingBox.right_bottom.x
-        bottomYOffset = boundingBox.right_bottom.y
+        local bottomXOffset = boundingBox.right_bottom.x
+        local bottomYOffset = boundingBox.right_bottom.y
 
         local leftTopChunkX = mFloor((center.x + topXOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
         local leftTopChunkY = mFloor((center.y + topYOffset) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -229,9 +232,7 @@ function chunkUtils.initialScan(chunk, map, tick)
             if (#enemyBuildings > 0) then
                 if universe.NEW_ENEMIES then
                     local base = findNearbyBase(map, chunk)
-                    if base then
-                        setChunkBase(map, chunk, base)
-                    else
+                    if not base then
                         base = createBase(map, chunk, tick)
                     end
                     local alignment = base.alignment
@@ -246,37 +247,17 @@ function chunkUtils.initialScan(chunk, map, tick)
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
+
+                        chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, tick, base)
                         if not buildingHiveTypeLookup[enemyBuilding.name] then
-                            local newEntity = upgradeEntity(enemyBuilding, alignment, map, nil, true)
-                            if newEntity then
-                                local hiveType = buildingHiveTypeLookup[newEntity]
-                                counts[hiveType] = counts[hiveType] + 1
-                            end
-                        else
-                            local hiveType = buildingHiveTypeLookup[enemyBuilding.name] or
-                                (((enemyBuilding.type == "turret") and "turret") or "biter-spawner")
-                            counts[hiveType] = counts[hiveType] + 1
+                            upgradeEntity(enemyBuilding, alignment, map, nil, true)
                         end
                     end
-
-                    setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
-                    setUtilityCount(map, chunk, counts["utility"])
-                    setHiveCount(map, chunk, counts["hive"])
-                    setTrapCount(map, chunk, counts["trap"])
-                    setTurretCount(map, chunk, counts["turret"])
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        local hiveType = buildingHiveTypeLookup[building.name] or
-                            (((building.type == "turret") and "turret") or "biter-spawner")
-                        counts[hiveType] = counts[hiveType] + 1
+                        chunkUtils.registerEnemyBaseStructure(map, building, tick)
                     end
-
-                    setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
-                    setUtilityCount(map, chunk, counts["utility"])
-                    setHiveCount(map, chunk, counts["hive"])
-                    setTrapCount(map, chunk, counts["trap"])
-                    setTurretCount(map, chunk, counts["turret"])
                 end
             end
 
@@ -340,24 +321,18 @@ end
 
 function chunkUtils.mapScanEnemyChunk(chunk, map)
     local universe = map.universe
-    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
-    local buildings = map.surface.find_entities_filtered(universe.filteredEntitiesEnemyStructureQuery)
+    local query = universe.filteredEntitiesEnemyStructureQuery
+    setAreaInQuery(query, chunk, CHUNK_SIZE)
+    local buildings = map.surface.find_entities_filtered(query)
     local counts = map.chunkScanCounts
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
     end
     for i=1,#buildings do
         local building = buildings[i]
-        local hiveType = buildingHiveTypeLookup[building.name] or
-            (((building.type == "turret") and "turret") or "biter-spawner")
-        counts[hiveType] = counts[hiveType] + 1
-    end
 
-    setNestCount(map, chunk, counts["spitter-spawner"] + counts["biter-spawner"])
-    setUtilityCount(map, chunk, counts["utility"])
-    setHiveCount(map, chunk, counts["hive"])
-    setTrapCount(map, chunk, counts["trap"])
-    setTurretCount(map, chunk, counts["turret"])
+        chunkUtils.registerEnemyBaseStructure(map, building, game.tick)
+    end
 end
 
 function chunkUtils.entityForPassScan(map, entity)
@@ -385,7 +360,7 @@ function chunkUtils.createChunk(topX, topY)
     return chunk
 end
 
-function chunkUtils.colorChunk(chunk, surface, color)
+function chunkUtils.colorChunk(chunk, surface, color, ttl)
     local lx = math.floor(chunk.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local ly = math.floor(chunk.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 
@@ -396,7 +371,7 @@ function chunkUtils.colorChunk(chunk, surface, color)
             left_top = {lx, ly},
             right_bottom = {lx+32, ly+32},
             surface = surface,
-            time_to_live = 180,
+            time_to_live = ttl or 180,
             draw_on_ground = true,
             visible = true
     })
@@ -419,127 +394,111 @@ function chunkUtils.colorXY(x, y, surface, color)
     })
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, base)
+function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase)
     local entityType = entity.type
-    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-        local overlapArray = getEntityOverlapChunks(map, entity)
 
-        local getFunc
-        local setFunc
-        local universe = map.universe
-        local hiveTypeLookup = universe.buildingHiveTypeLookup
-        local hiveType = hiveTypeLookup[entity.name]
-        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+    local addFunc
+    local universe = map.universe
+    local hiveTypeLookup = universe.buildingHiveTypeLookup
+    local hiveType = hiveTypeLookup[entity.name]
+    if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+        map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+        addFunc = addNestCount
+    elseif (hiveType == "turret") then
+        map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+        addFunc = addTurretCount
+    elseif (hiveType == "trap") then
+        addFunc = addTrapCount
+    elseif (hiveType == "utility") then
+        map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+        addFunc = addUtilityCount
+    elseif (hiveType == "hive") then
+        map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+        addFunc = addHiveCount
+    else
+        if (entityType == "turret") then
             map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-            getFunc = getNestCount
-            setFunc = setNestCount
-        elseif (hiveType == "turret") then
-            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-            getFunc = getTurretCount
-            setFunc = setTurretCount
-        elseif (hiveType == "trap") then
-            getFunc = getTrapCount
-            setFunc = setTrapCount
-        elseif (hiveType == "utility") then
-            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-            getFunc = getUtilityCount
-            setFunc = setUtilityCount
-        elseif (hiveType == "hive") then
-            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-            getFunc = getHiveCount
-            setFunc = setHiveCount
+            addFunc = addTurretCount
         else
-            if (entityType == "turret") then
-                map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-                getFunc = getTurretCount
-                setFunc = setTurretCount
-            elseif (entityType == "unit-spawner") then
-                map.builtEnemyBuilding = map.builtEnemyBuilding + 1
-                getFunc = getNestCount
-                setFunc = setNestCount
-            end
+            map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+            addFunc = addNestCount
         end
+    end
 
-        for i=1,#overlapArray do
-            local chunk = overlapArray[i]
-            if (chunk ~= -1) then
-                setFunc(map, chunk, getFunc(map, chunk) + 1)
-                setChunkBase(map, chunk, base)
+    local entityUnitNumber = entity.unit_number
+    local chunks = getEntityOverlapChunks(map, entity)
+    for i=1,#chunks do
+        local chunk = chunks[i]
+        if (chunk ~= -1) then
+            local base = incomingBase
+            if not base then
+                base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+            end
+            addFunc(map, chunk, entityUnitNumber)
+            setChunkBase(map, chunk, base)
+            if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
             end
         end
     end
-
-    return entity
 end
 
 function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType)
     local entityType = entity.type
-    if ((entityType == "unit-spawner") or (entityType == "turret")) and (entity.force.name == "enemy") then
-        local overlapArray = getEntityOverlapChunks(map, entity)
-        local getFunc
-        local setFunc
-        local hiveTypeLookup = map.universe.buildingHiveTypeLookup
-        local hiveType = hiveTypeLookup[entity.name]
-        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+
+    local removeFunc
+    local hiveTypeLookup = map.universe.buildingHiveTypeLookup
+    local hiveType = hiveTypeLookup[entity.name]
+    if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+        map.lostEnemyBuilding = map.lostEnemyBuilding + 1
+        removeFunc = removeNestCount
+    elseif (hiveType == "turret") then
+        map.lostEnemyBuilding = map.lostEnemyBuilding + 1
+        removeFunc = removeTurretCount
+    elseif (hiveType == "trap") then
+        removeFunc = removeTrapCount
+    elseif (hiveType == "utility") then
+        map.lostEnemyBuilding = map.lostEnemyBuilding + 1
+        removeFunc = removeUtilityCount
+    elseif (hiveType == "hive") then
+        map.lostEnemyBuilding = map.lostEnemyBuilding + 1
+        removeFunc = removeHiveCount
+    else
+        if (entityType == "turret") then
             map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-            getFunc = getNestCount
-            setFunc = setNestCount
-        elseif (hiveType == "turret") then
-            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-            getFunc = getTurretCount
-            setFunc = setTurretCount
-        elseif (hiveType == "trap") then
-            getFunc = getTrapCount
-            setFunc = setTrapCount
-        elseif (hiveType == "utility") then
-            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-            getFunc = getUtilityCount
-            setFunc = setUtilityCount
-        elseif (hiveType == "hive") then
-            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-            getFunc = getHiveCount
-            setFunc = setHiveCount
+            removeFunc = removeTurretCount
         else
-            if (entityType == "turret") then
-                map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-                getFunc = getTurretCount
-                setFunc = setTurretCount
-            elseif (entityType == "unit-spawner") then
-                hiveType = "biter-spawner"
-                map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-                getFunc = getNestCount
-                setFunc = setNestCount
+            hiveType = "biter-spawner"
+            map.lostEnemyBuilding = map.lostEnemyBuilding + 1
+            removeFunc = removeNestCount
+        end
+    end
+
+    local entityUnitNumber = entity.unit_number
+    local usedBases = {}
+    local chunks = getEntityOverlapChunks(map, entity)
+    for i=1,#chunks do
+        local chunk = chunks[i]
+        if (chunk ~= -1) then
+            local base = getChunkBase(map, chunk)
+            if damageType and usedBases[base.id] then
+                usedBases[base.id] = true
+                local damageTypeName = damageType.name
+                base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
+                base.deathEvents = base.deathEvents + 3
+            end
+            if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+                setRaidNestActiveness(map, chunk, 0)
+                setNestActiveness(map, chunk, 0)
+            end
+            removeFunc(map, chunk, entityUnitNumber)
+            if (getEnemyStructureCount(map, chunk) <= 0) then
+                removeChunkBase(map, chunk, base)
             end
         end
-
-        for i=1,#overlapArray do
-            local chunk = overlapArray[i]
-            if (chunk ~= -1) then
-                local count = getFunc(map, chunk)
-                if count then
-                    local base = getChunkBase(map, chunk)
-                    if damageType and base then
-                        local damageTypeName = damageType.name
-                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
-                        base.deathEvents = base.deathEvents + 3
-                    end
-                    if (count <= 1) then
-                        if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-                            setRaidNestActiveness(map, chunk, 0)
-                            setNestActiveness(map, chunk, 0)
-                        end
-                        setFunc(map, chunk, 0)
-                        if (getEnemyStructureCount(map, chunk) == 0) then
-                            setChunkBase(map, chunk, nil)
-                        end
-                    else
-                        setFunc(map, chunk, count - 1)
-                    end
-                end
-            end
-        end
-
     end
 end
 

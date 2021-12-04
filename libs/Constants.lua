@@ -157,8 +157,6 @@ constants.BASE_AI_MAX_STATE_DURATION = 20
 
 constants.BASE_CLEAN_DISTANCE = 13
 
-constants.BASE_DEADZONE_TTL = constants.TICKS_A_MINUTE * 18
-
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
 constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 9600
@@ -320,37 +318,6 @@ constants.UNIT_GROUP_MAX_SPEED_UP = 2
 constants.UNIT_GROUP_MAX_SLOWDOWN = 1.0
 constants.UNIT_GROUP_SLOWDOWN_FACTOR = 1.0
 
-constants.CONVERSION_TABLE = {
-    "neutral",
-    "fire",
-    "nuclear",
-    "suicide",
-    "neutral",
-    "acid",
-    "fire",
-    "physical",
-    "laser",
-    "inferno",
-    "poison",
-    "troll",
-    "fast",
-    "neutral",
-    "neutral",
-    "neutral",
-    "energy-thief",
-    "electric",
-    "wasp",
-    nil,
-    "acid",
-    "acid",
-    "spawner",
-    "laser",
-    "inferno",
-    "suicide",
-    "acid",
-    "spawner"
-}
-
 constants.BASE_ALIGNMENT_NEUTRAL = 1
 constants.BASE_ALIGNMENT_FIRE = 2
 constants.BASE_ALIGNMENT_NUCLEAR = 3
@@ -370,15 +337,7 @@ constants.BASE_ALIGNMENT_UNDYING = 16
 constants.BASE_ALIGNMENT_ENERGY_THIEF = 17
 constants.BASE_ALIGNMENT_ELECTRIC = 18
 constants.BASE_ALIGNMENT_WASP = 19
-constants.BASE_ALIGNMENT_DEADZONE = 20
-constants.BASE_ALIGNMENT_NE = 21
-constants.BASE_ALIGNMENT_BOBS = 22
-constants.BASE_ALIGNMENT_SPAWNER = 23
-constants.BASE_ALIGNMENT_NE_BLUE = 24
-constants.BASE_ALIGNMENT_NE_RED = 25
-constants.BASE_ALIGNMENT_NE_YELLOW = 26
-constants.BASE_ALIGNMENT_NE_GREEN = 27
-constants.BASE_ALIGNMENT_NE_PINK = 28
+constants.BASE_ALIGNMENT_SPAWNER = 20
 
 -- sentinels
 

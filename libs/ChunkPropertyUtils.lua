@@ -41,49 +41,114 @@ function chunkPropertyUtils.getHiveCount(map, chunk)
     return map.chunkToHives[chunk] or 0
 end
 
-function chunkPropertyUtils.setTurretCount(map, chunk, count)
-    if (count <= 0) then
-        map.chunkToTurrets[chunk] = nil
-    else
-        map.chunkToTurrets[chunk] = count
+function chunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
+    if not map.chunkToTurretIds[chunk] then
+        map.chunkToTurretIds[chunk] = {}
+    end
+    if not map.chunkToTurretIds[chunk][unitNumber] then
+        map.chunkToTurretIds[chunk][unitNumber] = true
+        map.chunkToTurrets[chunk] = (map.chunkToTurrets[chunk] or 0) + 1
     end
 end
 
-function chunkPropertyUtils.setHiveCount(map, chunk, count)
-    if (count <= 0) then
-        map.chunkToHives[chunk] = nil
-    else
-        map.chunkToHives[chunk] = count
-    end
-end
-
-function chunkPropertyUtils.setTrapCount(map, chunk, count)
-    if (count <= 0) then
-        map.chunkToTraps[chunk] = nil
-    else
-        map.chunkToTraps[chunk] = count
-    end
-end
-
-function chunkPropertyUtils.setUtilityCount(map, chunk, count)
-    if (count <= 0) then
-        map.chunkToUtilities[chunk] = nil
-    else
-        map.chunkToUtilities[chunk] = count
-    end
-end
-
-function chunkPropertyUtils.setNestCount(map, chunk, count)
-    if (count <= 0) then
-        map.chunkToNests[chunk] = nil
-        if (map.processMigrationIterator == chunk) then
-            map.processMigrationIterator = nil
+function chunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
+    if map.chunkToTurretIds[chunk] and map.chunkToTurretIds[chunk][unitNumber] then
+        map.chunkToTurretIds[chunk][unitNumber] = nil
+        map.chunkToTurrets[chunk] = map.chunkToTurrets[chunk] - 1
+        if map.chunkToTurrets[chunk] == 0 then
+            map.chunkToTurretIds[chunk] = nil
+            map.chunkToTurrets[chunk] = nil
         end
-        if (map.processNestIterator == chunk) then
-            map.processNestIterator = nil
+    end
+end
+
+function chunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
+    if not map.chunkToTrapIds[chunk] then
+        map.chunkToTrapIds[chunk] = {}
+    end
+    if not map.chunkToTrapIds[chunk][unitNumber] then
+        map.chunkToTrapIds[chunk][unitNumber] = true
+        map.chunkToTraps[chunk] = (map.chunkToTraps[chunk] or 0) + 1
+    end
+end
+
+function chunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
+    if map.chunkToTrapIds[chunk] and map.chunkToTrapIds[chunk][unitNumber] then
+        map.chunkToTrapIds[chunk][unitNumber] = nil
+        map.chunkToTraps[chunk] = map.chunkToTraps[chunk] - 1
+        if map.chunkToTraps[chunk] == 0 then
+            map.chunkToTrapIds[chunk] = nil
+            map.chunkToTraps[chunk] = nil
         end
-    else
-        map.chunkToNests[chunk] = count
+    end
+end
+
+function chunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
+    if not map.chunkToUtilityIds[chunk] then
+        map.chunkToUtilityIds[chunk] = {}
+    end
+    if not map.chunkToUtilityIds[chunk][unitNumber] then
+        map.chunkToUtilityIds[chunk][unitNumber] = true
+        map.chunkToUtilities[chunk] = (map.chunkToUtilities[chunk] or 0) + 1
+    end
+end
+
+function chunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
+    if map.chunkToUtilityIds[chunk] and map.chunkToUtilityIds[chunk][unitNumber] then
+        map.chunkToUtilityIds[chunk][unitNumber] = nil
+        map.chunkToUtilities[chunk] = map.chunkToUtilities[chunk] - 1
+        if map.chunkToUtilities[chunk] == 0 then
+            map.chunkToUtilityIds[chunk] = nil
+            map.chunkToUtilities[chunk] = nil
+        end
+    end
+end
+
+function chunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
+    if not map.chunkToHiveIds[chunk] then
+        map.chunkToHiveIds[chunk] = {}
+    end
+    if not map.chunkToHiveIds[chunk][unitNumber] then
+        map.chunkToHiveIds[chunk][unitNumber] = true
+        map.chunkToHives[chunk] = (map.chunkToHives[chunk] or 0) + 1
+    end
+end
+
+function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
+    if map.chunkToHiveIds[chunk] and map.chunkToHiveIds[chunk][unitNumber] then
+        map.chunkToHiveIds[chunk][unitNumber] = nil
+        map.chunkToHives[chunk] = map.chunkToHives[chunk] - 1
+        if map.chunkToHives[chunk] == 0 then
+            map.chunkToHiveIds[chunk] = nil
+            map.chunkToHives[chunk] = nil
+        end
+    end
+end
+
+function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
+    if not map.chunkToNestIds[chunk] then
+        map.chunkToNestIds[chunk] = {}
+    end
+    if not map.chunkToNestIds[chunk][unitNumber] then
+        map.chunkToNestIds[chunk][unitNumber] = true
+        map.chunkToNests[chunk] = (map.chunkToNests[chunk] or 0) + 1
+    end
+end
+
+function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
+    if map.chunkToNestIds[chunk] and map.chunkToNestIds[chunk][unitNumber] then
+        map.chunkToNestIds[chunk][unitNumber] = nil
+        map.chunkToNests[chunk] = map.chunkToNests[chunk] - 1
+        if map.chunkToNests[chunk] == 0 then
+            map.chunkToNestIds[chunk] = nil
+            map.chunkToNests[chunk] = nil
+            if (map.processMigrationIterator == chunk) then
+                map.processMigrationIterator = nil
+            end
+            if (map.processNestIterator == chunk) then
+                map.processNestIterator = nil
+            end
+        end
     end
 end
 
@@ -95,8 +160,18 @@ function chunkPropertyUtils.getChunkBase(map, chunk)
     return map.chunkToBase[chunk]
 end
 
+function chunkPropertyUtils.removeChunkBase(map, chunk, base)
+    if map.chunkToBase[chunk] then
+        base.chunkCount = base.chunkCount + 1
+        map.chunkToBase[chunk] = nil
+    end
+end
+
 function chunkPropertyUtils.setChunkBase(map, chunk, base)
-    map.chunkToBase[chunk] = base
+    if not map.chunkToBase[chunk] then
+        base.chunkCount = base.chunkCount + 1
+        map.chunkToBase[chunk] = base
+    end
 end
 
 function chunkPropertyUtils.getEnemyStructureCount(map, chunk)

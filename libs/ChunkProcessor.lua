@@ -7,8 +7,6 @@ local chunkProcessor = {}
 
 local chunkUtils = require("ChunkUtils")
 local constants = require("Constants")
-local baseUtils = require("BaseUtils")
-local mapUtils = require("MapUtils")
 
 -- constants
 
@@ -16,11 +14,8 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
 
-local queueGeneratedChunk = mapUtils.queueGeneratedChunk
-local getChunkByPosition = mapUtils.getChunkByPosition
-
-local findNearbyBase = baseUtils.findNearbyBase
-local createBase = baseUtils.createBase
+local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
+local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
@@ -51,12 +46,10 @@ local function findInsertionPoint(processQueue, chunk)
     return low
 end
 
-local function removeProcessQueueChunk(map, chunk)
-    local processQueue = map.processQueue
+local function removeProcessQueueChunk(processQueue, chunk)
     local insertionPoint = findInsertionPoint(processQueue, chunk)
     for i=insertionPoint,1,-1 do
         if (processQueue[i] == chunk) then
-            constants.gpsDebug(chunk.x+16, chunk.y+16, "removeProcessQueueChunk")
             tRemove(processQueue, i)
         end
     end
@@ -109,11 +102,13 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             if map[x][y] then
                 local chunk = initialScan(map[x][y], map, tick)
                 if (chunk == -1) then
-                    map[x][y] = nil
                     removeProcessQueueChunk(processQueue, map[x][y])
+                    map[x][y] = nil
                 end
             else
-                local chunk = initialScan(createChunk(x, y), map, tick)
+                local chunk = createChunk(x, y)
+                map[x][y] = chunk
+                chunk = initialScan(chunk, map, tick)
                 if (chunk ~= -1) then
                     map[x][y] = chunk
                     tInsert(
@@ -121,6 +116,8 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
                         findInsertionPoint(processQueue, chunk),
                         chunk
                     )
+                else
+                    map[x][y] = nil
                 end
             end
 
@@ -150,37 +147,14 @@ function chunkProcessor.processPendingUpgrades(map, tick)
             query.position = entityData.position or entity.position
             query.name = entityData.name
             local surface = entity.surface
+            unregisterEnemyBaseStructure(map, entity)
             entity.destroy()
             if remote.interfaces["kr-creep"] then
                 remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
             end
             local createdEntity = surface.create_entity(query)
-            if createdEntity and createdEntity.valid and entityData.register then
-                local chunk = getChunkByPosition(map, createdEntity.position)
-                if (chunk ~= -1) then
-                    local base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(map,
-                                          chunk,
-                                          tick)
-                    end
-                    if base then
-                        chunkUtils.registerEnemyBaseStructure(map, createdEntity, base)
-                    end
-                else
-                    queueGeneratedChunk(
-                        universe,
-                        {
-                            surface = createdEntity.surface,
-                            area = {
-                                left_top = {
-                                    x = createdEntity.position.x,
-                                    y = createdEntity.position.y
-                                }
-                            }
-                        }
-                    )
-                end
+            if createdEntity and createdEntity.valid then
+                registerEnemyBaseStructure(map, createdEntity, tick)
             end
         else
             map.pendingUpgradeIterator = next(pendingUpgrades, entity)

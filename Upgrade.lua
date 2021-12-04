@@ -4,7 +4,10 @@ local upgrade = {}
 
 local constants = require("libs/Constants")
 local mathUtils = require("libs/MathUtils")
+local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
+local baseUtils = require("libs/BaseUtils")
+local chunkProcessor = require("libs/ChunkProcessor")
 
 -- constants
 
@@ -28,7 +31,17 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
 
+local processPendingChunks = chunkProcessor.processPendingChunks
+
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
+
+local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getChunkBase = chunkPropertyUtils.getChunkBase
+local removeChunkBase = chunkPropertyUtils.removeChunkBase
+
+local findNearbyBase = baseUtils.findNearbyBase
+local createBase = baseUtils.createBase
+local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -256,7 +269,7 @@ local function addCommandSet(queriesAndCommands)
 
     queriesAndCommands.upgradeEntityQuery = {
         name = "",
-        position = nil
+        position = {0,0}
     }
 
     queriesAndCommands.attackCommand = {
@@ -443,38 +456,90 @@ function upgrade.attempt(universe)
                 map.pendingUpgrades = {}
                 map.sentAggressiveGroups = 0
                 map.maxAggressiveGroups = 1
-                for chunkXY in map.surface.get_chunks() do
-                    local x = chunkXY.x * 32
-                    local y = chunkXY.y * 32
-                    if not map[x] then
-                        map[x] = {}
-                    end
-                    if not map[x][y] then
-                        queueGeneratedChunk(universe,
-                            {
-                                surface = map.surface,
-                                area = {
-                                    left_top = {
-                                        x = x,
-                                        y = y
-                                    }
-                                }
-                            }
-                        )
-                    end
-                end
+                local basesToRemove = {}
                 for i=1,#map.processQueue do
                     local chunk = map.processQueue[i]
                     chunk.dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
+                    local base = getChunkBase(map, chunk)
+                    if base then
+                        if not map.bases[base.id] then
+                            map.bases[base.id] = base
+                        end
+                        if not base.damagedBy then
+                            base.damagedBy = {}
+                        end
+                        if not base.deathEvents then
+                            base.deathEvents = 0
+                        end
+                        if not base.chunkCount then
+                            base.chunkCount = 0
+                        end
+                        if not base.mutations then
+                            base.mutations = 0
+                        end
+                        if not base.alignment[1] then
+                            basesToRemove[base.id] = true
+                        end
+                    end
+                end
+                tSort(map.processQueue, sorter)
+                map.pendingChunks = {}
+                map.chunkToNests = {}
+                map.chunkToNestIds = {}
+                map.chunkToHives = {}
+                map.chunkToHiveIds = {}
+                map.chunkToTraps = {}
+                map.chunkToTrapIds = {}
+                map.chunkToTurrets = {}
+                map.chunkToTurretIds = {}
+                map.chunkToUtilities = {}
+                map.chunkToUtilityIds = {}
+                for chunkXY in map.surface.get_chunks() do
+                    if map.surface.is_chunk_generated(chunkXY) then
+                        local x = chunkXY.x * 32
+                        local y = chunkXY.y * 32
+                        queueGeneratedChunk(universe,
+                                            {
+                                                surface = map.surface,
+                                                area = {
+                                                    left_top = {
+                                                        x = x,
+                                                        y = y
+                                                    }
+                                                }
+                                            }
+                        )
+                    end
+                end
+                processPendingChunks(map, tick, true)
+                for i=1,#map.processQueue do
+                    local chunk = map.processQueue[i]
+                    local base = getChunkBase(map, chunk)
+
+                    if (getEnemyStructureCount(map, chunk) > 0) then
+                        base.chunkCount = (base.chunkCount or 0) + 1
+                    end
+
+                    if base and (not base.alignment[1]) then
+                        removeChunkBase(map, chunk, base)
+                    end
+                    if (getEnemyStructureCount(map, chunk) > 0) and not base then
+                        local newBase = findNearbyBase(map, chunk)
+                        if not newBase then
+                            createBase(map, chunk, tick)
+                        else
+                            setChunkBase(map, chunk, newBase)
+                        end
+                    end
+                    if base and getEnemyStructureCount(map, chunk) == 0 then
+                        removeChunkBase(map, chunk, base)
+                    end
+                end
+                for baseId in pairs(basesToRemove) do
+                    map.bases[baseId] = nil
                 end
                 for _,squad in pairs(map.groupNumberToSquad) do
                     squad.commandTick = tick
-                end
-                tSort(map.processQueue, sorter)
-                for _,base in pairs(map.bases) do
-                    base.damagedBy = {}
-                    base.deathEvents = 0
-                    base.mutations = 0
                 end
             end
         end

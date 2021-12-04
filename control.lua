@@ -44,6 +44,8 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
+
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local isRampantSetting = stringUtils.isRampantSetting
 
@@ -99,6 +101,7 @@ local findNearbyBase = baseUtils.findNearbyBase
 local processActiveNests = mapProcessor.processActiveNests
 
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local retreatUnits = squadDefense.retreatUnits
 
@@ -222,9 +225,6 @@ local function onModSettingsChange(event)
                          "adaptationModifier",
                          settings.global["rampant--adaptationModifier"].value)
     upgrade.compareTable(universe,
-                         "deadZoneFrequency",
-                         settings.global["rampant--deadZoneFrequency"].value)
-    upgrade.compareTable(universe,
                          "raidAIToggle",
                          settings.global["rampant--raidAIToggle"].value)
     upgrade.compareTable(universe,
@@ -303,10 +303,17 @@ local function prepMap(surface)
     map.chunkToTraps = {}
     map.chunkToUtilities = {}
     map.chunkToHives = {}
+    map.chunkToNestIds = {}
+    map.chunkToHiveIds = {}
+    map.chunkToTrapIds = {}
+    map.chunkToTurretIds = {}
+    map.chunkToUtilityIds = {}
+
     map.chunkToPlayerBase = {}
     map.chunkToResource = {}
     map.chunkToPlayerCount = {}
     map.playerToChunk = {}
+    map.pendingChunks = {}
 
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
@@ -335,8 +342,6 @@ local function prepMap(surface)
 
     map.chunkScanCounts = {}
 
-    map.enemiesToSquad = {}
-    map.enemiesToSquad.len = 0
     map.chunkRemovals = {}
     map.processActiveNest = {}
     map.tickActiveNest = {}
@@ -385,6 +390,7 @@ local function prepMap(surface)
         position[2] = y
         if surface.is_chunk_generated(position) then
             onChunkGenerated({ surface = surface,
+                               tick = tick,
                                area = { left_top = { x = x * 32,
                                                      y = y * 32}}})
         end
@@ -542,19 +548,22 @@ local function onDeath(event)
                 end
 
             else
-                if (event.force and (event.force.name ~= "enemy")) then
+                if event.force and (event.force.name ~= "enemy") then
+                    local rally = false
                     if (entityType == "unit-spawner") then
                         map.points = map.points + RECOVER_NEST_COST
                         if universe.aiPointsPrintGainsToChat then
                             game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
                         end
-                    else
+                        rally = true
+                    elseif (entityType == "turret") then
                         map.points = map.points + RECOVER_WORM_COST
                         if universe.aiPointsPrintGainsToChat then
                             game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
                         end
+                        rally = true
                     end
-                    if (chunk ~= -1) then
+                    if (chunk ~= -1) and rally then
                         rallyUnits(chunk, map, tick)
 
                         if cause and cause.valid then
@@ -567,7 +576,12 @@ local function onDeath(event)
                     end
                 end
 
-                unregisterEnemyBaseStructure(map, entity, event.damage_type)
+                if universe.buildingHiveTypeLookup[entity.name] or
+                    (entityType == "unit-spawner") or
+                    (entityType == "turret")
+                then
+                    unregisterEnemyBaseStructure(map, entity, event.damage_type)
+                end
             end
 
         elseif (entity.force.name ~= "enemy") then
@@ -658,6 +672,8 @@ local function onEnemyBaseBuild(event)
                                       chunk,
                                       event.tick)
                 end
+
+                registerEnemyBaseStructure(map, entity, event.tick, base)
 
                 upgradeEntity(entity,
                               base.alignment,
@@ -828,6 +844,8 @@ local function onEntitySpawned(event)
                                       chunk,
                                       event.tick)
                 end
+
+                registerEnemyBaseStructure(map, entity, event.tick, base)
 
                 upgradeEntity(entity,
                               base.alignment,
@@ -1053,7 +1071,7 @@ script.on_event(defines.events.on_tick,
                         universe.processedChunks = universe.processedChunks + PROCESS_QUEUE_SIZE
                         planning(map, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
-                            recycleBases(map, tick)
+                            recycleBases(map)
                         end
                         cleanUpMapTables(map, tick)
                     elseif (pick == 1) then
@@ -1158,7 +1176,9 @@ remote.add_interface("rampantTests",
                          exportAiState = tests.exportAiState(nil),
                          createEnergyTest = tests.createEnergyTest,
                          killActiveSquads = tests.killActiveSquads,
-                         scanChunkPaths = tests.scanChunkPaths
+                         scanChunkPaths = tests.scanChunkPaths,
+                         scanEnemy = tests.scanEnemy,
+                         getEnemyStructureCount = tests.getEnemyStructureCount
                      }
 )
 

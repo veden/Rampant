@@ -6,6 +6,7 @@ local chunkUtils = require("libs/ChunkUtils")
 local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
+local queryUtils = require("libs/QueryUtils")
 -- local tendrilUtils = require("libs/TendrilUtils")
 
 function tests.pheromoneLevels(size)
@@ -209,14 +210,6 @@ function tests.createEnemy(x,d)
     return game.get_surface(global.natives.activeSurface).create_entity(a)
 end
 
-function tests.registeredNest(x)
-    local entity = tests.createEnemy(x)
-    chunk.registerEnemyBaseStructure(global.map,
-                                     entity,
-                                     nil,
-                                     game.get_surface(global.natives.activeSurface))
-end
-
 function tests.attackOrigin()
     local enemy = game.get_surface(global.natives.activeSurface).find_nearest_enemy({position={0,0},
                                                                                      max_distance = 1000})
@@ -319,28 +312,49 @@ end
 function tests.unitBuildBase()
 end
 
-function tests.showBaseGrid()
-    local n = {}
-
-    for k,v in pairs(global.natives.bases) do
-        n[v] = k % 4
-    end
-
-    local chunks = global.map.chunkToBase
-    for chunk,base in pairs(chunks) do
-        local pick = n[base]
-        local color = "concrete"
-        if  base.alignment == constants.BASE_ALIGNMENT_NE then
-            color = "hazard-concrete-left"
-        elseif (pick == 1) then
-            color = "water"
-        elseif (pick == 2) then
-            color = "deepwater"
-        elseif (pick == 3) then
-            color = "water-green"
+function tests.showBaseGrid(time)
+    local map = global.universe.maps[game.player.surface.index]
+    local chunks = map.chunkToBase
+    for chunk in pairs(chunks) do
+        local count = chunkPropertyUtils.getEnemyStructureCount(map, chunk)
+        chunkUtils.mapScanEnemyChunk(chunk, map)
+        local newCount = chunkPropertyUtils.getEnemyStructureCount(map, chunk)
+        if newCount ~= count then
+            constants.gpsDebug(chunk.x+16,chunk.y+16, "f2:" .. tostring(count) .. "/" .. tostring(newCount))
+            chunkUtils.colorChunk(chunk, game.player.surface.index, {0.3, 0.1, 0.1, 0.6}, time and tonumber(time))
+        else
+            chunkUtils.colorChunk(chunk, game.player.surface.index, nil, time and tonumber(time))
         end
-        chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
     end
+end
+
+function tests.getEnemyStructureCount()
+    local map = global.universe.maps[game.player.surface.index]
+    local chunk = mapUtils.getChunkByPosition(map, game.player.character.position)
+
+    print(chunk.x, chunk.y, chunkPropertyUtils.getEnemyStructureCount(map, chunk))
+end
+
+function tests.scanEnemy()
+    local map = global.universe.maps[game.player.surface.index]
+    local chunk = mapUtils.getChunkByPosition(map, game.player.character.position)
+    local universe = map.universe
+    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
+    local query = universe.filteredEntitiesEnemyStructureQuery
+    queryUtils.setAreaInQuery(query, chunk, constants.CHUNK_SIZE)
+    local buildings = map.surface.find_entities_filtered(query)
+    local counts = map.chunkScanCounts
+    for i=1,#constants.HIVE_BUILDINGS_TYPES do
+        counts[constants.HIVE_BUILDINGS_TYPES[i]] = 0
+    end
+    for i=1,#buildings do
+        local building = buildings[i]
+        local hiveType = buildingHiveTypeLookup[building.name] or
+            (((building.type == "turret") and "turret") or "biter-spawner")
+        counts[hiveType] = counts[hiveType] + 1
+    end
+
+    print(game.tick, serpent.dump(counts))
 end
 
 function tests.showMovementGrid()
