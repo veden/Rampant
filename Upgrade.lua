@@ -446,8 +446,8 @@ function upgrade.attempt(universe)
 
         universe.maxPoints = 0
     end
-    if global.version < 121 then
-        global.version = 121
+    if global.version < 122 then
+        global.version = 122
 
         addCommandSet(universe)
         if (universe.maps) then
