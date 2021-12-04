@@ -375,17 +375,12 @@ local function prepMap(surface)
 
     -- queue all current chunks that wont be generated during play
     local tick = game.tick
-    local position = {0,0}
     for chunk in surface.get_chunks() do
-        local x = chunk.x
-        local y = chunk.y
-        position[1] = x
-        position[2] = y
-        if surface.is_chunk_generated(position) then
+        if surface.is_chunk_generated(chunk) then
             onChunkGenerated({ surface = surface,
                                tick = tick,
-                               area = { left_top = { x = x * 32,
-                                                     y = y * 32}}})
+                               area = { left_top = { x = chunk.x * 32,
+                                                     y = chunk.y * 32}}})
         end
     end
 
