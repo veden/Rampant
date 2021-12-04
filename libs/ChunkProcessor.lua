@@ -68,7 +68,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     if not event then
         event = next(pendingChunks, nil)
     end
-    local endCount = 2
+    local endCount = 1
     if flush then
         endCount = table_size(pendingChunks)
         event = next(pendingChunks, nil)

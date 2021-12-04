@@ -1053,7 +1053,7 @@ script.on_event(defines.events.on_tick,
                 function ()
                     local gameRef = game
                     local tick = gameRef.tick
-                    local pick = tick % 7
+                    local pick = tick % 8
 
                     -- local profiler = game.create_profiler()
 
@@ -1069,8 +1069,6 @@ script.on_event(defines.events.on_tick,
 
                     if (pick == 0) then
                         processPendingChunks(map, tick)
-                        processScanChunks(map)
-                        universe.processedChunks = universe.processedChunks + PROCESS_QUEUE_SIZE
                         planning(map, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
                             recycleBases(map)
@@ -1086,13 +1084,17 @@ script.on_event(defines.events.on_tick,
                         processVengence(map)
                     elseif (pick == 4) then
                         scanResourceMap(map, tick)
-                    elseif (pick == 5) then
                         scanEnemyMap(map, tick)
+                    elseif (pick == 5) then
                         processSpawners(map)
+                        scanEnemyMap(map, tick)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
                         processNests(map, tick)
                         temperamentPlanner(map)
+                    elseif (pick == 7) then
+                        processPendingChunks(map, tick)
+                        processScanChunks(map)
                     end
 
                     processActiveNests(map, tick)

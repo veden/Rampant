@@ -138,6 +138,7 @@ function mapProcessor.processMap(map, tick)
     else
         map.processIndex = endIndex - 1
     end
+    map.universe.processedChunks = map.universe.processedChunks + PROCESS_QUEUE_SIZE
 end
 
 function mapProcessor.processStaticMap(map)
