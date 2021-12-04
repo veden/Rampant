@@ -331,9 +331,12 @@ function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
     end
-    local base = findNearbyBase(map, chunk)
-    if not base then
-        base = createBase(map, chunk, tick)
+    local base
+    if universe.NEW_ENEMIES then
+        base = findNearbyBase(map, chunk)
+        if not base then
+            base = createBase(map, chunk, tick)
+        end
     end
     for i=1,#buildings do
         local building = buildings[i]
@@ -437,15 +440,17 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase)
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
-            local base = incomingBase
-            if not base then
-                base = findNearbyBase(map, chunk)
+            if universe.NEW_ENEMIES then
+                local base = incomingBase
                 if not base then
-                    base = createBase(map, chunk, tick)
+                    base = findNearbyBase(map, chunk)
+                    if not base then
+                        base = createBase(map, chunk, tick)
+                    end
                 end
+                setChunkBase(map, chunk, base)
             end
             addFunc(map, chunk, entityUnitNumber)
-            setChunkBase(map, chunk, base)
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
             end
@@ -490,20 +495,22 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType)
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
-            local base = getChunkBase(map, chunk)
-            if damageType and usedBases[base.id] then
-                usedBases[base.id] = true
-                local damageTypeName = damageType.name
-                base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
-                base.deathEvents = base.deathEvents + 3
-            end
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 setRaidNestActiveness(map, chunk, 0)
                 setNestActiveness(map, chunk, 0)
             end
             removeFunc(map, chunk, entityUnitNumber)
-            if (getEnemyStructureCount(map, chunk) <= 0) then
-                removeChunkBase(map, chunk, base)
+            if map.universe.NEW_ENEMIES then
+                local base = getChunkBase(map, chunk)
+                if damageType and usedBases[base.id] then
+                    usedBases[base.id] = true
+                    local damageTypeName = damageType.name
+                    base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
+                    base.deathEvents = base.deathEvents + 3
+                end
+                if (getEnemyStructureCount(map, chunk) <= 0) then
+                    removeChunkBase(map, chunk, base)
+                end
             end
         end
     end
