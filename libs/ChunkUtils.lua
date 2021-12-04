@@ -295,6 +295,10 @@ function chunkUtils.chunkPassScan(chunk, map)
         setPassable(map, chunk, pass)
         setPathRating(map, chunk, waterTiles + neutralObjects)
 
+        if pass == CHUNK_IMPASSABLE then
+            return -1
+        end
+
         return chunk
     end
 

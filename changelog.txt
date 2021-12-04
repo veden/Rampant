@@ -40,6 +40,7 @@ Date: 23. 11. 2021
     - Corrected spelling of wonder command to wander command
     - Fixed enemy structures destroyed by the enemy were not being unregistered from Rampants map
     - Fixed regional bases would not be corrected distributed or cleaned up on spawners
+    - Fixed chunks that became impassable would not return an impassable chunk flag when pass scanned
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
     - Added debug mod settings for showing enemy structures being upgraded in place
