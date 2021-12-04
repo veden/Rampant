@@ -317,7 +317,7 @@ function tests.showBaseGrid(time)
     local chunks = map.chunkToBase
     for chunk in pairs(chunks) do
         local count = chunkPropertyUtils.getEnemyStructureCount(map, chunk)
-        chunkUtils.mapScanEnemyChunk(chunk, map)
+        chunkUtils.mapScanEnemyChunk(chunk, map, game.tick)
         local newCount = chunkPropertyUtils.getEnemyStructureCount(map, chunk)
         if newCount ~= count then
             constants.gpsDebug(chunk.x+16,chunk.y+16, "f2:" .. tostring(count) .. "/" .. tostring(newCount))

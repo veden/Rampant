@@ -390,7 +390,7 @@ function mapProcessor.scanEnemyMap(map, tick)
         offset[1] = chunk.x + CHUNK_SIZE
         offset[2] = chunk.y + CHUNK_SIZE
 
-        mapScanEnemyChunk(chunk, map)
+        mapScanEnemyChunk(chunk, map, tick)
     end
 
     if (endIndex == processQueueLength) then

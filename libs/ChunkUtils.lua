@@ -318,7 +318,7 @@ function chunkUtils.mapScanResourceChunk(chunk, map)
     setPathRating(map, chunk, waterTiles + neutralObjects)
 end
 
-function chunkUtils.mapScanEnemyChunk(chunk, map)
+function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     local universe = map.universe
     local query = universe.filteredEntitiesEnemyStructureQuery
     setAreaInQuery(query, chunk, CHUNK_SIZE)
@@ -327,10 +327,14 @@ function chunkUtils.mapScanEnemyChunk(chunk, map)
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
     end
+    local base = findNearbyBase(map, chunk)
+    if not base then
+        base = createBase(map, chunk, tick)
+    end
     for i=1,#buildings do
         local building = buildings[i]
 
-        chunkUtils.registerEnemyBaseStructure(map, building, game.tick)
+        chunkUtils.registerEnemyBaseStructure(map, building, tick, base)
     end
 end
 
