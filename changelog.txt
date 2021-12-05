@@ -41,6 +41,7 @@ Date: 23. 11. 2021
     - Fixed enemy structures destroyed by the enemy were not being unregistered from Rampants map
     - Fixed regional bases would not be corrected distributed or cleaned up on spawners
     - Fixed chunks that became impassable would not return an impassable chunk flag when pass scanned
+    - Fixed kastorio creep code be spawned when the building failed to upgrade
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
     - Added debug mod settings for showing enemy structures being upgraded in place
