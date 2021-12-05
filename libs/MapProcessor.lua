@@ -365,9 +365,6 @@ function mapProcessor.scanEnemyMap(map, tick)
 
     local index = map.scanEnemyIndex
 
-    local area = map.universe.area
-    local offset = area[2]
-    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -378,15 +375,7 @@ function mapProcessor.scanEnemyMap(map, tick)
     end
 
     for x=index,endIndex do
-        local chunk = processQueue[x]
-
-        chunkBox[1] = chunk.x
-        chunkBox[2] = chunk.y
-
-        offset[1] = chunk.x + CHUNK_SIZE
-        offset[2] = chunk.y + CHUNK_SIZE
-
-        mapScanEnemyChunk(chunk, map, tick)
+        mapScanEnemyChunk(processQueue[x], map, tick)
     end
 
     if (endIndex == processQueueLength) then
