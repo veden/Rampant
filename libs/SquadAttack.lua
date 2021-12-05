@@ -185,7 +185,7 @@ local function settleMove(map, squad)
             if position then
                 targetPosition.x = position.x
                 targetPosition.y = position.y
-                if nextAttackChunk then
+                if nextAttackChunk ~= -1 then
                     addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 else
                     addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
