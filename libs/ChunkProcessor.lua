@@ -144,16 +144,20 @@ function chunkProcessor.processPendingUpgrades(map, tick)
     else
         entityData = map.pendingUpgrades[entityId]
     end
-    if entityId then
+    if not entityId then
+        map.pendingUpgradeIterator = nil
+        if table_size(map.pendingUpgrades) == 0 then
+            map.pendingUpgrades = {}
+        end
+    else
         local entity = entityData.entity
         if entity.valid then
             map.pendingUpgradeIterator = next(map.pendingUpgrades, entityId)
             map.pendingUpgrades[entityId] = nil
-            local universe = map.universe
-            local query = universe.upgradeEntityQuery
+            local surface = entity.surface
+            local query = map.universe.upgradeEntityQuery
             query.position = entityData.position or entity.position
             query.name = entityData.name
-            local surface = entity.surface
             unregisterEnemyBaseStructure(map, entity)
             entity.destroy()
             local createdEntity = surface.create_entity(query)
