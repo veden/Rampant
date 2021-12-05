@@ -12,6 +12,7 @@ Date: 23. 11. 2021
     - Optimized adding new chunks to the Rampant in-memory state map
     - Added minimum building cost upgrade check before base upgrade performs scanning
     - Optimized energy thief faction
+    - Factorissimo, Space Exploration Orbits, asteroid belts, secret maps, starmap, AAI-signal, NiceFill, Blueprint lab surfaces are no longer processed
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures

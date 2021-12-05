@@ -28,6 +28,7 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
 
+local sFind = string.find
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local processPendingChunks = chunkProcessor.processPendingChunks
 
@@ -425,9 +426,6 @@ function upgrade.attempt(universe)
         universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
-        for _,surface in pairs(game.surfaces) do
-            upgrade.prepMap(universe, surface)
-        end
         universe.activeMap = nil
         universe.mapIterator = nil
 
@@ -438,6 +436,20 @@ function upgrade.attempt(universe)
 end
 
 function upgrade.prepMap(universe, surface)
+    local surfaceName = surface.name
+    if sFind(surfaceName, "Factory floor") or
+        sFind(surfaceName, " Orbit") or
+        sFind(surfaceName, "clonespace") or
+        sFind(surfaceName, "BPL_TheLabplayer") or
+        sFind(surfaceName, "starmap-") or
+        (surfaceName == "aai-signals") or
+        sFind(surfaceName, "NiceFill") or
+        sFind(surfaceName, "Asteroid Belt") or
+        sFind(surfaceName, "Vault ")
+    then
+        return
+    end
+
     game.print("Rampant - Indexing surface:" .. tostring(surface.index) .. ", please wait.")
 
     local surfaceIndex = surface.index

@@ -132,6 +132,9 @@ local function onIonCannonFired(event)
         event.force, event.surface, event.player_index, event.position, event.radius
     --]]
     local map = universe.maps[event.surface.index]
+    if not map then
+        return
+    end
     map.ionCannonBlasts = map.ionCannonBlasts + 1
     map.points = map.points + 4000
     if universe.aiPointsPrintGainsToChat then
@@ -308,6 +311,9 @@ local function onBuild(event)
     local entity = event.created_entity or event.entity
     if entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         if (entity.type == "resource") and (entity.force.name == "neutral") then
             registerResource(entity, map)
         else
@@ -323,6 +329,9 @@ local function onMine(event)
     local entity = event.entity
     if entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         if (entity.type == "resource") and (entity.force.name == "neutral") then
             if (entity.amount == 0) then
                 unregisterResource(entity, map)
@@ -338,6 +347,9 @@ local function onDeath(event)
     if entity.valid then
         local surface = entity.surface
         local map = universe.maps[surface.index]
+        if not map then
+            return
+        end
         local entityPosition = entity.position
         local chunk = getChunkByPosition(map, entityPosition)
         local cause = event.cause
@@ -523,6 +535,9 @@ local function onEnemyBaseBuild(event)
     local entity = event.entity
     if entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             local base
@@ -562,6 +577,9 @@ end
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     local map = universe.maps[surfaceIndex]
+    if not map then
+        return
+    end
     local surface = map.surface
     local chunks = {}
     local tiles = event.tiles
@@ -628,7 +646,11 @@ end
 local function onResourceDepleted(event)
     local entity = event.entity
     if entity.valid then
-        unregisterResource(entity, universe.maps[entity.surface.index])
+        local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
+        unregisterResource(entity, map)
     end
 end
 
@@ -636,6 +658,9 @@ local function onRobotCliff(event)
     local entity = event.robot
     if entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         if (event.item.name == "cliff-explosives") then
             entityForPassScan(map, event.cliff)
         end
@@ -645,6 +670,9 @@ end
 local function onUsedCapsule(event)
     local surface = game.players[event.player_index].surface
     local map = universe.maps[surface.index]
+    if not map then
+        return
+    end
     if (event.item.name == "cliff-explosives") then
         local position2Top = universe.position2Top
         local position2Bottom = universe.position2Bottom
@@ -663,6 +691,9 @@ local function onRocketLaunch(event)
     local entity = event.rocket_silo or event.rocket
     if entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         map.rocketLaunched = map.rocketLaunched + 1
         map.points = map.points + 5000
         if universe.aiPointsPrintGainsToChat then
@@ -676,6 +707,9 @@ local function onTriggerEntityCreated(event)
         local entity = event.target_entity
         if (entity.valid) then
             local map = universe.maps[event.surface_index]
+            if not map then
+                return
+            end
             local chunk = getChunkByPosition(map, entity.position)
             if (chunk ~= -1) then
                 map.chunkToDrained[chunk.id] = event.tick + 60
@@ -697,6 +731,9 @@ local function onEntitySpawned(event)
     local entity = event.mine
     if universe.NEW_ENEMIES and entity.valid then
         local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
         if universe.buildingHiveTypeLookup[entity.name] then
             local disPos = mathUtils.distortPosition(entity.position, 8)
 
@@ -742,6 +779,9 @@ local function onUnitGroupCreated(event)
         local squad
         if not group.is_script_driven then
             local map = universe.maps[surface.index]
+            if not map then
+                return
+            end
             if not universe.aiNocturnalMode then
                 local settler = mRandom() < 0.25 and
                     canMigrate(map) and
@@ -814,6 +854,9 @@ local function onGroupFinishedGathering(event)
     local group = event.group
     if group.valid and (group.force.name == "enemy") then
         local map = universe.maps[group.surface.index]
+        if not map then
+            return
+        end
         local squad = map.groupNumberToSquad[group.group_number]
         if squad then
             if squad.settler then
@@ -902,7 +945,11 @@ local function onBuilderArrived(event)
     targetPosition.x = builder.position.x
     targetPosition.y = builder.position.y
 
-    local squad = universe.maps[builder.surface.index].groupNumberToSquad[builder.group_number]
+    local map = universe.maps[builder.surface.index]
+    if not map then
+        return
+    end
+    local squad = map.groupNumberToSquad[builder.group_number]
     squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     if universe.aiPointsPrintSpendingToChat then
         game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
@@ -1052,6 +1099,9 @@ remote.add_interface("rampantTests",
 local function rampantSetAIState(event)
     local surfaceIndex = game.players[event.player_index].surface.index
     local map = universe.maps[surfaceIndex]
+    if not map then
+        return
+    end
 
     game.print(map.surface.name .. " is in " .. constants.stateEnglish[map.state])
 

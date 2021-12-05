@@ -226,13 +226,15 @@ end
 function mapProcessor.processPlayers(players, map, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
-    local allowingAttacks = canAttack(map)
-    local universe = map.universe
-
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#players > 0) then
         local player = players[mRandom(#players)]
         if validPlayer(player) then
+            if player.surface.index ~= map.surface.index then
+                return
+            end
+            local allowingAttacks = canAttack(map)
+            local universe = map.universe
             local playerChunk = getChunkByPosition(map, player.character.position)
 
             if (playerChunk ~= -1) then
