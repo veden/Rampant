@@ -413,6 +413,7 @@ function aiPlanning.temperamentPlanner(map)
                        ", iCB:" .. map.ionCannonBlasts .. ", aB:" .. map.artilleryBlasts)
             game.print("temp: " .. map.temperament .. ", tempScore:" .. map.temperamentScore .. ", points:" .. map.points .. ", state:" .. constants.stateEnglish[map.state] .. ", surface:" .. map.surface.index .. " [" .. map.surface.name .. "]")
             game.print("aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount .. ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize .. ", formGroup:" .. universe.formSquadThreshold)
+            game.print("sAgg:".. map.sentAggressiveGroups .. ", mAgg:" .. map.maxAggressiveGroups)
         end
     end
 end
