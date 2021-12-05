@@ -408,9 +408,6 @@ function upgrade.attempt(universe)
         global.pendingChunks = nil
         global.natives = nil
         global.map = nil
-
-        universe.builderCount = 0
-        universe.squadCount = 0
     end
     if global.version < 116 then
         global.version = 116
@@ -428,6 +425,8 @@ function upgrade.attempt(universe)
         universe.maps = {}
         universe.activeMap = nil
         universe.mapIterator = nil
+        universe.builderCount = 0
+        universe.squadCount = 0
 
         game.print("Rampant - Version 2.0.0")
     end
