@@ -31,9 +31,9 @@ function mathUtils.roundToNearest(number, multiple)
     return num - (num % multiple)
 end
 
-function mathUtils.randomTickEvent(tick, low, high)
+function mathUtils.randomTickEvent(rg, tick, low, high)
     local range = high - low
-    local minutesToTick = (range * mRandom()) + low
+    local minutesToTick = (range * rg()) + low
     return tick + mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
 end
 
@@ -69,51 +69,9 @@ function mathUtils.xorRandom(state)
     end
 end
 
-function mathUtils.linearInterpolation(percent, min, max)
-    return ((max - min) * percent) + min
-end
-
 --[[
     Used for gaussian random numbers
 --]]
-function mathUtils.gaussianRandom(mean, std_dev)
-    -- marsagliaPolarMethod
-    local iid1
-    local iid2
-    local q
-    repeat
-        iid1 = 2 * mRandom() + -1
-        iid2 = 2 * mRandom() + -1
-        q = (iid1 * iid1) + (iid2 * iid2)
-    until (q ~= 0) and (q < 1)
-    local s = mSqrt((-2 * mLog10(q)) / q)
-    local v = iid1 * s
-
-    return mean + (v * std_dev)
-end
-
-function mathUtils.gaussianRandomRange(mean, std_dev, min, max)
-    if (min >= max) then
-        return min
-    end
-    local r
-    repeat
-        local iid1
-        local iid2
-        local q
-        repeat
-            iid1 = 2 * mRandom() + -1
-            iid2 = 2 * mRandom() + -1
-            q = (iid1 * iid1) + (iid2 * iid2)
-        until (q ~= 0) and (q < 1)
-        local s = mSqrt((-2 * mLog10(q)) / q)
-        local v = iid1 * s
-
-        r = mean + (v * std_dev)
-    until (r >= min) and (r <= max)
-    return r
-end
-
 function mathUtils.gaussianRandomRG(mean, std_dev, rg)
     -- marsagliaPolarMethod
     local iid1
@@ -175,9 +133,9 @@ function mathUtils.euclideanDistanceArray(p1, p2)
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
-function mathUtils.distortPosition(position, size)
-    local xDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
-    local yDistort = mathUtils.gaussianRandomRange(1, 0.5, 0, 2) - 1
+function mathUtils.distortPosition(rg, position, size)
+    local xDistort = mathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
+    local yDistort = mathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
     position.x = position.x + (xDistort * size)
     position.y = position.y + (yDistort * size)
     return position

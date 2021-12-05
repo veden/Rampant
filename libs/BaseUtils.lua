@@ -42,7 +42,7 @@ local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
-local gaussianRandomRange = mathUtils.gaussianRandomRange
+local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local linearInterpolation = mathUtils.linearInterpolation
 
@@ -58,8 +58,6 @@ local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
 local next = next
 
-local mRandom = math.random
-
 -- module code
 
 local function evoToTier(universe, evolutionFactor, maxSkips)
@@ -68,7 +66,7 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     for i=10,1,-1 do
         if universe.evoToTierMapping[i] <= evolutionFactor then
             v = i
-            if (skipsRemaining == 0) or (mRandom() <= 0.75) then
+            if (skipsRemaining == 0) or (universe.random() <= 0.75) then
                 break
             end
             skipsRemaining = skipsRemaining - 1
@@ -104,7 +102,7 @@ local function findBaseMutation(map, targetEvolution)
     local tier = evoToTier(universe, targetEvolution or map.evolutionLevel, 2)
     local alignments = universe.evolutionTableAlignment[tier]
 
-    local roll = mRandom()
+    local roll = map.random()
     for i=1,#alignments do
         local alignment = alignments[i]
 
@@ -123,7 +121,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
 
     local useTier
 
-    local tierRoll = mRandom()
+    local tierRoll = map.random()
     if (tierRoll < 0.4) then
         useTier = maxTier
     elseif (tierRoll < 0.7) then
@@ -141,13 +139,13 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
                 if upgrade[3] == useHiveType then
-                    entity = upgrade[2][mRandom(#upgrade[2])]
+                    entity = upgrade[2][map.random(#upgrade[2])]
                     break
                 end
             end
         end
         if not entity then
-            local roll = mRandom()
+            local roll = map.random()
 
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
@@ -155,7 +153,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
                 roll = roll - upgrade[1]
 
                 if (roll <= 0) then
-                    entity = upgrade[2][mRandom(#upgrade[2])]
+                    entity = upgrade[2][map.random(#upgrade[2])]
                     break
                 end
             end
@@ -181,15 +179,15 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
             for i=1, #mapTypes do
                 local upgrade = factionLookup[mapTypes[i]]
                 if upgrade and (#upgrade > 0) then
-                    entity = upgrade[mRandom(#upgrade)]
-                    if mRandom() < 0.55 then
+                    entity = upgrade[map.random(#upgrade)]
+                    if map.random() < 0.55 then
                         return entity
                     end
                 end
             end
         elseif (#upgrades > 0) then
-            entity = upgrades[mRandom(#upgrades)]
-            if mRandom() < 0.55 then
+            entity = upgrades[map.random(#upgrades)]
+            if map.random() < 0.55 then
                 return entity
             end
         end
@@ -213,8 +211,8 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
-        local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (mRandom() < 0.2)
-        makeHive = makeHive or (not makeHive and (mRandom() < 0.005))
+        local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (map.random() < 0.2)
+        makeHive = makeHive or (not makeHive and (map.random() < 0.005))
         return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"))
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
@@ -223,10 +221,10 @@ end
 
 local function findBaseInitialAlignment(map, evoIndex)
     local dev = evoIndex * 0.15
-    local evoTop = gaussianRandomRange(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex)
+    local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, map.random)
 
     local result
-    if mRandom() < 0.05 then
+    if map.random() < 0.05 then
         result = {findBaseMutation(map, evoTop), findBaseMutation(map, evoTop)}
     else
         result = {findBaseMutation(map, evoTop)}
@@ -264,7 +262,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
 
     local pickedBaseAlignment
     if (#baseAlignment == 2) then
-        if mRandom() < 0.75 then
+        if map.random() < 0.75 then
             pickedBaseAlignment = baseAlignment[2]
         else
             pickedBaseAlignment = baseAlignment[1]
@@ -300,7 +298,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
     local mutation
 
     if (damageFactions and (#damageFactions > 0)) then
-        mutation = damageFactions[mRandom(#damageFactions)]
+        mutation = damageFactions[map.random(#damageFactions)]
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
@@ -369,7 +367,7 @@ local function upgradeBaseBasedOnDamage(map, base)
     base.damagedBy["RandomMutation"] = mutationAmount
     total = total + mutationAmount
     local pickedDamage
-    local roll = mRandom()
+    local roll = map.random()
     for damageTypeName,amount in pairs(base.damagedBy) do
         base.damagedBy[damageTypeName] = amount / total
     end
@@ -392,10 +390,10 @@ function baseUtils.processBase(chunk, map, tick, base)
     local universe = map.universe
     local point = universe.position
 
-    point.x = chunk.x + (CHUNK_SIZE * mRandom())
-    point.y = chunk.y + (CHUNK_SIZE * mRandom())
+    point.x = chunk.x + (CHUNK_SIZE * map.random())
+    point.y = chunk.y + (CHUNK_SIZE * map.random())
 
-    local upgradeRoll = mRandom()
+    local upgradeRoll = map.random()
     if (base.state == BASE_AI_STATE_ACTIVE) and (base.points >= MINIMUM_BUILDING_COST) and (upgradeRoll < 0.30) then
         local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
@@ -433,7 +431,7 @@ function baseUtils.processBase(chunk, map, tick, base)
             upgradeBaseBasedOnDamage(map, base)
             base.mutations = base.mutations + 1
         elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
-            local roll = mRandom()
+            local roll = map.random()
             if (roll < 0.001) then
                 base.mutations = 0
             elseif (roll > 0.999) then
@@ -451,13 +449,14 @@ function baseUtils.processBase(chunk, map, tick, base)
     end
 
     if (base.stateTick <= tick) then
-        local roll = mRandom()
+        local roll = map.random()
         if (roll < 0.85) then
             base.state = BASE_AI_STATE_ACTIVE
         else
             base.state = BASE_AI_STATE_DORMANT
         end
-        base.stateTick = randomTickEvent(tick,
+        base.stateTick = randomTickEvent(map.random,
+                                         tick,
                                          BASE_AI_MIN_STATE_DURATION,
                                          BASE_AI_MAX_STATE_DURATION)
     end
@@ -479,11 +478,12 @@ function baseUtils.createBase(map, chunk, tick)
 
     local alignment = findBaseInitialAlignment(map, evoIndex) or {"neutral"}
 
-    local baseLevel = gaussianRandomRange(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50)
-    local baseDistanceThreshold = gaussianRandomRange(BASE_DISTANCE_THRESHOLD,
-                                                      BASE_DISTANCE_THRESHOLD * 0.2,
-                                                      BASE_DISTANCE_THRESHOLD * 0.75,
-                                                      BASE_DISTANCE_THRESHOLD * 1.50)
+    local baseLevel = gaussianRandomRangeRG(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50, map.random)
+    local baseDistanceThreshold = gaussianRandomRangeRG(BASE_DISTANCE_THRESHOLD,
+                                                        BASE_DISTANCE_THRESHOLD * 0.2,
+                                                        BASE_DISTANCE_THRESHOLD * 0.75,
+                                                        BASE_DISTANCE_THRESHOLD * 1.50,
+                                                        map.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
 
     local base = {

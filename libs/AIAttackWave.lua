@@ -42,8 +42,6 @@ local findNearbyBase = baseUtils.findNearbyBase
 
 local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
 
-local mRandom = math.random
-
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local getPassable = chunkPropertyUtils.getPassable
@@ -53,7 +51,7 @@ local getNestActiveness = chunkPropertyUtils.getNestActiveness
 local getRallyTick = chunkPropertyUtils.getRallyTick
 local setRallyTick = chunkPropertyUtils.setRallyTick
 
-local gaussianRandomRange = mathUtils.gaussianRandomRange
+local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkByXY = mapUtils.getChunkByXY
@@ -67,17 +65,19 @@ local mCeil = math.ceil
 -- module code
 
 local function settlerWaveScaling(universe)
-    return mCeil(gaussianRandomRange(universe.settlerWaveSize,
-                                     universe.settlerWaveDeviation,
-                                     universe.expansionMinSize,
-                                     universe.expansionMaxSize))
+    return mCeil(gaussianRandomRangeRG(universe.settlerWaveSize,
+                                       universe.settlerWaveDeviation,
+                                       universe.expansionMinSize,
+                                       universe.expansionMaxSize,
+                                       universe.random))
 end
 
 local function attackWaveScaling(universe)
-    return mCeil(gaussianRandomRange(universe.attackWaveSize,
-                                     universe.attackWaveDeviation,
-                                     1,
-                                     universe.attackWaveUpperBound))
+    return mCeil(gaussianRandomRangeRG(universe.attackWaveSize,
+                                       universe.attackWaveDeviation,
+                                       1,
+                                       universe.attackWaveUpperBound,
+                                       universe.random))
 end
 
 local function attackWaveValidCandidate(chunk, map)
@@ -193,7 +193,7 @@ end
 function aiAttackWave.formSettlers(map, chunk)
     local universe = map.universe
     if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
-        (mRandom() < universe.formSquadThreshold) and
+        (map.random() < universe.formSquadThreshold) and
         ((map.points - AI_SETTLER_COST) > 0)
     then
         local surface = map.surface
@@ -223,10 +223,11 @@ function aiAttackWave.formSettlers(map, chunk)
             if squadPosition then
                 local squad = createSquad(squadPosition, surface, nil, true)
 
-                squad.maxDistance = gaussianRandomRange(universe.expansionMaxDistance * 0.5,
-                                                        universe.expansionMaxDistanceDerivation,
-                                                        10,
-                                                        universe.expansionMaxDistance)
+                squad.maxDistance = gaussianRandomRangeRG(universe.expansionMaxDistance * 0.5,
+                                                          universe.expansionMaxDistanceDerivation,
+                                                          10,
+                                                          universe.expansionMaxDistance,
+                                                          universe.random)
 
                 local scaledWaveSize = settlerWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group
@@ -236,7 +237,7 @@ function aiAttackWave.formSettlers(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
+                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
                     universe.builderCount = universe.builderCount + 1
                     map.points = map.points - AI_SETTLER_COST
                     if universe.aiPointsPrintSpendingToChat then
@@ -256,7 +257,7 @@ end
 function aiAttackWave.formVengenceSquad(map, chunk)
     local universe = map.universe
     if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
-        (mRandom() < universe.formSquadThreshold) and
+        (map.random() < universe.formSquadThreshold) and
         ((map.points - AI_VENGENCE_SQUAD_COST) > 0)
     then
         local surface = map.surface
@@ -276,7 +277,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
             if squadPosition then
                 local squad = createSquad(squadPosition, surface)
 
-                squad.rabid = mRandom() < 0.03
+                squad.rabid = map.random() < 0.03
 
                 local scaledWaveSize = attackWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group
@@ -286,7 +287,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
+                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
                     map.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
                     map.points = map.points - AI_VENGENCE_SQUAD_COST
@@ -307,7 +308,7 @@ function aiAttackWave.formSquads(map, chunk)
     local universe = map.universe
     if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
         attackWaveValidCandidate(chunk, map) and
-        (mRandom() < universe.formSquadThreshold) and
+        (map.random() < universe.formSquadThreshold) and
         ((map.points - AI_SQUAD_COST) > 0)
     then
         local surface = map.surface
@@ -327,7 +328,7 @@ function aiAttackWave.formSquads(map, chunk)
             if squadPosition then
                 local squad = createSquad(squadPosition, surface)
 
-                squad.rabid = mRandom() < 0.03
+                squad.rabid = map.random() < 0.03
 
                 local scaledWaveSize = attackWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group
@@ -337,7 +338,7 @@ function aiAttackWave.formSquads(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = mRandom() < calculateKamikazeThreshold(foundUnits, universe)
+                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
                     map.points = map.points - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
                     map.groupNumberToSquad[squad.groupNumber] = squad

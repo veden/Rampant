@@ -41,6 +41,7 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local distortPosition = mathUtils.distortPosition
 local prepMap = upgrade.prepMap
 
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
@@ -114,8 +115,6 @@ local cleanSquads = squadAttack.cleanSquads
 
 local upgradeEntity = baseUtils.upgradeEntity
 local rebuildNativeTables = baseUtils.rebuildNativeTables
-
-local mRandom = math.random
 
 local tRemove = table.remove
 
@@ -286,7 +285,7 @@ local function onConfigChanged()
                          settings.startup["rampant--newEnemies"].value)
 
     if universe.NEW_ENEMIES then
-        rebuildNativeTables(universe, game.create_random_generator(universe.ENEMY_SEED))
+        rebuildNativeTables(universe, universe.random)
     else
         universe.buildingHiveTypeLookup = {}
         universe.buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
@@ -394,7 +393,7 @@ local function onDeath(event)
 
                     map.lostEnemyUnits = map.lostEnemyUnits + 1
 
-                    if (mRandom() < universe.rallyThreshold) and not surface.peaceful_mode then
+                    if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                         rallyUnits(chunk, map, tick)
                     end
                 end
@@ -735,7 +734,7 @@ local function onEntitySpawned(event)
             return
         end
         if universe.buildingHiveTypeLookup[entity.name] then
-            local disPos = mathUtils.distortPosition(entity.position, 8)
+            local disPos = distortPosition(universe.random, entity.position, 8)
 
             local chunk = getChunkByPosition(map, disPos)
             if (chunk ~= -1) then
@@ -783,7 +782,7 @@ local function onUnitGroupCreated(event)
                 return
             end
             if not universe.aiNocturnalMode then
-                local settler = mRandom() < 0.25 and
+                local settler = universe.random() < 0.25 and
                     canMigrate(map) and
                     (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
 
@@ -817,7 +816,7 @@ local function onUnitGroupCreated(event)
                     return
                 end
 
-                local settler = mRandom() < 0.25 and
+                local settler = universe.random() < 0.25 and
                     canMigrate(map) and
                     (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
 
@@ -881,7 +880,7 @@ local function onGroupFinishedGathering(event)
                 end
             end
         else
-            local settler = mRandom() < 0.25 and
+            local settler = universe.random() < 0.25 and
                 canMigrate(map) and
                 (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
 
@@ -1012,7 +1011,7 @@ script.on_event(defines.events.on_tick,
                     processPendingUpgrades(map, tick)
                     cleanSquads(map, tick)
 
-                    -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", mRandom()})
+                    -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
 end)
 
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)

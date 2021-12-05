@@ -90,7 +90,6 @@ local mMin = math.min
 local mMax = math.max
 
 local next = next
-local mRandom = math.random
 
 -- module code
 
@@ -228,7 +227,7 @@ function mapProcessor.processPlayers(players, map, tick)
     -- randomize player order to ensure a single player isn't singled out
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#players > 0) then
-        local player = players[mRandom(#players)]
+        local player = players[map.random(#players)]
         if validPlayer(player) then
             if player.surface.index ~= map.surface.index then
                 return

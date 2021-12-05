@@ -47,8 +47,6 @@ local linearInterpolation = mathUtils.linearInterpolation
 local mFloor = math.floor
 local mCeil = math.ceil
 
-local mRandom = math.random
-
 local mMax = math.max
 local mMin = math.min
 
@@ -96,7 +94,8 @@ function aiPlanning.planning(map, evolution_factor, tick)
     if (map.canAttackTick < tick) then
         map.maxAggressiveGroups = mCeil(map.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
         map.sentAggressiveGroups = 0
-        map.canAttackTick = randomTickEvent(tick,
+        map.canAttackTick = randomTickEvent(map.random,
+                                            tick,
                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
     end
@@ -119,7 +118,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
     universe.unitRefundAmount = AI_UNIT_REFUND * evolution_factor
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolution_factor * NO_RETREAT_EVOLUTION_BONUS_MAX)
 
-    local points = ((AI_POINT_GENERATOR_AMOUNT * mRandom()) + (map.activeNests * 0.003) +
+    local points = ((AI_POINT_GENERATOR_AMOUNT * universe.random()) + (map.activeNests * 0.003) +
         (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1)))
 
     if (map.temperament < 0.05) or (map.temperament > 0.95) then
@@ -149,7 +148,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
     end
 
     if (map.stateTick <= tick) then
-        local roll = mRandom()
+        local roll = universe.random()
         if (map.temperament < 0.05) then -- 0 - 0.05
             if universe.enabledMigration then
                 if (roll < 0.7) and universe.siegeAIToggle then
@@ -298,7 +297,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
         map.ionCannonBlasts = 0
         map.artilleryBlasts = 0
 
-        map.stateTick = randomTickEvent(tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+        map.stateTick = randomTickEvent(map.random, tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
 
         if universe.printAIStateChanges then
             game.print(map.surface.name .. ": AI is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. string.format("%.2f", (map.stateTick - tick) / (60*60)) .. " minutes @ " .. getTimeStringFromTick(map.stateTick) .. " playtime")
