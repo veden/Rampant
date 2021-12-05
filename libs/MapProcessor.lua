@@ -123,7 +123,7 @@ function mapProcessor.processMap(map, tick)
 
     for x=index,endIndex,step do
         local chunk = processQueue[x]
-        if chunk and (chunk[CHUNK_TICK] ~= tick) then
+        if chunk[CHUNK_TICK] ~= tick then
             chunk[CHUNK_TICK] = tick
             processPheromone(map, chunk)
         end
@@ -253,12 +253,7 @@ function mapProcessor.processPlayers(players, map, tick)
                                 queueNestSpawners(map, chunk, tick)
 
                                 if vengence then
-                                    local count = map.vengenceQueue[chunk]
-                                    if not count then
-                                        count = 0
-                                        map.vengenceQueue[chunk] = count
-                                    end
-                                    map.vengenceQueue[chunk] = count + 1
+                                    map.vengenceQueue[chunk] = (map.vengenceQueue[chunk] or 0) + 1
                                 end
                             end
                         end
