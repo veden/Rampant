@@ -284,9 +284,10 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
             ["name"] = spawnerName,
             ["position"] = disPos,
             ["register"] = register,
-            ["base"] = base
+            ["base"] = base,
+            ["entity"] = entity
         }
-        map.pendingUpgrades[entity] = entityData
+        map.pendingUpgrades[entity.unit_number] = entityData
         return spawnerName
     end
     return nil
@@ -299,7 +300,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
     local mutation
 
     if (damageFactions and (#damageFactions > 0)) then
-        mutation = damageFactions[math.random(#damageFactions)]
+        mutation = damageFactions[mRandom(#damageFactions)]
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil

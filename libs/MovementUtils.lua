@@ -51,7 +51,7 @@ function movementUtils.addMovementPenalty(squad, chunk)
     local penaltyCount = #penalties
     for i=1,penaltyCount do
         local penalty = penalties[i]
-        if (penalty.c == chunk) then
+        if (penalty.c.id == chunk.id) then
             penalty.v = penalty.v + 1
             if (penalty.v > 2) then
                 squad.kamikaze = true
@@ -79,7 +79,7 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
+            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
@@ -98,7 +98,7 @@ function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChun
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
-            if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
+            if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > nextHighestScore) then
@@ -125,7 +125,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
+            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
@@ -148,7 +148,7 @@ function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionCh
         neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
-            if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
+            if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > nextHighestScore) then
@@ -203,7 +203,7 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if canMoveChunkDirection(map, x, chunk, neighborChunk) or (chunk == -1) then
+            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
@@ -223,7 +223,7 @@ function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, 
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
 
-            if ((neighborChunk ~= -1) and (neighborChunk ~= chunk) and
+            if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
                 canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
                 local score = scoreFunction(map, neighborChunk)
                 if (score > nextHighestScore) then

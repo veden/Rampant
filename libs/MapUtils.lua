@@ -43,6 +43,10 @@ function mapUtils.getChunkByPosition(map, position)
     return -1
 end
 
+function mapUtils.getChunkById(map, chunkId)
+    return map.chunkIdToChunk[chunkId] or -1
+end
+
 function mapUtils.positionToChunkXY(position)
     local chunkX = mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -51,7 +55,10 @@ end
 
 function mapUtils.queueGeneratedChunk(universe, event)
     event.tick = (event.tick or game.tick) + 20
-    universe.maps[event.surface.index].pendingChunks[event] = true
+    local map = universe.maps[event.surface.index]
+    event.id = map.eventId
+    map.pendingChunks[event.id] = event
+    map.eventId = map.eventId + 1
 end
 
 --[[
@@ -219,7 +226,6 @@ function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosi
     endPosition.x = lx
     endPosition.y = ly
 end
-
 
 mapUtilsG = mapUtils
 return mapUtils

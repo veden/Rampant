@@ -175,12 +175,12 @@ function aiAttackWave.rallyUnits(chunk, map, tick)
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
                     if (rallyChunk ~= -1) and (getNestCount(map, rallyChunk) > 0) then
-                        local count = vengenceQueue[rallyChunk]
+                        local count = vengenceQueue[rallyChunk.id]
                         if not count then
                             count = 0
-                            vengenceQueue[rallyChunk] = count
+                            vengenceQueue[rallyChunk.id] = count
                         end
-                        vengenceQueue[rallyChunk] = count + 1
+                        vengenceQueue[rallyChunk.id] = count + 1
                     end
                 end
             end

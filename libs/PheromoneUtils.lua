@@ -37,6 +37,7 @@ local addVictoryGenerator = chunkPropertyUtils.addVictoryGenerator
 local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 
 local getNeighborChunks = mapUtils.getNeighborChunks
+local getChunkById = mapUtils.getChunkById
 
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local getPathRating = chunkPropertyUtils.getPathRating
@@ -63,18 +64,20 @@ function pheromoneUtils.victoryScent(map, chunk, entityType)
 end
 
 function pheromoneUtils.disperseVictoryScent(map)
-    local chunk = map.victoryScentIterator
+    local chunkId = map.victoryScentIterator
     local chunkToVictory = map.chunkToVictory
     local pheromone
-    if not chunk then
-        chunk, pheromone = next(chunkToVictory, nil)
+    if not chunkId then
+        chunkId, pheromone = next(chunkToVictory, nil)
     else
-        pheromone = chunkToVictory[chunk]
+        pheromone = chunkToVictory[chunkId]
     end
-    if not chunk then
+    if not chunkId then
         map.victoryScentIterator = nil
     else
-        map.victoryScentIterator = next(chunkToVictory, chunk)
+        map.victoryScentIterator = next(chunkToVictory, chunkId)
+        chunkToVictory[chunkId] = nil
+        local chunk = getChunkById(map, chunkId)
         local chunkX = chunk.x
         local chunkY = chunk.y
         local i = 1
@@ -87,8 +90,6 @@ function pheromoneUtils.disperseVictoryScent(map)
                 i = i + 1
             end
         end
-
-        chunkToVictory[chunk] = nil
     end
 end
 

@@ -41,6 +41,8 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local prepMap = upgrade.prepMap
+
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
@@ -260,135 +262,6 @@ local function onModSettingsChange(event)
     return true
 end
 
-local function prepMap(surface)
-    surface.print("Rampant - Indexing surface:" .. tostring(surface.index) .. ", please wait.")
-
-    local surfaceIndex = surface.index
-
-    if not universe.maps then
-        universe.maps = {}
-    end
-
-    local map = universe.maps[surfaceIndex]
-    if not map then
-        map = {}
-        universe.maps[surfaceIndex] = map
-    end
-
-    map.maxAggressiveGroups = 1
-    map.sentAggressiveGroups = 0
-    map.processedChunks = 0
-    map.processQueue = {}
-    map.processIndex = 1
-    map.cleanupIndex = 1
-    map.scanPlayerIndex = 1
-    map.scanResourceIndex = 1
-    map.scanEnemyIndex = 1
-    map.processStaticIndex = 1
-    map.outgoingScanWave = true
-    map.outgoingStaticScanWave = true
-
-    map.pendingUpgrades = {}
-    map.pendingChunks = {}
-    map.chunkToBase = {}
-    map.chunkToNests = {}
-    map.chunkToTurrets = {}
-    map.chunkToTraps = {}
-    map.chunkToUtilities = {}
-    map.chunkToHives = {}
-    map.chunkToNestIds = {}
-    map.chunkToHiveIds = {}
-    map.chunkToTrapIds = {}
-    map.chunkToTurretIds = {}
-    map.chunkToUtilityIds = {}
-
-    map.chunkToPlayerBase = {}
-    map.chunkToResource = {}
-    map.chunkToPlayerCount = {}
-    map.playerToChunk = {}
-    map.pendingChunks = {}
-
-    map.chunkToPassScan = {}
-    map.chunkToSquad = {}
-
-    map.chunkToRetreats = {}
-    map.chunkToRallys = {}
-
-    map.chunkToPassable = {}
-    map.chunkToPathRating = {}
-    map.chunkToDeathGenerator = {}
-    map.chunkToDrained = {}
-    map.chunkToVictory = {}
-    map.chunkToActiveNest = {}
-    map.chunkToActiveRaidNest = {}
-
-    map.pendingUpgradeIterator = nil
-    map.squadIterator = nil
-    map.regroupIterator = nil
-    map.deployVengenceIterator = nil
-    map.recycleBaseIterator = nil
-    map.processActiveSpawnerIterator = nil
-    map.processActiveRaidSpawnerIterator = nil
-    map.processMigrationIterator = nil
-    map.processNestIterator = nil
-    map.victoryScentIterator = nil
-
-    map.chunkScanCounts = {}
-
-    map.chunkRemovals = {}
-    map.processActiveNest = {}
-    map.tickActiveNest = {}
-
-    map.emptySquadsOnChunk = {}
-
-    map.surface = surface
-    map.universe = universe
-
-    map.vengenceQueue = {}
-    map.bases = {}
-    map.baseIndex = 1
-    map.baseIncrement = 0
-    map.points = 0
-    map.state = constants.AI_STATE_AGGRESSIVE
-    map.baseId = 0
-    map.squads = nil
-    map.pendingAttack = nil
-    map.building = nil
-
-    map.evolutionLevel = game.forces.enemy.evolution_factor
-    map.canAttackTick = 0
-    map.drainPylons = {}
-    map.groupNumberToSquad = {}
-    map.activeRaidNests = 0
-    map.activeNests = 0
-    map.destroyPlayerBuildings = 0
-    map.lostEnemyUnits = 0
-    map.lostEnemyBuilding = 0
-    map.rocketLaunched = 0
-    map.builtEnemyBuilding = 0
-    map.ionCannonBlasts = 0
-    map.artilleryBlasts = 0
-
-    map.temperament = 0.5
-    map.temperamentScore = 0
-    map.stateTick = 0
-
-    map.random = universe.random
-
-    -- queue all current chunks that wont be generated during play
-    local tick = game.tick
-    for chunk in surface.get_chunks() do
-        if surface.is_chunk_generated(chunk) then
-            onChunkGenerated({ surface = surface,
-                               tick = tick,
-                               area = { left_top = { x = chunk.x * 32,
-                                                     y = chunk.y * 32}}})
-        end
-    end
-
-    processPendingChunks(map, tick, true)
-end
-
 local function onConfigChanged()
     local version = upgrade.attempt(universe)
     if version then
@@ -426,7 +299,7 @@ local function onConfigChanged()
             universe.maps = {}
         end
         if not universe.maps[surface.index] then
-            prepMap(surface)
+            prepMap(universe, surface)
         end
     end
 end
@@ -520,13 +393,13 @@ local function onDeath(event)
                 if pair then
                     local target = pair[1]
                     local pole = pair[2]
-                    if target == entity then
+                    if target.unit_number == entityUnitNumber then
                         map.drainPylons[entityUnitNumber] = nil
                         if pole.valid then
                             map.drainPylons[pole.unit_number] = nil
                             pole.die()
                         end
-                    elseif (pole == entity) then
+                    elseif (pole.unit_number == entityUnitNumber) then
                         map.drainPylons[entityUnitNumber] = nil
                         if target.valid then
                             map.drainPylons[target.unit_number] = nil
@@ -576,11 +449,12 @@ local function onDeath(event)
             local creditNatives = false
             if (event.force ~= nil) and (event.force.name == "enemy") then
                 creditNatives = true
+                local drained
                 if (chunk ~= -1) then
                     victoryScent(map, chunk, entityType)
+                    drained = (entityType == "electric-turret") and map.chunkToDrained[chunk.id]
                 end
 
-                local drained = (entityType == "electric-turret") and map.chunkToDrained[chunk]
                 if cause or (drained and (drained - tick) > 0) then
                     if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
                         local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
@@ -698,7 +572,7 @@ local function onSurfaceTileChange(event)
                 local chunk = getChunkByPosition(map, position)
 
                 if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk] = true
+                    map.chunkToPassScan[chunk.id] = true
                 else
                     local x,y = positionToChunkXY(position)
                     local addMe = true
@@ -727,7 +601,7 @@ local function onSurfaceTileChange(event)
                 local chunk = getChunkByPosition(map, position)
 
                 if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk] = true
+                    map.chunkToPassScan[chunk.id] = true
                 else
                     local x,y = positionToChunkXY(position)
                     local addMe = true
@@ -804,7 +678,7 @@ local function onTriggerEntityCreated(event)
             local map = universe.maps[event.surface_index]
             local chunk = getChunkByPosition(map, entity.position)
             if (chunk ~= -1) then
-                map.chunkToDrained[chunk] = event.tick + 60
+                map.chunkToDrained[chunk.id] = event.tick + 60
             end
         end
     end
@@ -1003,7 +877,7 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceCreated(event)
-    prepMap(game.surfaces[event.surface_index])
+    prepMap(universe, game.surfaces[event.surface_index])
 end
 
 local function onSurfaceDeleted(event)

@@ -407,7 +407,7 @@ function aiPlanning.temperamentPlanner(map)
     map.temperament = ((map.temperamentScore + 10000) * 0.00005)
 
     if universe.debugTemperament then
-        if game.tick % 240 == 0 then
+        if game.tick % 243 == 0 then
             game.print("Rampant Stats:")
             game.print("aN:" .. map.activeNests .. ", aRN:" .. map.activeRaidNests .. ", dPB:" .. map.destroyPlayerBuildings ..
                        ", lEU:" .. map.lostEnemyUnits .. ", lEB:" .. map.lostEnemyBuilding .. ", rL:" .. map.rocketLaunched .. ", bEB:" .. map.builtEnemyBuilding ..

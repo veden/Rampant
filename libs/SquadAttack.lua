@@ -118,9 +118,14 @@ local function settleMove(map, squad)
     elseif squad.kamikaze then
         scoreFunction = scoreResourceLocationKamikaze
     end
-    addDeathGenerator(map, chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-    addSquadToChunk(map, chunk, squad)
-    addMovementPenalty(squad, chunk)
+    local squadChunk = squad.chunk
+    if squadChunk ~= -1 then
+        addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+    end
+    if chunk ~= -1 then
+        addSquadToChunk(map, chunk, squad)
+        addMovementPenalty(squad, chunk)
+    end
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
                                              squad.originPosition.x,
@@ -129,7 +134,8 @@ local function settleMove(map, squad)
     local position
     local surface = map.surface
 
-    if (distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0))
+    if (chunk ~= -1) and
+        ((distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0)))
     then
         position = findMovementPosition(surface, groupPosition)
 
@@ -244,9 +250,13 @@ local function attackMove(map, squad)
         attackScorer = scoreAttackKamikazeLocation
     end
     local squadChunk = squad.chunk
-    addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-    addSquadToChunk(map, chunk, squad)
-    addMovementPenalty(squad, chunk)
+    if squadChunk ~= -1 then
+        addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+    end
+    if chunk ~= -1 then
+        addSquadToChunk(map, chunk, squad)
+        addMovementPenalty(squad, chunk)
+    end
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection,
         nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
@@ -275,7 +285,7 @@ local function attackMove(map, squad)
     else
         targetPosition.x = position.x
         targetPosition.y = position.y
-        if nextAttackChunk then
+        if (nextAttackChunk ~= -1) then
             addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         else
             addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
@@ -322,26 +332,28 @@ end
 
 function squadAttack.cleanSquads(map, tick)
     local squads = map.groupNumberToSquad
-    local k = map.squadIterator
+    local groupId = map.squadIterator
     local squad
-    if not k then
-        k, squad = next(squads, k)
+    if not groupId then
+        groupId, squad = next(squads, groupId)
     else
-        squad = squads[k]
+        squad = squads[groupId]
     end
-    if not k then
+    if not groupId then
         map.squadIterator = nil
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
             map.groupNumberToSquad = {}
         end
     else
-        map.squadIterator = next(squads, k)
+        map.squadIterator = next(squads, groupId)
         local group = squad.group
         if not group.valid then
-            addDeathGenerator(map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            if squad.chunk ~= -1 then
+                addDeathGenerator(map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            end
             removeSquadFromChunk(map, squad)
-            if (map.regroupIterator == k) then
+            if (map.regroupIterator == groupId) then
                 map.regroupIterator = nil
             end
             local universe = map.universe
@@ -350,7 +362,7 @@ function squadAttack.cleanSquads(map, tick)
             else
                 universe.squadCount = universe.squadCount - 1
             end
-            squads[k] = nil
+            squads[groupId] = nil
         elseif (group.state == 4) then
             squadAttack.squadDispatch(map, squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then

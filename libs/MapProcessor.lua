@@ -63,6 +63,7 @@ local formSettlers = aiAttackWave.formSettlers
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 local getChunkByXY = mapUtils.getChunkByXY
+local getChunkById = mapUtils.getChunkById
 
 local validPlayer = playerUtils.validPlayer
 
@@ -253,7 +254,7 @@ function mapProcessor.processPlayers(players, map, tick)
                                 queueNestSpawners(map, chunk, tick)
 
                                 if vengence then
-                                    map.vengenceQueue[chunk] = (map.vengenceQueue[chunk] or 0) + 1
+                                    map.vengenceQueue[chunk.id] = (map.vengenceQueue[chunk.id] or 0) + 1
                                 end
                             end
                         end
@@ -448,27 +449,28 @@ function mapProcessor.processActiveNests(map, tick)
 end
 
 function mapProcessor.processVengence(map)
-    local ss = map.vengenceQueue
-    local chunk = map.deployVengenceIterator
-    if not chunk then
-        chunk = next(ss, nil)
+    local vengence = map.vengenceQueue
+    local chunkId = map.deployVengenceIterator
+    if not chunkId then
+        chunkId = next(vengence, nil)
     end
-    if not chunk then
+    if not chunkId then
         map.deployVengenceIterator = nil
-        if (tableSize(ss) == 0) then
+        if (tableSize(vengence) == 0) then
             map.vengenceQueue = {}
         end
     else
-        map.deployVengenceIterator = next(ss, chunk)
-        formVengenceSquad(map, chunk)
-        ss[chunk] = nil
+        map.deployVengenceIterator = next(vengence, chunkId)
+        formVengenceSquad(map, getChunkById(map, chunkId))
+        vengence[chunkId] = nil
     end
 end
 
 function mapProcessor.processNests(map, tick)
-    local chunk = next(map.chunkToNests, map.processNestIterator)
-    map.processNestIterator = chunk
-    if chunk then
+    local chunkId = next(map.chunkToNests, map.processNestIterator)
+    map.processNestIterator = chunkId
+    if chunkId then
+        local chunk = getChunkById(map, chunkId)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
@@ -481,10 +483,11 @@ function mapProcessor.processNests(map, tick)
     end
 end
 
-local function processSpawners(map, iterator, chunks)
-    local chunk = next(chunks, map[iterator])
-    map[iterator] = chunk
-    if chunk then
+local function processSpawnersBody(map, iterator, chunks)
+    local chunkId = next(chunks, map[iterator])
+    map[iterator] = chunkId
+    if chunkId then
+        local chunk = getChunkById(map, chunkId)
         local migrate = canMigrate(map)
         local attack = canAttack(map)
         if migrate then
@@ -499,30 +502,30 @@ function mapProcessor.processSpawners(map)
 
     if (map.state ~= AI_STATE_PEACEFUL) then
         if (map.state == AI_STATE_MIGRATING) then
-            processSpawners(map,
-                            "processMigrationIterator",
-                            map.chunkToNests)
+            processSpawnersBody(map,
+                                "processMigrationIterator",
+                                map.chunkToNests)
         elseif (map.state == AI_STATE_AGGRESSIVE) then
-            processSpawners(map,
-                            "processActiveSpawnerIterator",
-                            map.chunkToActiveNest)
+            processSpawnersBody(map,
+                                "processActiveSpawnerIterator",
+                                map.chunkToActiveNest)
         elseif (map.state == AI_STATE_SIEGE) then
-            processSpawners(map,
-                            "processActiveSpawnerIterator",
-                            map.chunkToActiveNest)
-            processSpawners(map,
-                            "processActiveRaidSpawnerIterator",
-                            map.chunkToActiveRaidNest)
-            processSpawners(map,
-                            "processMigrationIterator",
-                            map.chunkToNests)
+            processSpawnersBody(map,
+                                "processActiveSpawnerIterator",
+                                map.chunkToActiveNest)
+            processSpawnersBody(map,
+                                "processActiveRaidSpawnerIterator",
+                                map.chunkToActiveRaidNest)
+            processSpawnersBody(map,
+                                "processMigrationIterator",
+                                map.chunkToNests)
         else
-            processSpawners(map,
-                            "processActiveSpawnerIterator",
-                            map.chunkToActiveNest)
-            processSpawners(map,
-                            "processActiveRaidSpawnerIterator",
-                            map.chunkToActiveRaidNest)
+            processSpawnersBody(map,
+                                "processActiveSpawnerIterator",
+                                map.chunkToActiveNest)
+            processSpawnersBody(map,
+                                "processActiveRaidSpawnerIterator",
+                                map.chunkToActiveRaidNest)
         end
     end
 end

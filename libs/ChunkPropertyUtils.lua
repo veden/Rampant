@@ -22,130 +22,130 @@ local mMin = math.min
 -- module code
 
 function chunkPropertyUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk] or 0
+    return map.chunkToNests[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getTurretCount(map, chunk)
-    return map.chunkToTurrets[chunk] or 0
+    return map.chunkToTurrets[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getTrapCount(map, chunk)
-    return map.chunkToTraps[chunk] or 0
+    return map.chunkToTraps[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getUtilityCount(map, chunk)
-    return map.chunkToUtilities[chunk] or 0
+    return map.chunkToUtilities[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getHiveCount(map, chunk)
-    return map.chunkToHives[chunk] or 0
+    return map.chunkToHives[chunk.id] or 0
 end
 
 function chunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
-    if not map.chunkToTurretIds[chunk] then
-        map.chunkToTurretIds[chunk] = {}
+    if not map.chunkToTurretIds[chunk.id] then
+        map.chunkToTurretIds[chunk.id] = {}
     end
-    if not map.chunkToTurretIds[chunk][unitNumber] then
-        map.chunkToTurretIds[chunk][unitNumber] = true
-        map.chunkToTurrets[chunk] = (map.chunkToTurrets[chunk] or 0) + 1
+    if not map.chunkToTurretIds[chunk.id][unitNumber] then
+        map.chunkToTurretIds[chunk.id][unitNumber] = true
+        map.chunkToTurrets[chunk.id] = (map.chunkToTurrets[chunk.id] or 0) + 1
     end
 end
 
 function chunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
-    if map.chunkToTurretIds[chunk] and map.chunkToTurretIds[chunk][unitNumber] then
-        map.chunkToTurretIds[chunk][unitNumber] = nil
-        map.chunkToTurrets[chunk] = map.chunkToTurrets[chunk] - 1
-        if map.chunkToTurrets[chunk] == 0 then
-            map.chunkToTurretIds[chunk] = nil
-            map.chunkToTurrets[chunk] = nil
+    if map.chunkToTurretIds[chunk.id] and map.chunkToTurretIds[chunk.id][unitNumber] then
+        map.chunkToTurretIds[chunk.id][unitNumber] = nil
+        map.chunkToTurrets[chunk.id] = map.chunkToTurrets[chunk.id] - 1
+        if map.chunkToTurrets[chunk.id] == 0 then
+            map.chunkToTurretIds[chunk.id] = nil
+            map.chunkToTurrets[chunk.id] = nil
         end
     end
 end
 
 function chunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
-    if not map.chunkToTrapIds[chunk] then
-        map.chunkToTrapIds[chunk] = {}
+    if not map.chunkToTrapIds[chunk.id] then
+        map.chunkToTrapIds[chunk.id] = {}
     end
-    if not map.chunkToTrapIds[chunk][unitNumber] then
-        map.chunkToTrapIds[chunk][unitNumber] = true
-        map.chunkToTraps[chunk] = (map.chunkToTraps[chunk] or 0) + 1
+    if not map.chunkToTrapIds[chunk.id][unitNumber] then
+        map.chunkToTrapIds[chunk.id][unitNumber] = true
+        map.chunkToTraps[chunk.id] = (map.chunkToTraps[chunk.id] or 0) + 1
     end
 end
 
 function chunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
-    if map.chunkToTrapIds[chunk] and map.chunkToTrapIds[chunk][unitNumber] then
-        map.chunkToTrapIds[chunk][unitNumber] = nil
-        map.chunkToTraps[chunk] = map.chunkToTraps[chunk] - 1
-        if map.chunkToTraps[chunk] == 0 then
-            map.chunkToTrapIds[chunk] = nil
-            map.chunkToTraps[chunk] = nil
+    if map.chunkToTrapIds[chunk.id] and map.chunkToTrapIds[chunk.id][unitNumber] then
+        map.chunkToTrapIds[chunk.id][unitNumber] = nil
+        map.chunkToTraps[chunk.id] = map.chunkToTraps[chunk.id] - 1
+        if map.chunkToTraps[chunk.id] == 0 then
+            map.chunkToTrapIds[chunk.id] = nil
+            map.chunkToTraps[chunk.id] = nil
         end
     end
 end
 
 function chunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
-    if not map.chunkToUtilityIds[chunk] then
-        map.chunkToUtilityIds[chunk] = {}
+    if not map.chunkToUtilityIds[chunk.id] then
+        map.chunkToUtilityIds[chunk.id] = {}
     end
-    if not map.chunkToUtilityIds[chunk][unitNumber] then
-        map.chunkToUtilityIds[chunk][unitNumber] = true
-        map.chunkToUtilities[chunk] = (map.chunkToUtilities[chunk] or 0) + 1
+    if not map.chunkToUtilityIds[chunk.id][unitNumber] then
+        map.chunkToUtilityIds[chunk.id][unitNumber] = true
+        map.chunkToUtilities[chunk.id] = (map.chunkToUtilities[chunk.id] or 0) + 1
     end
 end
 
 function chunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
-    if map.chunkToUtilityIds[chunk] and map.chunkToUtilityIds[chunk][unitNumber] then
-        map.chunkToUtilityIds[chunk][unitNumber] = nil
-        map.chunkToUtilities[chunk] = map.chunkToUtilities[chunk] - 1
-        if map.chunkToUtilities[chunk] == 0 then
-            map.chunkToUtilityIds[chunk] = nil
-            map.chunkToUtilities[chunk] = nil
+    if map.chunkToUtilityIds[chunk.id] and map.chunkToUtilityIds[chunk.id][unitNumber] then
+        map.chunkToUtilityIds[chunk.id][unitNumber] = nil
+        map.chunkToUtilities[chunk.id] = map.chunkToUtilities[chunk.id] - 1
+        if map.chunkToUtilities[chunk.id] == 0 then
+            map.chunkToUtilityIds[chunk.id] = nil
+            map.chunkToUtilities[chunk.id] = nil
         end
     end
 end
 
 function chunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
-    if not map.chunkToHiveIds[chunk] then
-        map.chunkToHiveIds[chunk] = {}
+    if not map.chunkToHiveIds[chunk.id] then
+        map.chunkToHiveIds[chunk.id] = {}
     end
-    if not map.chunkToHiveIds[chunk][unitNumber] then
-        map.chunkToHiveIds[chunk][unitNumber] = true
-        map.chunkToHives[chunk] = (map.chunkToHives[chunk] or 0) + 1
+    if not map.chunkToHiveIds[chunk.id][unitNumber] then
+        map.chunkToHiveIds[chunk.id][unitNumber] = true
+        map.chunkToHives[chunk.id] = (map.chunkToHives[chunk.id] or 0) + 1
     end
 end
 
 function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
-    if map.chunkToHiveIds[chunk] and map.chunkToHiveIds[chunk][unitNumber] then
-        map.chunkToHiveIds[chunk][unitNumber] = nil
-        map.chunkToHives[chunk] = map.chunkToHives[chunk] - 1
-        if map.chunkToHives[chunk] == 0 then
-            map.chunkToHiveIds[chunk] = nil
-            map.chunkToHives[chunk] = nil
+    if map.chunkToHiveIds[chunk.id] and map.chunkToHiveIds[chunk.id][unitNumber] then
+        map.chunkToHiveIds[chunk.id][unitNumber] = nil
+        map.chunkToHives[chunk.id] = map.chunkToHives[chunk.id] - 1
+        if map.chunkToHives[chunk.id] == 0 then
+            map.chunkToHiveIds[chunk.id] = nil
+            map.chunkToHives[chunk.id] = nil
         end
     end
 end
 
 function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
-    if not map.chunkToNestIds[chunk] then
-        map.chunkToNestIds[chunk] = {}
+    if not map.chunkToNestIds[chunk.id] then
+        map.chunkToNestIds[chunk.id] = {}
     end
-    if not map.chunkToNestIds[chunk][unitNumber] then
-        map.chunkToNestIds[chunk][unitNumber] = true
-        map.chunkToNests[chunk] = (map.chunkToNests[chunk] or 0) + 1
+    if not map.chunkToNestIds[chunk.id][unitNumber] then
+        map.chunkToNestIds[chunk.id][unitNumber] = true
+        map.chunkToNests[chunk.id] = (map.chunkToNests[chunk.id] or 0) + 1
     end
 end
 
 function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
-    if map.chunkToNestIds[chunk] and map.chunkToNestIds[chunk][unitNumber] then
-        map.chunkToNestIds[chunk][unitNumber] = nil
-        map.chunkToNests[chunk] = map.chunkToNests[chunk] - 1
-        if map.chunkToNests[chunk] == 0 then
-            map.chunkToNestIds[chunk] = nil
-            map.chunkToNests[chunk] = nil
-            if (map.processMigrationIterator == chunk) then
+    if map.chunkToNestIds[chunk.id] and map.chunkToNestIds[chunk.id][unitNumber] then
+        map.chunkToNestIds[chunk.id][unitNumber] = nil
+        map.chunkToNests[chunk.id] = map.chunkToNests[chunk.id] - 1
+        if map.chunkToNests[chunk.id] == 0 then
+            map.chunkToNestIds[chunk.id] = nil
+            map.chunkToNests[chunk.id] = nil
+            if (map.processMigrationIterator == chunk.id) then
                 map.processMigrationIterator = nil
             end
-            if (map.processNestIterator == chunk) then
+            if (map.processNestIterator == chunk.id) then
                 map.processNestIterator = nil
             end
         end
@@ -153,164 +153,164 @@ function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk] or 0
+    return map.chunkToNests[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getChunkBase(map, chunk)
-    return map.chunkToBase[chunk]
+    return map.chunkToBase[chunk.id]
 end
 
 function chunkPropertyUtils.removeChunkBase(map, chunk, base)
-    if map.chunkToBase[chunk] then
+    if map.chunkToBase[chunk.id] then
         base.chunkCount = base.chunkCount - 1
-        map.chunkToBase[chunk] = nil
+        map.chunkToBase[chunk.id] = nil
     end
 end
 
 function chunkPropertyUtils.setChunkBase(map, chunk, base)
-    if not map.chunkToBase[chunk] then
+    if not map.chunkToBase[chunk.id] then
         base.chunkCount = base.chunkCount + 1
-        map.chunkToBase[chunk] = base
+        map.chunkToBase[chunk.id] = base
     end
 end
 
 function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
-    return (map.chunkToNests[chunk] or 0) + (map.chunkToTurrets[chunk] or 0) + (map.chunkToTraps[chunk] or 0) +
-        (map.chunkToUtilities[chunk] or 0) + (map.chunkToHives[chunk] or 0)
+    return (map.chunkToNests[chunk.id] or 0) + (map.chunkToTurrets[chunk.id] or 0) + (map.chunkToTraps[chunk.id] or 0) +
+        (map.chunkToUtilities[chunk.id] or 0) + (map.chunkToHives[chunk.id] or 0)
 end
 
 function chunkPropertyUtils.getRetreatTick(map, chunk)
-    return map.chunkToRetreats[chunk] or 0
+    return map.chunkToRetreats[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getRallyTick(map, chunk)
-    return map.chunkToRallys[chunk] or 0
+    return map.chunkToRallys[chunk.id] or 0
 end
 
 function chunkPropertyUtils.setRallyTick(map, chunk, tick)
-    map.chunkToRallys[chunk] = tick
+    map.chunkToRallys[chunk.id] = tick
 end
 
 function chunkPropertyUtils.setRetreatTick(map, chunk, tick)
-    map.chunkToRetreats[chunk] = tick
+    map.chunkToRetreats[chunk.id] = tick
 end
 
 function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
     if (resourceGenerator <= 0) then
-        map.chunkToResource[chunk] = nil
+        map.chunkToResource[chunk.id] = nil
     else
-        map.chunkToResource[chunk] = resourceGenerator
+        map.chunkToResource[chunk.id] = resourceGenerator
     end
 end
 
 function chunkPropertyUtils.getResourceGenerator(map, chunk)
-    return map.chunkToResource[chunk] or 0
+    return map.chunkToResource[chunk.id] or 0
 end
 
 function chunkPropertyUtils.addResourceGenerator(map, chunk, delta)
-    map.chunkToResource[chunk] = (map.chunkToResource[chunk] or 0) + delta
+    map.chunkToResource[chunk.id] = (map.chunkToResource[chunk.id] or 0) + delta
 end
 
 function chunkPropertyUtils.getDeathGenerator(map, chunk)
-    return map.chunkToDeathGenerator[chunk] or 0
+    return map.chunkToDeathGenerator[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getPassable(map, chunk)
-    return map.chunkToPassable[chunk] or CHUNK_ALL_DIRECTIONS
+    return map.chunkToPassable[chunk.id] or CHUNK_ALL_DIRECTIONS
 end
 
 
 function chunkPropertyUtils.getRaidNestActiveness(map, chunk)
-    return map.chunkToActiveRaidNest[chunk] or 0
+    return map.chunkToActiveRaidNest[chunk.id] or 0
 end
 
 function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
     if (value <= 0) then
-        if (map.chunkToActiveRaidNest[chunk] ~= nil) then
+        if map.chunkToActiveRaidNest[chunk.id] then
             map.activeRaidNests = map.activeRaidNests - 1
         end
-        if (map.processActiveRaidSpawnerIterator == chunk) then
+        if (map.processActiveRaidSpawnerIterator == chunk.id) then
             map.processActiveRaidSpawnerIterator = nil
         end
-        map.chunkToActiveRaidNest[chunk] = nil
+        map.chunkToActiveRaidNest[chunk.id] = nil
     else
-        if (map.chunkToActiveRaidNest[chunk] == nil) then
+        if not map.chunkToActiveRaidNest[chunk.id] then
             map.activeRaidNests = map.activeRaidNests + 1
         end
-        map.chunkToActiveRaidNest[chunk] = value
+        map.chunkToActiveRaidNest[chunk.id] = value
     end
 end
 
 function chunkPropertyUtils.getNestActiveTick(map, chunk)
-    return map.tickActiveNest[chunk] or 0
+    return map.tickActiveNest[chunk.id] or 0
 end
 
 function chunkPropertyUtils.setNestActiveTick(map, chunk, tick)
     if (tick == 0) then
-        map.tickActiveNest[chunk] = nil
+        map.tickActiveNest[chunk.id] = nil
     else
-        map.tickActiveNest[chunk] = tick
+        map.tickActiveNest[chunk.id] = tick
     end
 end
 
 function chunkPropertyUtils.getNestActiveness(map, chunk)
-    return map.chunkToActiveNest[chunk] or 0
+    return map.chunkToActiveNest[chunk.id] or 0
 end
 
 function chunkPropertyUtils.setNestActiveness(map, chunk, value)
     if (value <= 0) then
-        if (map.chunkToActiveNest[chunk] ~= nil) then
+        if map.chunkToActiveNest[chunk.id] then
             map.activeNests = map.activeNests - 1
         end
-        if (map.processActiveSpawnerIterator == chunk) then
+        if (map.processActiveSpawnerIterator == chunk.id) then
             map.processActiveSpawnerIterator = nil
         end
-        map.chunkToActiveNest[chunk] = nil
+        map.chunkToActiveNest[chunk.id] = nil
     else
-        if (map.chunkToActiveNest[chunk] == nil) then
+        if not map.chunkToActiveNest[chunk.id] then
             map.activeNests = map.activeNests + 1
         end
-        map.chunkToActiveNest[chunk] = value
+        map.chunkToActiveNest[chunk.id] = value
     end
 end
 
 function chunkPropertyUtils.setPassable(map, chunk, value)
     if (value == CHUNK_ALL_DIRECTIONS) then
-        map.chunkToPassable[chunk] = nil
+        map.chunkToPassable[chunk.id] = nil
     else
-        map.chunkToPassable[chunk] = value
+        map.chunkToPassable[chunk.id] = value
     end
 end
 
 function chunkPropertyUtils.getPathRating(map, chunk)
-    return map.chunkToPathRating[chunk] or 1
+    return map.chunkToPathRating[chunk.id] or 1
 end
 
 function chunkPropertyUtils.setPathRating(map, chunk, value)
     if (value == 1) then
-        map.chunkToPathRating[chunk] = nil
+        map.chunkToPathRating[chunk.id] = nil
     else
-        map.chunkToPathRating[chunk] = value
+        map.chunkToPathRating[chunk.id] = value
     end
 end
 
 function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
-    map.chunkToDeathGenerator[chunk] = (map.chunkToDeathGenerator[chunk] or 0) + value
+    map.chunkToDeathGenerator[chunk.id] = (map.chunkToDeathGenerator[chunk.id] or 0) + value
 end
 
 function chunkPropertyUtils.addVictoryGenerator(map, chunk, value)
-    map.chunkToVictory[chunk] = (map.chunkToVictory[chunk] or 0) + value
+    map.chunkToVictory[chunk.id] = (map.chunkToVictory[chunk.id] or 0) + value
 end
 
 function chunkPropertyUtils.decayDeathGenerator(map, chunk)
-    local gen = map.chunkToDeathGenerator[chunk]
+    local gen = map.chunkToDeathGenerator[chunk.id]
     if gen then
         gen = gen * MOVEMENT_GENERATOR_PERSISTANCE
 
         if (gen >= -2) and (gen <= 2) then
-            map.chunkToDeathGenerator[chunk] = nil
+            map.chunkToDeathGenerator[chunk.id] = nil
         else
-            map.chunkToDeathGenerator[chunk] = gen
+            map.chunkToDeathGenerator[chunk.id] = gen
         end
     end
 end
@@ -321,50 +321,50 @@ function chunkPropertyUtils.addPlayerToChunk(map, chunk, name)
     local playerChunk = playerChunks[name]
     if not playerChunk then
         playerChunks[name] = chunk
-        local playerCount = playerCountChunks[chunk]
+        local playerCount = playerCountChunks[chunk.id]
         if not playerCount then
-            playerCountChunks[chunk] = 1
+            playerCountChunks[chunk.id] = 1
         else
-            playerCountChunks[chunk] = playerCount + 1
+            playerCountChunks[chunk.id] = playerCount + 1
         end
-    elseif (playerChunk ~= chunk) then
+    elseif (playerChunk.id ~= chunk.id) then
         playerChunks[name] = chunk
-        local playerCount = playerCountChunks[playerChunk]
+        local playerCount = playerCountChunks[playerChunk.id]
         chunkPropertyUtils.setPlayersOnChunk(map, playerChunk, playerCount - 1)
-        playerCount = playerCountChunks[chunk]
+        playerCount = playerCountChunks[chunk.id]
         if not playerCount then
-            playerCountChunks[chunk] = 1
+            playerCountChunks[chunk.id] = 1
         else
-            playerCountChunks[chunk] = playerCount + 1
+            playerCountChunks[chunk.id] = playerCount + 1
         end
     end
 end
 
 function chunkPropertyUtils.setPlayersOnChunk(map, chunk, value)
     if (value <= 0) then
-        map.chunkToPlayerCount[chunk] = nil
+        map.chunkToPlayerCount[chunk.id] = nil
     else
-        map.chunkToPlayerCount[chunk] = value
+        map.chunkToPlayerCount[chunk.id] = value
     end
 end
 
 function chunkPropertyUtils.getPlayersOnChunk(map, chunk)
-    return map.chunkToPlayerCount[chunk] or 0
+    return map.chunkToPlayerCount[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
-    return map.chunkToPlayerBase[chunk] or 0
+    return map.chunkToPlayerBase[chunk.id] or 0
 end
 
 function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     local chunkToSquad = map.chunkToSquad
 
-    if (chunk ~= -1) and (squad.chunk ~= chunk) then
+    if (chunk ~= -1) and ((squad.chunk == -1) or (squad.chunk.id ~= chunk.id)) then
         chunkPropertyUtils.removeSquadFromChunk(map, squad)
-        local squads = chunkToSquad[chunk]
+        local squads = chunkToSquad[chunk.id]
         if not squads then
             squads = {}
-            chunkToSquad[chunk] = squads
+            chunkToSquad[chunk.id] = squads
         end
         squads[squad.groupNumber] = squad
         squad.chunk = chunk
@@ -374,29 +374,31 @@ end
 function chunkPropertyUtils.removeSquadFromChunk(map, squad)
     local chunkToSquad = map.chunkToSquad
     local chunk = squad.chunk
-    local squads = chunkToSquad[chunk]
-    if squads then
-        squads[squad.groupNumber] = nil
-        if (table_size(squads) == 0) then
-            chunkToSquad[chunk] = nil
+    if (chunk ~= -1) then
+        local squads = chunkToSquad[chunk.id]
+        if squads then
+            squads[squad.groupNumber] = nil
+            if (table_size(squads) == 0) then
+                chunkToSquad[chunk.id] = nil
+            end
         end
     end
 end
 
 function chunkPropertyUtils.getSquadsOnChunk(map, chunk)
-    return map.chunkToSquad[chunk] or map.emptySquadsOnChunk
+    return map.chunkToSquad[chunk.id] or map.emptySquadsOnChunk
 end
 
 function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
     if (playerGenerator <= 0) then
-        map.chunkToPlayerBase[chunk] = nil
+        map.chunkToPlayerBase[chunk.id] = nil
     else
-        map.chunkToPlayerBase[chunk] = playerGenerator
+        map.chunkToPlayerBase[chunk.id] = playerGenerator
     end
 end
 
 function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
-    map.chunkToPlayerBase[chunk] = (map.chunkToPlayerBase[chunk] or 0) + playerGenerator
+    map.chunkToPlayerBase[chunk.id] = (map.chunkToPlayerBase[chunk.id] or 0) + playerGenerator
 end
 
 function chunkPropertyUtils.processNestActiveness(map, chunk)
@@ -409,12 +411,12 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
         if universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > universe.attackPlayerThreshold) then
             chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
         elseif (chunk[BASE_PHEROMONE] > 0) then
-            local position = universe.position
             if (surface.get_pollution(chunk) > 0) then
                 chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
             else
                 local x = chunk.x
                 local y = chunk.y
+                local position = {x=0,y=0}
                 position.x = x + 32
                 position.y = y
                 if (surface.get_pollution(position) > 0) then

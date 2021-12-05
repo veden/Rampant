@@ -3,11 +3,8 @@ local upgrade = {}
 -- imports
 
 local constants = require("libs/Constants")
-local mathUtils = require("libs/MathUtils")
-local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
-local mapUtils = require("libs/MapUtils")
-local baseUtils = require("libs/BaseUtils")
 local chunkProcessor = require("libs/ChunkProcessor")
+local mapUtils = require("libs/MapUtils")
 
 -- constants
 
@@ -31,36 +28,10 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
 
+local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local processPendingChunks = chunkProcessor.processPendingChunks
 
-local queueGeneratedChunk = mapUtils.queueGeneratedChunk
-
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
-local getChunkBase = chunkPropertyUtils.getChunkBase
-local removeChunkBase = chunkPropertyUtils.removeChunkBase
-
-local findNearbyBase = baseUtils.findNearbyBase
-local createBase = baseUtils.createBase
-local setChunkBase = chunkPropertyUtils.setChunkBase
-
-local euclideanDistancePoints = mathUtils.euclideanDistancePoints
-
-local mAbs = math.abs
-local tSort = table.sort
-
 -- module code
-
-local function sorter(a, b)
-    if (a.dOrigin == b.dOrigin) then
-        if (a.x == b.x) then
-            return (mAbs(a.y) < mAbs(b.y))
-        else
-            return (mAbs(a.x) < mAbs(b.x))
-        end
-    end
-
-    return (a.dOrigin < b.dOrigin)
-end
 
 local function addCommandSet(queriesAndCommands)
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
@@ -445,103 +416,163 @@ function upgrade.attempt(universe)
 
         universe.maxPoints = 0
     end
-    if global.version < 122 then
-        global.version = 122
+    if global.version < 200 then
+        global.version = 200
 
         addCommandSet(universe)
+        universe.eventId = 0
         universe.randomGenerator = nil
-        universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.map_gen_settings.seed)
-        if (universe.maps) then
-            local tick = game.tick
-            for _,map in pairs(universe.maps) do
-                map.random = universe.random
-                map.pendingUpgrades = {}
-                map.sentAggressiveGroups = 0
-                map.maxAggressiveGroups = 1
-                local basesToRemove = {}
-                for i=1,#map.processQueue do
-                    local chunk = map.processQueue[i]
-                    chunk.dOrigin = euclideanDistancePoints(chunk.x, chunk.y, 0, 0)
-                    if universe.NEW_ENEMIES then
-                        local base = getChunkBase(map, chunk)
-                        if base then
-                            if not map.bases[base.id] then
-                                map.bases[base.id] = base
-                            end
-                            if not base.damagedBy then
-                                base.damagedBy = {}
-                            end
-                            if not base.deathEvents then
-                                base.deathEvents = 0
-                            end
-                            if not base.chunkCount then
-                                base.chunkCount = 0
-                            end
-                            if not base.mutations then
-                                base.mutations = 0
-                            end
-                            if not base.alignment[1] then
-                                basesToRemove[base.id] = true
-                            end
-                        end
-                    end
-                end
-                tSort(map.processQueue, sorter)
-                map.pendingChunks = {}
-                map.chunkToNests = {}
-                map.chunkToNestIds = {}
-                map.chunkToHives = {}
-                map.chunkToHiveIds = {}
-                map.chunkToTraps = {}
-                map.chunkToTrapIds = {}
-                map.chunkToTurrets = {}
-                map.chunkToTurretIds = {}
-                map.chunkToUtilities = {}
-                map.chunkToUtilityIds = {}
-                for chunkXY in map.surface.get_chunks() do
-                    if map.surface.is_chunk_generated(chunkXY) then
-                        local x = chunkXY.x * 32
-                        local y = chunkXY.y * 32
-                        queueGeneratedChunk(universe,
-                                            {
-                                                surface = map.surface,
-                                                area = {
-                                                    left_top = {
-                                                        x = x,
-                                                        y = y
-                                                    }
-                                                }
-                                            }
-                        )
-                    end
-                end
-                processPendingChunks(map, tick, true)
-                if universe.NEW_ENEMIES then
-                    for baseId in pairs(basesToRemove) do
-                        map.bases[baseId] = nil
-                    end
-                    map.chunkToBases = {}
-                    for i=1,#map.processQueue do
-                        local chunk = map.processQueue[i]
-                        if (getEnemyStructureCount(map, chunk) > 0) then
-                            local newBase = findNearbyBase(map, chunk)
-                            if not newBase then
-                                createBase(map, chunk, tick)
-                            end
-                            setChunkBase(map, chunk, newBase)
-                        end
-                    end
-                end
-                for _,squad in pairs(map.groupNumberToSquad) do
-                    squad.commandTick = tick
-                end
-            end
+        universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
+        game.forces.enemy.kill_all_units()
+        universe.maps = {}
+        for _,surface in pairs(game.surfaces) do
+            upgrade.prepMap(universe, surface)
         end
+        universe.activeMap = nil
+        universe.mapIterator = nil
 
-        game.print("Rampant - Version 1.2.0")
+        game.print("Rampant - Version 2.0.0")
     end
 
     return (starting ~= global.version) and global.version
+end
+
+function upgrade.prepMap(universe, surface)
+    game.print("Rampant - Indexing surface:" .. tostring(surface.index) .. ", please wait.")
+
+    local surfaceIndex = surface.index
+
+    if not universe.maps then
+        universe.maps = {}
+    end
+
+    local map = {}
+    universe.maps[surfaceIndex] = map
+
+    map.eventId = 1
+    map.chunkId = 1
+    map.maxAggressiveGroups = 1
+    map.sentAggressiveGroups = 0
+    map.processedChunks = 0
+    map.processQueue = {}
+    map.processIndex = 1
+    map.cleanupIndex = 1
+    map.scanPlayerIndex = 1
+    map.scanResourceIndex = 1
+    map.scanEnemyIndex = 1
+    map.processStaticIndex = 1
+    map.outgoingScanWave = true
+    map.outgoingStaticScanWave = true
+
+    map.pendingUpgrades = {}
+    map.pendingChunks = {}
+    map.chunkToBase = {}
+    map.chunkToNests = {}
+    map.chunkToTurrets = {}
+    map.chunkToTraps = {}
+    map.chunkToUtilities = {}
+    map.chunkToHives = {}
+    map.chunkToNestIds = {}
+    map.chunkToHiveIds = {}
+    map.chunkToTrapIds = {}
+    map.chunkToTurretIds = {}
+    map.chunkToUtilityIds = {}
+
+    map.chunkToPlayerBase = {}
+    map.chunkToResource = {}
+    map.chunkToPlayerCount = {}
+    map.playerToChunk = {}
+    map.pendingChunks = {}
+
+    map.chunkToPassScan = {}
+    map.chunkToSquad = {}
+
+    map.chunkToRetreats = {}
+    map.chunkToRallys = {}
+    map.chunkIdToChunk = {}
+
+    map.chunkToPassable = {}
+    map.chunkToPathRating = {}
+    map.chunkToDeathGenerator = {}
+    map.chunkToDrained = {}
+    map.chunkToVictory = {}
+    map.chunkToActiveNest = {}
+    map.chunkToActiveRaidNest = {}
+
+    map.chunkToPassScanIterator = nil
+    map.pendingUpgradeIterator = nil
+    map.squadIterator = nil
+    map.regroupIterator = nil
+    map.deployVengenceIterator = nil
+    map.recycleBaseIterator = nil
+    map.processActiveSpawnerIterator = nil
+    map.processActiveRaidSpawnerIterator = nil
+    map.processMigrationIterator = nil
+    map.processNestIterator = nil
+    map.victoryScentIterator = nil
+
+    map.chunkScanCounts = {}
+
+    map.chunkRemovals = {}
+    map.processActiveNest = {}
+    map.tickActiveNest = {}
+
+    map.emptySquadsOnChunk = {}
+
+    map.surface = surface
+    map.universe = universe
+
+    map.vengenceQueue = {}
+    map.bases = {}
+    map.baseIndex = 1
+    map.baseIncrement = 0
+    map.points = 0
+    map.state = constants.AI_STATE_AGGRESSIVE
+    map.baseId = 0
+    map.squads = nil
+    map.pendingAttack = nil
+    map.building = nil
+
+    map.evolutionLevel = game.forces.enemy.evolution_factor
+    map.canAttackTick = 0
+    map.drainPylons = {}
+    map.groupNumberToSquad = {}
+    map.activeRaidNests = 0
+    map.activeNests = 0
+    map.destroyPlayerBuildings = 0
+    map.lostEnemyUnits = 0
+    map.lostEnemyBuilding = 0
+    map.rocketLaunched = 0
+    map.builtEnemyBuilding = 0
+    map.ionCannonBlasts = 0
+    map.artilleryBlasts = 0
+
+    map.temperament = 0.5
+    map.temperamentScore = 0
+    map.stateTick = 0
+
+    map.random = universe.random
+
+    -- queue all current chunks that wont be generated during play
+    local tick = game.tick
+    for chunk in surface.get_chunks() do
+        if surface.is_chunk_generated(chunk) then
+            queueGeneratedChunk(universe,
+                                {
+                                    surface = surface,
+                                    tick = tick,
+                                    area = {
+                                        left_top = {
+                                            x = chunk.x * 32,
+                                            y = chunk.y * 32
+                                        }
+                                    }
+                                }
+            )
+        end
+    end
+
+    processPendingChunks(map, tick, true)
 end
 
 function upgrade.compareTable(entities, option, new)

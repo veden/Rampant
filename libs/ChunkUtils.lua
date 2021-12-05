@@ -351,16 +351,23 @@ function chunkUtils.entityForPassScan(map, entity)
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
         if (chunk ~= -1) then
-            map.chunkToPassScan[chunk] = true
+            map.chunkToPassScan[chunk.id] = chunk
         end
     end
 end
 
-function chunkUtils.createChunk(topX, topY)
+function chunkUtils.newChunkId(map)
+    local id = map.chunkId
+    map.chunkId = map.chunkId + 1
+    return id
+end
+
+function chunkUtils.createChunk(map, topX, topY)
     local chunk = {
         x = topX,
         y = topY,
-        dOrigin = euclideanDistancePoints(topX, topY, 0, 0)
+        dOrigin = euclideanDistancePoints(topX, topY, 0, 0),
+        id = chunkUtils.newChunkId(map)
     }
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0

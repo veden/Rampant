@@ -49,7 +49,7 @@ end
 local function removeProcessQueueChunk(processQueue, chunk)
     local insertionPoint = findInsertionPoint(processQueue, chunk)
     for i=insertionPoint,1,-1 do
-        if (processQueue[i] == chunk) then
+        if (processQueue[i].id == chunk.id) then
             tRemove(processQueue, i)
         end
     end
@@ -64,17 +64,20 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     local topOffset = area[1]
     local bottomOffset = area[2]
 
-    local event = map.chunkProcessorIterator
-    if not event then
-        event = next(pendingChunks, nil)
+    local eventId = map.chunkProcessorIterator
+    local event
+    if not eventId then
+        eventId, event = next(pendingChunks, nil)
+    else
+        event = pendingChunks[eventId]
     end
     local endCount = 1
     if flush then
         endCount = table_size(pendingChunks)
-        event = next(pendingChunks, nil)
+        eventId, event = next(pendingChunks, nil)
     end
     for _=1,endCount do
-        if not event then
+        if not eventId then
             map.chunkProcessorIterator = nil
             if (table_size(pendingChunks) == 0) then
                 -- this is needed as the next command remembers the max length a table has been
@@ -83,7 +86,7 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             break
         else
             if not flush and (event.tick > tick) then
-                map.chunkProcessorIterator = event
+                map.chunkProcessorIterator = eventId
                 return
             end
             local topLeft = event.area.left_top
@@ -100,48 +103,52 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
             end
 
             if map[x][y] then
-                local chunk = initialScan(map[x][y], map, tick)
+                local oldChunk = map[x][y]
+                local chunk = initialScan(oldChunk, map, tick)
                 if (chunk == -1) then
-                    removeProcessQueueChunk(processQueue, map[x][y])
+                    removeProcessQueueChunk(processQueue, oldChunk)
+                    map.chunkIdToChunk[oldChunk.id] = nil
                     map[x][y] = nil
                 end
             else
-                local chunk = createChunk(x, y)
-                map[x][y] = chunk
-                chunk = initialScan(chunk, map, tick)
+                local initialChunk = createChunk(map, x, y)
+                map[x][y] = initialChunk
+                map.chunkIdToChunk[initialChunk.id] = initialChunk
+                local chunk = initialScan(initialChunk, map, tick)
                 if (chunk ~= -1) then
-                    map[x][y] = chunk
                     tInsert(
                         processQueue,
                         findInsertionPoint(processQueue, chunk),
                         chunk
                     )
                 else
+                    map.chunkIdToChunk[initialChunk.id] = nil
                     map[x][y] = nil
                 end
             end
 
-            local newEvent = next(pendingChunks, event)
-            pendingChunks[event] = nil
+            local newEventId, newEvent = next(pendingChunks, eventId)
+            pendingChunks[eventId] = nil
+            eventId = newEventId
             event = newEvent
         end
     end
-    map.chunkProcessorIterator = event
+    map.chunkProcessorIterator = eventId
 end
 
 function chunkProcessor.processPendingUpgrades(map, tick)
-    local pendingUpgrades = map.pendingUpgrades
-    local entity = map.pendingUpgradeIterator
+    local entityId = map.pendingUpgradeIterator
     local entityData
-    if not entity then
-        entity, entityData = next(pendingUpgrades, nil)
+    if not entityId then
+        entityId, entityData = next(map.pendingUpgrades, nil)
     else
-        entityData = pendingUpgrades[entity]
+        entityData = map.pendingUpgrades[entityId]
     end
-    if entity then
+    if entityId then
+        local entity = entityData.entity
         if entity.valid then
-            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
-            pendingUpgrades[entity] = nil
+            map.pendingUpgradeIterator = next(map.pendingUpgrades, entityId)
+            map.pendingUpgrades[entityId] = nil
             local universe = map.universe
             local query = universe.upgradeEntityQuery
             query.position = entityData.position or entity.position
@@ -157,11 +164,12 @@ function chunkProcessor.processPendingUpgrades(map, tick)
                 end
             end
         else
-            map.pendingUpgradeIterator = next(pendingUpgrades, entity)
-            pendingUpgrades[entity] = nil
+            map.pendingUpgradeIterator = next(map.pendingUpgrades, entityId)
+            map.pendingUpgrades[entityId] = nil
         end
     end
 end
+
 
 function chunkProcessor.processScanChunks(map)
     local area = map.universe.area
@@ -169,35 +177,33 @@ function chunkProcessor.processScanChunks(map)
     local topOffset = area[1]
     local bottomOffset = area[2]
 
-    local removals = map.chunkRemovals
-
-    local chunkCount = 0
-
-    local chunkToPassScan = map.chunkToPassScan
-
-    for preScanChunk in pairs(chunkToPassScan) do
-        local x = preScanChunk.x
-        local y = preScanChunk.y
-
-        topOffset[1] = x
-        topOffset[2] = y
-        bottomOffset[1] = x + CHUNK_SIZE
-        bottomOffset[2] = y + CHUNK_SIZE
-
-        if (chunkPassScan(preScanChunk, map) == -1) then
-            map[x][y] = nil
-
-            chunkCount = chunkCount + 1
-            removals[chunkCount] = preScanChunk
-        end
-
-        chunkToPassScan[preScanChunk] = nil
+    local chunkId = map.chunkToPassScanIterator
+    local chunk
+    if not chunkId then
+        chunkId, chunk = next(map.chunkToPassScan, nil)
+    else
+        chunk = map.chunkToPassScan[chunkId]
     end
 
-    if (chunkCount > 0) then
-        local processQueue = map.processQueue
-        for ri=chunkCount,1,-1 do
-            removeProcessQueueChunk(processQueue, removals[ri])
+    if not chunkId then
+        map.chunkToPassScanIterator = nil
+        if (table_size(map.chunkToPassScan) == 0) then
+            -- this is needed as the next command remembers the max length a table has been
+            map.chunkToPassScan = {}
+        end
+    else
+        map.chunkToPassScanIterator = next(map.chunkToPassScan, chunkId)
+        map.chunkToPassScan[chunkId] = nil
+
+        topOffset[1] = chunk.x
+        topOffset[2] = chunk.y
+        bottomOffset[1] = chunk.x + CHUNK_SIZE
+        bottomOffset[2] = chunk.y + CHUNK_SIZE
+
+        if (chunkPassScan(chunk, map) == -1) then
+            removeProcessQueueChunk(map.processQueue, chunk)
+            map[chunk.x][chunk.y] = nil
+            map.chunkIdToChunk[chunk.id] = nil
         end
     end
 end
