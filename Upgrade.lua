@@ -392,7 +392,6 @@ function upgrade.attempt(universe)
         universe.attackWaveUpperBound = 0
         universe.unitRefundAmount = 0
         universe.regroupIndex = 1
-        universe.randomGenerator = game.create_random_generator(settings.startup["rampant--enemySeed"].value+1024)
 
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
             constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
@@ -450,9 +449,12 @@ function upgrade.attempt(universe)
         global.version = 122
 
         addCommandSet(universe)
+        universe.randomGenerator = nil
+        universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.map_gen_settings.seed)
         if (universe.maps) then
             local tick = game.tick
             for _,map in pairs(universe.maps) do
+                map.random = universe.random
                 map.pendingUpgrades = {}
                 map.sentAggressiveGroups = 0
                 map.maxAggressiveGroups = 1

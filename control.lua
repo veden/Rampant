@@ -373,6 +373,8 @@ local function prepMap(surface)
     map.temperamentScore = 0
     map.stateTick = 0
 
+    map.random = universe.random
+
     -- queue all current chunks that wont be generated during play
     local tick = game.tick
     for chunk in surface.get_chunks() do
