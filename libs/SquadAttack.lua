@@ -364,12 +364,18 @@ function squadAttack.cleanSquads(map, tick)
             end
             squads[groupId] = nil
         elseif (group.state == 4) then
+            squad.wanders = 0
             squadAttack.squadDispatch(map, squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then
-            local cmd = map.universe.wander2Command
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            group.set_command(cmd)
-            group.start_moving()
+            if squad.wanders > 5 then
+                squad.group.destroy()
+            else
+                squad.wanders = squad.wanders + 1
+                local cmd = map.universe.wander2Command
+                squad.commandTick = tick + COMMAND_TIMEOUT
+                group.set_command(cmd)
+                group.start_moving()
+            end
         end
     end
 end

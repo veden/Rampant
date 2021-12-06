@@ -11,6 +11,7 @@ Date: 23. 11. 2021
     - Optimized regional base upgrades so that the work is spread over many ticks reducing lag spikes
     - Optimized adding new chunks to the Rampant in-memory state map
     - Added minimum building cost upgrade check before base upgrade performs scanning
+    - Added max number of wander commands in a row for squads that aren't going anywhere before disbanding squad
     - Optimized energy thief faction
     - Factorissimo, Space Exploration Orbits, asteroid belts, secret maps, starmap, AAI-signal, NiceFill, Blueprint lab surfaces are no longer processed
     - Map processing around player now changes to the surface the player is standing on

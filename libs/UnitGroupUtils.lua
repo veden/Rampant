@@ -83,6 +83,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         penalties = {},
         base = nil,
         frenzy = false,
+        wanders = 0,
         settlers = settlers or false,
         kamikaze = false,
         frenzyPosition = {x = 0,
