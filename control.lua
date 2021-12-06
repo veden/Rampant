@@ -1006,7 +1006,7 @@ script.on_event(defines.events.on_tick,
                         processScanChunks(map)
                     end
 
-                    processActiveNests(map, tick)
+                    processActiveNests(universe, tick)
                     processPendingUpgrades(universe, tick)
                     processPendingUpgrades(universe, tick)
                     cleanSquads(universe, tick)

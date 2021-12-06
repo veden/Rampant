@@ -182,7 +182,7 @@ local function queueNestSpawners(map, chunk, tick)
     local limitPerActiveChunkTick =
         (map.activeNests + map.activeRaidNests) * DURATION_ACTIVE_NEST_DIVIDER
 
-    local processActiveNest = map.processActiveNest
+    local processActiveNest = map.universe.processActiveNest
 
     if ((getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0)) and
         (getNestActiveTick(map, chunk) == 0)
@@ -192,7 +192,10 @@ local function queueNestSpawners(map, chunk, tick)
         if not slot then
             slot = {}
             processActiveNest[nextTick] = slot
-            slot[#slot+1] = chunk
+            slot[#slot+1] = {
+                chunk = chunk,
+                map = map
+            }
         else
             if (#slot > limitPerActiveChunkTick) then
                 while (#slot > limitPerActiveChunkTick) do
@@ -201,15 +204,24 @@ local function queueNestSpawners(map, chunk, tick)
                     if not slot then
                         slot = {}
                         processActiveNest[nextTick] = slot
-                        slot[#slot+1] = chunk
+                        slot[#slot+1] = {
+                            chunk = chunk,
+                            map = map
+                        }
                         break
                     elseif (#slot < limitPerActiveChunkTick) then
-                        slot[#slot+1] = chunk
+                        slot[#slot+1] = {
+                            chunk = chunk,
+                            map = map
+                        }
                         break
                     end
                 end
             else
-                slot[#slot+1] = chunk
+                slot[#slot+1] = {
+                    chunk = chunk,
+                    map = map
+                }
             end
         end
         setNestActiveTick(map, chunk, tick)
@@ -438,12 +450,14 @@ function mapProcessor.scanResourceMap(map, tick)
     end
 end
 
-function mapProcessor.processActiveNests(map, tick)
-    local processActiveNest = map.processActiveNest
+function mapProcessor.processActiveNests(universe, tick)
+    local processActiveNest = universe.processActiveNest
     local slot = processActiveNest[tick]
     if slot then
         for i=1,#slot do
-            local chunk = slot[i]
+            local chunkPack = slot[i]
+            local chunk = chunkPack.chunk
+            local map = chunkPack.map
             if (getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0) then
                 processNestActiveness(map, chunk)
                 local nextTick = tick + DURATION_ACTIVE_NEST
