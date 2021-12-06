@@ -977,7 +977,7 @@ script.on_event(defines.events.on_tick,
                     end
 
                     if (pick == 0) then
-                        processPendingChunks(map, tick)
+                        processPendingChunks(universe, tick)
                         planning(map, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
                             recycleBases(map)
@@ -1002,7 +1002,7 @@ script.on_event(defines.events.on_tick,
                         processNests(map, tick)
                         temperamentPlanner(map)
                     elseif (pick == 7) then
-                        processPendingChunks(map, tick)
+                        processPendingChunks(universe, tick)
                         processScanChunks(map)
                     end
 

@@ -424,8 +424,10 @@ function upgrade.attempt(universe)
         universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
+        universe.chunkIdToChunk = {}
         universe.groupNumberToSquad = {}
         universe.pendingUpgrades = {}
+        universe.pendingChunks = {}
         universe.processActiveNest = {}
         universe.processActiveNestIterator = nil
         universe.deployVengenceIterator = nil
@@ -469,7 +471,6 @@ function upgrade.prepMap(universe, surface)
     local map = {}
     universe.maps[surfaceIndex] = map
 
-    map.eventId = 1
     map.maxAggressiveGroups = 1
     map.sentAggressiveGroups = 0
     map.processedChunks = 0
@@ -506,7 +507,6 @@ function upgrade.prepMap(universe, surface)
 
     map.chunkToRetreats = {}
     map.chunkToRallys = {}
-    map.chunkIdToChunk = {}
 
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
@@ -581,7 +581,7 @@ function upgrade.prepMap(universe, surface)
         end
     end
 
-    processPendingChunks(map, tick, true)
+    processPendingChunks(universe, tick, true)
 end
 
 function upgrade.compareTable(entities, option, new)

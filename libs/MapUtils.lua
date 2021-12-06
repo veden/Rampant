@@ -44,7 +44,7 @@ function mapUtils.getChunkByPosition(map, position)
 end
 
 function mapUtils.getChunkById(map, chunkId)
-    return map.chunkIdToChunk[chunkId] or -1
+    return map.universe.chunkIdToChunk[chunkId] or -1
 end
 
 function mapUtils.positionToChunkXY(position)
@@ -59,9 +59,10 @@ function mapUtils.queueGeneratedChunk(universe, event)
         return
     end
     event.tick = (event.tick or game.tick) + 20
-    event.id = map.eventId
-    map.pendingChunks[event.id] = event
-    map.eventId = map.eventId + 1
+    event.id = universe.eventId
+    event.map = map
+    universe.pendingChunks[event.id] = event
+    universe.eventId = universe.eventId + 1
 end
 
 --[[
