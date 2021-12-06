@@ -125,6 +125,9 @@ local function settleMove(map, squad)
     if chunk ~= -1 then
         addSquadToChunk(map, chunk, squad)
         addMovementPenalty(squad, chunk)
+        if not squad.group.valid then
+            return
+        end
     end
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
@@ -256,6 +259,9 @@ local function attackMove(map, squad)
     if chunk ~= -1 then
         addSquadToChunk(map, chunk, squad)
         addMovementPenalty(squad, chunk)
+        if not squad.group.valid then
+            return
+        end
     end
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local attackChunk, attackDirection,
