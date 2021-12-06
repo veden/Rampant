@@ -222,40 +222,40 @@ end
     vs
     the slower passive version processing the entire map in multiple passes.
 --]]
-function mapProcessor.processPlayers(players, map, tick)
+function mapProcessor.processPlayers(players, universe, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     -- not looping everyone because the cost is high enough already in multiplayer
     if (#players > 0) then
-        local player = players[map.random(#players)]
+        local player = players[universe.random(#players)]
         if validPlayer(player) then
-            if player.surface.index ~= map.surface.index then
-                return
-            end
-            local allowingAttacks = canAttack(map)
-            local universe = map.universe
-            local playerChunk = getChunkByPosition(map, player.character.position)
+            local char = player.character
+            local map = universe.maps[char.surface.index]
+            if map then
+                local allowingAttacks = canAttack(map)
+                local playerChunk = getChunkByPosition(map, char.position)
 
-            if (playerChunk ~= -1) then
-                local vengence = allowingAttacks and
-                    (map.points >= AI_VENGENCE_SQUAD_COST) and
-                    ((getEnemyStructureCount(map, playerChunk) > 0) or
-                        (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
+                if (playerChunk ~= -1) then
+                    local vengence = allowingAttacks and
+                        (map.points >= AI_VENGENCE_SQUAD_COST) and
+                        ((getEnemyStructureCount(map, playerChunk) > 0) or
+                            (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
 
-                for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
-                    for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
-                        local chunk = getChunkByXY(map, x, y)
+                    for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
+                        for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
+                            local chunk = getChunkByXY(map, x, y)
 
-                        if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
-                            chunk[CHUNK_TICK] = tick
-                            processPheromone(map, chunk, true)
+                            if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
+                                chunk[CHUNK_TICK] = tick
+                                processPheromone(map, chunk, true)
 
-                            if (getNestCount(map, chunk) > 0) then
-                                processNestActiveness(map, chunk)
-                                queueNestSpawners(map, chunk, tick)
+                                if (getNestCount(map, chunk) > 0) then
+                                    processNestActiveness(map, chunk)
+                                    queueNestSpawners(map, chunk, tick)
 
-                                if vengence then
-                                    map.vengenceQueue[chunk.id] = (map.vengenceQueue[chunk.id] or 0) + 1
+                                    if vengence then
+                                        map.vengenceQueue[chunk.id] = (map.vengenceQueue[chunk.id] or 0) + 1
+                                    end
                                 end
                             end
                         end
@@ -268,10 +268,14 @@ function mapProcessor.processPlayers(players, map, tick)
     for i=1,#players do
         local player = players[i]
         if validPlayer(player) then
-            local playerChunk = getChunkByPosition(map, player.character.position)
+            local char = player.character
+            local map = universe.maps[char.surface.index]
+            if map then
+                local playerChunk = getChunkByPosition(map, char.position)
 
-            if (playerChunk ~= -1) then
-                addPlayerToChunk(map, playerChunk, player.name)
+                if (playerChunk ~= -1) then
+                    addPlayerToChunk(map, playerChunk, player.name)
+                end
             end
         end
     end

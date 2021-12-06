@@ -13,6 +13,7 @@ Date: 23. 11. 2021
     - Added minimum building cost upgrade check before base upgrade performs scanning
     - Optimized energy thief faction
     - Factorissimo, Space Exploration Orbits, asteroid belts, secret maps, starmap, AAI-signal, NiceFill, Blueprint lab surfaces are no longer processed
+    - Map processing around player now changes to the surface the player is standing on
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures
@@ -47,6 +48,7 @@ Date: 23. 11. 2021
     - Fixed kastorio creep code be spawned when the building failed to upgrade
     - Potential desync fix in relation to reference comparison and deserialization
     - Fixed squad attack move would not properly place warding pheromone on taken path
+    - Fixed players added to a chunk not taking player surface into account when
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
     - Added debug mod settings for showing enemy structures being upgraded in place

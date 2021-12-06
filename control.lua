@@ -984,7 +984,7 @@ script.on_event(defines.events.on_tick,
                         end
                         cleanUpMapTables(map, tick)
                     elseif (pick == 1) then
-                        processPlayers(gameRef.connected_players, map, tick)
+                        processPlayers(gameRef.connected_players, universe, tick)
                     elseif (pick == 2) then
                         processMap(map, tick)
                     elseif (pick == 3) then
