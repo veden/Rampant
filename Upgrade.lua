@@ -449,7 +449,7 @@ function upgrade.prepMap(universe, surface)
         return
     end
 
-    game.print("Rampant - Indexing surface:" .. tostring(surface.index) .. ", please wait.")
+    game.print("Rampant - Indexing surface:" .. surface.name .. ", index:" .. tostring(surface.index) .. ", please wait.")
 
     local surfaceIndex = surface.index
 
