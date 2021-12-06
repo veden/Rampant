@@ -487,7 +487,7 @@ local function processSpawnersBody(map, iterator, chunks)
     end
 end
 
-function mapProcessor.processSpawners(map)
+function mapProcessor.processAttackWaves(map)
 
     if (map.state ~= AI_STATE_PEACEFUL) then
         if (map.state == AI_STATE_MIGRATING) then

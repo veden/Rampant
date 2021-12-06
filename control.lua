@@ -63,7 +63,7 @@ local positionToChunkXY = mapUtils.positionToChunkXY
 local temperamentPlanner = aiPlanning.temperamentPlanner
 
 local processVengence = mapProcessor.processVengence
-local processSpawners = mapProcessor.processSpawners
+local processAttackWaves = mapProcessor.processAttackWaves
 
 local processStaticMap = mapProcessor.processStaticMap
 
@@ -995,7 +995,7 @@ script.on_event(defines.events.on_tick,
                         scanResourceMap(map, tick)
                         scanEnemyMap(map, tick)
                     elseif (pick == 5) then
-                        processSpawners(map)
+                        processAttackWaves(map)
                         scanEnemyMap(map, tick)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
