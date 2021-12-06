@@ -320,7 +320,7 @@ function aiPlanning.temperamentPlanner(map)
     local delta = 0
 
     if activeNests > 0 then
-        local val = (0.03 * activeNests)
+        local val = (0.015 * activeNests)
         delta = delta + val
     else
         delta = delta - 0.014463
