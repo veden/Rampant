@@ -425,7 +425,9 @@ function upgrade.attempt(universe)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
         universe.groupNumberToSquad = {}
+        universe.pendingUpgrades = {}
         universe.deployVengenceIterator = nil
+        universe.pendingUpgradeIterator = nil
         universe.squadIterator = nil
         universe.vengenceQueue = {}
         universe.activeMap = nil
@@ -479,7 +481,6 @@ function upgrade.prepMap(universe, surface)
     map.outgoingScanWave = true
     map.outgoingStaticScanWave = true
 
-    map.pendingUpgrades = {}
     map.pendingChunks = {}
     map.chunkToBase = {}
     map.chunkToNests = {}
@@ -515,7 +516,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToActiveRaidNest = {}
 
     map.chunkToPassScanIterator = nil
-    map.pendingUpgradeIterator = nil
     map.recycleBaseIterator = nil
     map.processActiveSpawnerIterator = nil
     map.processActiveRaidSpawnerIterator = nil

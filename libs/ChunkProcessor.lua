@@ -136,40 +136,40 @@ function chunkProcessor.processPendingChunks(map, tick, flush)
     map.chunkProcessorIterator = eventId
 end
 
-function chunkProcessor.processPendingUpgrades(map, tick)
-    local entityId = map.pendingUpgradeIterator
+function chunkProcessor.processPendingUpgrades(universe, tick)
+    local entityId = universe.pendingUpgradeIterator
     local entityData
     if not entityId then
-        entityId, entityData = next(map.pendingUpgrades, nil)
+        entityId, entityData = next(universe.pendingUpgrades, nil)
     else
-        entityData = map.pendingUpgrades[entityId]
+        entityData = universe.pendingUpgrades[entityId]
     end
     if not entityId then
-        map.pendingUpgradeIterator = nil
-        if table_size(map.pendingUpgrades) == 0 then
-            map.pendingUpgrades = {}
+        universe.pendingUpgradeIterator = nil
+        if table_size(universe.pendingUpgrades) == 0 then
+            universe.pendingUpgrades = {}
         end
     else
         local entity = entityData.entity
         if entity.valid then
-            map.pendingUpgradeIterator = next(map.pendingUpgrades, entityId)
-            map.pendingUpgrades[entityId] = nil
+            universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
+            universe.pendingUpgrades[entityId] = nil
             local surface = entity.surface
-            local query = map.universe.upgradeEntityQuery
+            local query = universe.upgradeEntityQuery
             query.position = entityData.position or entity.position
             query.name = entityData.name
-            unregisterEnemyBaseStructure(map, entity)
+            unregisterEnemyBaseStructure(entityData.map, entity)
             entity.destroy()
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(map, createdEntity, tick, entityData.base)
+                registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base)
                 if remote.interfaces["kr-creep"] then
                     remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
                 end
             end
         else
-            map.pendingUpgradeIterator = next(map.pendingUpgrades, entityId)
-            map.pendingUpgrades[entityId] = nil
+            universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
+            universe.pendingUpgrades[entityId] = nil
         end
     end
 end

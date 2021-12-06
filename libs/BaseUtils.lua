@@ -282,10 +282,11 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
             ["name"] = spawnerName,
             ["position"] = disPos,
             ["register"] = register,
+            ["map"] = map,
             ["base"] = base,
             ["entity"] = entity
         }
-        map.pendingUpgrades[entity.unit_number] = entityData
+        map.universe.pendingUpgrades[entity.unit_number] = entityData
         return spawnerName
     end
     return nil

@@ -1007,8 +1007,8 @@ script.on_event(defines.events.on_tick,
                     end
 
                     processActiveNests(map, tick)
-                    processPendingUpgrades(map, tick)
-                    processPendingUpgrades(map, tick)
+                    processPendingUpgrades(universe, tick)
+                    processPendingUpgrades(universe, tick)
                     cleanSquads(universe, tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
