@@ -356,9 +356,9 @@ function chunkUtils.entityForPassScan(map, entity)
     end
 end
 
-function chunkUtils.newChunkId(map)
-    local id = map.chunkId
-    map.chunkId = map.chunkId + 1
+local function newChunkId(universe)
+    local id = universe.chunkId
+    universe.chunkId = universe.chunkId + 1
     return id
 end
 
@@ -367,7 +367,7 @@ function chunkUtils.createChunk(map, topX, topY)
         x = topX,
         y = topY,
         dOrigin = euclideanDistancePoints(topX, topY, 0, 0),
-        id = chunkUtils.newChunkId(map)
+        id = newChunkId(map.universe)
     }
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0

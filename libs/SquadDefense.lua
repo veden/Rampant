@@ -94,7 +94,7 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         if not newSquad then
             if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 created = true
-                newSquad = createSquad(position, surface)
+                newSquad = createSquad(position, map)
             else
                 return
             end
@@ -118,7 +118,7 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
             if universe.NEW_ENEMIES then
                 newSquad.base = findNearbyBase(map, chunk)
             end
-            map.groupNumberToSquad[newSquad.groupNumber] = newSquad
+            universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end
 

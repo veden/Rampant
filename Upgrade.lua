@@ -419,10 +419,15 @@ function upgrade.attempt(universe)
 
         addCommandSet(universe)
         universe.eventId = 0
+        universe.chunkId = 0
         universe.randomGenerator = nil
         universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
+        universe.groupNumberToSquad = {}
+        universe.deployVengenceIterator = nil
+        universe.squadIterator = nil
+        universe.vengenceQueue = {}
         universe.activeMap = nil
         universe.mapIterator = nil
         universe.builderCount = 0
@@ -461,7 +466,6 @@ function upgrade.prepMap(universe, surface)
     universe.maps[surfaceIndex] = map
 
     map.eventId = 1
-    map.chunkId = 1
     map.maxAggressiveGroups = 1
     map.sentAggressiveGroups = 0
     map.processedChunks = 0
@@ -512,9 +516,6 @@ function upgrade.prepMap(universe, surface)
 
     map.chunkToPassScanIterator = nil
     map.pendingUpgradeIterator = nil
-    map.squadIterator = nil
-    map.regroupIterator = nil
-    map.deployVengenceIterator = nil
     map.recycleBaseIterator = nil
     map.processActiveSpawnerIterator = nil
     map.processActiveRaidSpawnerIterator = nil
@@ -533,7 +534,6 @@ function upgrade.prepMap(universe, surface)
     map.surface = surface
     map.universe = universe
 
-    map.vengenceQueue = {}
     map.bases = {}
     map.baseIndex = 1
     map.baseIncrement = 0
@@ -547,7 +547,6 @@ function upgrade.prepMap(universe, surface)
     map.evolutionLevel = game.forces.enemy.evolution_factor
     map.canAttackTick = 0
     map.drainPylons = {}
-    map.groupNumberToSquad = {}
     map.activeRaidNests = 0
     map.activeNests = 0
     map.destroyPlayerBuildings = 0

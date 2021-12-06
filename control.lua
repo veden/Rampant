@@ -369,7 +369,7 @@ local function onDeath(event)
                     local group = entity.unit_group
                     if group then
                         local damageType = event.damage_type
-                        local squad = map.groupNumberToSquad[group.group_number]
+                        local squad = universe.groupNumberToSquad[group.group_number]
                         if damageType and squad then
                             local base = squad.base
                             if base then
@@ -795,8 +795,8 @@ local function onUnitGroupCreated(event)
                     return
                 end
 
-                squad = createSquad(nil, nil, group, settler)
-                map.groupNumberToSquad[group.group_number] = squad
+                squad = createSquad(nil, map, group, settler)
+                universe.groupNumberToSquad[group.group_number] = squad
 
                 if universe.NEW_ENEMIES then
                     local chunk = getChunkByPosition(map, group.position)
@@ -829,8 +829,8 @@ local function onUnitGroupCreated(event)
                     return
                 end
 
-                squad = createSquad(nil, nil, group, settler)
-                map.groupNumberToSquad[group.group_number] = squad
+                squad = createSquad(nil, map, group, settler)
+                universe.groupNumberToSquad[group.group_number] = squad
 
                 if universe.NEW_ENEMIES then
                     local chunk = getChunkByPosition(group.position)
@@ -856,7 +856,7 @@ local function onGroupFinishedGathering(event)
         if not map then
             return
         end
-        local squad = map.groupNumberToSquad[group.group_number]
+        local squad = universe.groupNumberToSquad[group.group_number]
         if squad then
             if squad.settler then
                 if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
@@ -893,8 +893,8 @@ local function onGroupFinishedGathering(event)
                 return
             end
 
-            squad = createSquad(nil, nil, group, settler)
-            map.groupNumberToSquad[group.group_number] = squad
+            squad = createSquad(nil, map, group, settler)
+            universe.groupNumberToSquad[group.group_number] = squad
             if settler then
                 universe.builderCount = universe.builderCount + 1
             else
@@ -948,12 +948,12 @@ local function onBuilderArrived(event)
     if not map then
         return
     end
-    local squad = map.groupNumberToSquad[builder.group_number]
+    local squad = universe.groupNumberToSquad[builder.group_number]
     squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     if universe.aiPointsPrintSpendingToChat then
         game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
     end
-    builder.surface.create_entity(universe.createBuildCloudQuery)
+    map.surface.create_entity(universe.createBuildCloudQuery)
 end
 
 -- hooks
@@ -990,7 +990,7 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 3) then
                         processStaticMap(map)
                         disperseVictoryScent(map)
-                        processVengence(map)
+                        processVengence(universe)
                     elseif (pick == 4) then
                         scanResourceMap(map, tick)
                         scanEnemyMap(map, tick)
@@ -1009,7 +1009,7 @@ script.on_event(defines.events.on_tick,
                     processActiveNests(map, tick)
                     processPendingUpgrades(map, tick)
                     processPendingUpgrades(map, tick)
-                    cleanSquads(map, tick)
+                    cleanSquads(universe, tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
 end)

@@ -73,8 +73,8 @@ function unitGroupUtils.findNearbySquad(map, chunk)
     return nil
 end
 
-function unitGroupUtils.createSquad(position, surface, group, settlers)
-    local unitGroup = group or surface.create_unit_group({position=position})
+function unitGroupUtils.createSquad(position, map, group, settlers)
+    local unitGroup = group or map.surface.create_unit_group({position=position})
 
     local squad = {
         group = unitGroup,
@@ -83,6 +83,7 @@ function unitGroupUtils.createSquad(position, surface, group, settlers)
         penalties = {},
         base = nil,
         frenzy = false,
+        map = map,
         wanders = 0,
         settlers = settlers or false,
         kamikaze = false,

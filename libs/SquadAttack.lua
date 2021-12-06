@@ -330,9 +330,9 @@ local function buildMove(map, squad)
     group.set_command(universe.compoundSettleCommand)
 end
 
-function squadAttack.cleanSquads(map, tick)
-    local squads = map.groupNumberToSquad
-    local groupId = map.squadIterator
+function squadAttack.cleanSquads(universe, tick)
+    local squads = universe.groupNumberToSquad
+    local groupId = universe.squadIterator
     local squad
     if not groupId then
         groupId, squad = next(squads, groupId)
@@ -340,23 +340,19 @@ function squadAttack.cleanSquads(map, tick)
         squad = squads[groupId]
     end
     if not groupId then
-        map.squadIterator = nil
+        universe.squadIterator = nil
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            map.groupNumberToSquad = {}
+            universe.groupNumberToSquad = {}
         end
     else
-        map.squadIterator = next(squads, groupId)
+        universe.squadIterator = next(squads, groupId)
         local group = squad.group
         if not group.valid then
             if squad.chunk ~= -1 then
-                addDeathGenerator(map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                addDeathGenerator(squad.map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             end
-            removeSquadFromChunk(map, squad)
-            if (map.regroupIterator == groupId) then
-                map.regroupIterator = nil
-            end
-            local universe = map.universe
+            removeSquadFromChunk(squad.map, squad)
             if squad.settlers then
                 universe.builderCount = universe.builderCount - 1
             else
@@ -365,13 +361,13 @@ function squadAttack.cleanSquads(map, tick)
             squads[groupId] = nil
         elseif (group.state == 4) then
             squad.wanders = 0
-            squadAttack.squadDispatch(map, squad, tick)
+            squadAttack.squadDispatch(squad.map, squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             if squad.wanders > 5 then
                 squad.group.destroy()
             else
                 squad.wanders = squad.wanders + 1
-                local cmd = map.universe.wander2Command
+                local cmd = universe.wander2Command
                 squad.commandTick = tick + COMMAND_TIMEOUT
                 group.set_command(cmd)
                 group.start_moving()

@@ -254,7 +254,15 @@ function mapProcessor.processPlayers(players, universe, tick)
                                     queueNestSpawners(map, chunk, tick)
 
                                     if vengence then
-                                        map.vengenceQueue[chunk.id] = (map.vengenceQueue[chunk.id] or 0) + 1
+                                        local pack = universe.vengenceQueue[chunk.id]
+                                        if not pack then
+                                            pack = {
+                                                v = 0,
+                                                map = map
+                                            }
+                                            universe.vengenceQueue[chunk.id] = pack
+                                        end
+                                        pack.v = pack.v + 1
                                     end
                                 end
                             end
@@ -453,21 +461,24 @@ function mapProcessor.processActiveNests(map, tick)
     end
 end
 
-function mapProcessor.processVengence(map)
-    local vengence = map.vengenceQueue
-    local chunkId = map.deployVengenceIterator
+function mapProcessor.processVengence(universe)
+    local vengenceQueue = universe.vengenceQueue
+    local chunkId = universe.deployVengenceIterator
+    local vengencePack
     if not chunkId then
-        chunkId = next(vengence, nil)
+        chunkId, vengencePack = next(vengenceQueue, nil)
+    else
+        vengencePack = vengenceQueue[chunkId]
     end
     if not chunkId then
-        map.deployVengenceIterator = nil
-        if (tableSize(vengence) == 0) then
-            map.vengenceQueue = {}
+        universe.deployVengenceIterator = nil
+        if (tableSize(vengenceQueue) == 0) then
+            universe.vengenceQueue = {}
         end
     else
-        map.deployVengenceIterator = next(vengence, chunkId)
-        formVengenceSquad(map, getChunkById(map, chunkId))
-        vengence[chunkId] = nil
+        universe.deployVengenceIterator = next(vengenceQueue, chunkId)
+        formVengenceSquad(vengencePack.map, getChunkById(vengencePack.map, chunkId))
+        vengenceQueue[chunkId] = nil
     end
 end
 
