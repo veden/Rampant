@@ -427,6 +427,7 @@ function upgrade.attempt(universe)
         universe.groupNumberToSquad = {}
         universe.pendingUpgrades = {}
         universe.processActiveNest = {}
+        universe.processActiveNestIterator = nil
         universe.deployVengenceIterator = nil
         universe.pendingUpgradeIterator = nil
         universe.squadIterator = nil
@@ -499,7 +500,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToResource = {}
     map.chunkToPlayerCount = {}
     map.playerToChunk = {}
-    map.pendingChunks = {}
 
     map.chunkToPassScan = {}
     map.chunkToSquad = {}
@@ -527,7 +527,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkScanCounts = {}
 
     map.chunkRemovals = {}
-    map.tickActiveNest = {}
 
     map.emptySquadsOnChunk = {}
 

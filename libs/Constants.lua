@@ -69,8 +69,6 @@ constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
 constants.DURATION_ACTIVE_NEST = 60 * constants.TICKS_A_SECOND
 
-constants.DURATION_ACTIVE_NEST_DIVIDER = 1 / constants.DURATION_ACTIVE_NEST
-
 -- chunk properties
 
 constants.CHUNK_SIZE = 32
