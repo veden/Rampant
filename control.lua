@@ -349,6 +349,13 @@ local function onDeath(event)
         if not map then
             return
         end
+        if (entity.force.name == "neutral") then
+            if (entity.name == "cliff") then
+                entityForPassScan(map, entity)
+            else
+                return
+            end
+        end
         local entityPosition = entity.position
         local chunk = getChunkByPosition(map, entityPosition)
         local cause = event.cause
@@ -455,8 +462,7 @@ local function onDeath(event)
                     unregisterEnemyBaseStructure(map, entity, event.damage_type)
                 end
             end
-
-        elseif (entity.force.name ~= "enemy") then
+        else
             local creditNatives = false
             if (event.force ~= nil) and (event.force.name == "enemy") then
                 creditNatives = true
@@ -514,10 +520,6 @@ local function onDeath(event)
                             end
                         end
                     end
-                end
-            elseif (entity.type == "resource") and (entity.force.name == "neutral") then
-                if (entity.amount == 0) then
-                    unregisterResource(entity, map)
                 end
             end
             if creditNatives and (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
