@@ -331,13 +331,7 @@ local function onMine(event)
         if not map then
             return
         end
-        if (entity.type == "resource") and (entity.force.name == "neutral") then
-            if (entity.amount == 0) then
-                unregisterResource(entity, map)
-            end
-        else
-            accountPlayerEntity(entity, map, false, false)
-        end
+        accountPlayerEntity(entity, map, false, false)
     end
 end
 
