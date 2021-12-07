@@ -64,7 +64,7 @@ local function getTimeStringFromTick(tick)
 end
 
 
-function aiPlanning.planning(map, evolution_factor, tick)
+local function planning(map, evolution_factor, tick)
     local universe = map.universe
     map.evolutionLevel = evolution_factor
     universe.evolutionLevel = evolution_factor
@@ -305,7 +305,7 @@ function aiPlanning.planning(map, evolution_factor, tick)
     end
 end
 
-function aiPlanning.temperamentPlanner(map)
+local function temperamentPlanner(map)
     local destroyPlayerBuildings = map.destroyPlayerBuildings
     local lostEnemyUnits = map.lostEnemyUnits
     local lostEnemyBuilding = map.lostEnemyBuilding
@@ -417,6 +417,30 @@ function aiPlanning.temperamentPlanner(map)
         end
     end
 end
+
+function aiPlanning.processMapAIs(universe, evo, tick)
+    for _ = 1, 10 do
+        local mapId = universe.processMapAIIterator
+        local map
+        if not mapId then
+            mapId, map = next(universe.maps, nil)
+        else
+            map = universe.maps[mapId]
+        end
+        if not mapId then
+            universe.processMapAIIterator = nil
+            return
+        else
+            universe.processMapAIIterator = next(universe.maps, mapId)
+            planning(map, evo, tick)
+            temperamentPlanner(map)
+            if not universe.processMapAIIterator then
+                return
+            end
+        end
+    end
+end
+
 
 aiPlanningG = aiPlanning
 return aiPlanning

@@ -449,6 +449,7 @@ function upgrade.attempt(universe)
         universe.pendingUpgradeIterator = nil
         universe.victoryScentIterator = nil
         universe.squadIterator = nil
+        universe.processMapAIIterator = nil
         universe.vengenceQueue = {}
         universe.activeMap = nil
         universe.mapIterator = nil

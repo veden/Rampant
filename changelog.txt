@@ -25,6 +25,7 @@ Date: 23. 11. 2021
     - Added support for AbandonedRuins mod
     - Victory scent is now processed regardless of current active surface
     - Pheromone map processing only does upto 5% of generated chunks on a surface before switching to the next surface
+    - AI Planning will now happen on upto 10 surface per cycle
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures

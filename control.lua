@@ -44,6 +44,8 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 local distortPosition = mathUtils.distortPosition
 local prepMap = upgrade.prepMap
 
+local processMapAIs = aiPlanning.processMapAIs
+
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
@@ -59,8 +61,6 @@ local squadDispatch = squadAttack.squadDispatch
 local cleanUpMapTables = mapProcessor.cleanUpMapTables
 
 local positionToChunkXY = mapUtils.positionToChunkXY
-
-local temperamentPlanner = aiPlanning.temperamentPlanner
 
 local processVengence = mapProcessor.processVengence
 local processAttackWaves = mapProcessor.processAttackWaves
@@ -83,8 +83,6 @@ local scanPlayerMap = mapProcessor.scanPlayerMap
 local scanResourceMap = mapProcessor.scanResourceMap
 
 local processNests = mapProcessor.processNests
-
-local planning = aiPlanning.planning
 
 local rallyUnits = aiAttackWave.rallyUnits
 
@@ -953,6 +951,9 @@ local function onSurfaceDeleted(event)
     if (universe.mapIterator == surfaceIndex) then
         universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
     end
+    if (universe.processMapAIIterator == surfaceIndex) then
+        universe.processMapAIIterator = nil
+    end
     universe.maps[surfaceIndex] = nil
 end
 
@@ -1004,7 +1005,7 @@ script.on_event(defines.events.on_tick,
 
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
-                        planning(map, gameRef.forces.enemy.evolution_factor, tick)
+                        processMapAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
                         if universe.NEW_ENEMIES then
                             recycleBases(map)
                         end
@@ -1026,7 +1027,6 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
                         processNests(map, tick)
-                        temperamentPlanner(map)
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
                         processScanChunks(map)
