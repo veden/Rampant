@@ -63,18 +63,19 @@ function pheromoneUtils.victoryScent(map, chunk, entityType)
     end
 end
 
-function pheromoneUtils.disperseVictoryScent(map)
-    local chunkId = map.victoryScentIterator
-    local chunkToVictory = map.chunkToVictory
-    local pheromone
+function pheromoneUtils.disperseVictoryScent(universe)
+    local chunkId = universe.victoryScentIterator
+    local chunkToVictory = universe.chunkToVictory
+    local pheromonePack
     if not chunkId then
-        chunkId, pheromone = next(chunkToVictory, nil)
+        chunkId, pheromonePack = next(chunkToVictory, nil)
     else
-        pheromone = chunkToVictory[chunkId]
+        pheromonePack = chunkToVictory[chunkId]
     end
     if not chunkId then
-        map.victoryScentIterator = nil
+        universe.victoryScentIterator = nil
     else
+        local map = pheromonePack.map
         map.victoryScentIterator = next(chunkToVictory, chunkId)
         chunkToVictory[chunkId] = nil
         local chunk = getChunkById(map, chunkId)
@@ -85,7 +86,7 @@ function pheromoneUtils.disperseVictoryScent(map)
             for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND,32 do
                 local c = getChunkByXY(map, x, y)
                 if (c ~= -1) then
-                    addDeathGenerator(map, c, -pheromone * VICTORY_SCENT_MULTIPLER[i] * getPathRating(map, c))
+                    addDeathGenerator(map, c, -pheromonePack.v * VICTORY_SCENT_MULTIPLER[i] * getPathRating(map, c))
                 end
                 i = i + 1
             end

@@ -441,11 +441,13 @@ function upgrade.attempt(universe)
         universe.chunkIdToChunk = {}
         universe.groupNumberToSquad = {}
         universe.pendingUpgrades = {}
+        universe.chunkToVictory = {}
         universe.pendingChunks = {}
         universe.processActiveNest = {}
         universe.processActiveNestIterator = nil
         universe.deployVengenceIterator = nil
         universe.pendingUpgradeIterator = nil
+        universe.victoryScentIterator = nil
         universe.squadIterator = nil
         universe.vengenceQueue = {}
         universe.activeMap = nil
@@ -526,7 +528,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
     map.chunkToDrained = {}
-    map.chunkToVictory = {}
     map.chunkToActiveNest = {}
     map.chunkToActiveRaidNest = {}
 
@@ -536,7 +537,6 @@ function upgrade.prepMap(universe, surface)
     map.processActiveRaidSpawnerIterator = nil
     map.processMigrationIterator = nil
     map.processNestIterator = nil
-    map.victoryScentIterator = nil
 
     map.chunkScanCounts = {}
 

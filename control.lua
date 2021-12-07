@@ -1015,7 +1015,7 @@ script.on_event(defines.events.on_tick,
                         processMap(map, tick)
                     elseif (pick == 3) then
                         processStaticMap(map)
-                        disperseVictoryScent(map)
+                        disperseVictoryScent(universe)
                         processVengence(universe)
                     elseif (pick == 4) then
                         scanResourceMap(map, tick)

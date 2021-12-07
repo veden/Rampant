@@ -287,7 +287,15 @@ function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
 end
 
 function chunkPropertyUtils.addVictoryGenerator(map, chunk, value)
-    map.chunkToVictory[chunk.id] = (map.chunkToVictory[chunk.id] or 0) + value
+    local cToV = map.universe.chunkToVictory
+    local chunkId = chunk.id
+    if not cToV[chunkId] then
+        cToV[chunkId] = {
+            map = map,
+            v = 0
+        }
+    end
+    cToV[chunkId].v = cToV[chunkId].v + value
 end
 
 function chunkPropertyUtils.decayDeathGenerator(map, chunk)
