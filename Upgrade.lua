@@ -65,6 +65,11 @@ local function addCommandSet(queriesAndCommands)
         y=0
     }
 
+    queriesAndCommands.playerForces = {}
+    queriesAndCommands.enemyForces = {}
+    queriesAndCommands.npcForces = {}
+    queriesAndCommands.nonPlayerForces = {}
+
     queriesAndCommands.chunkOverlapArray = {
             -1,
             -1,
@@ -95,18 +100,18 @@ local function addCommandSet(queriesAndCommands)
     }
     queriesAndCommands.filteredEntitiesUnitQuery = {
         area=queriesAndCommands.area,
-        force="enemy",
+        force=queriesAndCommands.enemyForces,
         type="unit"
     }
     queriesAndCommands.hasPlayerStructuresQuery = {
         area=queriesAndCommands.area,
-        force={"enemy","neutral"},
+        force=queriesAndCommands.nonPlayerForces,
         invert=true,
         limit=1
     }
     queriesAndCommands.filteredEntitiesEnemyStructureQuery = {
         area=queriesAndCommands.area,
-        force="enemy",
+        force=queriesAndCommands.enemyForces,
         type={
             "turret",
             "unit-spawner"
@@ -116,7 +121,7 @@ local function addCommandSet(queriesAndCommands)
         position = queriesAndCommands.position,
         radius = 10,
         limit = 1,
-        force = "enemy",
+        force = queriesAndCommands.enemyForces,
         type = {
             "unit-spawner",
             "turret"
@@ -127,28 +132,9 @@ local function addCommandSet(queriesAndCommands)
         position = queriesAndCommands.position
     }
 
-    queriesAndCommands.activePlayerForces = {"player"}
-
-    for _,force in pairs(game.forces) do
-        local add = true
-
-        if (force.name ~= "neutral") and (force.name ~= "enemy") then
-            for i=1,#queriesAndCommands.activePlayerForces do
-                if (queriesAndCommands.activePlayerForces[i] == force.name) then
-                    add = false
-                    break
-                end
-            end
-
-            if add then
-                queriesAndCommands.activePlayerForces[#queriesAndCommands.activePlayerForces+1] = force.name
-            end
-        end
-    end
-
     queriesAndCommands.filteredEntitiesPlayerQueryLowest = {
         area=queriesAndCommands.area,
-        force=queriesAndCommands.activePlayerForces,
+        force=queriesAndCommands.playerForces,
         collision_mask = "player-layer",
         type={
             "wall",
@@ -158,7 +144,7 @@ local function addCommandSet(queriesAndCommands)
 
     queriesAndCommands.filteredEntitiesPlayerQueryLow = {
         area=queriesAndCommands.area,
-        force=queriesAndCommands.activePlayerForces,
+        force=queriesAndCommands.playerForces,
         collision_mask = "player-layer",
         type={
             "splitter",
@@ -176,7 +162,7 @@ local function addCommandSet(queriesAndCommands)
 
     queriesAndCommands.filteredEntitiesPlayerQueryHigh = {
         area=queriesAndCommands.area,
-        force=queriesAndCommands.activePlayerForces,
+        force=queriesAndCommands.playerForces,
         collision_mask = "player-layer",
         type={
             "furnace",
@@ -194,7 +180,7 @@ local function addCommandSet(queriesAndCommands)
 
     queriesAndCommands.filteredEntitiesPlayerQueryHighest = {
         area=queriesAndCommands.area,
-        force=queriesAndCommands.activePlayerForces,
+        force=queriesAndCommands.playerForces,
         collision_mask = "player-layer",
         type={
             "artillery-turret",
@@ -333,6 +319,34 @@ local function addCommandSet(queriesAndCommands)
         unit_count = 1,
         unit_search_distance = CHUNK_SIZE
     }
+
+    queriesAndCommands.setCommandForces = function (npcForces, enemyForces)
+        for force in pairs(queriesAndCommands.playerForces) do
+            queriesAndCommands.playerForces[force] = nil
+        end
+        for force in pairs(queriesAndCommands.npcForces) do
+            queriesAndCommands.npcForces[force] = nil
+        end
+        for force in pairs(queriesAndCommands.enemyForces) do
+            queriesAndCommands.enemyForces[force] = nil
+        end
+        for force in pairs(queriesAndCommands.nonPlayerForces) do
+            queriesAndCommands.nonPlayerForces[force] = nil
+        end
+        for _,force in pairs(game.forces) do
+            if not npcForces[force.name] and not enemyForces[force.name] then
+                queriesAndCommands.playerForces[#queriesAndCommands.playerForces+1] = force.name
+            end
+        end
+        for force in pairs(enemyForces) do
+            queriesAndCommands.enemyForces[#queriesAndCommands.enemyForces+1] = force
+            queriesAndCommands.nonPlayerForces[#queriesAndCommands.nonPlayerForces+1] = force
+        end
+        for force in pairs(npcForces) do
+            queriesAndCommands.npcForces[#queriesAndCommands.npcForces+1] = force
+            queriesAndCommands.nonPlayerForces[#queriesAndCommands.nonPlayerForces+1] = force
+        end
+    end
 end
 
 function upgrade.attempt(universe)

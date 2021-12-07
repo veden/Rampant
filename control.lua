@@ -146,10 +146,25 @@ local function onIonCannonFired(event)
     end
 end
 
+local function onAbandonedRuins(event)
+    local entity = event.entity
+    if entity.valid and (entity.force.name ~= "enemy") then
+        local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
+        accountPlayerEntity(entity, map, true, false)
+    end
+end
+
 local function hookEvents()
     if settings.startup["ion-cannon-radius"] ~= nil then
         script.on_event(remote.call("orbital_ion_cannon", "on_ion_cannon_fired"),
                         onIonCannonFired)
+    end
+    if settings.global["AbandonedRuins-set"] ~= nil then
+        script.on_event(remote.call("AbandonedRuins", "get_on_entity_force_changed_event"),
+                        onAbandonedRuins)
     end
 end
 
@@ -295,6 +310,22 @@ local function onConfigChanged()
         universe.buildingHiveTypeLookup["big-worm-turret"] = "turret"
         universe.buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
     end
+
+    -- not a completed implementation needs if checks to use all forces
+    -- both in the data stage, commands, and if then logic
+    local enemyForces = {
+        ["enemy"]=true
+    }
+
+    local npcForces = {
+        ["neutral"]=true
+    }
+
+    if game.active_mods["AbandonedRuins"] then
+        npcForces["AbandonedRuins:enemy"] = true
+    end
+
+    universe.setCommandForces(npcForces, enemyForces)
 
     for _,surface in pairs(game.surfaces) do
         if not universe.maps then
@@ -901,13 +932,13 @@ local function onGroupFinishedGathering(event)
 end
 
 local function onForceCreated(event)
-    universe.activePlayerForces[#universe.activePlayerForces+1] = event.force.name
+    universe.playerForces[#universe.playerForces+1] = event.force.name
 end
 
 local function onForceMerged(event)
-    for i=#universe.activePlayerForces,1,-1 do
-        if (universe.activePlayerForces[i] == event.source_name) then
-            tRemove(universe.activePlayerForces, i)
+    for i=#universe.playerForces,1,-1 do
+        if (universe.playerForces[i] == event.source_name) then
+            tRemove(universe.playerForces, i)
             break
         end
     end
