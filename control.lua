@@ -337,191 +337,190 @@ end
 
 local function onDeath(event)
     local entity = event.entity
-    if entity.valid then
-        local surface = entity.surface
-        local map = universe.maps[surface.index]
-        if not map then
-            return
+    if not entity.valid then
+        return
+    end
+    local surface = entity.surface
+    local map = universe.maps[surface.index]
+    if not map then
+        return
+    end
+    if (entity.force.name == "neutral") then
+        if (entity.name == "cliff") then
+            entityForPassScan(map, entity)
         end
-        if (entity.force.name == "neutral") then
-            if (entity.name == "cliff") then
-                entityForPassScan(map, entity)
-            else
-                return
-            end
+        return
+    end
+    local entityPosition = entity.position
+    local chunk = getChunkByPosition(map, entityPosition)
+    local cause = event.cause
+    local tick = event.tick
+    local entityType = entity.type
+    if (entity.force.name == "enemy") then
+        local artilleryBlast = (cause and
+                                ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+
+        if artilleryBlast then
+            map.artilleryBlasts = map.artilleryBlasts + 1
         end
-        local entityPosition = entity.position
-        local chunk = getChunkByPosition(map, entityPosition)
-        local cause = event.cause
-        local tick = event.tick
-        local entityType = entity.type
-        if (entity.force.name == "enemy") then
 
-            local artilleryBlast = (cause and
-                                    ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+        if (entityType == "unit") then
+            if (chunk ~= -1) and event.force and (event.force.name ~= "enemy") then
 
-            if artilleryBlast then
-                map.artilleryBlasts = map.artilleryBlasts + 1
-            end
-
-            if (entityType == "unit") then
-                if (chunk ~= -1) and event.force and (event.force.name ~= "enemy") then
-
-                    local group = entity.unit_group
-                    if group then
-                        local damageType = event.damage_type
-                        local squad = universe.groupNumberToSquad[group.group_number]
-                        if damageType and squad then
-                            local base = squad.base
-                            if base then
-                                local damageTypeName = damageType.name
-                                base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
-                                base.deathEvents = base.deathEvents + 1
-                            end
+                local group = entity.unit_group
+                if group then
+                    local damageType = event.damage_type
+                    local squad = universe.groupNumberToSquad[group.group_number]
+                    if damageType and squad then
+                        local base = squad.base
+                        if base then
+                            local damageTypeName = damageType.name
+                            base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
+                            base.deathEvents = base.deathEvents + 1
                         end
                     end
+                end
 
-                    -- drop death pheromone where unit died
-                    deathScent(map, chunk)
+                -- drop death pheromone where unit died
+                deathScent(map, chunk)
 
-                    if (-getDeathGenerator(map, chunk) < -universe.retreatThreshold) and cause and cause.valid then
+                if (-getDeathGenerator(map, chunk) < -universe.retreatThreshold) and cause and cause.valid then
+                    retreatUnits(chunk,
+                                 cause,
+                                 map,
+                                 tick,
+                                 (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
+                end
+
+                map.lostEnemyUnits = map.lostEnemyUnits + 1
+
+                if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
+                    rallyUnits(chunk, map, tick)
+                end
+            end
+
+        elseif map.drainPylons[entity.unit_number] then
+            local entityUnitNumber = entity.unit_number
+            local pair = map.drainPylons[entityUnitNumber]
+            if pair then
+                local target = pair[1]
+                local pole = pair[2]
+                if target.unit_number == entityUnitNumber then
+                    map.drainPylons[entityUnitNumber] = nil
+                    if pole.valid then
+                        map.drainPylons[pole.unit_number] = nil
+                        pole.die()
+                    end
+                elseif (pole.unit_number == entityUnitNumber) then
+                    map.drainPylons[entityUnitNumber] = nil
+                    if target.valid then
+                        map.drainPylons[target.unit_number] = nil
+                        target.destroy()
+                    end
+                end
+            end
+
+        else
+            if event.force and (event.force.name ~= "enemy") then
+                local rally = false
+                if (entityType == "unit-spawner") then
+                    map.points = map.points + RECOVER_NEST_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
+                    end
+                    rally = true
+                elseif (entityType == "turret") then
+                    map.points = map.points + RECOVER_WORM_COST
+                    if universe.aiPointsPrintGainsToChat then
+                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
+                    end
+                    rally = true
+                end
+                if (chunk ~= -1) and rally then
+                    rallyUnits(chunk, map, tick)
+
+                    if cause and cause.valid then
                         retreatUnits(chunk,
                                      cause,
                                      map,
                                      tick,
-                                     (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
+                                     RETREAT_SPAWNER_GRAB_RADIUS)
                     end
-
-                    map.lostEnemyUnits = map.lostEnemyUnits + 1
-
-                    if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
-                        rallyUnits(chunk, map, tick)
-                    end
-                end
-
-            elseif map.drainPylons[entity.unit_number] then
-                local entityUnitNumber = entity.unit_number
-                local pair = map.drainPylons[entityUnitNumber]
-                if pair then
-                    local target = pair[1]
-                    local pole = pair[2]
-                    if target.unit_number == entityUnitNumber then
-                        map.drainPylons[entityUnitNumber] = nil
-                        if pole.valid then
-                            map.drainPylons[pole.unit_number] = nil
-                            pole.die()
-                        end
-                    elseif (pole.unit_number == entityUnitNumber) then
-                        map.drainPylons[entityUnitNumber] = nil
-                        if target.valid then
-                            map.drainPylons[target.unit_number] = nil
-                            target.destroy()
-                        end
-                    end
-                end
-
-            else
-                if event.force and (event.force.name ~= "enemy") then
-                    local rally = false
-                    if (entityType == "unit-spawner") then
-                        map.points = map.points + RECOVER_NEST_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
-                        end
-                        rally = true
-                    elseif (entityType == "turret") then
-                        map.points = map.points + RECOVER_WORM_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
-                        end
-                        rally = true
-                    end
-                    if (chunk ~= -1) and rally then
-                        rallyUnits(chunk, map, tick)
-
-                        if cause and cause.valid then
-                            retreatUnits(chunk,
-                                         cause,
-                                         map,
-                                         tick,
-                                         RETREAT_SPAWNER_GRAB_RADIUS)
-                        end
-                    end
-                end
-
-                if universe.buildingHiveTypeLookup[entity.name] or
-                    (entityType == "unit-spawner") or
-                    (entityType == "turret")
-                then
-                    unregisterEnemyBaseStructure(map, entity, event.damage_type)
                 end
             end
-        else
-            local creditNatives = false
-            if (event.force ~= nil) and (event.force.name == "enemy") then
-                creditNatives = true
-                local drained
-                if (chunk ~= -1) then
-                    victoryScent(map, chunk, entityType)
-                    drained = (entityType == "electric-turret") and map.chunkToDrained[chunk.id]
-                end
 
-                if cause or (drained and (drained - tick) > 0) then
-                    if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
-                        local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
-                        if conversion then
-                            local newEntity = surface.create_entity({
+            if universe.buildingHiveTypeLookup[entity.name] or
+                (entityType == "unit-spawner") or
+                (entityType == "turret")
+            then
+                unregisterEnemyBaseStructure(map, entity, event.damage_type)
+            end
+        end
+    else
+        local creditNatives = false
+        if (event.force ~= nil) and (event.force.name == "enemy") then
+            creditNatives = true
+            local drained
+            if (chunk ~= -1) then
+                victoryScent(map, chunk, entityType)
+                drained = (entityType == "electric-turret") and map.chunkToDrained[chunk.id]
+            end
+
+            if cause or (drained and (drained - tick) > 0) then
+                if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
+                    local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
+                    if conversion then
+                        local newEntity = surface.create_entity({
+                                position=entity.position,
+                                name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+                                direction=entity.direction
+                        })
+                        if (conversion == "pole") then
+                            local targetEntity = surface.create_entity({
                                     position=entity.position,
-                                    name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+                                    name="pylon-target-rampant",
                                     direction=entity.direction
                             })
-                            if (conversion == "pole") then
-                                local targetEntity = surface.create_entity({
-                                        position=entity.position,
-                                        name="pylon-target-rampant",
-                                        direction=entity.direction
-                                })
-                                targetEntity.backer_name = ""
-                                local pair = {targetEntity, newEntity}
-                                map.drainPylons[targetEntity.unit_number] = pair
-                                map.drainPylons[newEntity.unit_number] = pair
-                                local wires = entity.neighbours
-                                if wires then
-                                    for _,v in pairs(wires.copper) do
-                                        if (v.valid) then
-                                            newEntity.connect_neighbour(v);
-                                        end
-                                    end
-                                    for _,v in pairs(wires.red) do
-                                        if (v.valid) then
-                                            newEntity.connect_neighbour({
-                                                    wire = DEFINES_WIRE_TYPE_RED,
-                                                    target_entity = v
-                                            });
-                                        end
-                                    end
-                                    for _,v in pairs(wires.green) do
-                                        if (v.valid) then
-                                            newEntity.connect_neighbour({
-                                                    wire = DEFINES_WIRE_TYPE_GREEN,
-                                                    target_entity = v
-                                            });
-                                        end
+                            targetEntity.backer_name = ""
+                            local pair = {targetEntity, newEntity}
+                            map.drainPylons[targetEntity.unit_number] = pair
+                            map.drainPylons[newEntity.unit_number] = pair
+                            local wires = entity.neighbours
+                            if wires then
+                                for _,v in pairs(wires.copper) do
+                                    if (v.valid) then
+                                        newEntity.connect_neighbour(v);
                                     end
                                 end
-                            elseif newEntity.backer_name then
-                                newEntity.backer_name = ""
+                                for _,v in pairs(wires.red) do
+                                    if (v.valid) then
+                                        newEntity.connect_neighbour({
+                                                wire = DEFINES_WIRE_TYPE_RED,
+                                                target_entity = v
+                                        });
+                                    end
+                                end
+                                for _,v in pairs(wires.green) do
+                                    if (v.valid) then
+                                        newEntity.connect_neighbour({
+                                                wire = DEFINES_WIRE_TYPE_GREEN,
+                                                target_entity = v
+                                        });
+                                    end
+                                end
                             end
+                        elseif newEntity.backer_name then
+                            newEntity.backer_name = ""
                         end
                     end
                 end
             end
-            if creditNatives and (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
-            then
-                makeImmortalEntity(surface, entity)
-            else
-                accountPlayerEntity(entity, map, false, creditNatives)
-            end
+        end
+        if creditNatives and (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
+        then
+            makeImmortalEntity(surface, entity)
+        else
+            accountPlayerEntity(entity, map, false, creditNatives)
         end
     end
 end

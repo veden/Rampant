@@ -175,11 +175,6 @@ end
 
 
 function chunkProcessor.processScanChunks(map)
-    local area = map.universe.area
-
-    local topOffset = area[1]
-    local bottomOffset = area[2]
-
     local chunkId = map.chunkToPassScanIterator
     local chunk
     if not chunkId then
@@ -198,6 +193,9 @@ function chunkProcessor.processScanChunks(map)
         map.chunkToPassScanIterator = next(map.chunkToPassScan, chunkId)
         map.chunkToPassScan[chunkId] = nil
 
+        local area = map.universe.area
+        local topOffset = area[1]
+        local bottomOffset = area[2]
         topOffset[1] = chunk.x
         topOffset[2] = chunk.y
         bottomOffset[1] = chunk.x + CHUNK_SIZE
