@@ -584,7 +584,7 @@ local function onSurfaceTileChange(event)
                 local chunk = getChunkByPosition(map, position)
 
                 if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk.id] = true
+                    map.chunkToPassScan[chunk.id] = chunk
                 else
                     local x,y = positionToChunkXY(position)
                     local addMe = true
@@ -613,7 +613,7 @@ local function onSurfaceTileChange(event)
                 local chunk = getChunkByPosition(map, position)
 
                 if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk.id] = true
+                    map.chunkToPassScan[chunk.id] = chunk
                 else
                     local x,y = positionToChunkXY(position)
                     local addMe = true
