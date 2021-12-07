@@ -993,7 +993,7 @@ script.on_event(defines.events.on_tick,
                     -- local profiler = game.create_profiler()
 
                     local map = universe.activeMap
-                    if (not map) or (universe.processedChunks > #map.processQueue) then
+                    if (not map) or (universe.processedChunks > (#map.processQueue * 0.05)) then
                         universe.mapIterator, map = next(universe.maps, universe.mapIterator)
                         if not map then
                             universe.mapIterator, map = next(universe.maps, universe.mapIterator)
