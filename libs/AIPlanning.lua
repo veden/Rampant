@@ -419,7 +419,7 @@ local function temperamentPlanner(map)
 end
 
 function aiPlanning.processMapAIs(universe, evo, tick)
-    for _ = 1, 10 do
+    for _ = 1, 15 do
         local mapId = universe.processMapAIIterator
         local map
         if not mapId then
