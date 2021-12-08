@@ -1005,10 +1005,7 @@ script.on_event(defines.events.on_tick,
                     local map = universe.activeMap
                     if (not map) or (universe.processedChunks > (#map.processQueue * 0.05)) then
                         universe.processedChunks = 0
-                        print("b", universe.mapIterator)
                         map = nextMap(universe)
-                        print("a", universe.mapIterator)
-                        print("----")
                         universe.activeMap = map
                     end
 
