@@ -180,11 +180,13 @@ local function queueNestSpawners(map, chunk, tick)
 
     local chunkId = chunk.id
     if not processActiveNest[chunkId] then
-        processActiveNest[chunkId] = {
-            map = map,
-            chunk = chunk,
-            tick = tick + DURATION_ACTIVE_NEST
-        }
+        if (getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0) then
+            processActiveNest[chunkId] = {
+                map = map,
+                chunk = chunk,
+                tick = tick + DURATION_ACTIVE_NEST
+            }
+        end
     end
 end
 
@@ -429,6 +431,8 @@ function mapProcessor.processActiveNests(universe, tick)
             processNestActiveness(map, chunk)
             if (getNestActiveness(map, chunk) == 0) and (getRaidNestActiveness(map, chunk) == 0) then
                 processActiveNest[chunkId] = nil
+            else
+                chunkPack.tick = tick + DURATION_ACTIVE_NEST
             end
         end
     end
