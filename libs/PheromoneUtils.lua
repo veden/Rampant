@@ -75,9 +75,12 @@ function pheromoneUtils.disperseVictoryScent(universe)
     if not chunkId then
         universe.victoryScentIterator = nil
     else
-        local map = pheromonePack.map
-        map.victoryScentIterator = next(chunkToVictory, chunkId)
+        universe.victoryScentIterator = next(chunkToVictory, chunkId)
         chunkToVictory[chunkId] = nil
+        local map = pheromonePack.map
+        if not map.surface.valid then
+            return
+        end
         local chunk = getChunkById(map, chunkId)
         local chunkX = chunk.x
         local chunkY = chunk.y

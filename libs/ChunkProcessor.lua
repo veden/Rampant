@@ -87,7 +87,13 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
                 universe.chunkProcessorIterator = eventId
                 return
             end
+            local newEventId, newEvent = next(pendingChunks, eventId)
+            pendingChunks[eventId] = nil
             local map = event.map
+            if not map.surface.valid then
+                return
+            end
+
             local topLeft = event.area.left_top
             local x = topLeft.x
             local y = topLeft.y
@@ -126,8 +132,6 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
                 end
             end
 
-            local newEventId, newEvent = next(pendingChunks, eventId)
-            pendingChunks[eventId] = nil
             eventId = newEventId
             event = newEvent
         end

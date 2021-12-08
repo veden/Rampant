@@ -429,6 +429,10 @@ function mapProcessor.processActiveNests(universe, tick)
         universe.processActiveNestIterator = next(processActiveNest, chunkId)
         if chunkPack.tick < tick  then
             local map = chunkPack.map
+            if not map.surface.valid then
+                processActiveNest[chunkId] = nil
+                return
+            end
             local chunk = chunkPack.chunk
             processNestActiveness(map, chunk)
             if (getNestActiveness(map, chunk) == 0) and (getRaidNestActiveness(map, chunk) == 0) then
@@ -456,16 +460,33 @@ function mapProcessor.processVengence(universe)
         end
     else
         universe.deployVengenceIterator = next(vengenceQueue, chunkId)
-        formVengenceSquad(vengencePack.map, getChunkById(vengencePack.map, chunkId))
+        local map = vengencePack.map
+        if not map.surface.valid then
+            vengenceQueue[chunkId] = nil
+            return
+        end
+        formVengenceSquad(map, getChunkById(vengencePack.map, chunkId))
         vengenceQueue[chunkId] = nil
     end
 end
 
 function mapProcessor.processNests(universe, tick)
-    local chunkId, chunkPack = next(universe.chunkToNests, universe.processNestIterator)
-    universe.processNestIterator = chunkId
-    if chunkId then
+    local chunkId = universe.processNestIterator
+    local chunkPack
+    if not chunkId then
+        chunkId,chunkPack = next(universe.chunkToNests, nil)
+    else
+        chunkPack = universe.chunkToNests[chunkId]
+    end
+    if not chunkId then
+        universe.processNestIterator = nil
+    else
+        universe.processNestIterator = next(universe.chunkToNests, chunkId)
         local map = chunkPack.map
+        if not map.surface.valid then
+            universe.chunkToNests[chunkId] = nil
+            return
+        end
         local chunk = getChunkById(map, chunkId)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
@@ -480,10 +501,22 @@ function mapProcessor.processNests(universe, tick)
 end
 
 local function processSpawnersBody(universe, iterator, chunks)
-    local chunkId, chunkPack = next(chunks, universe[iterator])
-    universe[iterator] = chunkId
-    if chunkId then
+    local chunkId = universe[iterator]
+    local chunkPack
+    if not chunkId then
+        chunkId,chunkPack = next(chunks, nil)
+    else
+        chunkPack = chunks[chunkId]
+    end
+    if not chunkId then
+        universe[iterator] = nil
+    else
+        universe[iterator] = next(chunks, chunkId)
         local map = chunkPack.map
+        if not map.surface.valid then
+            chunks[chunkId] = nil
+            return
+        end
         local state = chunkPack.map.state
         if state == AI_STATE_PEACEFUL then
             return
