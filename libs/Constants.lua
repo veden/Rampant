@@ -67,7 +67,7 @@ constants.RESOURCE_NORMALIZER = 1 / 1024
 
 constants.PLAYER_PHEROMONE_MULTIPLER = 100
 
-constants.DURATION_ACTIVE_NEST = 60 * constants.TICKS_A_SECOND
+constants.DURATION_ACTIVE_NEST = 120 * constants.TICKS_A_SECOND
 
 -- chunk properties
 
