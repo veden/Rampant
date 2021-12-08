@@ -17,6 +17,9 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
+local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
+local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
+
 local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
@@ -38,7 +41,6 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 
 local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
@@ -477,10 +479,29 @@ function mapProcessor.processNests(universe, tick)
     end
 end
 
-local function processSpawnersBody(map, iterator, chunks)
-    local chunkId = next(chunks, map[iterator])
-    map[iterator] = chunkId
+local function processSpawnersBody(universe, iterator, chunks)
+    local chunkId, chunkPack = next(chunks, universe[iterator])
+    universe[iterator] = chunkId
     if chunkId then
+        local map = chunkPack.map
+        local state = chunkPack.map.state
+        if state == AI_STATE_PEACEFUL then
+            return
+        end
+        if iterator == "processMigrationIterator" then
+            if (state == AI_STATE_AGGRESSIVE) or (state == AI_STATE_ONSLAUGHT) or (state == AI_STATE_RAIDING) then
+                return
+            end
+        elseif iterator == "processActiveRaidSpawnerIterator" then
+            if (state == AI_STATE_AGGRESSIVE) or (state == AI_STATE_MIGRATING) then
+                return
+            end
+        elseif iterator == "processActiveSpawnerIterator" then
+            if (state == AI_STATE_MIGRATING) then
+                return
+            end
+        end
+
         local chunk = getChunkById(map, chunkId)
         local migrate = canMigrate(map)
         local attack = canAttack(map)
@@ -492,36 +513,16 @@ local function processSpawnersBody(map, iterator, chunks)
     end
 end
 
-function mapProcessor.processAttackWaves(map)
-
-    if (map.state ~= AI_STATE_PEACEFUL) then
-        if (map.state == AI_STATE_MIGRATING) then
-            processSpawnersBody(map,
-                                "processMigrationIterator",
-                                map.chunkToNests)
-        elseif (map.state == AI_STATE_AGGRESSIVE) then
-            processSpawnersBody(map,
-                                "processActiveSpawnerIterator",
-                                map.chunkToActiveNest)
-        elseif (map.state == AI_STATE_SIEGE) then
-            processSpawnersBody(map,
-                                "processActiveSpawnerIterator",
-                                map.chunkToActiveNest)
-            processSpawnersBody(map,
-                                "processActiveRaidSpawnerIterator",
-                                map.chunkToActiveRaidNest)
-            processSpawnersBody(map,
-                                "processMigrationIterator",
-                                map.chunkToNests)
-        else
-            processSpawnersBody(map,
-                                "processActiveSpawnerIterator",
-                                map.chunkToActiveNest)
-            processSpawnersBody(map,
-                                "processActiveRaidSpawnerIterator",
-                                map.chunkToActiveRaidNest)
-        end
-    end
+function mapProcessor.processAttackWaves(universe)
+    processSpawnersBody(universe,
+                        "processActiveSpawnerIterator",
+                        universe.chunkToActiveNest)
+    processSpawnersBody(universe,
+                        "processActiveRaidSpawnerIterator",
+                        universe.chunkToActiveRaidNest)
+    processSpawnersBody(universe,
+                        "processMigrationIterator",
+                        universe.chunkToNests)
 end
 
 mapProcessorG = mapProcessor

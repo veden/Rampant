@@ -149,8 +149,8 @@ function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
         if cToN[chunkId].v == 0 then
             map.chunkToNestIds[chunkId] = nil
             cToN[chunkId] = nil
-            if (map.processMigrationIterator == chunkId) then
-                map.processMigrationIterator = nil
+            if (map.universe.processMigrationIterator == chunkId) then
+                map.universe.processMigrationIterator = nil
             end
             if (map.universe.processNestIterator == chunkId) then
                 map.universe.processNestIterator = nil
@@ -237,44 +237,62 @@ end
 
 
 function chunkPropertyUtils.getRaidNestActiveness(map, chunk)
-    return map.chunkToActiveRaidNest[chunk.id] or 0
+    local activeness = map.universe.chunkToActiveRaidNest[chunk.id]
+    if not activeness then
+        return 0
+    end
+    return activeness.v or 0
 end
 
 function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
+    local universe = map.universe
     if (value <= 0) then
-        if map.chunkToActiveRaidNest[chunk.id] then
+        if universe.chunkToActiveRaidNest[chunk.id] then
             map.activeRaidNests = map.activeRaidNests - 1
         end
-        if (map.processActiveRaidSpawnerIterator == chunk.id) then
-            map.processActiveRaidSpawnerIterator = nil
+        if (universe.processActiveRaidSpawnerIterator == chunk.id) then
+            universe.processActiveRaidSpawnerIterator = nil
         end
-        map.chunkToActiveRaidNest[chunk.id] = nil
+        universe.chunkToActiveRaidNest[chunk.id] = nil
     else
-        if not map.chunkToActiveRaidNest[chunk.id] then
+        if not universe.chunkToActiveRaidNest[chunk.id] then
             map.activeRaidNests = map.activeRaidNests + 1
+            universe.chunkToActiveRaidNest[chunk.id] = {
+                map = map,
+                v = 0
+            }
         end
-        map.chunkToActiveRaidNest[chunk.id] = value
+        universe.chunkToActiveRaidNest[chunk.id].v = value
     end
 end
 
 function chunkPropertyUtils.getNestActiveness(map, chunk)
-    return map.chunkToActiveNest[chunk.id] or 0
+    local activeness = map.universe.chunkToActiveNest[chunk.id]
+    if not activeness then
+        return 0
+    end
+    return activeness.v or 0
 end
 
 function chunkPropertyUtils.setNestActiveness(map, chunk, value)
+    local universe = map.universe
     if (value <= 0) then
-        if map.chunkToActiveNest[chunk.id] then
+        if universe.chunkToActiveNest[chunk.id] then
             map.activeNests = map.activeNests - 1
         end
-        if (map.processActiveSpawnerIterator == chunk.id) then
-            map.processActiveSpawnerIterator = nil
+        if (universe.processActiveSpawnerIterator == chunk.id) then
+            universe.processActiveSpawnerIterator = nil
         end
-        map.chunkToActiveNest[chunk.id] = nil
+        universe.chunkToActiveNest[chunk.id] = nil
     else
-        if not map.chunkToActiveNest[chunk.id] then
+        if not universe.chunkToActiveNest[chunk.id] then
             map.activeNests = map.activeNests + 1
+            universe.chunkToActiveNest[chunk.id] = {
+                map = map,
+                v = 0
+            }
         end
-        map.chunkToActiveNest[chunk.id] = value
+        universe.chunkToActiveNest[chunk.id].v = value
     end
 end
 

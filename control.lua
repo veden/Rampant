@@ -1022,7 +1022,7 @@ script.on_event(defines.events.on_tick,
                         scanResourceMap(map, tick)
                         scanEnemyMap(map, tick)
                     elseif (pick == 5) then
-                        processAttackWaves(map)
+                        processAttackWaves(universe)
                         scanEnemyMap(map, tick)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
