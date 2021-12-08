@@ -65,6 +65,19 @@ function mapUtils.queueGeneratedChunk(universe, event)
     universe.eventId = universe.eventId + 1
 end
 
+function mapUtils.nextMap(universe)
+    local mapIterator = universe.mapIterator
+    repeat
+        local map
+        universe.mapIterator, map = next(universe.maps, universe.mapIterator)
+        if map and map.activeSurface then
+            return map
+        elseif map and not map.activeSurface then
+            print("skipping", universe.mapIterator)
+        end
+    until mapIterator == universe.mapIterator
+end
+
 --[[
     1 2 3
     \|/

@@ -38,6 +38,7 @@ function chunkPropertyUtils.getHiveCount(map, chunk)
 end
 
 function chunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
+    map.activeSurface = true
     if not map.chunkToTurretIds[chunk.id] then
         map.chunkToTurretIds[chunk.id] = {}
     end
@@ -59,6 +60,7 @@ function chunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
+    map.activeSurface = true
     if not map.chunkToTrapIds[chunk.id] then
         map.chunkToTrapIds[chunk.id] = {}
     end
@@ -80,6 +82,7 @@ function chunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
+    map.activeSurface = true
     if not map.chunkToUtilityIds[chunk.id] then
         map.chunkToUtilityIds[chunk.id] = {}
     end
@@ -101,6 +104,7 @@ function chunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
+    map.activeSurface = true
     if not map.chunkToHiveIds[chunk.id] then
         map.chunkToHiveIds[chunk.id] = {}
     end
@@ -122,6 +126,7 @@ function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
+    map.activeSurface = true
     local chunkId = chunk.id
     if not map.chunkToNestIds[chunkId] then
         map.chunkToNestIds[chunkId] = {}

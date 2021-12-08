@@ -495,6 +495,8 @@ function upgrade.prepMap(universe, surface)
     local map = {}
     universe.maps[surfaceIndex] = map
 
+    map.activatedMap = false
+
     map.maxAggressiveGroups = 1
     map.sentAggressiveGroups = 0
     map.processedChunks = 0

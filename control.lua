@@ -41,6 +41,8 @@ local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
 
 -- imported functions
 
+local nextMap = mapUtils.nextMap
+
 local distortPosition = mathUtils.distortPosition
 local prepMap = upgrade.prepMap
 
@@ -561,6 +563,7 @@ local function onEnemyBaseBuild(event)
         if not map then
             return
         end
+        map.activeSurface = true
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             local base
@@ -758,6 +761,7 @@ local function onEntitySpawned(event)
             return
         end
         if universe.buildingHiveTypeLookup[entity.name] then
+            map.activeSurface = true
             local disPos = distortPosition(universe.random, entity.position, 8)
 
             local chunk = getChunkByPosition(map, disPos)
@@ -800,110 +804,15 @@ local function onUnitGroupCreated(event)
     if (group.force.name == "enemy") then
         local surface = group.surface
         local squad
-        if not group.is_script_driven then
-            local map = universe.maps[surface.index]
-            if not map then
-                return
-            end
-            if not universe.aiNocturnalMode then
-                local settler = universe.random() < 0.25 and
-                    canMigrate(map) and
-                    (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
-
-                if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
-                    group.destroy()
-                    map.points = map.points + AI_SQUAD_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                    end
-                    return
-                end
-
-                squad = createSquad(nil, map, group, settler)
-                universe.groupNumberToSquad[group.group_number] = squad
-
-                if universe.NEW_ENEMIES then
-                    local chunk = getChunkByPosition(map, group.position)
-                    if (chunk ~= -1) then
-                        squad.base = findNearbyBase(map, chunk)
-                    end
-                end
-
-                if settler then
-                    universe.builderCount = universe.builderCount + 1
-                else
-                    universe.squadCount = universe.squadCount + 1
-                end
-            else
-                if not (surface.darkness > 0.65) then
-                    group.destroy()
-                    return
-                end
-
-                local settler = universe.random() < 0.25 and
-                    canMigrate(map) and
-                    (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
-
-                if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
-                    group.destroy()
-                    map.points = map.points + AI_SQUAD_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                    end
-                    return
-                end
-
-                squad = createSquad(nil, map, group, settler)
-                universe.groupNumberToSquad[group.group_number] = squad
-
-                if universe.NEW_ENEMIES then
-                    local chunk = getChunkByPosition(group.position)
-                    if (chunk ~= -1) then
-                        squad.base = findNearbyBase(map, chunk)
-                    end
-                end
-
-                if settler then
-                    universe.builderCount = universe.builderCount + 1
-                else
-                    universe.squadCount = universe.squadCount + 1
-                end
-            end
+        if group.is_script_driven then
+            return
         end
-    end
-end
-
-local function onGroupFinishedGathering(event)
-    local group = event.group
-    if group.valid and (group.force.name == "enemy") then
-        local map = universe.maps[group.surface.index]
+        local map = universe.maps[surface.index]
         if not map then
             return
         end
-        local squad = universe.groupNumberToSquad[group.group_number]
-        if squad then
-            if squad.settler then
-                if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
-                    squadDispatch(map, squad, event.tick)
-                else
-                    group.destroy()
-                    map.points = map.points + AI_SETTLER_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", map.points))
-                    end
-                end
-            else
-                if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
-                    squadDispatch(map, squad, event.tick)
-                else
-                    group.destroy()
-                    map.points = map.points + AI_SQUAD_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                    end
-                end
-            end
-        else
+        map.activeSurface = true
+        if not universe.aiNocturnalMode then
             local settler = universe.random() < 0.25 and
                 canMigrate(map) and
                 (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
@@ -919,13 +828,112 @@ local function onGroupFinishedGathering(event)
 
             squad = createSquad(nil, map, group, settler)
             universe.groupNumberToSquad[group.group_number] = squad
+
+            if universe.NEW_ENEMIES then
+                local chunk = getChunkByPosition(map, group.position)
+                if (chunk ~= -1) then
+                    squad.base = findNearbyBase(map, chunk)
+                end
+            end
+
             if settler then
                 universe.builderCount = universe.builderCount + 1
             else
                 universe.squadCount = universe.squadCount + 1
             end
-            squadDispatch(map, squad, event.tick)
+        else
+            if not (surface.darkness > 0.65) then
+                group.destroy()
+                return
+            end
+
+            local settler = universe.random() < 0.25 and
+                canMigrate(map) and
+                (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+
+            if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
+                group.destroy()
+                map.points = map.points + AI_SQUAD_COST
+                if universe.aiPointsPrintGainsToChat then
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                end
+                return
+            end
+
+            squad = createSquad(nil, map, group, settler)
+            universe.groupNumberToSquad[group.group_number] = squad
+
+            if universe.NEW_ENEMIES then
+                local chunk = getChunkByPosition(group.position)
+                if (chunk ~= -1) then
+                    squad.base = findNearbyBase(map, chunk)
+                end
+            end
+
+            if settler then
+                universe.builderCount = universe.builderCount + 1
+            else
+                universe.squadCount = universe.squadCount + 1
+            end
         end
+    end
+end
+
+local function onGroupFinishedGathering(event)
+    local group = event.group
+    if not group.valid or (group.force.name ~= "enemy") then
+        return
+    end
+    local map = universe.maps[group.surface.index]
+    if not map then
+        return
+    end
+    map.activeSurface = true
+    local squad = universe.groupNumberToSquad[group.group_number]
+    if squad then
+        if squad.settler then
+            if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
+                squadDispatch(map, squad, event.tick)
+            else
+                group.destroy()
+                map.points = map.points + AI_SETTLER_COST
+                if universe.aiPointsPrintGainsToChat then
+                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", map.points))
+                end
+            end
+        else
+            if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
+                squadDispatch(map, squad, event.tick)
+            else
+                group.destroy()
+                map.points = map.points + AI_SQUAD_COST
+                if universe.aiPointsPrintGainsToChat then
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                end
+            end
+        end
+    else
+        local settler = universe.random() < 0.25 and
+            canMigrate(map) and
+            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+
+        if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
+            group.destroy()
+            map.points = map.points + AI_SQUAD_COST
+            if universe.aiPointsPrintGainsToChat then
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+            end
+            return
+        end
+
+        squad = createSquad(nil, map, group, settler)
+        universe.groupNumberToSquad[group.group_number] = squad
+        if settler then
+            universe.builderCount = universe.builderCount + 1
+        else
+            universe.squadCount = universe.squadCount + 1
+        end
+        squadDispatch(map, squad, event.tick)
     end
 end
 
@@ -975,6 +983,7 @@ local function onBuilderArrived(event)
     if not map then
         return
     end
+    map.activeSurface = true
     local squad = universe.groupNumberToSquad[builder.group_number]
     squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     if universe.aiPointsPrintSpendingToChat then
@@ -995,11 +1004,11 @@ script.on_event(defines.events.on_tick,
 
                     local map = universe.activeMap
                     if (not map) or (universe.processedChunks > (#map.processQueue * 0.05)) then
-                        universe.mapIterator, map = next(universe.maps, universe.mapIterator)
-                        if not map then
-                            universe.mapIterator, map = next(universe.maps, universe.mapIterator)
-                        end
                         universe.processedChunks = 0
+                        print("b", universe.mapIterator)
+                        map = nextMap(universe)
+                        print("a", universe.mapIterator)
+                        print("----")
                         universe.activeMap = map
                     end
 
