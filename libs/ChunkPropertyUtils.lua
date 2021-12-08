@@ -21,10 +21,6 @@ local mMin = math.min
 
 -- module code
 
-function chunkPropertyUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk.id] or 0
-end
-
 function chunkPropertyUtils.getTurretCount(map, chunk)
     return map.chunkToTurrets[chunk.id] or 0
 end
@@ -126,34 +122,49 @@ function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
 end
 
 function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
-    if not map.chunkToNestIds[chunk.id] then
-        map.chunkToNestIds[chunk.id] = {}
+    local chunkId = chunk.id
+    if not map.chunkToNestIds[chunkId] then
+        map.chunkToNestIds[chunkId] = {}
     end
-    if not map.chunkToNestIds[chunk.id][unitNumber] then
-        map.chunkToNestIds[chunk.id][unitNumber] = true
-        map.chunkToNests[chunk.id] = (map.chunkToNests[chunk.id] or 0) + 1
+    if not map.chunkToNestIds[chunkId][unitNumber] then
+        map.chunkToNestIds[chunkId][unitNumber] = true
+        local cToN = map.universe.chunkToNests
+        local pack = cToN[chunkId]
+        if not pack then
+            cToN[chunkId] = {
+                map = map,
+                v = 0
+            }
+        end
+        cToN[chunkId].v = cToN[chunkId].v + 1
     end
 end
 
 function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
-    if map.chunkToNestIds[chunk.id] and map.chunkToNestIds[chunk.id][unitNumber] then
-        map.chunkToNestIds[chunk.id][unitNumber] = nil
-        map.chunkToNests[chunk.id] = map.chunkToNests[chunk.id] - 1
-        if map.chunkToNests[chunk.id] == 0 then
-            map.chunkToNestIds[chunk.id] = nil
-            map.chunkToNests[chunk.id] = nil
-            if (map.processMigrationIterator == chunk.id) then
+    local chunkId = chunk.id
+    if map.chunkToNestIds[chunkId] and map.chunkToNestIds[chunkId][unitNumber] then
+        map.chunkToNestIds[chunkId][unitNumber] = nil
+        local cToN = map.universe.chunkToNests
+        cToN[chunkId].v = cToN[chunkId].v - 1
+        if cToN[chunkId].v == 0 then
+            map.chunkToNestIds[chunkId] = nil
+            cToN[chunkId] = nil
+            if (map.processMigrationIterator == chunkId) then
                 map.processMigrationIterator = nil
             end
-            if (map.processNestIterator == chunk.id) then
-                map.processNestIterator = nil
+            if (map.universe.processNestIterator == chunkId) then
+                map.universe.processNestIterator = nil
             end
         end
     end
 end
 
 function chunkPropertyUtils.getNestCount(map, chunk)
-    return map.chunkToNests[chunk.id] or 0
+    local nestPack = map.universe.chunkToNests[chunk.id]
+    if not nestPack then
+        return 0
+    end
+    return nestPack.v
 end
 
 function chunkPropertyUtils.getChunkBase(map, chunk)
@@ -175,7 +186,12 @@ function chunkPropertyUtils.setChunkBase(map, chunk, base)
 end
 
 function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
-    return (map.chunkToNests[chunk.id] or 0) + (map.chunkToTurrets[chunk.id] or 0) + (map.chunkToTraps[chunk.id] or 0) +
+    local nests = 0
+    local nestPack = map.universe.chunkToNests[chunk.id]
+    if nestPack then
+        nests = nestPack.v
+    end
+    return nests + (map.chunkToTurrets[chunk.id] or 0) + (map.chunkToTraps[chunk.id] or 0) +
         (map.chunkToUtilities[chunk.id] or 0) + (map.chunkToHives[chunk.id] or 0)
 end
 

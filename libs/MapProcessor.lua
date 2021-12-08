@@ -459,15 +459,16 @@ function mapProcessor.processVengence(universe)
     end
 end
 
-function mapProcessor.processNests(map, tick)
-    local chunkId = next(map.chunkToNests, map.processNestIterator)
-    map.processNestIterator = chunkId
+function mapProcessor.processNests(universe, tick)
+    local chunkId, chunkPack = next(universe.chunkToNests, universe.processNestIterator)
+    universe.processNestIterator = chunkId
     if chunkId then
+        local map = chunkPack.map
         local chunk = getChunkById(map, chunkId)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        if map.universe.NEW_ENEMIES then
+        if universe.NEW_ENEMIES then
             local base = getChunkBase(map, chunk)
             if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
                 processBase(chunk, map, tick, base)

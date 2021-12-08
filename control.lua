@@ -1026,7 +1026,7 @@ script.on_event(defines.events.on_tick,
                         scanEnemyMap(map, tick)
                     elseif (pick == 6) then
                         scanPlayerMap(map, tick)
-                        processNests(map, tick)
+                        processNests(universe, tick)
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
                         processScanChunks(map)
