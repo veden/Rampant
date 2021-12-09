@@ -534,70 +534,50 @@ local function onEnemyBaseBuild(event)
     end
 end
 
+local function processSurfaceTile(map, position, chunks, tick)
+    local chunk = getChunkByPosition(map, position)
+
+    if (chunk ~= -1) then
+        map.chunkToPassScan[chunk.id] = chunk
+    else
+        local x,y = positionToChunkXY(position)
+        local addMe = true
+        for ci=1,#chunks do
+            local c = chunks[ci]
+            if (c.x == x) and (c.y == y) then
+                addMe = false
+                break
+            end
+        end
+        if addMe then
+            local chunkXY = {x=x,y=y}
+            chunks[#chunks+1] = chunkXY
+            onChunkGenerated({area = { left_top = chunkXY },
+                              tick = tick,
+                              surface = map.surface})
+        end
+    end
+end
+
 local function onSurfaceTileChange(event)
     local surfaceIndex = event.surface_index or (event.robot and event.robot.surface and event.robot.surface.index)
     local map = universe.maps[surfaceIndex]
     if not map then
         return
     end
-    local surface = map.surface
     local chunks = {}
     local tiles = event.tiles
     if event.tile then
         if ((event.tile.name == "landfill") or sFind(event.tile.name, "water")) then
             for i=1,#tiles do
-                local position = tiles[i].position
-                local chunk = getChunkByPosition(map, position)
-
-                if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk.id] = chunk
-                else
-                    local x,y = positionToChunkXY(position)
-                    local addMe = true
-                    for ci=1,#chunks do
-                        local c = chunks[ci]
-                        if (c.x == x) and (c.y == y) then
-                            addMe = false
-                            break
-                        end
-                    end
-                    if addMe then
-                        local chunkXY = {x=x,y=y}
-                        chunks[#chunks+1] = chunkXY
-                        onChunkGenerated({area = { left_top = chunkXY },
-                                          tick = event.tick,
-                                          surface = surface})
-                    end
-                end
+                processSurfaceTile(map, tiles[i].position, chunks, event.tick)
             end
         end
     else
         for i=1,#tiles do
             local tile = tiles[i]
             if (tile.name == "landfill") or sFind(tile.name, "water") then
-                local position = tile.position
-                local chunk = getChunkByPosition(map, position)
-
-                if (chunk ~= -1) then
-                    map.chunkToPassScan[chunk.id] = chunk
-                else
-                    local x,y = positionToChunkXY(position)
-                    local addMe = true
-                    for ci=1,#chunks do
-                        local c = chunks[ci]
-                        if (c.x == x) and (c.y == y) then
-                            addMe = false
-                            break
-                        end
-                    end
-                    if addMe then
-                        local chunkXY = {x=x,y=y}
-                        chunks[#chunks+1] = chunkXY
-                        onChunkGenerated({area = { left_top = chunkXY },
-                                          tick = event.tick,
-                                          surface = surface})
-                    end
-                end
+                processSurfaceTile(map, tiles[i].position, chunks, event.tick)
             end
         end
     end
