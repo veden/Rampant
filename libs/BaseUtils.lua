@@ -373,7 +373,8 @@ local function upgradeBaseBasedOnDamage(map, base)
         base.damagedBy[damageTypeName] = amount / total
     end
     for damageType,amount in pairs(base.damagedBy) do
-        if ((roll - amount) <= 0) then
+        roll = roll - amount
+        if (roll <= 0) then
             pickedDamage = damageType
             break
         end
@@ -429,14 +430,26 @@ function baseUtils.processBase(chunk, map, tick, base)
 
     if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
         if (base.mutations < universe.MAX_BASE_MUTATIONS) then
-            upgradeBaseBasedOnDamage(map, base)
             base.mutations = base.mutations + 1
+            upgradeBaseBasedOnDamage(map, base)
         elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
             local roll = map.random()
             if (roll < 0.001) then
                 base.mutations = 0
+                if (map.universe.printBaseAdaptation) then
+                    game.print({"description.rampant--adaptationResetDebugMessage",
+                                base.x,
+                                base.y,
+                                base.mutations,
+                                map.universe.MAX_BASE_MUTATIONS})
+                end
             elseif (roll > 0.999) then
                 base.mutations = base.mutations + 1
+                if (map.universe.printBaseAdaptation) then
+                    game.print({"description.rampant--adaptationFrozenDebugMessage",
+                                base.x,
+                                base.y})
+                end
             end
         end
         base.damagedBy = {}
