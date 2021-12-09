@@ -510,7 +510,6 @@ function upgrade.prepMap(universe, surface)
     map.outgoingScanWave = true
     map.outgoingStaticScanWave = true
 
-    map.pendingChunks = {}
     map.chunkToBase = {}
     map.chunkToTurrets = {}
     map.chunkToTraps = {}
@@ -537,8 +536,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
     map.chunkToDrained = {}
-    map.chunkToActiveNest = {}
-    map.chunkToActiveRaidNest = {}
 
     map.chunkToPassScanIterator = nil
     map.recycleBaseIterator = nil
