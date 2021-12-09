@@ -930,8 +930,8 @@ script.on_event(defines.events.on_tick,
                             if universe.NEW_ENEMIES then
                                 recycleBases(map)
                             end
-                            cleanUpMapTables(map, tick)
                         end
+                        cleanUpMapTables(universe, tick)
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, universe, tick)
                     elseif (pick == 2) then

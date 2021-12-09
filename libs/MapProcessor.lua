@@ -284,42 +284,17 @@ local function processCleanUp(universe, chunks, iterator, tick, duration)
     end
 end
 
-function mapProcessor.cleanUpMapTables(map, tick)
-    local index = map.cleanupIndex
+function mapProcessor.cleanUpMapTables(universe, tick)
+    local retreats = universe.chunkToRetreats
+    local rallys = universe.chunkToRallys
+    local drained = universe.chunkToDrained
 
-    local universe = map.universe
-    local retreats = map.chunkToRetreats
-    local rallys = map.chunkToRallys
-    local drained = map.universe.chunkToDrained
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
+    for _=1,CLEANUP_QUEUE_SIZE do
+        processCleanUp(universe, retreats, "chunkToRetreatIterator", tick, COOLDOWN_RETREAT)
 
-    local endIndex = mMin(index + CLEANUP_QUEUE_SIZE, processQueueLength)
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    for x=index,endIndex do
-        local chunk = processQueue[x]
-
-        local retreatTick = retreats[chunk]
-        if retreatTick and ((tick - retreatTick) > COOLDOWN_RETREAT) then
-            retreats[chunk] = nil
-        end
-
-        local rallyTick = rallys[chunk]
-        if rallyTick and ((tick - rallyTick) > COOLDOWN_RALLY) then
-            rallys[chunk] = nil
-        end
+        processCleanUp(universe, rallys, "chunkToRallyIterator", tick, COOLDOWN_RALLY)
 
         processCleanUp(universe, drained, "chunkToDrainedIterator", tick, COOLDOWN_DRAIN)
-    end
-
-    if (endIndex == processQueueLength) then
-        map.cleanupIndex = 1
-    else
-        map.cleanupIndex = endIndex + 1
     end
 end
 

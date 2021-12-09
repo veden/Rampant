@@ -255,19 +255,45 @@ function chunkPropertyUtils.setDrainedTick(map, chunk, tick)
 end
 
 function chunkPropertyUtils.getRetreatTick(map, chunk)
-    return map.chunkToRetreats[chunk.id] or 0
+    local pack = map.universe.chunkToRetreats[chunk.id]
+    if not pack then
+        return 0
+    end
+    return pack.tick
 end
 
 function chunkPropertyUtils.getRallyTick(map, chunk)
-    return map.chunkToRallys[chunk.id] or 0
+    local pack = map.universe.chunkToRallys[chunk.id]
+    if not pack then
+        return 0
+    end
+    return pack.tick
 end
 
 function chunkPropertyUtils.setRallyTick(map, chunk, tick)
-    map.chunkToRallys[chunk.id] = tick
+    local chunkId = chunk.id
+    local pack = map.universe.chunkToRallys[chunkId]
+    if not pack then
+        pack = {
+            map = map,
+            tick = tick
+        }
+        map.universe.chunkToRallys[chunkId] = pack
+    end
+    pack.tick = tick
 end
 
 function chunkPropertyUtils.setRetreatTick(map, chunk, tick)
-    map.chunkToRetreats[chunk.id] = tick
+    local chunkId = chunk.id
+    local pack = map.universe.chunkToRetreats[chunkId]
+    if not pack then
+        pack = {
+            map = map,
+            tick = tick
+        }
+        map.universe.chunkToRetreats[chunkId] = pack
+    end
+    pack.tick = tick
 end
 
 function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
