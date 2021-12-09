@@ -428,8 +428,8 @@ function upgrade.attempt(universe)
 
         universe.maxPoints = 0
     end
-    if global.version < 201 then
-        global.version = 201
+    if global.version < 202 then
+        global.version = 202
 
         addCommandSet(universe)
         universe.eventId = 0
@@ -460,8 +460,10 @@ function upgrade.attempt(universe)
         universe.processActiveSpawnerIterator = nil
         universe.processActiveRaidSpawnerIterator = nil
         universe.processMigrationIterator = nil
+        universe.chunkToDrainedIterator = nil
         universe.chunkToActiveNest = {}
         universe.chunkToActiveRaidNest = {}
+        universe.chunkToDrained = {}
 
         game.print("Rampant - Version 2.0.0")
     end
@@ -535,7 +537,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
-    map.chunkToDrained = {}
 
     map.chunkToPassScanIterator = nil
     map.recycleBaseIterator = nil

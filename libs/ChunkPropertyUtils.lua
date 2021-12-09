@@ -7,6 +7,8 @@ local constants = require("Constants")
 
 -- constants
 
+local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
+
 local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
 
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
@@ -198,6 +200,58 @@ function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
     end
     return nests + (map.chunkToTurrets[chunk.id] or 0) + (map.chunkToTraps[chunk.id] or 0) +
         (map.chunkToUtilities[chunk.id] or 0) + (map.chunkToHives[chunk.id] or 0)
+end
+
+function chunkPropertyUtils.setDrainPylons(map, entity1, entity2)
+    local pair = {entity1, entity2}
+    map.drainPylons[entity1.unit_number] = pair
+    map.drainPylons[entity2.unit_number] = pair
+end
+
+function chunkPropertyUtils.removeDrainPylons(map, unitNumber)
+    local pair = map.drainPylons[unitNumber]
+    if pair then
+        local target = pair[1]
+        local pole = pair[2]
+        if target.unit_number == unitNumber then
+            map.drainPylons[unitNumber] = nil
+            if pole.valid then
+                map.drainPylons[pole.unit_number] = nil
+                pole.die()
+            end
+        elseif (pole.unit_number == unitNumber) then
+            map.drainPylons[unitNumber] = nil
+            if target.valid then
+                map.drainPylons[target.unit_number] = nil
+                target.destroy()
+            end
+        end
+    end
+end
+
+function chunkPropertyUtils.getDrainPylonPair(map, unitNumber)
+    return map.drainPylons[unitNumber]
+end
+
+function chunkPropertyUtils.isDrained(map, chunk, tick)
+    local pack = map.universe.chunkToDrained[chunk.id]
+    if not pack then
+        return false
+    end
+    return (tick - pack.tick) < COOLDOWN_DRAIN
+end
+
+function chunkPropertyUtils.setDrainedTick(map, chunk, tick)
+    local chunkId = chunk.id
+    local pack = map.universe.chunkToDrained[chunkId]
+    if not pack then
+        pack = {
+            map = map,
+            tick = 0
+        }
+        map.universe.chunkToDrained[chunkId] = pack
+    end
+    pack.tick = tick
 end
 
 function chunkPropertyUtils.getRetreatTick(map, chunk)

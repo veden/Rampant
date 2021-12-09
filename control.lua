@@ -33,12 +33,6 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
-local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
-local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
-
-local ENERGY_THIEF_CONVERSION_TABLE = constants.ENERGY_THIEF_CONVERSION_TABLE
-local ENERGY_THIEF_LOOKUP = constants.ENERGY_THIEF_LOOKUP
-
 -- imported functions
 
 local nextMap = mapUtils.nextMap
@@ -55,8 +49,6 @@ local isRampantSetting = stringUtils.isRampantSetting
 
 local processPendingUpgrades = chunkProcessor.processPendingUpgrades
 local canMigrate = aiPredicates.canMigrate
-
-local convertTypeToDrainCrystal = unitUtils.convertTypeToDrainCrystal
 
 local squadDispatch = squadAttack.squadDispatch
 
@@ -100,6 +92,13 @@ local findNearbyBase = baseUtils.findNearbyBase
 
 local processActiveNests = mapProcessor.processActiveNests
 
+local removeDrainPylons = chunkPropertyUtils.removeDrainPylons
+local getDrainPylonPair = chunkPropertyUtils.getDrainPylonPair
+
+local createDrainPylon = unitUtils.createDrainPylon
+
+local isDrained = chunkPropertyUtils.isDrained
+local setDrainedTick = chunkPropertyUtils.setDrainedTick
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
 local retreatUnits = squadDefense.retreatUnits
@@ -430,27 +429,8 @@ local function onDeath(event)
                 end
             end
 
-        elseif map.drainPylons[entity.unit_number] then
-            local entityUnitNumber = entity.unit_number
-            local pair = map.drainPylons[entityUnitNumber]
-            if pair then
-                local target = pair[1]
-                local pole = pair[2]
-                if target.unit_number == entityUnitNumber then
-                    map.drainPylons[entityUnitNumber] = nil
-                    if pole.valid then
-                        map.drainPylons[pole.unit_number] = nil
-                        pole.die()
-                    end
-                elseif (pole.unit_number == entityUnitNumber) then
-                    map.drainPylons[entityUnitNumber] = nil
-                    if target.valid then
-                        map.drainPylons[target.unit_number] = nil
-                        target.destroy()
-                    end
-                end
-            end
-
+        elseif getDrainPylonPair(map, entity.unit_number) then
+            removeDrainPylons(map, entity.unit_number)
         else
             if event.force and (event.force.name ~= "enemy") then
                 local rally = false
@@ -491,60 +471,14 @@ local function onDeath(event)
         local creditNatives = false
         if (event.force ~= nil) and (event.force.name == "enemy") then
             creditNatives = true
-            local drained
+            local drained = false
             if (chunk ~= -1) then
                 victoryScent(map, chunk, entityType)
-                drained = (entityType == "electric-turret") and map.chunkToDrained[chunk.id]
+                drained = (entityType == "electric-turret") and isDrained(map, chunk, tick)
             end
 
-            if cause or (drained and (drained - tick) > 0) then
-                if ((cause and ENERGY_THIEF_LOOKUP[cause.name]) or (not cause)) then
-                    local conversion = ENERGY_THIEF_CONVERSION_TABLE[entityType]
-                    if conversion then
-                        local newEntity = surface.create_entity({
-                                position=entity.position,
-                                name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
-                                direction=entity.direction
-                        })
-                        if (conversion == "pole") then
-                            local targetEntity = surface.create_entity({
-                                    position=entity.position,
-                                    name="pylon-target-rampant",
-                                    direction=entity.direction
-                            })
-                            targetEntity.backer_name = ""
-                            local pair = {targetEntity, newEntity}
-                            map.drainPylons[targetEntity.unit_number] = pair
-                            map.drainPylons[newEntity.unit_number] = pair
-                            local wires = entity.neighbours
-                            if wires then
-                                for _,v in pairs(wires.copper) do
-                                    if (v.valid) then
-                                        newEntity.connect_neighbour(v);
-                                    end
-                                end
-                                for _,v in pairs(wires.red) do
-                                    if (v.valid) then
-                                        newEntity.connect_neighbour({
-                                                wire = DEFINES_WIRE_TYPE_RED,
-                                                target_entity = v
-                                        });
-                                    end
-                                end
-                                for _,v in pairs(wires.green) do
-                                    if (v.valid) then
-                                        newEntity.connect_neighbour({
-                                                wire = DEFINES_WIRE_TYPE_GREEN,
-                                                target_entity = v
-                                        });
-                                    end
-                                end
-                            end
-                        elseif newEntity.backer_name then
-                            newEntity.backer_name = ""
-                        end
-                    end
-                end
+            if cause or drained then
+                createDrainPylon(map, cause, entity, entityType)
             end
         end
         if creditNatives and (universe.safeEntities[entityType] or universe.safeEntities[entity.name])
@@ -738,7 +672,7 @@ local function onTriggerEntityCreated(event)
             end
             local chunk = getChunkByPosition(map, entity.position)
             if (chunk ~= -1) then
-                map.chunkToDrained[chunk.id] = event.tick + 60
+                setDrainedTick(map, chunk, event.tick)
             end
         end
     end

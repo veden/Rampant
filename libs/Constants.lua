@@ -62,6 +62,7 @@ constants.CHUNK_PASS_THRESHOLD = 0.2
 
 constants.COOLDOWN_RALLY = constants.TICKS_A_SECOND * 10
 constants.COOLDOWN_RETREAT = constants.TICKS_A_SECOND * 10
+constants.COOLDOWN_DRAIN = constants.TICKS_A_SECOND * 1
 
 constants.RESOURCE_NORMALIZER = 1 / 1024
 

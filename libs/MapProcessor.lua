@@ -42,6 +42,7 @@ local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 
+local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
@@ -265,12 +266,31 @@ function mapProcessor.processPlayers(players, universe, tick)
     end
 end
 
+local function processCleanUp(universe, chunks, iterator, tick, duration)
+    local chunkId = universe[iterator]
+    local chunkPack
+    if not chunkId then
+        chunkId, chunkPack = next(chunks, nil)
+    else
+        chunkPack = chunks[chunkId]
+    end
+    if not chunkId then
+        universe[iterator] = nil
+    else
+        universe[iterator] = next(chunks, chunkId)
+        if (tick - chunkPack.tick) > duration then
+            chunks[chunkId] = nil
+        end
+    end
+end
+
 function mapProcessor.cleanUpMapTables(map, tick)
     local index = map.cleanupIndex
 
+    local universe = map.universe
     local retreats = map.chunkToRetreats
     local rallys = map.chunkToRallys
-    local drained = map.chunkToDrained
+    local drained = map.universe.chunkToDrained
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -293,10 +313,7 @@ function mapProcessor.cleanUpMapTables(map, tick)
             rallys[chunk] = nil
         end
 
-        local drainTick = drained[chunk]
-        if drainTick and ((tick - drainTick) > 0) then
-            drained[chunk] = nil
-        end
+        processCleanUp(universe, drained, "chunkToDrainedIterator", tick, COOLDOWN_DRAIN)
     end
 
     if (endIndex == processQueueLength) then

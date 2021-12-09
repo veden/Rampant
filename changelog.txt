@@ -73,6 +73,7 @@ Date: 23. 11. 2021
     - Added debug mod settings for showing enemy structures being upgraded in place
     - Moved config methods into relevant code files
     - Removed unnecessary unregisterResource called on onMine event
+    - Cleaned up energy thief code in control
   Removals:
     - Removed map deadzones as they were breaking regional bases
     - Removed make building safe mod option, now each individual toggle works as people are expecting
