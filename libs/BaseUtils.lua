@@ -417,13 +417,13 @@ function baseUtils.processBase(chunk, map, tick, base)
 
     local deathThreshold
     if (map.evolutionLevel < 0.5) then
-        deathThreshold = 3000
-    elseif (map.evolutionLevel < 0.7) then
         deathThreshold = 4500
-    elseif (map.evolutionLevel < 0.9) then
-        deathThreshold = 6000
-    else
+    elseif (map.evolutionLevel < 0.7) then
         deathThreshold = 7500
+    elseif (map.evolutionLevel < 0.9) then
+        deathThreshold = 11000
+    else
+        deathThreshold = 16000
     end
 
     deathThreshold = universe.adaptationModifier * deathThreshold
