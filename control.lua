@@ -1012,30 +1012,44 @@ script.on_event(defines.events.on_tick,
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
                         processMapAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
-                        if universe.NEW_ENEMIES then
-                            recycleBases(map)
+                        if map then
+                            if universe.NEW_ENEMIES then
+                                recycleBases(map)
+                            end
+                            cleanUpMapTables(map, tick)
                         end
-                        cleanUpMapTables(map, tick)
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, universe, tick)
                     elseif (pick == 2) then
-                        processMap(map, tick)
+                        if map then
+                            processMap(map, tick)
+                        end
                     elseif (pick == 3) then
-                        processStaticMap(map)
+                        if map then
+                            processStaticMap(map)
+                        end
                         disperseVictoryScent(universe)
                         processVengence(universe)
                     elseif (pick == 4) then
-                        scanResourceMap(map, tick)
-                        scanEnemyMap(map, tick)
+                        if map then
+                            scanResourceMap(map, tick)
+                            scanEnemyMap(map, tick)
+                        end
                     elseif (pick == 5) then
                         processAttackWaves(universe)
-                        scanEnemyMap(map, tick)
+                        if map then
+                            scanEnemyMap(map, tick)
+                        end
                     elseif (pick == 6) then
-                        scanPlayerMap(map, tick)
+                        if map then
+                            scanPlayerMap(map, tick)
+                        end
                         processNests(universe, tick)
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
-                        processScanChunks(map)
+                        if map then
+                            processScanChunks(map)
+                        end
                     end
 
                     processActiveNests(universe, tick)
