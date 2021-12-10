@@ -82,7 +82,7 @@ end
 
 local function attackWaveValidCandidate(chunk, map)
     local isValid = getNestActiveness(map, chunk)
-    if map.state == AI_STATE_RAIDING then
+    if (map.state == AI_STATE_RAIDING) or (map.state == AI_STATE_SIEGE) then
         isValid = isValid + getRaidNestActiveness(map, chunk)
     end
     return (isValid > 0)

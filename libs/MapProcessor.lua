@@ -532,7 +532,8 @@ local function processSpawnersBody(universe, iterator, chunks)
         local attack = canAttack(map)
         if migrate then
             formSettlers(map, chunk)
-        elseif attack then
+        end
+        if attack then
             formSquads(map, chunk)
         end
     end
