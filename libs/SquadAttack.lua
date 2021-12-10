@@ -71,7 +71,7 @@ end
 
 local function scoreSiegeLocationKamikaze(_, neighborChunk)
     local settle = neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
     return settle
 end
@@ -83,7 +83,7 @@ end
 
 local function scoreSiegeLocation(map, neighborChunk)
     local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
     return settle
 end
