@@ -350,8 +350,11 @@ function chunkUtils.entityForPassScan(map, entity)
 
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
-        if (chunk ~= -1) then
-            map.chunkToPassScan[chunk.id] = chunk
+        if (chunk ~= -1) and not map.universe.chunkToPassScan[chunk.id] then
+            map.universe.chunkToPassScan[chunk.id] = {
+                map = map,
+                chunk = chunk
+            }
         end
     end
 end

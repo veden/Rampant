@@ -538,7 +538,12 @@ local function processSurfaceTile(map, position, chunks, tick)
     local chunk = getChunkByPosition(map, position)
 
     if (chunk ~= -1) then
-        map.chunkToPassScan[chunk.id] = chunk
+        if not map.universe.chunkToPassScan[chunk.id] then
+            map.universe.chunkToPassScan[chunk.id] = {
+                map=map,
+                chunk=chunk
+            }
+        end
     else
         local x,y = positionToChunkXY(position)
         local addMe = true
@@ -961,9 +966,7 @@ script.on_event(defines.events.on_tick,
                         processNests(universe, tick)
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
-                        if map then
-                            processScanChunks(map)
-                        end
+                        processScanChunks(universe)
                     end
 
                     processActiveNests(universe, tick)

@@ -468,6 +468,8 @@ function upgrade.attempt(universe)
         universe.chunkToRetreats = {}
         universe.chunkToRallyIterator = nil
         universe.chunkToRallys = {}
+        universe.chunkToPassScan = {}
+        universe.chunkToPassScanIterator = nil
 
         game.print("Rampant - Version 2.0.0")
     end
@@ -531,14 +533,12 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPlayerCount = {}
     map.playerToChunk = {}
 
-    map.chunkToPassScan = {}
     map.chunkToSquad = {}
 
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
 
-    map.chunkToPassScanIterator = nil
     map.recycleBaseIterator = nil
 
     map.chunkScanCounts = {}

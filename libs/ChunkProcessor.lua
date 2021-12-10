@@ -178,26 +178,31 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
 end
 
 
-function chunkProcessor.processScanChunks(map)
-    local chunkId = map.chunkToPassScanIterator
-    local chunk
+function chunkProcessor.processScanChunks(universe)
+    local chunkId = universe.chunkToPassScanIterator
+    local chunkPack
     if not chunkId then
-        chunkId, chunk = next(map.chunkToPassScan, nil)
+        chunkId, chunkPack = next(universe.chunkToPassScan, nil)
     else
-        chunk = map.chunkToPassScan[chunkId]
+        chunkPack = universe.chunkToPassScan[chunkId]
     end
 
     if not chunkId then
-        map.chunkToPassScanIterator = nil
-        if (table_size(map.chunkToPassScan) == 0) then
+        universe.chunkToPassScanIterator = nil
+        if (table_size(universe.chunkToPassScan) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            map.chunkToPassScan = {}
+            universe.chunkToPassScan = {}
         end
     else
-        map.chunkToPassScanIterator = next(map.chunkToPassScan, chunkId)
-        map.chunkToPassScan[chunkId] = nil
+        universe.chunkToPassScanIterator = next(universe.chunkToPassScan, chunkId)
+        universe.chunkToPassScan[chunkId] = nil
+        local map = chunkPack.map
+        if not map.surface.valid then
+            return
+        end
+        local chunk = chunkPack.chunk
 
-        local area = map.universe.area
+        local area = universe.area
         local topOffset = area[1]
         local bottomOffset = area[2]
         topOffset[1] = chunk.x
