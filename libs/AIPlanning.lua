@@ -344,17 +344,17 @@ local function temperamentPlanner(map)
     if lostEnemyUnits > 0 then
         local multipler
         if map.evolutionLevel < 0.3 then
-            multipler = 0.000434
-        elseif map.evolutionLevel < 0.5 then
             multipler = 0.000217
-        elseif map.evolutionLevel < 0.7 then
+        elseif map.evolutionLevel < 0.5 then
             multipler = 0.000108
-        elseif map.evolutionLevel < 0.9 then
+        elseif map.evolutionLevel < 0.7 then
             multipler = 0.000054
         elseif map.evolutionLevel < 0.9 then
             multipler = 0.000027
-        else
+        elseif map.evolutionLevel < 0.9 then
             multipler = 0.0000135
+        else
+            multipler = 0.00000675
         end
         local val = (multipler * lostEnemyUnits)
         if (currentTemperament > 0) then
@@ -365,7 +365,7 @@ local function temperamentPlanner(map)
     end
 
     if lostEnemyBuilding > 0 then
-        local val = (0.072317 * lostEnemyBuilding)
+        local val = (0.0015 * lostEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
@@ -373,8 +373,8 @@ local function temperamentPlanner(map)
         end
     end
 
-    if (builtEnemyBuilding > 0) then
-        local val = (0.004339 * builtEnemyBuilding)
+    if builtEnemyBuilding > 0 then
+        local val = (0.0006818 * builtEnemyBuilding)
         if (currentTemperament > 0) then
             delta = delta - val
         else
