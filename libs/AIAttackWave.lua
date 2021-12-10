@@ -33,7 +33,7 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local RALLY_CRY_DISTANCE = constants.RALLY_CRY_DISTANCE
 
 local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
-
+local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 -- imported functions
@@ -82,7 +82,7 @@ end
 
 local function attackWaveValidCandidate(chunk, map)
     local isValid = getNestActiveness(map, chunk)
-    if (map.state == AI_STATE_RAIDING) or (map.state == AI_STATE_SIEGE) then
+    if (map.state == AI_STATE_RAIDING) or (map.state == AI_STATE_SIEGE) or (map.state == AI_STATE_ONSLAUGHT) then
         isValid = isValid + getRaidNestActiveness(map, chunk)
     end
     return (isValid > 0)
