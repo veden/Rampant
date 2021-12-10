@@ -75,7 +75,7 @@ Date: 23. 11. 2021
     - Fixed kastorio creep code be spawned when the building failed to upgrade
     - Potential desync fix in relation to reference comparison and deserialization
     - Fixed squad attack move would not properly place warding pheromone on taken path
-    - Fixed players added to a chunk not taking player surface into account when
+    - Fixed players added to a chunk not taking player surface into account
     - Fixed picking damageType during faction mutation (Thank you Garrotte13)
     - Fixed surfaceTileChange trying to use a boolean inplace of an object (Thank you Garrotte13)
     - Fixed onslaught AI state not using raid actived nests
