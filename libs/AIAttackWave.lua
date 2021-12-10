@@ -240,7 +240,12 @@ function aiAttackWave.formSettlers(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
+                    local kamikazeThreshold = calculateKamikazeThreshold(foundUnits, universe)
+                    if map.state == AI_STATE_SIEGE then
+                        kamikazeThreshold = kamikazeThreshold * 2.5
+                    end
+                    squad.kamikaze = map.random() < kamikazeThreshold
+
                     universe.builderCount = universe.builderCount + 1
                     map.points = map.points - AI_SETTLER_COST
                     if universe.aiPointsPrintSpendingToChat then
