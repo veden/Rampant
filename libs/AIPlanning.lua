@@ -124,11 +124,13 @@ local function planning(map, evolution_factor, tick)
     local points = ((AI_POINT_GENERATOR_AMOUNT * universe.random()) + (map.activeNests * 0.003) +
         (AI_POINT_GENERATOR_AMOUNT * mMax(evolution_factor ^ 2.5, 0.1)))
 
-    if (map.temperament < 0.05) or (map.temperament > 0.95) then
+    if (map.temperament == 0) or (map.temperament == 1) then
+        points = points + 0.5
+    elseif (map.temperament < 0.20) or (map.temperament > 0.80) then
         points = points + 0.3
-    elseif (map.temperament < 0.25) or (map.temperament > 0.75) then
+    elseif (map.temperament < 0.35) or (map.temperament > 0.65) then
         points = points + 0.2
-    elseif (map.temperament < 0.40) or (map.temperament > 0.60) then
+    elseif (map.temperament < 0.45) or (map.temperament > 0.55) then
         points = points + 0.1
     end
 
