@@ -40,7 +40,8 @@ local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
 
 local findNearbyBase = baseUtils.findNearbyBase
 
-local calculateKamikazeThreshold = unitGroupUtils.calculateKamikazeThreshold
+local calculateKamikazeSettlerThreshold = unitGroupUtils.calculateKamikazeSettlerThreshold
+local calculateKamikazeSquadThreshold = unitGroupUtils.calculateKamikazeSquadThreshold
 
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
@@ -240,7 +241,7 @@ function aiAttackWave.formSettlers(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    local kamikazeThreshold = calculateKamikazeThreshold(foundUnits, universe)
+                    local kamikazeThreshold = calculateKamikazeSettlerThreshold(foundUnits, universe)
                     if map.state == AI_STATE_SIEGE then
                         kamikazeThreshold = kamikazeThreshold * 2.5
                     end
@@ -295,7 +296,7 @@ function aiAttackWave.formVengenceSquad(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
+                    squad.kamikaze = map.random() < calculateKamikazeSquadThreshold(foundUnits, universe)
                     universe.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
                     map.points = map.points - AI_VENGENCE_SQUAD_COST
@@ -346,7 +347,7 @@ function aiAttackWave.formSquads(map, chunk)
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
-                    squad.kamikaze = map.random() < calculateKamikazeThreshold(foundUnits, universe)
+                    squad.kamikaze = map.random() < calculateKamikazeSquadThreshold(foundUnits, universe)
                     map.points = map.points - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
                     universe.groupNumberToSquad[squad.groupNumber] = squad

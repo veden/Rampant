@@ -83,6 +83,7 @@ Date: 23. 11. 2021
     - Fixed picking damageType during faction mutation (Thank you Garrotte13)
     - Fixed surfaceTileChange trying to use a boolean inplace of an object (Thank you Garrotte13)
     - Fixed onslaught AI state not using raid actived nests
+    - Fixed settlers calculating kamikazeThreshold using attackWaveMaxSize instead of settlerWaveMaxSize
   Framework:
     - Fixed Rampant in-memory map visualization tool for debugging
     - Added debug mod settings for showing enemy structures being upgraded in place
