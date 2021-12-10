@@ -176,10 +176,19 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                attackChunk = nextAttackChunk
-                positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
-                positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
-                position = findMovementPosition(surface, targetPosition2)
+                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (map.state ~= AI_STATE_SIEGE) then
+                    attackChunk = nextAttackChunk
+                    positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
+                    positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
+                    position = findMovementPosition(surface, targetPosition2)
+                else
+                    positionFromDirectionAndFlat(nextAttackDirection, groupPosition, targetPosition, 1.3)
+                    position = findMovementPosition(surface, targetPosition)
+                    if not position then
+                        positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition, 1.3)
+                        position = findMovementPosition(surface, targetPosition)
+                    end
+                end
             else
                 positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
                 position = findMovementPosition(surface, targetPosition)
@@ -199,7 +208,17 @@ local function settleMove(map, squad)
                 return
             end
 
-            if (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
+            if (nextAttackChunk ~= -1) and (map.state == AI_STATE_SIEGE) and (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) then
+                cmd = universe.settleCommand
+                cmd.destination.x = targetPosition.x
+                cmd.destination.y = targetPosition.y
+                squad.status = SQUAD_BUILDING
+                if squad.kamikaze then
+                    cmd.distraction = DEFINES_DISTRACTION_NONE
+                else
+                    cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+                end
+            elseif (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
                 (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
             then
                 cmd = universe.attackCommand

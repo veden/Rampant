@@ -214,29 +214,32 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
     return endPosition
 end
 
-function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosition)
+function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosition, multipler)
     local lx = startPosition.x
     local ly = startPosition.y
+    if not multipler then
+        multipler = 1
+    end
     if (direction == 1) then
-        lx = lx - CHUNK_SIZE
-        ly = ly - CHUNK_SIZE
+        lx = lx - CHUNK_SIZE * multipler
+        ly = ly - CHUNK_SIZE * multipler
     elseif (direction == 2) then
-        ly = ly - CHUNK_SIZE
+        ly = ly - CHUNK_SIZE * multipler
     elseif (direction == 3) then
-        lx = lx + CHUNK_SIZE
-        ly = ly - CHUNK_SIZE
+        lx = lx + CHUNK_SIZE * multipler
+        ly = ly - CHUNK_SIZE * multipler
     elseif (direction == 4) then
-        lx = lx - CHUNK_SIZE
+        lx = lx - CHUNK_SIZE * multipler
     elseif (direction == 5) then
-        lx = lx + CHUNK_SIZE
+        lx = lx + CHUNK_SIZE * multipler
     elseif (direction == 6) then
-        lx = lx - CHUNK_SIZE
-        ly = ly + CHUNK_SIZE
+        lx = lx - CHUNK_SIZE * multipler
+        ly = ly + CHUNK_SIZE * multipler
     elseif (direction == 7) then
-        ly = ly + CHUNK_SIZE
+        ly = ly + CHUNK_SIZE * multipler
     elseif (direction == 8) then
-        lx = lx + CHUNK_SIZE
-        ly = ly + CHUNK_SIZE
+        lx = lx + CHUNK_SIZE * multipler
+        ly = ly + CHUNK_SIZE * multipler
     end
     endPosition.x = lx
     endPosition.y = ly
