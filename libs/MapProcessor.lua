@@ -514,7 +514,7 @@ local function processSpawnersBody(universe, iterator, chunks)
             return
         end
         if iterator == "processMigrationIterator" then
-            if (state == AI_STATE_AGGRESSIVE) or (state == AI_STATE_ONSLAUGHT) or (state == AI_STATE_RAIDING) then
+            if (state ~= AI_STATE_MIGRATING) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then
