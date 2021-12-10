@@ -72,8 +72,6 @@ function mapUtils.nextMap(universe)
         universe.mapIterator, map = next(universe.maps, universe.mapIterator)
         if map and map.activeSurface then
             return map
-        elseif map and not map.activeSurface then
-            print("skipping", universe.mapIterator)
         end
     until mapIterator == universe.mapIterator
 end
