@@ -10,6 +10,9 @@ local mathUtils = require("MathUtils")
 
 -- constants
 
+local TEMPERAMENT_RANGE_MAX = constants.TEMPERAMENT_RANGE_MAX
+local TEMPERAMENT_RANGE_MIN = constants.TEMPERAMENT_RANGE_MIN
+local TEMPERAMENT_DIVIDER = constants.TEMPERAMENT_DIVIDER
 local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
 local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
 local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
@@ -402,8 +405,8 @@ local function temperamentPlanner(map)
     local universe = map.universe
 
     delta = delta * universe.temperamentRateModifier
-    map.temperamentScore = mMin(10000, mMax(-10000, currentTemperament + delta))
-    map.temperament = ((map.temperamentScore + 10000) * 0.00005)
+    map.temperamentScore = mMin(TEMPERAMENT_RANGE_MAX, mMax(TEMPERAMENT_RANGE_MIN, currentTemperament + delta))
+    map.temperament = ((map.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
 
     if universe.debugTemperament then
         if game.tick % 243 == 0 then
