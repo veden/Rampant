@@ -2,6 +2,7 @@
 Version: 2.0.0
 Date: 23. 11. 2021
   Contributions:
+    - Special thanks to Garrotte13 for play testing early builds and providing invaluable feedback and bug reports.
     - Astorin has provide an updated RU locale up through Rampant 2.0.0
   Improvements:
     - Removed bounding box check when placing enemy buildings or upgrading buildings inplace

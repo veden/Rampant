@@ -161,11 +161,11 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local query = universe.upgradeEntityQuery
             query.position = entityData.position or entity.position
             query.name = entityData.name
-            unregisterEnemyBaseStructure(entityData.map, entity)
+            unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base)
+                registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
                     remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
                 end
