@@ -156,8 +156,10 @@ local function planning(map, evolution_factor, tick)
         local roll = universe.random()
         if (map.temperament < 0.05) then -- 0 - 0.05
             if universe.enabledMigration then
-                if (roll < 0.35) then
+                if (roll < 0.30) then
                     map.state = AI_STATE_MIGRATING
+                elseif (roll < 0.50) and universe.raidAIToggle then
+                    map.state = AI_STATE_RAIDING
                 elseif universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
                 else
@@ -178,6 +180,8 @@ local function planning(map, evolution_factor, tick)
             if (universe.enabledMigration) then
                 if (roll < 0.4) then
                     map.state = AI_STATE_MIGRATING
+                elseif (roll < 0.55) and universe.raidAIToggle then
+                    map.state = AI_STATE_RAIDING
                 elseif universe.siegeAIToggle then
                     map.state = AI_STATE_SIEGE
                 else
