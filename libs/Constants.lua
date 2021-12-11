@@ -1390,7 +1390,7 @@ if settings.startup["rampant--energyThiefEnemy"].value then
         units = {
             {
                 type = "biter",
-                attackAttributes = {"beam", "electric", "drainCrystal"},
+                attackAttributes = {"spit", "electric", "drainCrystal"},
                 name = "biter",
                 majorResistances = {"electric", "laser"},
                 minorResistances = {},

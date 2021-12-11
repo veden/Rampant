@@ -13,7 +13,7 @@ Date: 23. 11. 2021
     - Optimized adding new chunks to the Rampant in-memory state map
     - Added minimum building cost upgrade check before base upgrade performs scanning
     - Added max number of wander commands in a row for squads that aren't going anywhere before disbanding squad
-    - Optimized energy thief faction
+    - Optimized energy thief faction by switch to electric AOE projectile
     - Factorissimo, Space Exploration Orbits, asteroid belts, secret maps, starmap, AAI-signal, NiceFill, Blueprint lab surfaces are no longer processed
     - Map processing around player now changes to the surface the player is standing on
     - Squads now get processed regardless of the current active map being processed

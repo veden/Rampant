@@ -149,6 +149,13 @@ local clusterAttackNumeric = {
     ["startingSpeed"] = { 0.25, 0.25, 0.27, 0.27, 0.29, 0.29, 0.31, 0.31, 0.33, 0.33 }
 }
 
+local liteClusterAttackNumeric = {
+    ["clusterDistance"] = { 2, 2, 3, 3, 3, 4, 4, 4, 5, 5 },
+    ["clusters"] = { 2, 2, 3, 3, 4, 4, 5, 5, 6, 6 },
+    ["startingSpeed"] = { 0.25, 0.25, 0.27, 0.27, 0.29, 0.29, 0.31, 0.31, 0.33, 0.33 },
+    ["damage"] = { 4, 7.5, 11.25, 15, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5 }
+}
+
 local biterAttributeNumeric = {
     ["range"] = { 0.5, 0.5, 0.75, 0.75, 1.0, 1.0, 1.25, 1.50, 1.75, 2.0 },
     ["radius"] = { 0.5, 0.65, 0.75, 0.85, 0.95, 1.1, 1.2, 1.3, 1.4, 1.5 },
@@ -914,21 +921,39 @@ local function buildAttack(faction, template)
                                                                                                  attack.tint2)) or nil)
             end
         elseif (attack == "drainCrystal") then
-            template.actions = function(attributes, electricBeam)
+            template.range = { 6, 6, 7, 7, 8, 8, 9, 9, 10, 10 }
+            template.addon[#template.addon+1] = liteClusterAttackNumeric
+            template.attackPointEffects = function(attributes)
                 return
                     {
                         {
-                            type = "instant",
-                            target_effects =
-                                {
-                                    type = "script",
-                                    effect_id = "rampant-drain-trigger"
-                                }
+                            type = "script",
+                            effect_id = "rampant-drain-trigger"
                         },
                         {
-                            type = "beam",
-                            beam = electricBeam or "electric-beam",
-                            duration = attributes.duration * 2
+                            type = "damage",
+                            damage = { type="laser", amount = attributes.damage }
+                        },
+                        {
+                            type="nested-result",
+                            action = {
+                                {
+                                    type = "cluster",
+                                    cluster_count = attributes.clusters,
+                                    distance = attributes.clusterDistance,
+                                    distance_deviation = 1,
+                                    action_delivery =
+                                        {
+                                            type = "projectile",
+                                            projectile = makeLaser(attributes),
+                                            duration = 20,
+                                            direction_deviation = 0.6,
+                                            starting_speed = attributes.startingSpeed,
+                                            starting_speed_deviation = 0.3
+                                        },
+                                    repeat_count = 2
+                                }
+                            }
                         }
                     }
             end

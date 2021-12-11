@@ -599,12 +599,21 @@ end
 local function onTriggerEntityCreated(event)
     if (event.effect_id == "rampant-drain-trigger") then
         local entity = event.target_entity
-        if (entity.valid) then
+        if (entity and entity.valid) then
             local map = universe.maps[event.surface_index]
             if not map then
                 return
             end
             local chunk = getChunkByPosition(map, entity.position)
+            if (chunk ~= -1) then
+                setDrainedTick(map, chunk, event.tick)
+            end
+        elseif (event.target_position) then
+            local map = universe.maps[event.surface_index]
+            if not map then
+                return
+            end
+            local chunk = getChunkByPosition(map, event.target_position)
             if (chunk ~= -1) then
                 setDrainedTick(map, chunk, event.tick)
             end
