@@ -444,18 +444,18 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, 
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
-            if universe.NEW_ENEMIES then
-                local base = incomingBase
-                if not base then
-                    base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(map, chunk, tick)
-                    end
-                end
-                setChunkBase(map, chunk, base)
-            end
             if addFunc(map, chunk, entityUnitNumber) then
                 added = true
+                if universe.NEW_ENEMIES then
+                    local base = incomingBase
+                    if not base then
+                        base = findNearbyBase(map, chunk)
+                        if not base then
+                            base = createBase(map, chunk, tick)
+                        end
+                    end
+                    setChunkBase(map, chunk, base)
+                end
             end
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
@@ -506,17 +506,17 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
             end
             if removeFunc(map, chunk, entityUnitNumber) then
                 removed = true
-            end
-            if map.universe.NEW_ENEMIES then
-                local base = getChunkBase(map, chunk)
-                if damageType and usedBases[base.id] then
-                    usedBases[base.id] = true
-                    local damageTypeName = damageType.name
-                    base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
-                    base.deathEvents = base.deathEvents + 3
-                end
-                if (getEnemyStructureCount(map, chunk) <= 0) then
-                    removeChunkBase(map, chunk, base)
+                if map.universe.NEW_ENEMIES then
+                    local base = getChunkBase(map, chunk)
+                    if damageType and usedBases[base.id] then
+                        usedBases[base.id] = true
+                        local damageTypeName = damageType.name
+                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
+                        base.deathEvents = base.deathEvents + 3
+                    end
+                    if (getEnemyStructureCount(map, chunk) <= 0) then
+                        removeChunkBase(map, chunk, base)
+                    end
                 end
             end
         end
