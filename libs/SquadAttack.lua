@@ -10,6 +10,7 @@ local mapUtils = require("MapUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
+local queryUtils = require("QueryUtils")
 
 -- constants
 
@@ -36,6 +37,8 @@ local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
+
+local setPositionInCommand = queryUtils.setPositionInCommand
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -101,9 +104,8 @@ end
 
 local function settleMove(map, squad)
     local universe = map.universe
-    local targetPosition = universe.position
-    local targetPosition2 = universe.position2
     local group = squad.group
+    local targetPosition = {x=0,y=0}
 
     local groupPosition = group.position
     local x, y = positionToChunkXY(groupPosition)
@@ -146,15 +148,14 @@ local function settleMove(map, squad)
             position = groupPosition
         end
 
-        targetPosition.x = position.x
-        targetPosition.y = position.y
-
         cmd = universe.settleCommand
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
             cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
         end
+
+        setPositionInCommand(cmd, position)
 
         squad.status = SQUAD_BUILDING
 
@@ -178,20 +179,44 @@ local function settleMove(map, squad)
             if (nextAttackChunk ~= -1) then
                 if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (map.state ~= AI_STATE_SIEGE) then
                     attackChunk = nextAttackChunk
-                    positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
-                    positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
-                    position = findMovementPosition(surface, targetPosition2)
+                    position = findMovementPosition(
+                        surface,
+                        positionFromDirectionAndFlat(
+                            nextAttackDirection,
+                            positionFromDirectionAndFlat(
+                                attackDirection,
+                                groupPosition
+                            )
+                        )
+                    )
                 else
-                    positionFromDirectionAndFlat(nextAttackDirection, groupPosition, targetPosition, 1.3)
-                    position = findMovementPosition(surface, targetPosition)
+                    position = findMovementPosition(
+                        surface,
+                        positionFromDirectionAndFlat(
+                            nextAttackDirection,
+                            groupPosition,
+                            1.3
+                        )
+                    )
                     if not position then
-                        positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition, 1.3)
-                        position = findMovementPosition(surface, targetPosition)
+                        position = findMovementPosition(
+                            surface,
+                            positionFromDirectionAndFlat(
+                                attackDirection,
+                                groupPosition,
+                                1.3
+                            )
+                        )
                     end
                 end
             else
-                positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
-                position = findMovementPosition(surface, targetPosition)
+                position = findMovementPosition(
+                    surface,
+                    positionFromDirectionAndFlat(
+                        attackDirection,
+                        groupPosition
+                    )
+                )
             end
 
             if position then
@@ -210,8 +235,6 @@ local function settleMove(map, squad)
 
             if (nextAttackChunk ~= -1) and (map.state == AI_STATE_SIEGE) and (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) then
                 cmd = universe.settleCommand
-                cmd.destination.x = targetPosition.x
-                cmd.destination.y = targetPosition.y
                 squad.status = SQUAD_BUILDING
                 if squad.kamikaze then
                     cmd.distraction = DEFINES_DISTRACTION_NONE
@@ -238,8 +261,8 @@ local function settleMove(map, squad)
             end
         else
             cmd = universe.settleCommand
-            cmd.destination.x = groupPosition.x
-            cmd.destination.y = groupPosition.y
+            targetPosition.x = groupPosition.x
+            targetPosition.y = groupPosition.y
 
             if squad.kamikaze then
                 cmd.distraction = DEFINES_DISTRACTION_NONE
@@ -250,6 +273,8 @@ local function settleMove(map, squad)
             squad.status = SQUAD_BUILDING
         end
 
+        setPositionInCommand(cmd, targetPosition)
+
         group.set_command(cmd)
     end
 end
@@ -257,8 +282,7 @@ end
 local function attackMove(map, squad)
 
     local universe = map.universe
-    local targetPosition = universe.position
-    local targetPosition2 = universe.position2
+    local targetPosition = {0,0}
 
     local group = squad.group
 
@@ -293,14 +317,28 @@ local function attackMove(map, squad)
         cmd = universe.wanderCommand
         group.set_command(cmd)
         return
-    elseif (nextAttackChunk ~= -1) then
+    end
+
+    if (nextAttackChunk ~= -1) then
         attackChunk = nextAttackChunk
-        positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
-        positionFromDirectionAndFlat(nextAttackDirection, targetPosition, targetPosition2)
-        position = findMovementPosition(surface, targetPosition2)
+        position = findMovementPosition(
+            surface,
+            positionFromDirectionAndFlat(
+                nextAttackDirection,
+                positionFromDirectionAndFlat(
+                    attackDirection,
+                    groupPosition
+                )
+            )
+        )
     else
-        positionFromDirectionAndFlat(attackDirection, groupPosition, targetPosition)
-        position = findMovementPosition(surface, targetPosition)
+        position = findMovementPosition(
+            surface,
+            positionFromDirectionAndFlat(
+                attackDirection,
+                groupPosition
+            )
+        )
     end
 
     if not position then
@@ -335,6 +373,7 @@ local function attackMove(map, squad)
             cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
         end
     end
+    setPositionInCommand(cmd, targetPosition)
 
     group.set_command(cmd)
 end
@@ -342,15 +381,14 @@ end
 local function buildMove(map, squad)
     local group = squad.group
     local universe = map.universe
-    local position = universe.position
-    local groupPosition = findMovementPosition(map.surface, group.position)
+    local groupPosition = group.position
+    local newGroupPosition = findMovementPosition(map.surface, groupPosition)
 
-    if not groupPosition then
-        groupPosition = group.position
+    if not newGroupPosition then
+        setPositionInCommand(universe.settleCommand, groupPosition)
+    else
+        setPositionInCommand(universe.settleCommand, newGroupPosition)
     end
-
-    position.x = groupPosition.x
-    position.y = groupPosition.y
 
     group.set_command(universe.compoundSettleCommand)
 end

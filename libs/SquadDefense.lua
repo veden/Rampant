@@ -63,22 +63,34 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
                                                                        scoreRetreatLocation,
                                                                        map)
         local universe = map.universe
-        local position = universe.position
-        local targetPosition2 = universe.position2
+        local position = {
+            x = chunk.x + 16,
+            y = chunk.y + 16
+        }
         local retreatPosition
-        position.x = chunk.x + 16
-        position.y = chunk.y + 16
         local surface = map.surface
         if (exitPath == -1) then
             return
         elseif (nextExitPath ~= -1) then
-            positionFromDirectionAndFlat(exitDirection, position, targetPosition2)
-            positionFromDirectionAndFlat(nextExitDirection, targetPosition2, position)
-            retreatPosition = findMovementPosition(surface, position)
+            retreatPosition = findMovementPosition(
+                surface,
+                positionFromDirectionAndFlat(
+                    nextExitDirection,
+                    positionFromDirectionAndFlat(
+                        exitDirection,
+                        position
+                    )
+                )
+            )
             exitPath = nextExitPath
         else
-            positionFromDirectionAndFlat(exitDirection, position, targetPosition2)
-            retreatPosition = findMovementPosition(surface, targetPosition2)
+            retreatPosition = findMovementPosition(
+                surface,
+                positionFromDirectionAndFlat(
+                    exitDirection,
+                    position
+                )
+            )
         end
 
         if retreatPosition then

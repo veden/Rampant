@@ -309,9 +309,6 @@ function mapProcessor.scanPlayerMap(map, tick)
     end
     local index = map.scanPlayerIndex
 
-    local area = map.universe.area
-    local offset = area[2]
-    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -322,15 +319,7 @@ function mapProcessor.scanPlayerMap(map, tick)
     end
 
     for x=index,endIndex do
-        local chunk = processQueue[x]
-
-        chunkBox[1] = chunk.x
-        chunkBox[2] = chunk.y
-
-        offset[1] = chunk.x + CHUNK_SIZE
-        offset[2] = chunk.y + CHUNK_SIZE
-
-        mapScanPlayerChunk(chunk, map)
+        mapScanPlayerChunk(processQueue[x], map)
     end
 
     if (endIndex == processQueueLength) then
@@ -375,9 +364,6 @@ function mapProcessor.scanResourceMap(map, tick)
     end
     local index = map.scanResourceIndex
 
-    local area = map.universe.area
-    local offset = area[2]
-    local chunkBox = area[1]
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -388,15 +374,7 @@ function mapProcessor.scanResourceMap(map, tick)
     end
 
     for x=index,endIndex do
-        local chunk = processQueue[x]
-
-        chunkBox[1] = chunk.x
-        chunkBox[2] = chunk.y
-
-        offset[1] = chunk.x + CHUNK_SIZE
-        offset[2] = chunk.y + CHUNK_SIZE
-
-        mapScanResourceChunk(chunk, map)
+        mapScanResourceChunk(processQueue[x], map)
     end
 
     if (endIndex == processQueueLength) then

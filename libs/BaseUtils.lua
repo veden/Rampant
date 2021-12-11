@@ -9,6 +9,7 @@ local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
 local mapUtils = require("MapUtils")
+local queryUtils = require("QueryUtils")
 
 -- constants
 
@@ -36,6 +37,8 @@ local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
+
+local setPositionXYInQuery = queryUtils.setPositionXYInQuery
 
 local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
@@ -390,14 +393,13 @@ function baseUtils.processBase(chunk, map, tick, base)
 
     local surface = map.surface
     local universe = map.universe
-    local point = universe.position
-
-    point.x = chunk.x + (CHUNK_SIZE * map.random())
-    point.y = chunk.y + (CHUNK_SIZE * map.random())
+    setPositionXYInQuery(universe.pbFilteredEntitiesPointQueryLimited,
+                         chunk.x + (CHUNK_SIZE * map.random()),
+                         chunk.y + (CHUNK_SIZE * map.random()))
 
     local upgradeRoll = map.random()
     if (base.state == BASE_AI_STATE_ACTIVE) and (base.points >= MINIMUM_BUILDING_COST) and (upgradeRoll < 0.30) then
-        local entities = surface.find_entities_filtered(universe.filteredEntitiesPointQueryLimited)
+        local entities = surface.find_entities_filtered(universe.pbFilteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
             local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)

@@ -185,7 +185,8 @@ function mapUtils.getCardinalChunks(map, x, y)
     return neighbors
 end
 
-function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPosition, scaling)
+function mapUtils.positionFromDirectionAndChunk(direction, startPosition, scaling)
+    local endPosition = {}
     if (direction == 1) then
         endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
         endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
@@ -214,7 +215,7 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, endPos
     return endPosition
 end
 
-function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosition, multipler)
+function mapUtils.positionFromDirectionAndFlat(direction, startPosition, multipler)
     local lx = startPosition.x
     local ly = startPosition.y
     if not multipler then
@@ -241,8 +242,10 @@ function mapUtils.positionFromDirectionAndFlat(direction, startPosition, endPosi
         lx = lx + CHUNK_SIZE * multipler
         ly = ly + CHUNK_SIZE * multipler
     end
-    endPosition.x = lx
-    endPosition.y = ly
+    return {
+        x = lx,
+        y = ly
+    }
 end
 
 mapUtilsG = mapUtils

@@ -48,7 +48,9 @@ local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 -- imported functions
 
-local setAreaInQuery = queryUtils.setAreaInQuery
+local setAreaInQueryChunkSize = queryUtils.setAreaInQueryChunkSize
+local setAreaXInQuery = queryUtils.setAreaXInQuery
+local setAreaYInQuery = queryUtils.setAreaYInQuery
 
 local setPlayerBaseGenerator = chunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = chunkPropertyUtils.addPlayerBaseGenerator
@@ -142,22 +144,18 @@ local function scanPaths(chunk, map)
     local y = chunk.y
 
     local universe = map.universe
-    local filteredEntitiesCliffQuery = universe.filteredEntitiesCliffQuery
-    local filteredTilesPathQuery = universe.filteredTilesPathQuery
+    local filteredEntitiesCliffQuery = universe.spFilteredEntitiesCliffQuery
+    local filteredTilesPathQuery = universe.spFilteredTilesPathQuery
     local count_entities_filtered = surface.count_entities_filtered
     local count_tiles_filtered = surface.count_tiles_filtered
 
     local passableNorthSouth = false
     local passableEastWest = false
 
-    local topPosition = filteredEntitiesCliffQuery.area[1]
-    local bottomPosition = filteredEntitiesCliffQuery.area[2]
-    topPosition[2] = y
-    bottomPosition[2] = y + 32
+    setAreaYInQuery(filteredEntitiesCliffQuery, y, y + CHUNK_SIZE)
 
-    for xi=x, x + 32 do
-        topPosition[1] = xi
-        bottomPosition[1] = xi + 1
+    for xi=x, x + CHUNK_SIZE do
+        setAreaXInQuery(filteredEntitiesCliffQuery, xi, xi + 1)
         if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
             (count_tiles_filtered(filteredTilesPathQuery) == 0)
         then
@@ -166,12 +164,10 @@ local function scanPaths(chunk, map)
         end
     end
 
-    topPosition[1] = x
-    bottomPosition[1] = x + 32
+    setAreaXInQuery(filteredEntitiesCliffQuery, x, x + CHUNK_SIZE)
 
-    for yi=y, y + 32 do
-        topPosition[2] = yi
-        bottomPosition[2] = yi + 1
+    for yi=y, y + CHUNK_SIZE do
+        setAreaYInQuery(filteredEntitiesCliffQuery, yi, yi + 1)
         if (count_entities_filtered(filteredEntitiesCliffQuery) == 0) and
             (count_tiles_filtered(filteredTilesPathQuery) == 0)
         then
@@ -190,14 +186,15 @@ local function scanPaths(chunk, map)
     return pass
 end
 
-local function scorePlayerBuildings(map)
+local function scorePlayerBuildings(map, chunk)
     local surface = map.surface
     local universe = map.universe
-    if surface.count_entities_filtered(universe.hasPlayerStructuresQuery) > 0 then
-        return (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
-            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
-            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
-            (surface.count_entities_filtered(universe.filteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
+    setAreaInQueryChunkSize(universe.spbHasPlayerStructuresQuery, chunk)
+    if surface.count_entities_filtered(universe.spbHasPlayerStructuresQuery) > 0 then
+        return (surface.count_entities_filtered(universe.spbFilteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
+            (surface.count_entities_filtered(universe.spbFilteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
+            (surface.count_entities_filtered(universe.spbFilteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
+            (surface.count_entities_filtered(universe.spbFilteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
     end
     return 0
 end
@@ -205,23 +202,24 @@ end
 function chunkUtils.initialScan(chunk, map, tick)
     local surface = map.surface
     local universe = map.universe
-    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
-    local enemyBuildings = surface.find_entities_filtered(universe.filteredEntitiesEnemyStructureQuery)
+    setAreaInQueryChunkSize(universe.isFilteredTilesQuery, chunk)
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.isFilteredTilesQuery) * 0.0009765625)) * 0.80
+    local enemyBuildings = surface.find_entities_filtered(universe.isFilteredEntitiesEnemyStructureQuery)
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
         local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
+                                    mMin(1 - (surface.count_entities_filtered(universe.isFilteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
         local pass = scanPaths(chunk, map)
 
-        local playerObjects = scorePlayerBuildings(map)
+        local playerObjects = scorePlayerBuildings(map, chunk)
 
         if ((playerObjects > 0) or (#enemyBuildings > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
         end
 
         if (pass ~= CHUNK_IMPASSABLE) then
-            local resources = surface.count_entities_filtered(universe.countResourcesQuery) * RESOURCE_NORMALIZER
+            local resources = surface.count_entities_filtered(universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
 
             local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
             local counts = map.chunkScanCounts
@@ -236,7 +234,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                         base = createBase(map, chunk, tick)
                     end
 
-                    local unitList = surface.find_entities_filtered(universe.filteredEntitiesUnitQuery)
+                    local unitList = surface.find_entities_filtered(universe.isFilteredEntitiesUnitQuery)
                     for i=1,#unitList do
                         local unit = unitList[i]
                         if (unit.valid) then
@@ -276,11 +274,12 @@ end
 function chunkUtils.chunkPassScan(chunk, map)
     local surface = map.surface
     local universe = map.universe
-    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
+    setAreaInQueryChunkSize(universe.cpsFilteredTilesQuery, chunk)
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.cpsFilteredTilesQuery) * 0.0009765625)) * 0.80
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) then
         local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
+                                    mMin(1 - (surface.count_entities_filtered(universe.cpsFilteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
         local pass = scanPaths(chunk, map)
 
@@ -306,27 +305,27 @@ function chunkUtils.chunkPassScan(chunk, map)
 end
 
 function chunkUtils.mapScanPlayerChunk(chunk, map)
-    local playerObjects = scorePlayerBuildings(map)
+    local playerObjects = scorePlayerBuildings(map, chunk)
     setPlayerBaseGenerator(map, chunk, playerObjects)
 end
 
 function chunkUtils.mapScanResourceChunk(chunk, map)
-    local surface = map.surface
     local universe = map.universe
-    local resources = surface.count_entities_filtered(universe.countResourcesQuery) * RESOURCE_NORMALIZER
+    setAreaInQueryChunkSize(universe.msrcCountResourcesQuery, chunk)
+    local surface = map.surface
+    local resources = surface.count_entities_filtered(universe.msrcCountResourcesQuery) * RESOURCE_NORMALIZER
     setResourceGenerator(map, chunk, resources)
-    local waterTiles = (1 - (surface.count_tiles_filtered(universe.filteredTilesQuery) * 0.0009765625)) * 0.80
+    local waterTiles = (1 - (surface.count_tiles_filtered(universe.msrcFilteredTilesQuery) * 0.0009765625)) * 0.80
     local neutralObjects = mMax(0,
-                                mMin(1 - (surface.count_entities_filtered(universe.filteredEntitiesChunkNeutral) * 0.005),
+                                mMin(1 - (surface.count_entities_filtered(universe.msrcFilteredEntitiesChunkNeutral) * 0.005),
                                      1) * 0.20)
     setPathRating(map, chunk, waterTiles + neutralObjects)
 end
 
 function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     local universe = map.universe
-    local query = universe.filteredEntitiesEnemyStructureQuery
-    setAreaInQuery(query, chunk, CHUNK_SIZE)
-    local buildings = map.surface.find_entities_filtered(query)
+    setAreaInQueryChunkSize(universe.msecFilteredEntitiesEnemyStructureQuery, chunk)
+    local buildings = map.surface.find_entities_filtered(universe.msecFilteredEntitiesEnemyStructureQuery)
     local counts = map.chunkScanCounts
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0

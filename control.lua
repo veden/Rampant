@@ -19,6 +19,7 @@ local chunkUtils = require("libs/ChunkUtils")
 local upgrade = require("Upgrade")
 local aiPredicates = require("libs/AIPredicates")
 local stringUtils = require("libs/StringUtils")
+local queryUtils = require("libs/QueryUtils")
 
 -- constants
 
@@ -34,6 +35,9 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 -- imported functions
+
+local setPointAreaInQuery = queryUtils.setPointAreaInQuery
+local setPositionInQuery = queryUtils.setPositionInQuery
 
 local nextMap = mapUtils.nextMap
 
@@ -619,13 +623,8 @@ local function onUsedCapsule(event)
         return
     end
     if (event.item.name == "cliff-explosives") then
-        local position2Top = universe.position2Top
-        local position2Bottom = universe.position2Bottom
-        position2Top.x = event.position.x-0.75
-        position2Top.y = event.position.y-0.75
-        position2Bottom.x = event.position.x+0.75
-        position2Bottom.y = event.position.y+0.75
-        local cliffs = surface.find_entities_filtered(universe.cliffQuery)
+        setPointAreaInQuery(universe.oucCliffQuery, event.position, 0.75)
+        local cliffs = surface.find_entities_filtered(universe.oucCliffQuery)
         for i=1,#cliffs do
             entityForPassScan(map, cliffs[i])
         end
@@ -894,9 +893,6 @@ local function onBuilderArrived(event)
     elseif (builder.force.name ~= "enemy") then
         return
     end
-    local targetPosition = universe.position
-    targetPosition.x = builder.position.x
-    targetPosition.y = builder.position.y
 
     local map = universe.maps[builder.surface.index]
     if not map then
@@ -906,9 +902,10 @@ local function onBuilderArrived(event)
     local squad = universe.groupNumberToSquad[builder.group_number]
     squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     if universe.aiPointsPrintSpendingToChat then
-        game.print("Settled: [gps=" .. targetPosition.x .. "," .. targetPosition.y .."]")
+        game.print("Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
-    map.surface.create_entity(universe.createBuildCloudQuery)
+    setPositionInQuery(universe.obaCreateBuildCloudQuery, builder.position)
+    map.surface.create_entity(universe.obaCreateBuildCloudQuery)
 end
 
 -- hooks

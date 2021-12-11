@@ -6,14 +6,13 @@ local chunkProcessor = {}
 -- imports
 
 local chunkUtils = require("ChunkUtils")
-local constants = require("Constants")
+local queryUtils = require("QueryUtils")
 
 -- constants
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-
 -- imported functions
 
+local setPositionInQuery = queryUtils.setPositionInQuery
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
 
@@ -56,10 +55,6 @@ local function removeProcessQueueChunk(processQueue, chunk)
 end
 
 function chunkProcessor.processPendingChunks(universe, tick, flush)
-    local area = universe.area
-    local topOffset = area[1]
-    local bottomOffset = area[2]
-
     local pendingChunks = universe.pendingChunks
     local eventId = universe.chunkProcessorIterator
     local event
@@ -97,11 +92,6 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
             local topLeft = event.area.left_top
             local x = topLeft.x
             local y = topLeft.y
-
-            topOffset[1] = x
-            topOffset[2] = y
-            bottomOffset[1] = x + CHUNK_SIZE
-            bottomOffset[2] = y + CHUNK_SIZE
 
             if not map[x] then
                 map[x] = {}
@@ -158,8 +148,8 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
             universe.pendingUpgrades[entityId] = nil
             local surface = entity.surface
-            local query = universe.upgradeEntityQuery
-            query.position = entityData.position or entity.position
+            local query = universe.ppuUpgradeEntityQuery
+            setPositionInQuery(query, entityData.position or entity.position)
             query.name = entityData.name
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
@@ -201,14 +191,6 @@ function chunkProcessor.processScanChunks(universe)
             return
         end
         local chunk = chunkPack.chunk
-
-        local area = universe.area
-        local topOffset = area[1]
-        local bottomOffset = area[2]
-        topOffset[1] = chunk.x
-        topOffset[2] = chunk.y
-        bottomOffset[1] = chunk.x + CHUNK_SIZE
-        bottomOffset[2] = chunk.y + CHUNK_SIZE
 
         if (chunkPassScan(chunk, map) == -1) then
             removeProcessQueueChunk(map.processQueue, chunk)
