@@ -507,6 +507,7 @@ function upgrade.attempt(universe)
         universe.chunkToRallys = {}
         universe.chunkToPassScan = {}
         universe.chunkToPassScanIterator = nil
+        universe.baseId = 0
 
         game.print("Rampant - Version 2.0.0")
     end
@@ -590,7 +591,6 @@ function upgrade.prepMap(universe, surface)
     map.baseIncrement = 0
     map.points = 0
     map.state = constants.AI_STATE_AGGRESSIVE
-    map.baseId = 0
     map.squads = nil
     map.pendingAttack = nil
     map.building = nil

@@ -501,6 +501,7 @@ function baseUtils.createBase(map, chunk, tick)
                                                         BASE_DISTANCE_THRESHOLD * 1.50,
                                                         map.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
+    local universe = map.universe
 
     local base = {
         x = x,
@@ -516,9 +517,9 @@ function baseUtils.createBase(map, chunk, tick)
         chunkCount = 0,
         createdTick = tick,
         points = 0,
-        id = map.baseId
+        id = universe.baseId
     }
-    map.baseId = map.baseId + 1
+    universe.baseId = universe.baseId + 1
 
     map.bases[base.id] = base
 
