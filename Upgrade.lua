@@ -543,6 +543,8 @@ function upgrade.prepMap(universe, surface)
 
     map.activatedMap = false
 
+    map.sentSiegeGroups = 0
+    map.maxSiegeGroups = 2
     map.maxAggressiveGroups = 1
     map.sentAggressiveGroups = 0
     map.processedChunks = 0

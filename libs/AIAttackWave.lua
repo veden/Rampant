@@ -237,6 +237,10 @@ function aiAttackWave.formSettlers(map, chunk)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
+                    if (map.state == AI_STATE_SIEGE) then
+                        map.sentSiegeGroups = map.sentSiegeGroups + 1
+                    end
+
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end
@@ -341,6 +345,10 @@ function aiAttackWave.formSquads(map, chunk)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
+                    if (map.state == AI_STATE_SIEGE) then
+                        map.sentSiegeGroups = 0
+                    end
+
                     if universe.NEW_ENEMIES then
                         squad.base = findNearbyBase(map, chunk)
                     end

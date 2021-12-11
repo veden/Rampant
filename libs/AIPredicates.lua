@@ -22,9 +22,9 @@ local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
 function aiPredicates.canAttack(map)
     local surface = map.surface
     local goodAI = (((map.state == AI_STATE_AGGRESSIVE) and (map.sentAggressiveGroups < map.maxAggressiveGroups)) or
-            (map.state == AI_STATE_RAIDING) or
-            (map.state == AI_STATE_ONSLAUGHT) or
-            (map.universe.raidAIToggle and (map.state == AI_STATE_SIEGE) and (map.random() < 0.025)))
+        (map.state == AI_STATE_RAIDING) or
+        (map.state == AI_STATE_ONSLAUGHT) or
+        (map.universe.raidAIToggle and (map.state == AI_STATE_SIEGE) and (map.sentSiegeGroups >= map.maxSiegeGroups)))
     local notPeaceful = not surface.peaceful_mode
     local nocturalMode = map.universe.aiNocturnalMode
     local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)

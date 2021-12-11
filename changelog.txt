@@ -32,7 +32,7 @@ Date: 23. 11. 2021
     - Surfaces are allocated but don't begin processing until the first enemy structure or unit group is found
     - Map cleanup is now processed regardless of current active map
     - Chunk pass scanning is now processed regardless of current active map
-    - Siege AI state now sends roughly 1 raid group every 3 settler groups if raiding is enabled
+    - Siege AI state now sends roughly 1 raid group every 2 settler groups if raiding is enabled
     - Siege groups now try to settle just outside player structures as opposed to attacking
     - Added Raid AI state to lower temperament scores @ 20% at 0 temperament and 15% at (0.2, 0.4)
   Tweaks:
