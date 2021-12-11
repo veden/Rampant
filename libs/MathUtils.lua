@@ -16,7 +16,6 @@ local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 local mSqrt = math.sqrt
 local mLog10 = math.log10
 
-local mRandom = math.random
 local mFloor = math.floor
 local mAbs = math.abs
 

@@ -190,94 +190,50 @@ local function onModSettingsChange(event)
         return
     end
 
-    upgrade.compareTable(universe.safeEntities,
-                         "curved-rail",
-                         settings.global["rampant--safeBuildings-curvedRail"].value)
-    upgrade.compareTable(universe.safeEntities,
-                         "straight-rail",
-                         settings.global["rampant--safeBuildings-straightRail"].value)
-    upgrade.compareTable(universe.safeEntities,
-                         "rail-signal",
-                         settings.global["rampant--safeBuildings-railSignals"].value)
-    upgrade.compareTable(universe.safeEntities,
-                         "rail-chain-signal",
-                         settings.global["rampant--safeBuildings-railChainSignals"].value)
-    upgrade.compareTable(universe.safeEntities,
-                         "train-stop",
-                         settings.global["rampant--safeBuildings-trainStops"].value)
-    upgrade.compareTable(universe.safeEntities,
-                         "lamp",
-                         settings.global["rampant--safeBuildings-lamps"].value)
-    upgrade.compareTable(universe,
-                         "MAX_BASE_MUTATIONS",
-                         settings.global["rampant--max-base-mutations"].value)
+    universe.safeEntities["curved-rail"] = settings.global["rampant--safeBuildings-curvedRail"].value
+    universe.safeEntities["straight-rail"] = settings.global["rampant--safeBuildings-straightRail"].value
+    universe.safeEntities["rail-signal"] = settings.global["rampant--safeBuildings-railSignals"].value
+    universe.safeEntities["rail-chain-signal"] = settings.global["rampant--safeBuildings-railChainSignals"].value
+    universe.safeEntities["train-stop"] = settings.global["rampant--safeBuildings-trainStops"].value
+    universe.safeEntities["lamp"] = settings.global["rampant--safeBuildings-lamps"].value
 
-    local changed, newValue = upgrade.compareTable(universe.safeEntities,
-                                                   "big-electric-pole",
-                                                   settings.global["rampant--safeBuildings-bigElectricPole"].value)
-    if changed then
-        universe.safeEntities["big-electric-pole"] = newValue
-        universe.safeEntities["big-electric-pole-2"] = newValue
-        universe.safeEntities["big-electric-pole-3"] = newValue
-        universe.safeEntities["big-electric-pole-4"] = newValue
-        universe.safeEntities["lighted-big-electric-pole-4"] = newValue
-        universe.safeEntities["lighted-big-electric-pole-3"] = newValue
-        universe.safeEntities["lighted-big-electric-pole-2"] = newValue
-        universe.safeEntities["lighted-big-electric-pole"] = newValue
-    end
+    universe.safeEntities["big-electric-pole"] = settings.global["rampant--safeBuildings-bigElectricPole"].value
 
-    upgrade.compareTable(universe,
-                         "temperamentRateModifier",
-                         settings.global["rampant--temperamentRateModifier"].value)
+    universe.safeEntities["big-electric-pole"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["big-electric-pole-2"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["big-electric-pole-3"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["big-electric-pole-4"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["lighted-big-electric-pole-4"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["lighted-big-electric-pole-3"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["lighted-big-electric-pole-2"] = universe.safeEntities["big-electric-pole"]
+    universe.safeEntities["lighted-big-electric-pole"] = universe.safeEntities["big-electric-pole"]
 
-    upgrade.compareTable(universe,
-                         "baseDistanceModifier",
-                         settings.global["rampant--baseDistanceModifier"].value)
-    upgrade.compareTable(universe,
-                         "printBaseAdaptation",
-                         settings.global["rampant--printBaseAdaptation"].value)
-    upgrade.compareTable(universe,
-                         "adaptationModifier",
-                         settings.global["rampant--adaptationModifier"].value)
-    upgrade.compareTable(universe,
-                         "raidAIToggle",
-                         settings.global["rampant--raidAIToggle"].value)
-    upgrade.compareTable(universe,
-                         "siegeAIToggle",
-                         settings.global["rampant--siegeAIToggle"].value)
+    universe["temperamentRateModifier"] = settings.global["rampant--temperamentRateModifier"].value
+    universe["baseDistanceModifier"] = settings.global["rampant--baseDistanceModifier"].value
+    universe["printBaseAdaptation"] = settings.global["rampant--printBaseAdaptation"].value
+    universe["adaptationModifier"] = settings.global["rampant--adaptationModifier"].value
 
-    upgrade.compareTable(universe,
-                         "attackPlayerThreshold",
-                         settings.global["rampant--attackPlayerThreshold"].value)
-    upgrade.compareTable(universe,
-                         "attackUsePlayer",
-                         settings.global["rampant--attackWaveGenerationUsePlayerProximity"].value)
+    universe["raidAIToggle"] = settings.global["rampant--raidAIToggle"].value
+    universe["siegeAIToggle"] = settings.global["rampant--siegeAIToggle"].value
+    universe["attackPlayerThreshold"] = settings.global["rampant--attackPlayerThreshold"].value
+    universe["attackUsePlayer"] = settings.global["rampant--attackWaveGenerationUsePlayerProximity"].value
 
-    upgrade.compareTable(universe,
-                         "attackWaveMaxSize",
-                         settings.global["rampant--attackWaveMaxSize"].value)
-    upgrade.compareTable(universe,
-                         "aiNocturnalMode",
-                         settings.global["rampant--permanentNocturnal"].value)
-    upgrade.compareTable(universe,
-                         "aiPointsScaler",
-                         settings.global["rampant--aiPointsScaler"].value)
+    universe["attackWaveMaxSize"] = settings.global["rampant--attackWaveMaxSize"].value
+    universe["aiNocturnalMode"] = settings.global["rampant--permanentNocturnal"].value
+    universe["aiPointsScaler"] = settings.global["rampant--aiPointsScaler"].value
 
-    universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
-    universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
-    universe.printBaseUpgrades = settings.global["rampant--printBaseUpgrades"].value
+    universe["aiPointsPrintGainsToChat"] = settings.global["rampant--aiPointsPrintGainsToChat"].value
+    universe["aiPointsPrintSpendingToChat"] = settings.global["rampant--aiPointsPrintSpendingToChat"].value
+    universe["printBaseUpgrades"] = settings.global["rampant--printBaseUpgrades"].value
 
-    universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
-    universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
-    universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
-    universe.debugTemperament = settings.global["rampant--debugTemperament"].value
+    universe["enabledMigration"] = universe.expansion and settings.global["rampant--enableMigration"].value
+    universe["peacefulAIToggle"] = settings.global["rampant--peacefulAIToggle"].value
+    universe["printAIStateChanges"] = settings.global["rampant--printAIStateChanges"].value
+    universe["debugTemperament"] = settings.global["rampant--debugTemperament"].value
 
-    upgrade.compareTable(universe,
-                         "AI_MAX_SQUAD_COUNT",
-                         settings.global["rampant--maxNumberOfSquads"].value)
-    upgrade.compareTable(universe,
-                         "AI_MAX_BUILDER_COUNT",
-                         settings.global["rampant--maxNumberOfBuilders"].value)
+    universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
+    universe["AI_MAX_BUILDER_COUNT"] = settings.global["rampant--maxNumberOfBuilders"].value
+    universe["MAX_BASE_MUTATIONS"] = settings.global["rampant--max-base-mutations"].value
 
     return true
 end
@@ -292,15 +248,9 @@ local function onConfigChanged()
 
     onModSettingsChange({setting="rampant--"})
 
-    upgrade.compareTable(universe,
-                         "ENEMY_SEED",
-                         settings.startup["rampant--enemySeed"].value)
-    upgrade.compareTable(universe,
-                         "ENEMY_VARIATIONS",
-                         settings.startup["rampant--newEnemyVariations"].value)
-    upgrade.compareTable(universe,
-                         "NEW_ENEMIES",
-                         settings.startup["rampant--newEnemies"].value)
+    universe["ENEMY_SEED"] = settings.startup["rampant--enemySeed"].value
+    universe["ENEMY_VARIATIONS"] = settings.startup["rampant--newEnemyVariations"].value
+    universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
 
     if universe.NEW_ENEMIES then
         rebuildNativeTables(universe, universe.random)
@@ -330,10 +280,10 @@ local function onConfigChanged()
 
     universe.setCommandForces(npcForces, enemyForces)
 
+    if not universe.maps then
+        universe.maps = {}
+    end
     for _,surface in pairs(game.surfaces) do
-        if not universe.maps then
-            universe.maps = {}
-        end
         if not universe.maps[surface.index] then
             prepMap(universe, surface)
         end
@@ -719,80 +669,81 @@ end
 
 local function onUnitGroupCreated(event)
     local group = event.group
-    if (group.force.name == "enemy") then
-        local surface = group.surface
-        local squad
-        if group.is_script_driven then
+    if (group.force.name ~= "enemy") then
+        return
+    end
+    local surface = group.surface
+    local squad
+    if group.is_script_driven then
+        return
+    end
+    local map = universe.maps[surface.index]
+    if not map then
+        return
+    end
+    map.activeSurface = true
+    if not universe.aiNocturnalMode then
+        local settler = canMigrate(map) and
+            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.random() < 0.25)
+
+        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
+            group.destroy()
+            map.points = map.points + AI_SQUAD_COST
+            if universe.aiPointsPrintGainsToChat then
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+            end
             return
         end
-        local map = universe.maps[surface.index]
-        if not map then
-            return
+
+        squad = createSquad(nil, map, group, settler)
+        universe.groupNumberToSquad[group.group_number] = squad
+
+        if universe.NEW_ENEMIES then
+            local chunk = getChunkByPosition(map, group.position)
+            if (chunk ~= -1) then
+                squad.base = findNearbyBase(map, chunk)
+            end
         end
-        map.activeSurface = true
-        if not universe.aiNocturnalMode then
-            local settler = universe.random() < 0.25 and
-                canMigrate(map) and
-                (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
 
-            if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
-                group.destroy()
-                map.points = map.points + AI_SQUAD_COST
-                if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                end
-                return
-            end
-
-            squad = createSquad(nil, map, group, settler)
-            universe.groupNumberToSquad[group.group_number] = squad
-
-            if universe.NEW_ENEMIES then
-                local chunk = getChunkByPosition(map, group.position)
-                if (chunk ~= -1) then
-                    squad.base = findNearbyBase(map, chunk)
-                end
-            end
-
-            if settler then
-                universe.builderCount = universe.builderCount + 1
-            else
-                universe.squadCount = universe.squadCount + 1
-            end
+        if settler then
+            universe.builderCount = universe.builderCount + 1
         else
-            if not (surface.darkness > 0.65) then
-                group.destroy()
-                return
+            universe.squadCount = universe.squadCount + 1
+        end
+    else
+        if not (surface.darkness > 0.65) then
+            group.destroy()
+            return
+        end
+
+        local settler = canMigrate(map) and
+            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.random() < 0.25)
+
+        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
+            group.destroy()
+            map.points = map.points + AI_SQUAD_COST
+            if universe.aiPointsPrintGainsToChat then
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
             end
+            return
+        end
 
-            local settler = universe.random() < 0.25 and
-                canMigrate(map) and
-                (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+        squad = createSquad(nil, map, group, settler)
+        universe.groupNumberToSquad[group.group_number] = squad
 
-            if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
-                group.destroy()
-                map.points = map.points + AI_SQUAD_COST
-                if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
-                end
-                return
+        if universe.NEW_ENEMIES then
+            local chunk = getChunkByPosition(group.position)
+            if (chunk ~= -1) then
+                squad.base = findNearbyBase(map, chunk)
             end
+        end
 
-            squad = createSquad(nil, map, group, settler)
-            universe.groupNumberToSquad[group.group_number] = squad
-
-            if universe.NEW_ENEMIES then
-                local chunk = getChunkByPosition(group.position)
-                if (chunk ~= -1) then
-                    squad.base = findNearbyBase(map, chunk)
-                end
-            end
-
-            if settler then
-                universe.builderCount = universe.builderCount + 1
-            else
-                universe.squadCount = universe.squadCount + 1
-            end
+        if settler then
+            universe.builderCount = universe.builderCount + 1
+        else
+            universe.squadCount = universe.squadCount + 1
         end
     end
 end
@@ -831,11 +782,11 @@ local function onGroupFinishedGathering(event)
             end
         end
     else
-        local settler = universe.random() < 0.25 and
-            canMigrate(map) and
-            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+        local settler = canMigrate(map) and
+            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.random() < 0.25)
 
-        if not settler and universe.squadCount > universe.AI_MAX_SQUAD_COUNT then
+        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
             map.points = map.points + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
@@ -928,10 +879,8 @@ script.on_event(defines.events.on_tick,
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
                         processMapAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
-                        if map then
-                            if universe.NEW_ENEMIES then
-                                recycleBases(map)
-                            end
+                        if map and universe.NEW_ENEMIES then
+                            recycleBases(map)
                         end
                         cleanUpMapTables(universe, tick)
                     elseif (pick == 1) then

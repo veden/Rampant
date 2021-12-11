@@ -580,8 +580,6 @@ function upgrade.prepMap(universe, surface)
 
     map.chunkScanCounts = {}
 
-    map.chunkRemovals = {}
-
     map.emptySquadsOnChunk = {}
 
     map.surface = surface
@@ -636,15 +634,6 @@ function upgrade.prepMap(universe, surface)
     end
 
     processPendingChunks(universe, tick, true)
-end
-
-function upgrade.compareTable(entities, option, new)
-    local changed = false
-    if (entities[option] ~= new) then
-        entities[option] = new
-        changed = true
-    end
-    return changed, new
 end
 
 return upgrade

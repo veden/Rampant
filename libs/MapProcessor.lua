@@ -17,9 +17,6 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
-local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
-local AI_STATE_RAIDING = constants.AI_STATE_RAIDING
-
 local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
@@ -28,8 +25,6 @@ local ENEMY_QUEUE_SIZE = constants.ENEMY_QUEUE_SIZE
 local PLAYER_QUEUE_SIZE = constants.PLAYER_QUEUE_SIZE
 
 local CLEANUP_QUEUE_SIZE = constants.CLEANUP_QUEUE_SIZE
-
-local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
 local CHUNK_TICK = constants.CHUNK_TICK
@@ -163,8 +158,7 @@ function mapProcessor.processStaticMap(map)
     end
 
     for x=index,endIndex,step do
-        local chunk = processQueue[x]
-        processStaticPheromone(map, chunk)
+        processStaticPheromone(map, processQueue[x])
     end
 
     if (endIndex == processQueueLength) then
