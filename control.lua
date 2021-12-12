@@ -23,6 +23,7 @@ local queryUtils = require("libs/QueryUtils")
 
 -- constants
 
+local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
 local AI_SQUAD_COST = constants.AI_SQUAD_COST
 local AI_SETTLER_COST = constants.AI_SETTLER_COST
@@ -234,6 +235,9 @@ local function onModSettingsChange(event)
     universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
     universe["AI_MAX_BUILDER_COUNT"] = settings.global["rampant--maxNumberOfBuilders"].value
     universe["MAX_BASE_MUTATIONS"] = settings.global["rampant--max-base-mutations"].value
+
+    universe["initialPeaceTime"] = settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE
+    universe["printAwakenMessage"] = settings.global["rampant--printAwakenMessage"].value
 
     return true
 end

@@ -463,6 +463,27 @@ data:extend({
             per_user = false
         },
 
+
+        {
+            type = "int-setting",
+            name = "rampant--initialPeaceTime",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 20,
+            maximum_value = 9999999999,
+            order = "m[total]-c[ai]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant--printAwakenMessage",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "m[total]-c[ai]",
+            per_user = false
+        },
+
         {
             type = "bool-setting",
             name = "rampant--peacefulAIToggle",

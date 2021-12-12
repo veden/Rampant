@@ -152,177 +152,185 @@ local function planning(map, evolution_factor, tick)
         map.points = maxOverflowPoints
     end
 
-    if (map.stateTick <= tick) then
-        local roll = universe.random()
-        if (map.temperament < 0.05) then -- 0 - 0.05
-            if universe.enabledMigration then
-                if (roll < 0.30) then
-                    map.state = AI_STATE_MIGRATING
-                elseif (roll < 0.50) and universe.raidAIToggle then
-                    map.state = AI_STATE_RAIDING
-                elseif universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                else
-                    map.state = AI_STATE_MIGRATING
-                end
-            else
-                if universe.raidAIToggle then
-                    if (roll < 0.70) then
-                        map.state = AI_STATE_RAIDING
-                    else
-                        map.state = AI_STATE_AGGRESSIVE
-                    end
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
+    if (map.stateTick > tick) or not universe.awake then
+        if (not universe.awake) and (tick >= universe.initialPeaceTime) then
+            universe.awake = true
+            if universe.printAwakenMessage then
+                game.print({"description.rampant--planetHasAwoken"})
             end
-        elseif (map.temperament < 0.20) then -- 0.05 - 0.2
-            if (universe.enabledMigration) then
-                if (roll < 0.4) then
-                    map.state = AI_STATE_MIGRATING
-                elseif (roll < 0.55) and universe.raidAIToggle then
-                    map.state = AI_STATE_RAIDING
-                elseif universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                else
-                    map.state = AI_STATE_MIGRATING
-                end
-            else
-                if universe.raidAIToggle then
-                    if (roll < 0.40) then
-                        map.state = AI_STATE_AGGRESSIVE
-                    else
-                        map.state = AI_STATE_RAIDING
-                    end
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
-            end
-        elseif (map.temperament < 0.4) then -- 0.2 - 0.4
-            if (universe.enabledMigration) then
-                if (roll < 0.2) and universe.raidAIToggle then
-                    map.state = AI_STATE_RAIDING
-                elseif (roll < 0.2) then
-                    map.state = AI_STATE_AGGRESSIVE
-                elseif (roll < 0.8) then
-                    map.state = AI_STATE_MIGRATING
-                elseif universe.peacefulAIToggle then
-                    map.state = AI_STATE_PEACEFUL
-                else
-                    map.state = AI_STATE_MIGRATING
-                end
-            else
-                if (roll < 0.3) then
-                    map.state = AI_STATE_AGGRESSIVE
-                elseif (roll < 0.6) and universe.raidAIToggle then
-                    map.state = AI_STATE_RAIDING
-                elseif (roll < 0.6) then
-                    map.state = AI_STATE_AGGRESSIVE
-                elseif universe.peacefulAIToggle then
-                    map.state = AI_STATE_PEACEFUL
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
-            end
-        elseif (map.temperament < 0.6) then -- 0.4 - 0.6
-            if (roll < 0.4) then
-                map.state = AI_STATE_AGGRESSIVE
-            elseif (roll < 0.5) and universe.raidAIToggle then
+        else
+            return
+        end
+    end
+    local roll = universe.random()
+    if (map.temperament < 0.05) then -- 0 - 0.05
+        if universe.enabledMigration then
+            if (roll < 0.30) then
+                map.state = AI_STATE_MIGRATING
+            elseif (roll < 0.50) and universe.raidAIToggle then
                 map.state = AI_STATE_RAIDING
-            elseif (roll < 0.75) and universe.peacefulAIToggle then
+            elseif universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            else
+                map.state = AI_STATE_MIGRATING
+            end
+        else
+            if universe.raidAIToggle then
+                if (roll < 0.70) then
+                    map.state = AI_STATE_RAIDING
+                else
+                    map.state = AI_STATE_AGGRESSIVE
+                end
+            else
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (map.temperament < 0.20) then -- 0.05 - 0.2
+        if (universe.enabledMigration) then
+            if (roll < 0.4) then
+                map.state = AI_STATE_MIGRATING
+            elseif (roll < 0.55) and universe.raidAIToggle then
+                map.state = AI_STATE_RAIDING
+            elseif universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            else
+                map.state = AI_STATE_MIGRATING
+            end
+        else
+            if universe.raidAIToggle then
+                if (roll < 0.40) then
+                    map.state = AI_STATE_AGGRESSIVE
+                else
+                    map.state = AI_STATE_RAIDING
+                end
+            else
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (map.temperament < 0.4) then -- 0.2 - 0.4
+        if (universe.enabledMigration) then
+            if (roll < 0.2) and universe.raidAIToggle then
+                map.state = AI_STATE_RAIDING
+            elseif (roll < 0.2) then
+                map.state = AI_STATE_AGGRESSIVE
+            elseif (roll < 0.8) then
+                map.state = AI_STATE_MIGRATING
+            elseif universe.peacefulAIToggle then
                 map.state = AI_STATE_PEACEFUL
             else
-                if universe.enabledMigration then
-                    map.state = AI_STATE_MIGRATING
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
+                map.state = AI_STATE_MIGRATING
             end
-        elseif (map.temperament < 0.8) then -- 0.6 - 0.8
-            if (roll < 0.4) then
+        else
+            if (roll < 0.3) then
                 map.state = AI_STATE_AGGRESSIVE
-            elseif (roll < 0.6) then
-                map.state = AI_STATE_ONSLAUGHT
-            elseif (roll < 0.8) then
+            elseif (roll < 0.6) and universe.raidAIToggle then
                 map.state = AI_STATE_RAIDING
+            elseif (roll < 0.6) then
+                map.state = AI_STATE_AGGRESSIVE
             elseif universe.peacefulAIToggle then
                 map.state = AI_STATE_PEACEFUL
             else
                 map.state = AI_STATE_AGGRESSIVE
             end
-        elseif (map.temperament < 0.95) then -- 0.8 - 0.95
-            if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.20) and universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                elseif (roll < 0.45) then
-                    map.state = AI_STATE_RAIDING
-                elseif (roll < 0.85) then
-                    map.state = AI_STATE_ONSLAUGHT
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
-            elseif (universe.enabledMigration) then
-                if (roll < 0.20) and universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                elseif (roll < 0.75) then
-                    map.state = AI_STATE_ONSLAUGHT
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
-            elseif (universe.raidAIToggle) then
-                if (roll < 0.45) then
-                    map.state = AI_STATE_ONSLAUGHT
-                elseif (roll < 0.75) then
-                    map.state = AI_STATE_RAIDING
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
+        end
+    elseif (map.temperament < 0.6) then -- 0.4 - 0.6
+        if (roll < 0.4) then
+            map.state = AI_STATE_AGGRESSIVE
+        elseif (roll < 0.5) and universe.raidAIToggle then
+            map.state = AI_STATE_RAIDING
+        elseif (roll < 0.75) and universe.peacefulAIToggle then
+            map.state = AI_STATE_PEACEFUL
+        else
+            if universe.enabledMigration then
+                map.state = AI_STATE_MIGRATING
             else
-                if (roll < 0.65) then
-                    map.state = AI_STATE_ONSLAUGHT
-                else
-                    map.state = AI_STATE_AGGRESSIVE
-                end
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (map.temperament < 0.8) then -- 0.6 - 0.8
+        if (roll < 0.4) then
+            map.state = AI_STATE_AGGRESSIVE
+        elseif (roll < 0.6) then
+            map.state = AI_STATE_ONSLAUGHT
+        elseif (roll < 0.8) then
+            map.state = AI_STATE_RAIDING
+        elseif universe.peacefulAIToggle then
+            map.state = AI_STATE_PEACEFUL
+        else
+            map.state = AI_STATE_AGGRESSIVE
+        end
+    elseif (map.temperament < 0.95) then -- 0.8 - 0.95
+        if (universe.enabledMigration and universe.raidAIToggle) then
+            if (roll < 0.20) and universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            elseif (roll < 0.45) then
+                map.state = AI_STATE_RAIDING
+            elseif (roll < 0.85) then
+                map.state = AI_STATE_ONSLAUGHT
+            else
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        elseif (universe.enabledMigration) then
+            if (roll < 0.20) and universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            elseif (roll < 0.75) then
+                map.state = AI_STATE_ONSLAUGHT
+            else
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        elseif (universe.raidAIToggle) then
+            if (roll < 0.45) then
+                map.state = AI_STATE_ONSLAUGHT
+            elseif (roll < 0.75) then
+                map.state = AI_STATE_RAIDING
+            else
+                map.state = AI_STATE_AGGRESSIVE
             end
         else
-            if (universe.enabledMigration and universe.raidAIToggle) then
-                if (roll < 0.30) and universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                elseif (roll < 0.65) then
-                    map.state = AI_STATE_RAIDING
-                else
-                    map.state = AI_STATE_ONSLAUGHT
-                end
-            elseif (universe.enabledMigration) then
-                if (roll < 0.30) and universe.siegeAIToggle then
-                    map.state = AI_STATE_SIEGE
-                else
-                    map.state = AI_STATE_ONSLAUGHT
-                end
-            elseif (universe.raidAIToggle) then
-                if (roll < 0.45) then
-                    map.state = AI_STATE_ONSLAUGHT
-                else
-                    map.state = AI_STATE_RAIDING
-                end
+            if (roll < 0.65) then
+                map.state = AI_STATE_ONSLAUGHT
+            else
+                map.state = AI_STATE_AGGRESSIVE
+            end
+        end
+    else
+        if (universe.enabledMigration and universe.raidAIToggle) then
+            if (roll < 0.30) and universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            elseif (roll < 0.65) then
+                map.state = AI_STATE_RAIDING
             else
                 map.state = AI_STATE_ONSLAUGHT
             end
+        elseif (universe.enabledMigration) then
+            if (roll < 0.30) and universe.siegeAIToggle then
+                map.state = AI_STATE_SIEGE
+            else
+                map.state = AI_STATE_ONSLAUGHT
+            end
+        elseif (universe.raidAIToggle) then
+            if (roll < 0.45) then
+                map.state = AI_STATE_ONSLAUGHT
+            else
+                map.state = AI_STATE_RAIDING
+            end
+        else
+            map.state = AI_STATE_ONSLAUGHT
         end
+    end
 
-        map.destroyPlayerBuildings = 0
-        map.lostEnemyUnits = 0
-        map.lostEnemyBuilding = 0
-        map.rocketLaunched = 0
-        map.builtEnemyBuilding = 0
-        map.ionCannonBlasts = 0
-        map.artilleryBlasts = 0
+    map.destroyPlayerBuildings = 0
+    map.lostEnemyUnits = 0
+    map.lostEnemyBuilding = 0
+    map.rocketLaunched = 0
+    map.builtEnemyBuilding = 0
+    map.ionCannonBlasts = 0
+    map.artilleryBlasts = 0
 
-        map.stateTick = randomTickEvent(map.random, tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+    map.stateTick = randomTickEvent(map.random, tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
 
-        if universe.printAIStateChanges then
-            game.print(map.surface.name .. ": AI is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. string.format("%.2f", (map.stateTick - tick) / (60*60)) .. " minutes @ " .. getTimeStringFromTick(map.stateTick) .. " playtime")
-        end
+    if universe.printAIStateChanges then
+        game.print(map.surface.name .. ": AI is now: " .. constants.stateEnglish[map.state] .. ", Next state change is in " .. string.format("%.2f", (map.stateTick - tick) / (60*60)) .. " minutes @ " .. getTimeStringFromTick(map.stateTick) .. " playtime")
     end
 end
 
