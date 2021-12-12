@@ -35,6 +35,7 @@ Date: 23. 11. 2021
     - Siege AI state now sends roughly 1 raid group every 2 settler groups if raiding is enabled
     - Siege groups now try to settle just outside player structures as opposed to attacking
     - Added Raid AI state to lower temperament scores @ 20% at 0 temperament and 15% at (0.2, 0.4)
+    - Vengence squads now have a 7.5% chance to be a settler group if migration is enabled
   Tweaks:
     - Increase chance to upgrade an enemy structure from 5% to 30%
     - New enemy regional bases that have two factions now do 75% on one faction and 25% on the faction for building and upgrading enemy structures

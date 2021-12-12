@@ -57,6 +57,7 @@ local getChunkBase = chunkPropertyUtils.getChunkBase
 
 local formSquads = aiAttackWave.formSquads
 local formVengenceSquad = aiAttackWave.formVengenceSquad
+local formVengenceSettler = aiAttackWave.formVengenceSettler
 local formSettlers = aiAttackWave.formSettlers
 
 local getChunkByPosition = mapUtils.getChunkByPosition
@@ -430,7 +431,11 @@ function mapProcessor.processVengence(universe)
             vengenceQueue[chunkId] = nil
             return
         end
-        formVengenceSquad(map, getChunkById(vengencePack.map, chunkId))
+        if universe.enabledMigration and (universe.random() < 0.075) then
+            formVengenceSettler(map, getChunkById(vengencePack.map, chunkId))
+        else
+            formVengenceSquad(map, getChunkById(vengencePack.map, chunkId))
+        end
         vengenceQueue[chunkId] = nil
     end
 end
