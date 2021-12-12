@@ -465,8 +465,8 @@ function upgrade.attempt(universe)
 
         universe.maxPoints = 0
     end
-    if global.version < 203 then
-        global.version = 203
+    if global.version < 204 then
+        global.version = 204
 
         addCommandSet(universe)
         universe.eventId = 0
