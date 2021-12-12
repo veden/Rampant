@@ -278,7 +278,7 @@ local function onConfigChanged()
         npcForces["AbandonedRuins:enemy"] = true
     end
 
-    universe.setCommandForces(npcForces, enemyForces)
+    upgrade.setCommandForces(universe, npcForces, enemyForces)
 
     if not universe.maps then
         universe.maps = {}

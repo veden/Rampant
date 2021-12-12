@@ -356,33 +356,33 @@ local function addCommandSet(queriesAndCommands)
         unit_count = 1,
         unit_search_distance = CHUNK_SIZE
     }
+end
 
-    queriesAndCommands.setCommandForces = function (npcForces, enemyForces)
-        for force in pairs(queriesAndCommands.playerForces) do
-            queriesAndCommands.playerForces[force] = nil
+function upgrade.setCommandForces(universe, npcForces, enemyForces)
+    for force in pairs(universe.playerForces) do
+        universe.playerForces[force] = nil
+    end
+    for force in pairs(universe.npcForces) do
+        universe.npcForces[force] = nil
+    end
+    for force in pairs(universe.enemyForces) do
+        universe.enemyForces[force] = nil
+    end
+    for force in pairs(universe.nonPlayerForces) do
+        universe.nonPlayerForces[force] = nil
+    end
+    for _,force in pairs(game.forces) do
+        if not npcForces[force.name] and not enemyForces[force.name] then
+            universe.playerForces[#universe.playerForces+1] = force.name
         end
-        for force in pairs(queriesAndCommands.npcForces) do
-            queriesAndCommands.npcForces[force] = nil
-        end
-        for force in pairs(queriesAndCommands.enemyForces) do
-            queriesAndCommands.enemyForces[force] = nil
-        end
-        for force in pairs(queriesAndCommands.nonPlayerForces) do
-            queriesAndCommands.nonPlayerForces[force] = nil
-        end
-        for _,force in pairs(game.forces) do
-            if not npcForces[force.name] and not enemyForces[force.name] then
-                queriesAndCommands.playerForces[#queriesAndCommands.playerForces+1] = force.name
-            end
-        end
-        for force in pairs(enemyForces) do
-            queriesAndCommands.enemyForces[#queriesAndCommands.enemyForces+1] = force
-            queriesAndCommands.nonPlayerForces[#queriesAndCommands.nonPlayerForces+1] = force
-        end
-        for force in pairs(npcForces) do
-            queriesAndCommands.npcForces[#queriesAndCommands.npcForces+1] = force
-            queriesAndCommands.nonPlayerForces[#queriesAndCommands.nonPlayerForces+1] = force
-        end
+    end
+    for force in pairs(enemyForces) do
+        universe.enemyForces[#universe.enemyForces+1] = force
+        universe.nonPlayerForces[#universe.nonPlayerForces+1] = force
+    end
+    for force in pairs(npcForces) do
+        universe.npcForces[#universe.npcForces+1] = force
+        universe.nonPlayerForces[#universe.nonPlayerForces+1] = force
     end
 end
 
