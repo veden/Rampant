@@ -32,8 +32,9 @@ local CHUNK_TICK = constants.CHUNK_TICK
 local PROCESS_STATIC_QUEUE_SIZE = constants.PROCESS_STATIC_QUEUE_SIZE
 
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
-local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
 
+local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
+local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
 local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
 local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
 
@@ -486,7 +487,7 @@ local function processSpawnersBody(universe, iterator, chunks)
             return
         end
         if iterator == "processMigrationIterator" then
-            if (state ~= AI_STATE_MIGRATING) then
+            if (state ~= AI_STATE_MIGRATING) and (state ~= AI_STATE_SIEGE) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then

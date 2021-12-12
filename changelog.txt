@@ -56,7 +56,6 @@ Date: 23. 11. 2021
     - Now one spawner covered in pollution is worth 22 built enemy structures to offset temperament contribution
     - Now one spawner covered in pollution is worth (69:<30%evo, 138:<50%evo, 276:<70%evo, 552:<90%, 1104:>90%evo) lost enemy units to offset temperament contribution
     - Now +/-0.05 temperament from 0.5 gives an extra 0.1 points to AI each cycle, +/-0.15 gives 0.2, +/-0.30 gives 0.3, +/-0.5 gives 0.5
-    - Siege state no longer uses all spawners only pollution covered and active raid spawners (raid spawners are a status, not necessarily tied to raiding AI state)
     - Increased migration ai state chance at min temperament by 5% and if migration is disabled increased raiding to 70% chance
     - Increased siege chance to 60% chance between temperament (0.05, 0.20) and if migration is disabled increased raiding to 60%
     - Settling group formed during AI siege state are 2.5x more likely to be kamikaze
