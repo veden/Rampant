@@ -200,7 +200,9 @@ local function planning(map, evolution_factor, tick)
             end
         elseif (map.temperament < 0.4) then -- 0.2 - 0.4
             if (universe.enabledMigration) then
-                if (roll < 0.2) then
+                if (roll < 0.2) and universe.raidAIToggle then
+                    map.state = AI_STATE_RAIDING
+                elseif (roll < 0.2) then
                     map.state = AI_STATE_AGGRESSIVE
                 elseif (roll < 0.8) then
                     map.state = AI_STATE_MIGRATING
@@ -210,7 +212,11 @@ local function planning(map, evolution_factor, tick)
                     map.state = AI_STATE_MIGRATING
                 end
             else
-                if (roll < 0.6) then
+                if (roll < 0.3) then
+                    map.state = AI_STATE_AGGRESSIVE
+                elseif (roll < 0.6) and universe.raidAIToggle then
+                    map.state = AI_STATE_RAIDING
+                elseif (roll < 0.6) then
                     map.state = AI_STATE_AGGRESSIVE
                 elseif universe.peacefulAIToggle then
                     map.state = AI_STATE_PEACEFUL
@@ -221,7 +227,9 @@ local function planning(map, evolution_factor, tick)
         elseif (map.temperament < 0.6) then -- 0.4 - 0.6
             if (roll < 0.4) then
                 map.state = AI_STATE_AGGRESSIVE
-            elseif universe.peacefulAIToggle then
+            elseif (roll < 0.5) and universe.raidAIToggle then
+                map.state = AI_STATE_RAIDING
+            elseif (roll < 0.75) and universe.peacefulAIToggle then
                 map.state = AI_STATE_PEACEFUL
             else
                 if universe.enabledMigration then
