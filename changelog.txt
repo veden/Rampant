@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.1
+Date: 23. 11. 2021
+  Contributions:
+    - RealSimplyData fixed missing map parameter in onUnitGroupCreated (Thanks illiander42 for reporting)
+
+---------------------------------------------------------------------------------------------------
 Version: 2.0.0
 Date: 23. 11. 2021
   Contributions:
