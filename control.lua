@@ -747,7 +747,7 @@ local function onUnitGroupCreated(event)
         universe.groupNumberToSquad[group.group_number] = squad
 
         if universe.NEW_ENEMIES then
-            local chunk = getChunkByPosition(group.position)
+            local chunk = getChunkByPosition(map, group.position)
             if (chunk ~= -1) then
                 squad.base = findNearbyBase(map, chunk)
             end
