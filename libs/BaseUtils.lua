@@ -135,7 +135,8 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
         useTier = mMax(maxTier - 3, tier)
     end
 
-    local upgrades = evolutionTable[baseAlignment][useTier]
+    local alignmentTable = evolutionTable[baseAlignment]
+    local upgrades = alignmentTable[useTier]
 
     if upgrades then
         if useHiveType then
@@ -264,7 +265,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
     local baseAlignment = base.alignment
 
     local pickedBaseAlignment
-    if (#baseAlignment == 2) then
+    if baseAlignment[2] then
         if map.random() < 0.75 then
             pickedBaseAlignment = baseAlignment[2]
         else
@@ -669,9 +670,9 @@ function baseUtils.rebuildNativeTables(universe, rg)
     if universe.maps then
         for _,map in pairs(universe.maps) do
             for _,base in pairs(map.bases) do
-                for x=1,#base.alignment do
+                for x=1,2 do
                     local alignment = base.alignment[x]
-                    if not universe.buildingEvolveLookup[alignment] then
+                    if alignment and not universe.buildingEvolveLookup[alignment] then
                         base.alignment = findBaseInitialAlignment(map, evoIndex)
                         break
                     end

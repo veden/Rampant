@@ -5,6 +5,7 @@ Date: 23. 11. 2021
     - RealSimplyData fixed missing map parameter in onUnitGroupCreated (Thanks illiander42 for reporting)
   Bugfixes:
     - Fixed chunkPassScanning not checking for enemy structures when determining passability
+    - Potential bugfix for evolutionTable being nil, still need a save to verify
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.0
