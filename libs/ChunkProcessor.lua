@@ -149,7 +149,8 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             universe.pendingUpgrades[entityId] = nil
             local surface = entity.surface
             local query = universe.ppuUpgradeEntityQuery
-            setPositionInQuery(query, entityData.position or entity.position)
+            local position = entityData.position or entity.position
+            setPositionInQuery(query, position)
             query.name = entityData.name
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
@@ -157,7 +158,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             if createdEntity and createdEntity.valid then
                 registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
-                    remote.call("kr-creep", "spawn_creep_at_position", surface, query.position)
+                    remote.call("kr-creep", "spawn_creep_at_position", surface, position)
                 end
             end
         else
