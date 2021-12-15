@@ -5,7 +5,8 @@ Date: 23. 11. 2021
     - RealSimplyData fixed missing map parameter in onUnitGroupCreated (Thanks illiander42 for reporting)
   Bugfixes:
     - Fixed chunkPassScanning not checking for enemy structures when determining passability
-    - Potential bugfix for evolutionTable being nil, still need a save to verify
+    - Fixed chunks that become impassable not being properly removed from all tables and iterators (Thanks ZwerOxotnik for reporting)
+    - Potential bugfix for evolutionTable being nil, still need a save to verify (Thanks ZwerOxotnik for reporting)
     - Corrected Krastorio2 position parameter wanting xy pair. (Krastorio2 1.1.6 that is currently published at the time of this update is broken still, see thread https://mods.factorio.com/mod/Rampant/discussion/5f44980455e55634147d01f4)
 
 ---------------------------------------------------------------------------------------------------

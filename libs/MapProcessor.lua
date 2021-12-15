@@ -426,17 +426,17 @@ function mapProcessor.processVengence(universe)
         end
     else
         universe.deployVengenceIterator = next(vengenceQueue, chunkId)
+        vengenceQueue[chunkId] = nil
         local map = vengencePack.map
         if not map.surface.valid then
-            vengenceQueue[chunkId] = nil
             return
         end
+        local chunk = getChunkById(vengencePack.map, chunkId)
         if universe.enabledMigration and (universe.random() < 0.075) then
-            formVengenceSettler(map, getChunkById(vengencePack.map, chunkId))
+            formVengenceSettler(map, chunk)
         else
-            formVengenceSquad(map, getChunkById(vengencePack.map, chunkId))
+            formVengenceSquad(map, chunk)
         end
-        vengenceQueue[chunkId] = nil
     end
 end
 

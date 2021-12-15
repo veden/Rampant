@@ -76,6 +76,73 @@ function mapUtils.nextMap(universe)
     until mapIterator == universe.mapIterator
 end
 
+function mapUtils.removeChunkFromMap(map, x, y, chunkId)
+    local universe = map.universe
+    map[x][y] = nil
+    universe.chunkIdToChunk[chunkId] = nil
+    universe.chunkToActiveNest[chunkId] = nil
+    universe.chunkToActiveRaidNest[chunkId] = nil
+    universe.chunkToDrained[chunkId] = nil
+    universe.chunkToRetreats[chunkId] = nil
+    universe.chunkToRallys[chunkId] = nil
+    universe.chunkToPassScan[chunkId] = nil
+    universe.chunkToNests[chunkId] = nil
+    universe.vengenceQueue[chunkId] = nil
+    universe.processActiveNest[chunkId] = nil
+    universe.chunkToVictory[chunkId] = nil
+    map.chunkToBase[chunkId] = nil
+    map.chunkToTurrets[chunkId] = nil
+    map.chunkToTraps[chunkId] = nil
+    map.chunkToUtilities[chunkId] = nil
+    map.chunkToHives[chunkId] = nil
+    map.chunkToNestIds[chunkId] = nil
+    map.chunkToHiveIds[chunkId] = nil
+    map.chunkToTrapIds[chunkId] = nil
+    map.chunkToTurretIds[chunkId] = nil
+    map.chunkToUtilityIds[chunkId] = nil
+    map.chunkToPlayerBase[chunkId] = nil
+    map.chunkToResource[chunkId] = nil
+    map.chunkToPlayerCount[chunkId] = nil
+    map.chunkToSquad[chunkId] = nil
+    map.chunkToPassable[chunkId] = nil
+    map.chunkToPathRating[chunkId] = nil
+    map.chunkToDeathGenerator[chunkId] = nil
+
+    if universe.processActiveNestIterator == chunkId then
+        universe.processActiveNestIterator = nil
+    end
+    if universe.victoryScentIterator == chunkId then
+        universe.victoryScentIterator = nil
+    end
+    if universe.processNestIterator == chunkId then
+        universe.processNestIterator = nil
+    end
+    if universe.chunkToDrainedIterator == chunkId then
+        universe.chunkToDrainedIterator = nil
+    end
+    if universe.chunkToRetreatIterator == chunkId then
+        universe.chunkToRetreatIterator = nil
+    end
+    if universe.chunkToRallyIterator == chunkId then
+        universe.chunkToRallyIterator = nil
+    end
+    if universe.chunkToPassScanIterator == chunkId then
+        universe.chunkToPassScanIterator = nil
+    end
+    if universe.processActiveSpawnerIterator == chunkId then
+        universe.processActiveSpawnerIterator = nil
+    end
+    if universe.processActiveRaidSpawnerIterator == chunkId then
+        universe.processActiveRaidSpawnerIterator = nil
+    end
+    if universe.processMigrationIterator == chunkId then
+        universe.processMigrationIterator = nil
+    end
+    if universe.deployVengenceIterator == chunkId then
+        universe.deployVengenceIterator = nil
+    end
+end
+
 --[[
     1 2 3
     \|/
