@@ -8,6 +8,7 @@ Date: 23. 11. 2021
     - Fixed chunks that become impassable not being properly removed from all tables and iterators (Thanks ZwerOxotnik for reporting)
     - Potential bugfix for evolutionTable being nil, still need a save to verify (Thanks ZwerOxotnik for reporting)
     - Corrected Krastorio2 position parameter wanting xy pair. (Krastorio2 1.1.6 that is currently published at the time of this update is broken still, see thread https://mods.factorio.com/mod/Rampant/discussion/5f44980455e55634147d01f4)
+    - Fixed vengence squad queue could get stuck if the surface it was about to process was invalidated
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.0
