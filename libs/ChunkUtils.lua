@@ -276,8 +276,9 @@ function chunkUtils.chunkPassScan(chunk, map)
     local universe = map.universe
     setAreaInQueryChunkSize(universe.cpsFilteredTilesQuery, chunk)
     local waterTiles = (1 - (surface.count_tiles_filtered(universe.cpsFilteredTilesQuery) * 0.0009765625)) * 0.80
+    local enemyCount = surface.count_entities_filtered(universe.cpsFilteredEnemyAnyFound)
 
-    if (waterTiles >= CHUNK_PASS_THRESHOLD) then
+    if (waterTiles >= CHUNK_PASS_THRESHOLD) or (enemyCount > 0) then
         local neutralObjects = mMax(0,
                                     mMin(1 - (surface.count_entities_filtered(universe.cpsFilteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
@@ -285,9 +286,7 @@ function chunkUtils.chunkPassScan(chunk, map)
 
         local playerObjects = getPlayerBaseGenerator(map, chunk)
 
-        local nests = getNestCount(map, chunk)
-
-        if ((playerObjects > 0) or (nests > 0)) and (pass == CHUNK_IMPASSABLE) then
+        if ((playerObjects > 0) or (enemyCount > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
         end
 

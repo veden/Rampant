@@ -213,6 +213,15 @@ local function addCommandSet(queriesAndCommands)
             "simple-entity"
         }
     }
+    queriesAndCommands.cpsFilteredEnemyAnyFound = {
+        area=cpsSharedChunkArea,
+        force=queriesAndCommands.enemyForces,
+        type={
+            "turret",
+            "unit-spawner"
+        },
+        limit = 1
+    }
 
     -- msrc
     local msrcSharedChunkArea = {
@@ -468,7 +477,6 @@ function upgrade.attempt(universe)
     if global.version < 204 then
         global.version = 204
 
-        addCommandSet(universe)
         universe.eventId = 0
         universe.chunkId = 0
         universe.randomGenerator = nil
@@ -509,8 +517,12 @@ function upgrade.attempt(universe)
         universe.chunkToPassScanIterator = nil
         universe.baseId = 0
         universe.awake = false
+    end
+    if global.version < 205 then
+        global.version = 205
 
-        game.print("Rampant - Version 2.0.0")
+        addCommandSet(universe)
+        game.print("Rampant - Version 2.0.1")
     end
 
     return (starting ~= global.version) and global.version
