@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.2
+Date: 15. 12. 2021
+  Bugfixes:
+    - Fixed base missing in unregisteredEnemyStructure with Rampant already active in a save before enabling new enemies
+
+---------------------------------------------------------------------------------------------------
 Version: 2.0.1
 Date: 23. 11. 2021
   Contributions:

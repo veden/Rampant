@@ -5,6 +5,8 @@ local upgrade = {}
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapUtils = require("libs/MapUtils")
+local chunkPropertyUtils = require("libs/ChunkUtils")
+local baseUtils = require("libs/BaseUtils")
 
 -- constants
 
@@ -27,6 +29,13 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
+
+local getChunkById = mapUtils.getChunkById
+local setChunkBase = chunkPropertyUtils.setChunkBase
+
+local createBase = baseUtils.createBase
+local findNearbyBase = baseUtils.findNearbyBase
+
 
 local sFind = string.find
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
@@ -522,7 +531,26 @@ function upgrade.attempt(universe)
         global.version = 205
 
         addCommandSet(universe)
-        game.print("Rampant - Version 2.0.1")
+    end
+    if global.version < 206 then
+        global.version = 206
+
+        if universe.NEW_ENEMIES then
+            local tick = game.tick
+            for chunkId, chunkPack in pairs(universe.chunkToNests) do
+                local map = chunkPack.map
+                if map.surface.valid then
+                    local chunk = getChunkById(map, chunkId)
+                    local base = findNearbyBase(map, chunk)
+                    if not base then
+                        base = createBase(map, chunk, tick)
+                    end
+                    setChunkBase(map, chunk, base)
+                end
+            end
+        end
+
+        game.print("Rampant - Version 2.0.2")
     end
 
     return (starting ~= global.version) and global.version

@@ -37,6 +37,9 @@ local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 -- imported functions
 
+local getChunkById = mapUtils.getChunkById
+local setChunkBase = chunkPropertyUtils.setChunkBase
+
 local setPointAreaInQuery = queryUtils.setPointAreaInQuery
 local setPositionInQuery = queryUtils.setPositionInQuery
 
@@ -254,6 +257,7 @@ local function onConfigChanged()
 
     universe["ENEMY_SEED"] = settings.startup["rampant--enemySeed"].value
     universe["ENEMY_VARIATIONS"] = settings.startup["rampant--newEnemyVariations"].value
+    local usingNewEnemiesAlready = universe["NEW_ENEMIES"]
     universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
 
     if universe.NEW_ENEMIES then
@@ -290,6 +294,20 @@ local function onConfigChanged()
     for _,surface in pairs(game.surfaces) do
         if not universe.maps[surface.index] then
             prepMap(universe, surface)
+        end
+    end
+    if (not usingNewEnemiesAlready) and universe.NEW_ENEMIES then
+        local tick = game.tick
+        for chunkId, chunkPack in pairs(universe.chunkToNests) do
+            local map = chunkPack.map
+            if map.surface.valid then
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
         end
     end
 end
