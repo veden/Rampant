@@ -5,7 +5,7 @@ local upgrade = {}
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapUtils = require("libs/MapUtils")
-local chunkPropertyUtils = require("libs/ChunkUtils")
+local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local baseUtils = require("libs/BaseUtils")
 
 -- constants
