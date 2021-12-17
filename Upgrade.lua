@@ -566,7 +566,8 @@ function upgrade.prepMap(universe, surface)
         (surfaceName == "aai-signals") or
         sFind(surfaceName, "NiceFill") or
         sFind(surfaceName, "Asteroid Belt") or
-        sFind(surfaceName, "Vault ")
+        sFind(surfaceName, "Vault ") or
+        (surfaceName == "RTStasisRealm")
     then
         return
     end
