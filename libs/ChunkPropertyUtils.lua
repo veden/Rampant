@@ -237,13 +237,13 @@ function chunkPropertyUtils.removeDrainPylons(map, unitNumber)
             map.drainPylons[unitNumber] = nil
             if pole.valid then
                 map.drainPylons[pole.unit_number] = nil
-                pole.die()
+                pole.destroy()
             end
         elseif (pole.unit_number == unitNumber) then
             map.drainPylons[unitNumber] = nil
             if target.valid then
                 map.drainPylons[target.unit_number] = nil
-                target.destroy()
+                target.die()
             end
         end
     end

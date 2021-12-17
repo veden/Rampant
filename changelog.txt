@@ -1,9 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.3
 Date: 15. 12. 2021
+  Tweaks:
+    - Added explosions to crystal pylon death
   Bugfixes:
     - Fixed typo in require import for upgrade on setChunkBase (Thanks Eerrikki for reporting)
     - Fixed upgradeEntity could return a nil name which failed in a surface.create_entity call (Thanks SimplyData for reporting)
+    - Fixed energyThief crystal pylons turning into radar corpses when they died
+    - Fixed energyThief crystal pylon hover picture not displaying
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.2
