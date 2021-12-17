@@ -2,7 +2,8 @@
 Version: 2.0.3
 Date: 15. 12. 2021
   Bugfixes:
-    - Fixed typo in require import for upgrade on setChunkBase
+    - Fixed typo in require import for upgrade on setChunkBase (Thanks Eerrikki for reporting)
+    - Fixed upgradeEntity could return a nil name which failed in a surface.create_entity call (Thanks SimplyData for reporting)
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.2
