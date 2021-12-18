@@ -867,11 +867,13 @@ end
 
 local function onBuilderArrived(event)
     local builder = event.group
+    local usingUnit = false
     if not (builder and builder.valid) then
         builder = event.unit
         if not (builder and builder.valid and builder.force.name == "enemy") then
             return
         end
+        usingUnit = true
     elseif (builder.force.name ~= "enemy") then
         return
     end
@@ -881,8 +883,10 @@ local function onBuilderArrived(event)
         return
     end
     map.activeSurface = true
-    local squad = universe.groupNumberToSquad[builder.group_number]
-    squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
+    if not usingUnit then
+        local squad = universe.groupNumberToSquad[builder.group_number]
+        squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
+    end
     if universe.aiPointsPrintSpendingToChat then
         game.print("Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
