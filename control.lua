@@ -37,6 +37,7 @@ local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 -- imported functions
 
+local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
 local getChunkById = mapUtils.getChunkById
 local setChunkBase = chunkPropertyUtils.setChunkBase
 
@@ -297,18 +298,7 @@ local function onConfigChanged()
         end
     end
     if (not usingNewEnemiesAlready) and universe.NEW_ENEMIES then
-        local tick = game.tick
-        for chunkId, chunkPack in pairs(universe.chunkToNests) do
-            local map = chunkPack.map
-            if map.surface.valid then
-                local chunk = getChunkById(map, chunkId)
-                local base = findNearbyBase(map, chunk)
-                if not base then
-                    base = createBase(map, chunk, tick)
-                end
-                setChunkBase(map, chunk, base)
-            end
-        end
+        addBasesToAllEnemyStructures(universe, game.tick)
     end
 end
 

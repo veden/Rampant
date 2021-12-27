@@ -9,6 +9,7 @@ Date: 17. 12. 2021
     - Fixed adding player to chunk crash
     - Fixed surface deletion with chunk processor indexing nil
     - Fixed enemy structures not being counted for faction adaptation
+    - Fixed when new enemies is enabled partway through game that all enemy structures are registered correctly
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.3

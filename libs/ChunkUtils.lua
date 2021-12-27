@@ -69,9 +69,9 @@ local addUtilityCount = chunkPropertyUtils.addUtilityCount
 local removeUtilityCount = chunkPropertyUtils.removeUtilityCount
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-local getNestCount = chunkPropertyUtils.getNestCount
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
+local getChunkById = mapUtils.getChunkById
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
 
@@ -340,6 +340,56 @@ function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
         local building = buildings[i]
 
         chunkUtils.registerEnemyBaseStructure(map, building, tick, base)
+    end
+end
+
+function chunkUtils.addBasesToAllEnemyStructures(universe, tick)
+    for chunkId, chunkPack in pairs(universe.chunkToNests) do
+        local map = chunkPack.map
+        if map.surface.valid then
+            local chunk = getChunkById(map, chunkId)
+            local base = findNearbyBase(map, chunk)
+            if not base then
+                base = createBase(map, chunk, tick)
+            end
+            setChunkBase(map, chunk, base)
+        end
+    end
+    for _, map in pairs(universe.maps) do
+        if map.surface.valid then
+            for chunkId in pairs(map.chunkToTurrets) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToHives) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToUtilities) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToTraps) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+        end
     end
 end
 
