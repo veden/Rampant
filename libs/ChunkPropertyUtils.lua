@@ -451,11 +451,10 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
 end
 
 function chunkPropertyUtils.addPlayerToChunk(map, chunk, name)
-    local playerChunks = map.playerToChunk
     local playerCountChunks = map.chunkToPlayerCount
-    local playerChunk = playerChunks[name]
+    local playerChunk = map.playerToChunk[name]
     if not playerChunk then
-        playerChunks[name] = chunk
+        map.playerToChunk[name] = chunk
         local playerCount = playerCountChunks[chunk.id]
         if not playerCount then
             playerCountChunks[chunk.id] = 1
@@ -463,9 +462,11 @@ function chunkPropertyUtils.addPlayerToChunk(map, chunk, name)
             playerCountChunks[chunk.id] = playerCount + 1
         end
     elseif (playerChunk.id ~= chunk.id) then
-        playerChunks[name] = chunk
+        map.playerToChunk[name] = chunk
         local playerCount = playerCountChunks[playerChunk.id]
-        chunkPropertyUtils.setPlayersOnChunk(map, playerChunk, playerCount - 1)
+        if playerCount then
+            chunkPropertyUtils.setPlayersOnChunk(map, playerChunk, playerCount - 1)
+        end
         playerCount = playerCountChunks[chunk.id]
         if not playerCount then
             playerCountChunks[chunk.id] = 1
