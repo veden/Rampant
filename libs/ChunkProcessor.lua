@@ -88,6 +88,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
             pendingChunks[eventId] = nil
             local map = event.map
             if not map.surface.valid then
+                universe.chunkProcessorIterator = newEventId
                 return
             end
 
