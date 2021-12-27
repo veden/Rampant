@@ -537,7 +537,6 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
             removeFunc = removeTurretCount
         else
             hiveType = "biter-spawner"
-
             removeFunc = removeNestCount
         end
     end

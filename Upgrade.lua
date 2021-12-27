@@ -5,8 +5,6 @@ local upgrade = {}
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapUtils = require("libs/MapUtils")
-local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
-local baseUtils = require("libs/BaseUtils")
 local chunkUtils = require("libs/ChunkUtils")
 
 -- constants
@@ -30,12 +28,6 @@ local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
-
-local getChunkById = mapUtils.getChunkById
-local setChunkBase = chunkPropertyUtils.setChunkBase
-
-local createBase = baseUtils.createBase
-local findNearbyBase = baseUtils.findNearbyBase
 
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
 
