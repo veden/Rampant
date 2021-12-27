@@ -507,7 +507,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
                 removed = true
                 if map.universe.NEW_ENEMIES then
                     local base = getChunkBase(map, chunk)
-                    if damageType and usedBases[base.id] then
+                    if damageType and not usedBases[base.id] then
                         usedBases[base.id] = true
                         local damageTypeName = damageType.name
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
