@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: 17. 12. 2021
+  Contributions:
+    - PlexPt has added a Chinese locale
   Improvements:
     - Added RTStasisRealm to surface exclusion list
     - Added space exploration spaceship surface to exclusion list
