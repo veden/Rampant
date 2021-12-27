@@ -37,6 +37,20 @@ local processPendingChunks = chunkProcessor.processPendingChunks
 
 -- module code
 
+local function isExcludedSurface(surfaceName)
+    return sFind(surfaceName, "Factory floor") or
+        sFind(surfaceName, " Orbit") or
+        sFind(surfaceName, "clonespace") or
+        sFind(surfaceName, "BPL_TheLabplayer") or
+        sFind(surfaceName, "starmap-") or
+        (surfaceName == "aai-signals") or
+        sFind(surfaceName, "NiceFill") or
+        sFind(surfaceName, "Asteroid Belt") or
+        sFind(surfaceName, "Vault ") or
+        (surfaceName == "RTStasisRealm") or
+        sFind(surfaceName, "spaceship")
+end
+
 local function addCommandSet(queriesAndCommands)
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
     queriesAndCommands.neighbors = {
@@ -529,6 +543,19 @@ function upgrade.attempt(universe)
     if global.version < 207 then
         global.version = 207
 
+        for mapId,map in pairs(universe.maps) do
+            local toBeRemoved = not map.surface.valid or isExcludedSurface(map.surface.name)
+            if toBeRemoved then
+                if universe.mapIterator == mapId then
+                    universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
+                end
+                if universe.processMapAIIterator == mapId then
+                    universe.processMapAIIterator = nil
+                end
+                universe.maps[mapId] = nil
+            end
+        end
+
         if universe.NEW_ENEMIES then
             addBasesToAllEnemyStructures(universe, game.tick)
         end
@@ -541,22 +568,11 @@ end
 
 function upgrade.prepMap(universe, surface)
     local surfaceName = surface.name
-    if sFind(surfaceName, "Factory floor") or
-        sFind(surfaceName, " Orbit") or
-        sFind(surfaceName, "clonespace") or
-        sFind(surfaceName, "BPL_TheLabplayer") or
-        sFind(surfaceName, "starmap-") or
-        (surfaceName == "aai-signals") or
-        sFind(surfaceName, "NiceFill") or
-        sFind(surfaceName, "Asteroid Belt") or
-        sFind(surfaceName, "Vault ") or
-        (surfaceName == "RTStasisRealm") or
-        sFind(surfaceName, "spaceship- ")
-    then
+    if isExcludedSurface(surfaceName) then
         return
     end
 
-    game.print("Rampant - Indexing surface:" .. surface.name .. ", index:" .. tostring(surface.index) .. ", please wait.")
+    game.print("Rampant - Indexing surface:" .. surfaceName .. ", index:" .. tostring(surface.index) .. ", please wait.")
 
     local surfaceIndex = surface.index
 
