@@ -3,6 +3,7 @@ Version: 2.0.4
 Date: 17. 12. 2021
   Improvements:
     - Added RTStasisRealm to surface exclusion list
+    - Added space exploration spaceship surface to exclusion list
   Bugfixes:
     - Fixed onBuilderArrived if the builder was a unit and not a group (Thanks DBotThePony for reporting)
     - Fixed adding player to chunk crash
