@@ -172,7 +172,7 @@ local biterAttributeNumeric = {
     ["movement"] = { 0.2, 0.19, 0.185, 0.18, 0.175, 0.17, 0.17, 0.17, 0.17, 0.17 },
     ["health"] = { 15, 75, 150, 250, 1000, 2000, 3500, 7500, 15000, 30000 },
     ["pollutionToAttack"] = { 10, 40, 80, 120, 200, 300, 450, 550, 650, 750 },
-    ["spawningTimeModifer"] = { 1, 1, 1, 2, 3, 7, 10, 10, 12, 12 }
+    ["spawningTimeModifer"] = { 1, 1, 2, 2, 4, 4, 6, 6, 8, 8 }
 }
 
 local acidPuddleAttributeNumeric = {
@@ -203,7 +203,7 @@ local spitterAttributeNumeric = {
     ["movement"] = { 0.185, 0.18, 0.18, 0.17, 0.17, 0.16, 0.16, 0.15, 0.15, 0.14 },
     ["health"] = { 10, 50, 200, 350, 1250, 2250, 3250, 6500, 12500, 25000 },
     ["pollutionToAttack"] = { 10, 40, 80, 120, 200, 300, 450, 550, 650, 750 },
-    ["spawningTimeModifer"] = { 1, 1, 1, 2, 2, 5, 8, 8, 10, 10 },
+    ["spawningTimeModifer"] = { 1, 1, 2, 2, 4, 4, 6, 6, 8, 8 }
 }
 
 local droneAttributeNumeric = {
