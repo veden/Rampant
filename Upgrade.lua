@@ -560,7 +560,7 @@ function upgrade.attempt(universe)
             addBasesToAllEnemyStructures(universe, game.tick)
         end
 
-        game.print("Rampant - Version 2.0.4")
+        game.print("Rampant - Version 2.1.0")
     end
 
     return (starting ~= global.version) and global.version
