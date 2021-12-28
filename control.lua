@@ -38,8 +38,6 @@ local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 -- imported functions
 
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
-local getChunkById = mapUtils.getChunkById
-local setChunkBase = chunkPropertyUtils.setChunkBase
 
 local setPointAreaInQuery = queryUtils.setPointAreaInQuery
 local setPositionInQuery = queryUtils.setPositionInQuery

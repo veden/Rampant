@@ -9,6 +9,7 @@ local chunkUtils = require("libs/ChunkUtils")
 
 -- constants
 
+local MINIMUM_EXPANSION_DISTANCE = constants.MINIMUM_EXPANSION_DISTANCE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
@@ -452,7 +453,6 @@ function upgrade.attempt(universe)
 
         universe.expansion = game.map_settings.enemy_expansion.enabled
         universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        universe.expansionMaxDistanceDerivation = universe.expansionMaxDistance * 0.33
         universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
         universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
         universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
@@ -559,8 +559,17 @@ function upgrade.attempt(universe)
         if universe.NEW_ENEMIES then
             addBasesToAllEnemyStructures(universe, game.tick)
         end
+    end
+    if global.version < 208 then
+        global.version = 208
 
-        game.print("Rampant - Version 2.1.0")
+        universe.expansionMaxDistanceDerivation = nil
+        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
+        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
+        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
+        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+
+        game.print("Rampant - Version 2.1.1")
     end
 
     return (starting ~= global.version) and global.version

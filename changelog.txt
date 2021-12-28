@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.1
+Date: 28. 12. 2021
+  Improvements:
+   - Settlers now have a 40% chance to move roughly 50% of max expansion distance, 25% chance to move roughly 33% of max expansion distance, and 25% chance to move roughly 75% of max expansion distance, 5% chance to settler where the group formed, 5% chance to go 100% of max expansion distance
+  Bugfixes:
+   - Settlers in some cases not setting a maxDistance which caused settlers to build where they were formed
+
+---------------------------------------------------------------------------------------------------
 Version: 2.1.0
 Date: 27. 12. 2021
   Contributions:
