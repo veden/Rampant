@@ -8,8 +8,11 @@ local chunkProcessor = {}
 local chunkUtils = require("ChunkUtils")
 local queryUtils = require("QueryUtils")
 local mapUtils = require("MapUtils")
+local constants = require("Constants")
 
 -- constants
+
+local CHUNK_SIZE = constants.CHUNK_SIZE
 
 -- imported functions
 
@@ -152,8 +155,9 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local surface = entity.surface
             local query = universe.ppuUpgradeEntityQuery
             local position = entityData.position or entity.position
-            setPositionInQuery(query, position)
             query.name = entityData.name
+            local foundPosition = surface.find_non_colliding_position(entityData.name, position, CHUNK_SIZE, 1, true)
+            setPositionInQuery(query, foundPosition or position)
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
             local createdEntity = surface.create_entity(query)

@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.0
+Date: 27. 12. 2021
+  Improvements:
+    - re-added finding non-colliding position for enemy structures but if it can't find a position then overlap them
+
+---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: 17. 12. 2021
   Contributions:
