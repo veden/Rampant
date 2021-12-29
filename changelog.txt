@@ -1,4 +1,50 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.1
+Date: 28. 12. 2021
+  Improvements:
+    - Settlers now have a 40% chance to move roughly 50% of max expansion distance, 25% chance to move roughly 33% of max expansion distance, and 25% chance to move roughly 75% of max expansion distance, 5% chance to settler where the group formed, 5% chance to go 100% of max expansion distance
+  Bugfixes:
+    - Settlers in some cases not setting a maxDistance which caused settlers to build where they were formed
+
+---------------------------------------------------------------------------------------------------
+Version: 2.1.0
+Date: 27. 12. 2021
+  Contributions:
+    - PlexPt has completed the Chinese locale
+  Improvements:
+    - re-added finding non-colliding position for enemy structures but if it can't find a position then overlap them
+  Tweaks:
+    - Modified spawning_time_modifier on biters to be roughly 25% faster at high tiers
+    - Modified spawning_time_modifier on spitters to be roughly 20% faster at high tiers
+
+---------------------------------------------------------------------------------------------------
+Version: 2.0.4
+Date: 17. 12. 2021
+  Contributions:
+    - PlexPt has added a Chinese locale
+  Improvements:
+    - Added RTStasisRealm to surface exclusion list
+    - Added space exploration spaceship surface to exclusion list
+    - Added pass during upgrade to remove in-memory maps that are on the exclusion list for surfaces
+  Bugfixes:
+    - Fixed onBuilderArrived if the builder was a unit and not a group (Thanks DBotThePony for reporting)
+    - Fixed adding player to chunk crash
+    - Fixed surface deletion with chunk processor indexing nil
+    - Fixed enemy structures not being counted for faction adaptation
+    - Fixed when new enemies is enabled partway through game that all enemy structures are registered correctly
+
+---------------------------------------------------------------------------------------------------
+Version: 2.0.3
+Date: 15. 12. 2021
+  Tweaks:
+    - Added explosions to crystal pylon death
+  Bugfixes:
+    - Fixed typo in require import for upgrade on setChunkBase (Thanks Eerrikki for reporting)
+    - Fixed upgradeEntity could return a nil name which failed in a surface.create_entity call (Thanks SimplyData for reporting)
+    - Fixed energyThief crystal pylons turning into radar corpses when they died
+    - Fixed energyThief crystal pylon hover picture not displaying
+
+---------------------------------------------------------------------------------------------------
 Version: 2.0.2
 Date: 15. 12. 2021
   Bugfixes:

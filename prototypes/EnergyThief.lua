@@ -25,7 +25,7 @@ function energyThief.addFactionAddon()
                 minable = {mining_time = 1, result = "drain-trigger-rampant"},
                 max_health = 100,
                 selectable_in_game = false,
-                corpse = "small-remnants",
+                corpse = nil,
                 collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
                 selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
                 picture =
@@ -75,7 +75,7 @@ function energyThief.addFactionAddon()
                 minable = {hardness = 0.2, mining_time = 0.5, result = "big-electric-pole"},
                 max_health = 750,
                 healing_per_tick = 0.02,
-                corpse = "medium-remnants",
+                corpse = nil,
                 resistances =
                     {
                         {
@@ -183,21 +183,22 @@ function energyThief.addFactionAddon()
     chest.name = "pylon-target-rampant"
     chest.icon = "__Rampant__/graphics/icons/thief/crystal-drain.png"
     chest.icon_size = 32
+    chest.corpse = nil
     chest.icon_mipmaps = 1
     chest.flags = {"not-repairable", "not-on-map", "hidden"}
     chest.subgroup = "enemies"
     chest.next_upgrade = nil
     chest.backer_name = false
+    data.raw["simple-entity-with-force"]["drain-trigger-rampant"].dying_explosion = chest.dying_explosion
     chest.pictures = {
         layers={
             {
-                filename = "__core__/graphics/empty.png",
-                priority = "low",
-                width = 1,
-                height = 1,
-                direction_count = 1,
-                line_length = 1,
-                shift = {0, 0}
+                filename = "__Rampant__/graphics/entities/thief/crystal-drain-pole.png",
+                priority = "high",
+                width = 168,
+                height = 130,
+                direction_count = 4,
+                shift = {1.6, -1.4}
             }
     }}
     chest.max_health = 750

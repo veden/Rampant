@@ -216,6 +216,8 @@ constants.SQUAD_BUILDING = 6
 
 -- Squad Related
 
+constants.MINIMUM_EXPANSION_DISTANCE = 10
+
 constants.RETREAT_GRAB_RADIUS = 24
 constants.RETREAT_SPAWNER_GRAB_RADIUS = 75
 

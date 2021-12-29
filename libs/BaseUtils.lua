@@ -281,7 +281,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
                                           map,
                                           evolve)
 
-    if (spawnerName ~= entity.name) then
+    if spawnerName and (spawnerName ~= entity.name) then
         local entityData = {
             ["name"] = spawnerName,
             ["position"] = disPos,

@@ -27,13 +27,14 @@ function thiefUtils.makeDrainCrystal(attributes)
                 flags = {"placeable-enemy"},
                 minable = {hardness = 0.2, mining_time = 0.5, result = itemName},
                 max_health = attributes.health or 500,
-                corpse = "small-remnants",
+                corpse = nil,
                 collision_box = {{-0.9 * attributes.scale, -0.9 * attributes.scale}, {0.9 * attributes.scale, 0.9 * attributes.scale}},
                 selection_box = {{-1.1 * attributes.scale, -1.1 * attributes.scale}, {1.1 * attributes.scale, 1.1 * attributes.scale}},
                 energy_per_sector = "100MJ",
                 max_distance_of_sector_revealed = 0,
                 max_distance_of_nearby_sector_revealed = 0,
                 energy_per_nearby_scan = "750kJ",
+                dying_explosion = "radar-explosion",
                 resistances = {
                     {
                         type = "physical",

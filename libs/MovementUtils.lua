@@ -8,6 +8,7 @@ local movementUtils = {}
 local constants = require("Constants")
 local mapUtils = require("MapUtils")
 local mathUtils = require("MathUtils")
+local unitGroupUtils = require("UnitGroupUtils")
 
 -- constants
 
@@ -17,7 +18,7 @@ local SQUAD_SETTLING = constants.SQUAD_SETTLING
 
 -- imported functions
 
-local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
+local calculateSettlerMaxDistance = unitGroupUtils.calculateSettlerMaxDistance
 
 local canMoveChunkDirection = mapUtils.canMoveChunkDirection
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -66,11 +67,7 @@ function movementUtils.addMovementPenalty(squad, chunk)
                     squad.settler = true
                     squad.originPosition.x = squad.group.position.x
                     squad.originPosition.y = squad.group.position.y
-                    squad.maxDistance = gaussianRandomRangeRG(universe.expansionMaxDistance * 0.5,
-                                                              universe.expansionMaxDistanceDerivation,
-                                                              10,
-                                                              universe.expansionMaxDistance,
-                                                              universe.random)
+                    squad.maxDistance = calculateSettlerMaxDistance(universe)
 
                     squad.status = SQUAD_SETTLING
                 else

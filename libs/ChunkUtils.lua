@@ -69,9 +69,9 @@ local addUtilityCount = chunkPropertyUtils.addUtilityCount
 local removeUtilityCount = chunkPropertyUtils.removeUtilityCount
 
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-local getNestCount = chunkPropertyUtils.getNestCount
 local setRaidNestActiveness = chunkPropertyUtils.setRaidNestActiveness
 local setNestActiveness = chunkPropertyUtils.setNestActiveness
+local getChunkById = mapUtils.getChunkById
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
 
@@ -343,6 +343,56 @@ function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     end
 end
 
+function chunkUtils.addBasesToAllEnemyStructures(universe, tick)
+    for chunkId, chunkPack in pairs(universe.chunkToNests) do
+        local map = chunkPack.map
+        if map.surface.valid then
+            local chunk = getChunkById(map, chunkId)
+            local base = findNearbyBase(map, chunk)
+            if not base then
+                base = createBase(map, chunk, tick)
+            end
+            setChunkBase(map, chunk, base)
+        end
+    end
+    for _, map in pairs(universe.maps) do
+        if map.surface.valid then
+            for chunkId in pairs(map.chunkToTurrets) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToHives) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToUtilities) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+            for chunkId in pairs(map.chunkToTraps) do
+                local chunk = getChunkById(map, chunkId)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+                setChunkBase(map, chunk, base)
+            end
+        end
+    end
+end
+
 function chunkUtils.entityForPassScan(map, entity)
     local overlapArray = getEntityOverlapChunks(map, entity)
 
@@ -487,7 +537,6 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
             removeFunc = removeTurretCount
         else
             hiveType = "biter-spawner"
-
             removeFunc = removeNestCount
         end
     end
@@ -507,7 +556,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
                 removed = true
                 if map.universe.NEW_ENEMIES then
                     local base = getChunkBase(map, chunk)
-                    if damageType and usedBases[base.id] then
+                    if damageType and not usedBases[base.id] then
                         usedBases[base.id] = true
                         local damageTypeName = damageType.name
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3

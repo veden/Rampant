@@ -15,6 +15,8 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
+local MINIMUM_EXPANSION_DISTANCE = constants.MINIMUM_EXPANSION_DISTANCE
+
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
@@ -225,12 +227,6 @@ function aiAttackWave.formSettlers(map, chunk)
                                                                       true)
             if squadPosition then
                 local squad = createSquad(squadPosition, map, nil, true)
-
-                squad.maxDistance = gaussianRandomRangeRG(universe.expansionMaxDistance * 0.5,
-                                                          universe.expansionMaxDistanceDerivation,
-                                                          10,
-                                                          universe.expansionMaxDistance,
-                                                          universe.random)
 
                 local scaledWaveSize = settlerWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group

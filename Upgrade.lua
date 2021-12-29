@@ -5,11 +5,11 @@ local upgrade = {}
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapUtils = require("libs/MapUtils")
-local chunkPropertyUtils = require("libs/ChunkUtils")
-local baseUtils = require("libs/BaseUtils")
+local chunkUtils = require("libs/ChunkUtils")
 
 -- constants
 
+local MINIMUM_EXPANSION_DISTANCE = constants.MINIMUM_EXPANSION_DISTANCE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
@@ -30,18 +30,27 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
 
-local getChunkById = mapUtils.getChunkById
-local setChunkBase = chunkPropertyUtils.setChunkBase
-
-local createBase = baseUtils.createBase
-local findNearbyBase = baseUtils.findNearbyBase
-
+local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
 
 local sFind = string.find
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local processPendingChunks = chunkProcessor.processPendingChunks
 
 -- module code
+
+local function isExcludedSurface(surfaceName)
+    return sFind(surfaceName, "Factory floor") or
+        sFind(surfaceName, " Orbit") or
+        sFind(surfaceName, "clonespace") or
+        sFind(surfaceName, "BPL_TheLabplayer") or
+        sFind(surfaceName, "starmap-") or
+        (surfaceName == "aai-signals") or
+        sFind(surfaceName, "NiceFill") or
+        sFind(surfaceName, "Asteroid Belt") or
+        sFind(surfaceName, "Vault ") or
+        (surfaceName == "RTStasisRealm") or
+        sFind(surfaceName, "spaceship")
+end
 
 local function addCommandSet(queriesAndCommands)
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
@@ -444,7 +453,6 @@ function upgrade.attempt(universe)
 
         universe.expansion = game.map_settings.enemy_expansion.enabled
         universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        universe.expansionMaxDistanceDerivation = universe.expansionMaxDistance * 0.33
         universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
         universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
         universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
@@ -532,25 +540,36 @@ function upgrade.attempt(universe)
 
         addCommandSet(universe)
     end
-    if global.version < 206 then
-        global.version = 206
+    if global.version < 207 then
+        global.version = 207
 
-        if universe.NEW_ENEMIES then
-            local tick = game.tick
-            for chunkId, chunkPack in pairs(universe.chunkToNests) do
-                local map = chunkPack.map
-                if map.surface.valid then
-                    local chunk = getChunkById(map, chunkId)
-                    local base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(map, chunk, tick)
-                    end
-                    setChunkBase(map, chunk, base)
+        for mapId,map in pairs(universe.maps) do
+            local toBeRemoved = not map.surface.valid or isExcludedSurface(map.surface.name)
+            if toBeRemoved then
+                if universe.mapIterator == mapId then
+                    universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
                 end
+                if universe.processMapAIIterator == mapId then
+                    universe.processMapAIIterator = nil
+                end
+                universe.maps[mapId] = nil
             end
         end
 
-        game.print("Rampant - Version 2.0.2")
+        if universe.NEW_ENEMIES then
+            addBasesToAllEnemyStructures(universe, game.tick)
+        end
+    end
+    if global.version < 208 then
+        global.version = 208
+
+        universe.expansionMaxDistanceDerivation = nil
+        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
+        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
+        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
+        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+
+        game.print("Rampant - Version 2.1.1")
     end
 
     return (starting ~= global.version) and global.version
@@ -558,20 +577,11 @@ end
 
 function upgrade.prepMap(universe, surface)
     local surfaceName = surface.name
-    if sFind(surfaceName, "Factory floor") or
-        sFind(surfaceName, " Orbit") or
-        sFind(surfaceName, "clonespace") or
-        sFind(surfaceName, "BPL_TheLabplayer") or
-        sFind(surfaceName, "starmap-") or
-        (surfaceName == "aai-signals") or
-        sFind(surfaceName, "NiceFill") or
-        sFind(surfaceName, "Asteroid Belt") or
-        sFind(surfaceName, "Vault ")
-    then
+    if isExcludedSurface(surfaceName) then
         return
     end
 
-    game.print("Rampant - Indexing surface:" .. surface.name .. ", index:" .. tostring(surface.index) .. ", please wait.")
+    game.print("Rampant - Indexing surface:" .. surfaceName .. ", index:" .. tostring(surface.index) .. ", please wait.")
 
     local surfaceIndex = surface.index
 
