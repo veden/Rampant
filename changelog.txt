@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
 Date: 29. 12. 2021
+  Contributions:
+    - PlexPt has provided an update Chinese locale
   Improvements:
     - Added integration with schallAlienLoot (Thank you garrotte for the code snippet)
     - New enemy hives only spawn structures during daylight hours now
