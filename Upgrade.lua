@@ -497,7 +497,6 @@ function upgrade.attempt(universe)
         universe.eventId = 0
         universe.chunkId = 0
         universe.randomGenerator = nil
-        universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
         universe.chunkIdToChunk = {}
@@ -568,8 +567,20 @@ function upgrade.attempt(universe)
         universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
         universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
         universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+    end
+    if global.version < 209 then
+        global.version = 209
 
-        game.print("Rampant - Version 2.1.1")
+        if not universe.random then
+            local combinedSeed = settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed
+            if (combinedSeed > 4294967295) then
+                universe.random = game.create_random_generator(combinedSeed % 4294967295)
+            elseif not universe.random then
+                universe.random = game.create_random_generator(combinedSeed)
+            end
+        end
+
+        game.print("Rampant - Version 2.2.0")
     end
 
     return (starting ~= global.version) and global.version

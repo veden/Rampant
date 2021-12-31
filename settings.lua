@@ -272,6 +272,7 @@ data:extend({
             setting_type = "startup",
             minimum_value = 1,
             default_value = 1024567,
+            maximum_value = 4294967295,
             order = "l[modifer]-b[unit]",
             per_user = false
         },
