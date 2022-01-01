@@ -52,9 +52,16 @@ end
 
 local function removeProcessQueueChunk(processQueue, chunk)
     local insertionPoint = findInsertionPoint(processQueue, chunk)
+    if insertionPoint > #processQueue then
+        insertionPoint = insertionPoint - 1
+    end
     for i=insertionPoint,1,-1 do
-        if (processQueue[i].id == chunk.id) then
+        local pqChunk = processQueue[i]
+        if pqChunk.id == chunk.id then
             tRemove(processQueue, i)
+            return
+        elseif pqChunk.dOrigin < chunk.dOrigin then
+            return
         end
     end
 end
