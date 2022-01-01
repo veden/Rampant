@@ -98,11 +98,10 @@ local next = next
     pheromone dissipate at a faster rate.
 --]]
 function mapProcessor.processMap(map, tick)
-    local index = map.processIndex
-
     local outgoingWave = map.outgoingScanWave
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
+    local index = mMin(map.processIndex, processQueueLength)
 
     local step
     local endIndex
@@ -139,11 +138,10 @@ function mapProcessor.processMap(map, tick)
 end
 
 function mapProcessor.processStaticMap(map)
-    local index = map.processStaticIndex
-
     local outgoingWave = map.outgoingStaticScanWave
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
+    local index = mMin(map.processStaticIndex, processQueueLength)
 
     local step
     local endIndex
