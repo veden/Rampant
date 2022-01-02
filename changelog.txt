@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
 Date: 29. 12. 2021
+  Improvements:
+    - Added integration with schallAlienLoot (Thank you garrotte for the code snippet)
   Tweaks:
     - Set maximum value on enemy seed to 4294967295
   Bugfixes:
