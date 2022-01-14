@@ -6,6 +6,7 @@ Date: 29. 12. 2021
   Tweaks:
     - Set maximum value on enemy seed to 4294967295
     - Slightly increased spacing between enemy structures
+    - License has changed to GPLv3
   Bugfixes:
     - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
     - Fixed random generator seed overflow (Thanks NeveHanter for the report)
