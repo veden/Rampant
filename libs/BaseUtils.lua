@@ -610,7 +610,7 @@ function baseUtils.rebuildNativeTables(universe, rg)
                 for v=1,universe.ENEMY_VARIATIONS do
                     local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                     enemyAlignmentLookup[entry] = faction.type
-                    local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
+                    local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. (t+2) .. "-rampant"
                     buildingSpaceLookup[entry] = proxyEntity
                     costLookup[entry] = HIVE_BUILDINGS_COST[building.type]
                     buildingHiveTypeLookup[entry] = building.type

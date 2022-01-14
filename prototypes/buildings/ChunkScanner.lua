@@ -45,7 +45,8 @@ local scales = {
     [8] = 1.8,
     [9] = 2.0,
     [10] = 2.1,
-    [11] = 2.2
+    [11] = 2.2,
+    [12] = 2.3
 }
 
 local subTypes = constants.HIVE_BUILDINGS_TYPES

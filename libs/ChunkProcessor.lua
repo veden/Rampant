@@ -163,7 +163,20 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local query = universe.ppuUpgradeEntityQuery
             local position = entityData.position or entity.position
             query.name = entityData.name
-            local foundPosition = surface.find_non_colliding_position(entityData.name, position, CHUNK_SIZE, 1, true)
+            local foundPosition
+            if universe.NEW_ENEMIES then
+                foundPosition = surface.find_non_colliding_position(universe.buildingSpaceLookup[entityData.name],
+                                                                    position,
+                                                                    CHUNK_SIZE,
+                                                                    1,
+                                                                    true)
+            else
+                foundPosition = surface.find_non_colliding_position(entityData.name,
+                                                                    position,
+                                                                    CHUNK_SIZE,
+                                                                    1,
+                                                                    true)
+            end
             setPositionInQuery(query, foundPosition or position)
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
