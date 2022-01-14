@@ -274,6 +274,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
     else
         pickedBaseAlignment = baseAlignment[1]
     end
+
     local spawnerName = findEntityUpgrade(pickedBaseAlignment,
                                           currentEvo,
                                           evoIndex,
@@ -673,6 +674,9 @@ function baseUtils.rebuildNativeTables(universe, rg)
                 for x=1,2 do
                     local alignment = base.alignment[x]
                     if alignment and not universe.buildingEvolveLookup[alignment] then
+                        base.alignment = findBaseInitialAlignment(map, evoIndex)
+                        break
+                    elseif not alignment and (x == 1) then
                         base.alignment = findBaseInitialAlignment(map, evoIndex)
                         break
                     end
