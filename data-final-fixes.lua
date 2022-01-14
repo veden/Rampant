@@ -9,7 +9,7 @@ if settings.startup["rampant--newEnemies"].value then
     swarmUtils.processFactions()
     swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["neutral-biter-spawner-v1-t10-rampant"].result_units)
 
-    if mods["SchallAlientLoot"] then
+    if mods["SchallAlienLoot"] then
         local SizeLootRampant = {1, 2, 3, 3, 4, 4, 4, 5, 5, 6}
         for _,faction in pairs(constants.FACTION_SET) do
             for v=1,settings.startup["rampant--newEnemyVariations"].value do
