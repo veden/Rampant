@@ -6,6 +6,7 @@ Date: 29. 12. 2021
   Tweaks:
     - Set maximum value on enemy seed to 4294967295
   Bugfixes:
+    - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
     - Fixed random generator seed overflow (Thanks NeveHanter for the report)
     - Fixed removing chunks could index outside processQueueLength (Thanks thecheat789 for the report)
     - Fixed processMap and processStaticMap could index outside processQueueLength

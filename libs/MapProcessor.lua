@@ -46,6 +46,8 @@ local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
 
 -- imported functions
 
+local removeChunkToNest = mapUtils.removeChunkToNest
+
 local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 
@@ -452,7 +454,7 @@ function mapProcessor.processNests(universe, tick)
         universe.processNestIterator = next(universe.chunkToNests, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
-            universe.chunkToNests[chunkId] = nil
+            removeChunkToNest(universe, chunkId)
             return
         end
         local chunk = getChunkById(map, chunkId)
@@ -482,7 +484,11 @@ local function processSpawnersBody(universe, iterator, chunks)
         universe[iterator] = next(chunks, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
-            chunks[chunkId] = nil
+            if (iterator == "processMigrationIterator") then
+                removeChunkToNest(universe, chunkId)
+            else
+                chunks[chunkId] = nil
+            end
             return
         end
         local state = chunkPack.map.state

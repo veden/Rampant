@@ -76,6 +76,16 @@ function mapUtils.nextMap(universe)
     until mapIterator == universe.mapIterator
 end
 
+function mapUtils.removeChunkToNest(universe, chunkId)
+    universe.chunkToNests[chunkId] = nil
+    if (chunkId == universe.processNestIterator) then
+        universe.processNestIterator = nil
+    end
+    if (chunkId == universe.processMigrationIterator) then
+        universe.processNestIterator = nil
+    end
+end
+
 function mapUtils.removeChunkFromMap(map, x, y, chunkId)
     local universe = map.universe
     map[x][y] = nil
