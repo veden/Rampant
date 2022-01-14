@@ -67,7 +67,7 @@ local scales = {
 
 local subTypes = constants.HIVE_BUILDINGS_TYPES
 
-for t=1,11 do
+for t=1,12 do
     local scale = scales[t] * 1.2
 
     for si=1,#subTypes do
