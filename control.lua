@@ -243,6 +243,7 @@ local function onModSettingsChange(event)
     universe["aiPointsPrintGainsToChat"] = settings.global["rampant--aiPointsPrintGainsToChat"].value
     universe["aiPointsPrintSpendingToChat"] = settings.global["rampant--aiPointsPrintSpendingToChat"].value
     universe["printBaseUpgrades"] = settings.global["rampant--printBaseUpgrades"].value
+    universe["PRINT_BASE_SETTLING"] = settings.global["rampant--printBaseSettling"].value
 
     universe["enabledMigration"] = universe.expansion and settings.global["rampant--enableMigration"].value
     universe["peacefulAIToggle"] = settings.global["rampant--peacefulAIToggle"].value
@@ -890,7 +891,7 @@ local function onBuilderArrived(event)
         local squad = universe.groupNumberToSquad[builder.group_number]
         squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     end
-    if universe.aiPointsPrintSpendingToChat then
+    if universe.PRINT_BASE_SETTLING then
         game.print("Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
     setPositionInQuery(universe.obaCreateBuildCloudQuery, builder.position)

@@ -538,6 +538,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant--printBaseSettling",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-c[ai]z",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant--debugTemperament",
             setting_type = "runtime-global",
             default_value = false,

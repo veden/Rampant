@@ -8,6 +8,7 @@ Date: 29. 12. 2021
     - Slightly increased spacing between enemy structures
     - License has changed to GPLv3
     - Reduced new enemy hive frequency outside resoure chunks by 10x
+    - Separated mod setting into printing settlers building and ai spending points
   Bugfixes:
     - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
     - Fixed random generator seed overflow (Thanks NeveHanter for the report)
