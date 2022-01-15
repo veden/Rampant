@@ -232,7 +232,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
         local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (map.random() < 0.2)
-        makeHive = makeHive or (not makeHive and (map.random() < 0.0005))
+        print(originalEntity.unit_number, makeHive)
         return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"))
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
@@ -309,6 +309,11 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
         }
         map.universe.pendingUpgrades[entity.unit_number] = entityData
         return spawnerName
+    end
+    if entity.valid then
+        if map.universe.proxyEntityLookup[entity.name] then
+            entity.destroy()
+        end
     end
     return nil
 end
@@ -561,6 +566,8 @@ function baseUtils.rebuildNativeTables(universe, rg)
     universe.costLookup = costLookup
     local buildingHiveTypeLookup = {}
     universe.buildingHiveTypeLookup = buildingHiveTypeLookup
+    local proxyEntityLookup = {}
+    universe.proxyEntityLookup = proxyEntityLookup
 
     for i=1,10 do
         evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
@@ -626,7 +633,8 @@ function baseUtils.rebuildNativeTables(universe, rg)
                 for v=1,universe.ENEMY_VARIATIONS do
                     local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                     enemyAlignmentLookup[entry] = faction.type
-                    local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. (t+2) .. "-rampant"
+                    local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
+                    proxyEntityLookup[proxyEntity] = true
                     buildingSpaceLookup[entry] = proxyEntity
                     costLookup[entry] = HIVE_BUILDINGS_COST[building.type]
                     buildingHiveTypeLookup[entry] = building.type

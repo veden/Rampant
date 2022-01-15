@@ -249,7 +249,7 @@ local unitSpawnerAttributeNumeric = {
     ["spawningCooldownStart"] = { 1080, 1075, 1070, 1065, 1060, 1055, 1050, 1045, 1040, 1035 },
     ["spawningCooldownEnd"] = { 350, 345, 340, 335, 330, 325, 320, 315, 310, 305 },
     ["unitsToSpawn"] = { 11, 11, 12, 12, 13, 13, 14, 14, 15, 15 },
-    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["cooldown"] = { 50, 50, 45, 45, 40, 40, 35, 35, 30, 30 },
     ["unitsOwned"] = { 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 },
     ["physicalDecrease"] = { 1, 2, 3, 4, 6, 6, 8, 10, 12, 14 },
     ["physicalPercent"] = { 15, 15, 17, 17, 18, 18, 19, 19, 20, 20 },
@@ -258,7 +258,7 @@ local unitSpawnerAttributeNumeric = {
     ["fireDecrease"] = { 3, 3, 4, 4, 4, 4, 4, 4, 5, 5 },
     ["firePercent"] = { 40, 40, 42, 42, 43, 43, 44, 44, 45, 45 },
     ["evolutionRequirement"] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 },
-    ["cooldown"] = { 50, 50, 45, 45, 40, 40, 35, 35, 30, 30 }
+    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4 }
 }
 
 local hiveAttributeNumeric = {
@@ -271,7 +271,7 @@ local hiveAttributeNumeric = {
     ["spawningCooldownEnd"] = { 1785, 1780, 1775, 1770, 1765, 1760, 1755, 1750, 1745, 1740 },
     -- ["spawningCooldownEnd"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["unitsToSpawn"] = { 3000, 3000, 300, 3000, 3000, 3000, 3000, 3000, 3000, 3000 },
-    ["scale"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1 },
+    ["scale"] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9 },
     ["unitsOwned"] = { 7, 7, 8, 8, 9, 9, 10, 10, 11, 11 },
     ["physicalDecrease"] = { 1, 2, 3, 4, 6, 6, 8, 10, 12, 14 },
     ["physicalPercent"] = { 15, 15, 17, 17, 18, 18, 19, 19, 20, 20 },
@@ -290,7 +290,7 @@ local wormAttributeNumeric = {
     ["range"] = { 25, 27, 31, 33, 35, 36, 37, 38, 39, 40 },
     ["cooldown"] = { 70, 70, 68, 66, 64, 62, 60, 58, 56, 54 },
     ["damage"] = { 12, 22.5, 33.75, 45, 67.5, 82.5, 97.5, 112.5, 127.5, 142.5 },
-    ["scale"] = { 0.25, 0.40, 0.60, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["scale"] = { 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35 },
     ["radius"] = { 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.3, 2.5, 3.0 },
     ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
@@ -694,7 +694,7 @@ local function generateApperance(unit)
     local tier = unit.effectiveLevel
     if unit.scale then
         local scaleValue = unit.scale[tier]
-        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.24, scaleValue * 0.40, scaleValue * 1.50, xorRandom)
+        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.24, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
         unit.scale = scale
     end
     if unit.tint then

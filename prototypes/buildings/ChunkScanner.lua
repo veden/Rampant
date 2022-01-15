@@ -50,65 +50,91 @@ data:extend({
         })
 })
 
+local function generateCollisionBox(scale, entityType)
+    if entityType == "turret" then
+        return {
+            {-1.1 * scale, -1.0 * scale},
+            {1.1 * scale, 1.0 * scale}
+        }
+    elseif (entityType == "biter-spawner") or (entityType == "spitter-spawner") then
+        return {
+            {-3 * scale, -2 * scale},
+            {2 * scale, 2 * scale}
+        }
+    elseif entityType == "hive" then
+        return {
+            {-3 * scale, -2 * scale},
+            {2 * scale, 2 * scale}
+        }
+    end
+end
+
 local scales = {
-    [1] = 0.9,
-    [2] = 1.1,
-    [3] = 1.2,
-    [4] = 1.3,
-    [5] = 1.4,
-    [6] = 1.5,
-    [7] = 1.6,
-    [8] = 1.8,
-    [9] = 2.0,
-    [10] = 2.1,
-    [11] = 2.2,
-    [12] = 2.3
+    ["trap"] = {},
+    ["utility"] = {},
+    ["spitter-spawner"] = {
+        [1] = 0.70, [2] = 0.83, [3] = 0.96, [4] = 1.09, [5] = 1.22,
+        [6] = 1.35, [7] = 1.48, [8] = 1.61, [9] = 1.74, [10] = 1.87
+    },
+    ["biter-spawner"] = {
+        [1] = 0.70, [2] = 0.83, [3] = 0.96, [4] = 1.09, [5] = 1.22,
+        [6] = 1.35, [7] = 1.48, [8] = 1.61, [9] = 1.74, [10] = 1.87
+    },
+    ["hive"] = {
+        [1] = 1.35, [2] = 1.48, [3] = 1.61, [4] = 1.74, [5] = 1.87,
+        [6] = 2.0, [7] = 2.13, [8] = 2.26, [9] = 2.39, [10] = 2.52
+    },
+    ["turret"] = {
+        [1] = 0.635, [2] = 0.765, [3] = 0.895, [4] = 1.025, [5] = 1.155,
+        [6] = 1.285, [7] = 1.415, [8] = 1.545, [9] = 1.675, [10] = 1.805
+    }
 }
 
 local subTypes = constants.HIVE_BUILDINGS_TYPES
 
-for t=1,12 do
-    local scale = scales[t] * 1.2
+for si=1,#subTypes do
+    local st = subTypes[si]
+    if scales[st] then
+        for t=1,10 do
+            local scale = scales[st][t]
 
-    for si=1,#subTypes do
-        local st = subTypes[si]
-
-        data:extend(
-            {
+            data:extend(
                 {
-                    type = "land-mine",
-                    name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
-                    icon = "__base__/graphics/icons/steel-chest.png",
-                    icon_size = 32,
-                    flags = {},
-                    build_base_evolution_requirement = 0.08 * (t-1),
-                    order = "s-e-w-f",
-                    collision_mask = {"player-layer", "object-layer", "water-tile", "train-layer"},
-                    minable = nil,
-                    max_health = 100,
-                    corpse = nil,
-                    timeout = 1,
-                    trigger_radius = 0,
-                    collision_box = {{-3 * scale, -2 * scale}, {2 * scale, 2 * scale}},
-                    selection_box = nil,
+                    {
+                        type = "land-mine",
+                        name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
+                        icon = "__base__/graphics/icons/steel-chest.png",
+                        icon_size = 32,
+                        flags = {},
+                        build_base_evolution_requirement = 0.08 * (t-1),
+                        order = "s-e-w-f",
+                        collision_mask = {"player-layer", "object-layer", "water-tile", "train-layer"},
+                        minable = nil,
+                        max_health = 100,
+                        corpse = nil,
+                        timeout = 1,
+                        trigger_radius = 0,
+                        collision_box = generateCollisionBox(scale, st),
+                        selection_box = nil,
 
-                    picture_safe =
-                        {
-                            filename = "__core__/graphics/empty.png",
-                            priority = "extra-high",
-                            width = 1,
-                            height = 1
-                        },
-                    picture_set =
-                        {
-                            filename = "__core__/graphics/empty.png",
-                            priority = "extra-high",
-                            width = 1,
-                            height = 1
-                        }
+                        picture_safe =
+                            {
+                                filename = "__core__/graphics/empty.png",
+                                priority = "extra-high",
+                                width = 1,
+                                height = 1
+                            },
+                        picture_set =
+                            {
+                                filename = "__core__/graphics/empty.png",
+                                priority = "extra-high",
+                                width = 1,
+                                height = 1
+                            }
+                    }
                 }
-            }
-        )
+            )
+        end
     end
 end
 

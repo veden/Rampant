@@ -596,6 +596,20 @@ function upgrade.attempt(universe)
             end
         end
 
+        for _,map in pairs(universe.maps) do
+            if (map.surface.valid) then
+                local entities = map.surface.find_entities_filtered({type="land-mine"})
+                for i=1,#entities do
+                    local entity = entities[i]
+                    if entity.valid and string.find(entity.name, "entity-proxy-") then
+                        entity.destroy()
+                    end
+                end
+            end
+        end
+
+        universe.proxyEntityLookup = {}
+
         game.print("Rampant - Version 2.2.0")
     end
 
