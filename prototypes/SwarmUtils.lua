@@ -626,6 +626,9 @@ local function fillEntityTemplate(entity)
                     entity["healing"] = entity["healing"] * -1
                 elseif (attribute == "checkBuildability") then
                     entity.checkBuildability = true
+                elseif (attribute == "spawnDuringDays") then
+                    entity.minSpawnDarkness = 0
+                    entity.maxSpawnDarkness = 0.45
                 elseif (attribute == "followsPlayer") then
                     entity.followsPlayer = true
                 elseif (attribute == "stationary") then
@@ -678,27 +681,45 @@ local function fillEntityTemplate(entity)
     scaleAttributes(entity)
 end
 
-local function calculateRGBa(tint, tier, staticAlpha)
-    local r = gaussianRandomRangeRG(tint.r, tint.r * 0.10 + (0.005 * tier), mMax(tint.r * 0.85 - (0.005 * tier), 0), mMin(tint.r * 1.15, 1), xorRandom)
-    local g = gaussianRandomRangeRG(tint.g, tint.g * 0.10 + (0.005 * tier), mMax(tint.g * 0.85 - (0.005 * tier), 0), mMin(tint.g * 1.15, 1), xorRandom)
-    local b = gaussianRandomRangeRG(tint.b, tint.b * 0.10 + (0.005 * tier), mMax(tint.b * 0.85 - (0.005 * tier), 0), mMin(tint.b * 1.15, 1), xorRandom)
+local function calculateRGBa(tint, tier, staticAlpha, invert)
+    local stdDevMultipler = 0.10 + (0.005 * tier)
+    local lowMultipler = 0.85 - (0.005 * tier)
+    local r = gaussianRandomRangeRG(tint.r,
+                                    tint.r * stdDevMultipler,
+                                    mMax(tint.r * lowMultipler, 0),
+                                    mMin(tint.r * 1.15, 1), xorRandom)
+    local g = gaussianRandomRangeRG(tint.g,
+                                    tint.g * stdDevMultipler,
+                                    mMax(tint.g * lowMultipler, 0),
+                                    mMin((tint.g * 1.15), 1), xorRandom)
+    local b = gaussianRandomRangeRG(tint.b,
+                                    tint.b * stdDevMultipler,
+                                    mMax(tint.b * lowMultipler, 0),
+                                    mMin(tint.b * 1.15, 1), xorRandom)
     local a = tint.a
     if not staticAlpha then
-        a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
+        a = gaussianRandomRangeRG(tint.a,
+                                  tint.a * stdDevMultipler,
+                                  mMax(tint.a * lowMultipler, 0),
+                                  mMin(tint.a * 1.15, 1), xorRandom)
     end
 
-    return { r=r, g=g, b=b, a=a }
+    if invert then
+        return { r=(1-r), g=(1-g), b=(1-b), a=(1-a) }
+    else
+        return { r=r, g=g, b=b, a=a }
+    end
 end
 
-local function generateApperance(unit)
+local function generateApperance(unit, invert)
     local tier = unit.effectiveLevel
     if unit.scale then
         local scaleValue = unit.scale[tier]
-        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.24, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
+        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.15, scaleValue * 0.70, scaleValue * 1.30, xorRandom)
         unit.scale = scale
     end
     if unit.tint then
-        unit.tint = calculateRGBa(unit.tint, tier, true)
+        unit.tint = calculateRGBa(unit.tint, tier, true, invert)
     end
     if unit.tint2 then
         unit.tint2 = calculateRGBa(unit.tint2, tier, true)
@@ -793,7 +814,7 @@ function swarmUtils.buildEntitySpawner(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
-            generateApperance(unitSpawner)
+            generateApperance(unitSpawner, true)
             fillEntityTemplate(unitSpawner)
 
             if unitSpawner.autoplace then

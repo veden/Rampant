@@ -561,7 +561,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             name = "hive",
             majorResistances = {},
             minorResistances = {},
-            attributes = {},
+            attributes = {"spawnDuringDays"},
             acceptRate = {2, 10, 0.001, 0.0175},
             drops = {"nilArtifact"},
             buildSets = {
@@ -646,7 +646,7 @@ if settings.startup["rampant--acidEnemy"].value then
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
                 acceptRate = {2, 10, 0.001, 0.0175},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 drops = {"greenArtifact"},
                 buildSets = {
                     {"biter-spawner", 1, 10, 0.15, 0.3},
@@ -722,7 +722,7 @@ if settings.startup["rampant--laserEnemy"].value then
                 type = "hive",
                 name = "hive",
                 majorResistances = {"laser", "electric"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -805,7 +805,7 @@ if settings.startup["rampant--fireEnemy"].value then
                 name = "hive",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -867,7 +867,7 @@ if settings.startup["rampant--infernoEnemy"].value then
                 name = "hive",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -934,7 +934,7 @@ if settings.startup["rampant--waspEnemy"].value then
             {
                 type = "hive",
                 name = "hive",
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"purpleArtifact"},
                 buildSets = {
@@ -1010,7 +1010,7 @@ if settings.startup["rampant--spawnerEnemy"].value then
             {
                 type = "hive",
                 name = "hive",
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -1071,7 +1071,7 @@ if settings.startup["rampant--electricEnemy"].value then
                 name = "hive",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1133,7 +1133,7 @@ if settings.startup["rampant--physicalEnemy"].value then
                 name = "hive",
                 majorResistances = {"physical", "explosion"},
                 minorResistances = {"laser", "electric"},
-                attributes = {"highHealth", "bigger"},
+                attributes = {"highHealth", "bigger", "spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -1196,7 +1196,7 @@ if settings.startup["rampant--trollEnemy"].value then
                 name = "hive",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
-                attributes = {"highestHealth", "bigger", "highRegen"},
+                attributes = {"highestHealth", "bigger", "highRegen","spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1262,7 +1262,7 @@ if settings.startup["rampant--poisonEnemy"].value then
                 majorResistances = {"poison"},
                 minorResistances = {"fire"},
                 minorWeaknesses = {"electric", "explosion", "laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1323,7 +1323,7 @@ if settings.startup["rampant--suicideEnemy"].value then
                 name = "hive",
                 majorResistances = {"explosion"},
                 minorResistances = {"poison"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"yellowArtifact"},
                 buildSets = {
@@ -1383,7 +1383,7 @@ if settings.startup["rampant--nuclearEnemy"].value then
                 name = "hive",
                 majorResistances = {"explosion"},
                 minorResistances = {"fire"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"yellowArtifact"},
                 buildSets = {
@@ -1443,7 +1443,7 @@ if settings.startup["rampant--energyThiefEnemy"].value then
                 type = "hive",
                 name = "hive",
                 majorResistances = {"electric", "laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1526,7 +1526,7 @@ if settings.startup["rampant--fastEnemy"].value then
                 name = "hive",
                 majorResistances = {},
                 minorResistances = {"explosion"},
-                attributes = {"quickSpawning"},
+                attributes = {"quickSpawning", "spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"purpleArtifact"},
                 buildSets = {

@@ -394,6 +394,8 @@ function biterFunctions.makeUnitSpawner(attributes)
         map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}},
         corpse = makeUnitSpawnerCorpse(attributes),
         dying_explosion = attributes.explosion or "blood-explosion-huge",
+        min_darkness_to_spawn = attributes.minSpawnDarkness or 0,
+        max_darkness_to_spawn = attributes.maxSpawnDarkness or 1,
         dying_trigger_effect = attributes.dyingEffect,
         max_count_of_owned_units = attributes.unitsOwned or 7,
         max_friends_around_to_spawn = attributes.unitsToSpawn or 5,
