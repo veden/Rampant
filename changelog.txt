@@ -9,6 +9,8 @@ Date: 29. 12. 2021
     - License has changed to GPLv3
     - Removed chance of hive outside resoure chunks on settler structure creation
     - Separated mod setting into printing settlers building and ai spending points
+    - Reduced visual size of spawners and hives
+    - Increased visual size of worms
   Bugfixes:
     - Fixed Hives spawning excessive amounts of entities
     - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
