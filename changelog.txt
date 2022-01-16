@@ -10,6 +10,7 @@ Date: 29. 12. 2021
     - Removed chance of hive outside resoure chunks on settler structure creation
     - Separated mod setting into printing settlers building and ai spending points
   Bugfixes:
+    - Fixed Hives spawning excessive amounts of entities
     - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
     - Fixed random generator seed overflow (Thanks NeveHanter for the report)
     - Fixed removing chunks could index outside processQueueLength (Thanks thecheat789 for the report)

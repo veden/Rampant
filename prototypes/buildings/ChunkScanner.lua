@@ -70,8 +70,8 @@ local function generateCollisionBox(scale, entityType)
 end
 
 local scales = {
-    ["trap"] = {},
-    ["utility"] = {},
+    -- ["trap"] = {},
+    -- ["utility"] = {},
     ["spitter-spawner"] = {
         [1] = 0.70, [2] = 0.83, [3] = 0.96, [4] = 1.09, [5] = 1.22,
         [6] = 1.35, [7] = 1.48, [8] = 1.61, [9] = 1.74, [10] = 1.87
@@ -96,7 +96,8 @@ for si=1,#subTypes do
     local st = subTypes[si]
     if scales[st] then
         for t=1,10 do
-            local scale = scales[st][t]
+            -- local scale = scales[st][t]
+            local scale = scales["biter-spawner"][t]
 
             data:extend(
                 {
@@ -114,7 +115,8 @@ for si=1,#subTypes do
                         corpse = nil,
                         timeout = 1,
                         trigger_radius = 0,
-                        collision_box = generateCollisionBox(scale, st),
+                        -- collision_box = generateCollisionBox(scale, st),
+                        collision_box = generateCollisionBox(scale, "biter-spawner"),
                         selection_box = nil,
 
                         picture_safe =

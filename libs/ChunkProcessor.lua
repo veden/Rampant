@@ -24,11 +24,13 @@ local chunkProcessor = {}
 local chunkUtils = require("ChunkUtils")
 local queryUtils = require("QueryUtils")
 local mapUtils = require("MapUtils")
-local constants = require("Constants")
+-- local constants = require("Constants")
 
 -- constants
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+-- local CHUNK_SIZE = constants.CHUNK_SIZE
+-- local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
+-- local QUARTER_CHUNK_SIZE = constants.QUARTER_CHUNK_SIZE
 
 -- imported functions
 
@@ -179,28 +181,19 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local query = universe.ppuUpgradeEntityQuery
             local position = entityData.position or entity.position
             query.name = entityData.name
-            local foundPosition
-            if universe.NEW_ENEMIES then
-                foundPosition = surface.find_non_colliding_position(universe.buildingSpaceLookup[entityData.name],
-                                                                    position,
-                                                                    CHUNK_SIZE,
-                                                                    1,
-                                                                    true)
-            else
-                foundPosition = surface.find_non_colliding_position(entityData.name,
-                                                                    position,
-                                                                    CHUNK_SIZE,
-                                                                    1,
-                                                                    true)
-            end
-            setPositionInQuery(query, foundPosition or position)
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
+            local foundPosition = surface.find_non_colliding_position(universe.buildingSpaceLookup[entityData.name],
+                                                                      position,
+                                                                      2,
+                                                                      1,
+                                                                      true)
+            setPositionInQuery(query, foundPosition or position)
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
                 registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
-                    remote.call("kr-creep", "spawn_creep_at_position", surface, position)
+                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
                 end
             end
         else
