@@ -15,7 +15,9 @@ Date: 29. 12. 2021
     - Fixed removing chunks could index outside processQueueLength (Thanks thecheat789 for the report)
     - Fixed processMap and processStaticMap could index outside processQueueLength
     - Fixed base alignments could be blank when removing factions (Thanks kind_killer for the report)
-    - Fixed hive proxy entities would not be destroyed or upgraded correctly
+    - Fixed hive proxy entities would occasionally not be destroyed or upgraded correctly
+    - Fixed hive proxy entities not respecting initial proxy type when determining initial upgrades
+    - Fixed hive entities being initialized from turrets
   Optimizations:
     - Added early stopping to removeProcessQueueChunk
 

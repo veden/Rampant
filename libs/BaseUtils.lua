@@ -134,7 +134,7 @@ local function findBaseMutation(map, targetEvolution)
     return alignments[#alignments]
 end
 
-local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType)
+local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType, entityType)
     local evolutionTable = map.universe.buildingEvolveLookup
     local entity
 
@@ -165,16 +165,22 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
             end
         end
         if not entity then
-            local roll = map.random()
-
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
-
-                roll = roll - upgrade[1]
-
-                if (roll <= 0) then
+                if upgrade[3] == entityType then
                     entity = upgrade[2][map.random(#upgrade[2])]
-                    break
+                end
+            end
+            if not entity then
+                local mapTypes = FACTION_MUTATION_MAPPING[entityType]
+                for i=1, #mapTypes do
+                    local mappedType = mapTypes[i]
+                    for ui=1,#upgrades do
+                        local upgrade = upgrades[ui]
+                        if upgrade[3] == mappedType then
+                            return upgrade[2][map.random(#upgrade[2])]
+                        end
+                    end
                 end
             end
         end
@@ -231,9 +237,19 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
-        local makeHive = (chunk ~= -1) and (getResourceGenerator(map, chunk) > 0) and (map.random() < 0.2)
-        print(originalEntity.unit_number, makeHive)
-        return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"))
+        local entityType = map.universe.buildingHiveTypeLookup[originalEntity.name]
+        if not entityType then
+            if map.random() < 0.5 then
+                entityType = "biter-spawner"
+            else
+                entityType = "spitter-spawner"
+            end
+        end
+        local makeHive = (chunk ~= -1) and
+            (getResourceGenerator(map, chunk) > 0) and
+            ((entityType == "biter-spawner") or (entityType == "spitter-spawner"))
+            and (map.random() < 0.2)
+        return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"), entityType)
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
     end
@@ -572,6 +588,13 @@ function baseUtils.rebuildNativeTables(universe, rg)
     for i=1,10 do
         evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
     end
+
+    buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
+    buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
+    buildingHiveTypeLookup["small-worm-turret"] = "turret"
+    buildingHiveTypeLookup["medium-worm-turret"] = "turret"
+    buildingHiveTypeLookup["big-worm-turret"] = "turret"
+    buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
 
     for i=1,#FACTION_SET do
         local faction = FACTION_SET[i]
