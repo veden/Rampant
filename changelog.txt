@@ -14,6 +14,7 @@ Date: 29. 12. 2021
     - Increased visual size of worms
     - Inverted Hive colors for easier visual identification
   Bugfixes:
+    - Fixed added check for hives on resource chunks before early building
     - Fixed Hives spawning excessive amounts of entities
     - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
     - Fixed random generator seed overflow (Thanks NeveHanter for the report)

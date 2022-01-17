@@ -64,6 +64,8 @@ local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
 
+
+local getHiveCount = chunkPropertyUtils.getHiveCount
 local getNestCount = chunkPropertyUtils.getNestCount
 
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -156,7 +158,12 @@ local function settleMove(map, squad)
     local surface = map.surface
 
     if (chunk ~= -1) and
-        ((distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0)))
+        (
+            (distance >= squad.maxDistance) or
+            (
+                (getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0) and (getHiveCount(map, chunk) == 0)
+            )
+        )
     then
         position = findMovementPosition(surface, groupPosition)
 
