@@ -237,7 +237,8 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
 
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
-        local entityType = map.universe.buildingHiveTypeLookup[originalEntity.name]
+        local entityName = originalEntity.name
+        local entityType = map.universe.buildingHiveTypeLookup[entityName]
         if not entityType then
             if map.random() < 0.5 then
                 entityType = "biter-spawner"
@@ -245,10 +246,23 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
                 entityType = "spitter-spawner"
             end
         end
+        local roll = map.random()
         local makeHive = (chunk ~= -1) and
-            (getResourceGenerator(map, chunk) > 0) and
-            ((entityType == "biter-spawner") or (entityType == "spitter-spawner"))
-            and (map.random() < 0.2)
+            (
+                (entityType == "biter-spawner") or (entityType == "spitter-spawner")
+            )
+            and
+            (
+                (
+                    (roll <= 0.002) and
+                    not map.universe.proxyEntityLookup[entityName]
+                )
+                or
+                (
+                    (roll <= 0.202) and
+                    (getResourceGenerator(map, chunk) > 0)
+                )
+            )
         return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"), entityType)
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)

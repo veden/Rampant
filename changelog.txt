@@ -8,7 +8,7 @@ Date: 29. 12. 2021
     - Set maximum value on enemy seed to 4294967295
     - Slightly increased spacing between enemy structures
     - License has changed to GPLv3
-    - Removed chance of hive outside resoure chunks on settler structure creation
+    - Greatly reduced chance of hive outside resoure chunks on initial structure creation (1 in about 500 spawners will be hives)
     - Separated mod setting into printing settlers building and ai spending points
     - Reduced visual size of spawners and hives
     - Increased visual size of worms
