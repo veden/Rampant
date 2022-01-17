@@ -715,7 +715,7 @@ local function generateApperance(unit, invert)
     local tier = unit.effectiveLevel
     if unit.scale then
         local scaleValue = unit.scale[tier]
-        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.15, scaleValue * 0.70, scaleValue * 1.30, xorRandom)
+        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.20, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
         unit.scale = scale
     end
     if unit.tint then
