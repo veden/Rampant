@@ -98,7 +98,7 @@ function mapUtils.removeChunkToNest(universe, chunkId)
         universe.processNestIterator = nil
     end
     if (chunkId == universe.processMigrationIterator) then
-        universe.processNestIterator = nil
+        universe.processMigrationIterator = nil
     end
 end
 
