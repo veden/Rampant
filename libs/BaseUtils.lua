@@ -584,6 +584,8 @@ function baseUtils.rebuildNativeTables(universe, rg)
     universe.buildingHiveTypeLookup = buildingHiveTypeLookup
     local proxyEntityLookup = {}
     universe.proxyEntityLookup = proxyEntityLookup
+    local vanillaEntityLookups = {}
+    universe.vanillaEntityTypeLookup = vanillaEntityLookups
 
     for i=1,10 do
         evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
@@ -595,6 +597,13 @@ function baseUtils.rebuildNativeTables(universe, rg)
     buildingHiveTypeLookup["medium-worm-turret"] = "turret"
     buildingHiveTypeLookup["big-worm-turret"] = "turret"
     buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
+
+    vanillaEntityLookups["biter-spawner"] = true
+    vanillaEntityLookups["spitter-spawner"] = true
+    vanillaEntityLookups["small-worm-turret"] = true
+    vanillaEntityLookups["medium-worm-turret"] = true
+    vanillaEntityLookups["big-worm-turret"] = true
+    vanillaEntityLookups["behemoth-worm-turret"] = true
 
     for i=1,#FACTION_SET do
         local faction = FACTION_SET[i]

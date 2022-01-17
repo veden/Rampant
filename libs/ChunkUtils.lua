@@ -237,6 +237,7 @@ function chunkUtils.initialScan(chunk, map, tick)
         if (pass ~= CHUNK_IMPASSABLE) then
             local resources = surface.count_entities_filtered(universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
 
+            local vanillaEntityTypeLookup = universe.vanillaEntityTypeLookup
             local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
             local counts = map.chunkScanCounts
             for i=1,#HIVE_BUILDINGS_TYPES do
@@ -260,9 +261,10 @@ function chunkUtils.initialScan(chunk, map, tick)
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
-
                         chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, tick, base)
-                        if not buildingHiveTypeLookup[enemyBuilding.name] then
+                        local entityName = enemyBuilding.name
+                        local isVanilla = vanillaEntityTypeLookup[entityName]
+                        if isVanilla or (not isVanilla and not buildingHiveTypeLookup[entityName]) then
                             upgradeEntity(enemyBuilding, base, map, nil, true)
                         end
                     end

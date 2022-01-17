@@ -609,6 +609,7 @@ function upgrade.attempt(universe)
         end
 
         universe.proxyEntityLookup = {}
+        universe.vanillaEntityLookups = {}
 
         game.print("Rampant - Version 2.2.0")
     end
