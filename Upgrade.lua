@@ -65,7 +65,9 @@ local function isExcludedSurface(surfaceName)
         sFind(surfaceName, "Asteroid Belt") or
         sFind(surfaceName, "Vault ") or
         (surfaceName == "RTStasisRealm") or
-        sFind(surfaceName, "spaceship")
+        sFind(surfaceName, "spaceship") or
+        (surfaceName == "minime_dummy_dungeon") or
+        (surfaceName == "minime-preview-character")
 end
 
 local function addCommandSet(queriesAndCommands)
