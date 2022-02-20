@@ -160,6 +160,10 @@ local function planning(map, evolution_factor, tick)
 
     local currentPoints = map.points
 
+    if (currentPoints <= 0) then
+        currentPoints = 0
+    end
+
     if (currentPoints < maxPoints) then
         map.points = currentPoints + points
     end
