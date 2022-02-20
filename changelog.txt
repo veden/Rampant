@@ -2,6 +2,7 @@
 Version: 2.3.0
   Tweaks:
     - Added surface minime_dummy_dungeon and minime-preview-character to exclusion list
+    - Increased unit spawner cooldown by 2x
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
