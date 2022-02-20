@@ -50,6 +50,8 @@ local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
+local UNIT_DEATH_POINT_COST = constants.UNIT_DEATH_POINT_COST
+
 -- imported functions
 
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
@@ -403,6 +405,10 @@ local function onDeath(event)
                 end
 
                 map.lostEnemyUnits = map.lostEnemyUnits + 1
+                map.points = map.points - UNIT_DEATH_POINT_COST
+                if universe.aiPointsPrintSpendingToChat then
+                    game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", map.points))
+                end
 
                 if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                     rallyUnits(chunk, map, tick)

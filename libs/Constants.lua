@@ -1580,6 +1580,8 @@ constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRAD
 constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
 
+constants.UNIT_DEATH_POINT_COST = 1
+
 constants.MINIMUM_BUILDING_COST = constants.MAGIC_MAXIMUM_NUMBER
 for _,cost in pairs(constants.HIVE_BUILDINGS_COST) do
     if cost < constants.MINIMUM_BUILDING_COST then
