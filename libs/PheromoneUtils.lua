@@ -49,6 +49,8 @@ local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMO
 -- imported functions
 
 local addVictoryGenerator = chunkPropertyUtils.addVictoryGenerator
+local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local setDeathGenerator = chunkPropertyUtils.setDeathGenerator
 
 local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 
@@ -345,6 +347,7 @@ end
 
 function pheromoneUtils.processPheromone(map, chunk, player)
     local chunkPlayer = -MAGIC_MAXIMUM_NUMBER
+    local chunkDeath = 0
     local chunkPathRating = getPathRating(map, chunk)
 
     local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
@@ -363,6 +366,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -373,6 +380,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 pheromone = neighbor[PLAYER_PHEROMONE]
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
+                end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
                 end
             end
         end
@@ -385,6 +396,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -395,6 +410,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 pheromone = neighbor[PLAYER_PHEROMONE]
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
+                end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
                 end
             end
         end
@@ -407,6 +426,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -417,6 +440,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 pheromone = neighbor[PLAYER_PHEROMONE]
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
+                end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
                 end
             end
         end
@@ -429,6 +456,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -439,6 +470,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 pheromone = neighbor[PLAYER_PHEROMONE]
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
+                end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
                 end
             end
         end
@@ -452,6 +487,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -462,6 +501,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 pheromone = neighbor[PLAYER_PHEROMONE]
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
+                end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
                 end
             end
         end
@@ -475,6 +518,10 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
 
@@ -486,12 +533,20 @@ function pheromoneUtils.processPheromone(map, chunk, player)
                 if chunkPlayer < pheromone then
                     chunkPlayer = pheromone
                 end
+                pheromone = getDeathGenerator(map, chunk)
+                if chunkDeath < pheromone then
+                    chunkDeath = pheromone
+                end
             end
         end
     end
 
     if not player then
         decayDeathGenerator(map, chunk)
+    end
+
+    if chunkDeath > 0 then
+        setDeathGenerator(map, chunk, chunkDeath * 0.95)
     end
 
     chunkPlayer = chunkPlayer * 0.45

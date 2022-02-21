@@ -67,7 +67,7 @@ local removeChunkToNest = mapUtils.removeChunkToNest
 local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 local processBase = baseUtils.processBase
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
@@ -228,7 +228,7 @@ function mapProcessor.processPlayers(players, universe, tick)
                     local vengence = allowingAttacks and
                         (map.points >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
+                            (getDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
 
                     for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do

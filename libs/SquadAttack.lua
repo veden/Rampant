@@ -62,7 +62,7 @@ local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
 
 local getHiveCount = chunkPropertyUtils.getHiveCount
@@ -98,21 +98,21 @@ local function scoreSiegeLocationKamikaze(_, neighborChunk)
 end
 
 local function scoreResourceLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
+    local settle = (getDeathGeneratorRating(map, neighborChunk) * neighborChunk[RESOURCE_PHEROMONE])
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local settle = neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] +
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
-    return settle
+    return settle * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackLocation(map, neighborChunk)
-    local damage = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
+    local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage
+    return damage * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackKamikazeLocation(_, neighborChunk)

@@ -123,7 +123,7 @@ local createDrainPylon = unitUtils.createDrainPylon
 
 local isDrained = chunkPropertyUtils.isDrained
 local setDrainedTick = chunkPropertyUtils.setDrainedTick
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
 local retreatUnits = squadDefense.retreatUnits
 
@@ -396,7 +396,7 @@ local function onDeath(event)
                 -- drop death pheromone where unit died
                 deathScent(map, chunk)
 
-                if (-getDeathGenerator(map, chunk) < -universe.retreatThreshold) and cause and cause.valid then
+                if (getDeathGeneratorRating(map, chunk) < universe.retreatThreshold) and cause and cause.valid then
                     retreatUnits(chunk,
                                  cause,
                                  map,

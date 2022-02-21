@@ -75,7 +75,7 @@ local getChunkByXY = mapUtils.getChunkByXY
 local scoreNeighborsForFormation = movementUtils.scoreNeighborsForFormation
 local scoreNeighborsForResource = movementUtils.scoreNeighborsForResource
 local createSquad = unitGroupUtils.createSquad
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
 local mCeil = math.ceil
 
@@ -106,22 +106,19 @@ local function attackWaveValidCandidate(chunk, map)
 end
 
 local function scoreSettlerLocation(map, neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE] +
-        -getDeathGenerator(map, neighborChunk) +
+    return (getDeathGeneratorRating(map, neighborChunk) * neighborChunk[RESOURCE_PHEROMONE]) +
         -neighborChunk[PLAYER_PHEROMONE]
 end
 
 local function scoreSiegeSettlerLocation(map, neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE] +
-        neighborChunk[BASE_PHEROMONE] +
-        -getDeathGenerator(map, neighborChunk) +
+    return ((neighborChunk[RESOURCE_PHEROMONE] +
+             neighborChunk[BASE_PHEROMONE]) * getDeathGeneratorRating(map, neighborChunk)) +
         -neighborChunk[PLAYER_PHEROMONE]
 end
 
 local function scoreUnitGroupLocation(map, neighborChunk)
-    return neighborChunk[PLAYER_PHEROMONE] +
-        -getDeathGenerator(map, neighborChunk) +
-        neighborChunk[BASE_PHEROMONE]
+    return (neighborChunk[PLAYER_PHEROMONE] + neighborChunk[BASE_PHEROMONE]) *
+        getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function validSiegeSettlerLocation(map, neighborChunk)

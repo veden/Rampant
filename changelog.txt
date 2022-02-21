@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.3.0
+  improvement:
+    - Modified death pheromone squad path scoring
   Tweaks:
     - Added surface minime_dummy_dungeon and minime-preview-character to exclusion list
     - Increased unit spawner cooldown by 2x
