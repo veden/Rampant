@@ -6,6 +6,8 @@ Version: 2.3.0
     - Added surface minime_dummy_dungeon and minime-preview-character to exclusion list
     - Increased unit spawner cooldown by 2x
     - Added point loss on unit death
+  Bugfixes:
+    - Fixed Krastorio2 on_force_created playerforces being nil
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0

@@ -848,7 +848,9 @@ local function onGroupFinishedGathering(event)
 end
 
 local function onForceCreated(event)
-    universe.playerForces[#universe.playerForces+1] = event.force.name
+    if universe.playerForces then
+        universe.playerForces[#universe.playerForces+1] = event.force.name
+    end
 end
 
 local function onForceMerged(event)
