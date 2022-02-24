@@ -157,15 +157,19 @@ local function onIonCannonFired(event)
     if not map then
         return
     end
-    map.ionCannonBlasts = map.ionCannonBlasts + 1
-    map.points = map.points + 4000
-    if universe.aiPointsPrintGainsToChat then
-        game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " .. string.format("%.2f", map.points))
-    end
 
     local chunk = getChunkByPosition(map, event.position)
     if (chunk ~= -1) then
-        rallyUnits(chunk, map, event.tick)
+        local base = findNearbyBase(map, chunk)
+        if base then
+            base.ionCannonBlasts = base.ionCannonBlasts + 1
+            rallyUnits(chunk, map, event.tick, base)
+            base.unitPoints = base.unitPoints + 4000
+            if universe.aiPointsPrintGainsToChat then
+                game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " ..
+                           string.format("%.2f", base.points))
+            end
+        end
     end
 end
 
@@ -274,7 +278,6 @@ local function onConfigChanged()
 
     universe["ENEMY_SEED"] = settings.startup["rampant--enemySeed"].value
     universe["ENEMY_VARIATIONS"] = settings.startup["rampant--newEnemyVariations"].value
-    local usingNewEnemiesAlready = universe["NEW_ENEMIES"]
     universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
 
     if universe.NEW_ENEMIES then
@@ -313,9 +316,7 @@ local function onConfigChanged()
             prepMap(universe, surface)
         end
     end
-    if (not usingNewEnemiesAlready) and universe.NEW_ENEMIES then
-        addBasesToAllEnemyStructures(universe, game.tick)
-    end
+    addBasesToAllEnemyStructures(universe, game.tick)
 end
 
 local function onBuild(event)
@@ -405,10 +406,10 @@ local function onDeath(event)
                 end
 
                 map.lostEnemyUnits = map.lostEnemyUnits + 1
-                map.points = map.points - UNIT_DEATH_POINT_COST
-                if universe.aiPointsPrintSpendingToChat then
-                    game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", map.points))
-                end
+                -- map.points = map.points - UNIT_DEATH_POINT_COST
+                -- if universe.aiPointsPrintSpendingToChat then
+                --     game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", map.points))
+                -- end
 
                 if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                     rallyUnits(chunk, map, tick)
@@ -420,28 +421,31 @@ local function onDeath(event)
         else
             if event.force and (event.force.name ~= "enemy") then
                 local rally = false
-                if (entityType == "unit-spawner") then
-                    map.points = map.points + RECOVER_NEST_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", map.points))
+                if (chunk ~= -1) then
+                    local base = findNearbyBase(map, chunk)
+                    if (entityType == "unit-spawner") then
+                        base.points = base.points + RECOVER_NEST_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", base.points))
+                        end
+                        rally = true
+                    elseif (entityType == "turret") then
+                        base.points = base.points + RECOVER_WORM_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", base.points))
+                        end
+                        rally = true
                     end
-                    rally = true
-                elseif (entityType == "turret") then
-                    map.points = map.points + RECOVER_WORM_COST
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", map.points))
-                    end
-                    rally = true
-                end
-                if (chunk ~= -1) and rally then
-                    rallyUnits(chunk, map, tick)
+                    if rally then
+                        rallyUnits(chunk, map, tick, base)
 
-                    if cause and cause.valid then
-                        retreatUnits(chunk,
-                                     cause,
-                                     map,
-                                     tick,
-                                     RETREAT_SPAWNER_GRAB_RADIUS)
+                        if cause and cause.valid then
+                            retreatUnits(chunk,
+                                         cause,
+                                         map,
+                                         tick,
+                                         RETREAT_SPAWNER_GRAB_RADIUS)
+                        end
                     end
                 end
             end
@@ -486,17 +490,16 @@ local function onEnemyBaseBuild(event)
         map.activeSurface = true
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
-            local base
+            local base = findNearbyBase(map, chunk)
+            if not base then
+                base = createBase(map,
+                                  chunk,
+                                  event.tick)
+            end
+
+            registerEnemyBaseStructure(map, entity, event.tick, base)
+
             if universe.NEW_ENEMIES then
-                base = findNearbyBase(map, chunk)
-                if not base then
-                    base = createBase(map,
-                                      chunk,
-                                      event.tick)
-                end
-
-                registerEnemyBaseStructure(map, entity, event.tick, base)
-
                 upgradeEntity(entity,
                               base,
                               map,
@@ -620,10 +623,14 @@ local function onRocketLaunch(event)
         if not map then
             return
         end
-        map.rocketLaunched = map.rocketLaunched + 1
-        map.points = map.points + 5000
-        if universe.aiPointsPrintGainsToChat then
-            game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", map.points))
+        local chunk = getChunkByPosition(entity.position)
+        if (chunk ~= -1) then
+            local base = findNearbyBase(map, chunk)
+            base.rocketLaunched = base.rocketLaunched + 1
+            base.points = base.points + 5000
+            if universe.aiPointsPrintGainsToChat then
+                game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.points))
+            end
         end
     end
 end
@@ -740,11 +747,9 @@ local function onUnitGroupCreated(event)
         squad = createSquad(nil, map, group, settler)
         universe.groupNumberToSquad[group.group_number] = squad
 
-        if universe.NEW_ENEMIES then
-            local chunk = getChunkByPosition(map, group.position)
-            if (chunk ~= -1) then
-                squad.base = findNearbyBase(map, chunk)
-            end
+        local chunk = getChunkByPosition(map, group.position)
+        if (chunk ~= -1) then
+            squad.base = findNearbyBase(map, chunk)
         end
 
         if settler then
@@ -774,11 +779,9 @@ local function onUnitGroupCreated(event)
         squad = createSquad(nil, map, group, settler)
         universe.groupNumberToSquad[group.group_number] = squad
 
-        if universe.NEW_ENEMIES then
-            local chunk = getChunkByPosition(map, group.position)
-            if (chunk ~= -1) then
-                squad.base = findNearbyBase(map, chunk)
-            end
+        local chunk = getChunkByPosition(map, group.position)
+        if (chunk ~= -1) then
+            squad.base = findNearbyBase(map, chunk)
         end
 
         if settler then
@@ -926,7 +929,7 @@ script.on_event(defines.events.on_tick,
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
                         processMapAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
-                        if map and universe.NEW_ENEMIES then
+                        if map then
                             recycleBases(map)
                         end
                         cleanUpMapTables(universe, tick)

@@ -245,12 +245,12 @@ function chunkUtils.initialScan(chunk, map, tick)
             end
 
             if (#enemyBuildings > 0) then
-                if universe.NEW_ENEMIES then
-                    local base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(map, chunk, tick)
-                    end
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
 
+                if universe.NEW_ENEMIES then
                     local unitList = surface.find_entities_filtered(universe.isFilteredEntitiesUnitQuery)
                     for i=1,#unitList do
                         local unit = unitList[i]
@@ -271,7 +271,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        chunkUtils.registerEnemyBaseStructure(map, building, tick)
+                        chunkUtils.registerEnemyBaseStructure(map, building, tick, base)
                     end
                 end
             end
@@ -347,12 +347,9 @@ function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
     end
-    local base
-    if universe.NEW_ENEMIES then
-        base = findNearbyBase(map, chunk)
-        if not base then
-            base = createBase(map, chunk, tick)
-        end
+    local base = findNearbyBase(map, chunk)
+    if not base then
+        base = createBase(map, chunk, tick)
     end
     for i=1,#buildings do
         local building = buildings[i]
@@ -513,16 +510,14 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, 
         if (chunk ~= -1) then
             if addFunc(map, chunk, entityUnitNumber) then
                 added = true
-                if universe.NEW_ENEMIES then
-                    local base = incomingBase
+                local base = incomingBase
+                if not base then
+                    base = findNearbyBase(map, chunk)
                     if not base then
-                        base = findNearbyBase(map, chunk)
-                        if not base then
-                            base = createBase(map, chunk, tick)
-                        end
+                        base = createBase(map, chunk, tick)
                     end
-                    setChunkBase(map, chunk, base)
                 end
+                setChunkBase(map, chunk, base)
             end
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
@@ -572,17 +567,15 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
             end
             if removeFunc(map, chunk, entityUnitNumber) then
                 removed = true
-                if map.universe.NEW_ENEMIES then
-                    local base = getChunkBase(map, chunk)
-                    if damageType and not usedBases[base.id] then
-                        usedBases[base.id] = true
-                        local damageTypeName = damageType.name
-                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
-                        base.deathEvents = base.deathEvents + 3
-                    end
-                    if (getEnemyStructureCount(map, chunk) <= 0) then
-                        removeChunkBase(map, chunk, base)
-                    end
+                local base = getChunkBase(map, chunk)
+                if damageType and not usedBases[base.id] then
+                    usedBases[base.id] = true
+                    local damageTypeName = damageType.name
+                    base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
+                    base.deathEvents = base.deathEvents + 3
+                end
+                if (getEnemyStructureCount(map, chunk) <= 0) then
+                    removeChunkBase(map, chunk, base)
                 end
             end
         end

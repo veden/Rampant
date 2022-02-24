@@ -98,6 +98,7 @@ local function planning(map, evolution_factor, tick)
     end
 
     local maxOverflowPoints = maxPoints * 3
+    universe.maxOverflowPoints = maxOverflowPoints
 
     local attackWaveMaxSize = universe.attackWaveMaxSize
     universe.retreatThreshold = linearInterpolation(evolution_factor,

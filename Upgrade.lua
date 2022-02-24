@@ -572,10 +572,6 @@ function upgrade.attempt(universe)
                 universe.maps[mapId] = nil
             end
         end
-
-        if universe.NEW_ENEMIES then
-            addBasesToAllEnemyStructures(universe, game.tick)
-        end
     end
     if global.version < 208 then
         global.version = 208
@@ -612,6 +608,22 @@ function upgrade.attempt(universe)
 
         universe.proxyEntityLookup = {}
         universe.vanillaEntityLookups = {}
+    end
+    if global.version < 210 then
+        global.version = 210
+
+        addBasesToAllEnemyStructures(universe, game.tick)
+
+        local evoToTierMapping = {}
+        universe.evoToTierMapping = evoToTierMapping
+
+        for i=1,10 do
+            evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
+        end
+
+        for chunkId in pairs(universe.vengenceQueue) do
+            universe.vengenceQueue[chunkId] = nil
+        end
 
         game.print("Rampant - Version 2.3.0")
     end
@@ -685,8 +697,8 @@ function upgrade.prepMap(universe, surface)
 
     map.bases = {}
     map.baseIndex = 1
-    map.baseIncrement = 0
-    map.points = 0
+    -- map.baseIncrement = 0
+    -- map.points = 0
     map.state = constants.AI_STATE_PEACEFUL
     map.squads = nil
     map.pendingAttack = nil

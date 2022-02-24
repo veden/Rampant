@@ -52,12 +52,15 @@ local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
+local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
+
 -- imported functions
 
 local setPositionXYInQuery = queryUtils.setPositionXYInQuery
 
 local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+local manhattenDistancePoints = mathUtils.manhattenDistancePoints
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -106,7 +109,7 @@ function baseUtils.findNearbyBase(map, chunk)
     local bases = map.bases
     local closest = MAGIC_MAXIMUM_NUMBER
     for _, base in pairs(bases) do
-        local distance = euclideanDistancePoints(base.x, base.y, x, y)
+        local distance = manhattenDistancePoints(base.x, base.y, x, y)
         if (distance <= base.distanceThreshold) and (distance < closest) then
             closest = distance
             foundBase = base
@@ -440,6 +443,10 @@ local function upgradeBaseBasedOnDamage(map, base)
 end
 
 function baseUtils.processBase(chunk, map, tick, base)
+    if ((tick - base.tick) <= BASE_PROCESS_INTERVAL) then
+        return
+    end
+
     if not base.alignment[1] then
         return
     end
@@ -512,9 +519,13 @@ function baseUtils.processBase(chunk, map, tick, base)
     end
 
     base.points = base.points + map.baseIncrement
+    base.unitPoints = base.unitPoints + map.baseIncrement
 
     if (base.points > universe.maxPoints) then
         base.points = universe.maxPoints
+    end
+    if (base.unitPoints > universe.maxPoints) then
+        base.unitPoints = universe.unitPoints
     end
 
     if (base.stateTick <= tick) then
@@ -570,6 +581,7 @@ function baseUtils.createBase(map, chunk, tick)
         chunkCount = 0,
         createdTick = tick,
         points = 0,
+        unitPoints = 0,
         id = universe.baseId
     }
     universe.baseId = universe.baseId + 1
@@ -586,8 +598,6 @@ function baseUtils.rebuildNativeTables(universe, rg)
     universe.buildingSpaceLookup = buildingSpaceLookup
     local enemyAlignmentLookup = {}
     universe.enemyAlignmentLookup = enemyAlignmentLookup
-    local evoToTierMapping = {}
-    universe.evoToTierMapping = evoToTierMapping
     local upgradeLookup = {}
     universe.upgradeLookup = upgradeLookup
     local buildingEvolveLookup = {}
@@ -600,10 +610,6 @@ function baseUtils.rebuildNativeTables(universe, rg)
     universe.proxyEntityLookup = proxyEntityLookup
     local vanillaEntityLookups = {}
     universe.vanillaEntityTypeLookup = vanillaEntityLookups
-
-    for i=1,10 do
-        evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
-    end
 
     buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
     buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"

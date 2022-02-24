@@ -58,8 +58,6 @@ local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
-local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
-
 -- imported functions
 
 local removeChunkToNest = mapUtils.removeChunkToNest
@@ -225,6 +223,7 @@ function mapProcessor.processPlayers(players, universe, tick)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
+                    local base = findNearbyBase(map, playerChunk)
                     local vengence = allowingAttacks and
                         (map.points >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
@@ -247,7 +246,8 @@ function mapProcessor.processPlayers(players, universe, tick)
                                         if not pack then
                                             pack = {
                                                 v = 0,
-                                                map = map
+                                                map = map,
+                                                base = base
                                             }
                                             universe.vengenceQueue[chunk.id] = pack
                                         end
@@ -449,9 +449,9 @@ function mapProcessor.processVengence(universe)
         end
         local chunk = getChunkById(vengencePack.map, chunkId)
         if universe.enabledMigration and (universe.random() < 0.075) then
-            formVengenceSettler(map, chunk)
+            formVengenceSettler(map, chunk, vengencePack.base)
         else
-            formVengenceSquad(map, chunk)
+            formVengenceSquad(map, chunk, vengencePack.base)
         end
     end
 end
@@ -477,12 +477,10 @@ function mapProcessor.processNests(universe, tick)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        if universe.NEW_ENEMIES then
-            local base = getChunkBase(map, chunk)
-            if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
-                processBase(chunk, map, tick, base)
-            end
-        end
+        processBase(chunk,
+                    map,
+                    tick,
+                    getChunkBase(map, chunk))
     end
 end
 
@@ -508,31 +506,31 @@ local function processSpawnersBody(universe, iterator, chunks)
             return
         end
         local state = chunkPack.map.state
-        if state == AI_STATE_PEACEFUL then
+        if base.state == AI_STATE_PEACEFUL then
             return
         end
         if iterator == "processMigrationIterator" then
-            if (state ~= AI_STATE_MIGRATING) and (state ~= AI_STATE_SIEGE) then
+            if (base.state ~= AI_STATE_MIGRATING) and (state ~= AI_STATE_SIEGE) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then
-            if (state == AI_STATE_AGGRESSIVE) or (state == AI_STATE_MIGRATING) then
+            if (base.state == AI_STATE_AGGRESSIVE) or (base.state == AI_STATE_MIGRATING) then
                 return
             end
         elseif iterator == "processActiveSpawnerIterator" then
-            if (state == AI_STATE_MIGRATING) then
+            if (base.state == AI_STATE_MIGRATING) then
                 return
             end
         end
 
         local chunk = getChunkById(map, chunkId)
-        local migrate = canMigrate(map)
-        local attack = canAttack(map)
+        local migrate = canMigrate(map, base)
+        local attack = canAttack(map, base)
         if migrate then
-            formSettlers(map, chunk)
+            formSettlers(map, chunk, base)
         end
         if attack then
-            formSquads(map, chunk)
+            formSquads(map, chunk, base)
         end
     end
 end

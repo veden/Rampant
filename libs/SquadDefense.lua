@@ -143,9 +143,7 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            if universe.NEW_ENEMIES then
-                newSquad.base = findNearbyBase(map, chunk)
-            end
+            newSquad.base = findNearbyBase(map, chunk)
             universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end
