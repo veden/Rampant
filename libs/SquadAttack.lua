@@ -44,7 +44,7 @@ local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -129,7 +129,7 @@ local function settleMove(map, squad)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    if (map.state == AI_STATE_SIEGE) then
+    if (base.state == BASE_AI_STATE_SIEGE) then
         if squad.kamikaze then
             scoreFunction = scoreSiegeLocationKamikaze
         else
@@ -200,7 +200,7 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (map.state ~= AI_STATE_SIEGE) then
+                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (base.state ~= BASE_AI_STATE_SIEGE) then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
                         surface,
@@ -256,7 +256,10 @@ local function settleMove(map, squad)
                 return
             end
 
-            if (nextAttackChunk ~= -1) and (map.state == AI_STATE_SIEGE) and (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) then
+            if (nextAttackChunk ~= -1) and
+                (base.state == BASE_AI_STATE_SIEGE) and
+                (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
+            then
                 cmd = universe.settleCommand
                 squad.status = SQUAD_BUILDING
                 if squad.kamikaze then

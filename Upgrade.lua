@@ -650,10 +650,10 @@ function upgrade.prepMap(universe, surface)
 
     map.activatedMap = false
 
-    map.sentSiegeGroups = 0
-    map.maxSiegeGroups = 2
-    map.maxAggressiveGroups = 1
-    map.sentAggressiveGroups = 0
+    -- map.sentSiegeGroups = 0
+    -- map.maxSiegeGroups = 2
+    -- map.maxAggressiveGroups = 1
+    -- map.sentAggressiveGroups = 0
     map.processedChunks = 0
     map.processQueue = {}
     map.processIndex = 1
@@ -696,30 +696,31 @@ function upgrade.prepMap(universe, surface)
     map.universe = universe
 
     map.bases = {}
-    map.baseIndex = 1
-    -- map.baseIncrement = 0
-    -- map.points = 0
-    map.state = constants.AI_STATE_PEACEFUL
     map.squads = nil
     map.pendingAttack = nil
     map.building = nil
 
-    map.evolutionLevel = game.forces.enemy.evolution_factor
-    map.canAttackTick = 0
-    map.drainPylons = {}
-    map.activeRaidNests = 0
-    map.activeNests = 0
-    map.destroyPlayerBuildings = 0
-    map.lostEnemyUnits = 0
-    map.lostEnemyBuilding = 0
-    map.rocketLaunched = 0
-    map.builtEnemyBuilding = 0
-    map.ionCannonBlasts = 0
-    map.artilleryBlasts = 0
+    -- map.baseIndex = 1
+    -- map.baseIncrement = 0
+    -- map.points = 0
+    -- map.state = constants.AI_STATE_PEACEFUL
 
-    map.temperament = 0.5
-    map.temperamentScore = 0
-    map.stateTick = 0
+    -- map.evolutionLevel = game.forces.enemy.evolution_factor
+    -- map.canAttackTick = 0
+    -- map.drainPylons = {}
+    -- map.activeRaidNests = 0
+    -- map.activeNests = 0
+    -- map.destroyPlayerBuildings = 0
+    -- map.lostEnemyUnits = 0
+    -- map.lostEnemyBuilding = 0
+    -- map.rocketLaunched = 0
+    -- map.builtEnemyBuilding = 0
+    -- map.ionCannonBlasts = 0
+    -- map.artilleryBlasts = 0
+
+    -- map.temperament = 0.5
+    -- map.temperamentScore = 0
+    -- map.stateTick = 0
 
     map.random = universe.random
 

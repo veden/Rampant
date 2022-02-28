@@ -49,16 +49,18 @@ local PROCESS_STATIC_QUEUE_SIZE = constants.PROCESS_STATIC_QUEUE_SIZE
 
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
-local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
-local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
-local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
+local BASE_AI_STATE_MIGRATING = constants.BASE_AI_STATE_MIGRATING
 
 local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
+
+local findNearbyBase = baseUtils.findNearbyBase
 
 local removeChunkToNest = mapUtils.removeChunkToNest
 
@@ -219,13 +221,13 @@ function mapProcessor.processPlayers(players, universe, tick)
             local char = player.character
             local map = universe.maps[char.surface.index]
             if map then
-                local allowingAttacks = canAttack(map)
+                local allowingAttacks = canAttack(map, base)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
                     local base = findNearbyBase(map, playerChunk)
                     local vengence = allowingAttacks and
-                        (map.points >= AI_VENGENCE_SQUAD_COST) and
+                        (base.points >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
                             (getDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
 
@@ -506,19 +508,19 @@ local function processSpawnersBody(universe, iterator, chunks)
             return
         end
         local state = chunkPack.map.state
-        if base.state == AI_STATE_PEACEFUL then
+        if base.state == BASE_AI_STATE_PEACEFUL then
             return
         end
         if iterator == "processMigrationIterator" then
-            if (base.state ~= AI_STATE_MIGRATING) and (state ~= AI_STATE_SIEGE) then
+            if (base.state ~= BASE_AI_STATE_MIGRATING) and (state ~= BASE_AI_STATE_SIEGE) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then
-            if (base.state == AI_STATE_AGGRESSIVE) or (base.state == AI_STATE_MIGRATING) then
+            if (base.state == BASE_AI_STATE_AGGRESSIVE) or (base.state == BASE_AI_STATE_MIGRATING) then
                 return
             end
         elseif iterator == "processActiveSpawnerIterator" then
-            if (base.state == AI_STATE_MIGRATING) then
+            if (base.state == BASE_AI_STATE_MIGRATING) then
                 return
             end
         end

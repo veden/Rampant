@@ -37,7 +37,7 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
 local CHUNK_PASS_THRESHOLD = constants.CHUNK_PASS_THRESHOLD
 
-local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
+local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
@@ -529,7 +529,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, 
     end
 end
 
-function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCount)
+function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, skipCount)
     local entityType = entity.type
 
     local removeFunc
@@ -568,9 +568,8 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
             if removeFunc(map, chunk, entityUnitNumber) then
                 removed = true
                 local base = getChunkBase(map, chunk)
-                if damageType and not usedBases[base.id] then
+                if damageTypeName and not usedBases[base.id] then
                     usedBases[base.id] = true
-                    local damageTypeName = damageType.name
                     base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
                     base.deathEvents = base.deathEvents + 3
                 end
@@ -585,23 +584,23 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
     end
 end
 
-function chunkUtils.accountPlayerEntity(entity, map, addObject, creditNatives)
+function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         local universe = map.universe
         local entityValue = BUILDING_PHEROMONES[entity.type]
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
-            if creditNatives then
-                map.destroyPlayerBuildings = map.destroyPlayerBuildings + 1
-                if (map.state == AI_STATE_ONSLAUGHT) then
-                    map.points = map.points + entityValue
+            if base then
+                base.destroyPlayerBuildings = base.destroyPlayerBuildings + 1
+                if (base.state == BASE_AI_STATE_ONSLAUGHT) then
+                    base.points = base.points + entityValue
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.points))
                     end
                 else
-                    map.points = map.points + (entityValue * 0.12)
+                    base.points = base.points + (entityValue * 0.12)
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.points))
                     end
                 end
             end

@@ -64,7 +64,7 @@ local nextMap = mapUtils.nextMap
 local distortPosition = mathUtils.distortPosition
 local prepMap = upgrade.prepMap
 
-local processMapAIs = aiPlanning.processMapAIs
+local processBaseAIs = aiPlanning.processBaseAIs
 
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 
@@ -180,7 +180,7 @@ local function onAbandonedRuins(event)
         if not map then
             return
         end
-        accountPlayerEntity(entity, map, true, false)
+        accountPlayerEntity(entity, map, true)
     end
 end
 
@@ -317,6 +317,12 @@ local function onConfigChanged()
         end
     end
     addBasesToAllEnemyStructures(universe, game.tick)
+
+    if not universe.ranIncompatibleMessage and universe.newEnemies and
+        (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
+        universe.ranIncompatibleMessage = true
+        game.print({"description.rampant-bobs-nee-newEnemies"})
+    end
 end
 
 local function onBuild(event)
@@ -329,7 +335,7 @@ local function onBuild(event)
         if (entity.type == "resource") and (entity.force.name == "neutral") then
             registerResource(entity, map)
         else
-            accountPlayerEntity(entity, map, true, false)
+            accountPlayerEntity(entity, map, true)
             if universe.safeEntities[entity.type] or universe.safeEntities[entity.name] then
                 entity.destructible = false
             end
@@ -344,7 +350,7 @@ local function onMine(event)
         if not map then
             return
         end
-        accountPlayerEntity(entity, map, false, false)
+        accountPlayerEntity(entity, map, false)
     end
 end
 
@@ -358,44 +364,63 @@ local function onDeath(event)
     if not map then
         return
     end
-    if (entity.force.name == "neutral") then
+    local entityForceName = entity.force.name
+    if (entityForceName == "neutral") then
         if (entity.name == "cliff") then
             entityForPassScan(map, entity)
         end
         return
     end
-    local entityPosition = entity.position
-    local chunk = getChunkByPosition(map, entityPosition)
     local cause = event.cause
+    local causedByEnemyForce = event.force and (event.force.name == "enemy")
     local tick = event.tick
     local entityType = entity.type
-    if (entity.force.name == "enemy") then
-        local artilleryBlast = (cause and
-                                ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+    local entityPosition = entity.position
+    local damageTypeName = event.damage_type and event.damage_type.name
+    local chunk = getChunkByPosition(map, entityPosition)
+    local base
 
-        if artilleryBlast then
-            map.artilleryBlasts = map.artilleryBlasts + 1
+    if entityForceName == "enemy" then
+        if entityType ~= "unit" then
+            if getDrainPylonPair(map, entity.unit_number) then
+                removeDrainPylons(map, entity.unit_number)
+            else
+                unregisterEnemyBaseStructure(map, entity, damageTypeName)
+            end
+        else
+            local group = entity.unit_group
+            if group then
+                local squad = universe.groupNumberToSquad[group.group_number]
+                if damageTypeName and squad then
+                    base = squad.base
+                end
+            end
         end
 
-        if (entityType == "unit") then
-            if (chunk ~= -1) and event.force and (event.force.name ~= "enemy") then
+        if (chunk ~= -1) then
+            deathScent(map, chunk)
 
-                local group = entity.unit_group
-                if group then
-                    local damageType = event.damage_type
-                    local squad = universe.groupNumberToSquad[group.group_number]
-                    if damageType and squad then
-                        local base = squad.base
-                        if base then
-                            local damageTypeName = damageType.name
-                            base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
-                            base.deathEvents = base.deathEvents + 1
-                        end
+            if not base then
+                base = findNearbyBase(map, chunk)
+            end
+
+            local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
+            if entityType == "unit" then
+                if base then
+                    base.lostEnemyUnits = base.lostEnemyUnits + 1
+                    base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
+                    base.deathEvents = base.deathEvents + 1
+                    -- base.points = base.points - UNIT_DEATH_POINT_COST
+                    -- if universe.aiPointsPrintSpendingToChat then
+                    --     game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", base.points))
+                    -- end
+                    if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
+                        rallyUnits(chunk, map, tick, base)
+                    end
+                    if artilleryBlast then
+                        base.artilleryBlasts = base.artilleryBlasts + 1
                     end
                 end
-
-                -- drop death pheromone where unit died
-                deathScent(map, chunk)
 
                 if (getDeathGeneratorRating(map, chunk) < universe.retreatThreshold) and cause and cause.valid then
                     retreatUnits(chunk,
@@ -404,67 +429,59 @@ local function onDeath(event)
                                  tick,
                                  (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
                 end
-
-                map.lostEnemyUnits = map.lostEnemyUnits + 1
-                -- map.points = map.points - UNIT_DEATH_POINT_COST
-                -- if universe.aiPointsPrintSpendingToChat then
-                --     game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", map.points))
-                -- end
-
-                if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
-                    rallyUnits(chunk, map, tick)
-                end
-            end
-
-        elseif getDrainPylonPair(map, entity.unit_number) then
-            removeDrainPylons(map, entity.unit_number)
-        else
-            if event.force and (event.force.name ~= "enemy") then
-                local rally = false
-                if (chunk ~= -1) then
-                    local base = findNearbyBase(map, chunk)
-                    if (entityType == "unit-spawner") then
-                        base.points = base.points + RECOVER_NEST_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST .. ". [Nest Lost] Total: " .. string.format("%.2f", base.points))
-                        end
-                        rally = true
-                    elseif (entityType == "turret") then
-                        base.points = base.points + RECOVER_WORM_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST .. ". [Worm Lost] Total: " .. string.format("%.2f", base.points))
-                        end
-                        rally = true
-                    end
-                    if rally then
-                        rallyUnits(chunk, map, tick, base)
-
-                        if cause and cause.valid then
-                            retreatUnits(chunk,
-                                         cause,
-                                         map,
-                                         tick,
-                                         RETREAT_SPAWNER_GRAB_RADIUS)
-                        end
-                    end
-                end
-            end
-
-            if universe.buildingHiveTypeLookup[entity.name] or
+            elseif universe.buildingHiveTypeLookup[entity.name] or
                 (entityType == "unit-spawner") or
                 (entityType == "turret")
             then
-                unregisterEnemyBaseStructure(map, entity, event.damage_type)
+                if base then
+                    if (entityType == "unit-spawner") then
+                        base.points = base.points + RECOVER_NEST_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST ..
+                                       ". [Nest Lost] Total: " .. string.format("%.2f", base.points))
+                        end
+                    elseif (entityType == "turret") then
+                        base.points = base.points + RECOVER_WORM_COST
+                        if universe.aiPointsPrintGainsToChat then
+                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST ..
+                                       ". [Worm Lost] Total: " .. string.format("%.2f", base.points))
+                        end
+                    end
+                    rallyUnits(chunk, map, tick, base)
+                    if artilleryBlast then
+                        base.artilleryBlasts = base.artilleryBlasts + 1
+                    end
+                end
+
+                if cause and cause.valid then
+                    retreatUnits(chunk,
+                                 cause,
+                                 map,
+                                 tick,
+                                 RETREAT_SPAWNER_GRAB_RADIUS)
+                end
             end
         end
     else
         local creditNatives = false
-        if (event.force ~= nil) and (event.force.name == "enemy") then
+        if causedByEnemyForce then
             creditNatives = true
             local drained = false
-            if (chunk ~= -1) then
+            if chunk ~= -1 then
                 victoryScent(map, chunk, entityType)
                 drained = (entityType == "electric-turret") and isDrained(map, chunk, tick)
+                if cause and cause.type == "unit" then
+                    local group = cause.unit_group
+                    if group and group.valid then
+                        local squad = universe.groupNumberToSquad[group.group_number]
+                        if squad then
+                            base = squad.base
+                        end
+                    end
+                end
+                if not base then
+                    base = findNearbyBase(map, chunk)
+                end
             end
 
             if cause or drained then
@@ -475,7 +492,7 @@ local function onDeath(event)
         then
             makeImmortalEntity(surface, entity)
         else
-            accountPlayerEntity(entity, map, false, creditNatives)
+            accountPlayerEntity(entity, map, false, base)
         end
     end
 end
@@ -730,16 +747,25 @@ local function onUnitGroupCreated(event)
         return
     end
     map.activeSurface = true
+    local chunk = getChunkByPosition(map, group.position)
+    if (chunk == -1) then
+        return
+    end
+    local base = findNearbyBase(map, chunk)
+    if not base then
+        group.destroy()
+        return
+    end
     if not universe.aiNocturnalMode then
-        local settler = canMigrate(map) and
+        local settler = canMigrate(map, base) and
             (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            map.points = map.points + AI_SQUAD_COST
+            base.points = base.points + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
             end
             return
         end
@@ -747,10 +773,7 @@ local function onUnitGroupCreated(event)
         squad = createSquad(nil, map, group, settler)
         universe.groupNumberToSquad[group.group_number] = squad
 
-        local chunk = getChunkByPosition(map, group.position)
-        if (chunk ~= -1) then
-            squad.base = findNearbyBase(map, chunk)
-        end
+        squad.base = base
 
         if settler then
             universe.builderCount = universe.builderCount + 1
@@ -763,15 +786,15 @@ local function onUnitGroupCreated(event)
             return
         end
 
-        local settler = canMigrate(map) and
+        local settler = canMigrate(map, base) and
             (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            map.points = map.points + AI_SQUAD_COST
+            base.points = base.points + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
             end
             return
         end
@@ -779,10 +802,7 @@ local function onUnitGroupCreated(event)
         squad = createSquad(nil, map, group, settler)
         universe.groupNumberToSquad[group.group_number] = squad
 
-        local chunk = getChunkByPosition(map, group.position)
-        if (chunk ~= -1) then
-            squad.base = findNearbyBase(map, chunk)
-        end
+        squad.base = base
 
         if settler then
             universe.builderCount = universe.builderCount + 1
@@ -804,14 +824,15 @@ local function onGroupFinishedGathering(event)
     map.activeSurface = true
     local squad = universe.groupNumberToSquad[group.group_number]
     if squad then
+        local base = squad.base
         if squad.settler then
             if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                map.points = map.points + AI_SETTLER_COST
+                base.points = base.points + AI_SETTLER_COST
                 if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", map.points))
+                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", base.points))
                 end
             end
         else
@@ -819,22 +840,24 @@ local function onGroupFinishedGathering(event)
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                map.points = map.points + AI_SQUAD_COST
+                base.points = base.points + AI_SQUAD_COST
                 if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
                 end
             end
         end
     else
-        local settler = canMigrate(map) and
+        local chunk = getChunkByPosition(map, group.position)
+        local base = findNearbyBase(map, chunk)
+        local settler = canMigrate(map, base) and
             (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            map.points = map.points + AI_SQUAD_COST
+            base.points = base.points + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", map.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
             end
             return
         end
@@ -928,7 +951,6 @@ script.on_event(defines.events.on_tick,
 
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
-                        processMapAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
                         if map then
                             recycleBases(map)
                         end
@@ -965,6 +987,7 @@ script.on_event(defines.events.on_tick,
                         processScanChunks(universe)
                     end
 
+                    processBaseAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
                     processActiveNests(universe, tick)
                     processPendingUpgrades(universe, tick)
                     processPendingUpgrades(universe, tick)
@@ -1071,7 +1094,13 @@ local function rampantSetAIState(event)
             return
         end
 
-        if (target ~= constants.AI_STATE_PEACEFUL and target ~= constants.AI_STATE_AGGRESSIVE and target ~= constants.AI_STATE_RAIDING and target ~= constants.AI_STATE_MIGRATING and target ~= constants.AI_STATE_SIEGE and target ~= constants.AI_STATE_ONSLAUGHT) then
+        if target ~= constants.BASE_AI_STATE_PEACEFUL and
+            target ~= constants.BASE_AI_STATE_AGGRESSIVE and
+            target ~= constants.BASE_AI_STATE_RAIDING and
+            target ~= constants.BASE_AI_STATE_MIGRATING and
+            target ~= constants.BASE_AI_STATE_SIEGE and
+            target ~= constants.BASE_AI_STATE_ONSLAUGHT
+        then
             game.print(target .. " is not a valid state")
             return
         else

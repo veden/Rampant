@@ -36,13 +36,13 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 
 local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
 
-local BASE_AI_STATE_ACTIVE = constants.BASE_AI_STATE_ACTIVE
-local BASE_AI_STATE_DORMANT = constants.BASE_AI_STATE_DORMANT
+local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
+local BASE_GENERATION_STATE_DORMANT = constants.BASE_GENERATION_STATE_DORMANT
 
 local FACTION_SET = constants.FACTION_SET
 
-local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
-local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
+local BASE_GENERATION_MIN_STATE_DURATION = constants.BASE_GENERATION_MIN_STATE_DURATION
+local BASE_GENERATION_MAX_STATE_DURATION = constants.BASE_GENERATION_MAX_STATE_DURATION
 
 local HIVE_BUILDINGS_COST = constants.HIVE_BUILDINGS_COST
 
@@ -53,6 +53,8 @@ local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
 local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
+
+local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
 
 -- imported functions
 
@@ -121,7 +123,7 @@ end
 
 local function findBaseMutation(map, targetEvolution)
     local universe = map.universe
-    local tier = evoToTier(universe, targetEvolution or map.evolutionLevel, 2)
+    local tier = evoToTier(universe, targetEvolution or universe.evolutionLevel, 2)
     local alignments = universe.evolutionTableAlignment[tier]
 
     local roll = map.random()
@@ -310,7 +312,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
 
     local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distance, map.evolutionLevel)
+    local evoIndex = mMax(distance, map.universe.evolutionLevel)
     local baseAlignment = base.alignment
 
     local pickedBaseAlignment
@@ -443,7 +445,7 @@ local function upgradeBaseBasedOnDamage(map, base)
 end
 
 function baseUtils.processBase(chunk, map, tick, base)
-    if ((tick - base.tick) <= BASE_PROCESS_INTERVAL) then
+    if ((tick - base.generationTick) <= BASE_PROCESS_INTERVAL) then
         return
     end
 
@@ -458,7 +460,10 @@ function baseUtils.processBase(chunk, map, tick, base)
                          chunk.y + (CHUNK_SIZE * map.random()))
 
     local upgradeRoll = map.random()
-    if (base.state == BASE_AI_STATE_ACTIVE) and (base.points >= MINIMUM_BUILDING_COST) and (upgradeRoll < 0.30) then
+    if (base.generationState == BASE_GENERATION_STATE_ACTIVE) and
+        (base.points >= MINIMUM_BUILDING_COST) and
+        (upgradeRoll < 0.30)
+    then
         local entities = surface.find_entities_filtered(universe.pbFilteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
@@ -478,11 +483,12 @@ function baseUtils.processBase(chunk, map, tick, base)
     end
 
     local deathThreshold
-    if (map.evolutionLevel < 0.5) then
+    local evolutionLevel = map.universe.evolutionLevel
+    if (evolutionLevel < 0.5) then
         deathThreshold = 4500
-    elseif (map.evolutionLevel < 0.7) then
+    elseif (evolutionLevel < 0.7) then
         deathThreshold = 7500
-    elseif (map.evolutionLevel < 0.9) then
+    elseif (evolutionLevel < 0.9) then
         deathThreshold = 11000
     else
         deathThreshold = 16000
@@ -528,20 +534,20 @@ function baseUtils.processBase(chunk, map, tick, base)
         base.unitPoints = universe.unitPoints
     end
 
-    if (base.stateTick <= tick) then
+    if (base.stateGenerationTick <= tick) then
         local roll = map.random()
         if (roll < 0.85) then
-            base.state = BASE_AI_STATE_ACTIVE
+            base.generationState = BASE_GENERATION_STATE_ACTIVE
         else
-            base.state = BASE_AI_STATE_DORMANT
+            base.generationState = BASE_GENERATION_STATE_DORMANT
         end
-        base.stateTick = randomTickEvent(map.random,
-                                         tick,
-                                         BASE_AI_MIN_STATE_DURATION,
-                                         BASE_AI_MAX_STATE_DURATION)
+        base.stateGenerationTick = randomTickEvent(map.random,
+                                                   tick,
+                                                   BASE_GENERATION_MIN_STATE_DURATION,
+                                                   BASE_GENERATION_MAX_STATE_DURATION)
     end
 
-    base.tick = tick
+    base.generationTick = tick
 end
 
 function baseUtils.createBase(map, chunk, tick)
@@ -552,7 +558,7 @@ function baseUtils.createBase(map, chunk, tick)
     local meanLevel = mFloor(distance * 0.005)
 
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distanceIndex, map.evolutionLevel)
+    local evoIndex = mMax(distanceIndex, map.universe.evolutionLevel)
 
     local baseTick = tick
 
@@ -573,20 +579,36 @@ function baseUtils.createBase(map, chunk, tick)
         distanceThreshold = distanceThreshold * map.universe.baseDistanceModifier,
         tick = baseTick,
         alignment = alignment,
-        state = BASE_AI_STATE_ACTIVE,
+        state = BASE_GENERATION_STATE_ACTIVE,
         damagedBy = {},
         deathEvents = 0,
         mutations = 0,
-        stateTick = 0,
+        stateGenerationTick = 0,
         chunkCount = 0,
         createdTick = tick,
         points = 0,
         unitPoints = 0,
+        stateAI = BASE_AI_STATE_PEACEFUL,
+        canAttackTick = 0,
+        drainPylons = {},
+        activeRaidNests = 0,
+        activeNests = 0,
+        destroyPlayerBuildings = 0,
+        lostEnemyUnits = 0,
+        lostEnemyBuilding = 0,
+        rocketLaunched = 0,
+        builtEnemyBuilding = 0,
+        ionCannonBlasts = 0,
+        artilleryBlasts = 0,
+        temperament = 0.5,
+        temperamentScore = 0,
+        stateAITick = 0,
         id = universe.baseId
     }
     universe.baseId = universe.baseId + 1
 
     map.bases[base.id] = base
+    universe.bases[base.id] = base
 
     return base
 end
