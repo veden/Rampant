@@ -765,10 +765,6 @@ local function onUnitGroupCreated(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.unitPoints = base.unitPoints + AI_SQUAD_COST
-            if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
-            end
             return
         end
 
@@ -794,10 +790,6 @@ local function onUnitGroupCreated(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.unitPoints = base.unitPoints + AI_SQUAD_COST
-            if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
-            end
             return
         end
 
@@ -826,26 +818,17 @@ local function onGroupFinishedGathering(event)
     map.activeSurface = true
     local squad = universe.groupNumberToSquad[group.group_number]
     if squad then
-        local base = squad.base
         if squad.settler then
             if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                base.unitPoints = base.unitPoints + AI_SETTLER_COST
-                if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", base.unitPoints))
-                end
             end
         else
             if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                base.unitPoints = base.unitPoints + AI_SQUAD_COST
-                if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
-                end
             end
         end
     else
@@ -857,10 +840,6 @@ local function onGroupFinishedGathering(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.unitPoints = base.unitPoints + AI_SQUAD_COST
-            if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
-            end
             return
         end
 
