@@ -54,8 +54,6 @@ local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
 
 -- imported functions
 
-local findNearbyBase = baseUtils.findNearbyBase
-
 local calculateKamikazeSettlerThreshold = unitGroupUtils.calculateKamikazeSettlerThreshold
 local calculateKamikazeSquadThreshold = unitGroupUtils.calculateKamikazeSquadThreshold
 
@@ -99,7 +97,10 @@ end
 
 local function attackWaveValidCandidate(chunk, map, base)
     local isValid = getNestActiveness(map, chunk)
-    if (base.stateAI == BASE_AI_STATE_RAIDING) or (base.stateAI == BASE_AI_STATE_SIEGE) or (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
+    if (base.stateAI == BASE_AI_STATE_RAIDING) or
+        (base.stateAI == BASE_AI_STATE_SIEGE) or
+        (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
+    then
         isValid = isValid + getRaidNestActiveness(map, chunk)
     end
     return (isValid > 0)
@@ -216,7 +217,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
     then
         local surface = map.surface
         local squadPath, squadDirection
-        if (map.state == BASE_AI_STATE_SIEGE) then
+        if (base.stateAI == BASE_AI_STATE_SIEGE) then
             squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                    validSiegeSettlerLocation,
                                                                    scoreSiegeSettlerLocation,
@@ -238,7 +239,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
                                                                       4,
                                                                       true)
             if squadPosition then
-                local squad = createSquad(squadPosition, map, nil, true)
+                local squad = createSquad(squadPosition, map, nil, true, base)
 
                 local scaledWaveSize = settlerWaveScaling(universe)
                 universe.formGroupCommand.group = squad.group
@@ -294,7 +295,7 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
                                                                       4,
                                                                       true)
             if squadPosition then
-                local squad = createSquad(squadPosition, map)
+                local squad = createSquad(squadPosition, map, nil, false, base)
 
                 squad.rabid = map.random() < 0.03
 
@@ -342,7 +343,7 @@ function aiAttackWave.formVengenceSettler(map, chunk, base)
                                                                       4,
                                                                       true)
             if squadPosition then
-                local squad = createSquad(squadPosition, map, nil, true)
+                local squad = createSquad(squadPosition, map, nil, true, base)
 
                 squad.rabid = map.random() < 0.03
 
@@ -391,7 +392,7 @@ function aiAttackWave.formSquads(map, chunk, base)
                                                                       4,
                                                                       true)
             if squadPosition then
-                local squad = createSquad(squadPosition, map)
+                local squad = createSquad(squadPosition, map, nil, false, base)
 
                 squad.rabid = map.random() < 0.03
 

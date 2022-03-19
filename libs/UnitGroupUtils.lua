@@ -114,7 +114,7 @@ function unitGroupUtils.calculateSettlerMaxDistance(universe)
                                  universe.random)
 end
 
-function unitGroupUtils.createSquad(position, map, group, settlers)
+function unitGroupUtils.createSquad(position, map, group, settlers, base)
     local unitGroup = group or map.surface.create_unit_group({position=position})
 
     local squad = {
@@ -122,7 +122,8 @@ function unitGroupUtils.createSquad(position, map, group, settlers)
         status = SQUAD_GUARDING,
         rabid = false,
         penalties = {},
-        base = nil,
+        base = base,
+        type = base.stateAI,
         frenzy = false,
         map = map,
         wanders = 0,

@@ -60,7 +60,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local removeChunkToNest = mapUtils.removeChunkToNest
 
@@ -68,7 +68,7 @@ local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 
 local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
-local processBase = baseUtils.processBase
+local processBaseMutation = baseUtils.processBaseMutation
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
 local getChunkBase = chunkPropertyUtils.getChunkBase
@@ -221,13 +221,16 @@ function mapProcessor.processPlayers(players, universe, tick)
             local char = player.character
             local map = universe.maps[char.surface.index]
             if map then
-                local allowingAttacks = canAttack(map, base)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
                     local base = findNearbyBase(map, playerChunk)
+                    if not base then
+                        return
+                    end
+                    local allowingAttacks = canAttack(map, base)
                     local vengence = allowingAttacks and
-                        (base.points >= AI_VENGENCE_SQUAD_COST) and
+                        (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
                             (getDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
 
@@ -479,10 +482,11 @@ function mapProcessor.processNests(universe, tick)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        processBase(chunk,
-                    map,
-                    tick,
-                    getChunkBase(map, chunk))
+        if universe.NEW_ENEMIES then
+            processBaseMutation(chunk,
+                                map,
+                                getChunkBase(map, chunk))
+        end
     end
 end
 
@@ -507,25 +511,25 @@ local function processSpawnersBody(universe, iterator, chunks)
             end
             return
         end
-        local state = chunkPack.map.state
-        if base.state == BASE_AI_STATE_PEACEFUL then
+        local chunk = getChunkById(map, chunkId)
+        local base = findNearbyBase(map, chunk)
+        if base.stateAI == BASE_AI_STATE_PEACEFUL then
             return
         end
         if iterator == "processMigrationIterator" then
-            if (base.state ~= BASE_AI_STATE_MIGRATING) and (state ~= BASE_AI_STATE_SIEGE) then
+            if (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then
-            if (base.state == BASE_AI_STATE_AGGRESSIVE) or (base.state == BASE_AI_STATE_MIGRATING) then
+            if (base.stateAI == BASE_AI_STATE_AGGRESSIVE) or (base.stateAI == BASE_AI_STATE_MIGRATING) then
                 return
             end
         elseif iterator == "processActiveSpawnerIterator" then
-            if (base.state == BASE_AI_STATE_MIGRATING) then
+            if (base.stateAI == BASE_AI_STATE_MIGRATING) then
                 return
             end
         end
 
-        local chunk = getChunkById(map, chunkId)
         local migrate = canMigrate(map, base)
         local attack = canAttack(map, base)
         if migrate then

@@ -23,32 +23,27 @@ local aiPlanning = {}
 
 local constants = require("Constants")
 local mathUtils = require("MathUtils")
+local baseUtils = require("BaseUtils")
 
 -- constants
+
+local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
+
+local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
+local BASE_GENERATION_STATE_DORMANT = constants.BASE_GENERATION_STATE_DORMANT
+
+local BASE_GENERATION_MIN_STATE_DURATION = constants.BASE_GENERATION_MIN_STATE_DURATION
+local BASE_GENERATION_MAX_STATE_DURATION = constants.BASE_GENERATION_MAX_STATE_DURATION
 
 local TEMPERAMENT_RANGE_MAX = constants.TEMPERAMENT_RANGE_MAX
 local TEMPERAMENT_RANGE_MIN = constants.TEMPERAMENT_RANGE_MIN
 local TEMPERAMENT_DIVIDER = constants.TEMPERAMENT_DIVIDER
-local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
-local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
-local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
 local NO_RETREAT_BASE_PERCENT = constants.NO_RETREAT_BASE_PERCENT
 local NO_RETREAT_EVOLUTION_BONUS_MAX = constants.NO_RETREAT_EVOLUTION_BONUS_MAX
-
-local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
-local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
-local BASE_AI_STATE_RAIDING = constants.BASE_AI_STATE_RAIDING
-local BASE_AI_STATE_MIGRATING = constants.BASE_AI_STATE_MIGRATING
-local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
-local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
 
 local AI_UNIT_REFUND = constants.AI_UNIT_REFUND
 
 local AI_MAX_POINTS = constants.AI_MAX_POINTS
-local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
-
-local AI_MIN_STATE_DURATION = constants.AI_MIN_STATE_DURATION
-local AI_MAX_STATE_DURATION = constants.AI_MAX_STATE_DURATION
 
 local BASE_RALLY_CHANCE = constants.BASE_RALLY_CHANCE
 local BONUS_RALLY_CHANCE = constants.BONUS_RALLY_CHANCE
@@ -57,17 +52,36 @@ local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = constants.RETREAT_MOVEMENT_PHEROMON
 local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
 local MINIMUM_AI_POINTS = constants.MINIMUM_AI_POINTS
 
+local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
+local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
+local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
+
+local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_RAIDING = constants.BASE_AI_STATE_RAIDING
+local BASE_AI_STATE_MIGRATING = constants.BASE_AI_STATE_MIGRATING
+local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local AI_POINT_GENERATOR_AMOUNT = constants.AI_POINT_GENERATOR_AMOUNT
+
+local BASE_AI_MIN_STATE_DURATION = constants.BASE_AI_MIN_STATE_DURATION
+local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
+
+
 -- imported functions
 
 local randomTickEvent = mathUtils.randomTickEvent
 
+local upgradeBaseBasedOnDamage = baseUtils.upgradeBaseBasedOnDamage
+
 local linearInterpolation = mathUtils.linearInterpolation
 
 local mFloor = math.floor
-local mCeil = math.ceil
 
 local mMax = math.max
 local mMin = math.min
+
+local mCeil = math.ceil
 
 -- module code
 
@@ -82,8 +96,8 @@ local function getTimeStringFromTick(tick)
     return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
 end
 
-
-local function planning(universe, base, evolutionLevel, tick)
+function aiPlanning.planning(universe, evolutionLevel)
+    universe.evolutionLevel = evolutionLevel
     local maxPoints = mMax(AI_MAX_POINTS * evolutionLevel, MINIMUM_AI_POINTS)
     universe.maxPoints = maxPoints
 
@@ -100,15 +114,6 @@ local function planning(universe, base, evolutionLevel, tick)
     universe.attackWaveSize = attackWaveMaxSize * (evolutionLevel ^ 1.4)
     universe.attackWaveDeviation = (universe.attackWaveSize * 0.333)
     universe.attackWaveUpperBound = universe.attackWaveSize + (universe.attackWaveSize * 0.35)
-
-    if (base.canAttackTick < tick) then
-        base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
-        base.sentAggressiveGroups = 0
-        base.canAttackTick = randomTickEvent(universe.random,
-                                             tick,
-                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
-    end
 
     if (universe.attackWaveSize < 1) then
         universe.attackWaveSize = 2
@@ -127,18 +132,31 @@ local function planning(universe, base, evolutionLevel, tick)
 
     universe.unitRefundAmount = AI_UNIT_REFUND * evolutionLevel
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolutionLevel * NO_RETREAT_EVOLUTION_BONUS_MAX)
+end
 
-    local points = ((AI_POINT_GENERATOR_AMOUNT * universe.random()) + (base.activeNests * 0.003) +
-        (AI_POINT_GENERATOR_AMOUNT * mMax(evolutionLevel ^ 2.5, 0.1)))
+local function processBase(universe, base, tick)
+
+    if (base.canAttackTick < tick) then
+        base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
+        base.sentAggressiveGroups = 0
+        base.canAttackTick = randomTickEvent(universe.random,
+                                             tick,
+                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
+                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
+    end
+
+    local points = (AI_POINT_GENERATOR_AMOUNT * universe.random()) +
+        (base.activeNests * 0.144) +
+        (AI_POINT_GENERATOR_AMOUNT * mMax(universe.evolutionLevel ^ 2.5, 0.1))
 
     if (base.temperament == 0) or (base.temperament == 1) then
-        points = points + 0.5
+        points = points + 24
     elseif (base.temperament < 0.20) or (base.temperament > 0.80) then
-        points = points + 0.3
+        points = points + 14.4
     elseif (base.temperament < 0.35) or (base.temperament > 0.65) then
-        points = points + 0.2
+        points = points + 9.6
     elseif (base.temperament < 0.45) or (base.temperament > 0.55) then
-        points = points + 0.1
+        points = points + 4.8
     end
 
     if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
@@ -147,22 +165,198 @@ local function planning(universe, base, evolutionLevel, tick)
 
     points = points * universe.aiPointsScaler
 
-    base.points = points * 30
-    base.unitPoints = points * 30
-
-    local currentPoints = base.points
+    local currentPoints = base.unitPoints
 
     if (currentPoints <= 0) then
         currentPoints = 0
     end
 
-    if (currentPoints < maxPoints) then
-        base.points = currentPoints + points
+    if (currentPoints < universe.maxPoints) then
+        base.unitPoints = currentPoints + points
+    elseif currentPoints > universe.maxOverflowPoints then
+        base.unitPoints = universe.maxOverflowPoints
     end
 
-    if (currentPoints > maxOverflowPoints) then
-        base.points = maxOverflowPoints
+    if (base.points < universe.maxPoints) then
+        base.points = base.points + (points * 0.75)
+    else
+        base.points = universe.maxPoints
     end
+
+    local deathThreshold
+    local evolutionLevel = universe.evolutionLevel
+    if (evolutionLevel < 0.5) then
+        deathThreshold = 4500
+    elseif (evolutionLevel < 0.7) then
+        deathThreshold = 7500
+    elseif (evolutionLevel < 0.9) then
+        deathThreshold = 11000
+    else
+        deathThreshold = 16000
+    end
+
+    deathThreshold = universe.adaptationModifier * deathThreshold
+    if ((base.deathEvents > deathThreshold) and (universe.random() > 0.95)) then
+        if (base.mutations < universe.MAX_BASE_MUTATIONS) then
+            base.mutations = base.mutations + 1
+            upgradeBaseBasedOnDamage(universe, base)
+        elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
+            local roll = universe.random()
+            if (roll < 0.001) then
+                base.mutations = 0
+                if (universe.printBaseAdaptation) then
+                    game.print({"description.rampant--adaptationResetDebugMessage",
+                                base.x,
+                                base.y,
+                                base.mutations,
+                                universe.MAX_BASE_MUTATIONS})
+                end
+            elseif (roll > 0.999) then
+                base.mutations = base.mutations + 1
+                if (universe.printBaseAdaptation) then
+                    game.print({"description.rampant--adaptationFrozenDebugMessage",
+                                base.x,
+                                base.y})
+                end
+            end
+        end
+        base.damagedBy = {}
+        base.deathEvents = 0
+    end
+
+    if (base.stateGenerationTick <= tick) then
+        local roll = universe.random()
+        if (roll < 0.85) then
+            base.stateGeneration = BASE_GENERATION_STATE_ACTIVE
+        else
+            base.stateGeneration = BASE_GENERATION_STATE_DORMANT
+        end
+        base.stateGenerationTick = randomTickEvent(universe.random,
+                                                   tick,
+                                                   BASE_GENERATION_MIN_STATE_DURATION,
+                                                   BASE_GENERATION_MAX_STATE_DURATION)
+    end
+
+    base.tick = tick
+end
+
+local function temperamentPlanner(base, evolutionLevel)
+    local destroyPlayerBuildings = base.destroyPlayerBuildings
+    local lostEnemyUnits = base.lostEnemyUnits
+    local lostEnemyBuilding = base.lostEnemyBuilding
+    local rocketLaunched = base.rocketLaunched
+    local builtEnemyBuilding = base.builtEnemyBuilding
+    local ionCannonBlasts = base.ionCannonBlasts
+    local artilleryBlasts = base.artilleryBlasts
+    local activeNests = base.activeNests
+    local activeRaidNests = base.activeRaidNests
+
+    local currentTemperament = base.temperamentScore
+    local delta = 0
+
+    if activeNests > 0 then
+        local val = (5.76 * activeNests)
+        delta = delta + val
+    else
+        delta = delta - 5.553792
+    end
+
+    if destroyPlayerBuildings > 0 then
+        if currentTemperament > 0 then
+            delta = delta - (5.553792 * destroyPlayerBuildings)
+        else
+            delta = delta + (5.553792 * destroyPlayerBuildings)
+        end
+    end
+
+    if activeRaidNests > 0 then
+        local val = (0.2304 * activeRaidNests)
+        delta = delta - val
+    else
+        delta = delta - 3.84
+    end
+
+    if lostEnemyUnits > 0 then
+        local multipler
+        if evolutionLevel < 0.3 then
+            multipler = 0.083328
+        elseif evolutionLevel < 0.5 then
+            multipler = 0.041472
+        elseif evolutionLevel < 0.7 then
+            multipler = 0.020736
+        elseif evolutionLevel < 0.9 then
+            multipler = 0.010368
+        elseif evolutionLevel < 0.9 then
+            multipler = 0.005184
+        else
+            multipler = 0.002592
+        end
+        local val = (multipler * lostEnemyUnits)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    end
+
+    if lostEnemyBuilding > 0 then
+        local val = (0.576 * lostEnemyBuilding)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    end
+
+    if builtEnemyBuilding > 0 then
+        local val = (0.261952 * builtEnemyBuilding)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    else
+        delta = delta - 2.777088
+    end
+
+    if (rocketLaunched > 0) then
+        local val = (27.76 * rocketLaunched)
+        delta = delta + val
+    end
+
+    if (ionCannonBlasts > 0) then
+        local val = (13.924864 * ionCannonBlasts)
+        delta = delta + val
+    end
+
+    if (artilleryBlasts > 0) then
+        local val = (13.924864 * artilleryBlasts)
+        delta = delta + val
+    end
+
+    local universe = base.universe
+
+    delta = delta * universe.temperamentRateModifier
+    base.temperamentScore = mMin(TEMPERAMENT_RANGE_MAX, mMax(TEMPERAMENT_RANGE_MIN, currentTemperament + delta))
+    base.temperament = ((base.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
+
+    if universe.debugTemperament then
+        game.print("Rampant Stats:\naN:" .. base.activeNests .. ", aRN:" .. base.activeRaidNests .. ", dPB:" ..
+                   base.destroyPlayerBuildings .. ", lEU:" .. base.lostEnemyUnits .. ", lEB:" ..
+                   base.lostEnemyBuilding .. ", rL:" .. base.rocketLaunched .. ", bEB:" ..
+                   base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
+                   base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
+                   ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
+                   constants.stateEnglish[base.stateAI] .. ", surface:" .. base.surface.index .. " [" ..
+                   base.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
+                   ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
+                   ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
+                   ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.generationState ..
+                   ", baseId:".. base.id)
+    end
+end
+
+local function processState(universe, base, tick)
 
     if (base.stateAITick > tick) or not universe.awake then
         if (not universe.awake) and (tick >= universe.initialPeaceTime) then
@@ -339,129 +533,17 @@ local function planning(universe, base, evolutionLevel, tick)
     base.ionCannonBlasts = 0
     base.artilleryBlasts = 0
 
-    base.stateAITick = randomTickEvent(universe.random, tick, AI_MIN_STATE_DURATION, AI_MAX_STATE_DURATION)
+    base.stateAITick = randomTickEvent(universe.random, tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
 
     if universe.printAIStateChanges then
         game.print(base.index .. ": AI is now: " .. constants.stateEnglish[base.stateAI] .. ", Next state change is in "
                    .. string.format("%.2f", (base.stateAITick - tick) / (60*60)) .. " minutes @ " ..
                    getTimeStringFromTick(base.stateAITick) .. " playtime")
     end
+
 end
 
-local function temperamentPlanner(base, evolutionLevel)
-    local destroyPlayerBuildings = base.destroyPlayerBuildings
-    local lostEnemyUnits = base.lostEnemyUnits
-    local lostEnemyBuilding = base.lostEnemyBuilding
-    local rocketLaunched = base.rocketLaunched
-    local builtEnemyBuilding = base.builtEnemyBuilding
-    local ionCannonBlasts = base.ionCannonBlasts
-    local artilleryBlasts = base.artilleryBlasts
-    local activeNests = base.activeNests
-    local activeRaidNests = base.activeRaidNests
-
-    local currentTemperament = base.temperamentScore
-    local delta = 0
-
-    if activeNests > 0 then
-        local val = (0.015 * activeNests)
-        delta = delta + val
-    else
-        delta = delta - 0.014463
-    end
-
-    if destroyPlayerBuildings > 0 then
-        if currentTemperament > 0 then
-            delta = delta - (0.014463 * destroyPlayerBuildings)
-        else
-            delta = delta + (0.014463 * destroyPlayerBuildings)
-        end
-    end
-
-    if activeRaidNests > 0 then
-        local val = (0.0006 * activeRaidNests)
-        delta = delta - val
-    else
-        delta = delta - 0.01
-    end
-
-    if lostEnemyUnits > 0 then
-        local multipler
-        if evolutionLevel < 0.3 then
-            multipler = 0.000217
-        elseif evolutionLevel < 0.5 then
-            multipler = 0.000108
-        elseif evolutionLevel < 0.7 then
-            multipler = 0.000054
-        elseif evolutionLevel < 0.9 then
-            multipler = 0.000027
-        elseif evolutionLevel < 0.9 then
-            multipler = 0.0000135
-        else
-            multipler = 0.00000675
-        end
-        local val = (multipler * lostEnemyUnits)
-        if (currentTemperament > 0) then
-            delta = delta - val
-        else
-            delta = delta + val
-        end
-    end
-
-    if lostEnemyBuilding > 0 then
-        local val = (0.0015 * lostEnemyBuilding)
-        if (currentTemperament > 0) then
-            delta = delta - val
-        else
-            delta = delta + val
-        end
-    end
-
-    if builtEnemyBuilding > 0 then
-        local val = (0.0006818 * builtEnemyBuilding)
-        if (currentTemperament > 0) then
-            delta = delta - val
-        else
-            delta = delta + val
-        end
-    else
-        delta = delta - 0.007232
-    end
-
-    if (rocketLaunched > 0) then
-        local val = (0.289268 * rocketLaunched)
-        delta = delta + val
-    end
-
-    if (ionCannonBlasts > 0) then
-        local val = (0.144634 * ionCannonBlasts)
-        delta = delta + val
-    end
-
-    if (artilleryBlasts > 0) then
-        local val = (0.144634 * artilleryBlasts)
-        delta = delta + val
-    end
-
-    local universe = base.universe
-
-    delta = delta * universe.temperamentRateModifier
-    base.temperamentScore = mMin(TEMPERAMENT_RANGE_MAX, mMax(TEMPERAMENT_RANGE_MIN, currentTemperament + delta))
-    base.temperament = ((base.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
-
-    if universe.debugTemperament then
-        if game.tick % 243 == 0 then
-            game.print("Rampant Stats:")
-            game.print("aN:" .. base.activeNests .. ", aRN:" .. base.activeRaidNests .. ", dPB:" .. base.destroyPlayerBuildings ..
-                       ", lEU:" .. base.lostEnemyUnits .. ", lEB:" .. base.lostEnemyBuilding .. ", rL:" .. base.rocketLaunched .. ", bEB:" .. base.builtEnemyBuilding ..
-                       ", iCB:" .. base.ionCannonBlasts .. ", aB:" .. base.artilleryBlasts)
-            game.print("temp: " .. base.temperament .. ", tempScore:" .. base.temperamentScore .. ", points:" .. base.points .. ", state:" .. constants.stateEnglish[base.state] .. ", surface:" .. base.surface.index .. " [" .. base.surface.name .. "]")
-            game.print("aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount .. ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize .. ", formGroup:" .. universe.formSquadThreshold)
-            game.print("sAgg:".. base.sentAggressiveGroups .. ", mAgg:" .. base.maxAggressiveGroups)
-        end
-    end
-end
-
-function aiPlanning.processBaseAIs(universe, evo, tick)
+function aiPlanning.processBaseAIs(universe, tick)
     local baseId = universe.processBaseAIIterator
     local base
     if not baseId then
@@ -474,12 +556,12 @@ function aiPlanning.processBaseAIs(universe, evo, tick)
         return
     else
         universe.processBaseAIIterator = next(universe.bases, baseId)
-        universe.evolutionLevel = evo
-        planning(universe, base, evo, tick)
-        temperamentPlanner(base, evo)
-        if not universe.processBaseAIIterator then
+        if (tick - base.tick) <= BASE_PROCESS_INTERVAL then
             return
         end
+        temperamentPlanner(base, universe.evolutionLevel)
+        processState(universe, base, tick)
+        processBase(universe, base, tick)
     end
 end
 

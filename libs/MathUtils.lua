@@ -137,9 +137,7 @@ function mathUtils.euclideanDistancePoints(x1, y1, x2, y2)
 end
 
 function mathUtils.manhattenDistancePoints(x1, y1, x2, y2)
-    local xs = x1 - x2
-    local ys = y1 - y2
-    return mAbs(xs + ys)
+    return mAbs((x1 - x2) + (y1 - y2))
 end
 
 function mathUtils.euclideanDistanceArray(p1, p2)

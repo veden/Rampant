@@ -118,7 +118,7 @@ constants.DIVISOR_DEATH_TRAIL_TABLE = { 0.75, 0.65, 0.55, 0.45, 0.35 }
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
 constants.MINIMUM_AI_POINTS = 400
-constants.AI_POINT_GENERATOR_AMOUNT = 0.17721
+constants.AI_POINT_GENERATOR_AMOUNT = 15
 constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
 constants.RECOVER_WORM_COST = constants.AI_SQUAD_COST * 0.5
@@ -187,7 +187,7 @@ constants.BASE_UPGRADE = 1500
 constants.BASE_DISTANCE_THRESHOLD = 30 * constants.CHUNK_SIZE
 constants.BASE_DISTANCE_LEVEL_BONUS = 15
 
-constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND
+constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 20
 
 -- ai retreat
 
@@ -1579,7 +1579,7 @@ constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRAD
 constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
 
-constants.UNIT_DEATH_POINT_COST = 1
+constants.UNIT_DEATH_POINT_COST = 0.5
 
 constants.MINIMUM_BUILDING_COST = constants.MAGIC_MAXIMUM_NUMBER
 for _,cost in pairs(constants.HIVE_BUILDINGS_COST) do

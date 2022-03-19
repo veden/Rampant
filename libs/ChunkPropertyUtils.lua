@@ -20,6 +20,7 @@ end
 local chunkPropertyUtils = {}
 
 local constants = require("Constants")
+local mathUtils = require("MathUtils")
 
 -- constants
 
@@ -33,7 +34,11 @@ local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local MOVEMENT_GENERATOR_PERSISTANCE = constants.MOVEMENT_GENERATOR_PERSISTANCE
 local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
 
+local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+
 -- imported functions
+
+local manhattenDistancePoints = mathUtils.manhattenDistancePoints
 
 local mMin = math.min
 
@@ -369,11 +374,11 @@ function chunkPropertyUtils.getRaidNestActiveness(map, chunk)
     return activeness.v or 0
 end
 
-function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
+function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value, base)
     local universe = map.universe
     if (value <= 0) then
         if universe.chunkToActiveRaidNest[chunk.id] then
-            map.activeRaidNests = map.activeRaidNests - 1
+            base.activeRaidNests = base.activeRaidNests - 1
         end
         if (universe.processActiveRaidSpawnerIterator == chunk.id) then
             universe.processActiveRaidSpawnerIterator = nil
@@ -381,7 +386,7 @@ function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value)
         universe.chunkToActiveRaidNest[chunk.id] = nil
     else
         if not universe.chunkToActiveRaidNest[chunk.id] then
-            map.activeRaidNests = map.activeRaidNests + 1
+            base.activeRaidNests = base.activeRaidNests + 1
             universe.chunkToActiveRaidNest[chunk.id] = {
                 map = map,
                 v = 0
@@ -399,11 +404,11 @@ function chunkPropertyUtils.getNestActiveness(map, chunk)
     return activeness.v or 0
 end
 
-function chunkPropertyUtils.setNestActiveness(map, chunk, value)
+function chunkPropertyUtils.setNestActiveness(map, chunk, value, base)
     local universe = map.universe
     if (value <= 0) then
         if universe.chunkToActiveNest[chunk.id] then
-            map.activeNests = map.activeNests - 1
+            base.activeNests = base.activeNests - 1
         end
         if (universe.processActiveSpawnerIterator == chunk.id) then
             universe.processActiveSpawnerIterator = nil
@@ -411,7 +416,7 @@ function chunkPropertyUtils.setNestActiveness(map, chunk, value)
         universe.chunkToActiveNest[chunk.id] = nil
     else
         if not universe.chunkToActiveNest[chunk.id] then
-            map.activeNests = map.activeNests + 1
+            base.activeNests = base.activeNests + 1
             universe.chunkToActiveNest[chunk.id] = {
                 map = map,
                 v = 0
@@ -568,18 +573,40 @@ function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
     map.chunkToPlayerBase[chunk.id] = (map.chunkToPlayerBase[chunk.id] or 0) + playerGenerator
 end
 
+function chunkPropertyUtils.findNearbyBase(map, chunk)
+    local x = chunk.x
+    local y = chunk.y
+
+    local foundBase = chunkPropertyUtils.getChunkBase(map, chunk)
+    if foundBase then
+        return foundBase
+    end
+
+    local closest = MAGIC_MAXIMUM_NUMBER
+    for _, base in pairs(map.bases) do
+        local distance = manhattenDistancePoints(base.x, base.y, x, y)
+        if (distance <= base.distanceThreshold) and (distance < closest) then
+            closest = distance
+            foundBase = base
+        end
+    end
+
+    return foundBase
+end
+
 function chunkPropertyUtils.processNestActiveness(map, chunk)
     local nests = chunkPropertyUtils.getNestCount(map, chunk)
+    local base = chunkPropertyUtils.findNearbyBase(map, chunk)
     if (nests > 0) then
         local surface = map.surface
         local activeness = chunkPropertyUtils.getNestActiveness(map, chunk)
         local universe = map.universe
         local raidActiveness = chunkPropertyUtils.getRaidNestActiveness(map, chunk)
         if universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > universe.attackPlayerThreshold) then
-            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
         elseif (chunk[BASE_PHEROMONE] > 0) then
             if (surface.get_pollution(chunk) > 0) then
-                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
             else
                 local x = chunk.x
                 local y = chunk.y
@@ -587,26 +614,26 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
                 position.x = x + 32
                 position.y = y
                 if (surface.get_pollution(position) > 0) then
-                    chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                    chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                 else
                     position.x = x - 32
                     if (surface.get_pollution(position) > 0) then
-                        chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                        chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                     else
                         position.x = x
                         position.y = y - 32
                         if (surface.get_pollution(position) > 0) then
-                            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                         else
                             position.y = y + 32
                             if (surface.get_pollution(position) > 0) then
-                                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20))
+                                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                             else
-                                chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2)
+                                chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2, base)
                                 if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
-                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20))
+                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20), base)
                                 else
-                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 1)
+                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 1, base)
                                 end
                             end
                         end
@@ -614,12 +641,12 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
                 end
             end
         else
-            chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 5)
-            chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 5)
+            chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 5, base)
+            chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 5, base)
         end
-    else
-        chunkPropertyUtils.setNestActiveness(map, chunk, 0)
-        chunkPropertyUtils.setRaidNestActiveness(map, chunk, 0)
+    elseif base then
+        chunkPropertyUtils.setNestActiveness(map, chunk, 0, base)
+        chunkPropertyUtils.setRaidNestActiveness(map, chunk, 0, base)
     end
 end
 

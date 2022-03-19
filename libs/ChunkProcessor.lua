@@ -159,7 +159,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
     universe.chunkProcessorIterator = eventId
 end
 
-function chunkProcessor.processPendingUpgrades(universe, tick)
+function chunkProcessor.processPendingUpgrades(universe)
     local entityId = universe.pendingUpgradeIterator
     local entityData
     if not entityId then
@@ -191,7 +191,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             setPositionInQuery(query, foundPosition or position)
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base, true)
+                registerEnemyBaseStructure(entityData.map, createdEntity, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
                     remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
                 end

@@ -37,12 +37,8 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
 
 local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
-local BASE_GENERATION_STATE_DORMANT = constants.BASE_GENERATION_STATE_DORMANT
 
 local FACTION_SET = constants.FACTION_SET
-
-local BASE_GENERATION_MIN_STATE_DURATION = constants.BASE_GENERATION_MIN_STATE_DURATION
-local BASE_GENERATION_MAX_STATE_DURATION = constants.BASE_GENERATION_MAX_STATE_DURATION
 
 local HIVE_BUILDINGS_COST = constants.HIVE_BUILDINGS_COST
 
@@ -52,17 +48,13 @@ local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
 
-local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
-
 local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
 
 -- imported functions
 
 local setPositionXYInQuery = queryUtils.setPositionXYInQuery
 
-local randomTickEvent = mathUtils.randomTickEvent
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
-local manhattenDistancePoints = mathUtils.manhattenDistancePoints
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
@@ -75,8 +67,6 @@ local mFloor = math.floor
 local mMin = math.min
 local mMax = math.max
 local distort = mathUtils.distort
-
-local getChunkBase = chunkPropertyUtils.getChunkBase
 
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
@@ -99,34 +89,11 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     return v
 end
 
-function baseUtils.findNearbyBase(map, chunk)
-    local x = chunk.x
-    local y = chunk.y
-
-    local foundBase = getChunkBase(map, chunk)
-    if foundBase then
-        return foundBase
-    end
-
-    local bases = map.bases
-    local closest = MAGIC_MAXIMUM_NUMBER
-    for _, base in pairs(bases) do
-        local distance = manhattenDistancePoints(base.x, base.y, x, y)
-        if (distance <= base.distanceThreshold) and (distance < closest) then
-            closest = distance
-            foundBase = base
-        end
-    end
-
-    return foundBase
-end
-
-local function findBaseMutation(map, targetEvolution)
-    local universe = map.universe
+local function findBaseMutation(universe, targetEvolution)
     local tier = evoToTier(universe, targetEvolution or universe.evolutionLevel, 2)
     local alignments = universe.evolutionTableAlignment[tier]
 
-    local roll = map.random()
+    local roll = universe.random()
     for i=1,#alignments do
         local alignment = alignments[i]
 
@@ -274,15 +241,15 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     end
 end
 
-local function findBaseInitialAlignment(map, evoIndex)
+local function findBaseInitialAlignment(universe, evoIndex)
     local dev = evoIndex * 0.15
-    local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, map.random)
+    local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, universe.random)
 
     local result
-    if map.random() < 0.05 then
-        result = {findBaseMutation(map, evoTop), findBaseMutation(map, evoTop)}
+    if universe.random() < 0.05 then
+        result = {findBaseMutation(universe, evoTop), findBaseMutation(universe, evoTop)}
     else
-        result = {findBaseMutation(map, evoTop)}
+        result = {findBaseMutation(universe, evoTop)}
     end
 
     return result
@@ -303,6 +270,7 @@ function baseUtils.recycleBases(map)
         map.recycleBaseIterator = next(bases, id)
         if base.chunkCount == 0 then
             bases[id] = nil
+            map.universe.bases[id] = nil
         end
     end
 end
@@ -353,14 +321,14 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
     return nil
 end
 
-local function pickMutationFromDamageType(map, damageType, roll, base)
+local function pickMutationFromDamageType(universe, damageType, roll, base)
     local baseAlignment = base.alignment
 
     local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
     local mutation
 
     if (damageFactions and (#damageFactions > 0)) then
-        mutation = damageFactions[map.random(#damageFactions)]
+        mutation = damageFactions[universe.random(#damageFactions)]
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
@@ -378,7 +346,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
             end
         end
     else
-        mutation = findBaseMutation(map)
+        mutation = findBaseMutation(universe)
         if baseAlignment[2] then
             if (roll < 0.05) then
                 baseAlignment[2] = nil
@@ -396,7 +364,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
             end
         end
     end
-    if (map.universe.printBaseAdaptation) then
+    if (universe.printBaseAdaptation) then
         if baseAlignment[2] then
             game.print({"description.rampant--adaptation2DebugMessage",
                         damageType,
@@ -405,7 +373,7 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
                         base.x,
                         base.y,
                         base.mutations,
-                        map.universe.MAX_BASE_MUTATIONS})
+                        universe.MAX_BASE_MUTATIONS})
         else
             game.print({"description.rampant--adaptation1DebugMessage",
                         damageType,
@@ -413,12 +381,12 @@ local function pickMutationFromDamageType(map, damageType, roll, base)
                         base.x,
                         base.y,
                         base.mutations,
-                        map.universe.MAX_BASE_MUTATIONS})
+                        universe.MAX_BASE_MUTATIONS})
         end
     end
 end
 
-local function upgradeBaseBasedOnDamage(map, base)
+function baseUtils.upgradeBaseBasedOnDamage(universe, base)
 
     local total = 0
 
@@ -429,7 +397,7 @@ local function upgradeBaseBasedOnDamage(map, base)
     base.damagedBy["RandomMutation"] = mutationAmount
     total = total + mutationAmount
     local pickedDamage
-    local roll = map.random()
+    local roll = universe.random()
     for damageTypeName,amount in pairs(base.damagedBy) do
         base.damagedBy[damageTypeName] = amount / total
     end
@@ -441,37 +409,30 @@ local function upgradeBaseBasedOnDamage(map, base)
         end
     end
 
-    pickMutationFromDamageType(map, pickedDamage, roll, base)
+    pickMutationFromDamageType(universe, pickedDamage, roll, base)
 end
 
-function baseUtils.processBase(chunk, map, tick, base)
-    if ((tick - base.generationTick) <= BASE_PROCESS_INTERVAL) then
-        return
-    end
-
-    if not base.alignment[1] then
-        return
-    end
-
-    local surface = map.surface
-    local universe = map.universe
-    setPositionXYInQuery(universe.pbFilteredEntitiesPointQueryLimited,
-                         chunk.x + (CHUNK_SIZE * map.random()),
-                         chunk.y + (CHUNK_SIZE * map.random()))
-
-    local upgradeRoll = map.random()
-    if (base.generationState == BASE_GENERATION_STATE_ACTIVE) and
-        (base.points >= MINIMUM_BUILDING_COST) and
-        (upgradeRoll < 0.30)
+function baseUtils.processBaseMutation(chunk, map, base)
+    if not base.alignment[1] or
+        (base.stateGeneration ~= BASE_GENERATION_STATE_ACTIVE) or
+        (map.random() >= 0.30)
     then
+        return
+    end
+
+    if (base.points >= MINIMUM_BUILDING_COST) then
+        local surface = map.surface
+        local universe = map.universe
+        setPositionXYInQuery(universe.pbFilteredEntitiesPointQueryLimited,
+                             chunk.x + (CHUNK_SIZE * map.random()),
+                             chunk.y + (CHUNK_SIZE * map.random()))
+
         local entities = surface.find_entities_filtered(universe.pbFilteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
             local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
-                local newEntity = baseUtils.upgradeEntity(entity,
-                                                          base,
-                                                          map)
+                local newEntity = baseUtils.upgradeEntity(entity, base, map)
                 if newEntity then
                     if universe.printBaseUpgrades then
                         surface.print("[gps=".. entity.position.x ..",".. entity.position.y .."] " .. "Scheduled upgrade for ".. entity.name .. " to " .. newEntity)
@@ -481,73 +442,6 @@ function baseUtils.processBase(chunk, map, tick, base)
             end
         end
     end
-
-    local deathThreshold
-    local evolutionLevel = map.universe.evolutionLevel
-    if (evolutionLevel < 0.5) then
-        deathThreshold = 4500
-    elseif (evolutionLevel < 0.7) then
-        deathThreshold = 7500
-    elseif (evolutionLevel < 0.9) then
-        deathThreshold = 11000
-    else
-        deathThreshold = 16000
-    end
-
-    deathThreshold = universe.adaptationModifier * deathThreshold
-
-    if ((base.deathEvents > deathThreshold) and (upgradeRoll > 0.95)) then
-        if (base.mutations < universe.MAX_BASE_MUTATIONS) then
-            base.mutations = base.mutations + 1
-            upgradeBaseBasedOnDamage(map, base)
-        elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
-            local roll = map.random()
-            if (roll < 0.001) then
-                base.mutations = 0
-                if (map.universe.printBaseAdaptation) then
-                    game.print({"description.rampant--adaptationResetDebugMessage",
-                                base.x,
-                                base.y,
-                                base.mutations,
-                                map.universe.MAX_BASE_MUTATIONS})
-                end
-            elseif (roll > 0.999) then
-                base.mutations = base.mutations + 1
-                if (map.universe.printBaseAdaptation) then
-                    game.print({"description.rampant--adaptationFrozenDebugMessage",
-                                base.x,
-                                base.y})
-                end
-            end
-        end
-        base.damagedBy = {}
-        base.deathEvents = 0
-    end
-
-    base.points = base.points + map.baseIncrement
-    base.unitPoints = base.unitPoints + map.baseIncrement
-
-    if (base.points > universe.maxPoints) then
-        base.points = universe.maxPoints
-    end
-    if (base.unitPoints > universe.maxPoints) then
-        base.unitPoints = universe.unitPoints
-    end
-
-    if (base.stateGenerationTick <= tick) then
-        local roll = map.random()
-        if (roll < 0.85) then
-            base.generationState = BASE_GENERATION_STATE_ACTIVE
-        else
-            base.generationState = BASE_GENERATION_STATE_DORMANT
-        end
-        base.stateGenerationTick = randomTickEvent(map.random,
-                                                   tick,
-                                                   BASE_GENERATION_MIN_STATE_DURATION,
-                                                   BASE_GENERATION_MAX_STATE_DURATION)
-    end
-
-    base.generationTick = tick
 end
 
 function baseUtils.createBase(map, chunk, tick)
@@ -557,40 +451,46 @@ function baseUtils.createBase(map, chunk, tick)
 
     local meanLevel = mFloor(distance * 0.005)
 
+    local universe = map.universe
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distanceIndex, map.universe.evolutionLevel)
+    local evoIndex = mMax(distanceIndex, universe.evolutionLevel)
 
-    local baseTick = tick
+    local alignment = (universe.NEW_ENEMIES and findBaseInitialAlignment(universe, evoIndex)) or {"neutral"}
 
-    local alignment = findBaseInitialAlignment(map, evoIndex) or {"neutral"}
-
-    local baseLevel = gaussianRandomRangeRG(meanLevel, meanLevel * 0.3, meanLevel * 0.50, meanLevel * 1.50, map.random)
+    local baseLevel = gaussianRandomRangeRG(meanLevel,
+                                            meanLevel * 0.3,
+                                            meanLevel * 0.50,
+                                            meanLevel * 1.50,
+                                            universe.random)
     local baseDistanceThreshold = gaussianRandomRangeRG(BASE_DISTANCE_THRESHOLD,
                                                         BASE_DISTANCE_THRESHOLD * 0.2,
                                                         BASE_DISTANCE_THRESHOLD * 0.75,
                                                         BASE_DISTANCE_THRESHOLD * 1.50,
-                                                        map.random)
+                                                        universe.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
-    local universe = map.universe
 
     local base = {
         x = x,
         y = y,
-        distanceThreshold = distanceThreshold * map.universe.baseDistanceModifier,
-        tick = baseTick,
+        distanceThreshold = distanceThreshold * universe.baseDistanceModifier,
+        tick = tick,
         alignment = alignment,
-        state = BASE_GENERATION_STATE_ACTIVE,
         damagedBy = {},
         deathEvents = 0,
         mutations = 0,
+        stateGeneration = BASE_GENERATION_STATE_ACTIVE,
         stateGenerationTick = 0,
         chunkCount = 0,
         createdTick = tick,
         points = 0,
         unitPoints = 0,
         stateAI = BASE_AI_STATE_PEACEFUL,
+        stateAITick = 0,
         canAttackTick = 0,
-        drainPylons = {},
+        maxAggressiveGroups = 0,
+        sentAggressiveGroups = 0,
+        maxSiegeGroups = 0,
+        sentSiegeGroups = 0,
         activeRaidNests = 0,
         activeNests = 0,
         destroyPlayerBuildings = 0,
@@ -602,7 +502,8 @@ function baseUtils.createBase(map, chunk, tick)
         artilleryBlasts = 0,
         temperament = 0.5,
         temperamentScore = 0,
-        stateAITick = 0,
+        universe = universe,
+        surface = map.surface,
         id = universe.baseId
     }
     universe.baseId = universe.baseId + 1
@@ -766,18 +667,16 @@ function baseUtils.rebuildNativeTables(universe, rg)
 
     local evoIndex = evoToTier(universe, universe.evolutionLevel, 2)
 
-    if universe.maps then
-        for _,map in pairs(universe.maps) do
-            for _,base in pairs(map.bases) do
-                for x=1,2 do
-                    local alignment = base.alignment[x]
-                    if alignment and not universe.buildingEvolveLookup[alignment] then
-                        base.alignment = findBaseInitialAlignment(map, evoIndex)
-                        break
-                    elseif not alignment and (x == 1) then
-                        base.alignment = findBaseInitialAlignment(map, evoIndex)
-                        break
-                    end
+    if universe.bases then
+        for _,base in pairs(universe.bases) do
+            for x=1,2 do
+                local alignment = base.alignment[x]
+                if alignment and not universe.buildingEvolveLookup[alignment] then
+                    base.alignment = findBaseInitialAlignment(universe, evoIndex)
+                    break
+                elseif not alignment and (x == 1) then
+                    base.alignment = findBaseInitialAlignment(universe, evoIndex)
+                    break
                 end
             end
         end

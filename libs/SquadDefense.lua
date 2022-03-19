@@ -41,7 +41,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 
@@ -122,7 +122,11 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         if not newSquad then
             if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 created = true
-                newSquad = createSquad(position, map)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    return
+                end
+                newSquad = createSquad(position, map, nil, false, base)
             else
                 return
             end
@@ -143,7 +147,6 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            newSquad.base = findNearbyBase(map, chunk)
             universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end

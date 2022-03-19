@@ -37,7 +37,7 @@ local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 
 function aiPredicates.canAttack(map, base)
     local surface = map.surface
-    local goodAI = (((base.stateAI == BASE_AI_STATE_AGGRESSIVE) and (map.sentAggressiveGroups < map.maxAggressiveGroups)) or
+    local goodAI = (((base.stateAI == BASE_AI_STATE_AGGRESSIVE) and (base.sentAggressiveGroups < base.maxAggressiveGroups)) or
         (base.stateAI == BASE_AI_STATE_RAIDING) or
         (base.stateAI == BASE_AI_STATE_ONSLAUGHT) or
         (map.universe.raidAIToggle and (base.stateAI == BASE_AI_STATE_SIEGE) and (base.sentSiegeGroups >= base.maxSiegeGroups)))

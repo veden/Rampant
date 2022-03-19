@@ -54,6 +54,8 @@ local UNIT_DEATH_POINT_COST = constants.UNIT_DEATH_POINT_COST
 
 -- imported functions
 
+local planning = aiPlanning.planning
+
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
 
 local setPointAreaInQuery = queryUtils.setPointAreaInQuery
@@ -112,7 +114,7 @@ local victoryScent = pheromoneUtils.victoryScent
 local createSquad = unitGroupUtils.createSquad
 
 local createBase = baseUtils.createBase
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local processActiveNests = mapProcessor.processActiveNests
 
@@ -167,7 +169,7 @@ local function onIonCannonFired(event)
             base.unitPoints = base.unitPoints + 4000
             if universe.aiPointsPrintGainsToChat then
                 game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " ..
-                           string.format("%.2f", base.points))
+                           string.format("%.2f", base.unitPoints))
             end
         end
     end
@@ -410,10 +412,10 @@ local function onDeath(event)
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
                     base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
                     base.deathEvents = base.deathEvents + 1
-                    -- base.points = base.points - UNIT_DEATH_POINT_COST
-                    -- if universe.aiPointsPrintSpendingToChat then
-                    --     game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", base.points))
-                    -- end
+                    base.unitPoints = base.unitPoints - UNIT_DEATH_POINT_COST
+                    if universe.aiPointsPrintSpendingToChat then
+                        game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", base.unitPoints))
+                    end
                     if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                         rallyUnits(chunk, map, tick, base)
                     end
@@ -435,16 +437,16 @@ local function onDeath(event)
             then
                 if base then
                     if (entityType == "unit-spawner") then
-                        base.points = base.points + RECOVER_NEST_COST
+                        base.unitPoints = base.unitPoints + RECOVER_NEST_COST
                         if universe.aiPointsPrintGainsToChat then
                             game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST ..
-                                       ". [Nest Lost] Total: " .. string.format("%.2f", base.points))
+                                       ". [Nest Lost] Total: " .. string.format("%.2f", base.unitPoints))
                         end
                     elseif (entityType == "turret") then
-                        base.points = base.points + RECOVER_WORM_COST
+                        base.unitPoints = base.unitPoints + RECOVER_WORM_COST
                         if universe.aiPointsPrintGainsToChat then
                             game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST ..
-                                       ". [Worm Lost] Total: " .. string.format("%.2f", base.points))
+                                       ". [Worm Lost] Total: " .. string.format("%.2f", base.unitPoints))
                         end
                     end
                     rallyUnits(chunk, map, tick, base)
@@ -514,7 +516,7 @@ local function onEnemyBaseBuild(event)
                                   event.tick)
             end
 
-            registerEnemyBaseStructure(map, entity, event.tick, base)
+            registerEnemyBaseStructure(map, entity, base)
 
             if universe.NEW_ENEMIES then
                 upgradeEntity(entity,
@@ -644,9 +646,9 @@ local function onRocketLaunch(event)
         if (chunk ~= -1) then
             local base = findNearbyBase(map, chunk)
             base.rocketLaunched = base.rocketLaunched + 1
-            base.points = base.points + 5000
+            base.unitPoints = base.unitPoints + 5000
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.points))
+                game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.unitPoints))
             end
         end
     end
@@ -706,7 +708,7 @@ local function onEntitySpawned(event)
                                       event.tick)
                 end
 
-                registerEnemyBaseStructure(map, entity, event.tick, base, true)
+                registerEnemyBaseStructure(map, entity, base, true)
 
                 upgradeEntity(entity,
                               base,
@@ -763,14 +765,14 @@ local function onUnitGroupCreated(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.points = base.points + AI_SQUAD_COST
+            base.unitPoints = base.unitPoints + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
             end
             return
         end
 
-        squad = createSquad(nil, map, group, settler)
+        squad = createSquad(nil, map, group, settler, base)
         universe.groupNumberToSquad[group.group_number] = squad
 
         squad.base = base
@@ -792,14 +794,14 @@ local function onUnitGroupCreated(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.points = base.points + AI_SQUAD_COST
+            base.unitPoints = base.unitPoints + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
             end
             return
         end
 
-        squad = createSquad(nil, map, group, settler)
+        squad = createSquad(nil, map, group, settler, base)
         universe.groupNumberToSquad[group.group_number] = squad
 
         squad.base = base
@@ -830,9 +832,9 @@ local function onGroupFinishedGathering(event)
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                base.points = base.points + AI_SETTLER_COST
+                base.unitPoints = base.unitPoints + AI_SETTLER_COST
                 if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", base.points))
+                    game.print(map.surface.name .. ": Points: +" .. AI_SETTLER_COST .. ". [Settler Refund] Total: " .. string.format("%.2f", base.unitPoints))
                 end
             end
         else
@@ -840,9 +842,9 @@ local function onGroupFinishedGathering(event)
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
-                base.points = base.points + AI_SQUAD_COST
+                base.unitPoints = base.unitPoints + AI_SQUAD_COST
                 if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
+                    game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
                 end
             end
         end
@@ -855,14 +857,14 @@ local function onGroupFinishedGathering(event)
 
         if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
             group.destroy()
-            base.points = base.points + AI_SQUAD_COST
+            base.unitPoints = base.unitPoints + AI_SQUAD_COST
             if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.points))
+                game.print(map.surface.name .. ": Points: +" .. AI_SQUAD_COST .. ". [Squad Refund] Total: " .. string.format("%.2f", base.unitPoints))
             end
             return
         end
 
-        squad = createSquad(nil, map, group, settler)
+        squad = createSquad(nil, map, group, settler, base)
         universe.groupNumberToSquad[group.group_number] = squad
         if settler then
             universe.builderCount = universe.builderCount + 1
@@ -985,12 +987,13 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
                         processScanChunks(universe)
+                        planning(universe, gameRef.forces.enemy.evolution_factor)
                     end
 
-                    processBaseAIs(universe, gameRef.forces.enemy.evolution_factor, tick)
+                    processBaseAIs(universe, tick)
                     processActiveNests(universe, tick)
-                    processPendingUpgrades(universe, tick)
-                    processPendingUpgrades(universe, tick)
+                    processPendingUpgrades(universe)
+                    processPendingUpgrades(universe)
                     cleanSquads(universe, tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
