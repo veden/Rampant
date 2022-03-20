@@ -9,6 +9,7 @@ Version: 3.0.0
     - Increased unit spawner cooldown by 2x
     - Added point loss on unit death
     - Removed squad refunds when vanilla AI or other mods create enemy unit groups above the squad limit
+    - Halved the base distance bonus per regional base level so regional base cover less ground
   Bugfixes:
     - Fixed Krastorio2 on_force_created playerforces being nil
     - Fixed enemy map scan creating bases unnecessarily
