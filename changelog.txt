@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.0
-  improvement:
+  Notes:
+    - Will reset maps of in progress games
+  Improvement:
     - Modified death pheromone squad path scoring
     - AI is now per regional base
     - Regional bases now have there own aggressive and siege squad counter and cleanup process
