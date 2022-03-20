@@ -486,7 +486,6 @@ function baseUtils.createBase(map, chunk, tick)
         unitPoints = 0,
         stateAI = BASE_AI_STATE_PEACEFUL,
         stateAITick = 0,
-        canAttackTick = 0,
         maxAggressiveGroups = 0,
         sentAggressiveGroups = 0,
         maxSiegeGroups = 0,

@@ -55,6 +55,7 @@ local MINIMUM_AI_POINTS = constants.MINIMUM_AI_POINTS
 local AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION
 local AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION
 local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
+local ALL_NESTS_PER_SIEGE_GROUPS = constants.ALL_NESTS_PER_SIEGE_GROUPS
 
 local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
 local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
@@ -136,14 +137,8 @@ end
 
 local function processBase(universe, base, tick)
 
-    if (base.canAttackTick < tick) then
-        base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
-        base.sentAggressiveGroups = 0
-        base.canAttackTick = randomTickEvent(universe.random,
-                                             tick,
-                                             AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION,
-                                             AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION)
-    end
+    base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
+    base.maxSiegeGroups = mCeil((base.activeNests + base.activeRaidNests) / ALL_NESTS_PER_SIEGE_GROUPS)
 
     local points = (AI_POINT_GENERATOR_AMOUNT * universe.random()) +
         (base.activeNests * 0.144) +
@@ -351,7 +346,7 @@ local function temperamentPlanner(base, evolutionLevel)
                    base.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
                    ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
                    ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
-                   ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.generationState ..
+                   ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration ..
                    ", baseId:".. base.id)
     end
 end

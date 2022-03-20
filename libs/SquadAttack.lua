@@ -45,6 +45,7 @@ local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
 local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -446,6 +447,10 @@ function squadAttack.cleanSquads(universe, tick)
                 universe.builderCount = universe.builderCount - 1
             else
                 universe.squadCount = universe.squadCount - 1
+                if squad.type == BASE_AI_STATE_AGGRESSIVE then
+                    local base = squad.base
+                    base.sentAggressiveGroups = base.sentAggressiveGroups - 1
+                end
             end
             squads[groupId] = nil
         elseif (group.state == 4) then
