@@ -44,7 +44,8 @@ local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -62,7 +63,7 @@ local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
 
 local getHiveCount = chunkPropertyUtils.getHiveCount
@@ -98,21 +99,21 @@ local function scoreSiegeLocationKamikaze(_, neighborChunk)
 end
 
 local function scoreResourceLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
+    local settle = (getDeathGeneratorRating(map, neighborChunk) * neighborChunk[RESOURCE_PHEROMONE])
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local settle = neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] +
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
-    return settle
+    return settle * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackLocation(map, neighborChunk)
-    local damage = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
+    local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage
+    return damage * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackKamikazeLocation(_, neighborChunk)
@@ -129,7 +130,7 @@ local function settleMove(map, squad)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    if (map.state == AI_STATE_SIEGE) then
+    if (squad.type == BASE_AI_STATE_SIEGE) then
         if squad.kamikaze then
             scoreFunction = scoreSiegeLocationKamikaze
         else
@@ -200,7 +201,7 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (map.state ~= AI_STATE_SIEGE) then
+                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (squad.type ~= BASE_AI_STATE_SIEGE) then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
                         surface,
@@ -256,7 +257,10 @@ local function settleMove(map, squad)
                 return
             end
 
-            if (nextAttackChunk ~= -1) and (map.state == AI_STATE_SIEGE) and (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) then
+            if (nextAttackChunk ~= -1) and
+                (squad.type == BASE_AI_STATE_SIEGE) and
+                (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
+            then
                 cmd = universe.settleCommand
                 squad.status = SQUAD_BUILDING
                 if squad.kamikaze then
@@ -443,6 +447,10 @@ function squadAttack.cleanSquads(universe, tick)
                 universe.builderCount = universe.builderCount - 1
             else
                 universe.squadCount = universe.squadCount - 1
+                if squad.type == BASE_AI_STATE_AGGRESSIVE then
+                    local base = squad.base
+                    base.sentAggressiveGroups = base.sentAggressiveGroups - 1
+                end
             end
             squads[groupId] = nil
         elseif (group.state == 4) then

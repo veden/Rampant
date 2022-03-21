@@ -37,7 +37,7 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
 local CHUNK_PASS_THRESHOLD = constants.CHUNK_PASS_THRESHOLD
 
-local AI_STATE_ONSLAUGHT = constants.AI_STATE_ONSLAUGHT
+local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
@@ -94,7 +94,7 @@ local processNestActiveness = chunkPropertyUtils.processNestActiveness
 local removeChunkBase = chunkPropertyUtils.removeChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 local createBase = baseUtils.createBase
 
 local upgradeEntity = baseUtils.upgradeEntity
@@ -245,12 +245,12 @@ function chunkUtils.initialScan(chunk, map, tick)
             end
 
             if (#enemyBuildings > 0) then
-                if universe.NEW_ENEMIES then
-                    local base = findNearbyBase(map, chunk)
-                    if not base then
-                        base = createBase(map, chunk, tick)
-                    end
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
 
+                if universe.NEW_ENEMIES then
                     local unitList = surface.find_entities_filtered(universe.isFilteredEntitiesUnitQuery)
                     for i=1,#unitList do
                         local unit = unitList[i]
@@ -261,7 +261,7 @@ function chunkUtils.initialScan(chunk, map, tick)
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
-                        chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, tick, base)
+                        chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, base)
                         local entityName = enemyBuilding.name
                         local isVanilla = vanillaEntityTypeLookup[entityName]
                         if isVanilla or (not isVanilla and not buildingHiveTypeLookup[entityName]) then
@@ -271,7 +271,7 @@ function chunkUtils.initialScan(chunk, map, tick)
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        chunkUtils.registerEnemyBaseStructure(map, building, tick)
+                        chunkUtils.registerEnemyBaseStructure(map, building, base)
                     end
                 end
             end
@@ -347,17 +347,16 @@ function chunkUtils.mapScanEnemyChunk(chunk, map, tick)
     for i=1,#HIVE_BUILDINGS_TYPES do
         counts[HIVE_BUILDINGS_TYPES[i]] = 0
     end
-    local base
-    if universe.NEW_ENEMIES then
-        base = findNearbyBase(map, chunk)
+    if (#buildings > 0) then
+        local base = findNearbyBase(map, chunk)
         if not base then
             base = createBase(map, chunk, tick)
         end
-    end
-    for i=1,#buildings do
-        local building = buildings[i]
+        for i=1,#buildings do
+            local building = buildings[i]
 
-        chunkUtils.registerEnemyBaseStructure(map, building, tick, base)
+            chunkUtils.registerEnemyBaseStructure(map, building, base)
+        end
     end
 end
 
@@ -480,7 +479,7 @@ function chunkUtils.colorXY(x, y, surface, color)
     })
 end
 
-function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, skipCount)
+function chunkUtils.registerEnemyBaseStructure(map, entity, base, skipCount)
     local entityType = entity.type
 
     local addFunc
@@ -513,16 +512,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, 
         if (chunk ~= -1) then
             if addFunc(map, chunk, entityUnitNumber) then
                 added = true
-                if universe.NEW_ENEMIES then
-                    local base = incomingBase
-                    if not base then
-                        base = findNearbyBase(map, chunk)
-                        if not base then
-                            base = createBase(map, chunk, tick)
-                        end
-                    end
-                    setChunkBase(map, chunk, base)
-                end
+                setChunkBase(map, chunk, base)
             end
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
@@ -530,11 +520,11 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, tick, incomingBase, 
         end
     end
     if added and (not skipCount) then
-        map.builtEnemyBuilding = map.builtEnemyBuilding + 1
+        base.builtEnemyBuilding = base.builtEnemyBuilding + 1
     end
 end
 
-function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCount)
+function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, skipCount)
     local entityType = entity.type
 
     local removeFunc
@@ -559,56 +549,53 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageType, skipCo
         end
     end
 
-    local removed = false
     local entityUnitNumber = entity.unit_number
     local usedBases = {}
     local chunks = getEntityOverlapChunks(map, entity)
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
+            local base = getChunkBase(map, chunk)
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-                setRaidNestActiveness(map, chunk, 0)
-                setNestActiveness(map, chunk, 0)
+                setRaidNestActiveness(map, chunk, 0, base)
+                setNestActiveness(map, chunk, 0, base)
             end
             if removeFunc(map, chunk, entityUnitNumber) then
-                removed = true
-                if map.universe.NEW_ENEMIES then
-                    local base = getChunkBase(map, chunk)
-                    if damageType and not usedBases[base.id] then
-                        usedBases[base.id] = true
-                        local damageTypeName = damageType.name
+                if not usedBases[base.id] then
+                    usedBases[base.id] = true
+                    if damageTypeName then
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
                         base.deathEvents = base.deathEvents + 3
                     end
-                    if (getEnemyStructureCount(map, chunk) <= 0) then
-                        removeChunkBase(map, chunk, base)
+                    if (not skipCount) and (hiveType ~= "trap") then
+                        base.lostEnemyBuilding = base.lostEnemyBuilding + 1
                     end
+                end
+                if (getEnemyStructureCount(map, chunk) <= 0) then
+                    removeChunkBase(map, chunk, base)
                 end
             end
         end
     end
-    if removed and (not skipCount) and (hiveType ~= "trap") then
-        map.lostEnemyBuilding = map.lostEnemyBuilding + 1
-    end
 end
 
-function chunkUtils.accountPlayerEntity(entity, map, addObject, creditNatives)
+function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
         local universe = map.universe
         local entityValue = BUILDING_PHEROMONES[entity.type]
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
-            if creditNatives then
-                map.destroyPlayerBuildings = map.destroyPlayerBuildings + 1
-                if (map.state == AI_STATE_ONSLAUGHT) then
-                    map.points = map.points + entityValue
+            if base then
+                base.destroyPlayerBuildings = base.destroyPlayerBuildings + 1
+                if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
+                    base.unitPoints = base.unitPoints + entityValue
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
                     end
                 else
-                    map.points = map.points + (entityValue * 0.12)
+                    base.unitPoints = base.unitPoints + (entityValue * 0.12)
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", map.points))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
                     end
                 end
             end

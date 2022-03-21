@@ -41,7 +41,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 
@@ -55,16 +55,16 @@ local findMovementPosition = movementUtils.findMovementPosition
 local getRetreatTick = chunkPropertyUtils.getRetreatTick
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local setRetreatTick = chunkPropertyUtils.setRetreatTick
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
-            -getDeathGenerator(map, neighborChunk) +
             -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-            -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
+            -(getPlayerBaseGenerator(map, neighborChunk) * 1000)) *
+        getDeathGeneratorRating(map, neighborChunk)
 end
 
 function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
@@ -122,7 +122,11 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         if not newSquad then
             if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 created = true
-                newSquad = createSquad(position, map)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    return
+                end
+                newSquad = createSquad(position, map, nil, false, base)
             else
                 return
             end
@@ -143,9 +147,6 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            if universe.NEW_ENEMIES then
-                newSquad.base = findNearbyBase(map, chunk)
-            end
             universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end
