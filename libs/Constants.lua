@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if constantsG then
     return constantsG
 end
@@ -40,8 +56,8 @@ constants.VERSION_88 = 88
 
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = 1000
-constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = 130000
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = (1 - 0.001)
+constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = (1 - 0.800)
 
 constants.TEMPERAMENT_RANGE_MAX = 10000
 constants.TEMPERAMENT_RANGE_MIN = -constants.TEMPERAMENT_RANGE_MAX
@@ -102,7 +118,7 @@ constants.DIVISOR_DEATH_TRAIL_TABLE = { 0.75, 0.65, 0.55, 0.45, 0.35 }
 constants.RESOURCE_MINIMUM_FORMATION_DELTA = 15
 
 constants.MINIMUM_AI_POINTS = 400
-constants.AI_POINT_GENERATOR_AMOUNT = 0.17721
+constants.AI_POINT_GENERATOR_AMOUNT = 15
 constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
 constants.RECOVER_WORM_COST = constants.AI_SQUAD_COST * 0.5
@@ -123,38 +139,39 @@ constants.AI_SQUAD_MERGE_THRESHOLD = constants.AI_MAX_BITER_GROUP_SIZE * 0.75
 
 constants.AI_MAX_SQUADS_PER_CYCLE = 7
 
-constants.AI_STATE_PEACEFUL = 1
-constants.AI_STATE_AGGRESSIVE = 2
-constants.AI_STATE_RAIDING = 4
-constants.AI_STATE_MIGRATING = 5
-constants.AI_STATE_SIEGE = 6
-constants.AI_STATE_ONSLAUGHT = 7
+constants.BASE_AI_STATE_PEACEFUL = 1
+constants.BASE_AI_STATE_AGGRESSIVE = 2
+constants.BASE_AI_STATE_RAIDING = 4
+constants.BASE_AI_STATE_MIGRATING = 5
+constants.BASE_AI_STATE_SIEGE = 6
+constants.BASE_AI_STATE_ONSLAUGHT = 7
 
 constants.stateEnglish = {}
-constants.stateEnglish[constants.AI_STATE_PEACEFUL] = "AI_STATE_PEACEFUL"
-constants.stateEnglish[constants.AI_STATE_AGGRESSIVE] = "AI_STATE_AGGRESSIVE"
-constants.stateEnglish[constants.AI_STATE_RAIDING] = "AI_STATE_RAIDING"
-constants.stateEnglish[constants.AI_STATE_MIGRATING] = "AI_STATE_MIGRATING"
-constants.stateEnglish[constants.AI_STATE_SIEGE] = "AI_STATE_SIEGE"
-constants.stateEnglish[constants.AI_STATE_ONSLAUGHT] = "AI_STATE_ONSLAUGHT"
+constants.stateEnglish[constants.BASE_AI_STATE_PEACEFUL] = "AI_STATE_PEACEFUL"
+constants.stateEnglish[constants.BASE_AI_STATE_AGGRESSIVE] = "AI_STATE_AGGRESSIVE"
+constants.stateEnglish[constants.BASE_AI_STATE_RAIDING] = "AI_STATE_RAIDING"
+constants.stateEnglish[constants.BASE_AI_STATE_MIGRATING] = "AI_STATE_MIGRATING"
+constants.stateEnglish[constants.BASE_AI_STATE_SIEGE] = "AI_STATE_SIEGE"
+constants.stateEnglish[constants.BASE_AI_STATE_ONSLAUGHT] = "AI_STATE_ONSLAUGHT"
 
-constants.BASE_AI_STATE_DORMANT = 0
-constants.BASE_AI_STATE_ACTIVE = 1
-constants.BASE_AI_STATE_OVERDRIVE = 2
-constants.BASE_AI_STATE_MUTATE = 3
+constants.BASE_GENERATION_STATE_DORMANT = 0
+constants.BASE_GENERATION_STATE_ACTIVE = 1
+-- constants.BASE_AI_STATE_OVERDRIVE = 2
+-- constants.BASE_AI_STATE_MUTATE = 3
 
 constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = 30
+constants.ALL_NESTS_PER_SIEGE_GROUPS = 150
 constants.AGGRESSIVE_CAN_ATTACK_WAIT_MIN_DURATION = 0.5
 constants.AGGRESSIVE_CAN_ATTACK_WAIT_MAX_DURATION = 3
 
-constants.AI_MIN_STATE_DURATION = 10
-constants.AI_MAX_STATE_DURATION = 25
+constants.BASE_AI_MIN_STATE_DURATION = 10
+constants.BASE_AI_MAX_STATE_DURATION = 25
 
-constants.AI_MIN_TEMPERAMENT_DURATION = 25
-constants.AI_MAX_TEMPERAMENT_DURATION = 32
+-- constants.AI_MIN_TEMPERAMENT_DURATION = 25
+-- constants.AI_MAX_TEMPERAMENT_DURATION = 32
 
-constants.BASE_AI_MIN_STATE_DURATION = 12
-constants.BASE_AI_MAX_STATE_DURATION = 20
+constants.BASE_GENERATION_MIN_STATE_DURATION = 12
+constants.BASE_GENERATION_MAX_STATE_DURATION = 20
 
 -- ai base
 
@@ -169,9 +186,9 @@ constants.BASE_WORM_UPGRADE = 400
 constants.BASE_UPGRADE = 1500
 
 constants.BASE_DISTANCE_THRESHOLD = 30 * constants.CHUNK_SIZE
-constants.BASE_DISTANCE_LEVEL_BONUS = 15
+constants.BASE_DISTANCE_LEVEL_BONUS = 7.5
 
-constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND
+constants.BASE_PROCESS_INTERVAL = constants.TICKS_A_SECOND * 20
 
 -- ai retreat
 
@@ -180,8 +197,7 @@ constants.NO_RETREAT_EVOLUTION_BONUS_MAX = 0.25
 
 -- pheromone amounts
 
-constants.MOVEMENT_PENALTY_AMOUNT = 300000
-constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 1300
+constants.DEATH_PHEROMONE_GENERATOR_AMOUNT = 0.001
 constants.DOUBLE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * 2
 constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * 10
 constants.FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT * 5
@@ -191,7 +207,7 @@ constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = 0
 
 -- pheromone diffusion amounts
 
-constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.90
+constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.92
 
 -- chunk attributes
 
@@ -545,7 +561,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
             name = "hive",
             majorResistances = {},
             minorResistances = {},
-            attributes = {},
+            attributes = {"spawnDuringDays"},
             acceptRate = {2, 10, 0.001, 0.0175},
             drops = {"nilArtifact"},
             buildSets = {
@@ -630,7 +646,7 @@ if settings.startup["rampant--acidEnemy"].value then
                 majorResistances = {"acid"},
                 minorResistances = {"poison"},
                 acceptRate = {2, 10, 0.001, 0.0175},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 drops = {"greenArtifact"},
                 buildSets = {
                     {"biter-spawner", 1, 10, 0.15, 0.3},
@@ -706,7 +722,7 @@ if settings.startup["rampant--laserEnemy"].value then
                 type = "hive",
                 name = "hive",
                 majorResistances = {"laser", "electric"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -789,7 +805,7 @@ if settings.startup["rampant--fireEnemy"].value then
                 name = "hive",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -851,7 +867,7 @@ if settings.startup["rampant--infernoEnemy"].value then
                 name = "hive",
                 majorResistances = {"fire", "acid"},
                 minorResistances = {},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -918,7 +934,7 @@ if settings.startup["rampant--waspEnemy"].value then
             {
                 type = "hive",
                 name = "hive",
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"purpleArtifact"},
                 buildSets = {
@@ -994,7 +1010,7 @@ if settings.startup["rampant--spawnerEnemy"].value then
             {
                 type = "hive",
                 name = "hive",
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"orangeArtifact"},
                 buildSets = {
@@ -1055,7 +1071,7 @@ if settings.startup["rampant--electricEnemy"].value then
                 name = "hive",
                 majorResistances = {"electric"},
                 minorResistances = {"laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1117,7 +1133,7 @@ if settings.startup["rampant--physicalEnemy"].value then
                 name = "hive",
                 majorResistances = {"physical", "explosion"},
                 minorResistances = {"laser", "electric"},
-                attributes = {"highHealth", "bigger"},
+                attributes = {"highHealth", "bigger", "spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"redArtifact"},
                 buildSets = {
@@ -1180,7 +1196,7 @@ if settings.startup["rampant--trollEnemy"].value then
                 name = "hive",
                 minorResistances = {"physical", "explosion"},
                 majorWeaknesses = {"fire"},
-                attributes = {"highestHealth", "bigger", "highRegen"},
+                attributes = {"highestHealth", "bigger", "highRegen","spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1246,7 +1262,7 @@ if settings.startup["rampant--poisonEnemy"].value then
                 majorResistances = {"poison"},
                 minorResistances = {"fire"},
                 minorWeaknesses = {"electric", "explosion", "laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"greenArtifact"},
                 buildSets = {
@@ -1307,7 +1323,7 @@ if settings.startup["rampant--suicideEnemy"].value then
                 name = "hive",
                 majorResistances = {"explosion"},
                 minorResistances = {"poison"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"yellowArtifact"},
                 buildSets = {
@@ -1367,7 +1383,7 @@ if settings.startup["rampant--nuclearEnemy"].value then
                 name = "hive",
                 majorResistances = {"explosion"},
                 minorResistances = {"fire"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"yellowArtifact"},
                 buildSets = {
@@ -1427,7 +1443,7 @@ if settings.startup["rampant--energyThiefEnemy"].value then
                 type = "hive",
                 name = "hive",
                 majorResistances = {"electric", "laser"},
-                attributes = {},
+                attributes = {"spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"blueArtifact"},
                 buildSets = {
@@ -1510,7 +1526,7 @@ if settings.startup["rampant--fastEnemy"].value then
                 name = "hive",
                 majorResistances = {},
                 minorResistances = {"explosion"},
-                attributes = {"quickSpawning"},
+                attributes = {"quickSpawning", "spawnDuringDays"},
                 acceptRate = {2, 10, 0.001, 0.0175},
                 drops = {"purpleArtifact"},
                 buildSets = {
@@ -1563,6 +1579,8 @@ constants.HIVE_BUILDINGS_COST["utility"] = constants.BASE_SPAWNER_UPGRADE * 1.5
 constants.HIVE_BUILDINGS_COST["spitter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["biter-spawner"] = constants.BASE_SPAWNER_UPGRADE
 constants.HIVE_BUILDINGS_COST["hive"] = constants.BASE_SPAWNER_UPGRADE * 2
+
+constants.UNIT_DEATH_POINT_COST = 0.5
 
 constants.MINIMUM_BUILDING_COST = constants.MAGIC_MAXIMUM_NUMBER
 for _,cost in pairs(constants.HIVE_BUILDINGS_COST) do

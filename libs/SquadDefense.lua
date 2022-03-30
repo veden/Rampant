@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if aiDefenseG then
     return aiDefenseG
 end
@@ -25,7 +41,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local findNearbyBase = baseUtils.findNearbyBase
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
 
@@ -39,16 +55,16 @@ local findMovementPosition = movementUtils.findMovementPosition
 local getRetreatTick = chunkPropertyUtils.getRetreatTick
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local setRetreatTick = chunkPropertyUtils.setRetreatTick
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 -- module code
 
 local function scoreRetreatLocation(map, neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
-            -getDeathGenerator(map, neighborChunk) +
             -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-            -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
+            -(getPlayerBaseGenerator(map, neighborChunk) * 1000)) *
+        getDeathGeneratorRating(map, neighborChunk)
 end
 
 function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
@@ -106,7 +122,11 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         if not newSquad then
             if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
                 created = true
-                newSquad = createSquad(position, map)
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    return
+                end
+                newSquad = createSquad(position, map, nil, false, base)
             else
                 return
             end
@@ -127,9 +147,6 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            if universe.NEW_ENEMIES then
-                newSquad.base = findNearbyBase(map, chunk)
-            end
             universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
             universe.squadCount = universe.squadCount + 1
         end

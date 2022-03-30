@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 local biterFunctions = {}
 
 local sounds = require("__base__.prototypes.entity.sounds")
@@ -378,6 +394,8 @@ function biterFunctions.makeUnitSpawner(attributes)
         map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}},
         corpse = makeUnitSpawnerCorpse(attributes),
         dying_explosion = attributes.explosion or "blood-explosion-huge",
+        min_darkness_to_spawn = attributes.minSpawnDarkness or 0,
+        max_darkness_to_spawn = attributes.maxSpawnDarkness or 1,
         dying_trigger_effect = attributes.dyingEffect,
         max_count_of_owned_units = attributes.unitsOwned or 7,
         max_friends_around_to_spawn = attributes.unitsToSpawn or 5,

@@ -1,3 +1,19 @@
+;; Copyright (C) 2022  veden
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 (require file/zip)
 (require json)
 
@@ -31,14 +47,15 @@
        (string->path "data.lua")
        (string->path "data-updates.lua")
        (string->path "data-final-fixes.lua")
-       (string->path "LICENSE.md")
+       (string->path "COPYING")
        (string->path "tests.lua")
        (string->path "changelog.txt")
        (string->path "Upgrade.lua")
        (string->path "settings.lua")
        (string->path "README.md")
        (string->path "thumbnail.png")
-       (string->path "NOTICE")
+       (string->path "NOTICE-lua")
+       (string->path "NOTICE-rkt")
        (string->path "libs")
        (string->path "sounds")
        (string->path "migrations")

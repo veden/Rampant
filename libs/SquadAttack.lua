@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if (squadAttackG) then
     return squadAttackG
 end
@@ -28,7 +44,8 @@ local SQUAD_SETTLING = constants.SQUAD_SETTLING
 local SQUAD_GUARDING = constants.SQUAD_GUARDING
 local SQUAD_RETREATING = constants.SQUAD_RETREATING
 
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
 
 local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
 
@@ -46,8 +63,10 @@ local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
+
+local getHiveCount = chunkPropertyUtils.getHiveCount
 local getNestCount = chunkPropertyUtils.getNestCount
 
 local getNeighborChunks = mapUtils.getNeighborChunks
@@ -80,21 +99,21 @@ local function scoreSiegeLocationKamikaze(_, neighborChunk)
 end
 
 local function scoreResourceLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[RESOURCE_PHEROMONE]
+    local settle = (getDeathGeneratorRating(map, neighborChunk) * neighborChunk[RESOURCE_PHEROMONE])
     return settle - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 end
 
 local function scoreSiegeLocation(map, neighborChunk)
-    local settle = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
-        neighborChunk[RESOURCE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local settle = neighborChunk[BASE_PHEROMONE] + neighborChunk[RESOURCE_PHEROMONE] +
+        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
-    return settle
+    return settle * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackLocation(map, neighborChunk)
-    local damage = -getDeathGenerator(map, neighborChunk) + neighborChunk[BASE_PHEROMONE] +
+    local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage
+    return damage * getDeathGeneratorRating(map, neighborChunk)
 end
 
 local function scoreAttackKamikazeLocation(_, neighborChunk)
@@ -111,7 +130,7 @@ local function settleMove(map, squad)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
-    if (map.state == AI_STATE_SIEGE) then
+    if (squad.type == BASE_AI_STATE_SIEGE) then
         if squad.kamikaze then
             scoreFunction = scoreSiegeLocationKamikaze
         else
@@ -140,7 +159,12 @@ local function settleMove(map, squad)
     local surface = map.surface
 
     if (chunk ~= -1) and
-        ((distance >= squad.maxDistance) or ((getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0)))
+        (
+            (distance >= squad.maxDistance) or
+            (
+                (getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0) and (getHiveCount(map, chunk) == 0)
+            )
+        )
     then
         position = findMovementPosition(surface, groupPosition)
 
@@ -177,7 +201,7 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (map.state ~= AI_STATE_SIEGE) then
+                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (squad.type ~= BASE_AI_STATE_SIEGE) then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
                         surface,
@@ -233,7 +257,10 @@ local function settleMove(map, squad)
                 return
             end
 
-            if (nextAttackChunk ~= -1) and (map.state == AI_STATE_SIEGE) and (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) then
+            if (nextAttackChunk ~= -1) and
+                (squad.type == BASE_AI_STATE_SIEGE) and
+                (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
+            then
                 cmd = universe.settleCommand
                 squad.status = SQUAD_BUILDING
                 if squad.kamikaze then
@@ -420,6 +447,10 @@ function squadAttack.cleanSquads(universe, tick)
                 universe.builderCount = universe.builderCount - 1
             else
                 universe.squadCount = universe.squadCount - 1
+                if squad.type == BASE_AI_STATE_AGGRESSIVE then
+                    local base = squad.base
+                    base.sentAggressiveGroups = base.sentAggressiveGroups - 1
+                end
             end
             squads[groupId] = nil
         elseif (group.state == 4) then

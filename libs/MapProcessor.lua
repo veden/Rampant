@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if mapProcessorG then
     return mapProcessorG
 end
@@ -33,24 +49,26 @@ local PROCESS_STATIC_QUEUE_SIZE = constants.PROCESS_STATIC_QUEUE_SIZE
 
 local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
 
-local AI_STATE_AGGRESSIVE = constants.AI_STATE_AGGRESSIVE
-local AI_STATE_SIEGE = constants.AI_STATE_SIEGE
-local AI_STATE_PEACEFUL = constants.AI_STATE_PEACEFUL
-local AI_STATE_MIGRATING = constants.AI_STATE_MIGRATING
+local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
+local BASE_AI_STATE_MIGRATING = constants.BASE_AI_STATE_MIGRATING
 
 local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
-local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
-
 -- imported functions
+
+local findNearbyBase = chunkPropertyUtils.findNearbyBase
+
+local removeChunkToNest = mapUtils.removeChunkToNest
 
 local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 
-local getDeathGenerator = chunkPropertyUtils.getDeathGenerator
-local processBase = baseUtils.processBase
+local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
+local processBaseMutation = baseUtils.processBaseMutation
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
 local getChunkBase = chunkPropertyUtils.getChunkBase
@@ -98,11 +116,10 @@ local next = next
     pheromone dissipate at a faster rate.
 --]]
 function mapProcessor.processMap(map, tick)
-    local index = map.processIndex
-
     local outgoingWave = map.outgoingScanWave
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
+    local index = mMin(map.processIndex, processQueueLength)
 
     local step
     local endIndex
@@ -139,11 +156,10 @@ function mapProcessor.processMap(map, tick)
 end
 
 function mapProcessor.processStaticMap(map)
-    local index = map.processStaticIndex
-
     local outgoingWave = map.outgoingStaticScanWave
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
+    local index = mMin(map.processStaticIndex, processQueueLength)
 
     local step
     local endIndex
@@ -205,14 +221,18 @@ function mapProcessor.processPlayers(players, universe, tick)
             local char = player.character
             local map = universe.maps[char.surface.index]
             if map then
-                local allowingAttacks = canAttack(map)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
+                    local base = findNearbyBase(map, playerChunk)
+                    if not base then
+                        return
+                    end
+                    local allowingAttacks = canAttack(map, base)
                     local vengence = allowingAttacks and
-                        (map.points >= AI_VENGENCE_SQUAD_COST) and
+                        (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (-getDeathGenerator(map, playerChunk) < -universe.retreatThreshold))
+                            (getDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
 
                     for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -231,7 +251,8 @@ function mapProcessor.processPlayers(players, universe, tick)
                                         if not pack then
                                             pack = {
                                                 v = 0,
-                                                map = map
+                                                map = map,
+                                                base = base
                                             }
                                             universe.vengenceQueue[chunk.id] = pack
                                         end
@@ -433,9 +454,9 @@ function mapProcessor.processVengence(universe)
         end
         local chunk = getChunkById(vengencePack.map, chunkId)
         if universe.enabledMigration and (universe.random() < 0.075) then
-            formVengenceSettler(map, chunk)
+            formVengenceSettler(map, chunk, vengencePack.base)
         else
-            formVengenceSquad(map, chunk)
+            formVengenceSquad(map, chunk, vengencePack.base)
         end
     end
 end
@@ -454,7 +475,7 @@ function mapProcessor.processNests(universe, tick)
         universe.processNestIterator = next(universe.chunkToNests, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
-            universe.chunkToNests[chunkId] = nil
+            removeChunkToNest(universe, chunkId)
             return
         end
         local chunk = getChunkById(map, chunkId)
@@ -462,10 +483,9 @@ function mapProcessor.processNests(universe, tick)
         queueNestSpawners(map, chunk, tick)
 
         if universe.NEW_ENEMIES then
-            local base = getChunkBase(map, chunk)
-            if base and ((tick - base.tick) > BASE_PROCESS_INTERVAL) then
-                processBase(chunk, map, tick, base)
-            end
+            processBaseMutation(chunk,
+                                map,
+                                getChunkBase(map, chunk))
         end
     end
 end
@@ -484,35 +504,39 @@ local function processSpawnersBody(universe, iterator, chunks)
         universe[iterator] = next(chunks, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
-            chunks[chunkId] = nil
+            if (iterator == "processMigrationIterator") then
+                removeChunkToNest(universe, chunkId)
+            else
+                chunks[chunkId] = nil
+            end
             return
         end
-        local state = chunkPack.map.state
-        if state == AI_STATE_PEACEFUL then
+        local chunk = getChunkById(map, chunkId)
+        local base = findNearbyBase(map, chunk)
+        if base.stateAI == BASE_AI_STATE_PEACEFUL then
             return
         end
         if iterator == "processMigrationIterator" then
-            if (state ~= AI_STATE_MIGRATING) and (state ~= AI_STATE_SIEGE) then
+            if (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE) then
                 return
             end
         elseif iterator == "processActiveRaidSpawnerIterator" then
-            if (state == AI_STATE_AGGRESSIVE) or (state == AI_STATE_MIGRATING) then
+            if (base.stateAI == BASE_AI_STATE_AGGRESSIVE) or (base.stateAI == BASE_AI_STATE_MIGRATING) then
                 return
             end
         elseif iterator == "processActiveSpawnerIterator" then
-            if (state == AI_STATE_MIGRATING) then
+            if (base.stateAI == BASE_AI_STATE_MIGRATING) then
                 return
             end
         end
 
-        local chunk = getChunkById(map, chunkId)
-        local migrate = canMigrate(map)
-        local attack = canAttack(map)
+        local migrate = canMigrate(map, base)
+        local attack = canAttack(map, base)
         if migrate then
-            formSettlers(map, chunk)
+            formSettlers(map, chunk, base)
         end
         if attack then
-            formSquads(map, chunk)
+            formSquads(map, chunk, base)
         end
     end
 end

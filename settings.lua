@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 data:extend({
 
         {
@@ -272,6 +288,7 @@ data:extend({
             setting_type = "startup",
             minimum_value = 1,
             default_value = 1024567,
+            maximum_value = 4294967295,
             order = "l[modifer]-b[unit]",
             per_user = false
         },
@@ -513,6 +530,15 @@ data:extend({
         {
             type = "bool-setting",
             name = "rampant--printBaseUpgrades",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-c[ai]z",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant--printBaseSettling",
             setting_type = "runtime-global",
             default_value = false,
             order = "m[total]-c[ai]z",

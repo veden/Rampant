@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 local upgrade = {}
 
 -- imports
@@ -30,8 +46,6 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
 -- imported functions
 
-local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
-
 local sFind = string.find
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local processPendingChunks = chunkProcessor.processPendingChunks
@@ -49,7 +63,9 @@ local function isExcludedSurface(surfaceName)
         sFind(surfaceName, "Asteroid Belt") or
         sFind(surfaceName, "Vault ") or
         (surfaceName == "RTStasisRealm") or
-        sFind(surfaceName, "spaceship")
+        sFind(surfaceName, "spaceship") or
+        (surfaceName == "minime_dummy_dungeon") or
+        (surfaceName == "minime-preview-character")
 end
 
 local function addCommandSet(queriesAndCommands)
@@ -415,13 +431,14 @@ end
 
 function upgrade.attempt(universe)
     local starting = global.version
-    if not global.version or global.version < 114 then
-        global.version = 114
+    if not global.version or global.version < 300 then
+        global.version = 300
 
         if not universe then
             universe = {}
             global.universe = universe
         end
+
         game.forces.enemy.kill_all_units()
 
         universe.safeEntities = {}
@@ -458,6 +475,12 @@ function upgrade.attempt(universe)
         universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
         universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
 
+        universe.expansionMaxDistanceDerivation = nil
+        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
+        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
+        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
+        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+
         universe.settlerCooldown = 0
         universe.settlerWaveDeviation = 0
         universe.settlerWaveSize = 0
@@ -482,22 +505,13 @@ function upgrade.attempt(universe)
         game.forces.enemy.ai_controllable = true
 
         universe.evolutionLevel = game.forces.enemy.evolution_factor
-        global.pendingChunks = nil
-        global.natives = nil
-        global.map = nil
-    end
-    if global.version < 116 then
-        global.version = 116
-
-        universe.maxPoints = 0
-    end
-    if global.version < 204 then
-        global.version = 204
+        global.pendingChunks = nil -- removes old pendingChunks
+        global.natives = nil -- removes old natives
+        global.map = nil -- removes old map
 
         universe.eventId = 0
         universe.chunkId = 0
         universe.randomGenerator = nil
-        universe.random = game.create_random_generator(settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed)
         game.forces.enemy.kill_all_units()
         universe.maps = {}
         universe.chunkIdToChunk = {}
@@ -534,14 +548,43 @@ function upgrade.attempt(universe)
         universe.chunkToPassScanIterator = nil
         universe.baseId = 0
         universe.awake = false
-    end
-    if global.version < 205 then
-        global.version = 205
+
+        universe.maxPoints = 0
+        universe.maxOverflowPoints = 0
+
+        if not universe.random then
+            local combinedSeed = settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed
+            if (combinedSeed > 4294967295) then
+                universe.random = game.create_random_generator(combinedSeed % 4294967295)
+            elseif not universe.random then
+                universe.random = game.create_random_generator(combinedSeed)
+            end
+        end
+
+        universe.proxyEntityLookup = {}
+        universe.vanillaEntityLookups = {}
 
         addCommandSet(universe)
-    end
-    if global.version < 207 then
-        global.version = 207
+
+        local evoToTierMapping = {}
+        universe.evoToTierMapping = evoToTierMapping
+        universe.bases = {}
+
+        for i=1,10 do
+            evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
+        end
+
+        for _,map in pairs(universe.maps) do
+            if (map.surface.valid) then
+                local entities = map.surface.find_entities_filtered({type="land-mine"})
+                for i=1,#entities do
+                    local entity = entities[i]
+                    if entity.valid and string.find(entity.name, "entity-proxy-") then
+                        entity.destroy()
+                    end
+                end
+            end
+        end
 
         for mapId,map in pairs(universe.maps) do
             local toBeRemoved = not map.surface.valid or isExcludedSurface(map.surface.name)
@@ -556,20 +599,7 @@ function upgrade.attempt(universe)
             end
         end
 
-        if universe.NEW_ENEMIES then
-            addBasesToAllEnemyStructures(universe, game.tick)
-        end
-    end
-    if global.version < 208 then
-        global.version = 208
-
-        universe.expansionMaxDistanceDerivation = nil
-        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
-        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
-        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
-        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
-
-        game.print("Rampant - Version 2.1.1")
+        game.print("Rampant - Version 3.0.0")
     end
 
     return (starting ~= global.version) and global.version
@@ -594,10 +624,6 @@ function upgrade.prepMap(universe, surface)
 
     map.activatedMap = false
 
-    map.sentSiegeGroups = 0
-    map.maxSiegeGroups = 2
-    map.maxAggressiveGroups = 1
-    map.sentAggressiveGroups = 0
     map.processedChunks = 0
     map.processQueue = {}
     map.processIndex = 1
@@ -618,6 +644,7 @@ function upgrade.prepMap(universe, surface)
     map.chunkToTrapIds = {}
     map.chunkToTurretIds = {}
     map.chunkToUtilityIds = {}
+    map.drainPylons = {}
 
     map.chunkToPlayerBase = {}
     map.chunkToResource = {}
@@ -640,30 +667,9 @@ function upgrade.prepMap(universe, surface)
     map.universe = universe
 
     map.bases = {}
-    map.baseIndex = 1
-    map.baseIncrement = 0
-    map.points = 0
-    map.state = constants.AI_STATE_PEACEFUL
     map.squads = nil
     map.pendingAttack = nil
     map.building = nil
-
-    map.evolutionLevel = game.forces.enemy.evolution_factor
-    map.canAttackTick = 0
-    map.drainPylons = {}
-    map.activeRaidNests = 0
-    map.activeNests = 0
-    map.destroyPlayerBuildings = 0
-    map.lostEnemyUnits = 0
-    map.lostEnemyBuilding = 0
-    map.rocketLaunched = 0
-    map.builtEnemyBuilding = 0
-    map.ionCannonBlasts = 0
-    map.artilleryBlasts = 0
-
-    map.temperament = 0.5
-    map.temperamentScore = 0
-    map.stateTick = 0
 
     map.random = universe.random
 

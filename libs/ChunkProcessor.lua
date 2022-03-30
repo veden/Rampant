@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if (chunkProcessorG) then
     return chunkProcessorG
 end
@@ -8,11 +24,13 @@ local chunkProcessor = {}
 local chunkUtils = require("ChunkUtils")
 local queryUtils = require("QueryUtils")
 local mapUtils = require("MapUtils")
-local constants = require("Constants")
+-- local constants = require("Constants")
 
 -- constants
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+-- local CHUNK_SIZE = constants.CHUNK_SIZE
+-- local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
+-- local QUARTER_CHUNK_SIZE = constants.QUARTER_CHUNK_SIZE
 
 -- imported functions
 
@@ -52,9 +70,16 @@ end
 
 local function removeProcessQueueChunk(processQueue, chunk)
     local insertionPoint = findInsertionPoint(processQueue, chunk)
+    if insertionPoint > #processQueue then
+        insertionPoint = insertionPoint - 1
+    end
     for i=insertionPoint,1,-1 do
-        if (processQueue[i].id == chunk.id) then
+        local pqChunk = processQueue[i]
+        if pqChunk.id == chunk.id then
             tRemove(processQueue, i)
+            return
+        elseif pqChunk.dOrigin < chunk.dOrigin then
+            return
         end
     end
 end
@@ -134,7 +159,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
     universe.chunkProcessorIterator = eventId
 end
 
-function chunkProcessor.processPendingUpgrades(universe, tick)
+function chunkProcessor.processPendingUpgrades(universe)
     local entityId = universe.pendingUpgradeIterator
     local entityData
     if not entityId then
@@ -156,15 +181,19 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local query = universe.ppuUpgradeEntityQuery
             local position = entityData.position or entity.position
             query.name = entityData.name
-            local foundPosition = surface.find_non_colliding_position(entityData.name, position, CHUNK_SIZE, 1, true)
-            setPositionInQuery(query, foundPosition or position)
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
+            local foundPosition = surface.find_non_colliding_position(universe.buildingSpaceLookup[entityData.name],
+                                                                      position,
+                                                                      2,
+                                                                      1,
+                                                                      true)
+            setPositionInQuery(query, foundPosition or position)
             local createdEntity = surface.create_entity(query)
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(entityData.map, createdEntity, tick, entityData.base, true)
+                registerEnemyBaseStructure(entityData.map, createdEntity, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
-                    remote.call("kr-creep", "spawn_creep_at_position", surface, position)
+                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
                 end
             end
         else

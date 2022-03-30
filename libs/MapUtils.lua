@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 if mapUtilsG then
     return mapUtilsG
 end
@@ -74,6 +90,16 @@ function mapUtils.nextMap(universe)
             return map
         end
     until mapIterator == universe.mapIterator
+end
+
+function mapUtils.removeChunkToNest(universe, chunkId)
+    universe.chunkToNests[chunkId] = nil
+    if (chunkId == universe.processNestIterator) then
+        universe.processNestIterator = nil
+    end
+    if (chunkId == universe.processMigrationIterator) then
+        universe.processMigrationIterator = nil
+    end
 end
 
 function mapUtils.removeChunkFromMap(map, x, y, chunkId)

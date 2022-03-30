@@ -1,3 +1,19 @@
+-- Copyright (C) 2022  veden
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 local swarmUtils = {}
 -- imports
 
@@ -230,10 +246,10 @@ local droneAttributeNumeric = {
 local unitSpawnerAttributeNumeric = {
     ["health"] = { 350, 500, 750, 1500, 3500, 7500, 11000, 20000, 30000, 45000 },
     ["healing"] = { 0.02, 0.02, 0.022, 0.024, 0.026, 0.028, 0.03, 0.032, 0.034, 0.036 },
-    ["spawningCooldownStart"] = { 1080, 1075, 1070, 1065, 1060, 1055, 1050, 1045, 1040, 1035 },
-    ["spawningCooldownEnd"] = { 350, 345, 340, 335, 330, 325, 320, 315, 310, 305 },
+    ["spawningCooldownStart"] = { 2160, 2150, 2140, 2130, 2120, 2110, 2100, 2090, 2080, 2070 },
+    ["spawningCooldownEnd"] = { 700, 690, 680, 670, 660, 650, 640, 630, 620, 610 },
     ["unitsToSpawn"] = { 11, 11, 12, 12, 13, 13, 14, 14, 15, 15 },
-    ["scale"] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["cooldown"] = { 50, 50, 45, 45, 40, 40, 35, 35, 30, 30 },
     ["unitsOwned"] = { 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 },
     ["physicalDecrease"] = { 1, 2, 3, 4, 6, 6, 8, 10, 12, 14 },
     ["physicalPercent"] = { 15, 15, 17, 17, 18, 18, 19, 19, 20, 20 },
@@ -242,7 +258,7 @@ local unitSpawnerAttributeNumeric = {
     ["fireDecrease"] = { 3, 3, 4, 4, 4, 4, 4, 4, 5, 5 },
     ["firePercent"] = { 40, 40, 42, 42, 43, 43, 44, 44, 45, 45 },
     ["evolutionRequirement"] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 },
-    ["cooldown"] = { 50, 50, 45, 45, 40, 40, 35, 35, 30, 30 }
+    ["scale"] = { 0.80, 0.85, 0.90, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25 }
 }
 
 local hiveAttributeNumeric = {
@@ -255,7 +271,7 @@ local hiveAttributeNumeric = {
     ["spawningCooldownEnd"] = { 1785, 1780, 1775, 1770, 1765, 1760, 1755, 1750, 1745, 1740 },
     -- ["spawningCooldownEnd"] = { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60 },
     ["unitsToSpawn"] = { 3000, 3000, 300, 3000, 3000, 3000, 3000, 3000, 3000, 3000 },
-    ["scale"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1 },
+    ["scale"] = { 1.0, 1.05, 1.1, 1.15, 1.20, 1.25, 1.30, 1.35, 1.4, 1.45 },
     ["unitsOwned"] = { 7, 7, 8, 8, 9, 9, 10, 10, 11, 11 },
     ["physicalDecrease"] = { 1, 2, 3, 4, 6, 6, 8, 10, 12, 14 },
     ["physicalPercent"] = { 15, 15, 17, 17, 18, 18, 19, 19, 20, 20 },
@@ -274,7 +290,7 @@ local wormAttributeNumeric = {
     ["range"] = { 25, 27, 31, 33, 35, 36, 37, 38, 39, 40 },
     ["cooldown"] = { 70, 70, 68, 66, 64, 62, 60, 58, 56, 54 },
     ["damage"] = { 12, 22.5, 33.75, 45, 67.5, 82.5, 97.5, 112.5, 127.5, 142.5 },
-    ["scale"] = { 0.25, 0.40, 0.60, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8 },
+    ["scale"] = { 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55, 1.65 },
     ["radius"] = { 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.3, 2.5, 3.0 },
     ["stickerDamagePerTick"] = { 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 },
     ["particleVerticalAcceleration"] = { 0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05 },
@@ -610,6 +626,9 @@ local function fillEntityTemplate(entity)
                     entity["healing"] = entity["healing"] * -1
                 elseif (attribute == "checkBuildability") then
                     entity.checkBuildability = true
+                elseif (attribute == "spawnDuringDays") then
+                    entity.minSpawnDarkness = 0
+                    entity.maxSpawnDarkness = 0.45
                 elseif (attribute == "followsPlayer") then
                     entity.followsPlayer = true
                 elseif (attribute == "stationary") then
@@ -662,27 +681,45 @@ local function fillEntityTemplate(entity)
     scaleAttributes(entity)
 end
 
-local function calculateRGBa(tint, tier, staticAlpha)
-    local r = gaussianRandomRangeRG(tint.r, tint.r * 0.10 + (0.005 * tier), mMax(tint.r * 0.85 - (0.005 * tier), 0), mMin(tint.r * 1.15, 1), xorRandom)
-    local g = gaussianRandomRangeRG(tint.g, tint.g * 0.10 + (0.005 * tier), mMax(tint.g * 0.85 - (0.005 * tier), 0), mMin(tint.g * 1.15, 1), xorRandom)
-    local b = gaussianRandomRangeRG(tint.b, tint.b * 0.10 + (0.005 * tier), mMax(tint.b * 0.85 - (0.005 * tier), 0), mMin(tint.b * 1.15, 1), xorRandom)
+local function calculateRGBa(tint, tier, staticAlpha, invert)
+    local stdDevMultipler = 0.10 + (0.005 * tier)
+    local lowMultipler = 0.85 - (0.005 * tier)
+    local r = gaussianRandomRangeRG(tint.r,
+                                    tint.r * stdDevMultipler,
+                                    mMax(tint.r * lowMultipler, 0),
+                                    mMin(tint.r * 1.15, 1), xorRandom)
+    local g = gaussianRandomRangeRG(tint.g,
+                                    tint.g * stdDevMultipler,
+                                    mMax(tint.g * lowMultipler, 0),
+                                    mMin((tint.g * 1.15), 1), xorRandom)
+    local b = gaussianRandomRangeRG(tint.b,
+                                    tint.b * stdDevMultipler,
+                                    mMax(tint.b * lowMultipler, 0),
+                                    mMin(tint.b * 1.15, 1), xorRandom)
     local a = tint.a
     if not staticAlpha then
-        a = gaussianRandomRangeRG(tint.a, tint.a * 0.10 + (0.005 * tier), mMax(tint.a * 0.85 - (0.005 * tier), 0), mMin(tint.a * 1.15, 1), xorRandom)
+        a = gaussianRandomRangeRG(tint.a,
+                                  tint.a * stdDevMultipler,
+                                  mMax(tint.a * lowMultipler, 0),
+                                  mMin(tint.a * 1.15, 1), xorRandom)
     end
 
-    return { r=r, g=g, b=b, a=a }
+    if invert then
+        return { r=(1-r), g=(1-g), b=(1-b), a=(1-a) }
+    else
+        return { r=r, g=g, b=b, a=a }
+    end
 end
 
-local function generateApperance(unit)
+local function generateApperance(unit, invert)
     local tier = unit.effectiveLevel
     if unit.scale then
         local scaleValue = unit.scale[tier]
-        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.24, scaleValue * 0.40, scaleValue * 1.50, xorRandom)
+        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.20, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
         unit.scale = scale
     end
     if unit.tint then
-        unit.tint = calculateRGBa(unit.tint, tier, true)
+        unit.tint = calculateRGBa(unit.tint, tier, true, invert)
     end
     if unit.tint2 then
         unit.tint2 = calculateRGBa(unit.tint2, tier, true)
@@ -777,7 +814,7 @@ function swarmUtils.buildEntitySpawner(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
-            generateApperance(unitSpawner)
+            generateApperance(unitSpawner, true)
             fillEntityTemplate(unitSpawner)
 
             if unitSpawner.autoplace then

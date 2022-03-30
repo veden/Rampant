@@ -1,4 +1,54 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.0.0
+  Notes:
+    - Will reset maps of in progress games
+  Improvement:
+    - Modified death pheromone squad path scoring
+    - AI is now per regional base
+    - Regional bases now have there own aggressive and siege squad counter and cleanup process
+  Tweaks:
+    - Added surface minime_dummy_dungeon and minime-preview-character to exclusion list
+    - Increased unit spawner cooldown by 2x
+    - Added point loss on unit death
+    - Removed squad refunds when vanilla AI or other mods create enemy unit groups above the squad limit
+    - Halved the base distance bonus per regional base level so regional base cover less ground
+  Bugfixes:
+    - Fixed Krastorio2 on_force_created playerforces being nil
+    - Fixed enemy map scan creating bases unnecessarily
+
+---------------------------------------------------------------------------------------------------
+Version: 2.2.0
+Date: 29. 12. 2021
+  Contributions:
+    - PlexPt has provided an update Chinese locale
+  Improvements:
+    - Added integration with schallAlienLoot (Thank you garrotte for the code snippet)
+    - New enemy hives only spawn structures during daylight hours now
+  Tweaks:
+    - Set maximum value on enemy seed to 4294967295
+    - Slightly increased spacing between enemy structures
+    - License has changed to GPLv3
+    - Greatly reduced chance of hive outside resoure chunks on initial structure creation (1 in about 500 spawners will be hives)
+    - Separated mod setting into printing settlers building and ai spending points
+    - Reduced visual size of spawners and hives
+    - Increased visual size of worms
+    - Inverted Hive colors for easier visual identification
+    - Decreased occupied resource pheromone generation by 10x
+  Bugfixes:
+    - Fixed added check for hives on resource chunks before early building
+    - Fixed Hives spawning excessive amounts of entities
+    - Fixed chunkPack nil in processNests (Thanks Skallywaggz for the report)
+    - Fixed random generator seed overflow (Thanks NeveHanter for the report)
+    - Fixed removing chunks could index outside processQueueLength (Thanks thecheat789 for the report)
+    - Fixed processMap and processStaticMap could index outside processQueueLength
+    - Fixed base alignments could be blank when removing factions (Thanks kind_killer for the report)
+    - Fixed hive proxy entities would occasionally not be destroyed or upgraded correctly
+    - Fixed hive proxy entities not respecting initial proxy type when determining initial upgrades
+    - Fixed hive entities being initialized from turrets
+  Optimizations:
+    - Added early stopping to removeProcessQueueChunk
+
+---------------------------------------------------------------------------------------------------
 Version: 2.1.2
 Date: 28. 12. 2021
   Bugfixes:
