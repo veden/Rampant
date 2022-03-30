@@ -232,6 +232,18 @@ local function makeWormCorpse(attributes)
     return name
 end
 
+function biterFunctions.get_localised_name(attributes)
+    if attributes.isRampant then
+        return {"",
+                {"rampant."..attributes.faction},
+                {"rampant."..attributes.unit_name},
+                {"rampant.t"..attributes.t},
+                " V" ..attributes.v}
+    end
+
+    return {attributes.name .. "-rampant"}
+end
+
 function biterFunctions.makeBiter(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
@@ -242,6 +254,7 @@ function biterFunctions.makeBiter(attributes)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
+        localised_name = biterFunctions.get_localised_name(attributes),
         icon = "__base__/graphics/icons/small-biter.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -300,6 +313,7 @@ function biterFunctions.makeSpitter(attributes)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
+        localised_name = biterFunctions.get_localised_name(attributes),
         icon = "__base__/graphics/icons/small-spitter.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -353,6 +367,7 @@ function biterFunctions.makeUnitSpawner(attributes)
     local o = {
         type = "unit-spawner",
         name = attributes.name .. "-rampant",
+        localised_name = biterFunctions.get_localised_name(attributes),
         icon = "__base__/graphics/icons/biter-spawner.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -498,6 +513,7 @@ function biterFunctions.makeWorm(attributes)
     local o = {
         type = "turret",
         name = attributes.name .. "-rampant",
+        localised_name = biterFunctions.get_localised_name(attributes),
         icon = "__base__/graphics/icons/medium-worm.png",
         icon_size = 64, icon_mipmaps = 4,
         flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "not-repairable", "breaths-air"},
