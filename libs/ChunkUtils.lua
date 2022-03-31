@@ -586,16 +586,20 @@ function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
             if base then
+                local pointValue = entityValue
+                if pointValue == GENERATOR_PHEROMONE_LEVEL_1 then
+                    pointValue = 0
+                end
                 base.destroyPlayerBuildings = base.destroyPlayerBuildings + 1
                 if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
-                    base.unitPoints = base.unitPoints + entityValue
+                    base.unitPoints = base.unitPoints + pointValue
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
                     end
                 else
-                    base.unitPoints = base.unitPoints + (entityValue * 0.12)
+                    base.unitPoints = base.unitPoints + (pointValue * 0.12)
                     if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(entityValue * 0.12) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
+                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
                     end
                 end
             end
