@@ -276,7 +276,7 @@ data:extend({
             name = "rampant--newEnemies",
             description = "rampant--newEnemies",
             setting_type = "startup",
-            default_value = false,
+            default_value = true,
             order = "e[modifier]-a[unit]",
             per_user = false
         },

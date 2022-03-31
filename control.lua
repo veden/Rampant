@@ -40,8 +40,6 @@ local queryUtils = require("libs/QueryUtils")
 
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
-local AI_SQUAD_COST = constants.AI_SQUAD_COST
-local AI_SETTLER_COST = constants.AI_SETTLER_COST
 
 local RECOVER_NEST_COST = constants.RECOVER_NEST_COST
 local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
