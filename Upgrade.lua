@@ -53,19 +53,24 @@ local processPendingChunks = chunkProcessor.processPendingChunks
 -- module code
 
 local function isExcludedSurface(surfaceName)
-    return sFind(surfaceName, "Factory floor") or
+    return
+        (surfaceName == "aai-signals") or
+        (surfaceName == "RTStasisRealm") or
+        (surfaceName == "minime_dummy_dungeon") or
+        (surfaceName == "minime-preview-character") or
+        (surfaceName == "pipelayer") or
+        (surfaceName == "beltlayer") or
+
+        sFind(surfaceName, "Factory floor") or
         sFind(surfaceName, " Orbit") or
         sFind(surfaceName, "clonespace") or
         sFind(surfaceName, "BPL_TheLabplayer") or
-        sFind(surfaceName, "starmap-") or
-        (surfaceName == "aai-signals") or
+        sFind(surfaceName, "starmap%-") or
         sFind(surfaceName, "NiceFill") or
         sFind(surfaceName, "Asteroid Belt") or
         sFind(surfaceName, "Vault ") or
-        (surfaceName == "RTStasisRealm") or
         sFind(surfaceName, "spaceship") or
-        (surfaceName == "minime_dummy_dungeon") or
-        (surfaceName == "minime-preview-character")
+        sFind(surfaceName, "bpsb%-lab%-")
 end
 
 local function addCommandSet(queriesAndCommands)

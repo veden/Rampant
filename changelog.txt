@@ -6,6 +6,7 @@ Version: 3.0.0
     - Modified death pheromone squad path scoring
     - AI is now per regional base
     - Regional bases now have there own aggressive and siege squad counter and cleanup process
+    - Added beltlayer, pipelayer, and blueprint-sandboxes mod surfaces to surface exclusion list
   Tweaks:
     - Added surface minime_dummy_dungeon and minime-preview-character to exclusion list
     - Increased unit spawner cooldown by 2x
