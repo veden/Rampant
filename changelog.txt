@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.0
   Notes:
-    - Will reset maps of in progress games
+    - Will reset maps of in progress games. This means that all enemy units will be removed and new enemy faction mutations will be reset.
   Improvement:
     - Modified death pheromone squad path scoring
     - AI is now per regional base

@@ -594,6 +594,21 @@ function chunkPropertyUtils.findNearbyBase(map, chunk)
     return foundBase
 end
 
+function chunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
+    local foundBase
+
+    local closest = MAGIC_MAXIMUM_NUMBER
+    for _, base in pairs(map.bases) do
+        local distance = manhattenDistancePoints(base.x, base.y, x, y)
+        if (distance <= base.distanceThreshold) and (distance < closest) then
+            closest = distance
+            foundBase = base
+        end
+    end
+
+    return foundBase
+end
+
 function chunkPropertyUtils.processNestActiveness(map, chunk)
     local nests = chunkPropertyUtils.getNestCount(map, chunk)
     local base = chunkPropertyUtils.findNearbyBase(map, chunk)

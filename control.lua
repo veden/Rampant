@@ -112,6 +112,7 @@ local victoryScent = pheromoneUtils.victoryScent
 local createSquad = unitGroupUtils.createSquad
 
 local createBase = baseUtils.createBase
+local findNearbyBaseByPosition = chunkPropertyUtils.findNearbyBaseByPosition
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local processActiveNests = mapProcessor.processActiveNests
@@ -747,11 +748,14 @@ local function onUnitGroupCreated(event)
         return
     end
     map.activeSurface = true
-    local chunk = getChunkByPosition(map, group.position)
+    local position = group.position
+    local chunk = getChunkByPosition(map, position)
+    local base
     if (chunk == -1) then
-        return
+        base = findNearbyBaseByPosition(map, position.x, position.y)
+    else
+        base = findNearbyBase(map, chunk)
     end
-    local base = findNearbyBase(map, chunk)
     if not base then
         group.destroy()
         return
@@ -830,8 +834,18 @@ local function onGroupFinishedGathering(event)
             end
         end
     else
-        local chunk = getChunkByPosition(map, group.position)
-        local base = findNearbyBase(map, chunk)
+        local position = group.position
+        local chunk = getChunkByPosition(map, position)
+        local base
+        if chunk == -1 then
+            base = findNearbyBaseByPosition(map, position.x, position.y)
+        else
+            base = findNearbyBase(map, chunk)
+        end
+        if not base then
+            group.destroy()
+            return
+        end
         local settler = canMigrate(map, base) and
             (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
             (universe.random() < 0.25)
