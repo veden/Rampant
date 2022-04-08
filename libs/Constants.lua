@@ -438,6 +438,37 @@ for tier=1, 10 do
     end
 end
 
+local function hexToRGBA(hex)
+    local index = 1
+    local a = {"r","g","b","a"}
+    local tint = {}
+    string.gsub(
+        hex,
+        "..",
+        function(cc)
+            tint[a[index]] = tonumber(cc, 16) / 255
+            index = index+1
+        end
+    )
+    return tint
+end
+
+local function convertHexPairs(hexPairString)
+    if #hexPairString ~= 17 then
+        error(
+            "Invalid rgba hex value for Rampant new enemy color, each color needs to have `rrggbbaa rrggbbaa`:" .. hexPairString
+        )
+    end
+    local index = 1
+    local a = {"tint", "tint2"}
+    local tints = {}
+    for hex in string.gmatch(hexPairString, "%x%x%x%x%x%x%x%x") do
+        tints[a[index]] = hexToRGBA(hex)
+        index = index + 1
+    end
+    return tints
+end
+
 constants.FACTIONS_BY_DAMAGE_TYPE = {
     ["physical"] = {
         -- "physical",
@@ -495,10 +526,11 @@ constants.FACTIONS_BY_DAMAGE_TYPE = {
 
 constants.FACTION_SET = {}
 
+local neutralTints = convertHexPairs(settings.startup["rampant--neutralTints"].value)
 constants.FACTION_SET[#constants.FACTION_SET+1] = {
     type = "neutral",
-    tint = {r=0.9, g=0.9, b=0.9, a=1},
-    tint2 = {r=1, g=1, b=1, a=1},
+    tint = neutralTints.tint,
+    tint2 = neutralTints.tint2,
     acceptRate = {1, 7, 0.3, 0.1},
     evo = 0,
     units = {
@@ -579,10 +611,11 @@ if settings.startup["rampant--acidEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "acid"
     constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "acid"
     constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "acid"
+    local acidTints = convertHexPairs(settings.startup["rampant--acidTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "acid",
-        tint = {r=1, g=1, b=1, a=1},
-        tint2 = {r=0.4, g=0.9, b=0.4, a=1},
+        tint = acidTints.tint,
+        tint2 = acidTints.tint2,
         acceptRate = {1, 10, 0.1, 0.2},
         evo = 0,
         units = {
@@ -662,10 +695,11 @@ end
 if settings.startup["rampant--laserEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "laser"
     constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "laser"
+    local laserTints = convertHexPairs(settings.startup["rampant--laserTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "laser",
-        tint = {r=0.3, g=0.3, b=0.42, a=1},
-        tint2 = {r=0, g=1, b=1, a=1},
+        tint = laserTints.tint,
+        tint2 = laserTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.10,
         units = {
@@ -739,10 +773,11 @@ end
 if settings.startup["rampant--fireEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "fire"
     constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "fire"
+    local fireTints = convertHexPairs(settings.startup["rampant--fireTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fire",
-        tint = {r=1, g=1, b=1, a=1},
-        tint2 = {r=0.9, g=0.2, b=0.2, a=1},
+        tint = fireTints.tint,
+        tint2 = fireTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -822,10 +857,11 @@ end
 if settings.startup["rampant--infernoEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "inferno"
     constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "inferno"
+    local infernoTints = convertHexPairs(settings.startup["rampant--infernoTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "inferno",
-        tint = {r=0.5, g=0.1, b=0.1, a=1},
-        tint2 = {r=0.9, g=0.1, b=0.1, a=1},
+        tint = infernoTints.tint,
+        tint2 = infernoTints.tint2,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -883,10 +919,11 @@ end
 if settings.startup["rampant--waspEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "wasp"
     constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "wasp"
+    local waspTints = convertHexPairs(settings.startup["rampant--waspTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "wasp",
-        tint = {r=1, g=1, b=0, a=1},
-        tint2 = {r=0, g=0, b=0, a=1},
+        tint = waspTints.tint,
+        tint2 = waspTints.tint2,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -952,10 +989,11 @@ if settings.startup["rampant--spawnerEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "spawner"
     constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "spawner"
     constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "spawner"
+    local spawnerTints = convertHexPairs(settings.startup["rampant--spawnerTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "spawner",
-        tint = {r=0.7, g=0.1, b=0.7, a=1},
-        tint2 = {r=1, g=0.4, b=1, a=1},
+        tint = spawnerTints.tint,
+        tint2 = spawnerTints.tint2,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -1026,10 +1064,11 @@ end
 if settings.startup["rampant--electricEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "electric"
     constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "electric"
+    local electricTints = convertHexPairs(settings.startup["rampant--electricTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "electric",
-        tint = {r=0.7, g=0.7, b=1.0, a=1},
-        tint2 = {r=0.2, g=0.2, b=1, a=1},
+        tint = electricTints.tint,
+        tint2 = electricTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.1,
         units = {
@@ -1088,10 +1127,11 @@ if settings.startup["rampant--physicalEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "physical"
     constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "physical"
     constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "physical"
+    local physicalTints = convertHexPairs(settings.startup["rampant--physicalTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "physical",
-        tint = {r=0.9, g=0.9, b=0.9, a=1},
-        tint2 = {r=0.8, g=0.8, b=0.8, a=1},
+        tint = physicalTints.tint,
+        tint2 = physicalTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -1150,10 +1190,11 @@ if settings.startup["rampant--trollEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "troll"
     constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "troll"
     constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "troll"
+    local trollTints = convertHexPairs(settings.startup["rampant--trollTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "troll",
-        tint = {r=0.4, g=0.4, b=0.4, a=1},
-        tint2 = {r=1, g=0.2, b=0.2, a=1},
+        tint = trollTints.tint,
+        tint2 = trollTints.tint2,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.17,
         units = {
@@ -1213,10 +1254,11 @@ if settings.startup["rampant--poisonEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "poison"
     constants.FACTIONS_BY_DAMAGE_TYPE["acid"][#constants.FACTIONS_BY_DAMAGE_TYPE["acid"]+1] = "poison"
     constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "poison"
+    local poisonTints = convertHexPairs(settings.startup["rampant--poisonTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "poison",
-        tint = {r=0.4, g=0.6, b=0.5, a=1},
-        tint2 = {r=0, g=0.7, b=0, a=1},
+        tint = poisonTints.tint,
+        tint2 = poisonTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.17,
         units = {
@@ -1278,10 +1320,11 @@ end
 if settings.startup["rampant--suicideEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "suicide"
     constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "suicide"
+    local suicideTints = convertHexPairs(settings.startup["rampant--suicideTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "suicide",
-        tint = {r=0.8, g=0.8, b=0.8, a=1},
-        tint2 = {r=1, g=0.5, b=0, a=1},
+        tint = suicideTints.tint,
+        tint2 = suicideTints.tint2,
         acceptRate = {2, 10, 0.05, 0.15},
         evo = 0.35,
         units = {
@@ -1339,10 +1382,11 @@ end
 if settings.startup["rampant--nuclearEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["impact"][#constants.FACTIONS_BY_DAMAGE_TYPE["impact"]+1] = "nuclear"
     constants.FACTIONS_BY_DAMAGE_TYPE["poison"][#constants.FACTIONS_BY_DAMAGE_TYPE["poison"]+1] = "nuclear"
+    local nuclearTints = convertHexPairs(settings.startup["rampant--nuclearTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "nuclear",
-        tint = {r=0.1, g=0.95, b=0.1, a=1},
-        tint2 = {r=1, g=0.5, b=0, a=1},
+        tint = nuclearTints.tint,
+        tint2 = nuclearTints.tint2,
         acceptRate = {4, 10, 0.1, 0.125},
         evo = 0.45,
         units = {
@@ -1399,10 +1443,11 @@ end
 if settings.startup["rampant--energyThiefEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["laser"][#constants.FACTIONS_BY_DAMAGE_TYPE["laser"]+1] = "energy-thief"
     constants.FACTIONS_BY_DAMAGE_TYPE["electric"][#constants.FACTIONS_BY_DAMAGE_TYPE["electric"]+1] = "energy-thief"
+    local energyThiefTints = convertHexPairs(settings.startup["rampant--energyThiefTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "energy-thief",
-        tint = {r=0.2, g=0.2, b=0.4, a=1},
-        tint2 = {r=0.1, g=0.1, b=0.1, a=1},
+        tint = energyThiefTints.tint,
+        tint2 = energyThiefTints.tint2,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -1460,10 +1505,11 @@ if settings.startup["rampant--fastEnemy"].value then
     constants.FACTIONS_BY_DAMAGE_TYPE["physical"][#constants.FACTIONS_BY_DAMAGE_TYPE["physical"]+1] = "fast"
     constants.FACTIONS_BY_DAMAGE_TYPE["explosion"][#constants.FACTIONS_BY_DAMAGE_TYPE["explosion"]+1] = "fast"
     constants.FACTIONS_BY_DAMAGE_TYPE["fire"][#constants.FACTIONS_BY_DAMAGE_TYPE["fire"]+1] = "fast"
+    local fastTints = convertHexPairs(settings.startup["rampant--fastTints"].value)
     constants.FACTION_SET[#constants.FACTION_SET+1] = {
         type = "fast",
-        tint = {r=0.9, g=0.9, b=0.9, a=1},
-        tint2 = {r=1, g=1, b=0.1, a=1},
+        tint = fastTints.tint,
+        tint2 = fastTints.tint2,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {

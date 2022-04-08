@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 data:extend({
 
         {
@@ -943,7 +942,6 @@ data:extend({
             per_user = false
         },
 
-
         {
             type = "double-setting",
             name = "rampant--unitHiveRespawnScaler",
@@ -1001,3 +999,140 @@ data:extend({
         }
 
 })
+
+-- Converts the RGBA struct to Hexadecimal discarding the alpha value.
+-- Since the RGBA struct stores values as percent (0-1) and not actual RGB (0-255) there might be precision errors when converting.
+local function rgbaToHex(rgba)
+    local r = string.format("%x", rgba.r * 255)
+    local g = string.format("%x", rgba.g * 255)
+    local b = string.format("%x", rgba.b * 255)
+    local a = string.format("%x", rgba.a * 255)
+    if #r == 1 then
+        r = "0"..r
+    end
+    if #g == 1 then
+        g = "0"..g
+    end
+    if #b == 1 then
+        b = "0"..b
+    end
+    if #a == 1 then
+        a = "0"..a
+    end
+    return r..g..b..a
+end
+
+-- Sets the default value of the faction tint settings.
+-- Change this function if the formating of the tint settings changes.
+local function setDefaultValue(tint, tint2)
+    return rgbaToHex(tint) .. " " .. rgbaToHex(tint2)
+end
+
+local FACTIONS = {
+    {
+        -- Neutral faction
+        type = "neutral",
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
+        tint2 = {r =    1, g =    1, b =    1, a = 1}
+    },
+    {
+        -- Acidic faction
+        type = "acid",
+        tint =  {r =    1, g =    1, b =    1, a = 1},
+        tint2 = {r = 0.40, g = 0.90, b = 0.40, a = 1}
+    },
+    {
+        -- Laser faction
+        type = "laser",
+        tint =  {r = 0.60, g = 0.60, b = 0.84, a = 1},
+        tint2 = {r = 0.60, g = 0.60, b = 0.84, a = 1}
+    },
+    {
+        -- Fire faction
+        type = "fire",
+        tint =  {r =    1, g =    1, b =    1, a = 1},
+        tint2 = {r = 0.90, g = 0.20, b = 0.20, a = 1}
+    },
+    {
+        -- Inferno faction
+        type = "inferno",
+        tint =  {r = 0.90, g = 0.75, b = 0.75, a = 1},
+        tint2 = {r = 0.70, g = 0.30, b = 0.30, a = 1}
+    },
+    {
+        -- Wasp faction
+        type = "wasp",
+        tint =  {r =    1, g =    1, b = 0.70, a = 1},
+        tint2 = {r = 0.50, g = 0.50, b =    0, a = 1}
+    },
+    {
+        -- Spawner faction
+        type = "spawner",
+        tint =  {r =    1, g = 0.80, b =    1, a = 1},
+        tint2 = {r = 0.90, g = 0.30, b = 0.90, a = 1}
+    },
+    {
+        -- Electric faction
+        type = "electric",
+        tint =  {r = 0.80, g = 0.80, b =    1, a = 1},
+        tint2 = {r = 0.30, g = 0.30, b =    1, a = 1}
+    },
+    {
+        -- Brutal faction
+        type = "physical",
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
+        tint2 = {r = 0.80, g = 0.80, b = 0.80, a = 1}
+    },
+    {
+        -- Regenerative faction
+        type = "troll",
+        tint =  {r = 0.55, g = 0.55, b = 0.55, a = 1},
+        tint2 = {r =    1, g = 0.30, b = 0.30, a = 1}
+    },
+    {
+        -- Poison faction
+        type = "poison",
+        tint =  {r = 0.50, g = 0.70, b = 0.60, a = 1},
+        tint2 = {r = 0.30, g = 0.90, b = 0.30, a = 1}
+    },
+    {
+        -- Suicide faction
+        type = "suicide",
+        tint =  {r = 0.80, g = 0.80, b = 0.80, a = 1},
+        tint2 = {r =    1, g = 0.50, b =    0, a = 1}
+    },
+    {
+        -- Nuclear faction
+        type = "nuclear",
+        tint =  {r = 0.10, g = 0.95, b = 0.10, a = 1},
+        tint2 = {r =    1, g = 0.50, b =    0, a = 1}
+    },
+    {
+        -- Sapper faction
+        type = "energyThief",
+        tint =  {r = 0.50, g = 0.50, b = 0.70, a = 1},
+        tint2 = {r = 0.40, g = 0.40, b = 0.40, a = 1}
+    },
+    {
+        -- Fast faction
+        type = "fast",
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
+        tint2 = {r =    1, g =    1, b = 0.10, a = 1}
+    }
+}
+
+for i = 1, #FACTIONS do
+    local entry = FACTIONS[i]
+    local setting = "rampant--" .. entry.type .. "Tints"
+
+    data:extend({
+            {
+                type = "string-setting",
+                name = setting,
+                description = setting,
+                setting_type = "startup",
+                default_value = setDefaultValue(entry.tint, entry.tint2),
+                order = "p[modifier]-r[zzunit]",
+            },
+    })
+end
