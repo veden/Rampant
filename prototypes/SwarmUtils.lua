@@ -738,6 +738,8 @@ function swarmUtils.buildUnits(template)
         for i=1,variations do
             local unit = deepcopy(template)
             unit.name = unit.name .. "-v" .. i .. "-t" .. tier
+            unit.v = i
+            unit.t = tier
             -- unit.nameSuffix = "-v" .. i .. "-t" .. tier
             unit.effectiveLevel = effectiveLevel
             unit.variation = i
@@ -812,6 +814,8 @@ function swarmUtils.buildEntitySpawner(template)
         for i=1,variations do
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
+            unitSpawner.v = i
+            unitSpawner.t = tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             generateApperance(unitSpawner, true)
@@ -837,6 +841,8 @@ function swarmUtils.buildUnitSpawner(template)
         for i=1,variations do
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
+            unitSpawner.v = i
+            unitSpawner.t = tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             local unitTable = unitSetToProbabilityTable(template.unitSet)
@@ -863,6 +869,8 @@ function swarmUtils.buildWorm(template)
         for i=1,variations do
             local worm = deepcopy(template)
             worm.name = worm.name .. "-v" .. i .. "-t" .. tier
+            worm.v = i
+            worm.t = tier
             worm.effectiveLevel = effectiveLevel
             worm.variation = i
             generateApperance(worm)
@@ -1197,6 +1205,8 @@ local function buildUnitTemplate(faction, unit)
     local template = deepcopy(unit)
 
     template.name = faction.type .. "-" .. unit.name
+    template.unit_name = unit.name
+    template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
@@ -1232,6 +1242,8 @@ local function buildTurretTemplate(faction, turret)
     local template = deepcopy(turret)
 
     template.name = faction.type .. "-" .. turret.name
+    template.unit_name = turret.name
+    template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
@@ -1269,6 +1281,8 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
     local template = deepcopy(incomingTemplate)
 
     template.name = faction.type .. "-" .. template.name
+    template.unit_name = incomingTemplate.name
+    template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
@@ -1326,6 +1340,8 @@ local function buildHiveTemplate(faction, incomingTemplate)
     local template = deepcopy(incomingTemplate)
 
     template.name = faction.type .. "-" .. template.name
+    template.unit_name = incomingTemplate.name
+    template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
 
