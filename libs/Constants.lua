@@ -930,7 +930,7 @@ if settings.startup["rampant--waspEnemy"].value then
             {
                 type = "drone",
                 attackAttributes = {"spit", "acid"},
-                name = "wasp",
+                name = "spitter-wasp",
                 attributes = {"followsPlayer"},
                 drops = {}
             },
@@ -943,7 +943,7 @@ if settings.startup["rampant--waspEnemy"].value then
             },
             {
                 type = "spitter",
-                attackAttributes = {"capsule", {"drone", "wasp"}},
+                attackAttributes = {"capsule", {"drone", "spitter-wasp"}},
                 name = "spitter",
                 attributes = {},
                 drops = {"purpleArtifact"}
@@ -1007,7 +1007,7 @@ if settings.startup["rampant--spawnerEnemy"].value then
             {
                 type = "drone",
                 attackAttributes = {"touch", "acid"},
-                name = "egg",
+                name = "spitter-egg",
                 attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}},
                 drops = {}
             },
@@ -1020,7 +1020,7 @@ if settings.startup["rampant--spawnerEnemy"].value then
             },
             {
                 type = "spitter",
-                attackAttributes = {"capsule", {"drone", "egg"}},
+                attackAttributes = {"capsule", {"drone", "spitter-egg"}},
                 name = "spitter",
                 attributes = {"selfDamaging"},
                 drops = {"orangeArtifact"}

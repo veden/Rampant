@@ -14,19 +14,19 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-local biterFunctions = require("prototypes/utils/BiterUtils")
+local biterUtils = require("prototypes/utils/BiterUtils")
 local constants = require("libs/Constants")
 local smokeUtils = require("prototypes/utils/SmokeUtils")
 
 data:extend({
-        biterFunctions.makeBiter({
+        biterUtils.makeBiter({
                 name = "chunk-scanner-squad",
                 scale=15,
                 movement=1,
                 effectiveLevel=1,
                 resistances = {},
                 hitSprayName = "blood-fountain-hit-spray",
-                attack = biterFunctions.createMeleeAttack({
+                attack = biterUtils.createMeleeAttack({
                         radius=1,
                         damage=1,
                         scale=15,
@@ -34,14 +34,14 @@ data:extend({
                 })
         }),
 
-        biterFunctions.makeBiter({
+        biterUtils.makeBiter({
                 name = "chunk-scanner-squad-movement",
                 scale=2.5,
                 movement=1,
                 effectiveLevel=1,
                 resistances = {},
                 hitSprayName = "blood-fountain-hit-spray",
-                attack = biterFunctions.createMeleeAttack({
+                attack = biterUtils.createMeleeAttack({
                         radius=1,
                         damage=1,
                         scale=15,
@@ -76,11 +76,6 @@ local scales = {
         [1] = 0.70, [2] = 0.83, [3] = 0.96, [4] = 1.09, [5] = 1.22,
         [6] = 1.35, [7] = 1.48, [8] = 1.61, [9] = 1.74, [10] = 1.87
     },
-    -- ["biter-spawner"] = {
-    --     [1] = 0.70, [2] = 0.83, [3] = 0.96, [4] = 1.09, [5] = 1.22,
-    --     [6] = 1.35, [7] = 1.48, [8] = 1.61, [9] = 1.74, [10] = 1.87,
-    --     [11] = 2.0
-    -- },
     ["biter-spawner"] = {
         [1] = 0.83, [2] = 0.96, [3] = 1.09, [4] = 1.22, [5] = 1.35,
         [6] = 1.48, [7] = 1.61, [8] = 1.74, [9] = 1.87, [10] = 2.0
@@ -97,6 +92,7 @@ local scales = {
 
 local subTypes = constants.HIVE_BUILDINGS_TYPES
 
+
 for si=1,#subTypes do
     local st = subTypes[si]
     if scales[st] then
@@ -109,6 +105,12 @@ for si=1,#subTypes do
                     {
                         type = "land-mine",
                         name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
+                        localised_name = biterUtils.getLocalisedName({
+                                faction="entity-proxy",
+                                unit_name=st,
+                                tier=t,
+                                isRampant=true
+                        }),
                         icon = "__base__/graphics/icons/steel-chest.png",
                         icon_size = 32,
                         flags = {},

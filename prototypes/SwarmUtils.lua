@@ -739,8 +739,7 @@ function swarmUtils.buildUnits(template)
         for i=1,variations do
             local unit = deepcopy(template)
             unit.name = unit.name .. "-v" .. i .. "-t" .. tier
-            unit.v = i
-            unit.t = tier
+            unit.tier = tier
             -- unit.nameSuffix = "-v" .. i .. "-t" .. tier
             unit.effectiveLevel = effectiveLevel
             unit.variation = i
@@ -815,8 +814,7 @@ function swarmUtils.buildEntitySpawner(template)
         for i=1,variations do
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
-            unitSpawner.v = i
-            unitSpawner.t = tier
+            unitSpawner.tier = tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             generateApperance(unitSpawner, true)
@@ -842,8 +840,7 @@ function swarmUtils.buildUnitSpawner(template)
         for i=1,variations do
             local unitSpawner = deepcopy(template)
             unitSpawner.name = unitSpawner.name .. "-v" .. i .. "-t" .. tier
-            unitSpawner.v = i
-            unitSpawner.t = tier
+            unitSpawner.tier = tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             local unitTable = unitSetToProbabilityTable(template.unitSet)
@@ -870,8 +867,7 @@ function swarmUtils.buildWorm(template)
         for i=1,variations do
             local worm = deepcopy(template)
             worm.name = worm.name .. "-v" .. i .. "-t" .. tier
-            worm.v = i
-            worm.t = tier
+            worm.tier = tier
             worm.effectiveLevel = effectiveLevel
             worm.variation = i
             generateApperance(worm)

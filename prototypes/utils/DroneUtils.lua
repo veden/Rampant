@@ -13,7 +13,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+local biterUtils = require("BiterUtils")
 local util = require ("util")
 
 local droneUtils = {}
@@ -30,6 +30,7 @@ function droneUtils.makeDrone(attributes)
     local drone = {
         type = "combat-robot",
         name = n,
+        localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/defender.png",
         icon_size = 32,
         flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hidden"},

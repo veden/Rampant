@@ -18,6 +18,7 @@ local fireUtils = {}
 
 -- imported
 
+local biterUtils = require("BiterUtils")
 local colorUtils = require("ColorUtils")
 local imageUtils = require("ImageUtils")
 
@@ -126,6 +127,7 @@ function fireUtils.makeFire(attributes)
     data:extend({{
                 type = "fire",
                 name = name,
+                localised_name = {"", {"rampant.fire-pool"}},
                 flags = {"placeable-off-grid", "not-on-map"},
                 color = attributes.tint2,
                 damage_per_tick = { amount = attributes.fireDamagePerTick or 45/60, type = attributes.fireDamagePerTickType or "fire"  },
@@ -256,6 +258,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
     local acidFire = {
         type = "fire",
         name = name,
+        localised_name = {"", {"rampant.acid-pool"}},
         flags = {"placeable-off-grid", "not-on-map"},
         damage_per_tick = {amount = 0, type = "acid"},
         maximum_damage_multiplier = 3,

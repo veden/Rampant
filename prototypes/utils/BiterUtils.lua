@@ -14,7 +14,7 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-local biterFunctions = {}
+local biterUtils = {}
 
 local sounds = require("__base__.prototypes.entity.sounds")
 local particleUtils = require("ParticleUtils")
@@ -232,19 +232,20 @@ local function makeWormCorpse(attributes)
     return name
 end
 
-function biterFunctions.get_localised_name(attributes)
+function biterUtils.getLocalisedName(attributes)
     if attributes.isRampant then
-        return {"",
-                {"rampant."..attributes.faction},
-                {"rampant."..attributes.unit_name},
-                {"rampant.t"..attributes.t},
-                " V" ..attributes.v}
+        return {
+            "",
+            {"rampant."..attributes.faction},
+            {"rampant."..attributes.unit_name},
+            {"rampant.t"..attributes.tier}
+        }
     end
 
     return {attributes.name .. "-rampant"}
 end
 
-function biterFunctions.makeBiter(attributes)
+function biterUtils.makeBiter(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
         v.type = k
@@ -254,7 +255,7 @@ function biterFunctions.makeBiter(attributes)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
-        localised_name = biterFunctions.get_localised_name(attributes),
+        localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/small-biter.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -303,7 +304,7 @@ function biterFunctions.makeBiter(attributes)
     return entity
 end
 
-function biterFunctions.makeSpitter(attributes)
+function biterUtils.makeSpitter(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
         v.type = k
@@ -313,7 +314,7 @@ function biterFunctions.makeSpitter(attributes)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
-        localised_name = biterFunctions.get_localised_name(attributes),
+        localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/small-spitter.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -357,7 +358,7 @@ function biterFunctions.makeSpitter(attributes)
     return entity
 end
 
-function biterFunctions.makeUnitSpawner(attributes)
+function biterUtils.makeUnitSpawner(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
         v.type = k
@@ -367,7 +368,7 @@ function biterFunctions.makeUnitSpawner(attributes)
     local o = {
         type = "unit-spawner",
         name = attributes.name .. "-rampant",
-        localised_name = biterFunctions.get_localised_name(attributes),
+        localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/biter-spawner.png",
         icon_size = 64,
         icon_mipmaps = 4,
@@ -503,7 +504,7 @@ function biterFunctions.makeUnitSpawner(attributes)
     return o
 end
 
-function biterFunctions.makeWorm(attributes)
+function biterUtils.makeWorm(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
         v.type = k
@@ -513,7 +514,7 @@ function biterFunctions.makeWorm(attributes)
     local o = {
         type = "turret",
         name = attributes.name .. "-rampant",
-        localised_name = biterFunctions.get_localised_name(attributes),
+        localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/medium-worm.png",
         icon_size = 64, icon_mipmaps = 4,
         flags = attributes.flags or {"placeable-player", "placeable-enemy", "not-repairable", "not-repairable", "breaths-air"},
@@ -611,7 +612,7 @@ function biterFunctions.makeWorm(attributes)
 
 end
 
-function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
+function biterUtils.createSuicideAttack(attributes, blastWave, animation)
     local o = {
         type = "projectile",
         range = -- attributes.range or
@@ -900,7 +901,7 @@ function biterFunctions.createSuicideAttack(attributes, blastWave, animation)
     return o
 end
 
-function biterFunctions.makeWormAlienLootTable(name)
+function biterUtils.makeWormAlienLootTable(name)
     local biterLoot
 
     local a = settings.startup["bobmods-enemies-enableartifacts"]
@@ -941,7 +942,7 @@ function biterFunctions.makeWormAlienLootTable(name)
     return biterLoot
 end
 
-function biterFunctions.makeSpawnerAlienLootTable(name)
+function biterUtils.makeSpawnerAlienLootTable(name)
     local biterLoot
     local a = settings.startup["bobmods-enemies-enableartifacts"]
     local b = settings.startup["NE_Alien_Artifacts"]
@@ -981,7 +982,7 @@ function biterFunctions.makeSpawnerAlienLootTable(name)
     return biterLoot
 end
 
-function biterFunctions.makeUnitAlienLootTable(name)
+function biterUtils.makeUnitAlienLootTable(name)
     local biterLoot
     local a = settings.startup["bobmods-enemies-enableartifacts"]
     local b = settings.startup["NE_Alien_Artifacts"]
@@ -1035,7 +1036,7 @@ function biterFunctions.makeUnitAlienLootTable(name)
     return biterLoot
 end
 
-function biterFunctions.findRange(entity)
+function biterUtils.findRange(entity)
     return entity.attack_parameters.range
 end
 
@@ -1052,15 +1053,15 @@ local function findKey(key, obj)
     end
 end
 
-function biterFunctions.findRunScale(entity)
+function biterUtils.findRunScale(entity)
     return findKey("scale", entity.run_animation.layers)
 end
 
-function biterFunctions.findTint(entity)
+function biterUtils.findTint(entity)
     return findKey("tint", entity.run_animation.layers)
 end
 
-function biterFunctions.createElectricAttack(attributes, electricBeam, animation)
+function biterUtils.createElectricAttack(attributes, electricBeam, animation)
     return
         {
             type = "beam",
@@ -1090,7 +1091,7 @@ function biterFunctions.createElectricAttack(attributes, electricBeam, animation
         }
 end
 
-function biterFunctions.createBeamAttack(attributes, electricBeam, animation)
+function biterUtils.createBeamAttack(attributes, electricBeam, animation)
     return
         {
             type = "beam",
@@ -1119,7 +1120,7 @@ function biterFunctions.createBeamAttack(attributes, electricBeam, animation)
         }
 end
 
-function biterFunctions.createProjectileAttack(attributes, projectile, animation)
+function biterUtils.createProjectileAttack(attributes, projectile, animation)
     return {
         type = "projectile",
         ammo_category = "biological",
@@ -1153,7 +1154,7 @@ function biterFunctions.createProjectileAttack(attributes, projectile, animation
     }
 end
 
-function biterFunctions.createMeleeAttack(attackAttributes)
+function biterUtils.createMeleeAttack(attackAttributes)
     local meleeAttackEffects = {
         type = "damage",
         damage = { amount = attackAttributes.damage * 0.25, type = attackAttributes.damageType or "physical" }
@@ -1208,7 +1209,7 @@ function biterFunctions.createMeleeAttack(attackAttributes)
     }
 end
 
-function biterFunctions.biterAttackSounds(effectiveLevel)
+function biterUtils.biterAttackSounds(effectiveLevel)
     return {
         {
             filename = "__base__/sound/creatures/Spiters_1_1.ogg",
@@ -1253,17 +1254,17 @@ function biterFunctions.biterAttackSounds(effectiveLevel)
     }
 end
 
-function biterFunctions.createRangedAttack(attributes, attack, animation)
+function biterUtils.createRangedAttack(attributes, attack, animation)
     if (attributes.attackType == "stream") then
-        return biterFunctions.createStreamAttack(attributes, attack, animation)
+        return biterUtils.createStreamAttack(attributes, attack, animation)
     elseif (attributes.attackType == "projectile") then
-        return biterFunctions.createProjectileAttack(attributes, attack, animation)
+        return biterUtils.createProjectileAttack(attributes, attack, animation)
     else
         error("Unknown range attack")
     end
 end
 
-function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
+function biterUtils.createStreamAttack(attributes, fireAttack, animation)
     local attack = {
         type = "stream",
         ammo_category = "biological",
@@ -1309,7 +1310,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
 
         cyclic_sound =
             {
-                begin_sound = biterFunctions.biterAttackSounds(attributes.effectiveLevel),
+                begin_sound = biterUtils.biterAttackSounds(attributes.effectiveLevel),
                 middle_sound =
                     {
                         {
@@ -1331,7 +1332,7 @@ function biterFunctions.createStreamAttack(attributes, fireAttack, animation)
     return attack
 end
 
-function biterFunctions.makeResistance(name, decrease, percentage)
+function biterUtils.makeResistance(name, decrease, percentage)
     local obj = {
         type = name,
     }
@@ -1344,4 +1345,4 @@ function biterFunctions.makeResistance(name, decrease, percentage)
     return obj
 end
 
-return biterFunctions
+return biterUtils
