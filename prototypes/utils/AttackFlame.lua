@@ -103,7 +103,8 @@ function attackFlame.createAttackFlame(attributes)
                         target_effects = {
                             type= "create-fire",
                             entity_name = fireName,
-                            check_buildability = true
+                            check_buildability = true,
+                            show_in_tooltip = true
                         }
                     }
                 }
