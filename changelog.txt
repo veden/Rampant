@@ -4,7 +4,9 @@ Version: 3.0.0
     - Will reset maps of in progress games. This means that all enemy units will be removed and new enemy faction mutations will be reset.
   Contributions:
     - Added custom colors from ErdwurmJim
-    - Simplification and refactor of locale generation from PlexPt
+    - Simplification and refactor of locale generation with local for zh-CN from PlexPt
+    - Added KO locale from x2605 for Rampant 2.2.0
+    - Added updated RU locale from Astorin for Rampant 2.2.0
   Improvement:
     - Modified death pheromone squad path scoring
     - AI is now per regional base
