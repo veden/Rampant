@@ -34,6 +34,7 @@ local mapUtils = require("MapUtils")
 
 -- imported functions
 
+local findInsertionPoint = mapUtils.findInsertionPoint
 local removeChunkFromMap = mapUtils.removeChunkFromMap
 local setPositionInQuery = queryUtils.setPositionInQuery
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
@@ -46,43 +47,9 @@ local chunkPassScan = chunkUtils.chunkPassScan
 local next = next
 local table_size = table_size
 
-local tRemove = table.remove
 local tInsert = table.insert
-local mCeil = math.ceil
 
 -- module code
-
-local function findInsertionPoint(processQueue, chunk)
-    local low = 1
-    local high = #processQueue
-    local pivot
-    while (low <= high) do
-        pivot = mCeil((low + high) * 0.5)
-        local pivotChunk = processQueue[pivot]
-        if (pivotChunk.dOrigin > chunk.dOrigin) then
-            high = pivot - 1
-        elseif (pivotChunk.dOrigin <= chunk.dOrigin) then
-            low = pivot + 1
-        end
-    end
-    return low
-end
-
-local function removeProcessQueueChunk(processQueue, chunk)
-    local insertionPoint = findInsertionPoint(processQueue, chunk)
-    if insertionPoint > #processQueue then
-        insertionPoint = insertionPoint - 1
-    end
-    for i=insertionPoint,1,-1 do
-        local pqChunk = processQueue[i]
-        if pqChunk.id == chunk.id then
-            tRemove(processQueue, i)
-            return
-        elseif pqChunk.dOrigin < chunk.dOrigin then
-            return
-        end
-    end
-end
 
 function chunkProcessor.processPendingChunks(universe, tick, flush)
     local pendingChunks = universe.pendingChunks
@@ -132,8 +99,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
                 local oldChunk = map[x][y]
                 local chunk = initialScan(oldChunk, map, tick)
                 if (chunk == -1) then
-                    removeProcessQueueChunk(map.processQueue, oldChunk)
-                    removeChunkFromMap(map, x, y, oldChunk.id)
+                    removeChunkFromMap(map, oldChunk)
                 end
             else
                 local initialChunk = createChunk(map, x, y)
@@ -229,8 +195,7 @@ function chunkProcessor.processScanChunks(universe)
         local chunk = chunkPack.chunk
 
         if (chunkPassScan(chunk, map) == -1) then
-            removeProcessQueueChunk(map.processQueue, chunk)
-            removeChunkFromMap(map, chunk.x, chunk.y, chunk.id)
+            removeChunkFromMap(map, chunk)
         end
     end
 end

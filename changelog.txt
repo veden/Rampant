@@ -13,6 +13,7 @@ Version: 3.0.0
     - Regional bases now have there own aggressive and siege squad counter and cleanup process
     - Added beltlayer, pipelayer, minime, and blueprint-sandboxes mod surfaces to surface exclusion list
     - Added mod settings to customize factions colors
+    - Added on_chunk_deleted event for updating map and base stats
   Tweaks:
     - Increased unit spawner cooldown by 2x
     - Added point loss on unit death
@@ -28,6 +29,7 @@ Version: 3.0.0
     - Fixed base.index reference error in displaying ai state
     - Fixed rampantSetAIState command to work with multiple ais per surface
     - Fixed base recycling on invalid surfaces
+    - Fixed base chunk count not being decremented when chunks are removed 
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0

@@ -39,6 +39,8 @@ local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
 
 local mFloor = math.floor
 local getPassable = chunkPropertyUtils.getPassable
+local tRemove = table.remove
+local mCeil = math.ceil
 
 -- module code
 
@@ -102,7 +104,43 @@ function mapUtils.removeChunkToNest(universe, chunkId)
     end
 end
 
-function mapUtils.removeChunkFromMap(map, x, y, chunkId)
+function mapUtils.findInsertionPoint(processQueue, chunk)
+    local low = 1
+    local high = #processQueue
+    local pivot
+    while (low <= high) do
+        pivot = mCeil((low + high) * 0.5)
+        local pivotChunk = processQueue[pivot]
+        if (pivotChunk.dOrigin > chunk.dOrigin) then
+            high = pivot - 1
+        elseif (pivotChunk.dOrigin <= chunk.dOrigin) then
+            low = pivot + 1
+        end
+    end
+    return low
+end
+
+function mapUtils.removeProcessQueueChunk(processQueue, chunk)
+    local insertionPoint = mapUtils.findInsertionPoint(processQueue, chunk)
+    if insertionPoint > #processQueue then
+        insertionPoint = insertionPoint - 1
+    end
+    for i=insertionPoint,1,-1 do
+        local pqChunk = processQueue[i]
+        if pqChunk.id == chunk.id then
+            tRemove(processQueue, i)
+            return
+        elseif pqChunk.dOrigin < chunk.dOrigin then
+            return
+        end
+    end
+end
+
+function mapUtils.removeChunkFromMap(map, chunk)
+    local chunkId = chunk.id
+    local x = chunk.x
+    local y = chunk.y
+    mapUtils.removeProcessQueueChunk(map.processQueue, chunk)
     local universe = map.universe
     map[x][y] = nil
     universe.chunkIdToChunk[chunkId] = nil
@@ -116,7 +154,11 @@ function mapUtils.removeChunkFromMap(map, x, y, chunkId)
     universe.vengenceQueue[chunkId] = nil
     universe.processActiveNest[chunkId] = nil
     universe.chunkToVictory[chunkId] = nil
-    map.chunkToBase[chunkId] = nil
+    local base = map.chunkToBase[chunkId]
+    if base then
+        base.chunkCount = base.chunkCount - 1
+        map.chunkToBase[chunkId] = nil
+    end
     map.chunkToTurrets[chunkId] = nil
     map.chunkToTraps[chunkId] = nil
     map.chunkToUtilities[chunkId] = nil

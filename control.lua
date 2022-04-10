@@ -89,6 +89,9 @@ local disperseVictoryScent = pheromoneUtils.disperseVictoryScent
 
 local getChunkByPosition = mapUtils.getChunkByPosition
 
+local removeChunkFromMap = mapUtils.removeChunkFromMap
+local getChunkByXY = mapUtils.getChunkByXY
+
 local entityForPassScan = chunkUtils.entityForPassScan
 
 local processPendingChunks = chunkProcessor.processPendingChunks
@@ -901,6 +904,23 @@ local function onSurfaceCleared(event)
     onSurfaceCreated(event)
 end
 
+local function onChunkDeleted(event)
+    local surfaceIndex = event.surface_index
+    local map = universe.maps[surfaceIndex]
+    if map then
+        local positions = event.positions
+        for i=1,#positions do
+            local position = positions[i]
+            local x = position.x * 32
+            local y = position.y * 32
+            local chunk = getChunkByXY(map, x, y)
+            if chunk ~= -1 then
+                removeChunkFromMap(map, chunk)
+            end
+        end
+    end
+end
+
 local function onBuilderArrived(event)
     local builder = event.group
     local usingUnit = false
@@ -995,6 +1015,7 @@ script.on_event(defines.events.on_tick,
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
 end)
 
+script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
 script.on_event(defines.events.on_surface_created, onSurfaceCreated)
