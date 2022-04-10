@@ -214,24 +214,7 @@ local function settleMove(map, squad)
                         )
                     )
                 else
-                    position = findMovementPosition(
-                        surface,
-                        positionFromDirectionAndFlat(
-                            nextAttackDirection,
-                            groupPosition,
-                            1.3
-                        )
-                    )
-                    if not position then
-                        position = findMovementPosition(
-                            surface,
-                            positionFromDirectionAndFlat(
-                                attackDirection,
-                                groupPosition,
-                                1.3
-                            )
-                        )
-                    end
+                    position = groupPosition
                 end
             else
                 position = findMovementPosition(
