@@ -336,18 +336,20 @@ local function temperamentPlanner(base, evolutionLevel)
     base.temperament = ((base.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
 
     if universe.debugTemperament then
-        game.print("Rampant Stats:\naN:" .. base.activeNests .. ", aRN:" .. base.activeRaidNests .. ", dPB:" ..
-                   base.destroyPlayerBuildings .. ", lEU:" .. base.lostEnemyUnits .. ", lEB:" ..
-                   base.lostEnemyBuilding .. ", rL:" .. base.rocketLaunched .. ", bEB:" ..
-                   base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
-                   base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
-                   ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
-                   constants.stateEnglish[base.stateAI] .. ", surface:" .. base.surface.index .. " [" ..
-                   base.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
-                   ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
-                   ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
-                   ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration ..
-                   ", baseId:".. base.id)
+        local strConsole = "Rampant Stats:\nbaseId:".. base.id .. ", aN:" .. base.activeNests ..
+            ", aRN:" .. base.activeRaidNests .. ", dPB:" ..
+            base.destroyPlayerBuildings .. ", lEU:" .. base.lostEnemyUnits .. ", lEB:" ..
+            base.lostEnemyBuilding .. ", rL:" .. base.rocketLaunched .. ", bEB:" ..
+            base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
+            base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
+            ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
+            constants.stateEnglish[base.stateAI] .. ", surface:" .. base.surface.index .. " [" ..
+            base.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
+            ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
+            ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
+            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration
+        game.print(strConsole)
+        print(strConsole)
     end
 end
 
