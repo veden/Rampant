@@ -1072,20 +1072,18 @@ remote.add_interface("rampantTests",
 )
 
 local function rampantSetAIState(event)
-    local surfaceIndex = game.players[event.player_index].surface.index
-    local map = universe.maps[surfaceIndex]
-    if not map then
-        return
-    end
-
-    game.print(map.surface.name .. " is in " .. constants.stateEnglish[map.state])
-
     if event.parameter then
-        local target = tonumber(event.parameter)
+        local target
+        local baseId
+        local i = 0
 
-        if (target == nil) then
-            game.print("invalid param")
-            return
+        for m in string.gmatch(event.parameter, "%d+") do
+            if i == 0 then
+                i = i + 1
+                target = tonumber(m)
+            else
+                baseId = tonumber(m)
+            end
         end
 
         if target ~= constants.BASE_AI_STATE_PEACEFUL and
@@ -1095,11 +1093,17 @@ local function rampantSetAIState(event)
             target ~= constants.BASE_AI_STATE_SIEGE and
             target ~= constants.BASE_AI_STATE_ONSLAUGHT
         then
-            game.print(target .. " is not a valid state")
+            game.print(target .. " is not a valid state. /rampantSetAIState <stateId> <baseId>")
             return
         else
-            map.state = target
-            game.print(map.surface.name .. " is now in " .. constants.stateEnglish[map.state])
+            local base = universe.bases[baseId]
+            if not base then
+                game.print(baseId .. " is not a valid base. /rampantSetAIState <stateId> <baseId>")
+                return
+            end
+            base.stateAI = target
+            local surface = base.surface
+            game.print("id:" .. baseId .. " on surface:" .. surface.name .. " is now in " .. constants.stateEnglish[base.stateAI])
         end
     end
 end

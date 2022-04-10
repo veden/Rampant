@@ -25,6 +25,7 @@ Version: 3.0.0
     - Fixed Krastorio2 on_force_created playerforces being nil
     - Fixed enemy map scan creating bases unnecessarily
     - Fixed base.index reference error in displaying ai state
+    - Fixed rampantSetAIState command to work with multiple ais per surface
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
