@@ -896,6 +896,11 @@ local function onSurfaceDeleted(event)
     universe.maps[surfaceIndex] = nil
 end
 
+local function onSurfaceCleared(event)
+    onSurfaceDeleted(event)
+    onSurfaceCreated(event)
+end
+
 local function onBuilderArrived(event)
     local builder = event.group
     local usingUnit = false
@@ -945,7 +950,7 @@ script.on_event(defines.events.on_tick,
                     if (pick == 0) then
                         processPendingChunks(universe, tick)
                         if map then
-                            recycleBases(map)
+                            recycleBases(universe)
                         end
                         cleanUpMapTables(universe, tick)
                     elseif (pick == 1) then
@@ -991,7 +996,7 @@ script.on_event(defines.events.on_tick,
 end)
 
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
-script.on_event(defines.events.on_surface_cleared, onSurfaceCreated)
+script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
 script.on_event(defines.events.on_surface_created, onSurfaceCreated)
 
 script.on_init(onInit)
@@ -1102,7 +1107,11 @@ local function rampantSetAIState(event)
                 return
             end
             base.stateAI = target
-            local surface = base.surface
+            local surface = base.map.surface
+            if not surface.valid then
+                game.print("Base is invalid because surface is invalid")
+                return
+            end
             game.print("id:" .. baseId .. " on surface:" .. surface.name .. " is now in " .. constants.stateEnglish[base.stateAI])
         end
     end

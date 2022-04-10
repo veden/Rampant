@@ -554,6 +554,8 @@ function upgrade.attempt(universe)
         universe.baseId = 0
         universe.awake = false
 
+        universe.recycleBaseIterator = nil
+
         universe.maxPoints = 0
         universe.maxOverflowPoints = 0
 
@@ -661,8 +663,6 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
-
-    map.recycleBaseIterator = nil
 
     map.chunkScanCounts = {}
 

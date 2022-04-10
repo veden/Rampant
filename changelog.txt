@@ -27,6 +27,7 @@ Version: 3.0.0
     - Fixed enemy map scan creating bases unnecessarily
     - Fixed base.index reference error in displaying ai state
     - Fixed rampantSetAIState command to work with multiple ais per surface
+    - Fixed base recycling on invalid surfaces
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0

@@ -343,8 +343,8 @@ local function temperamentPlanner(base, evolutionLevel)
             base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
             base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
             ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
-            constants.stateEnglish[base.stateAI] .. ", surface:" .. base.surface.index .. " [" ..
-            base.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
+            constants.stateEnglish[base.stateAI] .. ", surface:" .. base.map.surface.index .. " [" ..
+            base.map.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
             ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
             ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
             ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration

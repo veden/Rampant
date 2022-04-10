@@ -255,9 +255,9 @@ local function findBaseInitialAlignment(universe, evoIndex)
     return result
 end
 
-function baseUtils.recycleBases(map)
-    local bases = map.bases
-    local id = map.recycleBaseIterator
+function baseUtils.recycleBases(universe)
+    local bases = universe.bases
+    local id = universe.recycleBaseIterator
     local base
     if not id then
         id, base = next(bases, nil)
@@ -265,12 +265,16 @@ function baseUtils.recycleBases(map)
         base = bases[id]
     end
     if not id then
-        map.recycleBaseIterator = nil
+        universe.recycleBaseIterator = nil
     else
-        map.recycleBaseIterator = next(bases, id)
-        if base.chunkCount == 0 then
+        universe.recycleBaseIterator = next(bases, id)
+        local map = base.map
+        if (base.chunkCount == 0) or not map.surface.valid then
+            print("removing", id)
             bases[id] = nil
-            map.universe.bases[id] = nil
+            if map.surface.valid then
+                map.universe.bases[id] = nil
+            end
         end
     end
 end
@@ -502,7 +506,7 @@ function baseUtils.createBase(map, chunk, tick)
         temperament = 0.5,
         temperamentScore = 0,
         universe = universe,
-        surface = map.surface,
+        map = map,
         id = universe.baseId
     }
     universe.baseId = universe.baseId + 1
