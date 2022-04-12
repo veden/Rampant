@@ -436,8 +436,8 @@ end
 
 function upgrade.attempt(universe)
     local starting = global.version
-    if not global.version or global.version < 300 then
-        global.version = 300
+    if not global.version or global.version < 301 then
+        global.version = 301
 
         if not universe then
             universe = {}
