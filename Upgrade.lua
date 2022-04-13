@@ -606,6 +606,8 @@ function upgrade.attempt(universe)
             end
         end
 
+        universe.processBaseAIIterator = nil
+
         game.print("Rampant - Version 3.0.0")
     end
 

@@ -30,7 +30,8 @@ Version: 3.0.0
     - Fixed base.index reference error in displaying ai state
     - Fixed rampantSetAIState command to work with multiple ais per surface
     - Fixed base recycling on invalid surfaces
-    - Fixed base chunk count not being decremented when chunks are removed 
+    - Fixed base chunk count not being decremented when chunks are removed
+    - Fixed base iterator processing being nil
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
