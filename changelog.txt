@@ -14,6 +14,10 @@ Version: 3.0.0
     - Added beltlayer, pipelayer, minime, and blueprint-sandboxes mod surfaces to surface exclusion list
     - Added mod settings to customize factions colors
     - Added on_chunk_deleted event for updating map and base stats
+    - Walking sounds have been added to new biters
+    - Laser sounds to beam attacks
+    - Biter melee attacks should now have a sound
+    - Dying, working, roaring sounds should now better match the size and level of the new enemy entities
   Tweaks:
     - Increased unit spawner cooldown by 2x
     - Added point loss on unit death

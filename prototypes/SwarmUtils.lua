@@ -17,6 +17,8 @@
 local swarmUtils = {}
 -- imports
 
+local sounds = require ("__base__.prototypes.entity.sounds")
+
 local bombUtils = require("utils/BombUtils")
 local attackFlame = require("utils/AttackFlame")
 local energyThiefFaction = require("EnergyThief")
@@ -123,6 +125,175 @@ local bloodFountains = {
     "blood-explosion-huge-rampant",
     "blood-explosion-huge-rampant",
     "blood-explosion-huge-rampant",
+}
+
+local biterDyingSounds = {
+    sounds.biter_dying(0.45),
+    sounds.biter_dying(0.50),
+    sounds.biter_dying(0.55),
+    sounds.biter_dying(0.60),
+    sounds.biter_dying(0.65),
+    sounds.biter_dying_big(0.40),
+    sounds.biter_dying_big(0.45),
+    sounds.biter_dying_big(0.50),
+    sounds.biter_dying_big(0.55),
+    sounds.biter_dying_big(0.60)
+}
+
+local biterWorkingSounds = {
+    sounds.biter_calls(0.75),
+    sounds.biter_calls(0.80),
+    sounds.biter_calls(0.87),
+    sounds.biter_calls_big(0.62),
+    sounds.biter_calls_big(0.67),
+    sounds.biter_calls_big(0.73),
+    sounds.biter_calls_big(0.80),
+    sounds.biter_calls_behemoth(0.90),
+    sounds.biter_calls_behemoth(0.95),
+    sounds.biter_calls_behemoth(1)
+}
+
+local biterWalkingSounds = {
+    sounds.biter_walk(0.15),
+    sounds.biter_walk(0.20),
+    sounds.biter_walk(0.25),
+    sounds.biter_walk(0.30),
+    sounds.biter_walk(0.35),
+    sounds.biter_walk_big(0.70),
+    sounds.biter_walk_big(0.74),
+    sounds.biter_walk_big(0.78),
+    sounds.biter_walk_big(0.82),
+    sounds.biter_walk_big(0.86)
+}
+
+local biterRoarSounds = {
+    sounds.biter_roars(0.30),
+    sounds.biter_roars(0.40),
+    sounds.biter_roars_mid(0.68),
+    sounds.biter_roars_mid(0.73),
+    sounds.biter_roars_mid(0.78),
+    sounds.biter_roars_big(0.32),
+    sounds.biter_roars_big(0.37),
+    sounds.biter_roars_big(0.42),
+    sounds.biter_roars_behemoth(0.60),
+    sounds.biter_roars_behemoth(0.70)
+}
+
+local spitterDyingSounds = {
+    sounds.spitter_dying(0.40),
+    sounds.spitter_dying(0.50),
+    sounds.spitter_dying_mid(0.55),
+    sounds.spitter_dying_mid(0.65),
+    sounds.spitter_dying_mid(0.75),
+    sounds.spitter_dying_big(0.67),
+    sounds.spitter_dying_big(0.71),
+    sounds.spitter_dying_big(0.75),
+    sounds.spitter_dying_behemoth(0.60),
+    sounds.spitter_dying_behemoth(0.70)
+}
+
+local spitterWorkingSounds = {
+    sounds.spitter_calls(0.39),
+    sounds.spitter_calls(0.44),
+    sounds.spitter_calls(0.49),
+    sounds.spitter_calls_med(0.48),
+    sounds.spitter_calls_med(0.53),
+    sounds.spitter_calls_med(0.58),
+    sounds.spitter_calls_med(0.63),
+    sounds.spitter_calls_big(0.50),
+    sounds.spitter_calls_big(0.55),
+    sounds.spitter_calls_big(0.60)
+}
+
+local spitterWalkingSounds = {
+    sounds.spitter_walk(0.20),
+    sounds.spitter_walk(0.30),
+    sounds.spitter_walk(0.40),
+    sounds.spitter_walk(0.50),
+    sounds.spitter_walk(0.60),
+    sounds.spitter_walk_big(0.45),
+    sounds.spitter_walk_big(0.50),
+    sounds.spitter_walk_big(0.55),
+    sounds.spitter_walk_big(0.60),
+    sounds.spitter_walk_big(0.65)
+}
+
+local wormFoldSounds = {
+    sounds.worm_fold(0.74),
+    sounds.worm_fold(0.77),
+    sounds.worm_fold(0.80),
+    sounds.worm_fold(0.83),
+    sounds.worm_fold(0.86),
+    sounds.worm_fold(0.89),
+    sounds.worm_fold(0.92),
+    sounds.worm_fold(0.95),
+    sounds.worm_fold(0.98),
+    sounds.worm_fold(1)
+}
+
+local wormStandupSounds = {
+    sounds.worm_standup_small(0.75),
+    sounds.worm_standup_small(0.82),
+    sounds.worm_standup_small(0.89),
+    sounds.worm_standup_small(1),
+    sounds.worm_standup(0.75),
+    sounds.worm_standup(0.80),
+    sounds.worm_standup(0.85),
+    sounds.worm_standup(0.90),
+    sounds.worm_standup(0.95),
+    sounds.worm_standup(1)
+}
+
+local wormBreathSounds = {
+    sounds.worm_breath(0.4),
+    sounds.worm_breath(0.5),
+    sounds.worm_breath(0.6),
+    sounds.worm_breath(0.7),
+    sounds.worm_breath(0.8),
+    sounds.worm_breath_big(0.80),
+    sounds.worm_breath_big(0.85),
+    sounds.worm_breath_big(0.90),
+    sounds.worm_breath_big(0.95),
+    sounds.worm_breath_big(1)
+}
+
+local wormDyingSounds = {
+    sounds.worm_dying_small(0.52),
+    sounds.worm_dying_small(0.57),
+    sounds.worm_dying_small(0.65),
+    sounds.worm_dying(0.60),
+    sounds.worm_dying(0.65),
+    sounds.worm_dying(0.7),
+    sounds.worm_dying(0.75),
+    sounds.worm_dying_big(0.67),
+    sounds.worm_dying_big(0.72),
+    sounds.worm_dying_big(0.77)
+}
+
+local wormRoarSounds = {
+    sounds.worm_roars(0.51),
+    sounds.worm_roars(0.56),
+    sounds.worm_roars(0.62),
+    sounds.worm_roars(0.68),
+    sounds.worm_roars(0.73),
+    sounds.worm_roars_big(0.62),
+    sounds.worm_roars_big(0.67),
+    sounds.worm_roars_big(0.72),
+    sounds.worm_roars_big(0.77),
+    sounds.worm_roars_big(0.82)
+}
+
+local wormAltRoarSounds = {
+    sounds.worm_roar_alternative(0.54),
+    sounds.worm_roar_alternative(0.59),
+    sounds.worm_roar_alternative(0.64),
+    sounds.worm_roar_alternative(0.68),
+    sounds.worm_roar_alternative(0.73),
+    sounds.worm_roar_alternative_big(0.67),
+    sounds.worm_roar_alternative_big(0.72),
+    sounds.worm_roar_alternative_big(0.82),
+    sounds.worm_roar_alternative_big(0.87),
+    sounds.worm_roar_alternative_big(0.92)
 }
 
 local nuclearAttackNumeric = {
@@ -745,13 +916,21 @@ function swarmUtils.buildUnits(template)
             unit.variation = i
             generateApperance(unit)
             fillEntityTemplate(unit)
+            unit.roarSounds = biterRoarSounds[effectiveLevel]
             unit.attack = unit.attackGenerator(unit)
             unit.death = (unit.deathGenerator and unit.deathGenerator(unit)) or nil
 
             local entity
             if (unit.type == "spitter") then
+                unit.dyingSounds = spitterDyingSounds[effectiveLevel]
+                unit.workingSounds = spitterWorkingSounds[effectiveLevel]
+                unit.walkingSounds = spitterWalkingSounds[effectiveLevel]
                 entity = makeSpitter(unit)
             elseif (unit.type == "biter") then
+                unit.dyingSounds = biterDyingSounds[effectiveLevel]
+                unit.workingSounds = biterWorkingSounds[effectiveLevel]
+                unit.walkingSounds = biterWalkingSounds[effectiveLevel]
+                unit.roarSounds = biterRoarSounds[effectiveLevel]
                 entity = makeBiter(unit)
             elseif (unit.type == "drone") then
                 -- if not unit.death then
@@ -872,6 +1051,13 @@ function swarmUtils.buildWorm(template)
             worm.variation = i
             generateApperance(worm)
             fillEntityTemplate(worm)
+
+            worm.standupSounds = wormStandupSounds[effectiveLevel]
+            worm.breathSounds = wormBreathSounds[effectiveLevel]
+            worm.dyingSounds = wormDyingSounds[effectiveLevel]
+            worm.roarSounds = wormRoarSounds[effectiveLevel]
+            worm.altRoarSounds = wormAltRoarSounds[effectiveLevel]
+            worm.foldSounds = wormFoldSounds[effectiveLevel]
 
             worm.attack = worm.attackGenerator(worm)
 

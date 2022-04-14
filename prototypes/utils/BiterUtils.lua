@@ -292,8 +292,9 @@ function biterUtils.makeBiter(attributes)
         dying_trigger_effect = attributes.dyingEffect,
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
-        dying_sound = sounds.biter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
-        working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
+        dying_sound = attributes.dyingSounds,
+        working_sound =  attributes.workingSounds,
+        walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
         ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true }
@@ -343,8 +344,9 @@ function biterUtils.makeSpitter(attributes)
         dying_explosion = attributes.explosion,
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         dying_trigger_effect = attributes.dyingEffect,
-        dying_sound =  sounds.spitter_dying(0.3 + (0.05 * attributes.effectiveLevel)),
-        working_sound =  sounds.biter_calls(0.2 + (0.05 * attributes.effectiveLevel)),
+        dying_sound = attributes.dyingSounds,
+        working_sound = attributes.workingSounds,
+        walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
         damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
@@ -533,33 +535,33 @@ function biterUtils.makeWorm(attributes)
         dying_explosion = attributes.explosion or "blood-explosion-big",
         dying_trigger_effect = attributes.dyingEffect,
         inventory_size = attributes.inventorySize,
-        dying_sound = sounds.worm_dying(0.3 + (0.05 * attributes.effectiveLevel)),
+        dying_sound = attributes.dyingSounds,
         folded_speed = 0.01,
         folded_speed_secondary = 0.024,
         folded_animation = wormFoldedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         preparing_speed = attributes.preparingSpeed or 0.024,
         preparing_animation = wormPreparingAnimation(attributes.scale, attributes.tint, "forward", attributes.tint2 or attributes.tint),
-        preparing_sound = sounds.worm_standup(0.4 + (0.05 * attributes.effectiveLevel)),
+        preparing_sound = attributes.standupSounds,
         prepared_speed = 0.024,
         prepared_speed_secondary = 0.012,
         prepared_animation = wormPreparedAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
-        prepared_sound = sounds.worm_breath(0.2 + (0.05 * attributes.effectiveLevel)),
+        prepared_sound = attributes.breathSounds,
         prepared_alternative_speed = 0.014,
         prepared_alternative_speed_secondary = 0.010,
         prepared_alternative_chance = 0.2,
         prepared_alternative_animation = wormPreparedAlternativeAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
-        prepared_alternative_sound = sounds.worm_roar_alternative(0.2 + (0.05 * attributes.effectiveLevel)),
+        prepared_alternative_sound = attributes.altRoarSounds,
 
         damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
 
         starting_attack_speed = 0.034,
         starting_attack_animation = wormStartAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
-        starting_attack_sound = sounds.worm_roars(0.2 + (0.05 * attributes.effectiveLevel)),
+        starting_attack_sound = attributes.roarSounds,
         ending_attack_speed = 0.016,
         ending_attack_animation = wormEndAttackAnimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
         folding_speed = attributes.foldingSpeed or 0.015,
         folding_animation =  wormPreparingAnimation(attributes.scale, attributes.tint, "backward", attributes.tint2 or attributes.tint),
-        folding_sound = sounds.worm_fold (0.4 + (0.05 * attributes.effectiveLevel)),
+        folding_sound = attributes.foldSounds,
         prepare_range = attributes.prepareRange or 30,
         integration = worm_integration(attributes.scale),
         attack_parameters = attributes.attack,
@@ -623,7 +625,7 @@ function biterUtils.createSuicideAttack(attributes, blastWave, animation)
         ammo_type = {
             category = "biological"
         },
-        sound = sounds.biter_roars(0.3 + (attributes.effectiveLevel * 0.05)),
+        sound = attributes.roarSounds,
         animation = animation
     }
 
@@ -1071,6 +1073,7 @@ function biterUtils.createElectricAttack(attributes, electricBeam, animation)
             warmup = attributes.warmup,
             min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
             range = (attributes.range and (attributes.range + 2)) or 15,
+            sound = make_laser_sounds(),
             ammo_type =
                 {
                     category = "biological",
@@ -1102,6 +1105,7 @@ function biterUtils.createBeamAttack(attributes, electricBeam, animation)
             damage_modifier = 2.5,
             min_attack_distance = (attributes.range and (attributes.range - 2)) or 15,
             range = (attributes.range and (attributes.range + 2)) or 15,
+            sound = make_laser_sounds(),
             ammo_type =
                 {
                     category = "biological",
@@ -1150,6 +1154,7 @@ function biterUtils.createProjectileAttack(attributes, projectile, animation)
                             }
                     }
             },
+        sound = biterUtils.biterAttackSounds(attributes.effectiveLevel),
         animation = animation
     }
 end
@@ -1204,7 +1209,7 @@ function biterUtils.createMeleeAttack(attackAttributes)
                     }
                 }
         },
-        sound = sounds.biter_roars(0.2 + (attackAttributes.effectiveLevel * 0.05)),
+        sound = attackAttributes.roarSounds,
         animation = biterattackanimation(attackAttributes.scale, attackAttributes.tint, attackAttributes.tint2 or attackAttributes.tint, attackAttributes.altBiter)
     }
 end
