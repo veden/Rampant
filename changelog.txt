@@ -24,7 +24,6 @@ Version: 3.0.0
     - Removed squad refunds when vanilla AI or other mods create enemy unit groups above the squad limit
     - Halved the base distance bonus per regional base level so regional base cover less ground
     - Walls and transport belts no longer provide points to the AI when they are destroyed
-    - Reduced inferno fire damage by roughly ~75% and reduced inferno sticker damage by ~60%
     - Siege groups should try to settle slightly further from player structures
     - AI Debugging states are now printed to console and in-game
     - Added mod description into locale for translation
