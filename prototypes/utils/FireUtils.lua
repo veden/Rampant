@@ -159,25 +159,47 @@ function fireUtils.makeFire(attributes)
                 --initial_flame_count = 1,
                 burnt_patch_lifetime = 1800,
 
-                on_fuel_added_action =
+                on_damage_tick_effect =
                     {
-                        type = "direct",
+                        type = "area",
+                        radius = attributes.radius or 2.5,
+                        -- force = "enemy",
+                        ignore_collision_condition = true,
+                        -- filter_enabled = true,
                         action_delivery =
                             {
                                 type = "instant",
                                 target_effects =
                                     {
                                         {
-                                            type = "create-trivial-smoke",
-                                            smoke_name = smokeAddingFuelName,
-                                            -- speed = {-0.03, 0},
-                                            -- speed_multiplier = 0.99,
-                                            -- speed_multiplier_deviation = 1.1,
-                                            offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
-                                            speed_from_center = 0.01
+                                            type = "create-sticker",
+                                            sticker = attributes.stickerName
                                         }
                                     }
                             }
+                    },
+
+                on_fuel_added_action =
+                    {
+                        {
+                            type = "direct",
+                            action_delivery =
+                                {
+                                    type = "instant",
+                                    target_effects =
+                                        {
+                                            {
+                                                type = "create-trivial-smoke",
+                                                smoke_name = smokeAddingFuelName,
+                                                -- speed = {-0.03, 0},
+                                                -- speed_multiplier = 0.99,
+                                                -- speed_multiplier_deviation = 1.1,
+                                                offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
+                                                speed_from_center = 0.01
+                                            }
+                                        }
+                                }
+                        }
                     },
 
                 pictures = create_fire_pictures({ blend_mode = "normal", animation_speed = 1, scale = 0.5, tint2 = attributes.tint2}),
