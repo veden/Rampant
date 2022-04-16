@@ -889,11 +889,20 @@ local function generateApperance(unit, invert)
         local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.20, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
         unit.scale = scale
     end
-    if unit.tint then
-        unit.tint = calculateRGBa(unit.tint, tier, true, invert)
-    end
-    if unit.tint2 then
-        unit.tint2 = calculateRGBa(unit.tint2, tier, true)
+    if invert then
+        if unit.tint then
+            unit.tint = calculateRGBa(unit.tint3, tier, true) -- calculateRGBa(unit.tint2, tier, true, true)
+        end
+        if unit.tint2 then
+            unit.tint2 = {r=1,g=1,b=1,a=1}
+        end
+    else
+        if unit.tint then
+            unit.tint = calculateRGBa(unit.tint, tier, true)
+        end
+        if unit.tint2 then
+            unit.tint2 = calculateRGBa(unit.tint2, tier, true)
+        end
     end
 end
 
@@ -1391,6 +1400,7 @@ local function buildUnitTemplate(faction, unit)
     template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
+    template.tint3 = faction.tint3
 
     template.faction = faction.type
 
@@ -1428,6 +1438,7 @@ local function buildTurretTemplate(faction, turret)
     template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
+    template.tint3 = faction.tint3
 
     template.faction = faction.type
 
@@ -1467,6 +1478,7 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
     template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
+    template.tint3 = faction.tint3
 
     template.faction = faction.type
 
@@ -1526,6 +1538,7 @@ local function buildHiveTemplate(faction, incomingTemplate)
     template.isRampant = true
     template.tint = faction.tint
     template.tint2 = faction.tint2
+    template.tint3 = faction.tint3
 
     template.faction = faction.type
 

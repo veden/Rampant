@@ -1024,100 +1024,115 @@ end
 
 -- Sets the default value of the faction tint settings.
 -- Change this function if the formating of the tint settings changes.
-local function setDefaultValue(tint, tint2)
-    return rgbaToHex(tint) .. " " .. rgbaToHex(tint2)
+local function setDefaultValue(tint, tint2, tint3)
+    return rgbaToHex(tint) .. " " .. rgbaToHex(tint2) .. " " .. rgbaToHex(tint3)
 end
 
 local FACTIONS = {
     {
         -- Neutral faction
         type = "neutral",
-        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
-        tint2 = {r =    1, g =    1, b =    1, a = 1}
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1.00},
+        tint2 = {r = 1.00, g = 1.00, b = 1.00, a = 1.00},
+        tint3 = {r = 0.50, g = 0.50, b = 0.50, a = 0.20}
     },
     {
         -- Acidic faction
         type = "acid",
-        tint =  {r =    1, g =    1, b =    1, a = 1},
-        tint2 = {r = 0.40, g = 0.90, b = 0.40, a = 1}
+        tint =  {r = 1.00, g = 1.00, b = 1.00, a = 1.00},
+        tint2 = {r = 0.40, g = 0.90, b = 0.40, a = 1.00},
+        tint3 = {r = 0.40, g = 0.60, b = 0.40, a = 0.20}
     },
     {
         -- Laser faction
         type = "laser",
-        tint =  {r = 0.60, g = 0.60, b = 0.84, a = 1},
-        tint2 = {r = 0.60, g = 0.60, b = 0.84, a = 1}
+        tint =  {r = 0.60, g = 0.60, b = 0.84, a = 1.00},
+        tint2 = {r = 0.60, g = 0.60, b = 0.84, a = 1.00},
+        tint3 = {r = 0.30, g = 0.30, b = 0.70, a = 0.20}
     },
     {
         -- Fire faction
         type = "fire",
-        tint =  {r =    1, g =    1, b =    1, a = 1},
-        tint2 = {r = 0.90, g = 0.20, b = 0.20, a = 1}
+        tint =  {r = 1.00, g = 1.00, b = 1.00, a = 1.00},
+        tint2 = {r = 0.90, g = 0.20, b = 0.20, a = 1.00},
+        tint3 = {r = 0.90, g = 0.70, b = 0.70, a = 0.20}
     },
     {
         -- Inferno faction
         type = "inferno",
-        tint =  {r = 0.90, g = 0.75, b = 0.75, a = 1},
-        tint2 = {r = 0.70, g = 0.30, b = 0.30, a = 1}
+        tint =  {r = 0.90, g = 0.75, b = 0.75, a = 1.00},
+        tint2 = {r = 0.70, g = 0.30, b = 0.30, a = 1.00},
+        tint3 = {r = 0.50, g = 0.00, b = 0.00, a = 0.20}
     },
     {
         -- Wasp faction
         type = "wasp",
-        tint =  {r =    1, g =    1, b = 0.70, a = 1},
-        tint2 = {r = 0.50, g = 0.50, b =    0, a = 1}
+        tint =  {r = 1.00, g = 1.00, b = 0.70, a = 1.00},
+        tint2 = {r = 0.50, g = 0.50, b = 0.00, a = 1.00},
+        tint3 = {r = 0.80, g = 0.80, b = 0.00, a = 0.20}
     },
     {
         -- Spawner faction
         type = "spawner",
-        tint =  {r =    1, g = 0.80, b =    1, a = 1},
-        tint2 = {r = 0.90, g = 0.30, b = 0.90, a = 1}
+        tint =  {r = 1.00, g = 0.80, b = 1.00, a = 1.00},
+        tint2 = {r = 0.90, g = 0.30, b = 0.90, a = 1.00},
+        tint3 = {r = 0.60, g = 0.10, b = 0.60, a = 0.20}
     },
     {
         -- Electric faction
         type = "electric",
-        tint =  {r = 0.80, g = 0.80, b =    1, a = 1},
-        tint2 = {r = 0.30, g = 0.30, b =    1, a = 1}
+        tint =  {r = 0.80, g = 0.80, b = 1.00, a = 1.00},
+        tint2 = {r = 0.30, g = 0.30, b = 1.00, a = 1.00},
+        tint3 = {r = 0.10, g = 0.10, b = 0.70, a = 0.20}
     },
     {
         -- Brutal faction
         type = "physical",
-        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
-        tint2 = {r = 0.80, g = 0.80, b = 0.80, a = 1}
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1.00},
+        tint2 = {r = 0.80, g = 0.80, b = 0.80, a = 1.00},
+        tint3 = {r = 0.20, g = 0.20, b = 0.20, a = 0.20}
     },
     {
         -- Regenerative faction
         type = "troll",
-        tint =  {r = 0.55, g = 0.55, b = 0.55, a = 1},
-        tint2 = {r =    1, g = 0.30, b = 0.30, a = 1}
+        tint =  {r = 0.55, g = 0.55, b = 0.55, a = 1.00},
+        tint2 = {r = 1.00, g = 0.30, b = 0.30, a = 1.00},
+        tint3 = {r = 0.30, g = 0.10, b = 0.10, a = 0.20}
     },
     {
         -- Poison faction
         type = "poison",
-        tint =  {r = 0.50, g = 0.70, b = 0.60, a = 1},
-        tint2 = {r = 0.30, g = 0.90, b = 0.30, a = 1}
+        tint =  {r = 0.50, g = 0.70, b = 0.60, a = 1.00},
+        tint2 = {r = 0.30, g = 0.90, b = 0.30, a = 1.00},
+        tint3 = {r = 0.05, g = 0.30, b = 0.05, a = 0.20}
     },
     {
         -- Suicide faction
         type = "suicide",
-        tint =  {r = 0.80, g = 0.80, b = 0.80, a = 1},
-        tint2 = {r =    1, g = 0.50, b =    0, a = 1}
+        tint =  {r = 0.80, g = 0.80, b = 0.80, a = 1.00},
+        tint2 = {r = 1.00, g = 0.50, b = 0.00, a = 1.00},
+        tint3 = {r = 0.55, g = 0.30, b = 0.15, a = 0.20}
     },
     {
         -- Nuclear faction
         type = "nuclear",
-        tint =  {r = 0.10, g = 0.95, b = 0.10, a = 1},
-        tint2 = {r =    1, g = 0.50, b =    0, a = 1}
+        tint =  {r = 0.10, g = 0.95, b = 0.10, a = 1.00},
+        tint2 = {r = 1.00, g = 0.50, b = 0.00, a = 1.00},
+        tint3 = {r = 0.50, g = 0.75, b = 0.00, a = 0.20}
     },
     {
         -- Sapper faction
         type = "energyThief",
-        tint =  {r = 0.50, g = 0.50, b = 0.70, a = 1},
-        tint2 = {r = 0.40, g = 0.40, b = 0.40, a = 1}
+        tint =  {r = 0.50, g = 0.50, b = 0.70, a = 1.00},
+        tint2 = {r = 0.40, g = 0.40, b = 0.40, a = 1.00},
+        tint3 = {r = 0.10, g = 0.10, b = 0.40, a = 0.20}
     },
     {
         -- Fast faction
         type = "fast",
-        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1},
-        tint2 = {r =    1, g =    1, b = 0.10, a = 1}
+        tint =  {r = 0.90, g = 0.90, b = 0.90, a = 1.00},
+        tint2 = {r = 1.00, g = 1.00, b = 0.10, a = 1.00},
+        tint3 = {r = 0.50, g = 0.50, b = 0.00, a = 0.20}
     }
 }
 
@@ -1131,7 +1146,7 @@ for i = 1, #FACTIONS do
                 name = setting,
                 description = setting,
                 setting_type = "startup",
-                default_value = setDefaultValue(entry.tint, entry.tint2),
+                default_value = setDefaultValue(entry.tint, entry.tint2, entry.tint3),
                 order = "p[modifier]-r[zzunit]",
             },
     })

@@ -454,13 +454,13 @@ local function hexToRGBA(hex)
 end
 
 local function convertHexPairs(hexPairString)
-    if #hexPairString ~= 17 then
+    if #hexPairString ~= 26 then
         error(
-            "Invalid rgba hex value for Rampant new enemy color, each color needs to have `rrggbbaa rrggbbaa`:" .. hexPairString
+            "Invalid rgba hex value for Rampant new enemy color, each color needs to have `rrggbbaa rrggbbaa rrggbbaa`:" .. hexPairString
         )
     end
     local index = 1
-    local a = {"tint", "tint2"}
+    local a = {"tint", "tint2", "tint3"}
     local tints = {}
     for hex in string.gmatch(hexPairString, "%x%x%x%x%x%x%x%x") do
         tints[a[index]] = hexToRGBA(hex)
@@ -531,6 +531,7 @@ constants.FACTION_SET[#constants.FACTION_SET+1] = {
     type = "neutral",
     tint = neutralTints.tint,
     tint2 = neutralTints.tint2,
+    tint3 = neutralTints.tint3,
     acceptRate = {1, 7, 0.3, 0.1},
     evo = 0,
     units = {
@@ -616,6 +617,7 @@ if settings.startup["rampant--acidEnemy"].value then
         type = "acid",
         tint = acidTints.tint,
         tint2 = acidTints.tint2,
+        tint3 = acidTints.tint3,
         acceptRate = {1, 10, 0.1, 0.2},
         evo = 0,
         units = {
@@ -700,6 +702,7 @@ if settings.startup["rampant--laserEnemy"].value then
         type = "laser",
         tint = laserTints.tint,
         tint2 = laserTints.tint2,
+        tint3 = laserTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.10,
         units = {
@@ -778,6 +781,7 @@ if settings.startup["rampant--fireEnemy"].value then
         type = "fire",
         tint = fireTints.tint,
         tint2 = fireTints.tint2,
+        tint3 = fireTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -862,6 +866,7 @@ if settings.startup["rampant--infernoEnemy"].value then
         type = "inferno",
         tint = infernoTints.tint,
         tint2 = infernoTints.tint2,
+        tint3 = infernoTints.tint3,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -924,6 +929,7 @@ if settings.startup["rampant--waspEnemy"].value then
         type = "wasp",
         tint = waspTints.tint,
         tint2 = waspTints.tint2,
+        tint3 = waspTints.tint3,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -994,6 +1000,7 @@ if settings.startup["rampant--spawnerEnemy"].value then
         type = "spawner",
         tint = spawnerTints.tint,
         tint2 = spawnerTints.tint2,
+        tint3 = spawnerTints.tint3,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -1069,6 +1076,7 @@ if settings.startup["rampant--electricEnemy"].value then
         type = "electric",
         tint = electricTints.tint,
         tint2 = electricTints.tint2,
+        tint3 = electricTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.1,
         units = {
@@ -1132,6 +1140,7 @@ if settings.startup["rampant--physicalEnemy"].value then
         type = "physical",
         tint = physicalTints.tint,
         tint2 = physicalTints.tint2,
+        tint3 = physicalTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
@@ -1195,6 +1204,7 @@ if settings.startup["rampant--trollEnemy"].value then
         type = "troll",
         tint = trollTints.tint,
         tint2 = trollTints.tint2,
+        tint3 = trollTints.tint3,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.17,
         units = {
@@ -1259,6 +1269,7 @@ if settings.startup["rampant--poisonEnemy"].value then
         type = "poison",
         tint = poisonTints.tint,
         tint2 = poisonTints.tint2,
+        tint3 = poisonTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.17,
         units = {
@@ -1325,6 +1336,7 @@ if settings.startup["rampant--suicideEnemy"].value then
         type = "suicide",
         tint = suicideTints.tint,
         tint2 = suicideTints.tint2,
+        tint3 = suicideTints.tint3,
         acceptRate = {2, 10, 0.05, 0.15},
         evo = 0.35,
         units = {
@@ -1387,6 +1399,7 @@ if settings.startup["rampant--nuclearEnemy"].value then
         type = "nuclear",
         tint = nuclearTints.tint,
         tint2 = nuclearTints.tint2,
+        tint3 = nuclearTints.tint3,
         acceptRate = {4, 10, 0.1, 0.125},
         evo = 0.45,
         units = {
@@ -1448,6 +1461,7 @@ if settings.startup["rampant--energyThiefEnemy"].value then
         type = "energy-thief",
         tint = energyThiefTints.tint,
         tint2 = energyThiefTints.tint2,
+        tint3 = energyThiefTints.tint3,
         acceptRate = {3, 10, 0.1, 0.125},
         evo = 0.2,
         units = {
@@ -1510,6 +1524,7 @@ if settings.startup["rampant--fastEnemy"].value then
         type = "fast",
         tint = fastTints.tint,
         tint2 = fastTints.tint2,
+        tint3 = fastTints.tint3,
         acceptRate = {2, 10, 0.1, 0.15},
         evo = 0.12,
         units = {
