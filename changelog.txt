@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.0
   Notes:
-    - Will reset maps of in progress games. This means that all enemy units will be removed and new enemy faction mutations will be reset.
+    - Will reset maps of in progress games. This means that all enemy units will be removed and new enemy faction mutations will be reset. if you have used a pre-release 3.0.0, you will need to reset your mod options otherwise startup will fail.
   Contributions:
     - Added custom colors from ErdwurmJim
     - Simplification and refactor of locale generation with local for zh-CN from PlexPt
