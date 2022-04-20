@@ -937,14 +937,14 @@ if settings.startup["rampant--waspEnemy"].value then
                 type = "drone",
                 attackAttributes = {"spit", "acid"},
                 name = "spitter-wasp",
-                attributes = {"followsPlayer"},
+                attributes = {"followsPlayer", "skipKillCount"},
                 drops = {}
             },
             {
                 type = "drone",
                 attackAttributes = {"stream", "acid"},
                 name = "worm-wasp",
-                attributes = {"stationary"},
+                attributes = {"stationary", "skipKillCount"},
                 drops = {}
             },
             {
@@ -1008,21 +1008,21 @@ if settings.startup["rampant--spawnerEnemy"].value then
                 type = "biter",
                 attackAttributes = {"melee"},
                 name = "spawn",
-                attributes = {"fragile", "unstable", "smallest"},
+                attributes = {"fragile", "unstable", "smallest", "skipKillCount"},
                 drops = {}
             },
             {
                 type = "drone",
                 attackAttributes = {"touch", "acid"},
                 name = "spitter-egg",
-                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}},
+                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}, "skipKillCount"},
                 drops = {}
             },
             {
                 type = "drone",
                 attackAttributes = {"touch", "acid"},
                 name = "worm-egg",
-                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}},
+                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}, "skipKillCount"},
                 drops = {}
             },
             {

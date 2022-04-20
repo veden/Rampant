@@ -818,6 +818,11 @@ local function fillEntityTemplate(entity)
                     }
                 elseif (attribute == "highestHealth") then
                     entity["health"] = entity["health"] * 2
+                elseif (attribute == "skipKillCount") then
+                    if not entity["appendFlags"] then
+                        entity["appendFlags"] = {}
+                    end
+                    entity["appendFlags"]["not-in-kill-statistics"] = true
                 elseif type(attribute) == "table" then
                     if (attribute[1] == "clusterDeath") then
                         entity.deathGenerator = function (attack)

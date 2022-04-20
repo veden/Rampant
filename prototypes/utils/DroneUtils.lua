@@ -33,7 +33,7 @@ function droneUtils.makeDrone(attributes)
         localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/defender.png",
         icon_size = 32,
-        flags = {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hidden"},
+        flags = attributes.flags or {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hidden"},
         subgroup="capsule",
         order="e-a-a",
         max_health = attributes.health or 60,
@@ -210,7 +210,11 @@ function droneUtils.makeDrone(attributes)
                 }
             }
     }
-
+    if attributes.appendFlags then
+        for flag in pairs(attributes.appendFlags) do
+            drone.flags[#drone.flags+1] = flag
+        end
+    end
     return drone
 end
 

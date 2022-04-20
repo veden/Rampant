@@ -302,6 +302,11 @@ function biterUtils.makeBiter(attributes)
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
     end
+    if attributes.appendFlags then
+        for flag in pairs(attributes.appendFlags) do
+            entity.flags[#entity.flags+1] = flag
+        end
+    end
     return entity
 end
 
@@ -356,6 +361,11 @@ function biterUtils.makeSpitter(attributes)
     }
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
+    end
+    if attributes.appendFlags then
+        for flag in pairs(attributes.appendFlags) do
+            entity.flags[#entity.flags+1] = flag
+        end
     end
     return entity
 end
@@ -503,6 +513,11 @@ function biterUtils.makeUnitSpawner(attributes)
     if attributes.autoplace then
         o["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
     end
+    if attributes.appendFlags then
+        for flag in pairs(attributes.appendFlags) do
+            o.flags[#o.flags+1] = flag
+        end
+    end
     return o
 end
 
@@ -609,6 +624,11 @@ function biterUtils.makeWorm(attributes)
 
     if attributes.autoplace then
         o["autoplace"] = enemy_worm_autoplace(attributes.autoplace)
+    end
+        if attributes.appendFlags then
+        for flag in pairs(attributes.appendFlags) do
+            o.flags[#o.flags+1] = flag
+        end
     end
     return o
 
