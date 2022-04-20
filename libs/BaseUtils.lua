@@ -517,6 +517,15 @@ function baseUtils.createBase(map, chunk, tick)
     return base
 end
 
+local function isMember(lst, x)
+    for _,l in pairs(lst) do
+        if l == x then
+            return true
+        end
+    end
+    return false
+end
+
 function baseUtils.rebuildNativeTables(universe, rg)
     local alignmentSet = {}
     universe.evolutionTableAlignment = alignmentSet
@@ -534,8 +543,10 @@ function baseUtils.rebuildNativeTables(universe, rg)
     universe.buildingHiveTypeLookup = buildingHiveTypeLookup
     local proxyEntityLookup = {}
     universe.proxyEntityLookup = proxyEntityLookup
-    local vanillaEntityLookups = {}
-    universe.vanillaEntityTypeLookup = vanillaEntityLookups
+    local vanillaEntityLookup = {}
+    universe.vanillaEntityTypeLookup = vanillaEntityLookup
+    local entitySkipCountLookup = {}
+    universe.entitySkipCountLookup = entitySkipCountLookup
 
     buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
     buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
@@ -544,12 +555,12 @@ function baseUtils.rebuildNativeTables(universe, rg)
     buildingHiveTypeLookup["big-worm-turret"] = "turret"
     buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
 
-    vanillaEntityLookups["biter-spawner"] = true
-    vanillaEntityLookups["spitter-spawner"] = true
-    vanillaEntityLookups["small-worm-turret"] = true
-    vanillaEntityLookups["medium-worm-turret"] = true
-    vanillaEntityLookups["big-worm-turret"] = true
-    vanillaEntityLookups["behemoth-worm-turret"] = true
+    vanillaEntityLookup["biter-spawner"] = true
+    vanillaEntityLookup["spitter-spawner"] = true
+    vanillaEntityLookup["small-worm-turret"] = true
+    vanillaEntityLookup["medium-worm-turret"] = true
+    vanillaEntityLookup["big-worm-turret"] = true
+    vanillaEntityLookup["behemoth-worm-turret"] = true
 
     for i=1,#FACTION_SET do
         local faction = FACTION_SET[i]
@@ -620,6 +631,12 @@ function baseUtils.rebuildNativeTables(universe, rg)
                         buildingHiveTypeLookup[proxyEntity] = building.type
                     end
                     variationSet[#variationSet+1] = entry
+                    for _,unit in pairs(faction.units) do
+                        if isMember(unit.attributes, "skipKillCount") then
+                            local name = faction.type .. "-" .. unit.name .. "-v" .. v .. "-t" .. t .. "-rampant"
+                            universe.entitySkipCountLookup[name] = true
+                        end
+                    end
                 end
 
                 local buildingAcceptRate = building.acceptRate
@@ -640,7 +657,6 @@ function baseUtils.rebuildNativeTables(universe, rg)
                         building.type
                     }
                 end
-
             end
         end
     end

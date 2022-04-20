@@ -409,11 +409,13 @@ local function onDeath(event)
             end
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-            if entityType == "unit" then
+            if (entityType == "unit") and not universe.entitySkipCountLookup[entity.name] then
                 if base then
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
-                    base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
-                    base.deathEvents = base.deathEvents + 1
+                    if damageTypeName then
+                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
+                        base.deathEvents = base.deathEvents + 1
+                    end
                     base.unitPoints = base.unitPoints - UNIT_DEATH_POINT_COST
                     if universe.aiPointsPrintSpendingToChat then
                         game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", base.unitPoints))

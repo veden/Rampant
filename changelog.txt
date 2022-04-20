@@ -36,7 +36,7 @@ Version: 3.0.0
     - Fixed base recycling on invalid surfaces
     - Fixed base chunk count not being decremented when chunks are removed
     - Fixed base iterator processing being nil
-    - Fixed spawner spawns and wasp drones being included in kill stats
+    - Fixed spawner spawns and wasp drones being included in kill stats, death pheromones, and AI stats
 
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
