@@ -2,6 +2,7 @@
 Version: 3.0.1
   Bugfixes:
     - Removed console print statement when recycling bases
+    - Fixed entitySkipCountLookup being nil when new enemies are disabled
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.0

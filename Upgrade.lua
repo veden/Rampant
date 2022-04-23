@@ -21,7 +21,6 @@ local upgrade = {}
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local mapUtils = require("libs/MapUtils")
-local chunkUtils = require("libs/ChunkUtils")
 
 -- constants
 
@@ -607,8 +606,13 @@ function upgrade.attempt(universe)
         end
 
         universe.processBaseAIIterator = nil
+    end
+    if global.version < 303 then
+        global.version = 303
 
-        game.print("Rampant - Version 3.0.0")
+        universe.entitySkipCountLookup = {}
+
+        game.print("Rampant - Version 3.0.1")
     end
 
     return (starting ~= global.version) and global.version
