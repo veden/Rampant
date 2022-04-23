@@ -270,7 +270,6 @@ function baseUtils.recycleBases(universe)
         universe.recycleBaseIterator = next(bases, id)
         local map = base.map
         if (base.chunkCount == 0) or not map.surface.valid then
-            print("removing", id)
             bases[id] = nil
             if map.surface.valid then
                 map.universe.bases[id] = nil
