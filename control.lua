@@ -646,7 +646,7 @@ local function onRocketLaunch(event)
         if not map then
             return
         end
-        local chunk = getChunkByPosition(entity.position)
+        local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             local base = findNearbyBase(map, chunk)
             base.rocketLaunched = base.rocketLaunched + 1
