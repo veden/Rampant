@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.1
+  Contributions:
+    - ahmedcharles provided a fix for the missing map parameter in rocket launch event
   Bugfixes:
     - Removed console print statement when recycling bases
     - Fixed entitySkipCountLookup being nil when new enemies are disabled
