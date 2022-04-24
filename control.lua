@@ -649,10 +649,12 @@ local function onRocketLaunch(event)
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             local base = findNearbyBase(map, chunk)
-            base.rocketLaunched = base.rocketLaunched + 1
-            base.unitPoints = base.unitPoints + 5000
-            if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.unitPoints))
+            if base then
+                base.rocketLaunched = base.rocketLaunched + 1
+                base.unitPoints = base.unitPoints + 5000
+                if universe.aiPointsPrintGainsToChat then
+                    game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.unitPoints))
+                end
             end
         end
     end

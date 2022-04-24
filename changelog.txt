@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.0.2
+  Bugfixes:
+    - Fixed on_rocket_launched enemy base not be close enough for point gain
+
+---------------------------------------------------------------------------------------------------
 Version: 3.0.1
   Contributions:
     - ahmedcharles provided a fix for the missing map parameter in rocket launch event
