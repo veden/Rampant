@@ -65,7 +65,7 @@ local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
-
+local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 local getHiveCount = chunkPropertyUtils.getHiveCount
 local getNestCount = chunkPropertyUtils.getNestCount
 
@@ -201,7 +201,8 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map,nextAttackChunk) == 0) or (squad.type ~= BASE_AI_STATE_SIEGE) then
+                if (getPlayerBaseGenerator(map, nextAttackChunk) == 0) and (getPlayersOnChunk(map, nextAttackChunk) == 0)
+                then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
                         surface,
@@ -241,8 +242,7 @@ local function settleMove(map, squad)
             end
 
             if (nextAttackChunk ~= -1) and
-                (squad.type == BASE_AI_STATE_SIEGE) and
-                (getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
+                ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) or (getPlayersOnChunk(map, nextAttackChunk) ~= 0))
             then
                 cmd = universe.settleCommand
                 squad.status = SQUAD_BUILDING
