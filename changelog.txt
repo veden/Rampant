@@ -2,6 +2,7 @@
 Version: 3.0.2
   Bugfixes:
     - Fixed on_rocket_launched enemy base not be close enough for point gain
+    - Fixed when new enemies are disabled the ai trying to mutate to a new enemy faction that doesn't exist
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.1

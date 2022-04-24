@@ -178,43 +178,48 @@ local function processBase(universe, base, tick)
         base.points = universe.maxPoints
     end
 
-    local deathThreshold
-    local evolutionLevel = universe.evolutionLevel
-    if (evolutionLevel < 0.5) then
-        deathThreshold = 4500
-    elseif (evolutionLevel < 0.7) then
-        deathThreshold = 7500
-    elseif (evolutionLevel < 0.9) then
-        deathThreshold = 11000
-    else
-        deathThreshold = 16000
-    end
+    if universe.NEW_ENEMIES then
+        local deathThreshold
+        local evolutionLevel = universe.evolutionLevel
+        if (evolutionLevel < 0.5) then
+            deathThreshold = 4500
+        elseif (evolutionLevel < 0.7) then
+            deathThreshold = 7500
+        elseif (evolutionLevel < 0.9) then
+            deathThreshold = 11000
+        else
+            deathThreshold = 16000
+        end
 
-    deathThreshold = universe.adaptationModifier * deathThreshold
-    if ((base.deathEvents > deathThreshold) and (universe.random() > 0.95)) then
-        if (base.mutations < universe.MAX_BASE_MUTATIONS) then
-            base.mutations = base.mutations + 1
-            upgradeBaseBasedOnDamage(universe, base)
-        elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
-            local roll = universe.random()
-            if (roll < 0.001) then
-                base.mutations = 0
-                if (universe.printBaseAdaptation) then
-                    game.print({"description.rampant--adaptationResetDebugMessage",
-                                base.x,
-                                base.y,
-                                base.mutations,
-                                universe.MAX_BASE_MUTATIONS})
-                end
-            elseif (roll > 0.999) then
+        deathThreshold = universe.adaptationModifier * deathThreshold
+        if ((base.deathEvents > deathThreshold) and (universe.random() > 0.95)) then
+            if (base.mutations < universe.MAX_BASE_MUTATIONS) then
                 base.mutations = base.mutations + 1
-                if (universe.printBaseAdaptation) then
-                    game.print({"description.rampant--adaptationFrozenDebugMessage",
-                                base.x,
-                                base.y})
+                upgradeBaseBasedOnDamage(universe, base)
+            elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
+                local roll = universe.random()
+                if (roll < 0.001) then
+                    base.mutations = 0
+                    if (universe.printBaseAdaptation) then
+                        game.print({"description.rampant--adaptationResetDebugMessage",
+                                    base.x,
+                                    base.y,
+                                    base.mutations,
+                                    universe.MAX_BASE_MUTATIONS})
+                    end
+                elseif (roll > 0.999) then
+                    base.mutations = base.mutations + 1
+                    if (universe.printBaseAdaptation) then
+                        game.print({"description.rampant--adaptationFrozenDebugMessage",
+                                    base.x,
+                                    base.y})
+                    end
                 end
             end
+            base.damagedBy = {}
+            base.deathEvents = 0
         end
+    else
         base.damagedBy = {}
         base.deathEvents = 0
     end
