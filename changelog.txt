@@ -2,6 +2,7 @@
 Version: 3.0.3
   Bugfixes:
     - Fixed settling squads not detecting players on a chunk when deciding to settle early
+    - Fixed recycling bases not clearing processBaseAIs iterator
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.2

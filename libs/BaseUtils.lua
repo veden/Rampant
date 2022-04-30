@@ -271,6 +271,9 @@ function baseUtils.recycleBases(universe)
         local map = base.map
         if (base.chunkCount == 0) or not map.surface.valid then
             bases[id] = nil
+            if universe.processBaseAIIterator == id then
+                universe.processBaseAIIterator = nil
+            end
             if map.surface.valid then
                 map.universe.bases[id] = nil
             end
