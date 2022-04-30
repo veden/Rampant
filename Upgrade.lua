@@ -612,7 +612,7 @@ function upgrade.attempt(universe)
 
         universe.entitySkipCountLookup = {}
 
-        game.print("Rampant - Version 3.0.1")
+        game.print("Rampant - Version 3.0.3")
     end
 
     return (starting ~= global.version) and global.version
