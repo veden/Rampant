@@ -214,10 +214,8 @@ constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.92
 constants.BASE_PHEROMONE = 1
 constants.PLAYER_PHEROMONE = 2
 constants.RESOURCE_PHEROMONE = 3
-
--- constants.PASSABLE = 5
-
-constants.CHUNK_TICK = 4
+constants.ENEMY_PHEROMONE = 4
+constants.CHUNK_TICK = 5
 
 -- constants.PATH_RATING = 7
 

@@ -42,6 +42,7 @@ local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
+local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
 local BUILDING_PHEROMONES = constants.BUILDING_PHEROMONES
 
 local CHUNK_SIZE = constants.CHUNK_SIZE
@@ -440,6 +441,7 @@ function chunkUtils.createChunk(map, topX, topY)
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0
     chunk[RESOURCE_PHEROMONE] = 0
+    chunk[ENEMY_PHEROMONE] = 0
     chunk[CHUNK_TICK] = 0
 
     return chunk

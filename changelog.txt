@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.1.0
+  Improvements:
+    - Readded enemy pheromone for pathfinding incorporating enemy bases
+
+---------------------------------------------------------------------------------------------------
 Version: 3.0.3
   Bugfixes:
     - Fixed settling squads not detecting players on a chunk when deciding to settle early

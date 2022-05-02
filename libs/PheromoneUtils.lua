@@ -39,6 +39,7 @@ local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
+local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
 
 local VICTORY_SCENT = constants.VICTORY_SCENT
 
@@ -58,6 +59,8 @@ local getNeighborChunks = mapUtils.getNeighborChunks
 local getChunkById = mapUtils.getChunkById
 
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getNestCount = chunkPropertyUtils.getNestCount
+local getHiveCount = chunkPropertyUtils.getHiveCount
 local getPathRating = chunkPropertyUtils.getPathRating
 local getPassable = chunkPropertyUtils.getPassable
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
@@ -122,6 +125,7 @@ end
 function pheromoneUtils.processStaticPheromone(map, chunk)
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkResource = -MAGIC_MAXIMUM_NUMBER
+    local chunkEnemy = -MAGIC_MAXIMUM_NUMBER
     local chunkPathRating = getPathRating(map, chunk)
 
     local clear = getEnemyStructureCount(map, chunk)
@@ -142,6 +146,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -156,6 +164,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 pheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < pheromone then
                     chunkBase = pheromone
+                end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
                 end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
@@ -172,6 +184,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -186,6 +202,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 pheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < pheromone then
                     chunkBase = pheromone
+                end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
                 end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
@@ -202,6 +222,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -216,6 +240,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 pheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < pheromone then
                     chunkBase = pheromone
+                end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
                 end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
@@ -232,6 +260,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -246,6 +278,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 pheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < pheromone then
                     chunkBase = pheromone
+                end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
                 end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
@@ -263,6 +299,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -277,6 +317,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 pheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < pheromone then
                     chunkBase = pheromone
+                end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
                 end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
@@ -294,6 +338,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -309,6 +357,10 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
                 if chunkBase < pheromone then
                     chunkBase = pheromone
                 end
+                pheromone = neighbor[ENEMY_PHEROMONE]
+                if chunkEnemy < pheromone then
+                    chunkEnemy = pheromone
+                end
                 pheromone = neighbor[RESOURCE_PHEROMONE]
                 if chunkResource < pheromone then
                     chunkResource = pheromone
@@ -323,6 +375,13 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
         chunk[BASE_PHEROMONE] = pheromone * chunkPathRating
     else
         chunk[BASE_PHEROMONE] = chunkBase * chunkPathRating
+    end
+
+    pheromone = getNestCount(map, chunk) + getHiveCount(map, chunk)
+    if chunkEnemy < pheromone then
+        chunk[ENEMY_PHEROMONE] = pheromone * chunkPathRating
+    else
+        chunk[ENEMY_PHEROMONE] = chunkEnemy * chunkPathRating
     end
 
     chunkResource = chunkResource * 0.9

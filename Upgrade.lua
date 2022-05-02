@@ -43,6 +43,9 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 local CHUNK_SIZE = constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 
+local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
+local CHUNK_TICK = constants.CHUNK_TICK
+
 -- imported functions
 
 local sFind = string.find
@@ -611,8 +614,19 @@ function upgrade.attempt(universe)
         global.version = 303
 
         universe.entitySkipCountLookup = {}
+    end
+    if global.version < 304 then
+        global.version = 304
 
-        game.print("Rampant - Version 3.0.3")
+        for _,map in pairs(universe.maps) do
+            local processQueue = map.processQueue
+            for i=1,#processQueue do
+                local chunk = processQueue[i]
+                chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
+            end
+        end
+
+        game.print("Rampant - Version 3.1.0")
     end
 
     return (starting ~= global.version) and global.version
