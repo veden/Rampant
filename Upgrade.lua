@@ -561,15 +561,6 @@ function upgrade.attempt(universe)
         universe.maxPoints = 0
         universe.maxOverflowPoints = 0
 
-        if not universe.random then
-            local combinedSeed = settings.startup["rampant--enemySeed"].value+game.default_map_gen_settings.seed
-            if (combinedSeed > 4294967295) then
-                universe.random = game.create_random_generator(combinedSeed % 4294967295)
-            elseif not universe.random then
-                universe.random = game.create_random_generator(combinedSeed)
-            end
-        end
-
         universe.proxyEntityLookup = {}
         universe.vanillaEntityLookups = {}
 
@@ -618,7 +609,10 @@ function upgrade.attempt(universe)
     if global.version < 304 then
         global.version = 304
 
+        universe.random = game.create_random_generator()
+
         for _,map in pairs(universe.maps) do
+            map.random = universe.random
             local processQueue = map.processQueue
             for i=1,#processQueue do
                 local chunk = processQueue[i]
