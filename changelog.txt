@@ -2,6 +2,7 @@
 Version: 3.1.0
   Improvements:
     - Readded enemy pheromone for pathfinding incorporating enemy bases
+    - Migration and siege groups now try to avoid chunks with existing enemy structures
   Tweaks:
     - Runtime number generator just uses the map seed now
 
