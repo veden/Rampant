@@ -73,14 +73,13 @@ function mathUtils.xorRandom(state)
     local lshift = bit32.lshift
     local rshift = bit32.rshift
 
-    state = state + 21594771
+    local seed = state + 32685453
 
     return function()
-        state = xor(state, lshift(state, 13))
-        state = xor(state, rshift(state, 17))
-        state = xor(state, lshift(state, 5))
-        state = state % 2147483647
-        return state * 4.65661287525e-10
+        seed = xor(seed, lshift(seed, 13))
+        seed = xor(seed, rshift(seed, 17))
+        seed = xor(seed, lshift(seed, 5))
+        return seed * 2.32830643654e-10 -- 2.32830643654e-10 = 1 / 2^32, 2.32830643708e-10 = 1 / ((2^32)-1)
     end
 end
 
