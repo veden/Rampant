@@ -58,7 +58,7 @@ function particleUtils.makeDamagedParticle(attributes)
         entity_name = name,
         offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
         offsets = {{0,0}},
-        damage_type_filters = "fire"
+        damage_type_filters = {"fire", "acid"}
     }
 end
 
