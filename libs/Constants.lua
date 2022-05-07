@@ -1661,5 +1661,9 @@ function constants.gpsDebug(x, y, msg)
     game.print("[gps=".. x .. "," .. y .. "]" .. msg)
 end
 
+constants.MAX_HIVE_TTL = 2485
+constants.MIN_HIVE_TTL = 890
+constants.DEV_HIVE_TTL = 150
+
 constantsG =  constants
 return constants

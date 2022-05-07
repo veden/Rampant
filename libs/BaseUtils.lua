@@ -281,7 +281,7 @@ function baseUtils.recycleBases(universe)
     end
 end
 
-function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
+function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register, timeDelay)
     local position = entity.position
     local currentEvo = entity.prototype.build_base_evolution_requirement or 0
 
@@ -314,7 +314,8 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register)
             ["register"] = register,
             ["map"] = map,
             ["base"] = base,
-            ["entity"] = entity
+            ["entity"] = entity,
+            ["delayTLL"] = timeDelay
         }
         map.universe.pendingUpgrades[entity.unit_number] = entityData
         return spawnerName

@@ -100,10 +100,50 @@ for si=1,#subTypes do
             -- local scale = scales[st][t]
             local scale = scales["biter-spawner"][t]
 
+            local eggPicture
+            if (st == "turret") then
+                eggPicture = {
+                    filename = "__base__/graphics/entity/spawner/hr-spawner-idle-integration.png",
+                    -- priority = "very-low",
+                    -- flags = {"low-object"},
+                    draw_as_shadow = true,
+                    scale = 0.25,
+                    width = 522,
+                    height = 380
+                }
+            elseif (st == "biter-spawner") or (st == "spitter-spawner") then
+                eggPicture = {
+                    filename = "__base__/graphics/entity/spawner/hr-spawner-idle-integration.png",
+                    -- priority = "very-low",
+                    -- flags = {"low-object"},
+                    draw_as_shadow = true,
+                    scale = 0.5,
+                    width = 522,
+                    height = 380
+                }
+            elseif (st == "hive") then
+                eggPicture = {
+                    filename = "__base__/graphics/entity/spawner/hr-spawner-idle-integration.png",
+                    -- priority = "very-low",
+                    -- flags = {"low-object"},
+                    draw_as_shadow = true,
+                    scale = 0.75,
+                    width = 522,
+                    height = 380
+                }
+            -- else
+            --     eggPicture = {
+            --         filename = "__core__/graphics/empty.png",
+            --         priority = "extra-high",
+            --         width = 1,
+            --         height = 1
+            --     }
+            end
+
             data:extend(
                 {
                     {
-                        type = "land-mine",
+                        type = "simple-entity-with-force",
                         name = "entity-proxy-" .. st .. "-t" .. t .. "-rampant",
                         localised_name = biterUtils.getLocalisedName({
                                 faction="entity-proxy",
@@ -115,31 +155,27 @@ for si=1,#subTypes do
                         icon_size = 32,
                         flags = {},
                         build_base_evolution_requirement = 0.08 * (t-1),
-                        order = "s-e-w-f",
                         collision_mask = {"player-layer", "object-layer", "water-tile", "train-layer"},
                         minable = nil,
-                        max_health = 100,
+                        max_health = 300 * t,
                         corpse = nil,
-                        timeout = 1,
-                        trigger_radius = 0,
-                        -- collision_box = generateCollisionBox(scale, st),
                         collision_box = generateCollisionBox(scale, "biter-spawner"),
-                        selection_box = nil,
+                        selection_box = generateCollisionBox(scale, "biter-spawner"),
 
-                        picture_safe =
+                        picture = eggPicture,
+
+                        created_effect = {
                             {
-                                filename = "__core__/graphics/empty.png",
-                                priority = "extra-high",
-                                width = 1,
-                                height = 1
-                            },
-                        picture_set =
-                            {
-                                filename = "__core__/graphics/empty.png",
-                                priority = "extra-high",
-                                width = 1,
-                                height = 1
+                                type = "direct",
+                                action_delivery = {
+                                    type = "instant",
+                                    source_effects = {
+                                        type = "script",
+                                        effect_id = "hive-spawned--rampant"
+                                    }
+                                }
                             }
+                        }
                     }
                 }
             )

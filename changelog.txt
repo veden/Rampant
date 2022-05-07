@@ -7,6 +7,7 @@ Version: 3.1.0
     - Runtime number generator just uses the map seed now
   Bugfixes:
     - Fixed the period of the xor number generator being cut in half
+    - Fixed desync when hives would generate buildings using the landmine event (workaround before created_effect existed)
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.3

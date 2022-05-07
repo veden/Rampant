@@ -50,6 +50,10 @@ local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
 
 local UNIT_DEATH_POINT_COST = constants.UNIT_DEATH_POINT_COST
 
+local MAX_HIVE_TTL = constants.MAX_HIVE_TTL
+local MIN_HIVE_TTL = constants.MIN_HIVE_TTL
+local DEV_HIVE_TTL = constants.DEV_HIVE_TTL
+
 -- imported functions
 
 local planning = aiPlanning.planning
@@ -62,6 +66,8 @@ local setPositionInQuery = queryUtils.setPositionInQuery
 local nextMap = mapUtils.nextMap
 
 local distortPosition = mathUtils.distortPosition
+local linearInterpolation = mathUtils.linearInterpolation
+local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 local prepMap = upgrade.prepMap
 
 local processBaseAIs = aiPlanning.processBaseAIs
@@ -660,8 +666,60 @@ local function onRocketLaunch(event)
     end
 end
 
+local function onEntitySpawned(entity, tick)
+    if universe.NEW_ENEMIES and entity.valid then
+        local map = universe.maps[entity.surface.index]
+        if not map then
+            return
+        end
+        if universe.buildingHiveTypeLookup[entity.name] then
+            map.activeSurface = true
+            local disPos = distortPosition(universe.random, entity.position, 8)
+
+            local chunk = getChunkByPosition(map, disPos)
+            if (chunk ~= -1) then
+                local base = findNearbyBase(map, chunk)
+                if not base then
+                    base = createBase(map,
+                                      chunk,
+                                      tick)
+                end
+
+                local meanTTL = linearInterpolation(universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL)
+
+                upgradeEntity(entity,
+                              base,
+                              map,
+                              disPos,
+                              true,
+                              true,
+                              tick + gaussianRandomRangeRG(meanTTL,
+                                                           DEV_HIVE_TTL,
+                                                           MIN_HIVE_TTL,
+                                                           MAX_HIVE_TTL,
+                                                           universe.random))
+            else
+                local x,y = positionToChunkXY(entity.position)
+                onChunkGenerated({
+                        surface = entity.surface,
+                        tick = tick,
+                        area = {
+                            left_top = {
+                                x = x,
+                                y = y
+                            }
+                        }
+                })
+                entity.destroy()
+            end
+        end
+    end
+end
+
 local function onTriggerEntityCreated(event)
-    if (event.effect_id == "rampant-drain-trigger") then
+    if (event.effect_id == "hive-spawned--rampant") then
+        onEntitySpawned(event.source_entity, event.tick)
+    elseif (event.effect_id == "rampant-drain-trigger") then
         local entity = event.target_entity
         if (entity and entity.valid) then
             local map = universe.maps[event.surface_index]
@@ -692,52 +750,6 @@ local function onInit()
 
     hookEvents()
     onConfigChanged()
-end
-
-local function onEntitySpawned(event)
-    local entity = event.mine
-    if universe.NEW_ENEMIES and entity.valid then
-        local map = universe.maps[entity.surface.index]
-        if not map then
-            return
-        end
-        if universe.buildingHiveTypeLookup[entity.name] then
-            map.activeSurface = true
-            local disPos = distortPosition(universe.random, entity.position, 8)
-
-            local chunk = getChunkByPosition(map, disPos)
-            if (chunk ~= -1) then
-                local base = findNearbyBase(map, chunk)
-                if not base then
-                    base = createBase(map,
-                                      chunk,
-                                      event.tick)
-                end
-
-                registerEnemyBaseStructure(map, entity, base, true)
-
-                upgradeEntity(entity,
-                              base,
-                              map,
-                              disPos,
-                              true,
-                              true)
-            else
-                local x,y = positionToChunkXY(entity.position)
-                onChunkGenerated({
-                        surface = entity.surface,
-                        tick = event.tick,
-                        area = {
-                            left_top = {
-                                x = x,
-                                y = y
-                            }
-                        }
-                })
-                entity.destroy()
-            end
-        end
-    end
 end
 
 local function onUnitGroupCreated(event)
@@ -1012,8 +1024,8 @@ script.on_event(defines.events.on_tick,
 
                     processBaseAIs(universe, tick)
                     processActiveNests(universe, tick)
-                    processPendingUpgrades(universe)
-                    processPendingUpgrades(universe)
+                    processPendingUpgrades(universe, tick)
+                    processPendingUpgrades(universe, tick)
                     cleanSquads(universe, tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
@@ -1048,8 +1060,6 @@ script.on_event({defines.events.on_built_entity,
                  defines.events.on_robot_built_entity,
                  defines.events.script_raised_built,
                  defines.events.script_raised_revive}, onBuild)
-
-script.on_event(defines.events.on_land_mine_armed, onEntitySpawned)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event({defines.events.on_entity_died,

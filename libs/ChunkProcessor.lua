@@ -125,7 +125,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
     universe.chunkProcessorIterator = eventId
 end
 
-function chunkProcessor.processPendingUpgrades(universe)
+function chunkProcessor.processPendingUpgrades(universe, tick)
     local entityId = universe.pendingUpgradeIterator
     local entityData
     if not entityId then
@@ -142,6 +142,9 @@ function chunkProcessor.processPendingUpgrades(universe)
         local entity = entityData.entity
         if entity.valid then
             universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
+            if entityData.delayTLL and tick < entityData.delayTLL then
+                return
+            end
             universe.pendingUpgrades[entityId] = nil
             local surface = entity.surface
             local query = universe.ppuUpgradeEntityQuery
