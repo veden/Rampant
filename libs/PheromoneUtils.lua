@@ -27,6 +27,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local ENEMY_PHEROMONE_MULTIPLER = constants.ENEMY_PHEROMONE_MULTIPLER
 local VICTORY_SCENT_MULTIPLER = constants.VICTORY_SCENT_MULTIPLER
 local VICTORY_SCENT_BOUND = constants.VICTORY_SCENT_BOUND
 
@@ -377,7 +378,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
         chunk[BASE_PHEROMONE] = chunkBase * chunkPathRating
     end
 
-    pheromone = getNestCount(map, chunk) + getHiveCount(map, chunk)
+    pheromone = (getNestCount(map, chunk) + getHiveCount(map, chunk)) * ENEMY_PHEROMONE_MULTIPLER
     if chunkEnemy < pheromone then
         chunk[ENEMY_PHEROMONE] = pheromone * chunkPathRating
     else
