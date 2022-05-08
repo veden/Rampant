@@ -9,6 +9,7 @@ Version: 3.1.0
     - Fixed the period of the xor number generator being cut in half
     - Fixed desync when hives would generate buildings using the landmine event (workaround before created_effect existed)
     - Fixed acid damage causing hit effects for enemies which caused UPS loss
+    - Fixed initial scan generation of hives on resources patches not having resources set before determining upgrades
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.3

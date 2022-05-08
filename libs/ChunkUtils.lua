@@ -236,7 +236,12 @@ function chunkUtils.initialScan(chunk, map, tick)
         end
 
         if (pass ~= CHUNK_IMPASSABLE) then
+            setPassable(map, chunk, pass)
+            setPathRating(map, chunk, waterTiles + neutralObjects)
+            setPlayerBaseGenerator(map, chunk, playerObjects)
+
             local resources = surface.count_entities_filtered(universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
+            setResourceGenerator(map, chunk, resources)
 
             local vanillaEntityTypeLookup = universe.vanillaEntityTypeLookup
             local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
@@ -276,12 +281,6 @@ function chunkUtils.initialScan(chunk, map, tick)
                     end
                 end
             end
-
-            setPlayerBaseGenerator(map, chunk, playerObjects)
-            setResourceGenerator(map, chunk, resources)
-
-            setPassable(map, chunk, pass)
-            setPathRating(map, chunk, waterTiles + neutralObjects)
 
             return chunk
         end
