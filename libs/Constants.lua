@@ -871,7 +871,7 @@ if settings.startup["rampant--infernoEnemy"].value then
         units = {
             {
                 type = "spitter",
-                attackAttributes = {"stream", "acid"},
+                attackAttributes = {"spitFire", "acid"},
                 name = "spitter",
                 majorResistances = {"acid", "fire"},
                 minorWeaknesses = {"poison"},
@@ -898,7 +898,7 @@ if settings.startup["rampant--infernoEnemy"].value then
                 majorResistances = {"acid", "fire"},
                 minorWeaknesses = {"poison"},
                 acceptRate = {1, 10, 0.8, 0.6},
-                attackAttributes = {"stream", "acid"},
+                attackAttributes = {"spitFire", "acid"},
                 attributes = {},
                 drops = {"orangeArtifact"}
             },

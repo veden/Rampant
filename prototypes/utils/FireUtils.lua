@@ -138,8 +138,8 @@ function fireUtils.makeFire(attributes)
 
                 spawn_entity = spawnEntityName,
 
-                spread_delay = 300,
-                spread_delay_deviation = 180,
+                spread_delay = 30,
+                spread_delay_deviation = 10,
                 maximum_spread_count = 100,
 
                 flame_alpha = 0.35,
@@ -151,8 +151,8 @@ function fireUtils.makeFire(attributes)
                 fade_in_duration = 30,
                 fade_out_duration = 30,
 
-                initial_lifetime = 120,
-                lifetime_increase_by = 150,
+                initial_lifetime = 20,
+                lifetime_increase_by = 2,
                 lifetime_increase_cooldown = 1,
                 maximum_lifetime = 1800,
                 delay_between_initial_flames = 10,
@@ -163,7 +163,7 @@ function fireUtils.makeFire(attributes)
                     {
                         type = "area",
                         radius = attributes.radius or 2.5,
-                        -- force = "enemy",
+                        force = "not-same",
                         ignore_collision_condition = true,
                         -- filter_enabled = true,
                         action_delivery =

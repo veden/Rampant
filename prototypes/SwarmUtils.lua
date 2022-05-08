@@ -58,6 +58,7 @@ local makeSticker = stickerUtils.makeSticker
 local makeAtomicBlast = bombUtils.makeAtomicBlast
 local makeLaser = beamUtils.makeLaser
 local createAttackBall = acidBall.createAttackBall
+local createSpitFire = acidBall.createSpitFire
 local createRangedAttack = biterUtils.createRangedAttack
 local createMeleeAttack = biterUtils.createMeleeAttack
 local makeAcidSplashFire = fireUtils.makeAcidSplashFire
@@ -312,18 +313,14 @@ local bombAttackNumeric = {
 }
 
 local streamAttackNumeric = {
-    -- ["mutliplerIncrease"] = {1, 1, 1, 1, 1, 2, 2, 2, 2, 2},
-    -- ["stickerMovementModifier"] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-    -- ["fireDamagePerTick"] = { 0.025, 0.050, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25 },
-    -- ["fireDamagePerTick"] = { 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1, 0.1125, 0.125 },
     ["stickerDamagePerTick"] = { 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65 },
     ["stickerDuration"] = { 400, 410, 420, 430, 440, 450, 440, 470, 480, 490 },
     ["particleTimeout"] = { 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 },
     ["fireSpreadRadius"] = { 0.75, 0.75, 0.77, 0.77, 0.79, 0.79, 0.83, 0.83, 0.85, 0.85 },
-    ["damageMaxMultipler"] = { 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 },
+    ["damageMaxMultipler"] = { 2, 2, 2, 3, 3, 3, 4, 4, 4, 5 },
     ["fireSpreadCooldown"] = { 30, 30, 29, 29, 28, 28, 27, 27, 25, 25 },
-    ["fireDamagePerTick"] = { 0.00625, 0.0125, 0.01875, 0.025, 0.03125, 0.0375, 0.04375, 0.05, 0.05625, 0.0625 },
-    ["damage"] = { 3, 3, 4, 4, 5, 5, 5, 5, 5, 6 }
+    ["fireDamagePerTick"] = { 1, 1, 1, 2, 2, 2, 3, 3, 3, 4 },
+    ["damage"] = { 4, 7.5, 11.25, 15, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5 }
 }
 
 local beamAttackNumeric = {
@@ -1147,6 +1144,18 @@ local function buildAttack(faction, template)
             template.attackGenerator = function (attack)
                 return createRangedAttack(attack,
                                           createAttackBall(attack),
+                                          (template.attackAnimation and template.attackAnimation(attack.scale,
+                                                                                                 attack.tint,
+                                                                                                 attack.tint2)) or nil)
+            end
+        elseif (attack == "spitFire") then
+            template.attackType = "projectile"
+            -- template.attackDirectionOnly = true
+            template.addon[#template.addon+1] = streamAttackNumeric
+
+            template.attackGenerator = function (attack)
+                return createRangedAttack(attack,
+                                          createSpitFire(attack),
                                           (template.attackAnimation and template.attackAnimation(attack.scale,
                                                                                                  attack.tint,
                                                                                                  attack.tint2)) or nil)

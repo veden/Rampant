@@ -31,6 +31,8 @@ local makeStream = streamUtils.makeStream
 local makeSticker = stickerUtils.makeSticker
 local makeProjectile = projectileUtils.makeProjectile
 local makeAcidSplashFire = fireUtils.makeAcidSplashFire
+local makeFire = fireUtils.makeFire
+local makeSpreadEffect = fireUtils.makeSpreadEffect
 
 -- dumb acid projectiles
 local AttackBall = {}
@@ -120,17 +122,7 @@ function AttackBall.createAttackBall(attributes)
     }
 
     local name
-    -- local template
     if (attributes.attackType == "stream") then
-        -- template = {
-        --     name = attributes.name,
-        --     tint = attributes.tint,
-        --     particleVertialAcceleration = attributes.particleVertialAcceleration,
-        --     particleHoizontalSpeed = attributes.particleHoizontalSpeed,
-        --     particleHoizontalSpeedDeviation = attributes.particleHoizontalSpeedDeviation,
-        --     actions = templateActions,
-        --     scale = attributes.scale
-        -- }
         attributes.actions = templateActions
         name = makeStream(attributes)
     else
@@ -138,6 +130,97 @@ function AttackBall.createAttackBall(attributes)
     end
 
     return name
+end
+
+function AttackBall.createSpitFire(attributes)
+    local spawnEntityName = makeSpreadEffect({
+            name = attributes.name,
+            tint2 = attributes.tint2,
+            fireDamagePerTick = attributes.fireDamagePerTick,
+            fireDamagePerTickType = attributes.fireDamagePerTickType,
+    })
+    local stickerName = makeSticker({
+            name = attributes.name,
+            spawnEntityName = spawnEntityName,
+            stickerDuration = attributes.stickerDuration,
+            stickerDamagePerTick = attributes.stickerDamagePerTick,
+            stickerDamagePerTickType = attributes.stickerDamagePerTickType,
+            stickerMovementModifier = attributes.stickerMovementModifier,
+            tint2 = attributes.tint2,
+            fireSpreadRadius = attributes.fireSpreadRadius
+    })
+    local fireName = makeFire({
+            name = attributes.name,
+            tint2 = attributes.tint2 or {r=0, g=0.9, b=0, a=0.5},
+            spawnEntityName = spawnEntityName,
+            fireDamagePerTick = attributes.fireDamagePerTick,
+            fireDamagePerTickType = attributes.fireDamagePerTickType,
+            damageMaxMultipler = attributes.damageMaxMultipler,
+            multiplerIncrease = attributes.multiplerIncrease,
+            multiplerDecrease = attributes.multiplerDecrease,
+            stickerName = stickerName
+    })
+
+    return makeProjectile(attributes,
+                          {
+                              {
+                                  type = "area",
+                                  radius = attributes.radius or 2.5,
+                                  force = "not-same",
+                                  action_delivery =
+                                      {
+                                          type = "instant",
+                                          target_effects =
+                                              {
+                                                  {
+                                                      type = "create-sticker",
+                                                      sticker = stickerName,
+                                                      check_buildability = true
+                                                  },
+                                                  {
+                                                      type = "create-entity",
+                                                      entity_name = "water-splash",
+                                                      tile_collision_mask = { "ground-tile" }
+                                                  },
+                                                  {
+                                                      type = "damage",
+                                                      damage = { amount = attributes.damage, type = attributes.damageType or "fire" }
+                                                  }
+                                              }
+                                      }
+                              },
+                              {
+                                  type = "cluster",
+                                  cluster_count = 2,
+                                  distance = 2 + (0.1 * attributes.effectiveLevel),
+                                  distance_deviation = 1.5,
+                                  action_delivery = {
+                                      type = "instant",
+                                      target_effects = {
+                                          {
+                                              type="create-fire",
+                                              entity_name = fireName,
+                                              check_buildability = true,
+                                              initial_ground_flame_count = 2,
+                                              show_in_tooltip = true
+                                          }
+                                      }
+                                  }
+                              },
+                              {
+                                  type = "direct",
+                                  action_delivery = {
+                                      type = "instant",
+                                      target_effects = {
+                                          type= "create-fire",
+                                          entity_name = fireName,
+                                          check_buildability = true,
+                                          show_in_tooltip = true
+                                      }
+                                  }
+                              }
+                          }
+    )
 end
 
 function AttackBall.generateVanilla()
