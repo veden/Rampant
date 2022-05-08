@@ -617,6 +617,7 @@ function upgrade.attempt(universe)
             for i=1,#processQueue do
                 local chunk = processQueue[i]
                 chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
+                chunk[ENEMY_PHEROMONE] = 0
             end
         end
 
