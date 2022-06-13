@@ -119,20 +119,22 @@
                    "t:" (~v (Chunk-tick chunk)) "\n"
                    "rat:" (~v (Chunk-rating chunk)) "\n"
                    "ne:" (~v (Chunk-nests chunk)) "\n"
-                   "wo:" (~v (Chunk-worms chunk)) "\n"
-                   "ral:" (~v (Chunk-rally chunk)) "\n"
-                   "ret:" (~v (Chunk-retreat chunk)) "\n"
-                   "rG:" (~v (Chunk-resourceGen chunk)) "\n"
-                   "pG:" (~v (Chunk-playerGen chunk)) "\n"))
+                   "wo:" (~v (Chunk-worms chunk)) "\n"))
 
   (define (chunk->string2 chunk)
-    (string-append "dG:" (~v (Chunk-deathGen chunk)) "\n"
+    (string-append "ral:" (~v (Chunk-rally chunk)) "\n"
+                   "ret:" (~v (Chunk-retreat chunk)) "\n"
+                   "rG:" (~v (Chunk-resourceGen chunk)) "\n"
+                   "pG:" (~v (Chunk-playerGen chunk)) "\n"
+                   "dG:" (~v (Chunk-deathGen chunk)) "\n"
                    "sA:" (~v (Chunk-scoreAttack chunk)) "\n"
                    "sAK:" (~v (Chunk-scoreAttackKamikaze chunk)) "\n"
                    "sS:" (~v (Chunk-scoreSiege chunk)) "\n"
                    "sSK:" (~v (Chunk-scoreSiegeKamikaze chunk)) "\n"
-                   "sR:" (~v (Chunk-scoreResource chunk)) "\n"
-                   "sRK:" (~v (Chunk-scoreResourceKamikaze chunk)) "\n"
+                   "sR:" (~v (Chunk-scoreResource chunk)) "\n"))
+
+  (define (chunk->string3 chunk)
+    (string-append "sRK:" (~v (Chunk-scoreResourceKamikaze chunk)) "\n"
                    "pu:" (~v (Chunk-pollution chunk)) "\n"
                    "aN:" (~v (Chunk-aNe chunk)) "\n"
                    "aRN:" (~v (Chunk-aRNe chunk)) "\n"

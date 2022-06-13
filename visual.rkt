@@ -99,6 +99,10 @@
                         [parent topPanel]
                         [label ""]
                         [horiz-margin 300]))
+  (define siteBox3 (new message%
+                        [parent topPanel]
+                        [label ""]
+                        [vert-margin 300]))
 
   (new button%
        [parent mainFrame]
@@ -226,7 +230,9 @@
       (send siteBox set-label
             (chunk->string chunk))
       (send siteBox2 set-label
-            (chunk->string2 chunk))))
+            (chunk->string2 chunk))
+      (send siteBox3 set-label
+            (chunk->string3 chunk))))
 
   (define (displayHighlight x y)
     ;; (display (list (screenX->chunkX x)
