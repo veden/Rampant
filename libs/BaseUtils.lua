@@ -226,12 +226,12 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
             and
             (
                 (
-                    (roll <= 0.002) and
+                    (roll <= 0.01) and
                     not map.universe.proxyEntityLookup[entityName]
                 )
                 or
                 (
-                    (roll <= 0.202) and
+                    (roll <= 0.210) and
                     (getResourceGenerator(map, chunk) > 0)
                 )
             )
