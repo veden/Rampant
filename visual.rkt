@@ -20,7 +20,13 @@
 
 (define CHUNK_SIZE 32)
 
-(define INVALID_CHUNK (Chunk -1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
+(define INVALID_CHUNK (Chunk -1 -1 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0 0
+                             0 0))
 
 (define windowX 500)
 (define windowY 0)
@@ -73,22 +79,26 @@
   (define activeChunkSetLookup null)
   (define activeChunkMinMaxSet null)
 
-  (define panel (new panel%
+  (define topPanel (new panel%
                      [parent mainFrame]
                      (alignment '(left top))))
 
+  (define botPanel (new panel%
+                     [parent mainFrame]
+                     (alignment '(right bottom))))
+
   (define statusBox (new message%
-                         [parent panel]
+                         [parent topPanel]
                          [label (~v "")]
                          [vert-margin 16]))
   (define siteBox (new message%
-                       [parent panel]
+                       [parent topPanel]
                        [label ""]
                        [vert-margin 30]))
   (define siteBox2 (new message%
-                        [parent panel]
+                        [parent topPanel]
                         [label ""]
-                        [vert-margin 300]))
+                        [horiz-margin 300]))
 
   (new button%
        [parent mainFrame]
@@ -134,59 +144,24 @@
                    canvass))
 
   (define (showVisual dc aiState)
-    (match-let* (((AiState chunks chunkLookups chunkMinMaxes) aiState)
-                 ((ChunkRange (MinMax miX maX)
-                              (MinMax miY maY)
-                              (MinMax minMovement maxMovement)
-                              (MinMax minBase maxBase)
-                              (MinMax minPlayer maxPlayer)
-                              (MinMax minResource maxResource)
-                              (MinMax minPassable maxPassable)
-                              (MinMax minTick maxTick)
-                              (MinMax minRating maxRating)
-                              nests
-                              worms
-                              rally
-                              retreat
-                              resourceGen
-                              playerGen
-                              deathGen
-                              attackScore
-                              settleScore
-                              siegeScore
-                              retreatScore
-                              kamikazeScore
-                              pollution
-                              aNe
-                              aRNe
-                              squads
-                              baseCreated
-                              hives
-                              traps
-                              utility
-                              vg) chunkMinMaxes))
-      
-      (set! activeChunkSet chunks)
+    (let* ((chunkMinMaxes (AiState-minMaxes aiState))
+           (minMaxX (ChunkRange-x chunkMinMaxes))
+           (minMaxY (ChunkRange-y chunkMinMaxes)))
+      (set! activeChunkSet (AiState-chunks aiState))
       (set! activeChunkMinMaxSet chunkMinMaxes)
-      (set! activeChunkSetLookup chunkLookups)
+      (set! activeChunkSetLookup (AiState-chunksLookup aiState))
 
       (when (Chunk? activeHighlight)
         (set! activeHighlight (findChunk (Chunk-x activeHighlight)
                                          (Chunk-y activeHighlight))))
 
-      (set! minX miX)
-      (set! maxX maX)
-      (set! minY miY)
-      (set! maxY maY)
-
-      ;; (display (list minX minY maxX maxY))
-      ;;       (display "\n")
+      (set! minX (MinMax-min minMaxX))
+      (set! maxX (MinMax-max minMaxX))
+      (set! minY (MinMax-min minMaxY))
+      (set! maxY (MinMax-max minMaxY))
 
       (set! tileWidth (ceiling (/ windowWidth (+ (abs (/ (- maxX minX) CHUNK_SIZE)) 3))))
       (set! tileHeight (ceiling (/ windowHeight (+ (abs (/ (- maxY minY) CHUNK_SIZE)) 3))))
-
-      ;; (display (list tileWidth tileHeight))
-      ;;       (display "\n")
 
       (refresh dc)
 
@@ -295,9 +270,9 @@
 
   (new radio-box%
        [label "Show Layer"]
-       [choices (list "movement" "base" "player" "resource" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "attackScore" "settleScore" "siegeScore" "retreatScore" "kamikazeScore" "pollution" "aNe" "aRNe" "squads" "baseCreated" "hives" "traps" "utility" "vg")]
+       [choices (list "movement" "base" "player" "resource" "enemy" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "scoreResourceKamikaze" "scoreResource" "scoreSiegeKamikaze" "scoreSiege" "scoreAttackKamikaze" "scoreAttack" "pollution" "aNe" "aRNe" "squads" "baseAlign" "hives" "traps" "utility" "vg")]
        [selection 0]
-       [parent mainFrame]
+       [parent botPanel]
        (callback (lambda (radioButton event)
                    (set! activeLayer (send radioButton get-item-label (send radioButton get-selection)))
                    (refresh dcMap))))
@@ -307,7 +282,4 @@
        frames))
 
 (runIt)
-;; (module Visualizer racket
-;;   (provide (all-defined-out))
 
-;;   )

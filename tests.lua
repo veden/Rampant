@@ -426,6 +426,49 @@ local function lookupIndexFaction(targetFaction)
     return 0
 end
 
+local function scoreResourceLocationKamikaze(_, neighborChunk)
+    local settle = neighborChunk[constants.RESOURCE_PHEROMONE]
+    return settle
+        - (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+        - neighborChunk[constants.ENEMY_PHEROMONE]
+end
+
+local function scoreSiegeLocationKamikaze(_, neighborChunk)
+    local settle = neighborChunk[constants.BASE_PHEROMONE]
+        + neighborChunk[constants.RESOURCE_PHEROMONE] * 0.5
+        + (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+        - neighborChunk[constants.ENEMY_PHEROMONE]
+
+    return settle
+end
+
+local function scoreResourceLocation(map, neighborChunk)
+    local settle = (chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk) * neighborChunk[constants.RESOURCE_PHEROMONE])
+    return settle
+        - (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+        - neighborChunk[constants.ENEMY_PHEROMONE]
+end
+
+local function scoreSiegeLocation(map, neighborChunk)
+    local settle = neighborChunk[constants.BASE_PHEROMONE]
+        + neighborChunk[constants.RESOURCE_PHEROMONE] * 0.5
+        + (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+        - neighborChunk[constants.ENEMY_PHEROMONE]
+
+    return settle * chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk)
+end
+
+local function scoreAttackLocation(map, neighborChunk)
+    local damage = neighborChunk[constants.BASE_PHEROMONE] +
+        (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+    return damage * chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk)
+end
+
+local function scoreAttackKamikazeLocation(_, neighborChunk)
+    local damage = neighborChunk[constants.BASE_PHEROMONE] + (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
+    return damage
+end
+
 function tests.exportAiState()
 
     local printState = function ()
@@ -446,15 +489,16 @@ function tests.exportAiState()
                 end
             end
 
-            s = s .. table.concat({0,
+            s = s .. table.concat({chunk.x,
+                                   chunk.y,
+                                   chunkPropertyUtils.getDeathGeneratorRating(map, chunk),
                                    chunk[constants.BASE_PHEROMONE],
                                    chunk[constants.PLAYER_PHEROMONE],
                                    chunk[constants.RESOURCE_PHEROMONE],
+                                   chunk[constants.ENEMY_PHEROMONE],
                                    chunkPropertyUtils.getPassable(map, chunk),
                                    chunk[constants.CHUNK_TICK],
                                    chunkPropertyUtils.getPathRating(map, chunk),
-                                   chunk.x,
-                                   chunk.y,
                                    chunkPropertyUtils.getNestCount(map, chunk),
                                    chunkPropertyUtils.getTurretCount(map, chunk),
                                    chunkPropertyUtils.getRallyTick(map, chunk),
@@ -462,6 +506,12 @@ function tests.exportAiState()
                                    chunkPropertyUtils.getResourceGenerator(map, chunk),
                                    chunkPropertyUtils.getPlayerBaseGenerator(map, chunk),
                                    chunkPropertyUtils.getDeathGenerator(map, chunk),
+                                   scoreResourceLocationKamikaze(map, chunk),
+                                   scoreResourceLocation(map, chunk),
+                                   scoreSiegeLocationKamikaze(map, chunk),
+                                   scoreSiegeLocation(map, chunk),
+                                   scoreAttackKamikazeLocation(map, chunk),
+                                   scoreAttackLocation(map, chunk),
                                    game.get_surface(game.players[1].surface.index).get_pollution(chunk),
                                    chunkPropertyUtils.getNestActiveness(map, chunk),
                                    chunkPropertyUtils.getRaidNestActiveness(map, chunk),
