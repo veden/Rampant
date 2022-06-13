@@ -442,6 +442,9 @@ function squadAttack.cleanSquads(universe, tick)
                 if squad.type == BASE_AI_STATE_AGGRESSIVE then
                     local base = squad.base
                     base.sentAggressiveGroups = base.sentAggressiveGroups - 1
+                    if base.sentAggressiveGroups < 0 then
+                        base.sentAggressiveGroups = 0
+                    end
                 end
             end
             squads[groupId] = nil
