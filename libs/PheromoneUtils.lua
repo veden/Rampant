@@ -394,13 +394,13 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
         if clear then
             chunk[RESOURCE_PHEROMONE] = pheromone * chunkPathRating
         else
-            chunk[RESOURCE_PHEROMONE] = pheromone * chunkPathRating * 0.01
+            chunk[RESOURCE_PHEROMONE] = pheromone * chunkPathRating * 0.0001
         end
     else
         if clear then
             chunk[RESOURCE_PHEROMONE] = chunkResource * chunkPathRating
         else
-            chunk[RESOURCE_PHEROMONE] = chunkResource * chunkPathRating * 0.01
+            chunk[RESOURCE_PHEROMONE] = chunkResource * chunkPathRating * 0.0001
         end
     end
 end

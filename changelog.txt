@@ -2,6 +2,7 @@
 Version: 3.1.2
   Tweaks:
     - Siege groups have their attraction to resource patches reduced by 50%
+    - Reduced resource patch pheromone when enemy structures exist on chunk by 100x
   Bugfixes:
     - Fixed sent aggressive squads count could be negative
     - Added missing sent and max siege groups on debug log
