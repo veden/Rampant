@@ -378,6 +378,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
         chunk[BASE_PHEROMONE] = chunkBase * chunkPathRating
     end
 
+    chunkEnemy = chunkEnemy * 0.9
     pheromone = (getNestCount(map, chunk) + getHiveCount(map, chunk)) * ENEMY_PHEROMONE_MULTIPLER
     if chunkEnemy < pheromone then
         chunk[ENEMY_PHEROMONE] = pheromone * chunkPathRating
