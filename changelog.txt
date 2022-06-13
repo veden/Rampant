@@ -2,6 +2,7 @@
 Version: 3.1.2
   Bugfixes:
     - Fixed sent aggressive squads count could be negative
+    - Added missing sent and max siege groups on debug log
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.1

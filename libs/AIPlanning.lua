@@ -352,7 +352,8 @@ local function temperamentPlanner(base, evolutionLevel)
             base.map.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
             ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
             ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
-            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration
+            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration .. ", sS:"
+            .. base.sentSiegeGroups .. ", mS:" .. base.maxSiegeGroups
         game.print(strConsole)
         print(strConsole)
     end
