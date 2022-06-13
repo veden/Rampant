@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2
+  Contribution:
+    - Updated RU locale for Rampant by Astorin
   Tweaks:
     - Siege groups have their attraction to resource patches reduced by 50%
     - Reduced resource patch pheromone when enemy structures exist on chunk by 100x
