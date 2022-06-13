@@ -9,6 +9,7 @@ Version: 3.1.2
     - Added missing sent and max siege groups on debug log
     - Fixed small amounts of death generator not being rounded to nil
     - Fixed enemy base pheromone missing decay based on radius
+    - Fixed resource pheromone generator not be cancelled out by enemy structures
   Framework:
     - Updated visualizer tool for debugging
 

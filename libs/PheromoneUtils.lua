@@ -129,7 +129,7 @@ function pheromoneUtils.processStaticPheromone(map, chunk)
     local chunkEnemy = -MAGIC_MAXIMUM_NUMBER
     local chunkPathRating = getPathRating(map, chunk)
 
-    local clear = getEnemyStructureCount(map, chunk)
+    local clear = getEnemyStructureCount(map, chunk) == 0
 
     local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
 
