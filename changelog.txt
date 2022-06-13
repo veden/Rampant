@@ -6,6 +6,7 @@ Version: 3.1.2
   Bugfixes:
     - Fixed sent aggressive squads count could be negative
     - Added missing sent and max siege groups on debug log
+    - Fixed small amounts of death generator not being rounded to nil
   Framework:
     - Updated visualizer tool for debugging
 

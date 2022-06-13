@@ -455,7 +455,7 @@ function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
 end
 
 function chunkPropertyUtils.setDeathGenerator(map, chunk, value)
-    if (value <= 0) then
+    if (value <= 0.001) then
         map.chunkToDeathGenerator[chunk.id] = nil
     else
         map.chunkToDeathGenerator[chunk.id] = value

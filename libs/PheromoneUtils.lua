@@ -601,12 +601,12 @@ function pheromoneUtils.processPheromone(map, chunk, player)
         end
     end
 
-    if not player then
-        decayDeathGenerator(map, chunk)
-    end
-
     if chunkDeath > 0 then
         setDeathGenerator(map, chunk, chunkDeath * 0.95)
+    end
+
+    if not player then
+        decayDeathGenerator(map, chunk)
     end
 
     chunkPlayer = chunkPlayer * 0.45
