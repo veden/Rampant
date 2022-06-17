@@ -520,7 +520,7 @@ local function addMajorResistance(entity, name, tier)
     local percents = { 80, 80, 84, 84, 89, 89, 93, 93, 97, 97 }
     entity.resistances[name] = {
         decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
-        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
+        percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, 0.99, xorRandom), 0.1)
     }
 end
 
