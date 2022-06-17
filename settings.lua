@@ -69,7 +69,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = 1,
             maximum_value = 300,
-            default_value = 25,
+            default_value = 30,
             order = "b[modifier]-f[wave]",
             per_user = false
         },

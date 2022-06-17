@@ -9,6 +9,7 @@ Version: 3.1.2
     - Increased hive spawning outside resources chunks by 5x
     - Changed mod setting to default to disallowFriendlyFire
     - Increased spawner egg and wasp health by 5, 75, 200, 300, 400, 550, 725, 1700, 3675, 7650
+    - Increased default mod settings max squads to 30
   Bugfixes:
     - Fixed sent aggressive squads, builder count, squad count could be negative
     - Added missing sent and max siege groups on debug log
