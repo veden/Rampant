@@ -18,6 +18,8 @@ local util = require ("util")
 
 local droneUtils = {}
 
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
+
 function droneUtils.makeDrone(attributes)
     local n = attributes.name .. "-drone-rampant"
     local resistances = {}
@@ -224,6 +226,7 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
     local actions = {
         {
             type = "direct",
+            force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
             action_delivery =
                 {
                     type = "instant",

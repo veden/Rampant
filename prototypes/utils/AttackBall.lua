@@ -114,6 +114,7 @@ function AttackBall.createAttackBall(attributes)
         templateArea,
         {
             type = "direct",
+            force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
             action_delivery = {
                 type = "instant",
                 target_effects = targetEffects

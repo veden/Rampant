@@ -7,6 +7,7 @@ Version: 3.1.2
     - Reduced resource patch pheromone when enemy structures exist on chunk by 100x
     - Increased enemy pheromone weight for pathing by 2.5x
     - Increased hive spawning outside resources chunks by 5x
+    - Changed mod setting to default to disallowFriendlyFire
   Bugfixes:
     - Fixed sent aggressive squads, builder count, squad count could be negative
     - Added missing sent and max siege groups on debug log
@@ -15,6 +16,7 @@ Version: 3.1.2
     - Fixed resource pheromone generator not be cancelled out by enemy structures
     - Fixed unit groups gathering and then being disbanded immediately after they finish gathering, which will prevent biter clumps when groups are disbanded at extreme distances from the player
     - Fixed max squads and builders being exhausted by the game engine with gathering unit groups
+    - Fixed electric biter attack causing biters to attack each other and expanded friendly fire protection to additional projectiles
   Framework:
     - Updated visualizer tool for debugging
 

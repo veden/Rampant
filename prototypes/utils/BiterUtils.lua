@@ -40,6 +40,8 @@ local makeDamagedParticle = particleUtils.makeDamagedParticle
 local biter_water_reflection = unitUtils.biter_water_reflection
 local spitter_water_reflection = unitUtils.spitter_water_reflection
 
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
+
 local function makeSpitterCorpse(attributes)
     local name = attributes.name .. "-corpse-rampant"
 
@@ -1102,6 +1104,7 @@ function biterUtils.createElectricAttack(attributes, electricBeam, animation)
                             type = "line",
                             range = (attributes.range and (attributes.range + 2)) or 15,
                             width = attributes.width or 0.5,
+                            force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
                             action_delivery = (attributes.actions and attributes.actions(attributes, electricBeam)) or
                                 {
                                     type = "beam",

@@ -16,6 +16,8 @@
 
 local beamUtils = {}
 
+local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
+
 function beamUtils.makeBubble(attributes)
     local name = attributes.name .. "-bubble-rampant"
     data:extend({{
@@ -53,6 +55,7 @@ function beamUtils.makeLaser(attributes)
                 action =
                     {
                         type = "direct",
+                        force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
                         action_delivery =
                             {
                                 type = "instant",
@@ -96,6 +99,7 @@ function beamUtils.makeBeam(attributes)
             action =
                 {
                     type = "direct",
+                    force = (DISALLOW_FRIENDLY_FIRE and "not-same") or nil,
                     action_delivery =
                         {
                             type = "instant",

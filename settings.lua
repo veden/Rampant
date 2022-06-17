@@ -211,7 +211,7 @@ data:extend({
             type = "bool-setting",
             name = "rampant--disallowFriendlyFire",
             setting_type = "startup",
-            default_value = false,
+            default_value = true,
             order = "c[modifier]-k[trigger]",
             per_user = false
         },
