@@ -8,7 +8,7 @@ Version: 3.1.2
     - Increased enemy pheromone weight for pathing by 2.5x
     - Increased hive spawning outside resources chunks by 5x
   Bugfixes:
-    - Fixed sent aggressive squads count could be negative
+    - Fixed sent aggressive squads, builder count, squad count could be negative
     - Added missing sent and max siege groups on debug log
     - Fixed small amounts of death generator not being rounded to nil
     - Fixed enemy base pheromone missing decay based on radius

@@ -437,6 +437,9 @@ function squadAttack.cleanSquads(universe, tick)
             removeSquadFromChunk(squad.map, squad)
             if squad.settlers then
                 universe.builderCount = universe.builderCount - 1
+                if universe.builderCount < 0 then
+                    universe.builderCount = 0
+                end
             else
                 universe.squadCount = universe.squadCount - 1
                 if squad.type == BASE_AI_STATE_AGGRESSIVE then
@@ -445,6 +448,9 @@ function squadAttack.cleanSquads(universe, tick)
                     if base.sentAggressiveGroups < 0 then
                         base.sentAggressiveGroups = 0
                     end
+                end
+                if universe.squadCount < 0 then
+                    universe.squadCount = 0
                 end
             end
             squads[groupId] = nil
