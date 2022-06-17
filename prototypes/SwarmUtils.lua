@@ -517,7 +517,7 @@ end
 
 local function addMajorResistance(entity, name, tier)
     local decreases = { 7, 7, 10, 10, 13, 13, 16, 16, 19, 23 }
-    local percents = { 65, 65, 70, 75, 75, 80, 85, 85, 90, 90 }
+    local percents = { 80, 80, 84, 84, 89, 89, 93, 93, 97, 97 }
     entity.resistances[name] = {
         decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
         percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
@@ -525,14 +525,8 @@ local function addMajorResistance(entity, name, tier)
 end
 
 local function addMinorResistance(entity, name, tier)
-    -- {
-    --     type = "resistance",
-    --     name = "fire",
-    --     decrease = { 1, 1, 1, 1, 2, 2, 3, 3, 3, 4 },
-    --     percent = { 30, 30, 30, 40, 40, 40, 45, 45, 45, 50 }
-    -- }
     local decreases = { 3, 3, 7, 7, 10, 10, 13, 13, 16, 18 }
-    local percents = { 35, 35, 40, 40, 45, 45, 50, 55, 55, 60 }
+    local percents = { 40, 40, 44, 44, 48, 48, 52, 56, 56, 60 }
     entity.resistances[name] = {
         decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
         percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
@@ -550,7 +544,7 @@ end
 
 local function addMinorWeakness(entity, name, tier)
     local decreases = { -3, -3, -7, -7, -10, -10, -13, -13, -16, -18 }
-    local percents = { -35, -35, -40, -40, -45, -45, -50, -55, -55, -60 }
+    local percents = { -40, -40, -44, -44, -48, -48, -52, -56, -56, -60 }
     entity.resistances[name] = {
         decrease = roundToNearest(gaussianRandomRangeRG(decreases[tier], decreases[tier] * 0.1, decreases[tier] * 0.85, decreases[tier] * 1.30, xorRandom), 0.1),
         percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)

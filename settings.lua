@@ -321,7 +321,7 @@ data:extend({
             setting_type = "startup",
             minimum_value = 1,
             maximum_value = 10,
-            default_value = 4,
+            default_value = 6,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
