@@ -765,7 +765,7 @@ local function fillEntityTemplate(entity)
                 elseif (attribute == "smallest") then
                     entity["scale"] = entity["scale"] * 0.5
                 elseif (attribute == "fragile") then
-                    entity["health"] = entity["health"] * 0.1
+                    entity["health"] = entity["health"] * 0.35
                 elseif (attribute == "selfDamaging") then
                     local divider
                     if entity.health < 100 then

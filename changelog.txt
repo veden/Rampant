@@ -12,6 +12,7 @@ Version: 3.1.2
     - Increased default mod settings max squads to 30
     - Increased default mod settings max enemy level to 6
     - Increased major,minor resistance percents and Increased minor weakness percents primarily in the lower enemy levels
+    - Increased spawner faction spawned biters health by 25%
   Bugfixes:
     - Fixed sent aggressive squads, builder count, squad count could be negative
     - Added missing sent and max siege groups on debug log
