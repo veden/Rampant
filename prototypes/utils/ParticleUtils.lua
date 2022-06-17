@@ -698,7 +698,7 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         type = "create-entity",
                                         entity_name = attributes.name .. "-blood-fountain-rampant",
-                                        repeat_count = 20,
+                                        repeat_count = 10,
                                         repeat_count_deviation = 3,
                                         offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                     }
@@ -729,7 +729,7 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 130,
+                                            repeat_count = 65,
                                             repeat_count_deviation = 20,
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
@@ -792,7 +792,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-rampant",
-                                            repeat_count = 35,
+                                            repeat_count = 20,
                                             repeat_count_deviation = 5,
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         }
@@ -825,7 +825,7 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 130,
+                                            repeat_count = 100,
                                             repeat_count_deviation = 20,
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
@@ -888,7 +888,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-big-rampant",
-                                            repeat_count = 35,
+                                            repeat_count = 30,
                                             repeat_count_deviation = 5,
                                             offset_deviation = {{-1.6, -1.6}, {1.6, 1.6}}
                                         }
