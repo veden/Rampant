@@ -8,6 +8,7 @@ Version: 3.1.2
     - Increased enemy pheromone weight for pathing by 2.5x
     - Increased hive spawning outside resources chunks by 5x
     - Changed mod setting to default to disallowFriendlyFire
+    - Increased spawner egg and wasp health by 5, 75, 200, 300, 400, 550, 725, 1700, 3675, 7650
   Bugfixes:
     - Fixed sent aggressive squads, builder count, squad count could be negative
     - Added missing sent and max siege groups on debug log
