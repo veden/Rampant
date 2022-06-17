@@ -268,6 +268,8 @@ local function onModSettingsChange(event)
 
     universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
     universe["AI_MAX_BUILDER_COUNT"] = settings.global["rampant--maxNumberOfBuilders"].value
+    universe["AI_MAX_VANILLA_SQUAD_COUNT"] = universe["AI_MAX_SQUAD_COUNT"] * 0.65
+    universe["AI_MAX_VANILLA_BUILDER_COUNT"] = universe["AI_MAX_BUILDER_COUNT"] * 0.65
     universe["MAX_BASE_MUTATIONS"] = settings.global["rampant--max-base-mutations"].value
 
     universe["initialPeaceTime"] = settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE
@@ -781,10 +783,10 @@ local function onUnitGroupCreated(event)
     end
     if not universe.aiNocturnalMode then
         local settler = canMigrate(map, base) and
-            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.builderCount < universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
-        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
+        if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
             group.destroy()
             return
         end
@@ -806,10 +808,10 @@ local function onUnitGroupCreated(event)
         end
 
         local settler = canMigrate(map, base) and
-            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.builderCount < universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
-        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
+        if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
             group.destroy()
             return
         end
@@ -840,13 +842,13 @@ local function onGroupFinishedGathering(event)
     local squad = universe.groupNumberToSquad[group.group_number]
     if squad then
         if squad.settler then
-            if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
+            if (universe.builderCount <= universe.AI_MAX_BUILDER_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
             end
         else
-            if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
+            if (universe.squadCount <= universe.AI_MAX_SQUAD_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
@@ -866,10 +868,10 @@ local function onGroupFinishedGathering(event)
             return
         end
         local settler = canMigrate(map, base) and
-            (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
+            (universe.builderCount < universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
-        if not settler and (universe.squadCount > universe.AI_MAX_SQUAD_COUNT) then
+        if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
             group.destroy()
             return
         end

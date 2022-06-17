@@ -13,6 +13,8 @@ Version: 3.1.2
     - Fixed small amounts of death generator not being rounded to nil
     - Fixed enemy base pheromone missing decay based on radius
     - Fixed resource pheromone generator not be cancelled out by enemy structures
+    - Fixed unit groups gathering and then being disbanded immediately after they finish gathering, which will prevent biter clumps when groups are disbanded at extreme distances from the player
+    - Fixed max squads and builders being exhausted by the game engine with gathering unit groups
   Framework:
     - Updated visualizer tool for debugging
 
