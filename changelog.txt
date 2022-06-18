@@ -23,6 +23,7 @@ Version: 3.1.2
     - Fixed unit groups gathering and then being disbanded immediately after they finish gathering, which will prevent biter clumps when groups are disbanded at extreme distances from the player
     - Fixed max squads and builders being exhausted by the game engine with gathering unit groups
     - Fixed electric biter attack causing biters to attack each other and expanded friendly fire protection to additional projectiles
+    - Fixed energy thief crystal pole spinning
   Framework:
     - Updated visualizer tool for debugging
 

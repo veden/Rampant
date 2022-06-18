@@ -205,6 +205,7 @@ function energyThief.addFactionAddon()
     chest.subgroup = "enemies"
     chest.next_upgrade = nil
     chest.backer_name = false
+    chest.rotation_speed = 0
     data.raw["simple-entity-with-force"]["drain-trigger-rampant"].dying_explosion = chest.dying_explosion
     chest.pictures = {
         layers={
@@ -216,7 +217,8 @@ function energyThief.addFactionAddon()
                 direction_count = 4,
                 shift = {1.6, -1.4}
             }
-    }}
+        }
+    }
     chest.max_health = 750
     chest.resistances =
         {
