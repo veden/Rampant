@@ -700,8 +700,8 @@ local function fillEntityTemplate(entity)
             if (entity.type == "drone") then
                 ti = 1
             end
-            entity["hitSprayName"] = entity[key] .. "-" .. "damaged-fountain-rampant"
-            entity[key] = entity[key] .. "-" .. bloodFountains[ti]
+            entity["hitSprayName"] = entity.faction .. "-" .. "damaged-fountain-rampant"
+            entity["explosion"] = entity.faction .. "-" .. bloodFountains[ti]
         elseif (key == "evolutionFunction") then
             entity["evolutionRequirement"] = distort(xorRandom, value(tier))
         elseif (key == "majorResistances") then
@@ -723,125 +723,128 @@ local function fillEntityTemplate(entity)
         elseif (key == "explosionTiers") then
             entity.attackExplosion = entity.explosionTiers[tier]
             entity.attackScorchmark = entity.scorchmarkTiers[tier]
-        elseif (key == "attributes") then
-            for i=1,#entity[key] do
-                local attribute = entity[key][i]
-                if (attribute == "lowHealth") then
-                    entity["health"] = entity["health"] * 0.75
-                elseif (attribute == "lowestHealth") then
-                    entity["health"] = entity["health"] * 0.50
-                elseif (attribute == "quickCooldown") then
-                    entity["cooldown"] = entity["cooldown"] * 0.50
-                    entity["damage"] = entity["damage"] * 0.65
-                    if entity["damagePerTick"] then
-                        entity["damagePerTick"] = entity["damagePerTick"] * 0.65
-                    end
-                elseif (attribute == "slowMovement") then
-                    entity["movement"] = entity["movement"] * 0.35
-                    entity["distancePerFrame"] = entity["distancePerFrame"] * 0.65
-                elseif (attribute == "quickMovement") then
-                    entity["movement"] = entity["movement"] * 1.25
-                    entity["distancePerFrame"] = entity["distancePerFrame"] * 1.35
-                elseif (attribute == "quickSpawning") then
-                    if entity["spawningCooldownStart"] then
-                        entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * 0.85
-                        entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * 0.85
-                    end
-                    if entity["spawningTimeModifer"] then
-                        entity["spawningTimeModifer"] = entity["spawningTimeModifer"] * 0.85
-                    end
-                elseif (attribute == "altBiterArmored") then
-                    entity["altBiter"] = "armored"
-                elseif (attribute == "highRegen") then
-                    entity["healing"] = entity["healing"] * 1.5
-                elseif (attribute == "highestRegen") then
-                    entity["healing"] = entity["healing"] * 3.5
-                elseif (attribute == "big") then
-                    entity["scale"] = entity["scale"] * 1.2
-                elseif (attribute == "bigger") then
-                    entity["scale"] = entity["scale"] * 1.35
-                elseif (attribute == "longReach") then
-                    entity["range"] = entity["range"] * 3
-                elseif (attribute == "smallest") then
-                    entity["scale"] = entity["scale"] * 0.5
-                elseif (attribute == "fragile") then
-                    entity["health"] = entity["health"] * 0.35
-                elseif (attribute == "selfDamaging") then
-                    local divider
-                    if entity.health < 100 then
-                        divider = 2
-                    else
-                        divider = 2.5
-                    end
-                    entity.healthDamage = entity.health / divider
-                    entity.sourceEffect = function (attributes)
-                        return
+        end
+    end
+
+    if entity.attributes then
+        for i=1,#entity.attributes do
+            local attribute = entity.attributes[i]
+            if (attribute == "lowHealth") then
+                entity["health"] = entity["health"] * 0.75
+            elseif (attribute == "lowestHealth") then
+                entity["health"] = entity["health"] * 0.50
+            elseif (attribute == "quickCooldown") then
+                entity["cooldown"] = entity["cooldown"] * 0.50
+                entity["damage"] = entity["damage"] * 0.65
+                if entity["damagePerTick"] then
+                    entity["damagePerTick"] = entity["damagePerTick"] * 0.65
+                end
+            elseif (attribute == "slowMovement") then
+                entity["movement"] = entity["movement"] * 0.35
+                entity["distancePerFrame"] = entity["distancePerFrame"] * 0.65
+            elseif (attribute == "quickMovement") then
+                entity["movement"] = entity["movement"] * 1.25
+                entity["distancePerFrame"] = entity["distancePerFrame"] * 1.35
+            elseif (attribute == "quickSpawning") then
+                if entity["spawningCooldownStart"] then
+                    entity["spawningCooldownStart"] = entity["spawningCooldownStart"] * 0.85
+                    entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * 0.85
+                end
+                if entity["spawningTimeModifer"] then
+                    entity["spawningTimeModifer"] = entity["spawningTimeModifer"] * 0.85
+                end
+            elseif (attribute == "altBiterArmored") then
+                entity["altBiter"] = "armored"
+            elseif (attribute == "highRegen") then
+                entity["healing"] = entity["healing"] * 1.5
+            elseif (attribute == "highestRegen") then
+                entity["healing"] = entity["healing"] * 3.5
+            elseif (attribute == "big") then
+                entity["scale"] = entity["scale"] * 1.2
+            elseif (attribute == "bigger") then
+                entity["scale"] = entity["scale"] * 1.35
+            elseif (attribute == "longReach") then
+                entity["range"] = entity["range"] * 3
+            elseif (attribute == "smallest") then
+                entity["scale"] = entity["scale"] * 0.5
+            elseif (attribute == "fragile") then
+                entity["health"] = entity["health"] * 0.35
+                entity["explosion"] = entity.faction .. "-" .. "damaged-fountain-rampant"
+            elseif (attribute == "selfDamaging") then
+                local divider
+                if entity.health < 100 then
+                    divider = 5
+                else
+                    divider = 7
+                end
+                entity.healthDamage = entity.health / divider
+                entity.sourceEffect = function (attributes)
+                    return
+                        {
                             {
-                                {
-                                    type = "damage",
-                                    affects_target = true,
-                                    damage = {amount = attributes.healthDamage or 5, type = attributes.damageType or "physical"}
-                                }
+                                type = "damage",
+                                affects_target = true,
+                                damage = {amount = attributes.healthDamage or 5, type = attributes.damageType or "physical"}
                             }
-                    end
-                elseif (attribute == "killsSelf") then
-                    entity.healthDamage = entity.health * 3
-                elseif (attribute == "unstable") then
-                    entity["healing"] = entity["healing"] * -1
-                elseif (attribute == "checkBuildability") then
-                    entity.checkBuildability = true
-                elseif (attribute == "spawnDuringDays") then
-                    entity.minSpawnDarkness = 0
-                    entity.maxSpawnDarkness = 0.45
-                elseif (attribute == "followsPlayer") then
-                    entity.followsPlayer = true
-                elseif (attribute == "stationary") then
-                    entity.movement = 0
-                    entity.distancePerFrame = 0
-                elseif (attribute == "highHealth") then
-                    entity["health"] = entity["health"] * 1.50
-                elseif (attribute == "poisonDeathCloud") then
-                    entity.dyingEffect = {
-                        type = "create-entity",
-                        entity_name = "poison-cloud-v" .. tier .. "-cloud-rampant"
-                    }
-                elseif (attribute == "highestHealth") then
-                    entity["health"] = entity["health"] * 2
-                elseif (attribute == "skipKillCount") then
-                    if not entity["appendFlags"] then
-                        entity["appendFlags"] = {}
-                    end
-                    entity["appendFlags"]["not-in-kill-statistics"] = true
-                elseif type(attribute) == "table" then
-                    if (attribute[1] == "clusterDeath") then
-                        entity.deathGenerator = function (attack)
-                            return {
-                                {
-                                    type = "cluster",
-                                    cluster_count = attack.clusters,
-                                    distance = attack.clusterDistance,
-                                    distance_deviation = 3,
-                                    action_delivery =
-                                        {
-                                            type = "projectile",
-                                            projectile = createCapsuleProjectile(attack,
-                                                                                 attack.faction .. "-" .. attribute[2]
-                                                                                 .. "-v" .. attack.variation .. "-t"
-                                                                                 .. attack.effectiveLevel .. "-rampant"),
-                                            direction_deviation = 0.6,
-                                            starting_speed = 0.25,
-                                            max_range = attack.range,
-                                            starting_speed_deviation = 0.3
-                                        }
-                                }
+                        }
+                end
+            elseif (attribute == "killsSelf") then
+                entity.healthDamage = entity.health * 3
+            elseif (attribute == "unstable") then
+                entity["healing"] = entity["healing"] * -1
+            elseif (attribute == "checkBuildability") then
+                entity.checkBuildability = true
+            elseif (attribute == "spawnDuringDays") then
+                entity.minSpawnDarkness = 0
+                entity.maxSpawnDarkness = 0.45
+            elseif (attribute == "followsPlayer") then
+                entity.followsPlayer = true
+            elseif (attribute == "stationary") then
+                entity.movement = 0
+                entity.distancePerFrame = 0
+            elseif (attribute == "highHealth") then
+                entity["health"] = entity["health"] * 1.50
+            elseif (attribute == "poisonDeathCloud") then
+                entity.dyingEffect = {
+                    type = "create-entity",
+                    entity_name = "poison-cloud-v" .. tier .. "-cloud-rampant"
+                }
+            elseif (attribute == "highestHealth") then
+                entity["health"] = entity["health"] * 2
+            elseif (attribute == "skipKillCount") then
+                if not entity["appendFlags"] then
+                    entity["appendFlags"] = {}
+                end
+                entity["appendFlags"]["not-in-kill-statistics"] = true
+            elseif type(attribute) == "table" then
+                if (attribute[1] == "clusterDeath") then
+                    entity.deathGenerator = function (attack)
+                        return {
+                            {
+                                type = "cluster",
+                                cluster_count = attack.clusters,
+                                distance = attack.clusterDistance,
+                                distance_deviation = 3,
+                                action_delivery =
+                                    {
+                                        type = "projectile",
+                                        projectile = createCapsuleProjectile(attack,
+                                                                             attack.faction .. "-" .. attribute[2]
+                                                                             .. "-v" .. attack.variation .. "-t"
+                                                                             .. attack.effectiveLevel .. "-rampant"),
+                                        direction_deviation = 0.6,
+                                        starting_speed = 0.25,
+                                        max_range = attack.range,
+                                        starting_speed_deviation = 0.3
+                                    }
                             }
-                        end
-                    else
-                        error("Unknown table attribute " .. attribute[1])
+                        }
                     end
                 else
-                    error("Unknown attribute " .. attribute)
+                    error("Unknown table attribute " .. attribute[1])
                 end
+            else
+                error("Unknown attribute " .. attribute)
             end
         end
     end
@@ -1003,6 +1006,7 @@ function swarmUtils.buildEntitySpawner(template)
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             generateApperance(unitSpawner, true)
+            unitSpawner.death = (unitSpawner.deathGenerator and unitSpawner.deathGenerator(unitSpawner)) or nil
             fillEntityTemplate(unitSpawner)
 
             if unitSpawner.autoplace then
@@ -1031,6 +1035,7 @@ function swarmUtils.buildUnitSpawner(template)
             local unitTable = unitSetToProbabilityTable(template.unitSet)
             unitSpawner.unitSet = unitTable
             generateApperance(unitSpawner)
+            unitSpawner.death = (unitSpawner.deathGenerator and unitSpawner.deathGenerator(unitSpawner)) or nil
             fillEntityTemplate(unitSpawner)
 
             if unitSpawner.autoplace then
@@ -1056,6 +1061,7 @@ function swarmUtils.buildWorm(template)
             worm.effectiveLevel = effectiveLevel
             worm.variation = i
             generateApperance(worm)
+            worm.death = (worm.deathGenerator and worm.deathGenerator(worm)) or nil
             fillEntityTemplate(worm)
 
             worm.standupSounds = wormStandupSounds[effectiveLevel]

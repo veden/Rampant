@@ -298,8 +298,7 @@ function biterUtils.makeBiter(attributes)
         working_sound =  attributes.workingSounds,
         walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
-        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter),
-        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true }
+        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
     }
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
@@ -358,8 +357,7 @@ function biterUtils.makeSpitter(attributes)
         water_reflection = spitter_water_reflection(attributes.scale),
         damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
-        run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint),
-        ai_settings = { destroy_when_commands_fail = false, allow_try_return_to_spawner = true }
+        run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
     }
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask

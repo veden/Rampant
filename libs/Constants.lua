@@ -1014,14 +1014,14 @@ if settings.startup["rampant--spawnerEnemy"].value then
                 type = "drone",
                 attackAttributes = {"touch", "acid"},
                 name = "spitter-egg",
-                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}, "skipKillCount"},
+                attributes = {"stationary", "bigger", "highestRegen", {"clusterDeath", "spawn"}, "skipKillCount"},
                 drops = {}
             },
             {
                 type = "drone",
                 attackAttributes = {"touch", "acid"},
                 name = "worm-egg",
-                attributes = {"stationary", "bigger", {"clusterDeath", "spawn"}, "skipKillCount"},
+                attributes = {"stationary", "bigger", "highestRegen", {"clusterDeath", "spawn"}, "skipKillCount"},
                 drops = {}
             },
             {
