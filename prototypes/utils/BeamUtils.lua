@@ -52,6 +52,7 @@ function beamUtils.makeLaser(attributes)
                 flags = {"not-on-map"},
                 collision_box = attributes.collisionBox or {{-0.3, -1.1}, {0.3, 1.1}},
                 acceleration = attributes.acceleration or 0.03,
+                force_condition = (settings.startup["rampant--disableCollidingProjectiles"].value and "not-same") or nil,
                 action =
                     {
                         type = "direct",

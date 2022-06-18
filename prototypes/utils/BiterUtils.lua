@@ -1156,6 +1156,7 @@ function biterUtils.createProjectileAttack(attributes, projectile, animation)
         warmup = attributes.warmup,
         cooldown_deviation = 0.15,
         projectile_creation_distance = 0.6,
+        force_condition = (settings.startup["rampant--disableCollidingProjectiles"].value and "not-same") or nil,
         range = attributes.range or 20,
         min_attack_distance = (attributes.range and (attributes.range - 2)) or 20,
         lead_target_for_projectile_speed = 0.95,

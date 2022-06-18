@@ -261,6 +261,7 @@ function droneUtils.createCapsuleProjectile(attributes, entityName)
         collision_mask = attributes.collisionMask,
         direction_only = attributes.attackDirectionOnly,
         piercing_damage = attributes.piercingDamage or 0,
+        force_condition = (settings.startup["rampant--disableCollidingProjectiles"].value and "not-same") or nil,
         acceleration = attributes.acceleration or 0.01,
         action = actions,
         light = {intensity = 0.5, size = 4},
