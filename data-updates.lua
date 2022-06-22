@@ -24,11 +24,6 @@ if settings.startup["rampant--useDumbProjectiles"].value or settings.startup["ra
 end
 
 for _, robot in pairs(data.raw["logistic-robot"]) do
-    -- if not robot.collision_mask then
-    --     robot.collision_mask = {}
-    -- end
-    -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
-
     if (settings.startup["rampant--unkillableLogisticRobots"].value) then
         robot.resistances = {}
         for damageType, _ in pairs(data.raw["damage-type"]) do
@@ -41,11 +36,6 @@ for _, robot in pairs(data.raw["logistic-robot"]) do
 end
 
 for _, robot in pairs(data.raw["construction-robot"]) do
-    -- if not robot.collision_mask then
-    --     robot.collision_mask = {}
-    -- end
-    -- robot.collision_mask[#robot.collision_mask+1] = "layer-13"
-
     if (settings.startup["rampant--unkillableConstructionRobots"].value) then
         robot.resistances = {}
         for damageType, _ in pairs(data.raw["damage-type"]) do
@@ -56,13 +46,6 @@ for _, robot in pairs(data.raw["construction-robot"]) do
         end
     end
 end
-
--- for _, robot in pairs(data.raw["combat-robot"]) do
---     if not robot.collision_mask then
---         robot.collision_mask = {}
---     end
---     robot.collision_mask[#robot.collision_mask+1] = "layer-13"
--- end
 
 --[[
     try to make sure new maps use the correct map settings without having to completely load the mod.
