@@ -54,7 +54,7 @@ local processPendingChunks = chunkProcessor.processPendingChunks
 
 -- module code
 
-local function isExcludedSurface(surfaceName)
+function upgrade.isExcludedSurface(surfaceName)
     return
         (surfaceName == "aai-signals") or
         (surfaceName == "RTStasisRealm") or
@@ -408,6 +408,21 @@ local function addCommandSet(queriesAndCommands)
     }
 end
 
+function upgrade.excludeSurface(universe)
+    for mapId,map in pairs(universe.maps) do
+        local toBeRemoved = not map.surface.valid or upgrade.isExcludedSurface(map.surface.name) or universe.excludedSurfaces[map.surface.name]
+        if toBeRemoved then
+            if universe.mapIterator == mapId then
+                universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
+            end
+            if universe.processMapAIIterator == mapId then
+                universe.processMapAIIterator = nil
+            end
+            universe.maps[mapId] = nil
+        end
+    end
+end
+
 function upgrade.setCommandForces(universe, npcForces, enemyForces)
     for force in pairs(universe.playerForces) do
         universe.playerForces[force] = nil
@@ -586,18 +601,7 @@ function upgrade.attempt(universe)
             end
         end
 
-        for mapId,map in pairs(universe.maps) do
-            local toBeRemoved = not map.surface.valid or isExcludedSurface(map.surface.name)
-            if toBeRemoved then
-                if universe.mapIterator == mapId then
-                    universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
-                end
-                if universe.processMapAIIterator == mapId then
-                    universe.processMapAIIterator = nil
-                end
-                universe.maps[mapId] = nil
-            end
-        end
+        upgrade.excludeSurface(universe)
 
         universe.processBaseAIIterator = nil
     end
@@ -620,8 +624,13 @@ function upgrade.attempt(universe)
                 chunk[ENEMY_PHEROMONE] = 0
             end
         end
+    end
+    if global.version < 305 then
+        global.version = 305
 
-        game.print("Rampant - Version 3.1.1")
+        universe.excludedSurfaces = {}
+
+        game.print("Rampant - Version 3.1.3")
     end
 
     return (starting ~= global.version) and global.version
@@ -629,7 +638,7 @@ end
 
 function upgrade.prepMap(universe, surface)
     local surfaceName = surface.name
-    if isExcludedSurface(surfaceName) then
+    if upgrade.isExcludedSurface(surfaceName) then
         return
     end
 

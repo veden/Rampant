@@ -1113,6 +1113,24 @@ remote.add_interface("rampantTests",
                      }
 )
 
+local function addExcludeSurface(surfaceName)
+    universe.excludedSurfaces[surfaceName] = true
+    upgrade.excludeSurface(universe)
+end
+
+local function removeExcludeSurface(surfaceName)
+    universe.excludedSurfaces[surfaceName] = nil
+    local surface = game.get_surface(surfaceName)
+    if surface then
+        prepMap(universe, surface)
+    end
+end
+
+remote.add_interface("Rampant", {
+                         addExcludeSurface = addExcludeSurface,
+                         removeExcludeSurface = removeExcludeSurface
+})
+
 local function rampantSetAIState(event)
     if event.parameter then
         local target
