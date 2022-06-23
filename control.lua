@@ -337,19 +337,67 @@ local function onConfigChanged()
     end
 end
 
-local function onBuild(event)
-    local entity = event.created_entity or event.entity
+local function onEnemyBaseBuild(event)
+    local entity = event.entity or event.created_entity
     if entity.valid then
         local map = universe.maps[entity.surface.index]
         if not map then
             return
         end
-        if (entity.type == "resource") and (entity.force.name == "neutral") then
-            registerResource(entity, map)
+        map.activeSurface = true
+        local chunk = getChunkByPosition(map, entity.position)
+        if (chunk ~= -1) then
+            local base = findNearbyBase(map, chunk)
+            if not base then
+                base = createBase(map,
+                                  chunk,
+                                  event.tick)
+            end
+
+            registerEnemyBaseStructure(map, entity, base)
+
+            if universe.NEW_ENEMIES then
+                upgradeEntity(entity,
+                              base,
+                              map,
+                              nil,
+                              true,
+                              true)
+            end
         else
-            accountPlayerEntity(entity, map, true)
-            if universe.safeEntities[entity.type] or universe.safeEntities[entity.name] then
-                entity.destructible = false
+            local x,y = positionToChunkXY(entity.position)
+            onChunkGenerated({
+                    surface = entity.surface,
+                    tick = event.tick,
+                    area = {
+                        left_top = {
+                            x = x,
+                            y = y
+                        }
+                    }
+            })
+        end
+    end
+end
+
+local function onBuild(event)
+    local entity = event.created_entity or event.entity
+    if entity.valid then
+        local entityForceName = entity.force.name
+        if entityForceName == "enemy" and universe.buildingHiveTypeLookup[entity.name] then
+            onEnemyBaseBuild(event)
+        else
+            local map = universe.maps[entity.surface.index]
+            if not map then
+                return
+            end
+            if (entity.type == "resource") and (entityForceName == "neutral") then
+                registerResource(entity, map)
+            else
+                accountPlayerEntity(entity, map, true)
+                if universe.safeEntities[entity.type] or universe.safeEntities[entity.name] then
+                    entity.destructible = false
+                end
             end
         end
     end
@@ -507,49 +555,6 @@ local function onDeath(event)
             makeImmortalEntity(surface, entity)
         else
             accountPlayerEntity(entity, map, false, base)
-        end
-    end
-end
-
-local function onEnemyBaseBuild(event)
-    local entity = event.entity
-    if entity.valid then
-        local map = universe.maps[entity.surface.index]
-        if not map then
-            return
-        end
-        map.activeSurface = true
-        local chunk = getChunkByPosition(map, entity.position)
-        if (chunk ~= -1) then
-            local base = findNearbyBase(map, chunk)
-            if not base then
-                base = createBase(map,
-                                  chunk,
-                                  event.tick)
-            end
-
-            registerEnemyBaseStructure(map, entity, base)
-
-            if universe.NEW_ENEMIES then
-                upgradeEntity(entity,
-                              base,
-                              map,
-                              nil,
-                              true,
-                              true)
-            end
-        else
-            local x,y = positionToChunkXY(entity.position)
-            onChunkGenerated({
-                    surface = entity.surface,
-                    tick = event.tick,
-                    area = {
-                        left_top = {
-                            x = x,
-                            y = y
-                        }
-                    }
-            })
         end
     end
 end

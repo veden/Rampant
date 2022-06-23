@@ -4,6 +4,7 @@ Version: 3.1.3
     - Added interface for adding and removing excluded surfaces
   Bugfixes:
     - Removed layer-13 from projectiles
+    - script_raised_built now looks for enemy faction and registers as needed
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2
