@@ -5,6 +5,8 @@ Version: 3.1.3
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
+  Optimizations:
+    - Moved most constants out of global
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2

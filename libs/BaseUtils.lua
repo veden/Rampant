@@ -29,6 +29,17 @@ local queryUtils = require("QueryUtils")
 
 -- constants
 
+local EVO_TO_TIER_MAPPING = constants.EVO_TO_TIER_MAPPING
+local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
+local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
+local COST_LOOKUP = constants.COST_LOOKUP
+local UPGRADE_LOOKUP = constants.UPGRADE_LOOKUP
+
+local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
+
+local EVOLUTION_TABLE_ALIGNMENT = constants.EVOLUTION_TABLE_ALIGNMENT
+local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
+
 local MINIMUM_BUILDING_COST = constants.MINIMUM_BUILDING_COST
 local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
@@ -37,10 +48,6 @@ local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
 local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
 
 local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
-
-local FACTION_SET = constants.FACTION_SET
-
-local HIVE_BUILDINGS_COST = constants.HIVE_BUILDINGS_COST
 
 local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
 local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
@@ -60,13 +67,10 @@ local getChunkByPosition = mapUtils.getChunkByPosition
 
 local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
-local linearInterpolation = mathUtils.linearInterpolation
-
 local mFloor = math.floor
 
 local mMin = math.min
 local mMax = math.max
-local distort = mathUtils.distort
 
 local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 
@@ -78,7 +82,7 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     local v
     local skipsRemaining = maxSkips
     for i=10,1,-1 do
-        if universe.evoToTierMapping[i] <= evolutionFactor then
+        if EVO_TO_TIER_MAPPING[i] <= evolutionFactor then
             v = i
             if (skipsRemaining == 0) or (universe.random() <= 0.75) then
                 break
@@ -91,7 +95,7 @@ end
 
 local function findBaseMutation(universe, targetEvolution)
     local tier = evoToTier(universe, targetEvolution or universe.evolutionLevel, 2)
-    local alignments = universe.evolutionTableAlignment[tier]
+    local alignments = EVOLUTION_TABLE_ALIGNMENT[tier]
 
     local roll = universe.random()
     for i=1,#alignments do
@@ -107,7 +111,6 @@ local function findBaseMutation(universe, targetEvolution)
 end
 
 local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType, entityType)
-    local evolutionTable = map.universe.buildingEvolveLookup
     local entity
 
     local useTier
@@ -123,7 +126,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
         useTier = mMax(maxTier - 3, tier)
     end
 
-    local alignmentTable = evolutionTable[baseAlignment]
+    local alignmentTable = BUILDING_EVOLVE_LOOKUP[baseAlignment]
     local upgrades = alignmentTable[useTier]
 
     if upgrades then
@@ -162,15 +165,12 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
 end
 
 local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
-    local universe = map.universe
-    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
-    local evolutionTable = universe.upgradeLookup
     local entity
 
-    local hiveType = buildingHiveTypeLookup[originalEntity.name]
+    local hiveType = BUILDING_HIVE_TYPE_LOOKUP[originalEntity.name]
 
     for t=maxTier,tier,-1 do
-        local factionLookup = evolutionTable[baseAlignment][t]
+        local factionLookup = UPGRADE_LOOKUP[baseAlignment][t]
         local upgrades = factionLookup[hiveType]
         if not upgrades then
             local mapTypes = FACTION_MUTATION_MAPPING[hiveType]
@@ -196,7 +196,7 @@ end
 local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
     local universe = map.universe
     local adjCurrentEvo = mMax(
-        ((baseAlignment ~= universe.enemyAlignmentLookup[originalEntity.name]) and 0) or currentEvo,
+        ((baseAlignment ~= ENEMY_ALIGNMENT_LOOKUP[originalEntity.name]) and 0) or currentEvo,
         0
     )
 
@@ -210,7 +210,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
     if evolve then
         local chunk = getChunkByPosition(map, originalEntity.position)
         local entityName = originalEntity.name
-        local entityType = map.universe.buildingHiveTypeLookup[entityName]
+        local entityType = BUILDING_HIVE_TYPE_LOOKUP[entityName]
         if not entityType then
             if map.random() < 0.5 then
                 entityType = "biter-spawner"
@@ -227,7 +227,7 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
             (
                 (
                     (roll <= 0.01) and
-                    not map.universe.proxyEntityLookup[entityName]
+                    not PROXY_ENTITY_LOOKUP[entityName]
                 )
                 or
                 (
@@ -321,7 +321,7 @@ function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register, ti
         return spawnerName
     end
     if entity.valid then
-        if map.universe.proxyEntityLookup[entity.name] then
+        if PROXY_ENTITY_LOOKUP[entity.name] then
             entity.destroy()
         end
     end
@@ -437,7 +437,7 @@ function baseUtils.processBaseMutation(chunk, map, base)
         local entities = surface.find_entities_filtered(universe.pbFilteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
-            local cost = (universe.costLookup[entity.name] or MAGIC_MAXIMUM_NUMBER)
+            local cost = (COST_LOOKUP[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
                 local newEntity = baseUtils.upgradeEntity(entity, base, map)
                 if newEntity then
@@ -520,180 +520,14 @@ function baseUtils.createBase(map, chunk, tick)
     return base
 end
 
-local function isMember(lst, x)
-    for _,l in pairs(lst) do
-        if l == x then
-            return true
-        end
-    end
-    return false
-end
-
-function baseUtils.rebuildNativeTables(universe, rg)
-    local alignmentSet = {}
-    universe.evolutionTableAlignment = alignmentSet
-    local buildingSpaceLookup = {}
-    universe.buildingSpaceLookup = buildingSpaceLookup
-    local enemyAlignmentLookup = {}
-    universe.enemyAlignmentLookup = enemyAlignmentLookup
-    local upgradeLookup = {}
-    universe.upgradeLookup = upgradeLookup
-    local buildingEvolveLookup = {}
-    universe.buildingEvolveLookup = buildingEvolveLookup
-    local costLookup = {}
-    universe.costLookup = costLookup
-    local buildingHiveTypeLookup = {}
-    universe.buildingHiveTypeLookup = buildingHiveTypeLookup
-    local proxyEntityLookup = {}
-    universe.proxyEntityLookup = proxyEntityLookup
-    local vanillaEntityLookup = {}
-    universe.vanillaEntityTypeLookup = vanillaEntityLookup
-    local entitySkipCountLookup = {}
-    universe.entitySkipCountLookup = entitySkipCountLookup
-
-    buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
-    buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
-    buildingHiveTypeLookup["small-worm-turret"] = "turret"
-    buildingHiveTypeLookup["medium-worm-turret"] = "turret"
-    buildingHiveTypeLookup["big-worm-turret"] = "turret"
-    buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
-
-    vanillaEntityLookup["biter-spawner"] = true
-    vanillaEntityLookup["spitter-spawner"] = true
-    vanillaEntityLookup["small-worm-turret"] = true
-    vanillaEntityLookup["medium-worm-turret"] = true
-    vanillaEntityLookup["big-worm-turret"] = true
-    vanillaEntityLookup["behemoth-worm-turret"] = true
-
-    for i=1,#FACTION_SET do
-        local faction = FACTION_SET[i]
-
-        local factionUpgradeLookup = {}
-        upgradeLookup[faction.type] = factionUpgradeLookup
-        local factionBuildingPicker = {}
-        buildingEvolveLookup[faction.type] = factionBuildingPicker
-
-        for t=1,10 do
-            local alignments = alignmentSet[t]
-            if not alignments then
-                alignments = {}
-                alignmentSet[t] = alignments
-            end
-
-            --[[
-                alignments table is a table that is used for selecting what factions are available
-                to pick given an evolution level.
-
-                evolutionTable is a table that given a faction allows the selection of a building
-                type based on the propabilities given. Once the the building type is selected given
-                a faction, then the evolution decides what level of building to select
-            --]]
-            local factionAcceptRate = faction.acceptRate
-
-            local low = factionAcceptRate[1]
-            local high = factionAcceptRate[2]
-            if (low <= t) and (t <= high) then
-                alignments[#alignments+1] = {
-                    distort(rg,
-                            linearInterpolation((t - low) / (high - low), factionAcceptRate[3], factionAcceptRate[4])),
-                    faction.type
-                }
-            end
-
-            local tieredUpgradeBuildingSet = factionUpgradeLookup[t]
-            if not tieredUpgradeBuildingSet then
-                tieredUpgradeBuildingSet = {}
-                factionUpgradeLookup[t] = tieredUpgradeBuildingSet
-            end
-
-            local tieredBuildingPickerSet = factionBuildingPicker[t]
-            if not tieredBuildingPickerSet then
-                tieredBuildingPickerSet = {}
-                factionBuildingPicker[t] = tieredBuildingPickerSet
-            end
-
-            for b=1,#faction.buildings do
-                local building = faction.buildings[b]
-
-                local buildingSet = tieredUpgradeBuildingSet[building.type]
-                if not buildingSet then
-                    buildingSet = {}
-                    tieredUpgradeBuildingSet[building.type] = buildingSet
-                end
-
-                local variationSet = {}
-                for v=1,universe.ENEMY_VARIATIONS do
-                    local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
-                    enemyAlignmentLookup[entry] = faction.type
-                    local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
-                    proxyEntityLookup[proxyEntity] = true
-                    buildingSpaceLookup[entry] = proxyEntity
-                    costLookup[entry] = HIVE_BUILDINGS_COST[building.type]
-                    buildingHiveTypeLookup[entry] = building.type
-                    if not buildingHiveTypeLookup[proxyEntity] then
-                        buildingHiveTypeLookup[proxyEntity] = building.type
-                    end
-                    variationSet[#variationSet+1] = entry
-                    for _,unit in pairs(faction.units) do
-                        if isMember(unit.attributes, "skipKillCount") then
-                            local name = faction.type .. "-" .. unit.name .. "-v" .. v .. "-t" .. t .. "-rampant"
-                            universe.entitySkipCountLookup[name] = true
-                        end
-                    end
-                end
-
-                local buildingAcceptRate = building.acceptRate
-
-                local buildingLow = buildingAcceptRate[1]
-                local buildingHigh = buildingAcceptRate[2]
-                if (buildingLow <= t) and (t <= buildingHigh) then
-                    for vi=1,#variationSet do
-                        local variation = variationSet[vi]
-                        buildingSet[#buildingSet+1] = variation
-                    end
-                    tieredBuildingPickerSet[#tieredBuildingPickerSet+1] = {
-                        distort(rg,
-                                linearInterpolation((t - buildingLow) / (buildingHigh - buildingLow),
-                                    buildingAcceptRate[3],
-                                    buildingAcceptRate[4])),
-                        variationSet,
-                        building.type
-                    }
-                end
-            end
-        end
-    end
-
-    for t=1,10 do
-        local alignments = alignmentSet[t]
-        local totalAlignment = 0
-        for i=1,#alignments do
-            totalAlignment = totalAlignment + alignments[i][1]
-        end
-        for i=1,#alignments do
-            alignments[i][1] = alignments[i][1] / totalAlignment
-        end
-
-        for fi=1,#FACTION_SET do
-            local faction = FACTION_SET[fi]
-            local factionBuildingSet = buildingEvolveLookup[faction.type][t]
-            local totalBuildingSet = 0
-            for i=1,#factionBuildingSet do
-                totalBuildingSet = totalBuildingSet + factionBuildingSet[i][1]
-            end
-            for i=1,#factionBuildingSet do
-                factionBuildingSet[i][1] = factionBuildingSet[i][1] / totalBuildingSet
-            end
-        end
-    end
-
+function baseUtils.rebuildNativeTables(universe)
     local evoIndex = evoToTier(universe, universe.evolutionLevel, 2)
 
     if universe.bases then
         for _,base in pairs(universe.bases) do
             for x=1,2 do
                 local alignment = base.alignment[x]
-                if alignment and not universe.buildingEvolveLookup[alignment] then
+                if alignment and not BUILDING_EVOLVE_LOOKUP[alignment] then
                     base.alignment = findBaseInitialAlignment(universe, evoIndex)
                     break
                 elseif not alignment and (x == 1) then

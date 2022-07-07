@@ -355,7 +355,6 @@ function tests.scanEnemy()
     local map = global.universe.maps[game.player.surface.index]
     local chunk = mapUtils.getChunkByPosition(map, game.player.character.position)
     local universe = map.universe
-    local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
     local query = universe.filteredEntitiesEnemyStructureQuery
     queryUtils.setAreaInQuery(query, chunk, constants.CHUNK_SIZE)
     local buildings = map.surface.find_entities_filtered(query)
@@ -365,7 +364,7 @@ function tests.scanEnemy()
     end
     for i=1,#buildings do
         local building = buildings[i]
-        local hiveType = buildingHiveTypeLookup[building.name] or
+        local hiveType = constants.BUILDING_HIVE_TYPE_LOOKUP[building.name] or
             (((building.type == "turret") and "turret") or "biter-spawner")
         counts[hiveType] = counts[hiveType] + 1
     end

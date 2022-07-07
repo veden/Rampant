@@ -24,13 +24,15 @@ local chunkProcessor = {}
 local chunkUtils = require("ChunkUtils")
 local queryUtils = require("QueryUtils")
 local mapUtils = require("MapUtils")
--- local constants = require("Constants")
+local constants = require("Constants")
 
 -- constants
 
 -- local CHUNK_SIZE = constants.CHUNK_SIZE
 -- local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
 -- local QUARTER_CHUNK_SIZE = constants.QUARTER_CHUNK_SIZE
+
+local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
 
 -- imported functions
 
@@ -152,7 +154,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             query.name = entityData.name
             unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
             entity.destroy()
-            local foundPosition = surface.find_non_colliding_position(universe.buildingSpaceLookup[entityData.name],
+            local foundPosition = surface.find_non_colliding_position(BUILDING_SPACE_LOOKUP[entityData.name],
                                                                       position,
                                                                       2,
                                                                       1,

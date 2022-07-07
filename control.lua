@@ -38,6 +38,9 @@ local queryUtils = require("libs/QueryUtils")
 
 -- constants
 
+local ENTITY_SKIP_COUNT_LOOKUP = constants.ENTITY_SKIP_COUNT_LOOKUP
+local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
+
 local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
 
@@ -293,15 +296,7 @@ local function onConfigChanged()
     universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
 
     if universe.NEW_ENEMIES then
-        rebuildNativeTables(universe, universe.random)
-    else
-        universe.buildingHiveTypeLookup = {}
-        universe.buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
-        universe.buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
-        universe.buildingHiveTypeLookup["small-worm-turret"] = "turret"
-        universe.buildingHiveTypeLookup["medium-worm-turret"] = "turret"
-        universe.buildingHiveTypeLookup["big-worm-turret"] = "turret"
-        universe.buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
+        rebuildNativeTables(universe)
     end
 
     -- not a completed implementation needs if checks to use all forces
@@ -384,7 +379,7 @@ local function onBuild(event)
     local entity = event.created_entity or event.entity
     if entity.valid then
         local entityForceName = entity.force.name
-        if entityForceName == "enemy" and universe.buildingHiveTypeLookup[entity.name] then
+        if entityForceName == "enemy" and BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
             onEnemyBaseBuild(event)
         else
             local map = universe.maps[entity.surface.index]
@@ -465,7 +460,7 @@ local function onDeath(event)
             end
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-            if (entityType == "unit") and not universe.entitySkipCountLookup[entity.name] then
+            if (entityType == "unit") and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
                 if base then
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
                     if damageTypeName then
@@ -491,7 +486,7 @@ local function onDeath(event)
                                  tick,
                                  (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
                 end
-            elseif universe.buildingHiveTypeLookup[entity.name] or
+            elseif BUILDING_HIVE_TYPE_LOOKUP[entity.name] or
                 (entityType == "unit-spawner") or
                 (entityType == "turret")
             then
@@ -679,7 +674,7 @@ local function onEntitySpawned(entity, tick)
         if not map then
             return
         end
-        if universe.buildingHiveTypeLookup[entity.name] then
+        if BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
             map.activeSurface = true
             local disPos = distortPosition(universe.random, entity.position, 8)
 

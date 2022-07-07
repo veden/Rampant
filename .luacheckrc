@@ -1,4 +1,5 @@
 globals = {
+        "mods",
         "game",
         "util",
         "data",

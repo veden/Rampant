@@ -26,7 +26,6 @@ local mapUtils = require("MapUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
-local baseUtils = require("BaseUtils")
 
 -- constants
 

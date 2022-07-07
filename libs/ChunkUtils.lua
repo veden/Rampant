@@ -30,6 +30,8 @@ local queryUtils = require("QueryUtils")
 
 -- constants
 
+local VANILLA_ENTITY_TYPE_LOOKUP = constants.VANILLA_ENTITY_TYPE_LOOKUP
+local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
 local HIVE_BUILDINGS_TYPES = constants.HIVE_BUILDINGS_TYPES
 
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
@@ -243,8 +245,6 @@ function chunkUtils.initialScan(chunk, map, tick)
             local resources = surface.count_entities_filtered(universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
             setResourceGenerator(map, chunk, resources)
 
-            local vanillaEntityTypeLookup = universe.vanillaEntityTypeLookup
-            local buildingHiveTypeLookup = universe.buildingHiveTypeLookup
             local counts = map.chunkScanCounts
             for i=1,#HIVE_BUILDINGS_TYPES do
                 counts[HIVE_BUILDINGS_TYPES[i]] = 0
@@ -269,8 +269,8 @@ function chunkUtils.initialScan(chunk, map, tick)
                         local enemyBuilding = enemyBuildings[i]
                         chunkUtils.registerEnemyBaseStructure(map, enemyBuilding, base)
                         local entityName = enemyBuilding.name
-                        local isVanilla = vanillaEntityTypeLookup[entityName]
-                        if isVanilla or (not isVanilla and not buildingHiveTypeLookup[entityName]) then
+                        local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
+                        if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
                             upgradeEntity(enemyBuilding, base, map, nil, true)
                         end
                     end
@@ -484,9 +484,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base, skipCount)
     local entityType = entity.type
 
     local addFunc
-    local universe = map.universe
-    local hiveTypeLookup = universe.buildingHiveTypeLookup
-    local hiveType = hiveTypeLookup[entity.name]
+    local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
     if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
         addFunc = addNestCount
     elseif (hiveType == "turret") then
@@ -529,8 +527,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
     local entityType = entity.type
 
     local removeFunc
-    local hiveTypeLookup = map.universe.buildingHiveTypeLookup
-    local hiveType = hiveTypeLookup[entity.name]
+    local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
     if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
         removeFunc = removeNestCount
     elseif (hiveType == "turret") then

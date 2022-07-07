@@ -485,8 +485,6 @@ function upgrade.attempt(universe)
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
             constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 
-        universe.evolutionTableAlignment = {}
-
         universe.kamikazeThreshold = 0
         universe.attackWaveLowerBound = 1
 
@@ -511,8 +509,6 @@ function upgrade.attempt(universe)
         universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
         universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
         universe.debugTemperament = settings.global["rampant--debugTemperament"].value
-
-        universe.enemyAlignmentLookup = {}
 
         game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
         game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
@@ -576,18 +572,9 @@ function upgrade.attempt(universe)
         universe.maxPoints = 0
         universe.maxOverflowPoints = 0
 
-        universe.proxyEntityLookup = {}
-        universe.vanillaEntityLookups = {}
-
         addCommandSet(universe)
 
-        local evoToTierMapping = {}
-        universe.evoToTierMapping = evoToTierMapping
         universe.bases = {}
-
-        for i=1,10 do
-            evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
-        end
 
         for _,map in pairs(universe.maps) do
             if (map.surface.valid) then
@@ -604,11 +591,6 @@ function upgrade.attempt(universe)
         upgrade.excludeSurface(universe)
 
         universe.processBaseAIIterator = nil
-    end
-    if global.version < 303 then
-        global.version = 303
-
-        universe.entitySkipCountLookup = {}
     end
     if global.version < 304 then
         global.version = 304
@@ -629,6 +611,18 @@ function upgrade.attempt(universe)
         global.version = 305
 
         universe.excludedSurfaces = {}
+
+        universe.evolutionTableAlignment = nil
+        universe.buildingSpaceLookup = nil
+        universe.enemyAlignmentLookup = nil
+        universe.upgradeLookup = nil
+        universe.buildingEvolveLookup = nil
+        universe.costLookup = nil
+        universe.buildingHiveTypeLookup = nil
+        universe.proxyEntityLookup = nil
+        universe.vanillaEntityTypeLookup = nil
+        universe.entitySkipCountLookup = nil
+        universe.evoToTierMapping = nil
 
         game.print("Rampant - Version 3.1.3")
     end

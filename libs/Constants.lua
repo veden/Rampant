@@ -19,6 +19,8 @@ if constantsG then
 end
 local constants = {}
 
+local mathUtils = require("MathUtils")
+
 -- versions
 
 constants.VERSION_5 = 5
@@ -1664,6 +1666,181 @@ end
 constants.MAX_HIVE_TTL = 2485
 constants.MIN_HIVE_TTL = 890
 constants.DEV_HIVE_TTL = 150
+
+local rg = mathUtils.xorRandom(settings.startup["rampant--enemySeed"].value)
+
+local alignmentSet = {}
+constants.EVOLUTION_TABLE_ALIGNMENT = alignmentSet -- evolutionTableAlignment
+local buildingSpaceLookup = {}
+constants.BUILDING_SPACE_LOOKUP = buildingSpaceLookup -- buildingSpaceLookup
+local enemyAlignmentLookup = {}
+constants.ENEMY_ALIGNMENT_LOOKUP = enemyAlignmentLookup -- enemyAlignmentLookup
+local upgradeLookup = {}
+constants.UPGRADE_LOOKUP = upgradeLookup --upgradeLookup
+local buildingEvolveLookup = {}
+constants.BUILDING_EVOLVE_LOOKUP = buildingEvolveLookup --buildingEvolveLookup
+local costLookup = {}
+constants.COST_LOOKUP = costLookup --costLookup
+local buildingHiveTypeLookup = {}
+constants.BUILDING_HIVE_TYPE_LOOKUP = buildingHiveTypeLookup --buildingHiveTypeLookup
+local proxyEntityLookup = {}
+constants.PROXY_ENTITY_LOOKUP = proxyEntityLookup --proxyEntityLookup
+local vanillaEntityLookup = {}
+constants.VANILLA_ENTITY_TYPE_LOOKUP = vanillaEntityLookup --vanillaEntityTypeLookup
+local entitySkipCountLookup = {}
+constants.ENTITY_SKIP_COUNT_LOOKUP = entitySkipCountLookup --entitySkipCountLookup
+
+buildingHiveTypeLookup["biter-spawner"] = "biter-spawner"
+buildingHiveTypeLookup["spitter-spawner"] = "spitter-spawner"
+buildingHiveTypeLookup["small-worm-turret"] = "turret"
+buildingHiveTypeLookup["medium-worm-turret"] = "turret"
+buildingHiveTypeLookup["big-worm-turret"] = "turret"
+buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
+
+vanillaEntityLookup["biter-spawner"] = true
+vanillaEntityLookup["spitter-spawner"] = true
+vanillaEntityLookup["small-worm-turret"] = true
+vanillaEntityLookup["medium-worm-turret"] = true
+vanillaEntityLookup["big-worm-turret"] = true
+vanillaEntityLookup["behemoth-worm-turret"] = true
+
+local function isMember(lst, x)
+    for _,l in pairs(lst) do
+        if l == x then
+            return true
+        end
+    end
+    return false
+end
+
+for i=1,#constants.FACTION_SET do
+    local faction = constants.FACTION_SET[i]
+
+    local factionUpgradeLookup = {}
+    upgradeLookup[faction.type] = factionUpgradeLookup
+    local factionBuildingPicker = {}
+    buildingEvolveLookup[faction.type] = factionBuildingPicker
+
+    for t=1,10 do
+        local alignments = alignmentSet[t]
+        if not alignments then
+            alignments = {}
+            alignmentSet[t] = alignments
+        end
+
+        --[[
+            alignments table is a table that is used for selecting what factions are available
+            to pick given an evolution level.
+
+            evolutionTable is a table that given a faction allows the selection of a building
+            type based on the propabilities given. Once the the building type is selected given
+            a faction, then the evolution decides what level of building to select
+        --]]
+        local factionAcceptRate = faction.acceptRate
+
+        local low = factionAcceptRate[1]
+        local high = factionAcceptRate[2]
+        if (low <= t) and (t <= high) then
+            alignments[#alignments+1] = {
+                mathUtils.distort(rg,
+                                  mathUtils.linearInterpolation((t - low) / (high - low), factionAcceptRate[3], factionAcceptRate[4])),
+                faction.type
+            }
+        end
+
+        local tieredUpgradeBuildingSet = factionUpgradeLookup[t]
+        if not tieredUpgradeBuildingSet then
+            tieredUpgradeBuildingSet = {}
+            factionUpgradeLookup[t] = tieredUpgradeBuildingSet
+        end
+
+        local tieredBuildingPickerSet = factionBuildingPicker[t]
+        if not tieredBuildingPickerSet then
+            tieredBuildingPickerSet = {}
+            factionBuildingPicker[t] = tieredBuildingPickerSet
+        end
+
+        for b=1,#faction.buildings do
+            local building = faction.buildings[b]
+
+            local buildingSet = tieredUpgradeBuildingSet[building.type]
+            if not buildingSet then
+                buildingSet = {}
+                tieredUpgradeBuildingSet[building.type] = buildingSet
+            end
+
+            local variationSet = {}
+            for v=1,settings.startup["rampant--newEnemyVariations"].value do
+                local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
+                enemyAlignmentLookup[entry] = faction.type
+                local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
+                proxyEntityLookup[proxyEntity] = true
+                buildingSpaceLookup[entry] = proxyEntity
+                costLookup[entry] = constants.HIVE_BUILDINGS_COST[building.type]
+                buildingHiveTypeLookup[entry] = building.type
+                if not buildingHiveTypeLookup[proxyEntity] then
+                    buildingHiveTypeLookup[proxyEntity] = building.type
+                end
+                variationSet[#variationSet+1] = entry
+                for _,unit in pairs(faction.units) do
+                    if isMember(unit.attributes, "skipKillCount") then
+                        local name = faction.type .. "-" .. unit.name .. "-v" .. v .. "-t" .. t .. "-rampant"
+                        constants.ENTITY_SKIP_COUNT_LOOKUP[name] = true
+                    end
+                end
+            end
+
+            local buildingAcceptRate = building.acceptRate
+
+            local buildingLow = buildingAcceptRate[1]
+            local buildingHigh = buildingAcceptRate[2]
+            if (buildingLow <= t) and (t <= buildingHigh) then
+                for vi=1,#variationSet do
+                    local variation = variationSet[vi]
+                    buildingSet[#buildingSet+1] = variation
+                end
+                tieredBuildingPickerSet[#tieredBuildingPickerSet+1] = {
+                    mathUtils.distort(rg,
+                                      mathUtils.linearInterpolation((t - buildingLow) / (buildingHigh - buildingLow),
+                                          buildingAcceptRate[3],
+                                          buildingAcceptRate[4])),
+                    variationSet,
+                    building.type
+                }
+            end
+        end
+    end
+end
+
+for t=1,10 do
+    local alignments = alignmentSet[t]
+    local totalAlignment = 0
+    for i=1,#alignments do
+        totalAlignment = totalAlignment + alignments[i][1]
+    end
+    for i=1,#alignments do
+        alignments[i][1] = alignments[i][1] / totalAlignment
+    end
+
+    for fi=1,#constants.FACTION_SET do
+        local faction = constants.FACTION_SET[fi]
+        local factionBuildingSet = buildingEvolveLookup[faction.type][t]
+        local totalBuildingSet = 0
+        for i=1,#factionBuildingSet do
+            totalBuildingSet = totalBuildingSet + factionBuildingSet[i][1]
+        end
+        for i=1,#factionBuildingSet do
+            factionBuildingSet[i][1] = factionBuildingSet[i][1] / totalBuildingSet
+        end
+    end
+end
+
+local evoToTierMapping = {}
+constants.EVO_TO_TIER_MAPPING = evoToTierMapping --evoToTierMapping
+
+for i=1,10 do
+    evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
+end
 
 constantsG =  constants
 return constants

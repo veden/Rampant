@@ -21,11 +21,9 @@ local mathUtils = {}
 
 -- imports
 
-local constants = require("Constants")
-
 -- constants
 
-local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
+local TICKS_A_MINUTE = 60 * 60
 
 -- imported functions
 
