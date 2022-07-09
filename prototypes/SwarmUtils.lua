@@ -35,6 +35,10 @@ local fireUtils = require("utils/FireUtils")
 local constants = require("__Rampant__/libs/Constants")
 local mathUtils = require("__Rampant__/libs/MathUtils")
 
+-- imported constants
+
+local TIERS = constants.TIERS
+
 -- imported functions
 
 local roundToNearest = mathUtils.roundToNearest
@@ -46,7 +50,7 @@ local distort = mathUtils.distort
 
 local deepcopy = util.table.deepcopy
 
-local TIER_UPGRADE_SET_10 = constants.TIER_UPGRADE_SET_10
+local TIER_UPGRADE_SET = constants.TIER_UPGRADE_SET
 
 local xorRandom = mathUtils.xorRandom(settings.startup["rampant--enemySeed"].value)
 
@@ -479,17 +483,13 @@ local wormAttributeNumeric = {
     ["evolutionRequirement"] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 }
 }
 
-local propTables10 = {
+local propTables = {
     {{0, 1}, {0.65, 0.0}},
-    {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}},
-    {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}},
-    {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}},
-    {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}},
-    {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}},
-    {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}},
-    {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}},
-    {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}},
-    {{0.93, 0}, {1, 1.0}}
+    {{0.25, 0}, {0.4, 0.5}, {0.80, 0.0}},
+    {{0.5, 0}, {0.60, 0.5}, {0.95, 0.0}},
+    {{0.75, 0}, {0.825, 0.5}, {1, 0.1}},
+    -- {{0.8, 0}, {0.85, 0.5}, {1, 0.2}},
+    {{0.90, 0}, {0.925, 0.5}, {1, 0.9}}
 }
 
 local function fillUnitTable(result, unitSet, tier, probability)
@@ -502,15 +502,11 @@ local function unitSetToProbabilityTable(unitSet)
     local result = {}
 
     fillUnitTable(result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
-    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
-    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
-    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
-    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
-    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
+    fillUnitTable(result, unitSet, 2, {{0.25, 0}, {0.4, 0.5}, {0.80, 0.0}})
+    fillUnitTable(result, unitSet, 3, {{0.5, 0}, {0.60, 0.5}, {0.95, 0.0}})
+    fillUnitTable(result, unitSet, 4, {{0.75, 0}, {0.825, 0.5}, {1, 0.1}})
+    -- fillUnitTable(result, unitSet, 5, {{0.8, 0}, {0.85, 0.5}, {1, 0.2}})
+    fillUnitTable(result, unitSet, 5, {{0.90, 0}, {0.925, 0.5}, {1, 0.9}})
 
     return result
 end
@@ -831,7 +827,7 @@ local function fillEntityTemplate(entity)
                                         projectile = createCapsuleProjectile(attack,
                                                                              attack.faction .. "-" .. attribute[2]
                                                                              .. "-v" .. attack.variation .. "-t"
-                                                                             .. attack.effectiveLevel .. "-rampant"),
+                                                                             .. attack.tier .. "-rampant"),
                                         direction_deviation = 0.6,
                                         starting_speed = 0.25,
                                         max_range = attack.range,
@@ -910,10 +906,10 @@ end
 function swarmUtils.buildUnits(template)
     local unitSet = {}
 
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
 
-    for tier=1, 10 do
-        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+    for tier=1, TIERS do
+        local effectiveLevel = TIER_UPGRADE_SET[tier]
         local result = {}
 
         for i=1,variations do
@@ -942,20 +938,6 @@ function swarmUtils.buildUnits(template)
                 unit.roarSounds = biterRoarSounds[effectiveLevel]
                 entity = makeBiter(unit)
             elseif (unit.type == "drone") then
-                -- if not unit.death then
-                --     unit.death = {
-                --         type = "direct",
-                --         action_delivery =
-                --             {
-                --                 type = "instant",
-                --                 target_effects =
-                --                     {
-                --                         type = "create-entity",
-                --                         entity_name = "massive-explosion"
-                --                     }
-                --             }
-                --     }
-                -- end
                 entity = makeDrone(unit)
             end
 
@@ -973,15 +955,13 @@ end
 local function buildEntities(entityTemplates)
     local unitSet = {}
 
-    for tier=1, 10 do
-        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
-
-        local entityTemplate = entityTemplates[effectiveLevel]
+    for tier=1, TIERS do
+        local entityTemplate = entityTemplates[tier]
 
         for ei=1,#entityTemplate do
             local template = entityTemplate[ei]
 
-            local probability = deepcopy(propTables10[tier])
+            local probability = deepcopy(propTables[tier])
 
             for z=1,#probability do
                 probability[z][2] = probability[z][2] * template[2]
@@ -994,10 +974,10 @@ local function buildEntities(entityTemplates)
 end
 
 function swarmUtils.buildEntitySpawner(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
 
-    for tier=1, 10 do
-        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+    for tier=1, TIERS do
+        local effectiveLevel = TIER_UPGRADE_SET[tier]
 
         for i=1,variations do
             local unitSpawner = deepcopy(template)
@@ -1021,10 +1001,10 @@ function swarmUtils.buildEntitySpawner(template)
 end
 
 function swarmUtils.buildUnitSpawner(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
 
-    for tier=1, 10 do
-        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+    for tier=1, TIERS do
+        local effectiveLevel = TIER_UPGRADE_SET[tier]
 
         for i=1,variations do
             local unitSpawner = deepcopy(template)
@@ -1050,10 +1030,10 @@ function swarmUtils.buildUnitSpawner(template)
 end
 
 function swarmUtils.buildWorm(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
 
-    for tier=1, 10 do
-        local effectiveLevel = TIER_UPGRADE_SET_10[tier]
+    for tier=1, TIERS do
+        local effectiveLevel = TIER_UPGRADE_SET[tier]
         for i=1,variations do
             local worm = deepcopy(template)
             worm.name = worm.name .. "-v" .. i .. "-t" .. tier
@@ -1248,7 +1228,7 @@ local function buildAttack(faction, template)
                     {
                         {
                             type="create-entity",
-                            entity_name = "poison-cloud-v" .. attributes.effectiveLevel .. "-cloud-rampant"
+                            entity_name = "poison-cloud-v" .. attributes.tier .. "-cloud-rampant"
                         }
                     }
             end
@@ -1388,7 +1368,7 @@ local function buildAttack(faction, template)
             if (attack[1] == "drone") then
                 template.entityGenerator = function (attributes)
                     return template.faction .. "-" .. attack[2] .. "-v" ..
-                        attributes.variation .. "-t" .. attributes.effectiveLevel .. "-drone-rampant"
+                        attributes.variation .. "-t" .. attributes.tier .. "-drone-rampant"
                 end
             end
         else
@@ -1517,7 +1497,7 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
 
     -- local unitVariations = settings.startup["rampant--newEnemyVariations"].value
 
-    for t=1,10 do
+    for t=1,TIERS do
         for i=1,#template.buildSets do
             local buildSet = template.buildSets[i]
             if (buildSet[2] <= t) and (t <= buildSet[3]) then
@@ -1575,7 +1555,7 @@ local function buildHiveTemplate(faction, incomingTemplate)
 
     local unitSet = {}
 
-    for t=1,10 do
+    for t=1,TIERS do
         local unitSetTier = unitSet[t]
         for i=1,#template.buildSets do
             local buildSet = template.buildSets[i]
@@ -1600,9 +1580,6 @@ local function buildHiveTemplate(faction, incomingTemplate)
         for i=1,#unitSetTier do
             unitSetTier[i][2] = unitSetTier[i][2] / total
         end
-        -- while (#unitSet[t] > unitVariations) do
-        --     table.remove(unitSet, math.random(#unitSet[t]))
-        -- end
     end
 
     template.unitSet = buildEntities(unitSet)
@@ -1631,8 +1608,6 @@ local function generateSpawnerProxyTemplate(name, health, result_units)
         dying_sound = nil,
         damaged_trigger_effect = nil,
         healing_per_tick = -1,
-        -- collision_box = {{-3,-3},{3,3}},
-        -- selection_box = {{-3,-3},{3,3}},
         collision_box = nil,
         selection_box = nil,
         -- in ticks per 1 pu
@@ -1645,14 +1620,7 @@ local function generateSpawnerProxyTemplate(name, health, result_units)
         max_count_of_owned_units = 0,
         max_friends_around_to_spawn = 0,
         enemy_map_color = {r=0,g=0,b=0,a=0},
-        -- enemy_map_color = {r=0,g=1,b=1,a=1},
         animations = { filename = "__core__/graphics/empty.png", size = 1 },
-        -- animations ={
-        --     spawner_idle_animation(0, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-        --     spawner_idle_animation(1, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-        --     spawner_idle_animation(2, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1}),
-        --     spawner_idle_animation(3, {r=1,b=1,g=1,a=1}, 1, {r=1,b=1,g=1,a=1})
-        -- },
         integration = nil,
         result_units = result_units,
         -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds

@@ -405,8 +405,8 @@ local function roundToNearest(number, multiple)
     return num - (num % multiple)
 end
 
-local tiers10 = {}
-
+local tiersSet = {}
+constants.TIERS = 5
 local tierStart = settings.startup["rampant--tierStart"].value
 local tierEnd = settings.startup["rampant--tierEnd"].value
 
@@ -419,21 +419,21 @@ local function buildTier(size, tiers)
     end
 end
 
-buildTier(10, tiers10)
+buildTier(constants.TIERS, tiersSet)
 
-constants.TIER_UPGRADE_SET_10 = tiers10
+constants.TIER_UPGRADE_SET = tiersSet
 
-local variations = settings.startup["rampant--newEnemyVariations"].value
+local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
-for tier=1, 10 do
+for tier=1, constants.TIERS do
     for i=1,variations do
         constants.ENERGY_THIEF_LOOKUP["energy-thief-worm-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
 end
 
-for tier=1, 10 do
+for tier=1, constants.TIERS do
     for i=1,variations do
         constants.ENERGY_THIEF_LOOKUP["energy-thief-biter-v" .. i .. "-t" .. tier .. "-rampant"] = true
     end
@@ -1721,7 +1721,7 @@ for i=1,#constants.FACTION_SET do
     local factionBuildingPicker = {}
     buildingEvolveLookup[faction.type] = factionBuildingPicker
 
-    for t=1,10 do
+    for t=1,constants.TIERS do
         local alignments = alignmentSet[t]
         if not alignments then
             alignments = {}
@@ -1770,7 +1770,8 @@ for i=1,#constants.FACTION_SET do
             end
 
             local variationSet = {}
-            for v=1,settings.startup["rampant--newEnemyVariations"].value do
+            for v=1,1-- settings.startup["rampant--newEnemyVariations"].value
+            do
                 local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                 enemyAlignmentLookup[entry] = faction.type
                 local proxyEntity = "entity-proxy-" .. building.type .. "-t" .. t .. "-rampant"
@@ -1812,7 +1813,7 @@ for i=1,#constants.FACTION_SET do
     end
 end
 
-for t=1,10 do
+for t=1,constants.TIERS do
     local alignments = alignmentSet[t]
     local totalAlignment = 0
     for i=1,#alignments do
@@ -1835,12 +1836,7 @@ for t=1,10 do
     end
 end
 
-local evoToTierMapping = {}
-constants.EVO_TO_TIER_MAPPING = evoToTierMapping --evoToTierMapping
-
-for i=1,10 do
-    evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
-end
+constants.EVO_TO_TIER_MAPPING = {0, 0.25, 0.5, 0.75, 0.90}
 
 constantsG =  constants
 return constants

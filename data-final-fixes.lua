@@ -22,19 +22,21 @@ local constants = require("libs/Constants")
 
 if settings.startup["rampant--newEnemies"].value then
     swarmUtils.processFactions()
-    swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["neutral-biter-spawner-v1-t10-rampant"].result_units)
+    swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["neutral-biter-spawner-v1-t"..constants.TIERS.."-rampant"].result_units)
 
     if mods["SchallAlienLoot"] then
         local SizeLootRampant = {1, 2, 3, 3, 4, 4, 4, 5, 5, 6}
         for _,faction in pairs(constants.FACTION_SET) do
-            for v=1,settings.startup["rampant--newEnemyVariations"].value do
-                for factionSize = 1, 10 do
+            for v=1,1-- settings.startup["rampant--newEnemyVariations"].value
+            do
+                for factionSize = 1, constants.TIERS do
+                    local effectiveLevel = constants.TIER_UPGRADE_SET[factionSize]
                     SchallAlienLoot_add_spawner(faction.type.."-hive-v"..v.."-t"..factionSize.."-rampant")
                     SchallAlienLoot_add_spawner(faction.type.."-spitter-spawner-v"..v.."-t"..factionSize.."-rampant")
                     SchallAlienLoot_add_spawner(faction.type.."-biter-spawner-v"..v.."-t"..factionSize.."-rampant")
                     SchallAlienLoot_add_worm(faction.type.."-worm-v"..v.."-t"..factionSize.."-rampant", factionSize)
-                    SchallAlienLoot_add_mover(faction.type.."-spitter-v"..v.."-t"..factionSize.."-rampant", SizeLootRampant[factionSize])
-                    SchallAlienLoot_add_mover(faction.type.."-biter-v"..v.."-t"..factionSize.."-rampant", SizeLootRampant[factionSize])
+                    SchallAlienLoot_add_mover(faction.type.."-spitter-v"..v.."-t"..factionSize.."-rampant", SizeLootRampant[effectiveLevel])
+                    SchallAlienLoot_add_mover(faction.type.."-biter-v"..v.."-t"..factionSize.."-rampant", SizeLootRampant[effectiveLevel])
                 end
             end
         end

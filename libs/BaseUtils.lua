@@ -29,6 +29,7 @@ local queryUtils = require("QueryUtils")
 
 -- constants
 
+local TIERS = constants.TIERS
 local EVO_TO_TIER_MAPPING = constants.EVO_TO_TIER_MAPPING
 local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
@@ -81,7 +82,7 @@ local next = next
 local function evoToTier(universe, evolutionFactor, maxSkips)
     local v
     local skipsRemaining = maxSkips
-    for i=10,1,-1 do
+    for i=TIERS,1,-1 do
         if EVO_TO_TIER_MAPPING[i] <= evolutionFactor then
             v = i
             if (skipsRemaining == 0) or (universe.random() <= 0.75) then

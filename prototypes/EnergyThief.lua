@@ -18,12 +18,15 @@
 -- imports
 
 local thiefUtils = require("utils/ThiefUtils")
+local constants = require("libs/Constants")
 
 -- constants
 
 local energyThief = {}
 
 -- imported functions
+
+local TIERS = constants.TIERS
 
 local makeDrainCrystal = thiefUtils.makeDrainCrystal
 
@@ -271,7 +274,7 @@ function energyThief.addFactionAddon()
     })
 
 
-    for i=1,10 do
+    for i=1,TIERS do
         local drainCrystalAttributes = {
             name = "crystal-v" .. i,
             drain = i * 1.3 .. "MW",
