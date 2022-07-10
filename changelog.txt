@@ -2,6 +2,10 @@
 Version: 3.1.3
   Compatibility:
     - Added interface for adding and removing excluded surfaces
+  Tweaks:
+    - Added minimum evolution of 20% before faction adaptation will happen
+    - Increased the death thresholds to 17000 <50%, 34000 <70%, 60000 <90%, 100000 for adaptation
+    - Changed spawner pollution check to use 75% of the chunk pollution diffuse value
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

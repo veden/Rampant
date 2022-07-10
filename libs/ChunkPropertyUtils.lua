@@ -626,22 +626,23 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
                 local x = chunk.x
                 local y = chunk.y
                 local position = {x=0,y=0}
+                local pollutionThreshold = universe.pollutionDiffuseMinimum
                 position.x = x + 32
                 position.y = y
-                if (surface.get_pollution(position) > 0) then
+                if (surface.get_pollution(position) > pollutionThreshold) then
                     chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                 else
                     position.x = x - 32
-                    if (surface.get_pollution(position) > 0) then
+                    if (surface.get_pollution(position) > pollutionThreshold) then
                         chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                     else
                         position.x = x
                         position.y = y - 32
-                        if (surface.get_pollution(position) > 0) then
+                        if (surface.get_pollution(position) > pollutionThreshold) then
                             chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                         else
                             position.y = y + 32
-                            if (surface.get_pollution(position) > 0) then
+                            if (surface.get_pollution(position) > pollutionThreshold) then
                                 chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                             else
                                 chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2, base)

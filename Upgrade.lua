@@ -623,6 +623,11 @@ function upgrade.attempt(universe)
         universe.vanillaEntityTypeLookup = nil
         universe.entitySkipCountLookup = nil
         universe.evoToTierMapping = nil
+    end
+    if global.version < 306 then
+        global.version = 306
+        local minDiffuse = game.map_settings.pollution.min_to_diffuse
+        universe.pollutionDiffuseMinimum = minDiffuse * 0.75
 
         game.print("Rampant - Version 3.1.3")
     end
