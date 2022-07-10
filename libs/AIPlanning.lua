@@ -177,16 +177,18 @@ local function processBase(universe, base, tick)
     end
 
     if universe.NEW_ENEMIES then
-        local deathThreshold
+        local deathThreshold = 0
         local evolutionLevel = universe.evolutionLevel
-        if (evolutionLevel < 0.5) then
-            deathThreshold = 4500
+        if (evolutionLevel < 0.2) then
+            base.deathEvents = 0
+        elseif (evolutionLevel < 0.5) then
+            deathThreshold = 17000
         elseif (evolutionLevel < 0.7) then
-            deathThreshold = 7500
+            deathThreshold = 34000
         elseif (evolutionLevel < 0.9) then
-            deathThreshold = 11000
+            deathThreshold = 60000
         else
-            deathThreshold = 16000
+            deathThreshold = 100000
         end
 
         deathThreshold = universe.adaptationModifier * deathThreshold

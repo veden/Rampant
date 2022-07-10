@@ -629,7 +629,7 @@ function upgrade.attempt(universe)
         local minDiffuse = game.map_settings.pollution.min_to_diffuse
         universe.pollutionDiffuseMinimum = minDiffuse * 0.75
 
-        game.print("Rampant - Version 3.1.3")
+        game.print("Rampant - Version 3.2.0")
     end
 
     return (starting ~= global.version) and global.version
