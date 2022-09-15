@@ -180,7 +180,7 @@ constants.BASE_CLEAN_DISTANCE = 13
 
 constants.BASE_COLLECTION_THRESHOLD = constants.TICKS_A_MINUTE * 2
 
-constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / 9600
+constants.BASE_DISTANCE_TO_EVO_INDEX = 1 / settings.startup["rampant--max-evo-dist"].value
 
 constants.BASE_SPAWNER_UPGRADE = 500
 constants.BASE_WORM_UPGRADE = 400
