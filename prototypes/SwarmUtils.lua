@@ -484,12 +484,12 @@ local wormAttributeNumeric = {
 }
 
 local propTables = {
-    {{0, 1}, {0.65, 0.0}},
-    {{0.25, 0}, {0.4, 0.5}, {0.80, 0.0}},
-    {{0.5, 0}, {0.60, 0.5}, {0.95, 0.0}},
-    {{0.75, 0}, {0.825, 0.5}, {1, 0.1}},
-    -- {{0.8, 0}, {0.85, 0.5}, {1, 0.2}},
-    {{0.90, 0}, {0.925, 0.5}, {1, 0.9}}
+    {{0.0,   1.0},  {0.65, 0.0}},
+    {{0.25,  0.0},  {0.40, 0.5},    {0.80, 0.0}},
+    {{0.50,  0.0},  {0.60, 0.5},    {0.95, 0.0}},
+    {{0.75,  0.0},  {0.85, 0.5},    {1.0, 0.1}},
+    {{0.85,  0.0},  {0.925, 0.5},   {1.0, 0.2}},
+    {{0.925,  0.0}, {0.975, 0.5},   {1.0, 0.9}}
 }
 
 local function fillUnitTable(result, unitSet, tier, probability)
@@ -504,9 +504,9 @@ local function unitSetToProbabilityTable(unitSet)
     fillUnitTable(result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
     fillUnitTable(result, unitSet, 2, {{0.25, 0}, {0.4, 0.5}, {0.80, 0.0}})
     fillUnitTable(result, unitSet, 3, {{0.5, 0}, {0.60, 0.5}, {0.95, 0.0}})
-    fillUnitTable(result, unitSet, 4, {{0.75, 0}, {0.825, 0.5}, {1, 0.1}})
-    -- fillUnitTable(result, unitSet, 5, {{0.8, 0}, {0.85, 0.5}, {1, 0.2}})
-    fillUnitTable(result, unitSet, 5, {{0.90, 0}, {0.925, 0.5}, {1, 0.9}})
+    fillUnitTable(result, unitSet, 4, {{0.75,  0.0},  {0.85, 0.5},    {1.0, 0.1}})
+    fillUnitTable(result, unitSet, 5, {{0.85,  0.0},  {0.925, 0.5},   {1.0, 0.2}})
+    fillUnitTable(result, unitSet, 6, {{0.925,  0.0}, {0.975, 0.5},   {1.0, 0.9}})
 
     return result
 end

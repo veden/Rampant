@@ -406,7 +406,7 @@ local function roundToNearest(number, multiple)
 end
 
 local tiersSet = {}
-constants.TIERS = 5
+constants.TIERS = 6
 local tierStart = settings.startup["rampant--tierStart"].value
 local tierEnd = settings.startup["rampant--tierEnd"].value
 
@@ -1836,7 +1836,7 @@ for t=1,constants.TIERS do
     end
 end
 
-constants.EVO_TO_TIER_MAPPING = {0, 0.25, 0.5, 0.75, 0.90}
+constants.EVO_TO_TIER_MAPPING = {0, 0.25, 0.5, 0.75, 0.85, 0.925}
 
 constantsG =  constants
 return constants
