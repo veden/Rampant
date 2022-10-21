@@ -587,6 +587,7 @@ local function scaleAttributes (entity)
         entity["damage"] = entity["damage"] * settings.startup["rampant--unitWormDamageScaler"].value
         entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant--unitWormDamageScaler"].value
         entity["range"] = entity["range"] * settings.startup["rampant--unitWormRangeScaler"].value
+        entity["prepareRange"] = entity["prepareRange"] * settings.startup["rampant--unitWormRangeScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant--unitWormHealingScaler"].value
     elseif (entity.type == "hive") then
         entity["health"] = entity["health"] * settings.startup["rampant--unitHiveHealthScaler"].value
