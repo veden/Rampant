@@ -10,6 +10,7 @@ Version: 3.2.0
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
     - Fixed worm range scaler setting not adjusting prepareRange so worms could shoot without being out of the ground. (Thanks Garrotte)
+    - When a faction is removed during play alignment table will default to the neutral faction to prevent alignment table being nil
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

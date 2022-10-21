@@ -41,6 +41,8 @@ local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
 local EVOLUTION_TABLE_ALIGNMENT = constants.EVOLUTION_TABLE_ALIGNMENT
 local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
 
+local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
+
 local MINIMUM_BUILDING_COST = constants.MINIMUM_BUILDING_COST
 local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
@@ -128,9 +130,12 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
     end
 
     local alignmentTable = BUILDING_EVOLVE_LOOKUP[baseAlignment]
+    if not alignmentTable then
+        alignmentTable = BUILDING_EVOLVE_LOOKUP[BASE_ALIGNMENT_NEUTRAL]
+    end
     local upgrades = alignmentTable[useTier]
 
-    if upgrades then
+    if alignmentTable and upgrades then
         if useHiveType then
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
