@@ -226,9 +226,6 @@ function chunkUtils.initialScan(chunk, map, tick)
     local enemyBuildings = surface.find_entities_filtered(universe.isFilteredEntitiesEnemyStructureQuery)
 
     if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
-        local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(universe.isFilteredEntitiesChunkNeutral) * 0.005),
-                                         1) * 0.20)
         local pass = scanPaths(chunk, map)
 
         local playerObjects = scorePlayerBuildings(map, chunk)
@@ -238,6 +235,10 @@ function chunkUtils.initialScan(chunk, map, tick)
         end
 
         if (pass ~= CHUNK_IMPASSABLE) then
+            local neutralObjects = mMax(0,
+                                        mMin(1 - (surface.count_entities_filtered(universe.isFilteredEntitiesChunkNeutral) * 0.005),
+                                             1) * 0.20)
+
             setPassable(map, chunk, pass)
             setPathRating(map, chunk, waterTiles + neutralObjects)
             setPlayerBaseGenerator(map, chunk, playerObjects)
