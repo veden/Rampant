@@ -46,6 +46,8 @@ local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
 local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
 local CHUNK_TICK = constants.CHUNK_TICK
 
+local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
+
 -- imported functions
 
 local sFind = string.find
@@ -488,18 +490,7 @@ function upgrade.attempt(universe)
         universe.kamikazeThreshold = 0
         universe.attackWaveLowerBound = 1
 
-        universe.expansion = game.map_settings.enemy_expansion.enabled
-        universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown
-        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown
-        universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
-        universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
-
         universe.expansionMaxDistanceDerivation = nil
-        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
-        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
-        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
-        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
 
         universe.settlerCooldown = 0
         universe.settlerWaveDeviation = 0
@@ -628,6 +619,24 @@ function upgrade.attempt(universe)
         global.version = 306
         local minDiffuse = game.map_settings.pollution.min_to_diffuse
         universe.pollutionDiffuseMinimum = minDiffuse * 0.75
+
+        universe.expansion = game.map_settings.enemy_expansion.enabled
+        universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
+        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown * TICKS_A_MINUTE
+        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown * TICKS_A_MINUTE
+        universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
+        universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
+
+        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
+        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
+        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
+        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+
+        for _,base in pairs(universe.bases) do
+            base.maxExpansionGroups = 0
+            base.sentExpansionGroups = 0
+            base.resetExpensionGroupsTick = 0
+        end
 
         game.print("Rampant - Version 3.2.0")
     end

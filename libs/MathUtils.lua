@@ -45,9 +45,13 @@ function mathUtils.roundToNearest(number, multiple)
 end
 
 function mathUtils.randomTickEvent(rg, tick, low, high)
+    return tick + mathUtils.randomTickDuration(rg, low, high)
+end
+
+function mathUtils.randomTickDuration(rg, low, high)
     local range = high - low
     local minutesToTick = (range * rg()) + low
-    return tick + mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
+    return mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
 end
 
 function mathUtils.distort(xorRandom, num, stdDev, min, max)

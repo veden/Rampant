@@ -452,11 +452,12 @@ function mapProcessor.processVengence(universe)
         if not map.surface.valid then
             return
         end
-        local chunk = getChunkById(vengencePack.map, chunkId)
-        if universe.enabledMigration and (universe.random() < 0.075) then
-            formVengenceSettler(map, chunk, vengencePack.base)
+        local chunk = getChunkById(map, chunkId)
+        local base = vengencePack.base
+        if canMigrate(map, base) and (universe.random() < 0.075) then
+            formVengenceSettler(map, chunk, base)
         else
-            formVengenceSquad(map, chunk, vengencePack.base)
+            formVengenceSquad(map, chunk, base)
         end
     end
 end

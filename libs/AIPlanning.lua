@@ -53,7 +53,7 @@ local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = constants.RETREAT_MOVEMENT_PHEROMON
 local MINIMUM_AI_POINTS = constants.MINIMUM_AI_POINTS
 
 local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
-local ALL_NESTS_PER_SIEGE_GROUPS = constants.ALL_NESTS_PER_SIEGE_GROUPS
+local ALL_NESTS_PER_EXPANSION_GROUPS = constants.ALL_NESTS_PER_EXPANSION_GROUPS
 
 local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
 local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
@@ -70,6 +70,7 @@ local BASE_AI_MAX_STATE_DURATION = constants.BASE_AI_MAX_STATE_DURATION
 -- imported functions
 
 local randomTickEvent = mathUtils.randomTickEvent
+local randomTickDuration = mathUtils.randomTickDuration
 
 local upgradeBaseBasedOnDamage = baseUtils.upgradeBaseBasedOnDamage
 
@@ -125,9 +126,11 @@ function aiPlanning.planning(universe, evolutionLevel)
                                                    universe.expansionMaxSize)
     universe.settlerWaveDeviation = (universe.settlerWaveSize * 0.33)
 
-    universe.settlerCooldown = mFloor(linearInterpolation(evolutionLevel ^ 1.66667,
-                                                          universe.expansionMaxTime,
-                                                          universe.expansionMinTime))
+    universe.settlerCooldown = randomTickDuration(universe.random,
+                                                  universe.expansionMinTime,
+                                                  mFloor(linearInterpolation(evolutionLevel ^ 1.66667,
+                                                                             universe.expansionMaxTime,
+                                                                             universe.expansionMinTime)))
 
     universe.unitRefundAmount = AI_UNIT_REFUND * evolutionLevel
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolutionLevel * NO_RETREAT_EVOLUTION_BONUS_MAX)
@@ -136,7 +139,14 @@ end
 local function processBase(universe, base, tick)
 
     base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
-    base.maxSiegeGroups = mCeil((base.activeNests + base.activeRaidNests) / ALL_NESTS_PER_SIEGE_GROUPS)
+    base.maxExpansionGroups = mCeil((base.activeNests + base.activeRaidNests) / ALL_NESTS_PER_EXPANSION_GROUPS)
+
+    if (base.stateAI == BASE_AI_STATE_MIGRATING or base.stateAI == BASE_AI_STATE_SIEGE)
+        and base.resetExpensionGroupsTick <= tick
+    then
+        base.resetExpensionGroupsTick = tick + universe.settlerCooldown
+        base.sentExpansionGroups = 0
+    end
 
     local points = (AI_POINT_GENERATOR_AMOUNT * universe.random()) +
         (base.activeNests * 0.144) +
@@ -352,8 +362,8 @@ local function temperamentPlanner(base, evolutionLevel)
             base.map.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
             ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
             ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
-            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration .. ", sS:"
-            .. base.sentSiegeGroups .. ", mS:" .. base.maxSiegeGroups
+            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration .. ", sE:"
+            .. base.sentExpansionGroups .. ", mE:" .. base.maxExpansionGroups
         game.print(strConsole)
         print(strConsole)
     end

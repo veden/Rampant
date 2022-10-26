@@ -36,24 +36,49 @@ local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 -- module code
 
 function aiPredicates.canAttack(map, base)
+    local universe = map.universe
+    local isAggressive = ((base.stateAI == BASE_AI_STATE_AGGRESSIVE)
+        and (base.sentAggressiveGroups < base.maxAggressiveGroups))
+    local isRaiding = (base.stateAI == BASE_AI_STATE_RAIDING)
+    local isOnslaught = (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
+    local isRaidSieging = universe.raidAIToggle
+        and (base.stateAI == BASE_AI_STATE_SIEGE)
+        and (base.sentExpansionGroups >= base.maxExpansionGroups)
+    local goodAI = isAggressive or isRaiding or isOnslaught or isRaidSieging
+    if not goodAI then
+        return false
+    end
     local surface = map.surface
-    local goodAI = (((base.stateAI == BASE_AI_STATE_AGGRESSIVE) and (base.sentAggressiveGroups < base.maxAggressiveGroups)) or
-        (base.stateAI == BASE_AI_STATE_RAIDING) or
-        (base.stateAI == BASE_AI_STATE_ONSLAUGHT) or
-        (map.universe.raidAIToggle and (base.stateAI == BASE_AI_STATE_SIEGE) and (base.sentSiegeGroups >= base.maxSiegeGroups)))
-    local notPeaceful = not surface.peaceful_mode
-    local nocturalMode = map.universe.aiNocturnalMode
+    if surface.peaceful_mode then
+        return false
+    end
+    local nocturalMode = universe.aiNocturnalMode
     local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
-    return goodAI and notPeaceful and noctural
+    if not noctural then
+        return false
+    end
+    return true
 end
 
 function aiPredicates.canMigrate(map, base)
-    local surface = map.surface
+    local badAIState = (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE)
+    if badAIState then
+        return false
+    end
     local universe = map.universe
+    if not universe.expansion then
+        return false
+    end
+    local surface = map.surface
+    if surface.peaceful_mode then
+        return false
+    end
     local nocturalMode = universe.aiNocturnalMode
-    local goodAI = (base.stateAI == BASE_AI_STATE_MIGRATING) or (base.stateAI == BASE_AI_STATE_SIEGE)
     local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
-    return goodAI and universe.expansion and not surface.peaceful_mode and noctural
+    if not noctural then
+        return false
+    end
+    return true
 end
 
 aiPredicatesG = aiPredicates

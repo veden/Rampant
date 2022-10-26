@@ -210,9 +210,10 @@ end
 
 function aiAttackWave.formSettlers(map, chunk, base)
     local universe = map.universe
-    if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
-        (map.random() < universe.formSquadThreshold) and
-        ((base.unitPoints - AI_SETTLER_COST) > 0)
+    if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+        and (base.sentExpansionGroups < base.maxExpansionGroups)
+        and ((base.unitPoints - AI_SETTLER_COST) > 0)
+        and (map.random() < universe.formSquadThreshold)
     then
         local surface = map.surface
         local squadPath, squadDirection
@@ -245,9 +246,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    if (base.stateAI == BASE_AI_STATE_SIEGE) then
-                        base.sentSiegeGroups = base.sentSiegeGroups + 1
-                    end
+                    base.sentExpansionGroups = base.sentExpansionGroups + 1
 
                     squad.base = base
                     local kamikazeThreshold = calculateKamikazeSettlerThreshold(foundUnits, universe)
@@ -276,9 +275,9 @@ end
 
 function aiAttackWave.formVengenceSquad(map, chunk, base)
     local universe = map.universe
-    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
-        (map.random() < universe.formSquadThreshold) and
-        ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
+    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT)
+        and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
+        and (map.random() < universe.formSquadThreshold)
     then
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -324,9 +323,10 @@ end
 
 function aiAttackWave.formVengenceSettler(map, chunk, base)
     local universe = map.universe
-    if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) and
-        (map.random() < universe.formSquadThreshold) and
-        ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
+    if (universe.builderCount < universe.AI_MAX_BUILDER_COUNT)
+        and (base.sentExpansionGroups < base.maxExpansionGroups)
+        and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
+        and (map.random() < universe.formSquadThreshold)
     then
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -351,6 +351,8 @@ function aiAttackWave.formVengenceSettler(map, chunk, base)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
+                    base.sentExpansionGroups = base.sentExpansionGroups + 1
+
                     squad.base = base
                     squad.kamikaze = map.random() < calculateKamikazeSettlerThreshold(foundUnits, universe)
                     universe.groupNumberToSquad[squad.groupNumber] = squad
@@ -372,10 +374,10 @@ end
 
 function aiAttackWave.formSquads(map, chunk, base)
     local universe = map.universe
-    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) and
-        attackWaveValidCandidate(chunk, map, base) and
-        (map.random() < universe.formSquadThreshold) and
-        ((base.unitPoints - AI_SQUAD_COST) > 0)
+    if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT)
+        and attackWaveValidCandidate(chunk, map, base)
+        and ((base.unitPoints - AI_SQUAD_COST) > 0)
+        and (map.random() < universe.formSquadThreshold)
     then
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -400,10 +402,6 @@ function aiAttackWave.formSquads(map, chunk, base)
                 universe.formCommand.unit_count = scaledWaveSize
                 local foundUnits = surface.set_multi_command(universe.formCommand)
                 if (foundUnits > 0) then
-                    if (base.stateAI == BASE_AI_STATE_SIEGE) then
-                        base.sentSiegeGroups = 0
-                    end
-
                     squad.base = base
                     squad.kamikaze = map.random() < calculateKamikazeSquadThreshold(foundUnits, universe)
                     base.unitPoints = base.unitPoints - AI_SQUAD_COST
