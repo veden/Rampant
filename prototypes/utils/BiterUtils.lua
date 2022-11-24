@@ -295,8 +295,8 @@ function biterUtils.makeBiter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         dying_sound = attributes.dyingSounds,
-        working_sound =  attributes.workingSounds,
-        walking_sound = attributes.walkingSounds,
+        working_sound =  attributes.workingSounds,  --problem sound
+        walking_sound = attributes.walkingSounds,  --problem sound
         running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
     }
@@ -351,8 +351,8 @@ function biterUtils.makeSpitter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         dying_trigger_effect = attributes.dyingEffect,
         dying_sound = attributes.dyingSounds,
-        working_sound = attributes.workingSounds,
-        walking_sound = attributes.walkingSounds,
+        working_sound = attributes.workingSounds,  --problem sound
+        walking_sound = attributes.walkingSounds,  --problem sound
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
         damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
@@ -577,7 +577,7 @@ function biterUtils.makeWorm(attributes)
         folding_speed = attributes.foldingSpeed or 0.015,
         folding_animation =  wormPreparingAnimation(attributes.scale, attributes.tint, "backward", attributes.tint2 or attributes.tint),
         folding_sound = attributes.foldSounds,
-        prepare_range = attributes.prepareRange or 30,
+        prepare_range = attributes.prepareRange or ( attributes.attack.range + 2.5 ),
         integration = worm_integration(attributes.scale),
         attack_parameters = attributes.attack,
         secondary_animation = true,

@@ -468,7 +468,7 @@ local wormAttributeNumeric = {
     ["particleHoizontalSpeedDeviation"] = { 0.0025, 0.0025, 0.0024, 0.0024, 0.0023, 0.0023, 0.0022, 0.0022, 0.0021, 0.0021 },
     ["foldingSpeed"] = { 0.15, 0.15, 0.16, 0.16, 0.16, 0.17, 0.17, 0.18, 0.18, 0.19 },
     ["preparingSpeed"] = { 0.025, 0.025, 0.026, 0.026, 0.027, 0.027, 0.028, 0.028, 0.029, 0.029 },
-    ["prepareRange"] = { 30, 30, 35, 35, 40, 40, 40, 40, 45, 45 },
+    ["prepareRange"] = { 28, 30, 34, 36, 38, 39, 40, 41, 42, 43 },
     ["physicalDecrease"] = { 0, 0, 5, 5, 8, 8, 10, 10, 12, 12 },
     ["explosionDecrease"] = { 0, 0, 5, 5, 8, 8, 10, 10, 12, 12 },
     ["explosionPercent"] = { 0, 0, 10, 10, 20, 20, 30, 30, 40, 40 },
@@ -591,6 +591,7 @@ local function scaleAttributes (entity)
         entity["damage"] = entity["damage"] * settings.startup["rampant--unitWormDamageScaler"].value
         entity["damagePerTick"] = entity["damagePerTick"] * settings.startup["rampant--unitWormDamageScaler"].value
         entity["range"] = entity["range"] * settings.startup["rampant--unitWormRangeScaler"].value
+        entity["prepareRange"] = entity["prepareRange"] * settings.startup["rampant--unitWormRangeScaler"].value
         entity["healing"] = entity["healing"] * settings.startup["rampant--unitWormHealingScaler"].value
     elseif (entity.type == "hive") then
         entity["health"] = entity["health"] * settings.startup["rampant--unitHiveHealthScaler"].value
