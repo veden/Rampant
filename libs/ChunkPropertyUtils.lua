@@ -628,20 +628,20 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
                 local position = {x=0,y=0}
                 position.x = x + 32
                 position.y = y
-                if (surface.get_pollution(position) > 0) then
+                if (surface.get_pollution(position) > 12.5) then
                     chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                 else
                     position.x = x - 32
-                    if (surface.get_pollution(position) > 0) then
+                    if (surface.get_pollution(position) > 12.5) then
                         chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                     else
                         position.x = x
                         position.y = y - 32
-                        if (surface.get_pollution(position) > 0) then
+                        if (surface.get_pollution(position) > 12.5) then
                             chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                         else
                             position.y = y + 32
-                            if (surface.get_pollution(position) > 0) then
+                            if (surface.get_pollution(position) > 12.5) then
                                 chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                             else
                                 chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2, base)
