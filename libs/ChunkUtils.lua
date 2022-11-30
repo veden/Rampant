@@ -98,9 +98,10 @@ local removeChunkBase = chunkPropertyUtils.removeChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
-local createBase = baseUtils.createBase
 
+local createBase = baseUtils.createBase
 local upgradeEntity = baseUtils.upgradeEntity
+local modifyBasePoints = baseUtils.modifyBasePoints
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -590,17 +591,10 @@ function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
                     pointValue = 0
                 end
                 base.destroyPlayerBuildings = base.destroyPlayerBuildings + 1
-                if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
-                    base.unitPoints = base.unitPoints + pointValue
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
-                    end
-                else
-                    base.unitPoints = base.unitPoints + (pointValue * 0.12)
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
-                    end
+                if (base.stateAI ~= BASE_AI_STATE_ONSLAUGHT) then
+                    pointValue = pointValue * 0.12
                 end
+                modifyBasePoints(base, pointValue, "Structure Kill")
             end
             entityValue = -entityValue
         end

@@ -546,5 +546,35 @@ function baseUtils.rebuildNativeTables(universe)
     end
 end
 
+function baseUtils.modifyBasePoints(base, points, tag, x, y)
+    tag = tag or ""
+    x = x or nil
+    y = y or nil
+    
+    base.unitPoints = base.unitPoints + points
+    
+    local universe = base.universe
+    local overflowMessage = ""
+    if base.unitPoints > universe.maxOverflowPoints then
+        base.unitPoints = universe.maxOverflowPoints
+        overflowMessage = " [Point cap reached]"
+    end
+
+    local printPointChange = ""
+    if points > 0 and universe.aiPointsPrintGainsToChat then
+        printPointChange =  "+" .. string.format("%.2f", points)
+    elseif points < 0 and universe.aiPointsPrintSpendingToChat then
+        printPointChange = string.format("%.2f", points)
+    end
+    
+    if printPointChange ~= "" then
+        local gps = ""
+        if x ~= nil then
+            gps = " [gps=" .. x .. "," .. y .. "]"
+        end
+        game.print("[" .. base.id .. "]:" .. base.map.surface.name .. " " .. printPointChange .. " [" .. tag .. "] Total:" .. string.format("%.2f", base.unitPoints) .. overflowMessage .. gps)
+    end
+end
+
 baseUtilsG = baseUtils
 return baseUtils

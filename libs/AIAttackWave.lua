@@ -27,6 +27,7 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 local unitGroupUtils = require("UnitGroupUtils")
 local movementUtils = require("MovementUtils")
 local mathUtils = require("MathUtils")
+local baseUtils = require("libs/BaseUtils")
 
 -- constants
 
@@ -75,6 +76,8 @@ local createSquad = unitGroupUtils.createSquad
 local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 
 local mCeil = math.ceil
+
+local modifyBasePoints = baseUtils.modifyBasePoints
 
 -- module code
 
@@ -256,12 +259,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
                     squad.kamikaze = map.random() < kamikazeThreshold
 
                     universe.builderCount = universe.builderCount + 1
-                    base.unitPoints = base.unitPoints - AI_SETTLER_COST
-                    if universe.aiPointsPrintSpendingToChat then
-                        game.print(map.surface.name .. ": Points: -" .. AI_SETTLER_COST .. ". [Settler] Total: " ..
-                                   string.format("%.2f", base.unitPoints) .. " [gps=" .. squadPosition.x .. "," ..
-                                   squadPosition.y .. "]")
-                    end
+                    modifyBasePoints(base, AI_SETTLER_COST*-1.0, "Settler", squadPosition.x, squadPosition.y)
                     universe.groupNumberToSquad[squad.groupNumber] = squad
                 else
                     if (squad.group.valid) then
@@ -306,11 +304,7 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
                     squad.kamikaze = map.random() < calculateKamikazeSquadThreshold(foundUnits, universe)
                     universe.groupNumberToSquad[squad.groupNumber] = squad
                     universe.squadCount = universe.squadCount + 1
-                    base.unitPoints = base.unitPoints - AI_VENGENCE_SQUAD_COST
-                    if universe.aiPointsPrintSpendingToChat then
-                        game.print(map.surface.name .. ": Points: -" .. AI_VENGENCE_SQUAD_COST .. ". [Vengence] Total: " ..
-                                   string.format("%.2f", base.unitPoints) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")
-                    end
+                    modifyBasePoints(base, AI_VENGENCE_SQUAD_COST*-1.0, "Vengence", squadPosition.x, squadPosition.y)
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -356,12 +350,8 @@ function aiAttackWave.formVengenceSettler(map, chunk, base)
                     squad.base = base
                     squad.kamikaze = map.random() < calculateKamikazeSettlerThreshold(foundUnits, universe)
                     universe.groupNumberToSquad[squad.groupNumber] = squad
-                    universe.builderCount = universe.builderCount + 1
-                    base.unitPoints = base.unitPoints - AI_VENGENCE_SQUAD_COST
-                    if universe.aiPointsPrintSpendingToChat then
-                        game.print(map.surface.name .. ": Points: -" .. AI_VENGENCE_SQUAD_COST .. ". [Vengence Settlers] Total: " ..
-                                   string.format("%.2f", base.unitPoints) .. " [gps=" .. squadPosition.x .. "," .. squadPosition.y .. "]")
-                    end
+                    universe.builderCount = universe.builderCount + 1                    
+                    modifyBasePoints(base, AI_VENGENCE_SQUAD_COST*-1.0, "Vengence Settlers", squadPosition.x, squadPosition.y)
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()
@@ -404,17 +394,12 @@ function aiAttackWave.formSquads(map, chunk, base)
                 if (foundUnits > 0) then
                     squad.base = base
                     squad.kamikaze = map.random() < calculateKamikazeSquadThreshold(foundUnits, universe)
-                    base.unitPoints = base.unitPoints - AI_SQUAD_COST
                     universe.squadCount = universe.squadCount + 1
                     universe.groupNumberToSquad[squad.groupNumber] = squad
                     if (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
                         base.sentAggressiveGroups = base.sentAggressiveGroups + 1
-                    end
-                    if universe.aiPointsPrintSpendingToChat then
-                        game.print(map.surface.name .. ": Points: -" .. AI_SQUAD_COST .. ". [Squad] Total: " ..
-                                   string.format("%.2f", base.unitPoints) .. " [gps=" .. squadPosition.x .. "," ..
-                                   squadPosition.y .. "]")
-                    end
+                    end                    
+                    modifyBasePoints(base, AI_SQUAD_COST*-1.0, "Squad", squadPosition.x, squadPosition.y)
                 else
                     if (squad.group.valid) then
                         squad.group.destroy()

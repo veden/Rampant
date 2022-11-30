@@ -73,6 +73,7 @@ local randomTickEvent = mathUtils.randomTickEvent
 local randomTickDuration = mathUtils.randomTickDuration
 
 local upgradeBaseBasedOnDamage = baseUtils.upgradeBaseBasedOnDamage
+local modifyBasePoints = baseUtils.modifyBasePoints
 
 local linearInterpolation = mathUtils.linearInterpolation
 
@@ -175,9 +176,9 @@ local function processBase(universe, base, tick)
     end
 
     if (currentPoints < universe.maxPoints) then
-        base.unitPoints = currentPoints + points
+        modifyBasePoints(base, points, "Logic Cycle")
     elseif currentPoints > universe.maxOverflowPoints then
-        base.unitPoints = universe.maxOverflowPoints
+	    --modifyBasePoints(base, (base.unitPoints - universe.maxOverflowPoints)*-1.0, "Logic Cycle - Point Cap Reached")
     end
 
     if (base.points < universe.maxPoints) then
