@@ -636,6 +636,7 @@ function upgrade.attempt(universe)
             base.maxExpansionGroups = 0
             base.sentExpansionGroups = 0
             base.resetExpensionGroupsTick = 0
+            base.totalLostEnemyUnits = 0
         end
 
         game.print("Rampant - Version 3.2.0")

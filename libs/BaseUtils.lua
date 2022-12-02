@@ -508,6 +508,7 @@ function baseUtils.createBase(map, chunk, tick)
         activeNests = 0,
         destroyPlayerBuildings = 0,
         lostEnemyUnits = 0,
+        totalLostEnemyUnits = 0,
         lostEnemyBuilding = 0,
         rocketLaunched = 0,
         builtEnemyBuilding = 0,

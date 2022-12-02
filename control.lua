@@ -461,11 +461,14 @@ local function onDeath(event)
             if (entityType == "unit") and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
                 if base then
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
+                    base.totalLostEnemyUnits = base.totalLostEnemyUnits + 1
                     if damageTypeName then
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
                         base.deathEvents = base.deathEvents + 1
                     end
-                    modifyBasePoints(base, UNIT_DEATH_POINT_COST*-1.0, "Unit Lost")     
+                    if base.totalLostEnemyUnits % 20 == 0 then
+                        modifyBasePoints(base, 20*UNIT_DEATH_POINT_COST*-1.0, "20 Units Lost")     
+                    end
                     if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                         rallyUnits(chunk, map, tick, base)
                     end
