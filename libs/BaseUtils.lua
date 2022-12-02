@@ -548,6 +548,11 @@ function baseUtils.rebuildNativeTables(universe)
 end
 
 function baseUtils.modifyBasePoints(base, points, tag, x, y)
+
+    if points > 0 and base.stateAI == BASE_AI_STATE_PEACEFUL then
+        return
+    end
+
     tag = tag or ""
     x = x or nil
     y = y or nil
