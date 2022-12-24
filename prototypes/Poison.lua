@@ -16,6 +16,7 @@
 
 -- imports
 
+local constants = require("__Rampant__/libs/Constants")
 local smokeUtils = require("utils/SmokeUtils")
 
 -- constants
@@ -28,7 +29,7 @@ local makeCloud = smokeUtils.makeCloud
 
 function poison.addFactionAddon()
 
-    for i=1,10 do
+    for i=1,constants.TIERS do
         makeCloud(
             {
                 name = "poison-cloud-v" .. i,

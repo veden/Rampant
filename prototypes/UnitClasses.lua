@@ -23,9 +23,9 @@ function generateMigration()
         local faction = factions[fi]
         for t = 1, 10 do
             local adjT = t
-            if t > 5 then
-                adjT = t - 5
-            end
+            -- if t > 5 then
+            --     adjT = t - 5
+            -- end
             for v = 2, 20 do
                 print("        [\"" .. faction .. "-biter-spawner-v" .. v .. "-t" .. t .. "-rampant\", \"" .. faction .. "-biter-spawner-v1-t" .. adjT .. "-rampant\"],")
                 print("        [\"" .. faction .. "-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant\", \"" .. faction .. "-spitter-spawner-v1-t" .. adjT .. "-rampant\"],")

@@ -483,12 +483,16 @@ local wormAttributeNumeric = {
 }
 
 local propTables = {
-    {{0.0,   1.0},  {0.65, 0.0}},
-    {{0.25,  0.0},  {0.40, 0.5},    {0.80, 0.0}},
-    {{0.50,  0.0},  {0.60, 0.5},    {0.95, 0.0}},
-    {{0.75,  0.0},  {0.85, 0.5},    {1.0, 0.1}},
-    {{0.85,  0.0},  {0.925, 0.5},   {1.0, 0.2}},
-    {{0.925,  0.0}, {0.975, 0.5},   {1.0, 0.9}}
+    {{0, 1}, {0.65, 0.0}},
+    {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}},
+    {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}},
+    {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}},
+    {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}},
+    {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}},
+    {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}},
+    {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}},
+    {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}},
+    {{0.93, 0}, {1, 1.0}}
 }
 
 local function fillUnitTable(result, unitSet, tier, probability)
@@ -501,11 +505,15 @@ local function unitSetToProbabilityTable(unitSet)
     local result = {}
 
     fillUnitTable(result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
-    fillUnitTable(result, unitSet, 2, {{0.25, 0}, {0.4, 0.5}, {0.80, 0.0}})
-    fillUnitTable(result, unitSet, 3, {{0.5, 0}, {0.60, 0.5}, {0.95, 0.0}})
-    fillUnitTable(result, unitSet, 4, {{0.75,  0.0},  {0.85, 0.5},    {1.0, 0.1}})
-    fillUnitTable(result, unitSet, 5, {{0.85,  0.0},  {0.925, 0.5},   {1.0, 0.2}})
-    fillUnitTable(result, unitSet, 6, {{0.925,  0.0}, {0.975, 0.5},   {1.0, 0.9}})
+    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
+    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
+    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
+    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
+    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
+    fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
 
     return result
 end
@@ -595,17 +603,6 @@ local function scaleAttributes (entity)
         entity["spawningCooldownEnd"] = entity["spawningCooldownEnd"] * settings.startup["rampant--unitHiveRespawnScaler"].value
     end
 end
-
--- local function distort(xorRandom, num, min, max)
---     local min = min or num * 0.85
---     local max = max or num * 1.30
---     if (num < 0) then
---         local t = min
---         min = max
---         max = t
---     end
---     return roundToNearest(gaussianRandomRangeRG(num, num * 0.15, min, max, xorRandom), 0.01)
--- end
 
 local function fillEntityTemplate(entity)
     local tier = entity.effectiveLevel
@@ -827,7 +824,7 @@ local function fillEntityTemplate(entity)
                                         projectile = createCapsuleProjectile(attack,
                                                                              attack.faction .. "-" .. attribute[2]
                                                                              .. "-v" .. attack.variation .. "-t"
-                                                                             .. attack.tier .. "-rampant"),
+                                                                             .. attack.effectiveLevel .. "-rampant"),
                                         direction_deviation = 0.6,
                                         starting_speed = 0.25,
                                         max_range = attack.range,
@@ -845,7 +842,6 @@ local function fillEntityTemplate(entity)
         end
     end
 
-    -- print(serpent.dump(entity))
     scaleAttributes(entity)
 end
 
@@ -938,6 +934,20 @@ function swarmUtils.buildUnits(template)
                 unit.roarSounds = biterRoarSounds[effectiveLevel]
                 entity = makeBiter(unit)
             elseif (unit.type == "drone") then
+                -- if not unit.death then
+                --     unit.death = {
+                --         type = "direct",
+                --         action_delivery =
+                --             {
+                --                 type = "instant",
+                --                 target_effects =
+                --                     {
+                --                         type = "create-entity",
+                --                         entity_name = "massive-explosion"
+                --                     }
+                --             }
+                --     }
+                -- end
                 entity = makeDrone(unit)
             end
 
@@ -956,7 +966,9 @@ local function buildEntities(entityTemplates)
     local unitSet = {}
 
     for tier=1, TIERS do
-        local entityTemplate = entityTemplates[tier]
+        local effectiveLevel = TIER_UPGRADE_SET[tier]
+
+        local entityTemplate = entityTemplates[effectiveLevel]
 
         for ei=1,#entityTemplate do
             local template = entityTemplate[ei]
@@ -1228,7 +1240,7 @@ local function buildAttack(faction, template)
                     {
                         {
                             type="create-entity",
-                            entity_name = "poison-cloud-v" .. attributes.tier .. "-cloud-rampant"
+                            entity_name = "poison-cloud-v" .. attributes.effectiveLevel .. "-cloud-rampant"
                         }
                     }
             end
@@ -1368,7 +1380,7 @@ local function buildAttack(faction, template)
             if (attack[1] == "drone") then
                 template.entityGenerator = function (attributes)
                     return template.faction .. "-" .. attack[2] .. "-v" ..
-                        attributes.variation .. "-t" .. attributes.tier .. "-drone-rampant"
+                        attributes.variation .. "-t" .. attributes.effectiveLevel .. "-drone-rampant"
                 end
             end
         else

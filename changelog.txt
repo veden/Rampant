@@ -15,7 +15,6 @@ Version: 3.2.0
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting
-    - Dropped number of enemy levels see during the game from 10 to 6, new tiers will now appear at 0, 0.25, 0.5, 0.75, 0.85, 0.925
     - Moved neturalObject scan chunk to after a chunk is determined to be passable
 
 ---------------------------------------------------------------------------------------------------

@@ -96,7 +96,7 @@ local subTypes = constants.HIVE_BUILDINGS_TYPES
 for si=1,#subTypes do
     local st = subTypes[si]
     if scales[st] then
-        for t=1,10 do
+        for t=1,constants.TIERS do
             -- local scale = scales[st][t]
             local scale = scales["biter-spawner"][t]
 
