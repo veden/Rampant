@@ -339,28 +339,38 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
 
     local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
     local mutation
+    local mutated = false
 
-    if (damageFactions and (#damageFactions > 0)) then
+    if damageFactions and (#damageFactions > 0) then
         mutation = damageFactions[universe.random(#damageFactions)]
         if baseAlignment[2] then
+            if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+                mutated = true
+            end
             if (roll < 0.05) then
-                baseAlignment[2] = nil
                 baseAlignment[1] = mutation
+                baseAlignment[2] = nil
             elseif (roll < 0.25) then
                 baseAlignment[1] = mutation
             else
                 baseAlignment[2] = mutation
             end
         else
+            if (baseAlignment[1] ~= mutation) then
+                mutated = true
+            end
             if (roll < 0.85) then
-                base.alignment[1] = mutation
+                baseAlignment[1] = mutation
             else
-                base.alignment[2] = mutation
+                baseAlignment[2] = mutation
             end
         end
     else
         mutation = findBaseMutation(universe)
         if baseAlignment[2] then
+            if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+                mutated = true
+            end
             if (roll < 0.05) then
                 baseAlignment[2] = nil
                 baseAlignment[1] = mutation
@@ -370,6 +380,9 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                 baseAlignment[2] = mutation
             end
         else
+            if (baseAlignment[1] ~= mutation) then
+                mutated = true
+            end
             if (roll < 0.85) then
                 base.alignment[1] = mutation
             else
@@ -377,7 +390,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
             end
         end
     end
-    if (universe.printBaseAdaptation) then
+    if mutated and universe.printBaseAdaptation then
         if baseAlignment[2] then
             game.print({"description.rampant--adaptation2DebugMessage",
                         damageType,
@@ -397,6 +410,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                         universe.MAX_BASE_MUTATIONS})
         end
     end
+    return mutated
 end
 
 function baseUtils.upgradeBaseBasedOnDamage(universe, base)
@@ -422,7 +436,7 @@ function baseUtils.upgradeBaseBasedOnDamage(universe, base)
         end
     end
 
-    pickMutationFromDamageType(universe, pickedDamage, roll, base)
+    return pickMutationFromDamageType(universe, pickedDamage, roll, base)
 end
 
 function baseUtils.processBaseMutation(chunk, map, base)

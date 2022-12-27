@@ -12,6 +12,7 @@ Version: 3.2.0
     - Fixed worm range scaler setting not adjusting prepareRange so worms could shoot without being out of the ground. (Thanks Garrotte)
     - When a faction is removed during play alignment table will default to the neutral faction to prevent alignment table being nil
     - Fixed settler groups not respecting expansion map setting for min and max time
+    - Fixed faction mutation mutating to an existing faction is no longer counted towards max number of mutations per base
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting
