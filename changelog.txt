@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.0
+  Improvements:
+    - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:

@@ -38,6 +38,7 @@ local queryUtils = require("libs/QueryUtils")
 
 -- constants
 
+local VANILLA_ENTITY_TYPE_LOOKUP = constants.VANILLA_ENTITY_TYPE_LOOKUP
 local ENTITY_SKIP_COUNT_LOOKUP = constants.ENTITY_SKIP_COUNT_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
 
@@ -155,6 +156,8 @@ local rebuildNativeTables = baseUtils.rebuildNativeTables
 local tRemove = table.remove
 
 local sFind = string.find
+
+local mRandom = math.random
 
 -- local references to global
 
@@ -1126,10 +1129,70 @@ local function removeExcludeSurface(surfaceName)
     end
 end
 
+local function removeNewEnemies()
+    game.print({"description.rampant--removeNewEnemies"})
+    universe.NEW_ENEMIES = false
+    for _,map in pairs(universe.maps) do
+        local surface = map.surface
+        if surface.valid then
+            local entities = surface.find_entities_filtered({
+                    force=universe.enemyForces,
+                    type={
+                        "turret",
+                        "unit-spawner"
+                    }
+            })
+            for entityIndex = 1,#entities do
+                local entity = entities[entityIndex]
+                if entity.valid and not VANILLA_ENTITY_TYPE_LOOKUP[entity.name] then
+                    local position = entity.position
+                    local newEntityName
+                    local entityType = entity.type
+                    unregisterEnemyBaseStructure(map, entity, nil, true)
+                    entity.destroy()
+                    if entityType == "unit-spawner" then
+                        if mRandom() < 0.5 then
+                            newEntityName = "biter-spawner"
+                        else
+                            newEntityName = "spitter-spawner"
+                        end
+                    elseif entityType == "turret" then
+                        if universe.evolutionLevel >= 0.9 then
+                            newEntityName = "behemoth-worm-turret"
+                        elseif universe.evolutionLevel >= 0.5 then
+                            newEntityName = "big-worm-turret"
+                        elseif universe.evolutionLevel >= 0.3 then
+                            newEntityName = "medium-worm-turret"
+                        else
+                            newEntityName = "small-worm-turret"
+                        end
+                    end
+                    local newEntity = surface.create_entity({
+                            name=newEntityName,
+                            position=position
+                    })
+                    local chunk = getChunkByPosition(map, position)
+                    if chunk ~= -1 then
+                        local base = findNearbyBase(map, chunk)
+                        if not base then
+                            base = createBase(map,
+                                              chunk,
+                                              game.tick)
+                        end
+                        registerEnemyBaseStructure(map, newEntity, base)
+                    end
+                end
+            end
+        end
+    end
+end
+
 remote.add_interface("Rampant", {
                          addExcludeSurface = addExcludeSurface,
                          removeExcludeSurface = removeExcludeSurface
 })
+
+commands.add_command('rampantRemoveNewEnemies', "", removeNewEnemies)
 
 local function rampantSetAIState(event)
     if event.parameter then
