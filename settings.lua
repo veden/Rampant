@@ -576,6 +576,18 @@ data:extend({
         },
 
         {
+            type = "double-setting",
+            name = "rampant--minimumAdaptationEvolution",
+            description = "rampant--minimumAdaptationEvolution",
+            setting_type = "runtime-global",
+            default_value = 0.2,
+            minimum_value = 0.0,
+            maximum_value = 1.0,
+            order = "m[total]-b[ai]1",
+            per_user = false
+        },
+
+        {
             type = "bool-setting",
             name = "rampant--aiPointsPrintSpendingToChat",
             description = "rampant--aiPointsPrintSpendingToChat",

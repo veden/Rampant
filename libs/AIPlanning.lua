@@ -189,7 +189,7 @@ local function processBase(universe, base, tick)
     if universe.NEW_ENEMIES then
         local deathThreshold = 0
         local evolutionLevel = universe.evolutionLevel
-        if (evolutionLevel < 0.2) then
+        if (evolutionLevel < universe.minimumAdaptationEvolution) then
             base.deathEvents = 0
         elseif (evolutionLevel < 0.5) then
             deathThreshold = 17000

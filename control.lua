@@ -281,6 +281,8 @@ local function onModSettingsChange(event)
     universe["initialPeaceTime"] = settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE
     universe["printAwakenMessage"] = settings.global["rampant--printAwakenMessage"].value
 
+    universe["minimumAdaptationEvolution"] = settings.global["rampant--minimumAdaptationEvolution"].value
+
     return true
 end
 

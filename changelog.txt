@@ -2,10 +2,10 @@
 Version: 3.2.0
   Improvements:
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
+    - Added minimum evolution of 20% before faction adaptation will happen with mod setting to configure
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
-    - Added minimum evolution of 20% before faction adaptation will happen
     - Increased the death thresholds to 17000 <50%, 34000 <70%, 60000 <90%, 100000 for adaptation
     - Changed spawner pollution check to use 75% of the chunk pollution diffuse value
   Bugfixes:
