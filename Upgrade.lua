@@ -525,7 +525,6 @@ function upgrade.attempt(universe)
         universe.maps = {}
         universe.chunkIdToChunk = {}
         universe.groupNumberToSquad = {}
-        universe.pendingUpgrades = {}
         universe.chunkToVictory = {}
         universe.pendingChunks = {}
         universe.processActiveNest = {}
@@ -631,6 +630,8 @@ function upgrade.attempt(universe)
         universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
         universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
         universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+
+        universe.pendingUpgrades = {}
 
         for _,base in pairs(universe.bases) do
             base.maxExpansionGroups = 0

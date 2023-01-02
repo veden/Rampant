@@ -199,7 +199,7 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
     return entity
 end
 
-local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
+function baseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
     local universe = map.universe
     local adjCurrentEvo = mMax(
         ((baseAlignment ~= ENEMY_ALIGNMENT_LOOKUP[originalEntity.name]) and 0) or currentEvo,
@@ -287,51 +287,15 @@ function baseUtils.recycleBases(universe)
     end
 end
 
-function baseUtils.upgradeEntity(entity, base, map, disPos, evolve, register, timeDelay)
-    local position = entity.position
-    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
-
-    local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distance, map.universe.evolutionLevel)
-    local baseAlignment = base.alignment
-
-    local pickedBaseAlignment
-    if baseAlignment[2] then
-        if map.random() < 0.75 then
-            pickedBaseAlignment = baseAlignment[2]
-        else
-            pickedBaseAlignment = baseAlignment[1]
-        end
-    else
-        pickedBaseAlignment = baseAlignment[1]
-    end
-
-    local spawnerName = findEntityUpgrade(pickedBaseAlignment,
-                                          currentEvo,
-                                          evoIndex,
-                                          entity,
-                                          map,
-                                          evolve)
-
-    if spawnerName and (spawnerName ~= entity.name) then
-        local entityData = {
-            ["name"] = spawnerName,
-            ["position"] = disPos,
-            ["register"] = register,
-            ["map"] = map,
-            ["base"] = base,
-            ["entity"] = entity,
-            ["delayTLL"] = timeDelay
-        }
-        map.universe.pendingUpgrades[entity.unit_number] = entityData
-        return spawnerName
-    end
-    if entity.valid then
-        if PROXY_ENTITY_LOOKUP[entity.name] then
-            entity.destroy()
-        end
-    end
-    return nil
+function baseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDelay)
+    base.universe.pendingUpgrades[entity.unit_number] = {
+        ["position"] = disPos,
+        ["register"] = register,
+        ["evolve"] = evolve,
+        ["base"] = base,
+        ["entity"] = entity,
+        ["delayTLL"] = timeDelay
+    }
 end
 
 local function pickMutationFromDamageType(universe, damageType, roll, base)
@@ -459,13 +423,8 @@ function baseUtils.processBaseMutation(chunk, map, base)
             local entity = entities[1]
             local cost = (COST_LOOKUP[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
-                local newEntity = baseUtils.upgradeEntity(entity, base, map)
-                if newEntity then
-                    if universe.printBaseUpgrades then
-                        surface.print("[gps=".. entity.position.x ..",".. entity.position.y .."] " .. "Scheduled upgrade for ".. entity.name .. " to " .. newEntity)
-                    end
-                    base.points = base.points - cost
-                end
+                baseUtils.queueUpgrade(entity, base, nil, false, true)
+                base.points = base.points - cost
             end
         end
     end

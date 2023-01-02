@@ -24,13 +24,16 @@ local chunkProcessor = {}
 local chunkUtils = require("ChunkUtils")
 local queryUtils = require("QueryUtils")
 local mapUtils = require("MapUtils")
+local mathUtils = require("MathUtils")
 local constants = require("Constants")
+local baseUtils = require("BaseUtils")
 
 -- constants
 
--- local CHUNK_SIZE = constants.CHUNK_SIZE
--- local HALF_CHUNK_SIZE = constants.HALF_CHUNK_SIZE
--- local QUARTER_CHUNK_SIZE = constants.QUARTER_CHUNK_SIZE
+local COST_LOOKUP = constants.COST_LOOKUP
+
+local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
+local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
 local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
 
@@ -41,11 +44,16 @@ local removeChunkFromMap = mapUtils.removeChunkFromMap
 local setPositionInQuery = queryUtils.setPositionInQuery
 local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
 local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
+local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+
+local findEntityUpgrade = baseUtils.findEntityUpgrade
 
 local createChunk = chunkUtils.createChunk
 local initialScan = chunkUtils.initialScan
 local chunkPassScan = chunkUtils.chunkPassScan
 
+local mMin = math.min
+local mMax = math.max
 local next = next
 local table_size = table_size
 
@@ -148,21 +156,66 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
                 return
             end
             universe.pendingUpgrades[entityId] = nil
+            local base = entityData.base
+            local map = base.map
+            local baseAlignment = base.alignment
+            local position = entityData.position or entity.position
+
+            local pickedBaseAlignment
+            if baseAlignment[2] then
+                if map.random() < 0.75 then
+                    pickedBaseAlignment = baseAlignment[2]
+                else
+                    pickedBaseAlignment = baseAlignment[1]
+                end
+            else
+                pickedBaseAlignment = baseAlignment[1]
+            end
+
+            local currentEvo = entity.prototype.build_base_evolution_requirement or 0
+
+            local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
+            local evoIndex = mMax(distance, universe.evolutionLevel)
+
+            local name = findEntityUpgrade(pickedBaseAlignment,
+                                           currentEvo,
+                                           evoIndex,
+                                           entity,
+                                           map,
+                                           entityData.evolve)
+
+            local entityName = entity.name
+            if not name and PROXY_ENTITY_LOOKUP[entityName] then
+                entity.destroy()
+                return
+            elseif (name == entityName) or not name then
+                return
+            end
+
             local surface = entity.surface
             local query = universe.ppuUpgradeEntityQuery
-            local position = entityData.position or entity.position
-            query.name = entityData.name
-            unregisterEnemyBaseStructure(entityData.map, entity, nil, true)
+            query.name = name
+
+            unregisterEnemyBaseStructure(map, entity, nil, true)
             entity.destroy()
-            local foundPosition = surface.find_non_colliding_position(BUILDING_SPACE_LOOKUP[entityData.name],
+            local foundPosition = surface.find_non_colliding_position(BUILDING_SPACE_LOOKUP[name],
                                                                       position,
                                                                       2,
                                                                       1,
                                                                       true)
             setPositionInQuery(query, foundPosition or position)
-            local createdEntity = surface.create_entity(query)
+
+            local createdEntity = surface.create_entity({
+                    name = query.name,
+                    position = query.position
+            })
             if createdEntity and createdEntity.valid then
-                registerEnemyBaseStructure(entityData.map, createdEntity, entityData.base, true)
+                if entityData.register then
+                    registerEnemyBaseStructure(map, createdEntity, base, true)
+                end
+                if not entityData.evolve and universe.printBaseUpgrades then
+                    surface.print("[gps=".. position.x ..",".. position.y .."] " .. "Scheduled upgrade for ".. entityName .. " to " .. name)
+                end
                 if remote.interfaces["kr-creep"] then
                     remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
                 end

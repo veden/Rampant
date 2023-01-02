@@ -100,7 +100,7 @@ local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
 local createBase = baseUtils.createBase
 
-local upgradeEntity = baseUtils.upgradeEntity
+local queueUpgrade = baseUtils.queueUpgrade
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -272,7 +272,11 @@ function chunkUtils.initialScan(chunk, map, tick)
                         local entityName = enemyBuilding.name
                         local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
                         if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
-                            upgradeEntity(enemyBuilding, base, map, nil, true)
+                            queueUpgrade(enemyBuilding,
+                                         base,
+                                         nil,
+                                         true,
+                                         true)
                         end
                     end
                 else

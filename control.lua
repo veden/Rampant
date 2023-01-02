@@ -150,7 +150,7 @@ local unregisterResource = chunkUtils.unregisterResource
 
 local cleanSquads = squadAttack.cleanSquads
 
-local upgradeEntity = baseUtils.upgradeEntity
+local queueUpgrade = baseUtils.queueUpgrade
 local rebuildNativeTables = baseUtils.rebuildNativeTables
 
 local tRemove = table.remove
@@ -357,12 +357,11 @@ local function onEnemyBaseBuild(event)
             registerEnemyBaseStructure(map, entity, base)
 
             if universe.NEW_ENEMIES then
-                upgradeEntity(entity,
-                              base,
-                              map,
-                              nil,
-                              true,
-                              true)
+                queueUpgrade(entity,
+                             base,
+                             nil,
+                             true,
+                             true)
             end
         else
             local x,y = positionToChunkXY(entity.position)
@@ -694,17 +693,16 @@ local function onEntitySpawned(entity, tick)
 
                 local meanTTL = linearInterpolation(universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL)
 
-                upgradeEntity(entity,
-                              base,
-                              map,
-                              disPos,
-                              true,
-                              true,
-                              tick + gaussianRandomRangeRG(meanTTL,
-                                                           DEV_HIVE_TTL,
-                                                           MIN_HIVE_TTL,
-                                                           MAX_HIVE_TTL,
-                                                           universe.random))
+                queueUpgrade(entity,
+                             base,
+                             disPos,
+                             true,
+                             true,
+                             tick + gaussianRandomRangeRG(meanTTL,
+                                                          DEV_HIVE_TTL,
+                                                          MIN_HIVE_TTL,
+                                                          MAX_HIVE_TTL,
+                                                          universe.random))
             else
                 local x,y = positionToChunkXY(entity.position)
                 onChunkGenerated({
@@ -980,8 +978,9 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
                     local pick = tick % 8
-
-                    -- local profiler = game.create_profiler()
+                    -- if not universe.profiler then
+                    --     universe.profiler = game.create_profiler()
+                    -- end
 
                     local map = universe.activeMap
                     if (not map) or (universe.processedChunks > (#map.processQueue * 0.05)) then
@@ -1035,7 +1034,11 @@ script.on_event(defines.events.on_tick,
                     processPendingUpgrades(universe, tick)
                     cleanSquads(universe, tick)
 
-                    -- game.print({"", "--dispatch4 ", profiler, ", ", pick, ", ", game.tick, "       ", universe.random()})
+                    -- if (game.tick % 20 == 0) then
+                    --     universe.profiler.divide(60)
+                    --     game.print({"", "--dispatch4 ", universe.profiler})
+                    --     universe.profiler.reset()
+                    -- end
 end)
 
 script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
