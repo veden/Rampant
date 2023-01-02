@@ -217,6 +217,17 @@ data:extend({
         },
 
         {
+            type = "int-setting",
+            name = "rampant--max-evo-dist",
+            setting_type = "startup",
+            default_value = 9600,
+            minimum_value = 1000,
+            maximum_value = 1000000,
+            order = "c[max]-k[evolution]",
+            per_user = false
+        },
+
+        {
             type = "double-setting",
             name = "rampant--adaptationModifier",
             setting_type = "runtime-global",
