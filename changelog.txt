@@ -18,6 +18,7 @@ Version: 3.2.0
     - Fixed faction mutation mutating to an existing faction is no longer counted towards max number of mutations per base
     - Corrected typo of `randominess` to `randomness` in tooltips
     - Fixed alignmentTable being nil due to an invalid reference to the neutral faction
+    - Missing turret sounds due too many sounds triggering at once
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

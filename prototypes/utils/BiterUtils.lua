@@ -295,7 +295,7 @@ function biterUtils.makeBiter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         dying_sound = attributes.dyingSounds,
-        working_sound =  attributes.workingSounds,
+--        working_sound =  attributes.workingSounds,
         walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
@@ -351,7 +351,7 @@ function biterUtils.makeSpitter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         dying_trigger_effect = attributes.dyingEffect,
         dying_sound = attributes.dyingSounds,
-        working_sound = attributes.workingSounds,
+--        working_sound = attributes.workingSounds,
         walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
