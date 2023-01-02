@@ -2,6 +2,7 @@
 Version: 3.2.0
   Improvements:
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
+    - Added console command /rampantRemoveFaction to remove individual factions on existing saves
     - Added minimum evolution of 20% before faction adaptation will happen with mod setting to configure
   Compatibility:
     - Added interface for adding and removing excluded surfaces
@@ -16,6 +17,7 @@ Version: 3.2.0
     - Fixed settler groups not respecting expansion map setting for min and max time
     - Fixed faction mutation mutating to an existing faction is no longer counted towards max number of mutations per base
     - Corrected typo of `randominess` to `randomness` in tooltips
+    - Fixed alignmentTable being nil due to an invalid reference to the neutral faction
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

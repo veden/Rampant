@@ -21,6 +21,7 @@ local baseUtils = {}
 
 -- imports
 
+local stringUtils = require("StringUtils")
 local mathUtils = require("MathUtils")
 local constants = require("Constants")
 local chunkPropertyUtils = require("ChunkPropertyUtils")
@@ -62,6 +63,8 @@ local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
 
 -- imported functions
 
+local isMember = stringUtils.isMember
+
 local setPositionXYInQuery = queryUtils.setPositionXYInQuery
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
@@ -96,13 +99,25 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     return v
 end
 
-local function findBaseMutation(universe, targetEvolution)
+local function findBaseMutation(universe, targetEvolution, excludeFactions)
     local tier = evoToTier(universe, targetEvolution or universe.evolutionLevel, 2)
+    local availableAlignments
     local alignments = EVOLUTION_TABLE_ALIGNMENT[tier]
 
+    if excludeFactions then
+        availableAlignments = {}
+        for _,alignment in pairs(alignments) do
+            if not isMember(alignment[2], excludeFactions) then
+                availableAlignments[#availableAlignments+1] = alignment
+            end
+        end
+    else
+        availableAlignments = alignments
+    end
+
     local roll = universe.random()
-    for i=1,#alignments do
-        local alignment = alignments[i]
+    for i=1,#availableAlignments do
+        local alignment = availableAlignments[i]
 
         roll = roll - alignment[1]
 
@@ -110,7 +125,7 @@ local function findBaseMutation(universe, targetEvolution)
             return alignment[2]
         end
     end
-    return alignments[#alignments]
+    return availableAlignments[#availableAlignments]
 end
 
 local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType, entityType)
@@ -131,7 +146,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
 
     local alignmentTable = BUILDING_EVOLVE_LOOKUP[baseAlignment]
     if not alignmentTable then
-        alignmentTable = BUILDING_EVOLVE_LOOKUP[BASE_ALIGNMENT_NEUTRAL]
+        alignmentTable = BUILDING_EVOLVE_LOOKUP["neutral"]
     end
     local upgrades = alignmentTable[useTier]
 
@@ -247,15 +262,16 @@ function baseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
     end
 end
 
-local function findBaseInitialAlignment(universe, evoIndex)
+-- local
+function baseUtils.findBaseInitialAlignment(universe, evoIndex, excludeFactions)
     local dev = evoIndex * 0.15
     local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, universe.random)
 
     local result
     if universe.random() < 0.05 then
-        result = {findBaseMutation(universe, evoTop), findBaseMutation(universe, evoTop)}
+        result = {findBaseMutation(universe, evoTop, excludeFactions), findBaseMutation(universe, evoTop, excludeFactions)}
     else
-        result = {findBaseMutation(universe, evoTop)}
+        result = {findBaseMutation(universe, evoTop, excludeFactions)}
     end
 
     return result
@@ -498,25 +514,6 @@ function baseUtils.createBase(map, chunk, tick)
     universe.bases[base.id] = base
 
     return base
-end
-
-function baseUtils.rebuildNativeTables(universe)
-    local evoIndex = evoToTier(universe, universe.evolutionLevel, 2)
-
-    if universe.bases then
-        for _,base in pairs(universe.bases) do
-            for x=1,2 do
-                local alignment = base.alignment[x]
-                if alignment and not BUILDING_EVOLVE_LOOKUP[alignment] then
-                    base.alignment = findBaseInitialAlignment(universe, evoIndex)
-                    break
-                elseif not alignment and (x == 1) then
-                    base.alignment = findBaseInitialAlignment(universe, evoIndex)
-                    break
-                end
-            end
-        end
-    end
 end
 
 baseUtilsG = baseUtils

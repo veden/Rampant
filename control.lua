@@ -38,6 +38,11 @@ local queryUtils = require("libs/QueryUtils")
 
 -- constants
 
+local FACTION_SET = constants.FACTION_SET
+
+local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
+
+local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
 local VANILLA_ENTITY_TYPE_LOOKUP = constants.VANILLA_ENTITY_TYPE_LOOKUP
 local ENTITY_SKIP_COUNT_LOOKUP = constants.ENTITY_SKIP_COUNT_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
@@ -60,6 +65,9 @@ local DEV_HIVE_TTL = constants.DEV_HIVE_TTL
 
 -- imported functions
 
+local isMember = stringUtils.isMember
+local split = stringUtils.split
+
 local planning = aiPlanning.planning
 
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
@@ -73,6 +81,8 @@ local distortPosition = mathUtils.distortPosition
 local linearInterpolation = mathUtils.linearInterpolation
 local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 local prepMap = upgrade.prepMap
+
+local findBaseInitialAlignment = baseUtils.findBaseInitialAlignment
 
 local processBaseAIs = aiPlanning.processBaseAIs
 
@@ -299,10 +309,6 @@ local function onConfigChanged()
     universe["ENEMY_SEED"] = settings.startup["rampant--enemySeed"].value
     universe["ENEMY_VARIATIONS"] = 1-- settings.startup["rampant--newEnemyVariations"].value
     universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
-
-    if universe.NEW_ENEMIES then
-        rebuildNativeTables(universe)
-    end
 
     -- not a completed implementation needs if checks to use all forces
     -- both in the data stage, commands, and if then logic
@@ -1192,12 +1198,108 @@ local function removeNewEnemies()
     end
 end
 
+local function removeFaction(cmd)
+    local factionNames = cmd.parameter
+    if not factionNames then
+        game.print({"description.rampant--removeFactionNames"})
+        return
+    end
+    factionNames = split(factionNames)
+    for _,factionName in pairs(factionNames) do
+        local found = false
+        if (factionName ~= "neutral") then
+            for _,faction in pairs(FACTION_SET) do
+                if (faction.type == factionName) then
+                    found = true
+                    break
+                end
+            end
+        end
+        if not found then
+            game.print({"description.rampant--removeFactionNames"})
+            return
+        end
+    end
+    local localizedFactionNames = ""
+    for _,name in pairs(factionNames) do
+        if localizedFactionNames == "" then
+            localizedFactionNames = name
+        else
+            localizedFactionNames = localizedFactionNames .. "," .. name
+        end
+    end
+    game.print({"description.rampant--removeFaction", localizedFactionNames})
+
+    for _,base in pairs(universe.bases) do
+        if isMember(base.alignment[1], factionNames) then
+            base.alignment = findBaseInitialAlignment(universe, universe.evolutionLevel, factionNames)
+        elseif isMember(base.alignment[2], factionNames) then
+            base.alignment = findBaseInitialAlignment(universe, universe.evolutionLevel, factionNames)
+        end
+    end
+
+    for _,map in pairs(universe.maps) do
+        local surface = map.surface
+        if surface.valid then
+            local entities = surface.find_entities_filtered({
+                    force=universe.enemyForces,
+                    type={
+                        "turret",
+                        "unit-spawner"
+                    }
+            })
+            for entityIndex = 1,#entities do
+                local entity = entities[entityIndex]
+                if entity.valid and isMember(ENEMY_ALIGNMENT_LOOKUP[entity.name], factionNames) then
+                    local position = entity.position
+                    local newEntityName
+                    local entityType = entity.type
+                    unregisterEnemyBaseStructure(map, entity, nil, true)
+                    entity.destroy()
+                    if entityType == "unit-spawner" then
+                        if mRandom() < 0.5 then
+                            newEntityName = "biter-spawner"
+                        else
+                            newEntityName = "spitter-spawner"
+                        end
+                    elseif entityType == "turret" then
+                        if universe.evolutionLevel >= 0.9 then
+                            newEntityName = "behemoth-worm-turret"
+                        elseif universe.evolutionLevel >= 0.5 then
+                            newEntityName = "big-worm-turret"
+                        elseif universe.evolutionLevel >= 0.3 then
+                            newEntityName = "medium-worm-turret"
+                        else
+                            newEntityName = "small-worm-turret"
+                        end
+                    end
+                    local newEntity = surface.create_entity({
+                            name=newEntityName,
+                            position=position
+                    })
+                    local chunk = getChunkByPosition(map, position)
+                    if chunk ~= -1 then
+                        local base = findNearbyBase(map, chunk)
+                        if not base then
+                            base = createBase(map,
+                                              chunk,
+                                              game.tick)
+                        end
+                        registerEnemyBaseStructure(map, newEntity, base)
+                    end
+                end
+            end
+        end
+    end
+end
+
 remote.add_interface("Rampant", {
                          addExcludeSurface = addExcludeSurface,
                          removeExcludeSurface = removeExcludeSurface
 })
 
 commands.add_command('rampantRemoveNewEnemies', "", removeNewEnemies)
+commands.add_command('rampantRemoveFaction', "", removeFaction)
 
 local function rampantSetAIState(event)
     if event.parameter then
