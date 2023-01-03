@@ -15,6 +15,7 @@ Version: 3.2.0
     - Increased the death thresholds to 17000 <50%, 34000 <70%, 60000 <90%, 100000 for adaptation
     - Changed spawner pollution check to use 75% of the chunk pollution diffuse value
     - Bases no longer gain points in AI_STATE_PEACEFUL (Dagothur)
+    - Added baseId and surface name to the adaptation console message
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

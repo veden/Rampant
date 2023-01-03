@@ -371,6 +371,8 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
     if mutated and universe.printBaseAdaptation then
         if baseAlignment[2] then
             game.print({"description.rampant--adaptation2DebugMessage",
+                        base.id,
+                        base.map.surface.name,
                         damageType,
                         {"description.rampant--"..baseAlignment[1].."EnemyName"},
                         {"description.rampant--"..baseAlignment[2].."EnemyName"},
@@ -380,6 +382,8 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                         universe.MAX_BASE_MUTATIONS})
         else
             game.print({"description.rampant--adaptation1DebugMessage",
+                        base.id,
+                        base.map.surface.name,
                         damageType,
                         {"description.rampant--"..baseAlignment[1].."EnemyName"},
                         base.x,
