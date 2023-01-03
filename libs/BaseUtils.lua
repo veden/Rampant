@@ -457,7 +457,9 @@ function baseUtils.createBase(map, chunk, tick)
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
     local evoIndex = mMax(distanceIndex, universe.evolutionLevel)
 
-    local alignment = (universe.NEW_ENEMIES and findBaseInitialAlignment(universe, evoIndex)) or {"neutral"}
+    local alignment =
+        (universe.NEW_ENEMIES and baseUtils.findBaseInitialAlignment(universe, evoIndex))
+        or {"neutral"}
 
     local baseLevel = gaussianRandomRangeRG(meanLevel,
                                             meanLevel * 0.3,

@@ -1,5 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.0
+  Contributions:
+    - Garrotte13: Missing turret sounds due too many sounds triggering at once
+    - ldinc: Added mod setting to configure maximum evolution by distance
   Improvements:
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
     - Added console command /rampantRemoveFaction to remove individual factions on existing saves
@@ -18,7 +21,6 @@ Version: 3.2.0
     - Fixed faction mutation mutating to an existing faction is no longer counted towards max number of mutations per base
     - Corrected typo of `randominess` to `randomness` in tooltips
     - Fixed alignmentTable being nil due to an invalid reference to the neutral faction
-    - Missing turret sounds due too many sounds triggering at once
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

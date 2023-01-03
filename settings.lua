@@ -220,9 +220,9 @@ data:extend({
             type = "int-setting",
             name = "rampant--max-evo-dist",
             setting_type = "startup",
-            default_value = 9600,
-            minimum_value = 1000,
-            maximum_value = 1000000,
+            default_value = 40,
+            minimum_value = 0,
+            maximum_value = 100000,
             order = "c[max]-k[evolution]",
             per_user = false
         },
