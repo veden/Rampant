@@ -26,6 +26,7 @@ Version: 3.2.0
     - Corrected typo of `randominess` to `randomness` in tooltips
     - Fixed alignmentTable being nil due to an invalid reference to the neutral faction
     - Bases can no longer spend points that exceed the overflow limit (Dagothur)
+    - Fixed death pheromone spread being initialized to 0 instead of max negative number causing victory scent to spread incorrectly
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

@@ -447,15 +447,11 @@ function chunkPropertyUtils.setPathRating(map, chunk, value)
 end
 
 function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
-    local v = (map.chunkToDeathGenerator[chunk.id] or 0) + value
-    if (v >= 1) then
-        v = 0.9999
-    end
-    map.chunkToDeathGenerator[chunk.id] = v
+    map.chunkToDeathGenerator[chunk.id] = (map.chunkToDeathGenerator[chunk.id] or 0) + value
 end
 
 function chunkPropertyUtils.setDeathGenerator(map, chunk, value)
-    if (value <= 0.001) then
+    if (value <= 0.001) and (value >= -0.001) then
         map.chunkToDeathGenerator[chunk.id] = nil
     else
         map.chunkToDeathGenerator[chunk.id] = value

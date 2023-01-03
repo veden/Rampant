@@ -408,7 +408,7 @@ end
 
 function pheromoneUtils.processPheromone(map, chunk, player)
     local chunkPlayer = -MAGIC_MAXIMUM_NUMBER
-    local chunkDeath = 0
+    local chunkDeath = -MAGIC_MAXIMUM_NUMBER
     local chunkPathRating = getPathRating(map, chunk)
 
     local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
