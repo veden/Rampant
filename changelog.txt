@@ -3,6 +3,7 @@ Version: 3.2.0
   Contributions:
     - Garrotte13: Missing turret sounds due too many sounds triggering at once
     - ldinc: Added mod setting to configure maximum evolution by distance
+    - PlexPt: marked zhcnremake translations as incompatible due to them being out of date
   Improvements:
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
     - Added console command /rampantRemoveFaction to remove individual factions on existing saves
