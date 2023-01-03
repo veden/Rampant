@@ -42,8 +42,6 @@ local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
 local EVOLUTION_TABLE_ALIGNMENT = constants.EVOLUTION_TABLE_ALIGNMENT
 local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
 
-local BASE_ALIGNMENT_NEUTRAL = constants.BASE_ALIGNMENT_NEUTRAL
-
 local MINIMUM_BUILDING_COST = constants.MINIMUM_BUILDING_COST
 local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
 
@@ -439,8 +437,9 @@ function baseUtils.processBaseMutation(chunk, map, base)
             local entity = entities[1]
             local cost = (COST_LOOKUP[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
+                local position = entity.position
+                baseUtils.modifyBaseSpecialPoints(base, -cost, "Scheduling Entity upgrade", position.x, position.y)
                 baseUtils.queueUpgrade(entity, base, nil, false, true)
-                base.points = base.points - cost
             end
         end
     end
@@ -516,6 +515,76 @@ function baseUtils.createBase(map, chunk, tick)
     universe.bases[base.id] = base
 
     return base
+end
+
+function baseUtils.modifyBaseUnitPoints(base, points, tag, x, y)
+
+    if points > 0 and base.stateAI == BASE_AI_STATE_PEACEFUL then
+        return
+    end
+
+    tag = tag or ""
+    x = x or nil
+    y = y or nil
+
+    base.unitPoints = base.unitPoints + points
+
+    local universe = base.universe
+    local overflowMessage = ""
+    if base.unitPoints > universe.maxOverflowPoints then
+        base.unitPoints = universe.maxOverflowPoints
+        overflowMessage = " [Point cap reached]"
+    end
+
+    local printPointChange = ""
+    if points > 0 and universe.aiPointsPrintGainsToChat then
+        printPointChange =  "+" .. string.format("%.2f", points)
+    elseif points < 0 and universe.aiPointsPrintSpendingToChat then
+        printPointChange = string.format("%.2f", points)
+    end
+
+    if printPointChange ~= "" then
+        local gps = ""
+        if x ~= nil then
+            gps = " [gps=" .. x .. "," .. y .. "]"
+        end
+        game.print("[" .. base.id .. "]:" .. base.map.surface.name .. " " .. printPointChange .. " [" .. tag .. "] Unit Total:" .. string.format("%.2f", base.unitPoints) .. overflowMessage .. gps)
+    end
+end
+
+function baseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
+
+    if points > 0 and base.stateAI == BASE_AI_STATE_PEACEFUL then
+        return
+    end
+
+    tag = tag or ""
+    x = x or nil
+    y = y or nil
+
+    base.points = base.points + points
+
+    local universe = base.universe
+    local overflowMessage = ""
+    if base.points > universe.maxOverflowPoints then
+        base.points = universe.maxOverflowPoints
+        overflowMessage = " [Point cap reached]"
+    end
+
+    local printPointChange = ""
+    if points > 0 and universe.aiPointsPrintGainsToChat then
+        printPointChange =  "+" .. string.format("%.2f", points)
+    elseif points < 0 and universe.aiPointsPrintSpendingToChat then
+        printPointChange = string.format("%.2f", points)
+    end
+
+    if printPointChange ~= "" then
+        local gps = ""
+        if x ~= nil then
+            gps = " [gps=" .. x .. "," .. y .. "]"
+        end
+        game.print("[" .. base.id .. "]:" .. base.map.surface.name .. " " .. printPointChange .. " [" .. tag .. "] Special Total:" .. string.format("%.2f", base.points) .. overflowMessage .. gps)
+    end
 end
 
 baseUtilsG = baseUtils

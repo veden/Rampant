@@ -27,6 +27,8 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
+local UNIT_DEATH_POINT_COST = constants.UNIT_DEATH_POINT_COST
+
 local BASE_PROCESS_INTERVAL = constants.BASE_PROCESS_INTERVAL
 
 local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
@@ -73,6 +75,8 @@ local randomTickEvent = mathUtils.randomTickEvent
 local randomTickDuration = mathUtils.randomTickDuration
 
 local upgradeBaseBasedOnDamage = baseUtils.upgradeBaseBasedOnDamage
+local modifyBaseUnitPoints = baseUtils.modifyBaseUnitPoints
+local modifyBaseSpecialPoints = baseUtils.modifyBaseSpecialPoints
 
 local linearInterpolation = mathUtils.linearInterpolation
 
@@ -175,15 +179,11 @@ local function processBase(universe, base, tick)
     end
 
     if (currentPoints < universe.maxPoints) then
-        base.unitPoints = currentPoints + points
-    elseif currentPoints > universe.maxOverflowPoints then
-        base.unitPoints = universe.maxOverflowPoints
+        modifyBaseUnitPoints(base, points, "Logic Cycle", base.x, base.y)
     end
 
     if (base.points < universe.maxPoints) then
-        base.points = base.points + (points * 0.75)
-    else
-        base.points = universe.maxPoints
+        modifyBaseSpecialPoints(base, (points * 0.75), "Logic Cycle", base.x, base.y)
     end
 
     if universe.NEW_ENEMIES then
@@ -536,6 +536,11 @@ local function processState(universe, base, tick)
         else
             base.stateAI = BASE_AI_STATE_ONSLAUGHT
         end
+    end
+
+    local remainingUnits = base.lostEnemyUnits % 20
+    if remainingUnits ~= 0 then
+        modifyBaseUnitPoints(base, -(remainingUnits*UNIT_DEATH_POINT_COST), remainingUnits.." Units Lost")
     end
 
     base.destroyPlayerBuildings = 0

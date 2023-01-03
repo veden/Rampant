@@ -3,7 +3,8 @@ Version: 3.2.0
   Contributions:
     - Garrotte13: Missing turret sounds due too many sounds triggering at once
     - ldinc: Added mod setting to configure maximum evolution by distance
-    - PlexPt: marked zhcnremake translations as incompatible due to them being out of date
+    - PlexPt: Marked zhcnremake translations as incompatible due to them being out of date
+    - Dagothur: Centralized base point management
   Improvements:
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
     - Added console command /rampantRemoveFaction to remove individual factions on existing saves
@@ -13,6 +14,7 @@ Version: 3.2.0
   Tweaks:
     - Increased the death thresholds to 17000 <50%, 34000 <70%, 60000 <90%, 100000 for adaptation
     - Changed spawner pollution check to use 75% of the chunk pollution diffuse value
+    - Bases no longer gain points in AI_STATE_PEACEFUL (Dagothur)
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
@@ -22,10 +24,13 @@ Version: 3.2.0
     - Fixed faction mutation mutating to an existing faction is no longer counted towards max number of mutations per base
     - Corrected typo of `randominess` to `randomness` in tooltips
     - Fixed alignmentTable being nil due to an invalid reference to the neutral faction
+    - Bases can no longer spend points that exceed the overflow limit (Dagothur)
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting
     - Moved neturalObject scan chunk to after a chunk is determined to be passable
+    - Centralized base points manipulation and chat messaging (Dagothur)
+    - Base point deductions for unit losses are now batched in 20 to reduce chat spam when using the print AI points to chat options (Dagothur)
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2

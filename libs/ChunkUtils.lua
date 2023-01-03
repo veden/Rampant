@@ -98,9 +98,10 @@ local removeChunkBase = chunkPropertyUtils.removeChunkBase
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
-local createBase = baseUtils.createBase
 
 local queueUpgrade = baseUtils.queueUpgrade
+local createBase = baseUtils.createBase
+local modifyBaseUnitPoints = baseUtils.modifyBaseUnitPoints
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
 
@@ -584,7 +585,6 @@ end
 
 function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
-        local universe = map.universe
         local entityValue = BUILDING_PHEROMONES[entity.type]
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
@@ -594,17 +594,10 @@ function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
                     pointValue = 0
                 end
                 base.destroyPlayerBuildings = base.destroyPlayerBuildings + 1
-                if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
-                    base.unitPoints = base.unitPoints + pointValue
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
-                    end
-                else
-                    base.unitPoints = base.unitPoints + (pointValue * 0.12)
-                    if universe.aiPointsPrintGainsToChat then
-                        game.print(map.surface.name .. ": Points: +" .. math.floor(pointValue) .. ". [Structure Kill] Total: " .. string.format("%.2f", base.unitPoints))
-                    end
+                if (base.stateAI ~= BASE_AI_STATE_ONSLAUGHT) then
+                    pointValue = pointValue * 0.12
                 end
+                modifyBaseUnitPoints(base, pointValue, "Structure Kill")
             end
             entityValue = -entityValue
         end

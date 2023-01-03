@@ -30,8 +30,6 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
-local COST_LOOKUP = constants.COST_LOOKUP
-
 local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
 local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
 
@@ -214,7 +212,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
                     registerEnemyBaseStructure(map, createdEntity, base, true)
                 end
                 if not entityData.evolve and universe.printBaseUpgrades then
-                    surface.print("[gps=".. position.x ..",".. position.y .."] " .. "Scheduled upgrade for ".. entityName .. " to " .. name)
+                    surface.print("["..base.id.."]:"..surface.name.." Upgrading ".. entityName .. " to " .. name .. " [gps=".. position.x ..",".. position.y .."]")
                 end
                 if remote.interfaces["kr-creep"] then
                     remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)

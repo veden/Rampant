@@ -40,8 +40,6 @@ local queryUtils = require("libs/QueryUtils")
 
 local FACTION_SET = constants.FACTION_SET
 
-local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
-
 local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
 local VANILLA_ENTITY_TYPE_LOOKUP = constants.VANILLA_ENTITY_TYPE_LOOKUP
 local ENTITY_SKIP_COUNT_LOOKUP = constants.ENTITY_SKIP_COUNT_LOOKUP
@@ -161,7 +159,8 @@ local unregisterResource = chunkUtils.unregisterResource
 local cleanSquads = squadAttack.cleanSquads
 
 local queueUpgrade = baseUtils.queueUpgrade
-local rebuildNativeTables = baseUtils.rebuildNativeTables
+
+local modifyBaseUnitPoints = baseUtils.modifyBaseUnitPoints
 
 local tRemove = table.remove
 
@@ -190,11 +189,7 @@ local function onIonCannonFired(event)
         if base then
             base.ionCannonBlasts = base.ionCannonBlasts + 1
             rallyUnits(chunk, map, event.tick, base)
-            base.unitPoints = base.unitPoints + 4000
-            if universe.aiPointsPrintGainsToChat then
-                game.print(map.surface.name .. ": Points: +" .. 4000 .. ". [Ion Cannon] Total: " ..
-                           string.format("%.2f", base.unitPoints))
-            end
+            modifyBaseUnitPoints(base, 4000, "Ion Cannon")
         end
     end
 end
@@ -477,9 +472,8 @@ local function onDeath(event)
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
                         base.deathEvents = base.deathEvents + 1
                     end
-                    base.unitPoints = base.unitPoints - UNIT_DEATH_POINT_COST
-                    if universe.aiPointsPrintSpendingToChat then
-                        game.print(map.surface.name .. ": Points: -" .. UNIT_DEATH_POINT_COST .. ". [Unit Lost] Total: " .. string.format("%.2f", base.unitPoints))
+                    if base.lostEnemyUnits % 20 == 0 then
+                        modifyBaseUnitPoints(base, -(20*UNIT_DEATH_POINT_COST), "20 Units Lost")
                     end
                     if (universe.random() < universe.rallyThreshold) and not surface.peaceful_mode then
                         rallyUnits(chunk, map, tick, base)
@@ -502,17 +496,9 @@ local function onDeath(event)
             then
                 if base then
                     if (entityType == "unit-spawner") then
-                        base.unitPoints = base.unitPoints + RECOVER_NEST_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_NEST_COST ..
-                                       ". [Nest Lost] Total: " .. string.format("%.2f", base.unitPoints))
-                        end
+                        modifyBaseUnitPoints(base, RECOVER_NEST_COST, "Nest Lost")
                     elseif (entityType == "turret") then
-                        base.unitPoints = base.unitPoints + RECOVER_WORM_COST
-                        if universe.aiPointsPrintGainsToChat then
-                            game.print(map.surface.name .. ": Points: +" .. RECOVER_WORM_COST ..
-                                       ". [Worm Lost] Total: " .. string.format("%.2f", base.unitPoints))
-                        end
+                        modifyBaseUnitPoints(base, RECOVER_WORM_COST, "Worm Lost")
                     end
                     rallyUnits(chunk, map, tick, base)
                     if artilleryBlast then
@@ -669,10 +655,7 @@ local function onRocketLaunch(event)
             local base = findNearbyBase(map, chunk)
             if base then
                 base.rocketLaunched = base.rocketLaunched + 1
-                base.unitPoints = base.unitPoints + 5000
-                if universe.aiPointsPrintGainsToChat then
-                    game.print(map.surface.name .. ": Points: +" .. 5000 .. ". [Rocket Launch] Total: " .. string.format("%.2f", base.unitPoints))
-                end
+                modifyBaseUnitPoints(base, 5000, "Rocket Launch")
             end
         end
     end
