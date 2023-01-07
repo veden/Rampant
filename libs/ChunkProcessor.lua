@@ -162,7 +162,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             if createdEntity and createdEntity.valid then
                 registerEnemyBaseStructure(entityData.map, createdEntity, entityData.base, true)
                 if remote.interfaces["kr-creep"] then
-                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
+                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position, false, createdEntity.name)
                 end
             end
         else
