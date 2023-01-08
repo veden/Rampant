@@ -612,6 +612,11 @@ local function makeBloodParticle(attributes)
                     },
                 ended_in_water_trigger_effect =
                     -- {
+                    --     type = "set-tile",
+                    --     tile_name = "landfill",
+                    --     radius = 1,
+                    -- }
+                    -- {
                     --     type = "create-entity",
                     --     entity_name = "water-splash"
                     -- }
@@ -696,11 +701,38 @@ function particleUtils.makeBloodFountains(attributes)
                                 type = "instant",
                                 target_effects =
                                     {
-                                        type = "create-entity",
-                                        entity_name = attributes.name .. "-blood-fountain-rampant",
-                                        repeat_count = 10,
-                                        repeat_count_deviation = 3,
-                                        offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
+                                        {
+                                            type = "create-entity",
+                                            entity_name = attributes.name .. "-blood-fountain-rampant",
+                                            repeat_count = 10,
+                                            repeat_count_deviation = 3,
+                                            offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
+                                        },
+                                        {
+                                            type = "create-particle",
+                                            repeat_count = 1,
+                                            repeat_count_deviation = 2,
+                                            probability = 1,
+                                            affects_target = false,
+                                            show_in_tooltip = false,
+                                            particle_name = "guts-entrails-particle-small-medium",
+                                            offsets = {
+                                                { 0.03906, -0.02344 }
+                                            },
+                                            offset_deviation = { { -1, -0.6992 }, { 1, 0.6992 } },
+                                            tile_collision_mask = nil,
+                                            initial_height = 0.4,
+                                            initial_height_deviation = 0.4,
+                                            initial_vertical_speed = 0.04,
+                                            initial_vertical_speed_deviation = 0.05,
+                                            speed_from_center = 0.04,
+                                            speed_from_center_deviation = 0.05,
+                                            frame_speed = 1,
+                                            frame_speed_deviation = 0.955,
+                                            tail_length = 3,
+                                            tail_length_deviation = 0,
+                                            tail_width = 1
+                                        }
                                     }
                             }
                     }
@@ -741,7 +773,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         },
                                         {
                                             type = "create-particle",
-                                            repeat_count = 4,
+                                            repeat_count = 1,
                                             repeat_count_deviation = 2,
                                             probability = 1,
                                             affects_target = false,
@@ -766,7 +798,7 @@ function particleUtils.makeBloodFountains(attributes)
                                         },
                                         {
                                             type = "create-particle",
-                                            repeat_count = 4,
+                                            repeat_count = 2,
                                             repeat_count_deviation = 2,
                                             probability = 1,
                                             affects_target = false,

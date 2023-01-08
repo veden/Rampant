@@ -659,14 +659,15 @@ data:extend({
             per_user = false
         },
 
-        -- {
-        --     type = "bool-setting",
-        --     name = "rampant--enableFullMapScan",
-        --     setting_type = "runtime-global",
-        --     default_value = true,
-        --     order = "n[modifier]-a[optimize]",
-        --     per_user = false
-        -- },
+        {
+            type = "bool-setting",
+            name = "rampant--enableLandfillOnDeath",
+            description = "rampant--reduceBloodParticles",
+            setting_type = "startup",
+            default_value = true,
+            order = "n[modifier]-a[optimize]",
+            per_user = false
+        },
 
         {
             type = "bool-setting",

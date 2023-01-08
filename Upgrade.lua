@@ -614,8 +614,8 @@ function upgrade.attempt(universe)
         universe.entitySkipCountLookup = nil
         universe.evoToTierMapping = nil
     end
-    if global.version < 306 then
-        global.version = 306
+    if global.version < 307 then
+        global.version = 307
         local minDiffuse = game.map_settings.pollution.min_to_diffuse
         universe.pollutionDiffuseMinimum = minDiffuse * 0.75
 

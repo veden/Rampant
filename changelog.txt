@@ -12,6 +12,7 @@ Version: 3.2.0
     - Improved the potential field pheromone distribution
     - Added long term death pheromone that overtime will cause chunks saturated in death to be avoided more frequently and settled less
     - Added a mod setting to toggle the purple settler cloud
+    - When enemies die there body parts can fill in water tiles. Can be disabled in mod settings.
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:

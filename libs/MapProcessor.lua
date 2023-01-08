@@ -564,8 +564,11 @@ function mapProcessor.processClouds(universe, tick)
         universe.settlePurpleCloud[len] = nil
         universe.settlePurpleCloud.len = len - 1
         local map = builderPack.map
-        if builderPack.squad.group.valid and map.surface.valid then
-            setPositionInQuery(universe.obaCreateBuildCloudQuery, builderPack.position)
+        if builderPack.group.valid and map.surface.valid then
+            setPositionInQuery(
+                universe.obaCreateBuildCloudQuery,
+                builderPack.position
+            )
             map.surface.create_entity(universe.obaCreateBuildCloudQuery)
         end
     end

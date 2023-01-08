@@ -106,6 +106,27 @@ if settings.startup["rampant--enableShrinkNestsAndWorms"].value then
     end
 end
 
+if settings.startup["rampant--enableLandfillOnDeath"].value then
+    local particles = {
+        "guts-entrails-particle-small-medium",
+        "guts-entrails-particle-big"
+    }
+
+    for _,particleName in pairs(particles) do
+        data.raw["optimized-particle"][particleName].ended_in_water_trigger_effect = {
+            {
+                type = "set-tile",
+                tile_name = "landfill",
+                radius = 0.5,
+            },
+            {
+                type = "script",
+                effect_id = "deathLandfillParticle--rampant"
+            }
+        }
+    end
+end
+
 if settings.startup["rampant--enableFadeTime"].value then
     for k, corpse in pairs(data.raw["corpse"]) do
         if (string.find(k, "biter") or string.find(k, "spitter") or string.find(k, "hive") or

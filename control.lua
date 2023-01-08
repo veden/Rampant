@@ -568,16 +568,20 @@ local function processSurfaceTile(map, position, chunks, tick)
     else
         local x,y = positionToChunkXY(position)
         local addMe = true
-        for ci=1,#chunks do
-            local c = chunks[ci]
-            if (c.x == x) and (c.y == y) then
-                addMe = false
-                break
+        if chunks then
+            for ci=1,#chunks do
+                local c = chunks[ci]
+                if (c.x == x) and (c.y == y) then
+                    addMe = false
+                    break
+                end
             end
         end
         if addMe then
             local chunkXY = {x=x,y=y}
-            chunks[#chunks+1] = chunkXY
+            if chunks then
+                chunks[#chunks+1] = chunkXY
+            end
             onChunkGenerated({area = { left_top = chunkXY },
                               tick = tick,
                               surface = map.surface})
@@ -739,6 +743,17 @@ local function onTriggerEntityCreated(event)
                 setDrainedTick(map, chunk, event.tick)
             end
         end
+    elseif (event.effect_id == "deathLandfillParticle--rampant") then
+        local map = universe.maps[event.surface_index]
+        if not map then
+            return
+        end
+        processSurfaceTile(
+            map,
+            event.target_position,
+            nil,
+            event.tick
+        )
     end
 end
 
@@ -988,7 +1003,7 @@ local function onBuilderArrived(event)
         universe.settlePurpleCloud[len] = {
             map = map,
             position = builder.position,
-            squad = builder,
+            group = builder,
             tick = event.tick + SETTLE_CLOUD_WARMUP
         }
     end
