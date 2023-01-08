@@ -272,6 +272,10 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
         and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
         and (map.random() < universe.formSquadThreshold)
     then
+        if (chunk[BASE_PHEROMONE] < 0.0001) or (chunk[PLAYER_PHEROMONE] < 0.0001) then
+            return
+        end
+
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
@@ -364,6 +368,10 @@ function aiAttackWave.formSquads(map, chunk, base)
         and ((base.unitPoints - AI_SQUAD_COST) > 0)
         and (map.random() < universe.formSquadThreshold)
     then
+        if (chunk[BASE_PHEROMONE] < 0.0001) or (chunk[PLAYER_PHEROMONE] < 0.0001) then
+            return
+        end
+
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,

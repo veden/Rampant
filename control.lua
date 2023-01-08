@@ -54,6 +54,8 @@ local RECOVER_WORM_COST = constants.RECOVER_WORM_COST
 local RETREAT_GRAB_RADIUS = constants.RETREAT_GRAB_RADIUS
 
 local RETREAT_SPAWNER_GRAB_RADIUS = constants.RETREAT_SPAWNER_GRAB_RADIUS
+local BASE_PHEROMONE = constants.BASE_PHEROMONE
+local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 
 local UNIT_DEATH_POINT_COST = constants.UNIT_DEATH_POINT_COST
 
@@ -783,6 +785,11 @@ local function onUnitGroupCreated(event)
             return
         end
 
+        if not settler and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
+            group.destroy()
+            return
+        end
+
         squad = createSquad(nil, map, group, settler, base)
         universe.groupNumberToSquad[group.group_number] = squad
 
@@ -804,6 +811,11 @@ local function onUnitGroupCreated(event)
             (universe.random() < 0.25)
 
         if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
+            group.destroy()
+            return
+        end
+
+        if not settler and chunk[BASE_PHEROMONE] < 0.0001 and chunk[PLAYER_PHEROMONE] < 0.0001 then
             group.destroy()
             return
         end
@@ -840,6 +852,12 @@ local function onGroupFinishedGathering(event)
                 group.destroy()
             end
         else
+            local chunk = getChunkByPosition(map, squad.group.position)
+            if (chunk ~= -1) and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
+                group.destroy()
+                return
+            end
+
             if (universe.squadCount <= universe.AI_MAX_SQUAD_COUNT) then
                 squadDispatch(map, squad, event.tick)
             else
@@ -864,6 +882,11 @@ local function onGroupFinishedGathering(event)
             (universe.random() < 0.25)
 
         if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
+            group.destroy()
+            return
+        end
+
+        if not settler and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
             group.destroy()
             return
         end
