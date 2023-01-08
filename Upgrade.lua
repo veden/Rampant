@@ -632,6 +632,8 @@ function upgrade.attempt(universe)
         universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
 
         universe.pendingUpgrades = {}
+        universe.settlePurpleCloud = {}
+        universe.settlePurpleCloud.len = 0
 
         for _,base in pairs(universe.bases) do
             base.maxExpansionGroups = 0

@@ -21,6 +21,7 @@ local mapProcessor = {}
 
 -- imports
 
+local queryUtils = require("QueryUtils")
 local pheromoneUtils = require("PheromoneUtils")
 local aiAttackWave = require("AIAttackWave")
 local aiPredicates = require("AIPredicates")
@@ -59,6 +60,8 @@ local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 -- imported functions
+
+local setPositionInQuery = queryUtils.setPositionInQuery
 
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
@@ -552,6 +555,20 @@ function mapProcessor.processAttackWaves(universe)
     processSpawnersBody(universe,
                         "processMigrationIterator",
                         universe.chunkToNests)
+end
+
+function mapProcessor.processClouds(universe, tick)
+    local len = universe.settlePurpleCloud.len
+    local builderPack = universe.settlePurpleCloud[len]
+    if builderPack and (builderPack.tick <= tick) then
+        universe.settlePurpleCloud[len] = nil
+        universe.settlePurpleCloud.len = len - 1
+        local map = builderPack.map
+        if builderPack.squad.group.valid and map.surface.valid then
+            setPositionInQuery(universe.obaCreateBuildCloudQuery, builderPack.position)
+            map.surface.create_entity(universe.obaCreateBuildCloudQuery)
+        end
+    end
 end
 
 mapProcessorG = mapProcessor

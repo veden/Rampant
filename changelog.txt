@@ -22,6 +22,7 @@ Version: 3.2.0
     - Kamikaze squads no longer use a separate movement function
     - Reduced the raiding base threshold from 550 to 50 to account for the new pheromone distribution
     - Added death pheromone scent multipler for destroyed enemy structures
+    - Settler purple cloud now doesn't trigger until two seconds after a settler group stops and the group and surface must still be valid
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

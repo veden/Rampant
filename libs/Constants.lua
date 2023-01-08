@@ -92,6 +92,8 @@ constants.ENEMY_PHEROMONE_MULTIPLER = 500
 
 constants.DURATION_ACTIVE_NEST = 120 * constants.TICKS_A_SECOND
 
+constants.SETTLE_CLOUD_WARMUP = constants.TICKS_A_SECOND * 3
+
 -- chunk properties
 
 constants.CHUNK_SIZE = 32

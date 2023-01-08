@@ -63,6 +63,8 @@ local MAX_HIVE_TTL = constants.MAX_HIVE_TTL
 local MIN_HIVE_TTL = constants.MIN_HIVE_TTL
 local DEV_HIVE_TTL = constants.DEV_HIVE_TTL
 
+local SETTLE_CLOUD_WARMUP = constants.SETTLE_CLOUD_WARMUP
+
 -- imported functions
 
 local isMember = stringUtils.isMember
@@ -73,9 +75,10 @@ local planning = aiPlanning.planning
 local addBasesToAllEnemyStructures = chunkUtils.addBasesToAllEnemyStructures
 
 local setPointAreaInQuery = queryUtils.setPointAreaInQuery
-local setPositionInQuery = queryUtils.setPositionInQuery
 
 local nextMap = mapUtils.nextMap
+
+local processClouds = mapProcessor.processClouds
 
 local distortPosition = mathUtils.distortPosition
 local linearInterpolation = mathUtils.linearInterpolation
@@ -975,10 +978,16 @@ local function onBuilderArrived(event)
         squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     end
     if universe.PRINT_BASE_SETTLING then
-        game.print("Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
+        game.print(map.surface.name.." Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
-    setPositionInQuery(universe.obaCreateBuildCloudQuery, builder.position)
-    map.surface.create_entity(universe.obaCreateBuildCloudQuery)
+    local len = universe.settlePurpleCloud.len + 1
+    universe.settlePurpleCloud.len = len
+    universe.settlePurpleCloud[len] = {
+        map = map,
+        position = builder.position,
+        squad = builder,
+        tick = event.tick + SETTLE_CLOUD_WARMUP
+    }
 end
 
 -- hooks
@@ -1013,6 +1022,7 @@ script.on_event(defines.events.on_tick,
                         disperseVictoryScent(universe)
                         processAttackWaves(universe)
                         processNests(universe, tick)
+                        processClouds(universe, tick)
                     elseif (pick == 4) then
                         if map then
                             scanResourceMap(map, tick)

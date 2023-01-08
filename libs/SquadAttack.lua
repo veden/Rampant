@@ -268,7 +268,6 @@ local function settleMove(map, squad)
 end
 
 local function attackMove(map, squad)
-
     local universe = map.universe
     local targetPosition = {0,0}
 
