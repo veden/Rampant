@@ -223,14 +223,11 @@ function chunkUtils.initialScan(chunk, map, tick)
     local surface = map.surface
     local universe = map.universe
     setAreaInQueryChunkSize(universe.isFilteredTilesQuery, chunk)
-    local waterTiles = (1 - (surface.count_tiles_filtered(universe.isFilteredTilesQuery) * 0.0009765625)) * 0.80
+    local pass = scanPaths(chunk, map)
     local enemyBuildings = surface.find_entities_filtered(universe.isFilteredEntitiesEnemyStructureQuery)
+    local playerObjects = scorePlayerBuildings(map, chunk)
 
-    if (waterTiles >= CHUNK_PASS_THRESHOLD) or (#enemyBuildings > 0) then
-        local pass = scanPaths(chunk, map)
-
-        local playerObjects = scorePlayerBuildings(map, chunk)
-
+    if (pass ~= CHUNK_IMPASSABLE) or (#enemyBuildings > 0) or (playerObjects > 0) then
         if ((playerObjects > 0) or (#enemyBuildings > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
         end
@@ -241,6 +238,8 @@ function chunkUtils.initialScan(chunk, map, tick)
                                              1) * 0.20)
 
             setPassable(map, chunk, pass)
+
+            local waterTiles = (1 - (surface.count_tiles_filtered(universe.isFilteredTilesQuery) * 0.0009765625)) * 0.80
             setPathRating(map, chunk, waterTiles + neutralObjects)
             setPlayerBaseGenerator(map, chunk, playerObjects)
 
@@ -299,16 +298,15 @@ function chunkUtils.chunkPassScan(chunk, map)
     local surface = map.surface
     local universe = map.universe
     setAreaInQueryChunkSize(universe.cpsFilteredTilesQuery, chunk)
-    local waterTiles = (1 - (surface.count_tiles_filtered(universe.cpsFilteredTilesQuery) * 0.0009765625)) * 0.80
+    local pass = scanPaths(chunk, map)
     local enemyCount = surface.count_entities_filtered(universe.cpsFilteredEnemyAnyFound)
+    local playerObjects = getPlayerBaseGenerator(map, chunk)
 
-    if (waterTiles >= CHUNK_PASS_THRESHOLD) or (enemyCount > 0) then
+    if (pass ~= CHUNK_IMPASSABLE) or (enemyCount > 0) or (playerObjects > 0) then
         local neutralObjects = mMax(0,
                                     mMin(1 - (surface.count_entities_filtered(universe.cpsFilteredEntitiesChunkNeutral) * 0.005),
                                          1) * 0.20)
-        local pass = scanPaths(chunk, map)
-
-        local playerObjects = getPlayerBaseGenerator(map, chunk)
+        local waterTiles = (1 - (surface.count_tiles_filtered(universe.cpsFilteredTilesQuery) * 0.0009765625)) * 0.80
 
         if ((playerObjects > 0) or (enemyCount > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
@@ -316,10 +314,6 @@ function chunkUtils.chunkPassScan(chunk, map)
 
         setPassable(map, chunk, pass)
         setPathRating(map, chunk, waterTiles + neutralObjects)
-
-        if pass == CHUNK_IMPASSABLE then
-            return -1
-        end
 
         return chunk
     end
