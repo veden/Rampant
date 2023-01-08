@@ -64,7 +64,6 @@ local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
 
 local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 local getHiveCount = chunkPropertyUtils.getHiveCount

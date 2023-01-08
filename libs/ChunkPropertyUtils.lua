@@ -606,13 +606,22 @@ end
 function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
     if (playerGenerator <= 0) then
         map.chunkToPlayerBase[chunk.id] = nil
+        return 0
     else
         map.chunkToPlayerBase[chunk.id] = playerGenerator
+        return playerGenerator
     end
 end
 
 function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
-    map.chunkToPlayerBase[chunk.id] = (map.chunkToPlayerBase[chunk.id] or 0) + playerGenerator
+    local amount = (map.chunkToPlayerBase[chunk.id] or 0) + playerGenerator
+    if amount <= 0 then
+        map.chunkToPlayerBase[chunk.id] = nil
+        return 0
+    else
+        map.chunkToPlayerBase[chunk.id] = amount
+        return amount
+    end
 end
 
 function chunkPropertyUtils.findNearbyBase(map, chunk)

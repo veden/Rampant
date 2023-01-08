@@ -103,8 +103,6 @@ local positionToChunkXY = mapUtils.positionToChunkXY
 local processVengence = mapProcessor.processVengence
 local processAttackWaves = mapProcessor.processAttackWaves
 
-local processStaticMap = mapProcessor.processStaticMap
-
 local disperseVictoryScent = pheromoneUtils.disperseVictoryScent
 
 local getChunkByPosition = mapUtils.getChunkByPosition

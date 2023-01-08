@@ -35,6 +35,7 @@ Version: 3.2.0
     - Fixed death pheromone spread being initialized to 0 instead of max negative number causing victory scent to spread incorrectly
     - Fixed chunk scanning have a false negative for impassable chunks
     - Fixed non-settler unit groups being created when player or base pheromone is effectively zero
+    - When the last player structure is destroyed on a chunk, the base pheromone is set to 0
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

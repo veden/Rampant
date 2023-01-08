@@ -37,8 +37,6 @@ local HIVE_BUILDINGS_TYPES = constants.HIVE_BUILDINGS_TYPES
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 
-local CHUNK_PASS_THRESHOLD = constants.CHUNK_PASS_THRESHOLD
-
 local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -599,7 +597,10 @@ function chunkUtils.accountPlayerEntity(entity, map, addObject, base)
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
             if (chunk ~= -1) then
-                addPlayerBaseGenerator(map, chunk, entityValue)
+                local amount = addPlayerBaseGenerator(map, chunk, entityValue)
+                if (amount == 0) then
+                    chunk[BASE_PHEROMONE] = 0
+                end
             end
         end
     end

@@ -43,6 +43,7 @@ local VICTORY_SCENT = constants.VICTORY_SCENT
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 
 local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
+local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
 -- imported functions
 
@@ -122,7 +123,7 @@ end
 function pheromoneUtils.deathScent(map, chunk, structure)
     local amount = -DEATH_PHEROMONE_GENERATOR_AMOUNT
     if structure then
-        amount = amount * 7.5
+        amount = -TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
     end
     addDeathGenerator(map, chunk, amount)
     addPermanentDeathGenerator(map, chunk, amount)
