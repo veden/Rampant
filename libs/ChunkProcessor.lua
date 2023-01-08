@@ -215,7 +215,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
                     surface.print("["..base.id.."]:"..surface.name.." Upgrading ".. entityName .. " to " .. name .. " [gps=".. position.x ..",".. position.y .."]")
                 end
                 if remote.interfaces["kr-creep"] then
-                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position)
+                    remote.call("kr-creep", "spawn_creep_at_position", surface, foundPosition or position, false, createdEntity.name)
                 end
             end
         else
