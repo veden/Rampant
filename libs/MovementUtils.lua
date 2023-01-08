@@ -74,9 +74,7 @@ function movementUtils.addMovementPenalty(squad, chunk)
         local penalty = penalties[i]
         if (penalty.c.id == chunk.id) then
             penalty.v = penalty.v + 1
-            if (penalty.v > 2) and (penalty.v < 15) then
-                squad.kamikaze = true
-            elseif penalty.v >= 15 then
+            if penalty.v >= 15 then
                 local universe = squad.map.universe
                 if universe.enabledMigration and
                     (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then

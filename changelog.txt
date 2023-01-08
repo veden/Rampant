@@ -9,6 +9,8 @@ Version: 3.2.0
     - Added console command /rampantRemoveNewEnemies which changes all new enemies to vanilla enemies for allowing the disabling of new enemies on an existing save
     - Added console command /rampantRemoveFaction to remove individual factions on existing saves
     - Added minimum evolution of 20% before faction adaptation will happen with mod setting to configure
+    - Improved the potential field pheromone distribution
+    - Added long term death pheromone that overtime will cause chunks saturated in death to be avoided more frequently and settled less
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
@@ -16,6 +18,9 @@ Version: 3.2.0
     - Changed spawner pollution check to use 75% of the chunk pollution diffuse value
     - Bases no longer gain points in AI_STATE_PEACEFUL (Dagothur)
     - Added baseId and surface name to the adaptation console message
+    - Increased the number of chunks processed from 735 to 3000
+    - Kamikaze squads no longer use a separate movement function
+    - Reduced the raiding base threshold from 550 to 50 to account for the new pheromone distribution
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

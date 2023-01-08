@@ -145,7 +145,7 @@ local createDrainPylon = unitUtils.createDrainPylon
 
 local isDrained = chunkPropertyUtils.isDrained
 local setDrainedTick = chunkPropertyUtils.setDrainedTick
-local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
+local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
 
 local retreatUnits = squadDefense.retreatUnits
 
@@ -458,14 +458,13 @@ local function onDeath(event)
         end
 
         if (chunk ~= -1) then
-            deathScent(map, chunk)
-
             if not base then
                 base = findNearbyBase(map, chunk)
             end
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
             if (entityType == "unit") and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
+                deathScent(map, chunk)
                 if base then
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
                     if damageTypeName then
@@ -483,7 +482,7 @@ local function onDeath(event)
                     end
                 end
 
-                if (getDeathGeneratorRating(map, chunk) < universe.retreatThreshold) and cause and cause.valid then
+                if (getCombinedDeathGeneratorRating(map, chunk) < universe.retreatThreshold) and cause and cause.valid then
                     retreatUnits(chunk,
                                  cause,
                                  map,
@@ -494,6 +493,7 @@ local function onDeath(event)
                 (entityType == "unit-spawner") or
                 (entityType == "turret")
             then
+                deathScent(map, chunk, true)
                 if base then
                     if (entityType == "unit-spawner") then
                         modifyBaseUnitPoints(base, RECOVER_NEST_COST, "Nest Lost")
@@ -968,7 +968,7 @@ script.on_event(defines.events.on_tick,
                     local tick = gameRef.tick
                     local pick = tick % 8
                     -- if not universe.profiler then
-                    --     universe.profiler = game.create_profiler()
+                    -- local profiler = game.create_profiler()
                     -- end
 
                     local map = universe.activeMap
@@ -987,22 +987,17 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, universe, tick)
                     elseif (pick == 2) then
-                        if map then
-                            processMap(map, tick)
-                        end
-                    elseif (pick == 3) then
-                        if map then
-                            processStaticMap(map)
-                        end
-                        disperseVictoryScent(universe)
                         processVengence(universe)
+                    elseif (pick == 3) then
+                        disperseVictoryScent(universe)
+                        processAttackWaves(universe)
+                        processNests(universe, tick)
                     elseif (pick == 4) then
                         if map then
                             scanResourceMap(map, tick)
                             scanEnemyMap(map, tick)
                         end
                     elseif (pick == 5) then
-                        processAttackWaves(universe)
                         if map then
                             scanEnemyMap(map, tick)
                         end
@@ -1010,11 +1005,14 @@ script.on_event(defines.events.on_tick,
                         if map then
                             scanPlayerMap(map, tick)
                         end
-                        processNests(universe, tick)
                     elseif (pick == 7) then
                         processPendingChunks(universe, tick)
                         processScanChunks(universe)
                         planning(universe, gameRef.forces.enemy.evolution_factor)
+                    end
+
+                    if map then
+                        processMap(map, tick)
                     end
 
                     processBaseAIs(universe, tick)
@@ -1025,8 +1023,7 @@ script.on_event(defines.events.on_tick,
 
                     -- if (game.tick % 20 == 0) then
                     --     universe.profiler.divide(60)
-                    --     game.print({"", "--dispatch4 ", universe.profiler})
-                    --     universe.profiler.reset()
+                    -- game.print({"", "--dispatch4 ", profiler, " , ", pick," , ",math.random()})
                     -- end
 end)
 
@@ -1106,7 +1103,8 @@ remote.add_interface("rampantTests",
                          killActiveSquads = tests.killActiveSquads,
                          scanChunkPaths = tests.scanChunkPaths,
                          scanEnemy = tests.scanEnemy,
-                         getEnemyStructureCount = tests.getEnemyStructureCount
+                         getEnemyStructureCount = tests.getEnemyStructureCount,
+                         chunkCount = tests.chunkCount
                      }
 )
 

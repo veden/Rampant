@@ -64,7 +64,7 @@ local findMovementPosition = movementUtils.findMovementPosition
 
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
-local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
+local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
 
 local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 local getHiveCount = chunkPropertyUtils.getHiveCount
@@ -86,26 +86,8 @@ local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
 local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
 
 -- module code
-
-local function scoreResourceLocationKamikaze(_, neighborChunk)
-    local settle = neighborChunk[RESOURCE_PHEROMONE]
-    return settle
-        - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-        - neighborChunk[ENEMY_PHEROMONE]
-end
-
-local function scoreSiegeLocationKamikaze(_, neighborChunk)
-    local settle = neighborChunk[BASE_PHEROMONE]
-        + neighborChunk[RESOURCE_PHEROMONE] * 0.5
-        + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-        - neighborChunk[ENEMY_PHEROMONE]
-
-    return settle
-end
-
 local function scoreResourceLocation(map, neighborChunk)
-    local settle = (getDeathGeneratorRating(map, neighborChunk) * neighborChunk[RESOURCE_PHEROMONE])
-    return settle
+    return neighborChunk[RESOURCE_PHEROMONE]
         - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
         - neighborChunk[ENEMY_PHEROMONE]
 end
@@ -114,19 +96,13 @@ local function scoreSiegeLocation(map, neighborChunk)
     local settle = neighborChunk[BASE_PHEROMONE]
         + neighborChunk[RESOURCE_PHEROMONE] * 0.5
         + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-        - neighborChunk[ENEMY_PHEROMONE]
 
-    return settle * getDeathGeneratorRating(map, neighborChunk)
+    return settle - neighborChunk[ENEMY_PHEROMONE]
 end
 
 local function scoreAttackLocation(map, neighborChunk)
     local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage * getDeathGeneratorRating(map, neighborChunk)
-end
-
-local function scoreAttackKamikazeLocation(_, neighborChunk)
-    local damage = neighborChunk[BASE_PHEROMONE] + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage
 end
 
@@ -140,17 +116,11 @@ local function settleMove(map, squad)
     local chunk = getChunkByXY(map, x, y)
     local scoreFunction = scoreResourceLocation
     if (squad.type == BASE_AI_STATE_SIEGE) then
-        if squad.kamikaze then
-            scoreFunction = scoreSiegeLocationKamikaze
-        else
-            scoreFunction = scoreSiegeLocation
-        end
-    elseif squad.kamikaze then
-        scoreFunction = scoreResourceLocationKamikaze
+        scoreFunction = scoreSiegeLocation
     end
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
-        addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+        addDeathGenerator(map, squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     end
     if chunk ~= -1 then
         addSquadToChunk(map, chunk, squad)
@@ -240,9 +210,9 @@ local function settleMove(map, squad)
                 targetPosition.x = position.x
                 targetPosition.y = position.y
                 if nextAttackChunk ~= -1 then
-                    addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(map, nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 else
-                    addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(map, attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
                 cmd = universe.wanderCommand
@@ -311,12 +281,9 @@ local function attackMove(map, squad)
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
     local attackScorer = scoreAttackLocation
-    if squad.kamikaze then
-        attackScorer = scoreAttackKamikazeLocation
-    end
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
-        addDeathGenerator(map, squadChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+        addDeathGenerator(map, squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     end
     if chunk ~= -1 then
         addSquadToChunk(map, chunk, squad)
@@ -368,9 +335,9 @@ local function attackMove(map, squad)
         targetPosition.x = position.x
         targetPosition.y = position.y
         if (nextAttackChunk ~= -1) then
-            addDeathGenerator(map, nextAttackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(map, nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         else
-            addDeathGenerator(map, attackChunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(map, attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         end
     end
 
@@ -432,7 +399,7 @@ function squadAttack.cleanSquads(universe, tick)
         local group = squad.group
         if not group.valid then
             if squad.chunk ~= -1 then
-                addDeathGenerator(squad.map, squad.chunk, FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                addDeathGenerator(squad.map, squad.chunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             end
             removeSquadFromChunk(squad.map, squad)
             if squad.settlers then

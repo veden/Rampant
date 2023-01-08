@@ -639,6 +639,10 @@ function upgrade.attempt(universe)
             base.resetExpensionGroupsTick = 0
         end
 
+        for _,map in pairs(universe.maps) do
+            map.chunkToPermanentDeathGenerator = {}
+        end
+
         game.print("Rampant - Version 3.2.0")
     end
 
@@ -696,6 +700,7 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPassable = {}
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
+    map.chunkToPermanentDeathGenerator = {}
 
     map.chunkScanCounts = {}
 

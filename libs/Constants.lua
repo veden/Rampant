@@ -65,7 +65,7 @@ constants.TEMPERAMENT_RANGE_MAX = 10000
 constants.TEMPERAMENT_RANGE_MIN = -constants.TEMPERAMENT_RANGE_MAX
 constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
-constants.PROCESS_QUEUE_SIZE = 105
+constants.PROCESS_QUEUE_SIZE = 50
 constants.SCAN_QUEUE_SIZE = 2
 constants.RESOURCE_QUEUE_SIZE = 2
 constants.ENEMY_QUEUE_SIZE = 1
@@ -73,7 +73,6 @@ constants.PLAYER_QUEUE_SIZE = 2
 constants.CLEANUP_QUEUE_SIZE = 8
 constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
-constants.PROCESS_STATIC_QUEUE_SIZE = 20
 constants.PROCESS_PLAYER_BOUND = 128
 constants.VICTORY_SCENT_BOUND = 128
 
@@ -132,7 +131,7 @@ constants.AI_TUNNEL_COST = 100
 constants.AI_MAX_POINTS = 15500
 constants.AI_MAX_OVERFLOW_POINTS = constants.AI_MAX_POINTS * 3
 
-constants.RAIDING_MINIMUM_BASE_THRESHOLD = 550
+constants.RAIDING_MINIMUM_BASE_THRESHOLD = 50
 
 constants.AI_UNIT_REFUND = 3
 
@@ -258,6 +257,7 @@ constants.GENERATOR_PHEROMONE_LEVEL_3 = 500
 constants.GENERATOR_PHEROMONE_LEVEL_4 = 1000
 constants.GENERATOR_PHEROMONE_LEVEL_5 = 1750
 constants.GENERATOR_PHEROMONE_LEVEL_6 = 6000
+constants.GENERATOR_PHEROMONE_VICTORY_NORMALIZER = 20000
 
 constants.BUILDING_PHEROMONES = {}
 constants.BUILDING_PHEROMONES["wall"] = constants.GENERATOR_PHEROMONE_LEVEL_1
@@ -292,36 +292,9 @@ constants.BUILDING_PHEROMONES["reactor"] = constants.GENERATOR_PHEROMONE_LEVEL_6
 constants.BUILDING_PHEROMONES["rocket-silo"] = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 constants.VICTORY_SCENT = {}
-constants.VICTORY_SCENT["wall"] = constants.BUILDING_PHEROMONES["wall"] * 10
-constants.VICTORY_SCENT["transport-belt"] = constants.BUILDING_PHEROMONES["transport-belt"] * 10
-
-constants.VICTORY_SCENT["splitter"] = constants.BUILDING_PHEROMONES["splitter"] * 10
-constants.VICTORY_SCENT["pump"] = constants.BUILDING_PHEROMONES["pump"] * 10
-constants.VICTORY_SCENT["offshore-pump"] = constants.BUILDING_PHEROMONES["offshore-pump"] * 10
-
-constants.VICTORY_SCENT["lamp"] = constants.BUILDING_PHEROMONES["lamp"] * 10
-constants.VICTORY_SCENT["solar-panel"] = constants.BUILDING_PHEROMONES["solar-panel"] * 10
-constants.VICTORY_SCENT["programmable-speaker"] = constants.BUILDING_PHEROMONES["programmable-speaker"] * 10
-constants.VICTORY_SCENT["accumulator"] = constants.BUILDING_PHEROMONES["accumulator"] * 10
-constants.VICTORY_SCENT["assembling-machine"] = constants.BUILDING_PHEROMONES["assembling-machine"] * 10
-constants.VICTORY_SCENT["turret"] = constants.BUILDING_PHEROMONES["turret"] * 10
-constants.VICTORY_SCENT["ammo-turret"] = constants.BUILDING_PHEROMONES["ammo-turret"] * 10
-
-constants.VICTORY_SCENT["furnace"] = constants.BUILDING_PHEROMONES["furnace"] * 10
-constants.VICTORY_SCENT["lab"] = constants.BUILDING_PHEROMONES["lab"] * 10
-constants.VICTORY_SCENT["roboport"] = constants.BUILDING_PHEROMONES["roboport"] * 10
-constants.VICTORY_SCENT["beacon"] = constants.BUILDING_PHEROMONES["beacon"] * 10
-constants.VICTORY_SCENT["radar"] = constants.BUILDING_PHEROMONES["radar"] * 10
-constants.VICTORY_SCENT["electric-turret"] = constants.BUILDING_PHEROMONES["electric-turret"] * 10
-
-constants.VICTORY_SCENT["boiler"] = constants.BUILDING_PHEROMONES["boiler"] * 10
-constants.VICTORY_SCENT["generator"] = constants.BUILDING_PHEROMONES["generator"] * 10
-constants.VICTORY_SCENT["fluid-turret"] = constants.BUILDING_PHEROMONES["fluid-turret"] * 10
-constants.VICTORY_SCENT["mining-drill"] = constants.BUILDING_PHEROMONES["mining-drill"] * 10
-
-constants.VICTORY_SCENT["artillery-turret"] = constants.BUILDING_PHEROMONES["artillery-turret"] * 10
-constants.VICTORY_SCENT["reactor"] = constants.BUILDING_PHEROMONES["reactor"] * 10
-constants.VICTORY_SCENT["rocket-silo"] = constants.BUILDING_PHEROMONES["rocket-silo"] * 10
+for key, building in pairs(constants.BUILDING_PHEROMONES)  do
+    constants.VICTORY_SCENT[key] = building / constants.GENERATOR_PHEROMONE_VICTORY_NORMALIZER
+end
 
 -- map settings tweaks
 

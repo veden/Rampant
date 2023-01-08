@@ -25,6 +25,14 @@ local baseUtils = require("libs/BaseUtils")
 local queryUtils = require("libs/QueryUtils")
 -- local tendrilUtils = require("libs/TendrilUtils")
 
+function tests.chunkCount()
+    local count = 0
+    for _,map in pairs(global.universe.maps) do
+        count = count + #map.processQueue
+    end
+    print(count)
+end
+
 function tests.pheromoneLevels(size)
     local player = game.player.character
     local playerChunkX = math.floor(player.position.x / 32) * constants.CHUNK_SIZE
@@ -442,7 +450,7 @@ local function scoreSiegeLocationKamikaze(_, neighborChunk)
 end
 
 local function scoreResourceLocation(map, neighborChunk)
-    local settle = (chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk) * neighborChunk[constants.RESOURCE_PHEROMONE])
+    local settle = (neighborChunk[constants.RESOURCE_PHEROMONE])
     return settle
         - (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
         - neighborChunk[constants.ENEMY_PHEROMONE]
@@ -454,13 +462,13 @@ local function scoreSiegeLocation(map, neighborChunk)
         + (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
         - neighborChunk[constants.ENEMY_PHEROMONE]
 
-    return settle * chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk)
+    return settle
 end
 
 local function scoreAttackLocation(map, neighborChunk)
     local damage = neighborChunk[constants.BASE_PHEROMONE] +
         (neighborChunk[constants.PLAYER_PHEROMONE] * constants.PLAYER_PHEROMONE_MULTIPLER)
-    return damage * chunkPropertyUtils.getDeathGeneratorRating(map, neighborChunk)
+    return damage
 end
 
 local function scoreAttackKamikazeLocation(_, neighborChunk)
@@ -490,7 +498,7 @@ function tests.exportAiState()
 
             s = s .. table.concat({chunk.x,
                                    chunk.y,
-                                   chunkPropertyUtils.getDeathGeneratorRating(map, chunk),
+                                   chunkPropertyUtils.getCombinedDeathGeneratorRating(map, chunk),
                                    chunk[constants.BASE_PHEROMONE],
                                    chunk[constants.PLAYER_PHEROMONE],
                                    chunk[constants.RESOURCE_PHEROMONE],
@@ -504,7 +512,7 @@ function tests.exportAiState()
                                    chunkPropertyUtils.getRetreatTick(map, chunk),
                                    chunkPropertyUtils.getResourceGenerator(map, chunk),
                                    chunkPropertyUtils.getPlayerBaseGenerator(map, chunk),
-                                   chunkPropertyUtils.getDeathGenerator(map, chunk),
+                                   chunkPropertyUtils.getCombinedDeathGenerator(map, chunk),
                                    scoreResourceLocationKamikaze(map, chunk),
                                    scoreResourceLocation(map, chunk),
                                    scoreSiegeLocationKamikaze(map, chunk),

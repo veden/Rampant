@@ -353,14 +353,6 @@ function chunkPropertyUtils.addResourceGenerator(map, chunk, delta)
     map.chunkToResource[chunk.id] = (map.chunkToResource[chunk.id] or 0) + delta
 end
 
-function chunkPropertyUtils.getDeathGeneratorRating(map, chunk)
-    return 1 - (map.chunkToDeathGenerator[chunk.id] or 0)
-end
-
-function chunkPropertyUtils.getDeathGenerator(map, chunk)
-    return map.chunkToDeathGenerator[chunk.id] or 0
-end
-
 function chunkPropertyUtils.getPassable(map, chunk)
     return map.chunkToPassable[chunk.id] or CHUNK_ALL_DIRECTIONS
 end
@@ -446,13 +438,67 @@ function chunkPropertyUtils.setPathRating(map, chunk, value)
     end
 end
 
+function chunkPropertyUtils.getDeathGeneratorRating(map, chunk)
+    return 1 + (map.chunkToDeathGenerator[chunk.id] or 0)
+end
+
+function chunkPropertyUtils.getCombinedDeathGeneratorRating(map, chunk)
+    local amount = 1 + ((map.chunkToDeathGenerator[chunk.id] or 0) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0))
+    if (amount > 1) then
+        return 1
+    elseif (amount < 0) then
+        return 0
+    else
+        return amount
+    end
+end
+
+function chunkPropertyUtils.getDeathGenerator(map, chunk)
+    return map.chunkToDeathGenerator[chunk.id] or 0
+end
+
+function chunkPropertyUtils.getPermanentDeathGeneratorRating(map, chunk)
+    return 1 + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
+end
+
+function chunkPropertyUtils.getCombinedDeathGenerator(map, chunk)
+    local amount = (map.chunkToDeathGenerator[chunk.id] or 0) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
+    if (amount > 1) then
+        return 1
+    elseif (amount < -1) then
+        return -1
+    else
+        return amount
+    end
+end
+
+function chunkPropertyUtils.addPermanentDeathGenerator(map, chunk, amount)
+    local adjustedAmount = (amount * 0.25) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
+    if (adjustedAmount > 0.75) then
+        map.chunkToPermanentDeathGenerator[chunk.id] = 0.75
+    elseif (adjustedAmount < -0.75) then
+        map.chunkToPermanentDeathGenerator[chunk.id] = -0.75
+    else
+        map.chunkToPermanentDeathGenerator[chunk.id] = adjustedAmount
+    end
+end
+
 function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
-    map.chunkToDeathGenerator[chunk.id] = (map.chunkToDeathGenerator[chunk.id] or 0) + value
+    local currentAmount = (map.chunkToDeathGenerator[chunk.id] or 0) + value
+    if (currentAmount > 1) then
+        map.chunkToDeathGenerator[chunk.id] = 1
+    elseif (currentAmount < -1) then
+        map.chunkToDeathGenerator[chunk.id] = -1
+    else
+        map.chunkToDeathGenerator[chunk.id] = currentAmount
+    end
 end
 
 function chunkPropertyUtils.setDeathGenerator(map, chunk, value)
-    if (value <= 0.001) and (value >= -0.001) then
-        map.chunkToDeathGenerator[chunk.id] = nil
+    if (value > 1) then
+        map.chunkToDeathGenerator[chunk.id] = 1
+    elseif (value < -1) then
+        map.chunkToDeathGenerator[chunk.id] = -1
     else
         map.chunkToDeathGenerator[chunk.id] = value
     end
@@ -474,7 +520,7 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     local gen = map.chunkToDeathGenerator[chunk.id]
     if gen then
         local v = gen * MOVEMENT_GENERATOR_PERSISTANCE
-        if v <= 0.001 then
+        if (v < 0.0001) and (v > -0.0001) then
             map.chunkToDeathGenerator[chunk.id] = nil
         else
             map.chunkToDeathGenerator[chunk.id] = v

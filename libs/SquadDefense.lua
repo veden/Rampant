@@ -54,7 +54,6 @@ local findMovementPosition = movementUtils.findMovementPosition
 local getRetreatTick = chunkPropertyUtils.getRetreatTick
 local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
 local setRetreatTick = chunkPropertyUtils.setRetreatTick
-local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
 local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 
 -- module code
@@ -62,8 +61,7 @@ local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
 local function scoreRetreatLocation(map, neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
             -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-            -(getPlayerBaseGenerator(map, neighborChunk) * 1000)) *
-        getDeathGeneratorRating(map, neighborChunk)
+            -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
 function aiDefense.retreatUnits(chunk, cause, map, tick, radius)

@@ -67,7 +67,7 @@ local removeChunkToNest = mapUtils.removeChunkToNest
 local processStaticPheromone = pheromoneUtils.processStaticPheromone
 local processPheromone = pheromoneUtils.processPheromone
 
-local getDeathGeneratorRating = chunkPropertyUtils.getDeathGeneratorRating
+local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
 local processBaseMutation = baseUtils.processBaseMutation
 
 local processNestActiveness = chunkPropertyUtils.processNestActiveness
@@ -215,6 +215,21 @@ function mapProcessor.processPlayers(players, universe, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     -- not looping everyone because the cost is high enough already in multiplayer
+    for i=1,#players do
+        local player = players[i]
+        if validPlayer(player) then
+            local char = player.character
+            local map = universe.maps[char.surface.index]
+            if map then
+                local playerChunk = getChunkByPosition(map, char.position)
+
+                if (playerChunk ~= -1) then
+                    addPlayerToChunk(map, playerChunk, player.name)
+                end
+            end
+        end
+    end
+
     if (#players > 0) then
         local player = players[universe.random(#players)]
         if validPlayer(player) then
@@ -232,7 +247,7 @@ function mapProcessor.processPlayers(players, universe, tick)
                     local vengence = allowingAttacks and
                         (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (getDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
+                            (getCombinedDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
 
                     for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -262,21 +277,6 @@ function mapProcessor.processPlayers(players, universe, tick)
                             end
                         end
                     end
-                end
-            end
-        end
-    end
-
-    for i=1,#players do
-        local player = players[i]
-        if validPlayer(player) then
-            local char = player.character
-            local map = universe.maps[char.surface.index]
-            if map then
-                local playerChunk = getChunkByPosition(map, char.position)
-
-                if (playerChunk ~= -1) then
-                    addPlayerToChunk(map, playerChunk, player.name)
                 end
             end
         end
