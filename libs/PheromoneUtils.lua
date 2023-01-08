@@ -119,8 +119,11 @@ function pheromoneUtils.disperseVictoryScent(universe)
     end
 end
 
-function pheromoneUtils.deathScent(map, chunk)
+function pheromoneUtils.deathScent(map, chunk, structure)
     local amount = -DEATH_PHEROMONE_GENERATOR_AMOUNT
+    if structure then
+        amount = amount * 7.5
+    end
     addDeathGenerator(map, chunk, amount)
     addPermanentDeathGenerator(map, chunk, amount)
 end
