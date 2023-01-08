@@ -512,6 +512,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant--enabledPurpleSettlerCloud",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "m[total]-c[ai]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant--peacefulAIToggle",
             setting_type = "runtime-global",
             default_value = true,

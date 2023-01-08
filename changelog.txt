@@ -11,6 +11,7 @@ Version: 3.2.0
     - Added minimum evolution of 20% before faction adaptation will happen with mod setting to configure
     - Improved the potential field pheromone distribution
     - Added long term death pheromone that overtime will cause chunks saturated in death to be avoided more frequently and settled less
+    - Added a mod setting to toggle the purple settler cloud
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:

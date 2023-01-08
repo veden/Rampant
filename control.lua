@@ -280,6 +280,8 @@ local function onModSettingsChange(event)
     universe["printAIStateChanges"] = settings.global["rampant--printAIStateChanges"].value
     universe["debugTemperament"] = settings.global["rampant--debugTemperament"].value
 
+    universe["enabledPurpleSettlerCloud"] = settings.global["rampant--enabledPurpleSettlerCloud"].value
+
     universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
     universe["AI_MAX_BUILDER_COUNT"] = settings.global["rampant--maxNumberOfBuilders"].value
     universe["AI_MAX_VANILLA_SQUAD_COUNT"] = universe["AI_MAX_SQUAD_COUNT"] * 0.65
@@ -980,14 +982,16 @@ local function onBuilderArrived(event)
     if universe.PRINT_BASE_SETTLING then
         game.print(map.surface.name.." Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
-    local len = universe.settlePurpleCloud.len + 1
-    universe.settlePurpleCloud.len = len
-    universe.settlePurpleCloud[len] = {
-        map = map,
-        position = builder.position,
-        squad = builder,
-        tick = event.tick + SETTLE_CLOUD_WARMUP
-    }
+    if universe.enabledPurpleSettlerCloud then
+        local len = universe.settlePurpleCloud.len + 1
+        universe.settlePurpleCloud.len = len
+        universe.settlePurpleCloud[len] = {
+            map = map,
+            position = builder.position,
+            squad = builder,
+            tick = event.tick + SETTLE_CLOUD_WARMUP
+        }
+    end
 end
 
 -- hooks
