@@ -2,6 +2,7 @@
 Version: 3.2.0
   Contributions:
     - Garrotte13: Missing turret sounds due too many sounds triggering at once
+    - Garrotte13: Added additional kr-creep parameter for name of entity being created
     - ldinc: Added mod setting to configure maximum evolution by distance
     - PlexPt: Marked zhcnremake translations as incompatible due to them being out of date
     - Dagothur: Centralized base point management
