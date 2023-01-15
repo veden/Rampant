@@ -29,6 +29,7 @@ Version: 3.2.0
     - Removed chunk-scanner entities
     - Reduced max mod setting for enemy variations to 7 and created migrations for any variations greater than 8
     - Reduced range of enemy structures and unit sizes
+    - Moved new enemies creation from data-update-final to data stage
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
