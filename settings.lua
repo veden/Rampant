@@ -303,17 +303,17 @@ data:extend({
             per_user = false
         },
 
-        -- {
-        --     type = "int-setting",
-        --     name = "rampant--newEnemyVariations",
-        --     description = "rampant--newEnemyVariations",
-        --     setting_type = "startup",
-        --     minimum_value = 1,
-        --     maximum_value = 20,
-        --     default_value = 1,
-        --     order = "l[modifier]-h[unit]",
-        --     per_user = false
-        -- },
+        {
+            type = "int-setting",
+            name = "rampant--newEnemyVariations",
+            description = "rampant--newEnemyVariations",
+            setting_type = "startup",
+            minimum_value = 1,
+            maximum_value = 7,
+            default_value = 1,
+            order = "l[modifier]-h[unit]",
+            per_user = false
+        },
 
         {
             type = "int-setting",

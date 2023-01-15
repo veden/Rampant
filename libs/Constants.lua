@@ -398,7 +398,7 @@ buildTier(constants.TIERS, tiersSet)
 
 constants.TIER_UPGRADE_SET = tiersSet
 
-local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
+local variations = settings.startup["rampant--newEnemyVariations"].value
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
@@ -1745,7 +1745,7 @@ for i=1,#constants.FACTION_SET do
             end
 
             local variationSet = {}
-            for v=1,1-- settings.startup["rampant--newEnemyVariations"].value
+            for v=1,settings.startup["rampant--newEnemyVariations"].value
             do
                 local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                 enemyAlignmentLookup[entry] = faction.type

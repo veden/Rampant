@@ -42,8 +42,19 @@ local spitter_water_reflection = unitUtils.spitter_water_reflection
 
 local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
 
+local corpseSet = {}
+-- local corpseCount = 0
+
 local function makeSpitterCorpse(attributes)
-    local name = attributes.name .. "-corpse-rampant"
+    local name = "spitter-".. attributes.faction .. "-" .. attributes.effectiveLevel .. "-corpse-rampant"
+
+    if not corpseSet[name] then
+        corpseSet[name] = true
+        -- corpseCount = corpseCount + 1
+        -- print(corpseCount)
+    else
+        return name
+    end
 
     local corpse = {
         type = "corpse",
@@ -103,15 +114,22 @@ local function makeSpitterCorpse(attributes)
                 }
         }
 
-    data:extend(
-        {
+    data:extend({
             corpse
     })
     return name
 end
 
 local function makeBiterCorpse(attributes)
-    local name = attributes.name .. "-corpse-rampant"
+    local name = "biter-" .. attributes.faction .. "-" .. attributes.effectiveLevel .. "-corpse-rampant"
+
+    if not corpseSet[name] then
+        corpseSet[name] = true
+        -- corpseCount = corpseCount + 1
+        -- print(corpseCount)
+    else
+        return name
+    end
 
     local corpse = {
         type = "corpse",
@@ -178,7 +196,15 @@ local function makeBiterCorpse(attributes)
 end
 
 local function makeUnitSpawnerCorpse(attributes)
-    local name = attributes.name .. "-corpse-rampant"
+    local name = "spawner-" .. attributes.faction .. "-" .. attributes.type .. "-" .. attributes.effectiveLevel .. "-corpse-rampant"
+    if not corpseSet[name] then
+        corpseSet[name] = true
+        -- corpseCount = corpseCount + 1
+        -- print(corpseCount)
+    else
+        return name
+    end
+
     data:extend({
             {
                 type = "corpse",
@@ -208,7 +234,15 @@ local function makeUnitSpawnerCorpse(attributes)
 end
 
 local function makeWormCorpse(attributes)
-    local name = attributes.name .. "-corpse-rampant"
+    local name = "worm-" .. attributes.faction .. "-" .. attributes.effectiveLevel .. "-corpse-rampant"
+    if not corpseSet[name] then
+        corpseSet[name] = true
+        -- corpseCount = corpseCount + 1
+        -- print(corpseCount)
+    else
+        return name
+    end
+
     data:extend({
             {
                 type = "corpse",

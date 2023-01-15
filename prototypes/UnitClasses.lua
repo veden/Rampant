@@ -26,7 +26,7 @@ function generateMigration()
             -- if t > 5 then
             --     adjT = t - 5
             -- end
-            for v = 2, 20 do
+            for v = 8, 20 do
                 print("        [\"" .. faction .. "-biter-spawner-v" .. v .. "-t" .. t .. "-rampant\", \"" .. faction .. "-biter-spawner-v1-t" .. adjT .. "-rampant\"],")
                 print("        [\"" .. faction .. "-spitter-spawner-v" .. v .. "-t" .. t .. "-rampant\", \"" .. faction .. "-spitter-spawner-v1-t" .. adjT .. "-rampant\"],")
                 print("        [\"" .. faction .. "-worm-v" .. v .. "-t" .. t .. "-rampant\", \"" .. faction .. "-worm-v1-t" .. adjT .. "-rampant\"],")

@@ -18,8 +18,28 @@ local particleUtils = {}
 
 -- module code
 
+local particleSet = {}
+-- local particleCount = 0
+
 function particleUtils.makeDamagedParticle(attributes)
-    local name = attributes.name .. "-damaged-particle-rampant"
+    local name = "particle-" .. ((attributes.effectiveLevel and (attributes.effectiveLevel .. "-")) or "")
+        .. (attributes.faction or attributes.name) .. "-damaged-particle-rampant"
+
+    local o = {
+        type = "create-entity",
+        entity_name = name,
+        offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
+        offsets = {{0,0}},
+        damage_type_filters = {"fire", "acid"}
+    }
+
+    if not particleSet[name] then
+        particleSet[name] = true
+        -- particleCount = particleCount + 1
+        -- print(particleCount)
+    else
+        return o
+    end
 
     data:extend({
             {
@@ -53,19 +73,22 @@ function particleUtils.makeDamagedParticle(attributes)
             }
     })
 
-    return {
-        type = "create-entity",
-        entity_name = name,
-        offset_deviation = {{-0.5, -0.5}, {0.5, 0.5}},
-        offsets = {{0,0}},
-        damage_type_filters = {"fire", "acid"}
-    }
+    return o
 end
 
 
 local function makeBloodParticle(attributes)
-    local name = attributes.name .. "-blood-particle-rampant"
+    local name = "particle-" .. ((attributes.effectiveLevel and (attributes.effectiveLevel .. "-")) or "")
+        .. (attributes.faction or attributes.name) .. "-blood-particle-rampant"
     local tint = attributes.tint2
+
+    if not particleSet[name] then
+        particleSet[name] = true
+        -- particleCount = particleCount + 1
+        -- print(particleCount)
+    else
+        return name
+    end
 
     data:extend({
             {

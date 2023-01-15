@@ -27,7 +27,7 @@ if settings.startup["rampant--newEnemies"].value then
     if mods["SchallAlienLoot"] then
         local SizeLootRampant = {1, 2, 3, 3, 4, 4, 4, 5, 5, 6}
         for _,faction in pairs(constants.FACTION_SET) do
-            for v=1,1-- settings.startup["rampant--newEnemyVariations"].value
+            for v=1,settings.startup["rampant--newEnemyVariations"].value
             do
                 for factionSize = 1, constants.TIERS do
                     local effectiveLevel = constants.TIER_UPGRADE_SET[factionSize]

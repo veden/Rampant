@@ -879,7 +879,7 @@ local function generateApperance(unit, invert)
     local tier = unit.effectiveLevel
     if unit.scale then
         local scaleValue = unit.scale[tier]
-        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.20, scaleValue * 0.50, scaleValue * 1.30, xorRandom)
+        local scale = gaussianRandomRangeRG(scaleValue, scaleValue * 0.03, scaleValue * 0.15, scaleValue * 1.15, xorRandom)
         unit.scale = scale
     end
     if invert then
@@ -902,7 +902,7 @@ end
 function swarmUtils.buildUnits(template)
     local unitSet = {}
 
-    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -986,7 +986,7 @@ local function buildEntities(entityTemplates)
 end
 
 function swarmUtils.buildEntitySpawner(template)
-    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1013,7 +1013,7 @@ function swarmUtils.buildEntitySpawner(template)
 end
 
 function swarmUtils.buildUnitSpawner(template)
-    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1042,7 +1042,7 @@ function swarmUtils.buildUnitSpawner(template)
 end
 
 function swarmUtils.buildWorm(template)
-    local variations = 1-- settings.startup["rampant--newEnemyVariations"].value
+    local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]

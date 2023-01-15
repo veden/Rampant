@@ -27,6 +27,8 @@ Version: 3.2.0
     - Added death pheromone scent multipler for destroyed enemy structures
     - Settler purple cloud now doesn't trigger until two seconds after a settler group stops and the group and surface must still be valid
     - Removed chunk-scanner entities
+    - Reduced max mod setting for enemy variations to 7 and created migrations for any variations greater than 8
+    - Reduced range of enemy structures and unit sizes
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
@@ -47,6 +49,7 @@ Version: 3.2.0
     - Moved neturalObject scan chunk to after a chunk is determined to be passable
     - Centralized base points manipulation and chat messaging (Dagothur)
     - Base point deductions for unit losses are now batched in 20 to reduce chat spam when using the print AI points to chat options (Dagothur)
+    - Reduced corpse and particle variation to optimize increased entity times due to high entity counts
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2
