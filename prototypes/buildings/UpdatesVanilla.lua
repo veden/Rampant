@@ -21,34 +21,38 @@ function vanillaUpdates.addWallAcidResistance()
 
     for _,wall in pairs(walls) do
         local foundAcid = false
-        for _,resistance in pairs(wall.resistances) do
-            if resistance.type == "acid" then
-                if resistance.percent < 60 then
-                    resistance.percent = 60
+        if wall.resistances then
+            for _,resistance in pairs(wall.resistances) do
+                if resistance.type == "acid" then
+                    if resistance.percent < 60 then
+                        resistance.percent = 60
+                    end
+                    foundAcid = true
+                    break
                 end
-                foundAcid = true
-                break
             end
-        end
-        if not foundAcid then
-            wall.resistances[#wall.resistances+1] = {type="acid",percent=60}
+            if not foundAcid then
+                wall.resistances[#wall.resistances+1] = {type="acid",percent=60}
+            end
         end
     end
 
     walls = data.raw["gate"]
     for _,wall in pairs(walls) do
         local foundAcid = false
-        for _,resistance in pairs(wall.resistances) do
-            if resistance.type == "acid" then
-                if resistance.percent < 60 then
-                    resistance.percent = 60
+        if wall.resistances then
+            for _,resistance in pairs(wall.resistances) do
+                if resistance.type == "acid" then
+                    if resistance.percent < 60 then
+                        resistance.percent = 60
+                    end
+                    foundAcid = true
+                    break
                 end
-                foundAcid = true
-                break
             end
-        end
-        if not foundAcid then
-            wall.resistances[#wall.resistances+1] = {type="acid",percent=60}
+            if not foundAcid then
+                wall.resistances[#wall.resistances+1] = {type="acid",percent=60}
+            end
         end
     end
 end

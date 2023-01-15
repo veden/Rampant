@@ -44,6 +44,7 @@ Version: 3.2.0
     - Fixed chunk scanning have a false negative for impassable chunks
     - Fixed non-settler unit groups being created when player or base pheromone is effectively zero
     - When the last player structure is destroyed on a chunk, the base pheromone is set to 0
+    - Fixed crash when walls or gates didn't have a resistence property with the add acid resistance to walls mod settings
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting
