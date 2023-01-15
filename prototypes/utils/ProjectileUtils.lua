@@ -16,7 +16,6 @@
 
 local projectileUtils = {}
 
-
 function projectileUtils.makeProjectile(attributes, attack)
     local n = attributes.name .. "-projectile-rampant"
 
@@ -25,8 +24,9 @@ function projectileUtils.makeProjectile(attributes, attack)
                 name = n,
                 flags = {"not-on-map"},
                 collision_box = attributes.attackCollisionBox or {{-0.025, -0.025}, {0.025, 0.025}},
-                collision_mask = attributes.attackCollisionMask,
+                hit_collision_mask = attributes.attackCollisionMask or {"player-layer", "train-layer", RampantGlobalVariables.projectileCollisionLayer},
                 direction_only = attributes.attackDirectionOnly,
+                hit_at_collision_position = true,
                 piercing_damage = attributes.attackPiercingDamage or 0,
                 acceleration = attributes.attackAcceleration or 0.000001,
                 max_speed = math.min(math.max(attributes.scale*0.60, 0.4), 0.7),

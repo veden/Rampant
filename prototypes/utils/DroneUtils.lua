@@ -42,6 +42,7 @@ function droneUtils.makeDrone(attributes)
         healing_per_tick = attributes.healing,
         alert_when_damaged = false,
         collision_box = {{0, 0}, {0, 0}},
+        collision_mask = {RampantGlobalVariables.projectileCollisionLayer},
         selection_box = {{-0.5, -1.5}, {0.5, -0.5}},
         distance_per_frame = attributes.distancePerFrame or 0,
         time_to_live = attributes.ttl or (60 * 45),

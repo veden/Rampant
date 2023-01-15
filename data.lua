@@ -20,6 +20,7 @@ local colorUtils = require("prototypes/utils/ColorUtils")
 local smokeUtils = require("prototypes/utils/SmokeUtils")
 local swarmUtils = require("prototypes/SwarmUtils")
 local constants = require("libs/Constants")
+local collision_mask_util = require("collision-mask-util")
 
 -- imported functions
 
@@ -38,6 +39,9 @@ makeSmokeWithoutGlow({name="the", smokeWithoutGlowTint=makeColor(0.3, 0.75, 0.3,
 makeSmokeAddingFuel({name="the"})
 
 require("prototypes/buildings/ChunkScanner")
+
+RampantGlobalVariables = {}
+RampantGlobalVariables.projectileCollisionLayer = collision_mask_util.get_first_unused_layer()
 
 if not data.raw["corpse"]["acid-splash-purple"] then
     local attributes = {}
@@ -151,4 +155,3 @@ if settings.startup["rampant--newEnemies"].value then
 else
     swarmUtils.generateSpawnerProxy(data.raw["unit-spawner"]["biter-spawner"].result_units)
 end
-

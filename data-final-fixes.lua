@@ -33,6 +33,18 @@ if settings.startup["rampant--newEnemies"].value and mods["SchallAlienLoot"] the
     end
 end
 
+for _, projectile in pairs(data.raw["projectile"]) do
+    if not projectile.hit_collision_mask then
+        projectile.hit_collision_mask = {
+            "player-layer",
+            "train-layer",
+            RampantGlobalVariables.projectileCollisionLayer
+        }
+    else
+        projectile.hit_collision_mask[#projectile.hit_collision_mask+1] = RampantGlobalVariables.projectileCollisionLayer
+    end
+end
+
 if settings.startup["rampant--removeBloodParticles"].value then
     local explosions = data.raw["explosion"]
 
