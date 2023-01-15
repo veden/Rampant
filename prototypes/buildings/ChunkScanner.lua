@@ -18,38 +18,6 @@ local biterUtils = require("prototypes/utils/BiterUtils")
 local constants = require("libs/Constants")
 local smokeUtils = require("prototypes/utils/SmokeUtils")
 
-data:extend({
-        biterUtils.makeBiter({
-                name = "chunk-scanner-squad",
-                scale=15,
-                movement=1,
-                effectiveLevel=1,
-                resistances = {},
-                hitSprayName = "blood-fountain-hit-spray",
-                attack = biterUtils.createMeleeAttack({
-                        radius=1,
-                        damage=1,
-                        scale=15,
-                        effectiveLevel=1
-                })
-        }),
-
-        biterUtils.makeBiter({
-                name = "chunk-scanner-squad-movement",
-                scale=2.5,
-                movement=1,
-                effectiveLevel=1,
-                resistances = {},
-                hitSprayName = "blood-fountain-hit-spray",
-                attack = biterUtils.createMeleeAttack({
-                        radius=1,
-                        damage=1,
-                        scale=15,
-                        effectiveLevel=1
-                })
-        })
-})
-
 local function generateCollisionBox(scale, entityType)
     if entityType == "turret" then
         return {

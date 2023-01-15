@@ -48,7 +48,7 @@ local distortPosition = mathUtils.distortPosition
 
 function movementUtils.findMovementPosition(surface, position)
     local pos = position
-    pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
+    pos = surface.find_non_colliding_position("behemoth-biter", pos, 10, 2, false)
     return pos
 end
 
@@ -60,7 +60,7 @@ end
 
 function movementUtils.findMovementPositionDistort(surface, position)
     local pos = position
-    pos = surface.find_non_colliding_position("chunk-scanner-squad-movement-rampant", pos, 10, 2, false)
+    pos = surface.find_non_colliding_position("behemoth-biter", pos, 10, 2, false)
     return distortPosition(pos, 8)
 end
 

@@ -229,7 +229,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
         end
 
         if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+            local squadPosition = surface.find_non_colliding_position("biter-spawner",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
                                                                                                     0.98),
@@ -282,7 +282,7 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
                                                                      scoreUnitGroupLocation,
                                                                      map)
         if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+            local squadPosition = surface.find_non_colliding_position("biter-spawner",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
                                                                                                     0.98),
@@ -327,7 +327,7 @@ function aiAttackWave.formVengenceSettler(map, chunk, base)
                                                                      scoreUnitGroupLocation,
                                                                      map)
         if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+            local squadPosition = surface.find_non_colliding_position("biter-spawner",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
                                                                                                     0.98),
@@ -378,7 +378,7 @@ function aiAttackWave.formSquads(map, chunk, base)
                                                                      scoreUnitGroupLocation,
                                                                      map)
         if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("chunk-scanner-squad-rampant",
+            local squadPosition = surface.find_non_colliding_position("biter-spawner",
                                                                       positionFromDirectionAndChunk(squadDirection,
                                                                                                     chunk,
                                                                                                     0.98),
