@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local wormUtils = {}
 
 function wormUtils.wormFoldedAnimation(scale, tint, tint2)
@@ -274,7 +273,6 @@ function wormUtils.wormPreparedAnimation(scale, tint, tint2)
         }
 end
 
-
 function wormUtils.wormPreparedAlternativeAnimation(scale, tint, tint2)
     return
         {
@@ -360,7 +358,6 @@ function wormUtils.wormPreparedAlternativeAnimation(scale, tint, tint2)
                 }
         }
 end
-
 
 function wormUtils.wormStartAttackAnimation(scale, tint, tint2)
     return
@@ -697,7 +694,6 @@ function wormUtils.wormEndAttackAnimation(scale, tint, tint2)
                 }
         }
 end
-
 
 function wormUtils.wormDieAnimation(scale, tint, tint2)
     return

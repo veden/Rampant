@@ -287,7 +287,6 @@ function biterUtils.makeBiter(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    --    print(name .. " " .. biterAttributes.health)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
@@ -329,7 +328,6 @@ function biterUtils.makeBiter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
         dying_sound = attributes.dyingSounds,
---        working_sound =  attributes.workingSounds,
         walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
@@ -351,7 +349,6 @@ function biterUtils.makeSpitter(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    --    print(name .. " " .. biterAttributes.health)
     local entity = {
         type = "unit",
         name = attributes.name .. "-rampant",
@@ -385,7 +382,6 @@ function biterUtils.makeSpitter(attributes)
         enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
         dying_trigger_effect = attributes.dyingEffect,
         dying_sound = attributes.dyingSounds,
---        working_sound = attributes.workingSounds,
         walking_sound = attributes.walkingSounds,
         running_sound_animation_positions = {2,},
         water_reflection = spitter_water_reflection(attributes.scale),
@@ -410,7 +406,6 @@ function biterUtils.makeUnitSpawner(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    -- print(attributes.name)
     local o = {
         type = "unit-spawner",
         name = attributes.name .. "-rampant",
@@ -561,7 +556,6 @@ function biterUtils.makeWorm(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    --    print(name .. " " .. attributes.health)
     local o = {
         type = "turret",
         name = attributes.name .. "-rampant",
@@ -573,7 +567,6 @@ function biterUtils.makeWorm(attributes)
         subgroup="enemies",
         max_health = attributes.health,
         loot = attributes.loot,
-        -- shooting_cursor_size = 3.5 * attributes.scale,
         resistances = resistances,
         healing_per_tick = attributes.healing or 0.01,
         collision_box = {{-1.1 * attributes.scale, -1.0 * attributes.scale}, {1.1 * attributes.scale, 1.0 * attributes.scale}},
@@ -659,7 +652,7 @@ function biterUtils.makeWorm(attributes)
     if attributes.autoplace then
         o["autoplace"] = enemy_worm_autoplace(attributes.autoplace)
     end
-        if attributes.appendFlags then
+    if attributes.appendFlags then
         for flag in pairs(attributes.appendFlags) do
             o.flags[#o.flags+1] = flag
         end

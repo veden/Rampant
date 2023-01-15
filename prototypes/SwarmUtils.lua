@@ -912,7 +912,6 @@ function swarmUtils.buildUnits(template)
             local unit = deepcopy(template)
             unit.name = unit.name .. "-v" .. i .. "-t" .. tier
             unit.tier = tier
-            -- unit.nameSuffix = "-v" .. i .. "-t" .. tier
             unit.effectiveLevel = effectiveLevel
             unit.variation = i
             generateApperance(unit)
@@ -1512,8 +1511,8 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
     for t=1,TIERS do
         for i=1,#template.buildSets do
             local buildSet = template.buildSets[i]
-            if (buildSet[2] <= t) and (t <= buildSet[3]) then
-                local activeUnitSet = unitSets[buildSet[1]][t]
+            if (buildSet.tierStart <= t) and (t <= buildSet.tierEnd) then
+                local activeUnitSet = unitSets[buildSet.name][t]
                 local unitSetTier = unitSet[t]
                 if unitSetTier then
                     for b=1,#activeUnitSet do
@@ -1524,9 +1523,6 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
                 end
             end
         end
-        -- while (#unitSet[t] > unitVariations) do
-        --     table.remove(unitSet, math.random(#unitSet[t]))
-        -- end
     end
 
     template.unitSet = unitSet
@@ -1571,17 +1567,19 @@ local function buildHiveTemplate(faction, incomingTemplate)
         local unitSetTier = unitSet[t]
         for i=1,#template.buildSets do
             local buildSet = template.buildSets[i]
-            if (buildSet[2] <= t) and (t <= buildSet[3]) then
+            if (buildSet.tierStart <= t) and (t <= buildSet.tierEnd) then
                 if not unitSetTier then
                     unitSetTier = {}
                     unitSet[t] = unitSetTier
                 end
 
                 unitSetTier[#unitSetTier+1] = {
-                    "entity-proxy-" .. buildSet[1],
-                    mathUtils.linearInterpolation((t-1)/9,
-                        buildSet[4],
-                        buildSet[5])
+                    "entity-proxy-" .. buildSet.name,
+                    mathUtils.linearInterpolation(
+                        (t-1)/9,
+                        buildSet.tierChanceStart,
+                        buildSet.tierChanceEnd
+                    )
                 }
             end
         end

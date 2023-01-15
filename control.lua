@@ -1016,9 +1016,7 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
                     local pick = tick % 8
-                    -- if not universe.profiler then
                     -- local profiler = game.create_profiler()
-                    -- end
 
                     local map = universe.activeMap
                     if (not map) or (universe.processedChunks > (#map.processQueue * 0.05)) then
@@ -1071,10 +1069,7 @@ script.on_event(defines.events.on_tick,
                     processPendingUpgrades(universe, tick)
                     cleanSquads(universe, tick)
 
-                    -- if (game.tick % 20 == 0) then
-                    --     universe.profiler.divide(60)
                     -- game.print({"", "--dispatch4 ", profiler, " , ", pick," , ",math.random()})
-                    -- end
 end)
 
 script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
