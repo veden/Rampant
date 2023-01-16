@@ -18,7 +18,6 @@ local fireUtils = {}
 
 -- imported
 
-local biterUtils = require("BiterUtils")
 local colorUtils = require("ColorUtils")
 local imageUtils = require("ImageUtils")
 

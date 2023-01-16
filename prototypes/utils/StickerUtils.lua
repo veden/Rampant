@@ -42,7 +42,7 @@ function stickerUtils.makeSticker(attributes)
                 direction_count = 1,
                 blend_mode = "normal",
                 animation_speed = 2,
-                scale = 0.4,
+                scale = 0.175,
                 tint = attributes.tint2 or { r = 1, g = 1, b = 1, a = 0.35 },
                 shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
             },
@@ -51,11 +51,9 @@ function stickerUtils.makeSticker(attributes)
         target_movement_modifier_from = attributes.stickerMovementModifier or 1,
         target_movement_modifier_to = 1,
         vehicle_speed_modifier_from = (attributes.stickerMovementModifier and math.min(attributes.stickerMovementModifier * 1.25, 1)) or 1,
-        -- vehicle_speed_modifier_from = attributes.stickerMovementModifier or 1,
         vehicle_speed_modifier_to = 1,
-        -- vehicle_friction_modifier_from = 1.5,
-        -- vehicle_friction_modifier_from = 1,
-        -- vehicle_friction_modifier_to = 1,
+
+        stickers_per_square_meter = 2,
 
         damage_per_tick = attributes.stickerDamagePerTick and { amount = attributes.stickerDamagePerTick or 100 / 60,
                                                                 type = attributes.stickerDamagePerTickType or "fire" },
