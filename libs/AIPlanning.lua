@@ -204,8 +204,9 @@ local function processBase(universe, base, tick)
         deathThreshold = universe.adaptationModifier * deathThreshold
         if ((base.deathEvents > deathThreshold) and (universe.random() > 0.95)) then
             if (base.mutations < universe.MAX_BASE_MUTATIONS) then
-                base.mutations = base.mutations + 1
-                upgradeBaseBasedOnDamage(universe, base)
+                if upgradeBaseBasedOnDamage(universe, base) then
+                    base.mutations = base.mutations + 1
+                end
             elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
                 local roll = universe.random()
                 if (roll < 0.001) then

@@ -639,6 +639,7 @@ function upgrade.attempt(universe)
             base.maxExpansionGroups = 0
             base.sentExpansionGroups = 0
             base.resetExpensionGroupsTick = 0
+            base.alignmentHistory = {}
         end
 
         for _,map in pairs(universe.maps) do

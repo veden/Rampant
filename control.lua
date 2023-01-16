@@ -288,6 +288,8 @@ local function onModSettingsChange(event)
     universe["AI_MAX_VANILLA_BUILDER_COUNT"] = universe["AI_MAX_BUILDER_COUNT"] * 0.65
     universe["MAX_BASE_MUTATIONS"] = settings.global["rampant--max-base-mutations"].value
 
+    universe["MAX_BASE_ALIGNMENT_HISTORY"] = settings.global["rampant--maxBaseAlignmentHistory"].value
+
     universe["initialPeaceTime"] = settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE
     universe["printAwakenMessage"] = settings.global["rampant--printAwakenMessage"].value
 

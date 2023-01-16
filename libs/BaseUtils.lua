@@ -73,6 +73,7 @@ local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
 
 local mFloor = math.floor
 
+local tableRemove = table.remove
 local mMin = math.min
 local mMax = math.max
 
@@ -321,50 +322,58 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
 
     if damageFactions and (#damageFactions > 0) then
         mutation = damageFactions[universe.random(#damageFactions)]
-        if baseAlignment[2] then
-            if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+        if not isMember(mutation, base.alignmentHistory) then
+            if baseAlignment[2] then
+                if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+                    mutated = true
+                    if (roll < 0.05) then
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[2]
+                        baseAlignment[1] = mutation
+                        baseAlignment[2] = nil
+                    elseif (roll < 0.75) then
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                        baseAlignment[1] = mutation
+                    else
+                        baseAlignment[2] = mutation
+                    end
+                end
+            elseif (baseAlignment[1] ~= mutation) then
                 mutated = true
-            end
-            if (roll < 0.05) then
-                baseAlignment[1] = mutation
-                baseAlignment[2] = nil
-            elseif (roll < 0.25) then
-                baseAlignment[1] = mutation
-            else
-                baseAlignment[2] = mutation
-            end
-        else
-            if (baseAlignment[1] ~= mutation) then
-                mutated = true
-            end
-            if (roll < 0.85) then
-                baseAlignment[1] = mutation
-            else
-                baseAlignment[2] = mutation
+                if (roll < 0.85) then
+                    base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                    baseAlignment[1] = mutation
+                else
+                    baseAlignment[2] = mutation
+                end
             end
         end
     else
         mutation = findBaseMutation(universe)
-        if baseAlignment[2] then
-            if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+        if not isMember(mutation, base.alignmentHistory) then
+            if baseAlignment[2] then
+                if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
+                    mutated = true
+                    if (roll < 0.05) then
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[2]
+                        baseAlignment[1] = mutation
+                        baseAlignment[2] = nil
+                    elseif (roll < 0.75) then
+                        base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                        baseAlignment[1] = mutation
+                    else
+                        baseAlignment[2] = mutation
+                    end
+                end
+            elseif (baseAlignment[1] ~= mutation) then
                 mutated = true
-            end
-            if (roll < 0.05) then
-                baseAlignment[2] = nil
-                baseAlignment[1] = mutation
-            elseif (roll < 0.25) then
-                baseAlignment[1] = mutation
-            else
-                baseAlignment[2] = mutation
-            end
-        else
-            if (baseAlignment[1] ~= mutation) then
-                mutated = true
-            end
-            if (roll < 0.85) then
-                base.alignment[1] = mutation
-            else
-                base.alignment[2] = mutation
+                if (roll < 0.85) then
+                    base.alignmentHistory[#base.alignmentHistory+1] = baseAlignment[1]
+                    base.alignment[1] = mutation
+                else
+                    base.alignment[2] = mutation
+                end
             end
         end
     end
@@ -391,6 +400,11 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                         base.mutations,
                         universe.MAX_BASE_MUTATIONS})
         end
+    end
+    local alignmentCount = table_size(base.alignmentHistory)
+    while (alignmentCount > universe.MAX_BASE_ALIGNMENT_HISTORY) do
+        tableRemove(base.alignmentHistory, 1)
+        alignmentCount = alignmentCount - 1
     end
     return mutated
 end
@@ -482,6 +496,7 @@ function baseUtils.createBase(map, chunk, tick)
         distanceThreshold = distanceThreshold * universe.baseDistanceModifier,
         tick = tick,
         alignment = alignment,
+        alignmentHistory = {},
         damagedBy = {},
         deathEvents = 0,
         mutations = 0,

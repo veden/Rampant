@@ -251,6 +251,17 @@ data:extend({
 
         {
             type = "int-setting",
+            name = "rampant--maxBaseAlignmentHistory",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            maximum_value = 16,
+            default_value = 16,
+            order = "d[modifier]-a[ai]",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
             name = "rampant--initialPeaceTime",
             setting_type = "runtime-global",
             minimum_value = 0,

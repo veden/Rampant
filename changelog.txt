@@ -14,6 +14,7 @@ Version: 3.2.0
     - Added long term death pheromone that overtime will cause chunks saturated in death to be avoided more frequently and settled less
     - Added a mod setting to toggle the purple settler cloud
     - When enemies die there body parts can fill in water tiles. Can be disabled in mod settings.
+    - Added base mutation history to prevent mutations to previously mutated factions. Configurable amount of history in Mod Settings.
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
@@ -47,6 +48,7 @@ Version: 3.2.0
     - When the last player structure is destroyed on a chunk, the base pheromone is set to 0
     - Fixed crash when walls or gates didn't have a resistence property with the add acid resistance to walls mod settings
     - Fixed projectiles not being able to collide with spawner eggs and wasps
+    - Fixed bases being able to mutate to the same factions
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting
