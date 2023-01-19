@@ -215,6 +215,20 @@ function chunkPropertyUtils.getNestCount(map, chunk)
     return nestPack.v
 end
 
+function chunkPropertyUtils.addBaseResourceChunk(base, chunk)
+    if chunkPropertyUtils.getResourceGenerator(base.map, chunk) > 0 then
+        base.resourceChunkCount = base.resourceChunkCount + 1
+        base.resourceChunks[chunk.id] = true
+    end
+end
+
+function chunkPropertyUtils.removeBaseResourceChunk(base, chunk)
+    if base.resourceChunks[chunk.id] then
+        base.resourceChunkCount = base.resourceChunkCount - 1
+        base.resourceChunks[chunk.id] = nil
+    end
+end
+
 function chunkPropertyUtils.getChunkBase(map, chunk)
     return map.chunkToBase[chunk.id]
 end

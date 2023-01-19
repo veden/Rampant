@@ -20,6 +20,7 @@ local upgrade = {}
 
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
+local chunkPropertyUtils = require("libs/chunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 
 -- constants
@@ -50,6 +51,9 @@ local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
 
 -- imported functions
 
+local addBaseResourceChunk = chunkPropertyUtils.addBaseResourceChunk
+local getChunkBase = chunkPropertyUtils.getChunkBase
+local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
 local sFind = string.find
 local queueGeneratedChunk = mapUtils.queueGeneratedChunk
 local processPendingChunks = chunkProcessor.processPendingChunks
@@ -640,10 +644,23 @@ function upgrade.attempt(universe)
             base.sentExpansionGroups = 0
             base.resetExpensionGroupsTick = 0
             base.alignmentHistory = {}
+            base.resourceChunks = {}
+            base.resourceChunkCount = 0
         end
 
         for _,map in pairs(universe.maps) do
-            map.chunkToPermanentDeathGenerator = {}
+            if (map.surface.valid) then
+                for _, chunk in pairs(map.processQueue) do
+                    if getResourceGenerator(map, chunk) > 0 then
+                        local base = getChunkBase(map, chunk)
+                        if base then
+                            addBaseResourceChunk(base, chunk)
+                        end
+                    end
+                end
+
+                map.chunkToPermanentDeathGenerator = {}
+            end
         end
 
         game.print("Rampant - Version 3.2.0")

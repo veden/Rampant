@@ -32,6 +32,7 @@ Version: 3.2.0
     - Reduced range of enemy structures and unit sizes
     - Moved new enemies creation from data-update-final to data stage
     - Reduced the size of stickers applied by Rampant new enemies to player entities
+    - Recording the resource chunks covered by a given base as a property of a base
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

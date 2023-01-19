@@ -65,6 +65,9 @@ local GENERATOR_PHEROMONE_LEVEL_6 = constants.GENERATOR_PHEROMONE_LEVEL_6
 
 -- imported functions
 
+local removeBaseResourceChunk = chunkPropertyUtils.removeBaseResourceChunk
+local addBaseResourceChunk = chunkPropertyUtils.addBaseResourceChunk
+
 local setAreaInQueryChunkSize = queryUtils.setAreaInQueryChunkSize
 local setAreaXInQuery = queryUtils.setAreaXInQuery
 local setAreaYInQuery = queryUtils.setAreaYInQuery
@@ -510,6 +513,7 @@ function chunkUtils.registerEnemyBaseStructure(map, entity, base, skipCount)
             if addFunc(map, chunk, entityUnitNumber) then
                 added = true
                 setChunkBase(map, chunk, base)
+                addBaseResourceChunk(base, chunk)
             end
             if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                 processNestActiveness(map, chunk)
@@ -568,6 +572,7 @@ function chunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
                     end
                 end
                 if (getEnemyStructureCount(map, chunk) <= 0) then
+                    removeBaseResourceChunk(base, chunk)
                     removeChunkBase(map, chunk, base)
                 end
             end

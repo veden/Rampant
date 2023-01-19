@@ -522,6 +522,8 @@ function baseUtils.createBase(map, chunk, tick)
         builtEnemyBuilding = 0,
         ionCannonBlasts = 0,
         artilleryBlasts = 0,
+        resourceChunks = {},
+        resourceChunkCount = 0,
         temperament = 0.5,
         temperamentScore = 0,
         universe = universe,
