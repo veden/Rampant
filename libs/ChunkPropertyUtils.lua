@@ -24,6 +24,9 @@ local mathUtils = require("MathUtils")
 
 -- constants
 
+local PLAYER_GENERATOR_PERSISTANCE = constants.PLAYER_GENERATOR_PERSISTANCE
+local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
+
 local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
 
 local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
@@ -542,42 +545,32 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     end
 end
 
-function chunkPropertyUtils.addPlayerToChunk(map, chunk, name)
-    local playerCountChunks = map.chunkToPlayerCount
-    local playerChunk = map.playerToChunk[name]
-    if not playerChunk then
-        map.playerToChunk[name] = chunk
-        local playerCount = playerCountChunks[chunk.id]
-        if not playerCount then
-            playerCountChunks[chunk.id] = 1
+function chunkPropertyUtils.decayPlayerGenerator(map, chunk)
+    local gen = map.chunkToPlayerGenerator[chunk.id]
+    if gen then
+        local v = gen * PLAYER_GENERATOR_PERSISTANCE
+        if (v < 0.0001) and (v > -0.0001) then
+            map.chunkToPlayerGenerator[chunk.id] = nil
         else
-            playerCountChunks[chunk.id] = playerCount + 1
-        end
-    elseif (playerChunk.id ~= chunk.id) then
-        map.playerToChunk[name] = chunk
-        local playerCount = playerCountChunks[playerChunk.id]
-        if playerCount then
-            chunkPropertyUtils.setPlayersOnChunk(map, playerChunk, playerCount - 1)
-        end
-        playerCount = playerCountChunks[chunk.id]
-        if not playerCount then
-            playerCountChunks[chunk.id] = 1
-        else
-            playerCountChunks[chunk.id] = playerCount + 1
+            map.chunkToPlayerGenerator[chunk.id] = v
         end
     end
 end
 
-function chunkPropertyUtils.setPlayersOnChunk(map, chunk, value)
-    if (value <= 0) then
-        map.chunkToPlayerCount[chunk.id] = nil
+function chunkPropertyUtils.addPlayerGenerator(map, chunk, playerMaxGenerator)
+    local value = map.chunkToPlayerGenerator[chunk.id]
+    if value then
+        map.chunkToPlayerGenerator[chunk.id] = mMin(
+            value + PLAYER_PHEROMONE_GENERATOR_AMOUNT,
+            playerMaxGenerator
+        )
     else
-        map.chunkToPlayerCount[chunk.id] = value
+        map.chunkToPlayerGenerator[chunk.id] = PLAYER_PHEROMONE_GENERATOR_AMOUNT
     end
 end
 
-function chunkPropertyUtils.getPlayersOnChunk(map, chunk)
-    return map.chunkToPlayerCount[chunk.id] or 0
+function chunkPropertyUtils.getPlayerGenerator(map, chunk)
+    return map.chunkToPlayerGenerator[chunk.id] or 0
 end
 
 function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)

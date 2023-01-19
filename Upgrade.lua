@@ -20,7 +20,7 @@ local upgrade = {}
 
 local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
-local chunkPropertyUtils = require("libs/chunkPropertyUtils")
+local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 
 -- constants
@@ -659,6 +659,7 @@ function upgrade.attempt(universe)
                     end
                 end
 
+                map.chunkToPlayerGenerator = {}
                 map.chunkToPermanentDeathGenerator = {}
             end
         end
@@ -721,6 +722,7 @@ function upgrade.prepMap(universe, surface)
     map.chunkToPathRating = {}
     map.chunkToDeathGenerator = {}
     map.chunkToPermanentDeathGenerator = {}
+    map.chunkToPlayerGenerator = {}
 
     map.chunkScanCounts = {}
 

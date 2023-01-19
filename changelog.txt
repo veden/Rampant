@@ -50,6 +50,7 @@ Version: 3.2.0
     - Fixed crash when walls or gates didn't have a resistence property with the add acid resistance to walls mod settings
     - Fixed projectiles not being able to collide with spawner eggs and wasps
     - Fixed bases being able to mutate to the same factions
+    - Fixed players disconnecting on multiplayer could leave residual player pheromone that never dissipated
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

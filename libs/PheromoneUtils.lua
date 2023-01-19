@@ -40,19 +40,18 @@ local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
 
 local VICTORY_SCENT = constants.VICTORY_SCENT
 
-local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
-
 local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
 local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
 -- imported functions
 
+local decayPlayerGenerator = chunkPropertyUtils.decayPlayerGenerator
 local addVictoryGenerator = chunkPropertyUtils.addVictoryGenerator
 local getCombinedDeathGenerator = chunkPropertyUtils.getCombinedDeathGenerator
 local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
 local setDeathGenerator = chunkPropertyUtils.setDeathGenerator
 
-local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
+local getPlayerGenerator = chunkPropertyUtils.getPlayerGenerator
 
 local addPermanentDeathGenerator = chunkPropertyUtils.addPermanentDeathGenerator
 
@@ -168,10 +167,12 @@ function pheromoneUtils.processPheromone(map, chunk, player)
         decayDeathGenerator(map, chunk)
     end
 
+    decayPlayerGenerator(map, chunk)
+
     local chunkDeathRating = getCombinedDeathGeneratorRating(map, chunk) * getPathRating(map, chunk)
 
     chunk[PLAYER_PHEROMONE] = chunkDeathRating * mMax(
-        getPlayersOnChunk(map, chunk) * PLAYER_PHEROMONE_GENERATOR_AMOUNT,
+        getPlayerGenerator(map, chunk),
         (chunkPlayer / chunkCount) * 0.98
                                                      )
 

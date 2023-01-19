@@ -34,6 +34,7 @@ local baseUtils = require("BaseUtils")
 
 -- constants
 
+local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
 
 local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
@@ -63,6 +64,7 @@ local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
 
 local setPositionInQuery = queryUtils.setPositionInQuery
 
+local addPlayerGenerator = chunkPropertyUtils.addPlayerGenerator
 local findNearbyBase = chunkPropertyUtils.findNearbyBase
 
 local removeChunkToNest = mapUtils.removeChunkToNest
@@ -86,8 +88,6 @@ local getChunkByXY = mapUtils.getChunkByXY
 local getChunkById = mapUtils.getChunkById
 
 local validPlayer = playerUtils.validPlayer
-
-local addPlayerToChunk = chunkPropertyUtils.addPlayerToChunk
 
 local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
 local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
@@ -218,7 +218,9 @@ function mapProcessor.processPlayers(players, universe, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     -- not looping everyone because the cost is high enough already in multiplayer
-    for i=1,#players do
+    local playerCount = #players
+    local playerMaxGenerator = playerCount * PLAYER_PHEROMONE_GENERATOR_AMOUNT
+    for i=1,playerCount do
         local player = players[i]
         if validPlayer(player) then
             local char = player.character
@@ -227,7 +229,7 @@ function mapProcessor.processPlayers(players, universe, tick)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
-                    addPlayerToChunk(map, playerChunk, player.name)
+                    addPlayerGenerator(map, playerChunk, playerMaxGenerator)
                 end
             end
         end

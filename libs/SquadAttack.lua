@@ -30,6 +30,7 @@ local queryUtils = require("QueryUtils")
 
 -- constants
 
+local PLAYER_PHEROMONE_GENERATOR_THRESHOLD = constants.PLAYER_PHEROMONE_GENERATOR_THRESHOLD
 local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
 local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = constants.BASE_PHEROMONE
@@ -56,6 +57,7 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
+local getPlayerGenerator = chunkPropertyUtils.getPlayerGenerator
 local setPositionInCommand = queryUtils.setPositionInCommand
 
 local euclideanDistancePoints = mathUtils.euclideanDistancePoints
@@ -65,7 +67,6 @@ local findMovementPosition = movementUtils.findMovementPosition
 local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
 
-local getPlayersOnChunk = chunkPropertyUtils.getPlayersOnChunk
 local getHiveCount = chunkPropertyUtils.getHiveCount
 local getNestCount = chunkPropertyUtils.getNestCount
 
@@ -179,7 +180,8 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map, nextAttackChunk) == 0) and (getPlayersOnChunk(map, nextAttackChunk) == 0)
+                if (getPlayerBaseGenerator(map, nextAttackChunk) == 0)
+                    and (getPlayerGenerator(map, nextAttackChunk) < PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
                 then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
@@ -220,7 +222,8 @@ local function settleMove(map, squad)
             end
 
             if (nextAttackChunk ~= -1) and
-                ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0) or (getPlayersOnChunk(map, nextAttackChunk) ~= 0))
+                ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
+                    or (getPlayerGenerator(map, nextAttackChunk) >= PLAYER_PHEROMONE_GENERATOR_THRESHOLD))
             then
                 cmd = universe.settleCommand
                 squad.status = SQUAD_BUILDING
