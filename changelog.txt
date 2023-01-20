@@ -51,6 +51,7 @@ Version: 3.2.0
     - Fixed projectiles not being able to collide with spawner eggs and wasps
     - Fixed bases being able to mutate to the same factions
     - Fixed players disconnecting on multiplayer could leave residual player pheromone that never dissipated
+    - Fixed /rampantSetAIState command could error if not provide correct parameters or didn't display a message if parameters were missing
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

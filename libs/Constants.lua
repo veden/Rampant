@@ -117,13 +117,13 @@ constants.BASE_AI_STATE_MIGRATING = 5
 constants.BASE_AI_STATE_SIEGE = 6
 constants.BASE_AI_STATE_ONSLAUGHT = 7
 
-constants.stateEnglish = {}
-constants.stateEnglish[constants.BASE_AI_STATE_PEACEFUL] = "AI_STATE_PEACEFUL"
-constants.stateEnglish[constants.BASE_AI_STATE_AGGRESSIVE] = "AI_STATE_AGGRESSIVE"
-constants.stateEnglish[constants.BASE_AI_STATE_RAIDING] = "AI_STATE_RAIDING"
-constants.stateEnglish[constants.BASE_AI_STATE_MIGRATING] = "AI_STATE_MIGRATING"
-constants.stateEnglish[constants.BASE_AI_STATE_SIEGE] = "AI_STATE_SIEGE"
-constants.stateEnglish[constants.BASE_AI_STATE_ONSLAUGHT] = "AI_STATE_ONSLAUGHT"
+constants.STATE_ENGLISH = {}
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_PEACEFUL] = "AI_STATE_PEACEFUL"
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_AGGRESSIVE] = "AI_STATE_AGGRESSIVE"
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_RAIDING] = "AI_STATE_RAIDING"
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_MIGRATING] = "AI_STATE_MIGRATING"
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_SIEGE] = "AI_STATE_SIEGE"
+constants.STATE_ENGLISH[constants.BASE_AI_STATE_ONSLAUGHT] = "AI_STATE_ONSLAUGHT"
 
 constants.BASE_GENERATION_STATE_DORMANT = 0
 constants.BASE_GENERATION_STATE_ACTIVE = 1

@@ -359,7 +359,7 @@ local function temperamentPlanner(base, evolutionLevel)
             base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
             base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
             ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
-            constants.stateEnglish[base.stateAI] .. ", surface:" .. base.map.surface.index .. " [" ..
+            constants.STATE_ENGLISH[base.stateAI] .. ", surface:" .. base.map.surface.index .. " [" ..
             base.map.surface.name .. "]" .. ", aS:" .. universe.squadCount .. ", aB:" .. universe.builderCount ..
             ", atkSize:" .. universe.attackWaveSize .. ", stlSize:" .. universe.settlerWaveSize ..
             ", formGroup:" .. universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
@@ -555,7 +555,7 @@ local function processState(universe, base, tick)
     base.stateAITick = randomTickEvent(universe.random, tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
 
     if universe.printAIStateChanges then
-        game.print(base.id .. ": AI is now: " .. constants.stateEnglish[base.stateAI] .. ", Next state change is in "
+        game.print(base.id .. ": AI is now: " .. constants.STATE_ENGLISH[base.stateAI] .. ", Next state change is in "
                    .. string.format("%.2f", (base.stateAITick - tick) / (60*60)) .. " minutes @ " ..
                    getTimeStringFromTick(base.stateAITick) .. " playtime")
     end

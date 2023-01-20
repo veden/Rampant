@@ -1344,29 +1344,31 @@ local function rampantSetAIState(event)
             end
         end
 
-        if target ~= constants.BASE_AI_STATE_PEACEFUL and
-            target ~= constants.BASE_AI_STATE_AGGRESSIVE and
-            target ~= constants.BASE_AI_STATE_RAIDING and
-            target ~= constants.BASE_AI_STATE_MIGRATING and
-            target ~= constants.BASE_AI_STATE_SIEGE and
-            target ~= constants.BASE_AI_STATE_ONSLAUGHT
-        then
+        if not target or not constants.STATE_ENGLISH[target] then
             game.print(target .. " is not a valid state. /rampantSetAIState <stateId> <baseId>")
-            return
         else
+            if not baseId then
+                game.print("Invalid baseId. /rampantSetAIState <stateId> <baseId>")
+                return
+            end
             local base = universe.bases[baseId]
             if not base then
                 game.print(baseId .. " is not a valid base. /rampantSetAIState <stateId> <baseId>")
                 return
             end
+            local previousState = base.stateAI
             base.stateAI = target
             local surface = base.map.surface
             if not surface.valid then
                 game.print("Base is invalid because surface is invalid")
                 return
             end
-            game.print("id:" .. baseId .. " on surface:" .. surface.name .. " is now in " .. constants.stateEnglish[base.stateAI])
+            game.print("id:" .. baseId .. " on surface:" .. surface.name
+                       .. " was in " .. constants.STATE_ENGLISH[previousState]
+                       .. " is now in " .. constants.STATE_ENGLISH[base.stateAI])
         end
+    else
+        game.print("Missing parameters: /rampantSetAIState <stateId> <baseId>")
     end
 end
 
