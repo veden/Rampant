@@ -798,7 +798,7 @@ local function onUnitGroupCreated(event)
             (universe.builderCount < universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
-        if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
+        if not settler and ( (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) or (chunk == -1) ) then
             group.destroy()
             return
         end
@@ -828,7 +828,7 @@ local function onUnitGroupCreated(event)
             (universe.builderCount < universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (universe.random() < 0.25)
 
-        if not settler and (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) then
+        if not settler and ( (universe.squadCount >= universe.AI_MAX_VANILLA_SQUAD_COUNT) or (chunk == -1) ) then
             group.destroy()
             return
         end
