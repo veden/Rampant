@@ -625,8 +625,8 @@ function upgrade.attempt(universe)
 
         universe.expansion = game.map_settings.enemy_expansion.enabled
         universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown * TICKS_A_MINUTE
-        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown * TICKS_A_MINUTE
+        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown / TICKS_A_MINUTE
+        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown / TICKS_A_MINUTE
         universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
         universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
 
