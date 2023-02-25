@@ -20,5 +20,7 @@
 ((nil . ((projectile-project-install-cmd . "./make.sh copy")
 	 (projectile-install-buffer-suffix . "install")
 	 (projectile-project-package-cmd . "./make.sh zip")
-	 (projectile-package-buffer-suffix . "package")
+	 (projectile-package-buffer-suffix . "install")
+	 (projectile-project-uninstall-cmd . "./make.sh clear")
+	 (projectile-uninstall-buffer-suffix . "install")
 	 (projectile-project-run-cmd . "factorio"))))

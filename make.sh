@@ -6,24 +6,11 @@
 
 (define modFolder "/mnt/gallery/gameFiles/factorio/mods/")
 (define serverModFolder "/home/veden/Downloads/factorio/mods/")
-(define configuration (call-with-input-file "info.json"
-                        (lambda (port)
-                          (string->jsexpr (port->string port)))))
-(define packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
-                                   "_"
-                                   (hash-ref configuration 'version)))
+(define packageName '())
+(define configuration '())
 
 (define (makeZip folder)
-  (let ((packagePath (string->path (string-append folder
-                                                  packageName
-                                                  ".zip")))
-        (unzippedPath (string->path (string-append folder
-                                                   packageName))))
-
-    (delete-directory/files unzippedPath)
-
-    (when (file-exists? packagePath)
-      (delete-file packagePath)))
+  (clear)
 
   (zip (string-append folder
                       packageName
@@ -90,28 +77,41 @@
     (copyDirectory "graphics" modFolder)
     (copyDirectory "prototypes" modFolder)))
 
-(define (copy)
+(define (set-metadata)
   (set! configuration (call-with-input-file "info.json"
                         (lambda (port)
                           (string->jsexpr (port->string port)))))
   (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
                                    "_"
-                                   (hash-ref configuration 'version)))
+                                   (hash-ref configuration 'version))))
 
-  (print (string-append "copying " (hash-ref configuration 'name) (hash-ref configuration 'version)))
-  (copyFiles modFolder))
+(define (copy)
+  (set-metadata)
+  (copyFiles modFolder)
+  (print (string-append "copying " (hash-ref configuration 'name) (hash-ref configuration 'version))))
 
 (define (zipIt)
-  (set! configuration (call-with-input-file "info.json"
-                        (lambda (port)
-                          (string->jsexpr (port->string port)))))
-  (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
-                                   "_"
-                                   (hash-ref configuration 'version)))
-  (print (string-append "zipping " (hash-ref configuration 'name) (hash-ref configuration 'version)))
-  (makeZip modFolder))
+  (set-metadata)
+  (makeZip modFolder)
+  (print (string-append "zipping " (hash-ref configuration 'name) (hash-ref configuration 'version))))
+
+(define (clear)
+  (set-metadata)
+  (let ((packagePath (string->path (string-append modFolder
+                                                  packageName
+                                                  ".zip")))
+        (unzippedPath (string->path (string-append modFolder
+                                                   packageName))))
+
+    (when (directory-exists? unzippedPath)
+      (delete-directory/files unzippedPath))
+
+    (when (file-exists? packagePath)
+      (delete-file packagePath)))
+  (print (string-append "clearing " (hash-ref configuration 'name) (hash-ref configuration 'version))))
 
 (let ((arg (vector-ref (current-command-line-arguments) 0)))
   (cond ((equal? arg "copy") (copy))
         ((equal? arg "zip") (zipIt))
+        ((equal? arg "clear") (clear))
         (else "Invalid command arg [copy,zip]")))
