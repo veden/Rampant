@@ -495,25 +495,55 @@ local propTables = {
     {{0.93, 0}, {1, 1.0}}
 }
 
-local function fillUnitTable(result, unitSet, tier, probability)
-    for x=1,#unitSet[tier] do
-        result[#result+1] = {unitSet[tier][x], probability}
+local function mapTierToProbability(lst, reduce)
+    if reduce then
+        for i, item in pairs(lst) do
+            local adjustmentRatio = 1
+            if (reduce > 0) then
+                adjustmentRatio = 1 - (0.05 * reduce)
+            elseif (reduce == 0) then
+                adjustmentRatio = 0.975
+            end
+            lst[i] = {item[1] * adjustmentRatio, item[2]}
+            if item[3] then
+                lst[i][3] = item[3]
+            end
+        end
+        return lst
+    else
+        return lst
     end
 end
 
-local function unitSetToProbabilityTable(unitSet)
+local function fillUnitTable(spawnerTier, result, unitSet, tier, probability)
+    for x=1,#unitSet[tier] do
+        if (tier == 1) then
+            result[#result+1] = {
+                unitSet[tier][x],
+                probability
+            }
+        else
+            result[#result+1] = {
+                unitSet[tier][x],
+                mapTierToProbability(probability, spawnerTier - tier)
+            }
+        end
+    end
+end
+
+local function unitSetToProbabilityTable(unitSet, tier)
     local result = {}
 
-    fillUnitTable(result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
-    fillUnitTable(result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
-    fillUnitTable(result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
-    fillUnitTable(result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
-    fillUnitTable(result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
-    fillUnitTable(result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
-    fillUnitTable(result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
+    fillUnitTable(tier, result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
+    fillUnitTable(tier, result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
+    fillUnitTable(tier, result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
+    fillUnitTable(tier, result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
+    fillUnitTable(tier, result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
+    fillUnitTable(tier, result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
 
     return result
 end
@@ -899,7 +929,7 @@ local function generateApperance(unit, invert)
     end
 end
 
-function swarmUtils.buildUnits(template)
+local function buildUnits(template)
     local unitSet = {}
 
     local variations = settings.startup["rampant--newEnemyVariations"].value
@@ -984,7 +1014,7 @@ local function buildEntities(entityTemplates)
     return unitSet
 end
 
-function swarmUtils.buildEntitySpawner(template)
+local function buildEntitySpawner(template)
     local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
@@ -1011,7 +1041,7 @@ function swarmUtils.buildEntitySpawner(template)
     end
 end
 
-function swarmUtils.buildUnitSpawner(template)
+local function buildUnitSpawner(template)
     local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
@@ -1023,7 +1053,7 @@ function swarmUtils.buildUnitSpawner(template)
             unitSpawner.tier = tier
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
-            local unitTable = unitSetToProbabilityTable(template.unitSet)
+            local unitTable = unitSetToProbabilityTable(template.unitSet, tier)
             unitSpawner.unitSet = unitTable
             generateApperance(unitSpawner)
             unitSpawner.death = (unitSpawner.deathGenerator and unitSpawner.deathGenerator(unitSpawner)) or nil
@@ -1040,7 +1070,7 @@ function swarmUtils.buildUnitSpawner(template)
     end
 end
 
-function swarmUtils.buildWorm(template)
+local function buildWorm(template)
     local variations = settings.startup["rampant--newEnemyVariations"].value
 
     for tier=1, TIERS do
@@ -1680,7 +1710,7 @@ function swarmUtils.processFactions()
             local unit = faction.units[iu]
             local template = buildUnitTemplate(faction, unit)
 
-            unitSets[unit.name] = swarmUtils.buildUnits(template)
+            unitSets[unit.name] = buildUnits(template)
         end
 
         for iu=1,#faction.buildings do
@@ -1689,19 +1719,19 @@ function swarmUtils.processFactions()
             if (building.type == "spitter-spawner") then
                 local template = buildUnitSpawnerTemplate(faction, building, unitSets)
 
-                swarmUtils.buildUnitSpawner(template)
+                buildUnitSpawner(template)
             elseif (building.type == "biter-spawner") then
                 local template = buildUnitSpawnerTemplate(faction, building, unitSets)
 
-                swarmUtils.buildUnitSpawner(template)
+                buildUnitSpawner(template)
             elseif (building.type == "turret") then
                 local template = buildTurretTemplate(faction, building)
 
-                swarmUtils.buildWorm(template)
+                buildWorm(template)
             elseif (building.type == "hive") then
                 local template = buildHiveTemplate(faction, building)
 
-                swarmUtils.buildEntitySpawner(template)
+                buildEntitySpawner(template)
             elseif (building.type == "trap") then
 
             elseif (building.type == "utility") then
