@@ -52,7 +52,7 @@ local deepcopy = util.table.deepcopy
 
 local TIER_UPGRADE_SET = constants.TIER_UPGRADE_SET
 
-local xorRandom = mathUtils.xorRandom(settings.startup["rampant--enemySeed"].value)
+local xorRandom = mathUtils.xorRandom(constants.ENEMY_SEED)
 
 local biterattackanimation = unitUtils.biterattackanimation
 
@@ -932,7 +932,7 @@ end
 local function buildUnits(template)
     local unitSet = {}
 
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = constants.ENEMY_VARIATIONS
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1015,7 +1015,7 @@ local function buildEntities(entityTemplates)
 end
 
 local function buildEntitySpawner(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = constants.ENEMY_VARIATIONS
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1042,7 +1042,7 @@ local function buildEntitySpawner(template)
 end
 
 local function buildUnitSpawner(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = constants.ENEMY_VARIATIONS
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1071,7 +1071,7 @@ local function buildUnitSpawner(template)
 end
 
 local function buildWorm(template)
-    local variations = settings.startup["rampant--newEnemyVariations"].value
+    local variations = constants.ENEMY_VARIATIONS
 
     for tier=1, TIERS do
         local effectiveLevel = TIER_UPGRADE_SET[tier]
@@ -1536,7 +1536,7 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
 
     local unitSet = {}
 
-    -- local unitVariations = settings.startup["rampant--newEnemyVariations"].value
+    -- local unitVariations = constants.ENEMY_VARIATIONS
 
     for t=1,TIERS do
         for i=1,#template.buildSets do

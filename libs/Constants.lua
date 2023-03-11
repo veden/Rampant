@@ -23,6 +23,9 @@ local mathUtils = require("MathUtils")
 
 -- misc
 
+constants.ENEMY_SEED = settings.startup["rampant--enemySeed"].value
+constants.ENEMY_VARIATIONS = settings.startup["rampant--newEnemyVariations"].value
+
 constants.MAGIC_MAXIMUM_NUMBER = 1e99 -- used in loops trying to find the lowest/highest score
 constants.MAGIC_MAXIMUM_BASE_NUMBER = 100000000
 constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = (1 - 0.001)
@@ -367,7 +370,7 @@ buildTier(constants.TIERS, tiersSet)
 
 constants.TIER_UPGRADE_SET = tiersSet
 
-local variations = settings.startup["rampant--newEnemyVariations"].value
+local variations = constants.ENEMY_VARIATIONS
 
 constants.ENERGY_THIEF_LOOKUP = {}
 
@@ -1720,7 +1723,7 @@ for i=1,#constants.FACTION_SET do
             end
 
             local variationSet = {}
-            for v=1,settings.startup["rampant--newEnemyVariations"].value
+            for v=1,constants.ENEMY_VARIATIONS
             do
                 local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                 enemyAlignmentLookup[entry] = faction.type

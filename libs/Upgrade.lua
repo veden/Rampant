@@ -18,18 +18,18 @@ local Upgrade = {}
 
 -- imports
 
-local constants = require("libs/Constants")
-local chunkProcessor = require("libs/ChunkProcessor")
-local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
-local mapUtils = require("libs/MapUtils")
+local Constants = require("libs/Constants")
+local ChunkProcessor = require("libs/ChunkProcessor")
+local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+local MapUtils = require("libs/MapUtils")
 
 --
 
 local Universe
 
--- constants
+-- Constants
 
-local MINIMUM_EXPANSION_DISTANCE = constants.MINIMUM_EXPANSION_DISTANCE
+local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
 local DEFINES_COMMAND_BUILD_BASE = defines.command.build_base
@@ -45,22 +45,22 @@ local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
 local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
-local TRIPLE_CHUNK_SIZE = constants.TRIPLE_CHUNK_SIZE
+local CHUNK_SIZE = Constants.CHUNK_SIZE
+local TRIPLE_CHUNK_SIZE = Constants.TRIPLE_CHUNK_SIZE
 
-local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
-local CHUNK_TICK = constants.CHUNK_TICK
+local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local CHUNK_TICK = Constants.CHUNK_TICK
 
-local TICKS_A_MINUTE = constants.TICKS_A_MINUTE
+local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 
 -- imported functions
 
-local addBaseResourceChunk = chunkPropertyUtils.addBaseResourceChunk
-local getChunkBase = chunkPropertyUtils.getChunkBase
-local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
+local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
+local getChunkBase = ChunkPropertyUtils.getChunkBase
+local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
 local sFind = string.find
-local queueGeneratedChunk = mapUtils.queueGeneratedChunk
-local processPendingChunks = chunkProcessor.processPendingChunks
+local queueGeneratedChunk = MapUtils.queueGeneratedChunk
+local processPendingChunks = ChunkProcessor.processPendingChunks
 
 -- module code
 
@@ -580,14 +580,14 @@ function Upgrade.attempt()
         game.forces.enemy.kill_all_units()
 
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
-            constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
+            Constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
 
-        game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
-        game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
+        game.map_settings.unit_group.min_group_radius = Constants.UNIT_GROUP_MAX_RADIUS * 0.5
+        game.map_settings.unit_group.max_group_radius = Constants.UNIT_GROUP_MAX_RADIUS
 
-        game.map_settings.unit_group.max_member_speedup_when_behind = constants.UNIT_GROUP_MAX_SPEED_UP
-        game.map_settings.unit_group.max_member_slowdown_when_ahead = constants.UNIT_GROUP_MAX_SLOWDOWN
-        game.map_settings.unit_group.max_group_slowdown_factor = constants.UNIT_GROUP_SLOWDOWN_FACTOR
+        game.map_settings.unit_group.max_member_speedup_when_behind = Constants.UNIT_GROUP_MAX_SPEED_UP
+        game.map_settings.unit_group.max_member_slowdown_when_ahead = Constants.UNIT_GROUP_MAX_SLOWDOWN
+        game.map_settings.unit_group.max_group_slowdown_factor = Constants.UNIT_GROUP_SLOWDOWN_FACTOR
 
         game.map_settings.max_failed_behavior_count = 3
         game.map_settings.unit_group.member_disown_distance = 10
@@ -608,7 +608,7 @@ function Upgrade.attempt()
             end
         end
 
-        Universe.random = game.create_random_generator()
+        Universe.random = game.create_random_generator(Constants.ENEMY_SEED)
 
         Upgrade.excludeSurface()
 

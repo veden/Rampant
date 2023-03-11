@@ -33,6 +33,7 @@ Version: 3.2.0
     - Moved new enemies creation from data-update-final to data stage
     - Reduced the size of stickers applied by Rampant new enemies to player entities
     - Recording the resource chunks covered by a given base as a property of a base
+    - Use the enemy seed value instead of the map seed for puesdo random generating used by AI
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

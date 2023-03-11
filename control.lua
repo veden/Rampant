@@ -327,8 +327,6 @@ local function onConfigChanged()
 
     onModSettingsChange({setting="rampant--"})
 
-    Universe["ENEMY_SEED"] = settings.startup["rampant--enemySeed"].value
-    Universe["ENEMY_VARIATIONS"] = settings.startup["rampant--newEnemyVariations"].value
     Universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
 
     -- not a completed implementation needs if checks to use all forces
