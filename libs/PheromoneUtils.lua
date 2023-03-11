@@ -27,6 +27,8 @@ local chunkPropertyUtils = require("ChunkPropertyUtils")
 
 -- constants
 
+local CHUNK_TICK = constants.CHUNK_TICK
+
 local ENEMY_PHEROMONE_MULTIPLER = constants.ENEMY_PHEROMONE_MULTIPLER
 local VICTORY_SCENT_MULTIPLER = constants.VICTORY_SCENT_MULTIPLER
 local VICTORY_SCENT_BOUND = constants.VICTORY_SCENT_BOUND
@@ -128,7 +130,12 @@ function pheromoneUtils.deathScent(map, chunk, structure)
     addPermanentDeathGenerator(map, chunk, amount)
 end
 
-function pheromoneUtils.processPheromone(map, chunk, player)
+function pheromoneUtils.processPheromone(map, chunk, tick, player)
+    if chunk[CHUNK_TICK] > tick then
+        return
+    end
+    chunk[CHUNK_TICK] = tick
+
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(map, chunk)

@@ -119,77 +119,39 @@ local next = next
     pheromone dissipate at a faster rate.
 --]]
 function mapProcessor.processMap(map, tick)
-    local outgoingWave = map.outgoingScanWave
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
-    local index = mMin(map.processIndex, processQueueLength)
-
-    local step
-    local endIndex
-    if outgoingWave then
-        step = 1
-        endIndex = mMin(index + PROCESS_QUEUE_SIZE, processQueueLength)
-    else
-        step = -1
-        endIndex = mMax(index - PROCESS_QUEUE_SIZE, 1)
-    end
 
     if (processQueueLength == 0) then
         return
     end
 
-    for x=index,endIndex,step do
-        local chunk = processQueue[x]
-        if chunk[CHUNK_TICK] ~= tick then
-            chunk[CHUNK_TICK] = tick
-            processPheromone(map, chunk)
+    local startIndex = mMin(map.processIndex, processQueueLength)
+    local step
+    local endIndex
+    if map.outgoingScanWave then
+        step = 1
+        endIndex = mMin(startIndex + PROCESS_QUEUE_SIZE, processQueueLength)
+        if (endIndex == processQueueLength) then
+            map.outgoingScanWave = false
+            map.processIndex = processQueueLength
+        else
+            map.processIndex = endIndex + 1
+        end
+    else
+        step = -1
+        endIndex = mMax(startIndex - PROCESS_QUEUE_SIZE, 1)
+        if (endIndex == 1) then
+            map.outgoingScanWave = true
+            map.processIndex = 1
+        else
+            map.processIndex = endIndex - 1
         end
     end
+    map.universe.processedChunks = map.universe.processedChunks + ((startIndex - endIndex) * step)
 
-    if (endIndex == processQueueLength) then
-        map.outgoingScanWave = false
-    elseif (endIndex == 1) then
-        map.outgoingScanWave = true
-    elseif outgoingWave then
-        map.processIndex = endIndex + 1
-    else
-        map.processIndex = endIndex - 1
-    end
-    map.universe.processedChunks = map.universe.processedChunks + PROCESS_QUEUE_SIZE
-end
-
-function mapProcessor.processStaticMap(map)
-    local outgoingWave = map.outgoingStaticScanWave
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
-    local index = mMin(map.processStaticIndex, processQueueLength)
-
-    local step
-    local endIndex
-    if outgoingWave then
-        step = 1
-        endIndex = mMin(index + PROCESS_STATIC_QUEUE_SIZE, processQueueLength)
-    else
-        step = -1
-        endIndex = mMax(index - PROCESS_STATIC_QUEUE_SIZE, 1)
-    end
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    for x=index,endIndex,step do
-        processStaticPheromone(map, processQueue[x])
-    end
-
-    if (endIndex == processQueueLength) then
-        map.outgoingStaticScanWave = false
-    elseif (endIndex == 1) then
-        map.outgoingStaticScanWave = true
-    elseif outgoingWave then
-        map.processStaticIndex = endIndex + 1
-    else
-        map.processStaticIndex = endIndex - 1
+    for x=startIndex,endIndex,step do
+        processPheromone(map, processQueue[x], tick)
     end
 end
 
@@ -258,9 +220,8 @@ function mapProcessor.processPlayers(players, universe, tick)
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
                             local chunk = getChunkByXY(map, x, y)
 
-                            if (chunk ~= -1) and (chunk[CHUNK_TICK] ~= tick) then
-                                chunk[CHUNK_TICK] = tick
-                                processPheromone(map, chunk, true)
+                            if (chunk ~= -1) then
+                                processPheromone(map, chunk, tick, true)
 
                                 if (getNestCount(map, chunk) > 0) then
                                     processNestActiveness(map, chunk)
