@@ -14,93 +14,93 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if mapProcessorG then
-    return mapProcessorG
+if MapProcessorG then
+    return MapProcessorG
 end
-local mapProcessor = {}
+local MapProcessor = {}
+
+--
+
+local Universe
 
 -- imports
 
-local queryUtils = require("QueryUtils")
-local pheromoneUtils = require("PheromoneUtils")
-local aiAttackWave = require("AIAttackWave")
-local aiPredicates = require("AIPredicates")
-local constants = require("Constants")
-local mapUtils = require("MapUtils")
-local playerUtils = require("PlayerUtils")
-local chunkUtils = require("ChunkUtils")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
-local baseUtils = require("BaseUtils")
+local QueryUtils = require("QueryUtils")
+local PheromoneUtils = require("PheromoneUtils")
+local AiAttackWave = require("AIAttackWave")
+local AiPredicates = require("AIPredicates")
+local Constants = require("Constants")
+local MapUtils = require("MapUtils")
+local PlayerUtils = require("PlayerUtils")
+local ChunkUtils = require("ChunkUtils")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
+local BaseUtils = require("BaseUtils")
 
--- constants
+-- Constants
 
-local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
-local DURATION_ACTIVE_NEST = constants.DURATION_ACTIVE_NEST
+local PLAYER_PHEROMONE_GENERATOR_AMOUNT = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
+local DURATION_ACTIVE_NEST = Constants.DURATION_ACTIVE_NEST
 
-local PROCESS_QUEUE_SIZE = constants.PROCESS_QUEUE_SIZE
-local RESOURCE_QUEUE_SIZE = constants.RESOURCE_QUEUE_SIZE
-local ENEMY_QUEUE_SIZE = constants.ENEMY_QUEUE_SIZE
-local PLAYER_QUEUE_SIZE = constants.PLAYER_QUEUE_SIZE
+local PROCESS_QUEUE_SIZE = Constants.PROCESS_QUEUE_SIZE
+local RESOURCE_QUEUE_SIZE = Constants.RESOURCE_QUEUE_SIZE
+local ENEMY_QUEUE_SIZE = Constants.ENEMY_QUEUE_SIZE
+local PLAYER_QUEUE_SIZE = Constants.PLAYER_QUEUE_SIZE
 
-local CLEANUP_QUEUE_SIZE = constants.CLEANUP_QUEUE_SIZE
+local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 
-local PROCESS_PLAYER_BOUND = constants.PROCESS_PLAYER_BOUND
-local CHUNK_TICK = constants.CHUNK_TICK
+local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
-local PROCESS_STATIC_QUEUE_SIZE = constants.PROCESS_STATIC_QUEUE_SIZE
+local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 
-local AI_VENGENCE_SQUAD_COST = constants.AI_VENGENCE_SQUAD_COST
+local BASE_AI_STATE_AGGRESSIVE = Constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_PEACEFUL = Constants.BASE_AI_STATE_PEACEFUL
+local BASE_AI_STATE_MIGRATING = Constants.BASE_AI_STATE_MIGRATING
 
-local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
-local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
-local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
-local BASE_AI_STATE_MIGRATING = constants.BASE_AI_STATE_MIGRATING
-
-local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
-local COOLDOWN_RALLY = constants.COOLDOWN_RALLY
-local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
+local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
+local COOLDOWN_RALLY = Constants.COOLDOWN_RALLY
+local COOLDOWN_RETREAT = Constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local setPositionInQuery = queryUtils.setPositionInQuery
+local setPositionInQuery = QueryUtils.setPositionInQuery
 
-local addPlayerGenerator = chunkPropertyUtils.addPlayerGenerator
-local findNearbyBase = chunkPropertyUtils.findNearbyBase
+local addPlayerGenerator = ChunkPropertyUtils.addPlayerGenerator
+local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
-local removeChunkToNest = mapUtils.removeChunkToNest
+local removeChunkToNest = MapUtils.removeChunkToNest
 
-local processStaticPheromone = pheromoneUtils.processStaticPheromone
-local processPheromone = pheromoneUtils.processPheromone
+local processPheromone = PheromoneUtils.processPheromone
 
-local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
-local processBaseMutation = baseUtils.processBaseMutation
+local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
+local processBaseMutation = BaseUtils.processBaseMutation
 
-local processNestActiveness = chunkPropertyUtils.processNestActiveness
-local getChunkBase = chunkPropertyUtils.getChunkBase
+local processNestActiveness = ChunkPropertyUtils.processNestActiveness
+local getChunkBase = ChunkPropertyUtils.getChunkBase
 
-local formSquads = aiAttackWave.formSquads
-local formVengenceSquad = aiAttackWave.formVengenceSquad
-local formVengenceSettler = aiAttackWave.formVengenceSettler
-local formSettlers = aiAttackWave.formSettlers
+local formSquads = AiAttackWave.formSquads
+local formVengenceSquad = AiAttackWave.formVengenceSquad
+local formVengenceSettler = AiAttackWave.formVengenceSettler
+local formSettlers = AiAttackWave.formSettlers
 
-local getChunkByPosition = mapUtils.getChunkByPosition
-local getChunkByXY = mapUtils.getChunkByXY
-local getChunkById = mapUtils.getChunkById
+local getChunkByPosition = MapUtils.getChunkByPosition
+local getChunkByXY = MapUtils.getChunkByXY
+local getChunkById = MapUtils.getChunkById
 
-local validPlayer = playerUtils.validPlayer
+local validPlayer = PlayerUtils.validPlayer
 
-local mapScanEnemyChunk = chunkUtils.mapScanEnemyChunk
-local mapScanPlayerChunk = chunkUtils.mapScanPlayerChunk
-local mapScanResourceChunk = chunkUtils.mapScanResourceChunk
+local mapScanEnemyChunk = ChunkUtils.mapScanEnemyChunk
+local mapScanPlayerChunk = ChunkUtils.mapScanPlayerChunk
+local mapScanResourceChunk = ChunkUtils.mapScanResourceChunk
 
-local getNestCount = chunkPropertyUtils.getNestCount
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
-local getNestActiveness = chunkPropertyUtils.getNestActiveness
+local getNestCount = ChunkPropertyUtils.getNestCount
+local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
+local getNestActiveness = ChunkPropertyUtils.getNestActiveness
 
-local getRaidNestActiveness = chunkPropertyUtils.getRaidNestActiveness
+local getRaidNestActiveness = ChunkPropertyUtils.getRaidNestActiveness
 
-local canAttack = aiPredicates.canAttack
-local canMigrate = aiPredicates.canMigrate
+local canAttack = AiPredicates.canAttack
+local canMigrate = AiPredicates.canMigrate
 
 local tableSize = table_size
 
@@ -118,7 +118,7 @@ local next = next
     In theory, this might be fine as smaller bases have less surface to attack and need to have
     pheromone dissipate at a faster rate.
 --]]
-function mapProcessor.processMap(map, tick)
+function MapProcessor.processMap(map, tick)
     local processQueue = map.processQueue
     local processQueueLength = #processQueue
 
@@ -148,7 +148,7 @@ function mapProcessor.processMap(map, tick)
             map.processIndex = endIndex - 1
         end
     end
-    map.universe.processedChunks = map.universe.processedChunks + ((startIndex - endIndex) * step)
+    Universe.processedChunks = Universe.processedChunks + ((startIndex - endIndex) * step)
 
     for x=startIndex,endIndex,step do
         processPheromone(map, processQueue[x], tick)
@@ -156,11 +156,11 @@ function mapProcessor.processMap(map, tick)
 end
 
 local function queueNestSpawners(map, chunk, tick)
-    local processActiveNest = map.universe.processActiveNest
+    local processActiveNest = Universe.processActiveNest
 
     local chunkId = chunk.id
     if not processActiveNest[chunkId] then
-        if (getNestActiveness(map, chunk) > 0) or (getRaidNestActiveness(map, chunk) > 0) then
+        if (getNestActiveness(chunk) > 0) or (getRaidNestActiveness(chunk) > 0) then
             processActiveNest[chunkId] = {
                 map = map,
                 chunk = chunk,
@@ -176,7 +176,7 @@ end
     vs
     the slower passive version processing the entire map in multiple passes.
 --]]
-function mapProcessor.processPlayers(players, universe, tick)
+function MapProcessor.processPlayers(players, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
     -- not looping everyone because the cost is high enough already in multiplayer
@@ -186,7 +186,7 @@ function mapProcessor.processPlayers(players, universe, tick)
         local player = players[i]
         if validPlayer(player) then
             local char = player.character
-            local map = universe.maps[char.surface.index]
+            local map = Universe.maps[char.surface.index]
             if map then
                 local playerChunk = getChunkByPosition(map, char.position)
 
@@ -198,10 +198,10 @@ function mapProcessor.processPlayers(players, universe, tick)
     end
 
     if (#players > 0) then
-        local player = players[universe.random(#players)]
+        local player = players[Universe.random(#players)]
         if validPlayer(player) then
             local char = player.character
-            local map = universe.maps[char.surface.index]
+            local map = Universe.maps[char.surface.index]
             if map then
                 local playerChunk = getChunkByPosition(map, char.position)
 
@@ -214,7 +214,7 @@ function mapProcessor.processPlayers(players, universe, tick)
                     local vengence = allowingAttacks and
                         (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (getCombinedDeathGeneratorRating(map, playerChunk) < universe.retreatThreshold))
+                            (getCombinedDeathGeneratorRating(map, playerChunk) < Universe.retreatThreshold))
 
                     for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -223,19 +223,19 @@ function mapProcessor.processPlayers(players, universe, tick)
                             if (chunk ~= -1) then
                                 processPheromone(map, chunk, tick, true)
 
-                                if (getNestCount(map, chunk) > 0) then
+                                if (getNestCount(chunk) > 0) then
                                     processNestActiveness(map, chunk)
                                     queueNestSpawners(map, chunk, tick)
 
                                     if vengence then
-                                        local pack = universe.vengenceQueue[chunk.id]
+                                        local pack = Universe.vengenceQueue[chunk.id]
                                         if not pack then
                                             pack = {
                                                 v = 0,
                                                 map = map,
                                                 base = base
                                             }
-                                            universe.vengenceQueue[chunk.id] = pack
+                                            Universe.vengenceQueue[chunk.id] = pack
                                         end
                                         pack.v = pack.v + 1
                                     end
@@ -249,8 +249,8 @@ function mapProcessor.processPlayers(players, universe, tick)
     end
 end
 
-local function processCleanUp(universe, chunks, iterator, tick, duration)
-    local chunkId = universe[iterator]
+local function processCleanUp(chunks, iterator, tick, duration)
+    local chunkId = Universe[iterator]
     local chunkPack
     if not chunkId then
         chunkId, chunkPack = next(chunks, nil)
@@ -258,33 +258,33 @@ local function processCleanUp(universe, chunks, iterator, tick, duration)
         chunkPack = chunks[chunkId]
     end
     if not chunkId then
-        universe[iterator] = nil
+        Universe[iterator] = nil
     else
-        universe[iterator] = next(chunks, chunkId)
+        Universe[iterator] = next(chunks, chunkId)
         if (tick - chunkPack.tick) > duration then
             chunks[chunkId] = nil
         end
     end
 end
 
-function mapProcessor.cleanUpMapTables(universe, tick)
-    local retreats = universe.chunkToRetreats
-    local rallys = universe.chunkToRallys
-    local drained = universe.chunkToDrained
+function MapProcessor.cleanUpMapTables(tick)
+    local retreats = Universe.chunkToRetreats
+    local rallys = Universe.chunkToRallys
+    local drained = Universe.chunkToDrained
 
     for _=1,CLEANUP_QUEUE_SIZE do
-        processCleanUp(universe, retreats, "chunkToRetreatIterator", tick, COOLDOWN_RETREAT)
+        processCleanUp(retreats, "chunkToRetreatIterator", tick, COOLDOWN_RETREAT)
 
-        processCleanUp(universe, rallys, "chunkToRallyIterator", tick, COOLDOWN_RALLY)
+        processCleanUp(rallys, "chunkToRallyIterator", tick, COOLDOWN_RALLY)
 
-        processCleanUp(universe, drained, "chunkToDrainedIterator", tick, COOLDOWN_DRAIN)
+        processCleanUp(drained, "chunkToDrainedIterator", tick, COOLDOWN_DRAIN)
     end
 end
 
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function mapProcessor.scanPlayerMap(map, tick)
+function MapProcessor.scanPlayerMap(map, tick)
     if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or
         (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick)
     then
@@ -312,7 +312,7 @@ function mapProcessor.scanPlayerMap(map, tick)
     end
 end
 
-function mapProcessor.scanEnemyMap(map, tick)
+function MapProcessor.scanEnemyMap(map, tick)
     if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or (map.nextChunkProcess == tick) then
         return
     end
@@ -339,7 +339,7 @@ function mapProcessor.scanEnemyMap(map, tick)
     end
 end
 
-function mapProcessor.scanResourceMap(map, tick)
+function MapProcessor.scanResourceMap(map, tick)
     if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or
         (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick)
     then
@@ -367,9 +367,9 @@ function mapProcessor.scanResourceMap(map, tick)
     end
 end
 
-function mapProcessor.processActiveNests(universe, tick)
-    local processActiveNest = universe.processActiveNest
-    local chunkId = universe.processActiveNestIterator
+function MapProcessor.processActiveNests(tick)
+    local processActiveNest = Universe.processActiveNest
+    local chunkId = Universe.processActiveNestIterator
     local chunkPack
     if not chunkId then
         chunkId, chunkPack = next(processActiveNest, nil)
@@ -377,9 +377,9 @@ function mapProcessor.processActiveNests(universe, tick)
         chunkPack = processActiveNest[chunkId]
     end
     if not chunkId then
-        universe.processActiveNestIterator = nil
+        Universe.processActiveNestIterator = nil
     else
-        universe.processActiveNestIterator = next(processActiveNest, chunkId)
+        Universe.processActiveNestIterator = next(processActiveNest, chunkId)
         if chunkPack.tick < tick  then
             local map = chunkPack.map
             if not map.surface.valid then
@@ -388,7 +388,7 @@ function mapProcessor.processActiveNests(universe, tick)
             end
             local chunk = chunkPack.chunk
             processNestActiveness(map, chunk)
-            if (getNestActiveness(map, chunk) == 0) and (getRaidNestActiveness(map, chunk) == 0) then
+            if (getNestActiveness(chunk) == 0) and (getRaidNestActiveness(chunk) == 0) then
                 processActiveNest[chunkId] = nil
             else
                 chunkPack.tick = tick + DURATION_ACTIVE_NEST
@@ -397,9 +397,9 @@ function mapProcessor.processActiveNests(universe, tick)
     end
 end
 
-function mapProcessor.processVengence(universe)
-    local vengenceQueue = universe.vengenceQueue
-    local chunkId = universe.deployVengenceIterator
+function MapProcessor.processVengence()
+    local vengenceQueue = Universe.vengenceQueue
+    local chunkId = Universe.deployVengenceIterator
     local vengencePack
     if not chunkId then
         chunkId, vengencePack = next(vengenceQueue, nil)
@@ -407,20 +407,20 @@ function mapProcessor.processVengence(universe)
         vengencePack = vengenceQueue[chunkId]
     end
     if not chunkId then
-        universe.deployVengenceIterator = nil
+        Universe.deployVengenceIterator = nil
         if (tableSize(vengenceQueue) == 0) then
-            universe.vengenceQueue = {}
+            Universe.vengenceQueue = {}
         end
     else
-        universe.deployVengenceIterator = next(vengenceQueue, chunkId)
+        Universe.deployVengenceIterator = next(vengenceQueue, chunkId)
         vengenceQueue[chunkId] = nil
         local map = vengencePack.map
         if not map.surface.valid then
             return
         end
-        local chunk = getChunkById(map, chunkId)
+        local chunk = getChunkById(chunkId)
         local base = vengencePack.base
-        if canMigrate(map, base) and (universe.random() < 0.075) then
+        if canMigrate(map, base) and (Universe.random() < 0.075) then
             formVengenceSettler(map, chunk, base)
         else
             formVengenceSquad(map, chunk, base)
@@ -428,28 +428,28 @@ function mapProcessor.processVengence(universe)
     end
 end
 
-function mapProcessor.processNests(universe, tick)
-    local chunkId = universe.processNestIterator
+function MapProcessor.processNests(tick)
+    local chunkId = Universe.processNestIterator
     local chunkPack
     if not chunkId then
-        chunkId,chunkPack = next(universe.chunkToNests, nil)
+        chunkId,chunkPack = next(Universe.chunkToNests, nil)
     else
-        chunkPack = universe.chunkToNests[chunkId]
+        chunkPack = Universe.chunkToNests[chunkId]
     end
     if not chunkId then
-        universe.processNestIterator = nil
+        Universe.processNestIterator = nil
     else
-        universe.processNestIterator = next(universe.chunkToNests, chunkId)
+        Universe.processNestIterator = next(Universe.chunkToNests, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
-            removeChunkToNest(universe, chunkId)
+            removeChunkToNest(chunkId)
             return
         end
-        local chunk = getChunkById(map, chunkId)
+        local chunk = getChunkById(chunkId)
         processNestActiveness(map, chunk)
         queueNestSpawners(map, chunk, tick)
 
-        if universe.NEW_ENEMIES then
+        if Universe.NEW_ENEMIES then
             processBaseMutation(chunk,
                                 map,
                                 getChunkBase(map, chunk))
@@ -457,8 +457,8 @@ function mapProcessor.processNests(universe, tick)
     end
 end
 
-local function processSpawnersBody(universe, iterator, chunks)
-    local chunkId = universe[iterator]
+local function processSpawnersBody(iterator, chunks)
+    local chunkId = Universe[iterator]
     local chunkPack
     if not chunkId then
         chunkId,chunkPack = next(chunks, nil)
@@ -466,19 +466,19 @@ local function processSpawnersBody(universe, iterator, chunks)
         chunkPack = chunks[chunkId]
     end
     if not chunkId then
-        universe[iterator] = nil
+        Universe[iterator] = nil
     else
-        universe[iterator] = next(chunks, chunkId)
+        Universe[iterator] = next(chunks, chunkId)
         local map = chunkPack.map
         if not map.surface.valid then
             if (iterator == "processMigrationIterator") then
-                removeChunkToNest(universe, chunkId)
+                removeChunkToNest(chunkId)
             else
                 chunks[chunkId] = nil
             end
             return
         end
-        local chunk = getChunkById(map, chunkId)
+        local chunk = getChunkById(chunkId)
         local base = findNearbyBase(map, chunk)
         if base.stateAI == BASE_AI_STATE_PEACEFUL then
             return
@@ -508,34 +508,35 @@ local function processSpawnersBody(universe, iterator, chunks)
     end
 end
 
-function mapProcessor.processAttackWaves(universe)
-    processSpawnersBody(universe,
-                        "processActiveSpawnerIterator",
-                        universe.chunkToActiveNest)
-    processSpawnersBody(universe,
-                        "processActiveRaidSpawnerIterator",
-                        universe.chunkToActiveRaidNest)
-    processSpawnersBody(universe,
-                        "processMigrationIterator",
-                        universe.chunkToNests)
+function MapProcessor.processAttackWaves()
+    processSpawnersBody("processActiveSpawnerIterator",
+                        Universe.chunkToActiveNest)
+    processSpawnersBody("processActiveRaidSpawnerIterator",
+                        Universe.chunkToActiveRaidNest)
+    processSpawnersBody("processMigrationIterator",
+                        Universe.chunkToNests)
 end
 
-function mapProcessor.processClouds(universe, tick)
-    local len = universe.settlePurpleCloud.len
-    local builderPack = universe.settlePurpleCloud[len]
+function MapProcessor.processClouds(tick)
+    local len = Universe.settlePurpleCloud.len
+    local builderPack = Universe.settlePurpleCloud[len]
     if builderPack and (builderPack.tick <= tick) then
-        universe.settlePurpleCloud[len] = nil
-        universe.settlePurpleCloud.len = len - 1
+        Universe.settlePurpleCloud[len] = nil
+        Universe.settlePurpleCloud.len = len - 1
         local map = builderPack.map
         if builderPack.group.valid and map.surface.valid then
             setPositionInQuery(
-                universe.obaCreateBuildCloudQuery,
+                Universe.obaCreateBuildCloudQuery,
                 builderPack.position
             )
-            map.surface.create_entity(universe.obaCreateBuildCloudQuery)
+            map.surface.create_entity(Universe.obaCreateBuildCloudQuery)
         end
     end
 end
 
-mapProcessorG = mapProcessor
-return mapProcessor
+function MapProcessor.init(universe)
+    Universe = universe
+end
+
+MapProcessorG = MapProcessor
+return MapProcessor

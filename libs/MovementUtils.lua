@@ -14,57 +14,61 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if movementUtilsG then
-    return movementUtilsG
+if MovementUtilsG then
+    return MovementUtilsG
 end
-local movementUtils = {}
+local MovementUtils = {}
+
+--
+
+local Universe
 
 -- imports
 
-local constants = require("Constants")
-local mapUtils = require("MapUtils")
-local mathUtils = require("MathUtils")
-local unitGroupUtils = require("UnitGroupUtils")
+local Constants = require("Constants")
+local MapUtils = require("MapUtils")
+local MathUtils = require("MathUtils")
+local UnitGroupUtils = require("UnitGroupUtils")
 
--- constants
+-- Constants
 
-local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
-local SQUAD_SETTLING = constants.SQUAD_SETTLING
+local SQUAD_SETTLING = Constants.SQUAD_SETTLING
 
 -- imported functions
 
-local calculateSettlerMaxDistance = unitGroupUtils.calculateSettlerMaxDistance
+local calculateSettlerMaxDistance = UnitGroupUtils.calculateSettlerMaxDistance
 
-local canMoveChunkDirection = mapUtils.canMoveChunkDirection
-local getNeighborChunks = mapUtils.getNeighborChunks
+local canMoveChunkDirection = MapUtils.canMoveChunkDirection
+local getNeighborChunks = MapUtils.getNeighborChunks
 
 local tableRemove = table.remove
 local tableInsert = table.insert
 
-local distortPosition = mathUtils.distortPosition
+local distortPosition = MathUtils.distortPosition
 
 -- module code
 
-function movementUtils.findMovementPosition(surface, position)
+function MovementUtils.findMovementPosition(surface, position)
     local pos = position
     pos = surface.find_non_colliding_position("behemoth-biter", pos, 10, 2, false)
     return pos
 end
 
-function movementUtils.findMovementPositionEntity(entityName, surface, position)
+function MovementUtils.findMovementPositionEntity(entityName, surface, position)
     local pos = position
     pos = surface.find_non_colliding_position(entityName, pos, 5, 4, true)
     return pos
 end
 
-function movementUtils.findMovementPositionDistort(surface, position)
+function MovementUtils.findMovementPositionDistort(surface, position)
     local pos = position
     pos = surface.find_non_colliding_position("behemoth-biter", pos, 10, 2, false)
     return distortPosition(pos, 8)
 end
 
-function movementUtils.addMovementPenalty(squad, chunk)
+function MovementUtils.addMovementPenalty(squad, chunk)
     if (chunk == -1) then
         return
     end
@@ -75,13 +79,12 @@ function movementUtils.addMovementPenalty(squad, chunk)
         if (penalty.c.id == chunk.id) then
             penalty.v = penalty.v + 1
             if penalty.v >= 15 then
-                local universe = squad.map.universe
-                if universe.enabledMigration and
-                    (universe.builderCount < universe.AI_MAX_BUILDER_COUNT) then
+                if Universe.enabledMigration and
+                    (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT) then
                     squad.settler = true
                     squad.originPosition.x = squad.group.position.x
                     squad.originPosition.y = squad.group.position.y
-                    squad.maxDistance = calculateSettlerMaxDistance(universe)
+                    squad.maxDistance = calculateSettlerMaxDistance()
 
                     squad.status = SQUAD_SETTLING
                 else
@@ -103,7 +106,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction)
+function MovementUtils.scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -149,7 +152,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
+function MovementUtils.scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection = 0
@@ -198,7 +201,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, validFunction, scoreFunction, map)
+function MovementUtils.scoreNeighborsForResource(chunk, neighborDirectionChunks, validFunction, scoreFunction, map)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -227,7 +230,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFunction, map)
+function MovementUtils.scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFunction, map)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -278,7 +281,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction, scoreFunction, map)
+function MovementUtils.scoreNeighborsForFormation(neighborChunks, validFunction, scoreFunction, map)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -297,5 +300,9 @@ function movementUtils.scoreNeighborsForFormation(neighborChunks, validFunction,
     return highestChunk, highestDirection
 end
 
-movementUtilsG = movementUtils
-return movementUtils
+function MovementUtils.init(universe)
+    Universe = universe
+end
+
+MovementUtilsG = MovementUtils
+return MovementUtils

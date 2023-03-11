@@ -14,56 +14,63 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if chunkPropertyUtilsG then
-    return chunkPropertyUtilsG
+if ChunkPropertyUtilsG then
+    return ChunkPropertyUtilsG
 end
-local chunkPropertyUtils = {}
+local ChunkPropertyUtils = {}
 
-local constants = require("Constants")
-local mathUtils = require("MathUtils")
+--
 
--- constants
+local Universe
 
-local PLAYER_GENERATOR_PERSISTANCE = constants.PLAYER_GENERATOR_PERSISTANCE
-local PLAYER_PHEROMONE_GENERATOR_AMOUNT = constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
+--
 
-local COOLDOWN_DRAIN = constants.COOLDOWN_DRAIN
+local Constants = require("Constants")
+local MathUtils = require("MathUtils")
 
-local RAIDING_MINIMUM_BASE_THRESHOLD = constants.RAIDING_MINIMUM_BASE_THRESHOLD
+-- Constants
 
-local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local BASE_PHEROMONE = constants.BASE_PHEROMONE
+local PLAYER_GENERATOR_PERSISTANCE = Constants.PLAYER_GENERATOR_PERSISTANCE
+local PLAYER_PHEROMONE_GENERATOR_AMOUNT = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 
-local MOVEMENT_GENERATOR_PERSISTANCE = constants.MOVEMENT_GENERATOR_PERSISTANCE
-local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
 
-local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+local RAIDING_MINIMUM_BASE_THRESHOLD = Constants.RAIDING_MINIMUM_BASE_THRESHOLD
+
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+
+local MOVEMENT_GENERATOR_PERSISTANCE = Constants.MOVEMENT_GENERATOR_PERSISTANCE
+local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
+
+local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
 -- imported functions
 
-local manhattenDistancePoints = mathUtils.manhattenDistancePoints
+local manhattenDistancePoints = MathUtils.manhattenDistancePoints
+local tableSize = table_size
 
 local mMin = math.min
 
 -- module code
 
-function chunkPropertyUtils.getTurretCount(map, chunk)
+function ChunkPropertyUtils.getTurretCount(map, chunk)
     return map.chunkToTurrets[chunk.id] or 0
 end
 
-function chunkPropertyUtils.getTrapCount(map, chunk)
+function ChunkPropertyUtils.getTrapCount(map, chunk)
     return map.chunkToTraps[chunk.id] or 0
 end
 
-function chunkPropertyUtils.getUtilityCount(map, chunk)
+function ChunkPropertyUtils.getUtilityCount(map, chunk)
     return map.chunkToUtilities[chunk.id] or 0
 end
 
-function chunkPropertyUtils.getHiveCount(map, chunk)
+function ChunkPropertyUtils.getHiveCount(map, chunk)
     return map.chunkToHives[chunk.id] or 0
 end
 
-function chunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
     map.activeSurface = true
     if not map.chunkToTurretIds[chunk.id] then
         map.chunkToTurretIds[chunk.id] = {}
@@ -76,7 +83,7 @@ function chunkPropertyUtils.addTurretCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
     if map.chunkToTurretIds[chunk.id] and map.chunkToTurretIds[chunk.id][unitNumber] then
         map.chunkToTurretIds[chunk.id][unitNumber] = nil
         map.chunkToTurrets[chunk.id] = map.chunkToTurrets[chunk.id] - 1
@@ -89,7 +96,7 @@ function chunkPropertyUtils.removeTurretCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
     map.activeSurface = true
     if not map.chunkToTrapIds[chunk.id] then
         map.chunkToTrapIds[chunk.id] = {}
@@ -102,7 +109,7 @@ function chunkPropertyUtils.addTrapCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
     if map.chunkToTrapIds[chunk.id] and map.chunkToTrapIds[chunk.id][unitNumber] then
         map.chunkToTrapIds[chunk.id][unitNumber] = nil
         map.chunkToTraps[chunk.id] = map.chunkToTraps[chunk.id] - 1
@@ -115,7 +122,7 @@ function chunkPropertyUtils.removeTrapCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
     map.activeSurface = true
     if not map.chunkToUtilityIds[chunk.id] then
         map.chunkToUtilityIds[chunk.id] = {}
@@ -128,7 +135,7 @@ function chunkPropertyUtils.addUtilitiesCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
     if map.chunkToUtilityIds[chunk.id] and map.chunkToUtilityIds[chunk.id][unitNumber] then
         map.chunkToUtilityIds[chunk.id][unitNumber] = nil
         map.chunkToUtilities[chunk.id] = map.chunkToUtilities[chunk.id] - 1
@@ -141,7 +148,7 @@ function chunkPropertyUtils.removeUtilitiesCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
     map.activeSurface = true
     if not map.chunkToHiveIds[chunk.id] then
         map.chunkToHiveIds[chunk.id] = {}
@@ -154,7 +161,7 @@ function chunkPropertyUtils.addHiveCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
     if map.chunkToHiveIds[chunk.id] and map.chunkToHiveIds[chunk.id][unitNumber] then
         map.chunkToHiveIds[chunk.id][unitNumber] = nil
         map.chunkToHives[chunk.id] = map.chunkToHives[chunk.id] - 1
@@ -167,7 +174,7 @@ function chunkPropertyUtils.removeHiveCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.addNestCount(map, chunk, unitNumber)
     map.activeSurface = true
     local chunkId = chunk.id
     if not map.chunkToNestIds[chunkId] then
@@ -175,7 +182,7 @@ function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
     end
     if not map.chunkToNestIds[chunkId][unitNumber] then
         map.chunkToNestIds[chunkId][unitNumber] = true
-        local cToN = map.universe.chunkToNests
+        local cToN = Universe.chunkToNests
         local pack = cToN[chunkId]
         if not pack then
             cToN[chunkId] = {
@@ -189,20 +196,20 @@ function chunkPropertyUtils.addNestCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
+function ChunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
     local chunkId = chunk.id
     if map.chunkToNestIds[chunkId] and map.chunkToNestIds[chunkId][unitNumber] then
         map.chunkToNestIds[chunkId][unitNumber] = nil
-        local cToN = map.universe.chunkToNests
+        local cToN = Universe.chunkToNests
         cToN[chunkId].v = cToN[chunkId].v - 1
         if cToN[chunkId].v == 0 then
             map.chunkToNestIds[chunkId] = nil
             cToN[chunkId] = nil
-            if (map.universe.processMigrationIterator == chunkId) then
-                map.universe.processMigrationIterator = nil
+            if (Universe.processMigrationIterator == chunkId) then
+                Universe.processMigrationIterator = nil
             end
-            if (map.universe.processNestIterator == chunkId) then
-                map.universe.processNestIterator = nil
+            if (Universe.processNestIterator == chunkId) then
+                Universe.processNestIterator = nil
             end
         end
         return true
@@ -210,49 +217,49 @@ function chunkPropertyUtils.removeNestCount(map, chunk, unitNumber)
     return false
 end
 
-function chunkPropertyUtils.getNestCount(map, chunk)
-    local nestPack = map.universe.chunkToNests[chunk.id]
+function ChunkPropertyUtils.getNestCount(chunk)
+    local nestPack = Universe.chunkToNests[chunk.id]
     if not nestPack then
         return 0
     end
     return nestPack.v
 end
 
-function chunkPropertyUtils.addBaseResourceChunk(base, chunk)
-    if chunkPropertyUtils.getResourceGenerator(base.map, chunk) > 0 then
+function ChunkPropertyUtils.addBaseResourceChunk(base, chunk)
+    if ChunkPropertyUtils.getResourceGenerator(base.map, chunk) > 0 then
         base.resourceChunkCount = base.resourceChunkCount + 1
         base.resourceChunks[chunk.id] = true
     end
 end
 
-function chunkPropertyUtils.removeBaseResourceChunk(base, chunk)
+function ChunkPropertyUtils.removeBaseResourceChunk(base, chunk)
     if base.resourceChunks[chunk.id] then
         base.resourceChunkCount = base.resourceChunkCount - 1
         base.resourceChunks[chunk.id] = nil
     end
 end
 
-function chunkPropertyUtils.getChunkBase(map, chunk)
+function ChunkPropertyUtils.getChunkBase(map, chunk)
     return map.chunkToBase[chunk.id]
 end
 
-function chunkPropertyUtils.removeChunkBase(map, chunk, base)
+function ChunkPropertyUtils.removeChunkBase(map, chunk, base)
     if map.chunkToBase[chunk.id] then
         base.chunkCount = base.chunkCount - 1
         map.chunkToBase[chunk.id] = nil
     end
 end
 
-function chunkPropertyUtils.setChunkBase(map, chunk, base)
+function ChunkPropertyUtils.setChunkBase(map, chunk, base)
     if not map.chunkToBase[chunk.id] then
         base.chunkCount = base.chunkCount + 1
         map.chunkToBase[chunk.id] = base
     end
 end
 
-function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
+function ChunkPropertyUtils.getEnemyStructureCount(map, chunk)
     local nests = 0
-    local nestPack = map.universe.chunkToNests[chunk.id]
+    local nestPack = Universe.chunkToNests[chunk.id]
     if nestPack then
         nests = nestPack.v
     end
@@ -260,13 +267,13 @@ function chunkPropertyUtils.getEnemyStructureCount(map, chunk)
         (map.chunkToUtilities[chunk.id] or 0) + (map.chunkToHives[chunk.id] or 0)
 end
 
-function chunkPropertyUtils.setDrainPylons(map, entity1, entity2)
+function ChunkPropertyUtils.setDrainPylons(map, entity1, entity2)
     local pair = {entity1, entity2}
     map.drainPylons[entity1.unit_number] = pair
     map.drainPylons[entity2.unit_number] = pair
 end
 
-function chunkPropertyUtils.removeDrainPylons(map, unitNumber)
+function ChunkPropertyUtils.removeDrainPylons(map, unitNumber)
     local pair = map.drainPylons[unitNumber]
     if pair then
         local target = pair[1]
@@ -287,74 +294,74 @@ function chunkPropertyUtils.removeDrainPylons(map, unitNumber)
     end
 end
 
-function chunkPropertyUtils.getDrainPylonPair(map, unitNumber)
+function ChunkPropertyUtils.getDrainPylonPair(map, unitNumber)
     return map.drainPylons[unitNumber]
 end
 
-function chunkPropertyUtils.isDrained(map, chunk, tick)
-    local pack = map.universe.chunkToDrained[chunk.id]
+function ChunkPropertyUtils.isDrained(chunk, tick)
+    local pack = Universe.chunkToDrained[chunk.id]
     if not pack then
         return false
     end
     return (tick - pack.tick) < COOLDOWN_DRAIN
 end
 
-function chunkPropertyUtils.setDrainedTick(map, chunk, tick)
+function ChunkPropertyUtils.setDrainedTick(map, chunk, tick)
     local chunkId = chunk.id
-    local pack = map.universe.chunkToDrained[chunkId]
+    local pack = Universe.chunkToDrained[chunkId]
     if not pack then
         pack = {
             map = map,
             tick = 0
         }
-        map.universe.chunkToDrained[chunkId] = pack
+        Universe.chunkToDrained[chunkId] = pack
     end
     pack.tick = tick
 end
 
-function chunkPropertyUtils.getRetreatTick(map, chunk)
-    local pack = map.universe.chunkToRetreats[chunk.id]
+function ChunkPropertyUtils.getRetreatTick(chunk)
+    local pack = Universe.chunkToRetreats[chunk.id]
     if not pack then
         return 0
     end
     return pack.tick
 end
 
-function chunkPropertyUtils.getRallyTick(map, chunk)
-    local pack = map.universe.chunkToRallys[chunk.id]
+function ChunkPropertyUtils.getRallyTick(chunk)
+    local pack = Universe.chunkToRallys[chunk.id]
     if not pack then
         return 0
     end
     return pack.tick
 end
 
-function chunkPropertyUtils.setRallyTick(map, chunk, tick)
+function ChunkPropertyUtils.setRallyTick(map, chunk, tick)
     local chunkId = chunk.id
-    local pack = map.universe.chunkToRallys[chunkId]
+    local pack = Universe.chunkToRallys[chunkId]
     if not pack then
         pack = {
             map = map,
             tick = tick
         }
-        map.universe.chunkToRallys[chunkId] = pack
+        Universe.chunkToRallys[chunkId] = pack
     end
     pack.tick = tick
 end
 
-function chunkPropertyUtils.setRetreatTick(map, chunk, tick)
+function ChunkPropertyUtils.setRetreatTick(map, chunk, tick)
     local chunkId = chunk.id
-    local pack = map.universe.chunkToRetreats[chunkId]
+    local pack = Universe.chunkToRetreats[chunkId]
     if not pack then
         pack = {
             map = map,
             tick = tick
         }
-        map.universe.chunkToRetreats[chunkId] = pack
+        Universe.chunkToRetreats[chunkId] = pack
     end
     pack.tick = tick
 end
 
-function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
+function ChunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
     if (resourceGenerator <= 0) then
         map.chunkToResource[chunk.id] = nil
     else
@@ -362,80 +369,78 @@ function chunkPropertyUtils.setResourceGenerator(map, chunk, resourceGenerator)
     end
 end
 
-function chunkPropertyUtils.getResourceGenerator(map, chunk)
+function ChunkPropertyUtils.getResourceGenerator(map, chunk)
     return map.chunkToResource[chunk.id] or 0
 end
 
-function chunkPropertyUtils.addResourceGenerator(map, chunk, delta)
+function ChunkPropertyUtils.addResourceGenerator(map, chunk, delta)
     map.chunkToResource[chunk.id] = (map.chunkToResource[chunk.id] or 0) + delta
 end
 
-function chunkPropertyUtils.getPassable(map, chunk)
+function ChunkPropertyUtils.getPassable(map, chunk)
     return map.chunkToPassable[chunk.id] or CHUNK_ALL_DIRECTIONS
 end
 
 
-function chunkPropertyUtils.getRaidNestActiveness(map, chunk)
-    local activeness = map.universe.chunkToActiveRaidNest[chunk.id]
+function ChunkPropertyUtils.getRaidNestActiveness(chunk)
+    local activeness = Universe.chunkToActiveRaidNest[chunk.id]
     if not activeness then
         return 0
     end
     return activeness.v or 0
 end
 
-function chunkPropertyUtils.setRaidNestActiveness(map, chunk, value, base)
-    local universe = map.universe
+function ChunkPropertyUtils.setRaidNestActiveness(map, chunk, value, base)
     if (value <= 0) then
-        if universe.chunkToActiveRaidNest[chunk.id] then
+        if Universe.chunkToActiveRaidNest[chunk.id] then
             base.activeRaidNests = base.activeRaidNests - 1
         end
-        if (universe.processActiveRaidSpawnerIterator == chunk.id) then
-            universe.processActiveRaidSpawnerIterator = nil
+        if (Universe.processActiveRaidSpawnerIterator == chunk.id) then
+            Universe.processActiveRaidSpawnerIterator = nil
         end
-        universe.chunkToActiveRaidNest[chunk.id] = nil
+        Universe.chunkToActiveRaidNest[chunk.id] = nil
     else
-        if not universe.chunkToActiveRaidNest[chunk.id] then
+        if not Universe.chunkToActiveRaidNest[chunk.id] then
             base.activeRaidNests = base.activeRaidNests + 1
-            universe.chunkToActiveRaidNest[chunk.id] = {
+            Universe.chunkToActiveRaidNest[chunk.id] = {
                 map = map,
                 v = 0
             }
         end
-        universe.chunkToActiveRaidNest[chunk.id].v = value
+        Universe.chunkToActiveRaidNest[chunk.id].v = value
     end
 end
 
-function chunkPropertyUtils.getNestActiveness(map, chunk)
-    local activeness = map.universe.chunkToActiveNest[chunk.id]
+function ChunkPropertyUtils.getNestActiveness(chunk)
+    local activeness = Universe.chunkToActiveNest[chunk.id]
     if not activeness then
         return 0
     end
     return activeness.v or 0
 end
 
-function chunkPropertyUtils.setNestActiveness(map, chunk, value, base)
-    local universe = map.universe
+function ChunkPropertyUtils.setNestActiveness(map, chunk, value, base)
     if (value <= 0) then
-        if universe.chunkToActiveNest[chunk.id] then
+        if Universe.chunkToActiveNest[chunk.id] then
             base.activeNests = base.activeNests - 1
         end
-        if (universe.processActiveSpawnerIterator == chunk.id) then
-            universe.processActiveSpawnerIterator = nil
+        if (Universe.processActiveSpawnerIterator == chunk.id) then
+            Universe.processActiveSpawnerIterator = nil
         end
-        universe.chunkToActiveNest[chunk.id] = nil
+        Universe.chunkToActiveNest[chunk.id] = nil
     else
-        if not universe.chunkToActiveNest[chunk.id] then
+        if not Universe.chunkToActiveNest[chunk.id] then
             base.activeNests = base.activeNests + 1
-            universe.chunkToActiveNest[chunk.id] = {
+            Universe.chunkToActiveNest[chunk.id] = {
                 map = map,
                 v = 0
             }
         end
-        universe.chunkToActiveNest[chunk.id].v = value
+        Universe.chunkToActiveNest[chunk.id].v = value
     end
 end
 
-function chunkPropertyUtils.setPassable(map, chunk, value)
+function ChunkPropertyUtils.setPassable(map, chunk, value)
     if (value == CHUNK_ALL_DIRECTIONS) then
         map.chunkToPassable[chunk.id] = nil
     else
@@ -443,11 +448,11 @@ function chunkPropertyUtils.setPassable(map, chunk, value)
     end
 end
 
-function chunkPropertyUtils.getPathRating(map, chunk)
+function ChunkPropertyUtils.getPathRating(map, chunk)
     return map.chunkToPathRating[chunk.id] or 1
 end
 
-function chunkPropertyUtils.setPathRating(map, chunk, value)
+function ChunkPropertyUtils.setPathRating(map, chunk, value)
     if (value == 1) then
         map.chunkToPathRating[chunk.id] = nil
     else
@@ -455,11 +460,11 @@ function chunkPropertyUtils.setPathRating(map, chunk, value)
     end
 end
 
-function chunkPropertyUtils.getDeathGeneratorRating(map, chunk)
+function ChunkPropertyUtils.getDeathGeneratorRating(map, chunk)
     return 1 + (map.chunkToDeathGenerator[chunk.id] or 0)
 end
 
-function chunkPropertyUtils.getCombinedDeathGeneratorRating(map, chunk)
+function ChunkPropertyUtils.getCombinedDeathGeneratorRating(map, chunk)
     local amount = 1 + ((map.chunkToDeathGenerator[chunk.id] or 0) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0))
     if (amount > 1) then
         return 1
@@ -470,15 +475,15 @@ function chunkPropertyUtils.getCombinedDeathGeneratorRating(map, chunk)
     end
 end
 
-function chunkPropertyUtils.getDeathGenerator(map, chunk)
+function ChunkPropertyUtils.getDeathGenerator(map, chunk)
     return map.chunkToDeathGenerator[chunk.id] or 0
 end
 
-function chunkPropertyUtils.getPermanentDeathGeneratorRating(map, chunk)
+function ChunkPropertyUtils.getPermanentDeathGeneratorRating(map, chunk)
     return 1 + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
 end
 
-function chunkPropertyUtils.getCombinedDeathGenerator(map, chunk)
+function ChunkPropertyUtils.getCombinedDeathGenerator(map, chunk)
     local amount = (map.chunkToDeathGenerator[chunk.id] or 0) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
     if (amount > 1) then
         return 1
@@ -489,7 +494,7 @@ function chunkPropertyUtils.getCombinedDeathGenerator(map, chunk)
     end
 end
 
-function chunkPropertyUtils.addPermanentDeathGenerator(map, chunk, amount)
+function ChunkPropertyUtils.addPermanentDeathGenerator(map, chunk, amount)
     local adjustedAmount = (amount * 0.25) + (map.chunkToPermanentDeathGenerator[chunk.id] or 0)
     if (adjustedAmount > 0.75) then
         map.chunkToPermanentDeathGenerator[chunk.id] = 0.75
@@ -500,7 +505,7 @@ function chunkPropertyUtils.addPermanentDeathGenerator(map, chunk, amount)
     end
 end
 
-function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
+function ChunkPropertyUtils.addDeathGenerator(map, chunk, value)
     local currentAmount = (map.chunkToDeathGenerator[chunk.id] or 0) + value
     if (currentAmount > 1) then
         map.chunkToDeathGenerator[chunk.id] = 1
@@ -511,7 +516,7 @@ function chunkPropertyUtils.addDeathGenerator(map, chunk, value)
     end
 end
 
-function chunkPropertyUtils.setDeathGenerator(map, chunk, value)
+function ChunkPropertyUtils.setDeathGenerator(map, chunk, value)
     if (value > 1) then
         map.chunkToDeathGenerator[chunk.id] = 1
     elseif (value < -1) then
@@ -521,8 +526,8 @@ function chunkPropertyUtils.setDeathGenerator(map, chunk, value)
     end
 end
 
-function chunkPropertyUtils.addVictoryGenerator(map, chunk, value)
-    local cToV = map.universe.chunkToVictory
+function ChunkPropertyUtils.addVictoryGenerator(map, chunk, value)
+    local cToV = Universe.chunkToVictory
     local chunkId = chunk.id
     if not cToV[chunkId] then
         cToV[chunkId] = {
@@ -533,7 +538,7 @@ function chunkPropertyUtils.addVictoryGenerator(map, chunk, value)
     cToV[chunkId].v = cToV[chunkId].v + value
 end
 
-function chunkPropertyUtils.decayDeathGenerator(map, chunk)
+function ChunkPropertyUtils.decayDeathGenerator(map, chunk)
     local gen = map.chunkToDeathGenerator[chunk.id]
     if gen then
         local v = gen * MOVEMENT_GENERATOR_PERSISTANCE
@@ -545,7 +550,7 @@ function chunkPropertyUtils.decayDeathGenerator(map, chunk)
     end
 end
 
-function chunkPropertyUtils.decayPlayerGenerator(map, chunk)
+function ChunkPropertyUtils.decayPlayerGenerator(map, chunk)
     local gen = map.chunkToPlayerGenerator[chunk.id]
     if gen then
         local v = gen * PLAYER_GENERATOR_PERSISTANCE
@@ -557,7 +562,7 @@ function chunkPropertyUtils.decayPlayerGenerator(map, chunk)
     end
 end
 
-function chunkPropertyUtils.addPlayerGenerator(map, chunk, playerMaxGenerator)
+function ChunkPropertyUtils.addPlayerGenerator(map, chunk, playerMaxGenerator)
     local value = map.chunkToPlayerGenerator[chunk.id]
     if value then
         map.chunkToPlayerGenerator[chunk.id] = mMin(
@@ -569,19 +574,19 @@ function chunkPropertyUtils.addPlayerGenerator(map, chunk, playerMaxGenerator)
     end
 end
 
-function chunkPropertyUtils.getPlayerGenerator(map, chunk)
+function ChunkPropertyUtils.getPlayerGenerator(map, chunk)
     return map.chunkToPlayerGenerator[chunk.id] or 0
 end
 
-function chunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
+function ChunkPropertyUtils.getPlayerBaseGenerator(map, chunk)
     return map.chunkToPlayerBase[chunk.id] or 0
 end
 
-function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
+function ChunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     local chunkToSquad = map.chunkToSquad
 
     if (chunk ~= -1) and ((squad.chunk == -1) or (squad.chunk.id ~= chunk.id)) then
-        chunkPropertyUtils.removeSquadFromChunk(map, squad)
+        ChunkPropertyUtils.removeSquadFromChunk(map, squad)
         local squads = chunkToSquad[chunk.id]
         if not squads then
             squads = {}
@@ -592,25 +597,25 @@ function chunkPropertyUtils.addSquadToChunk(map, chunk, squad)
     end
 end
 
-function chunkPropertyUtils.removeSquadFromChunk(map, squad)
+function ChunkPropertyUtils.removeSquadFromChunk(map, squad)
     local chunkToSquad = map.chunkToSquad
     local chunk = squad.chunk
     if (chunk ~= -1) then
         local squads = chunkToSquad[chunk.id]
         if squads then
             squads[squad.groupNumber] = nil
-            if (table_size(squads) == 0) then
+            if (tableSize(squads) == 0) then
                 chunkToSquad[chunk.id] = nil
             end
         end
     end
 end
 
-function chunkPropertyUtils.getSquadsOnChunk(map, chunk)
+function ChunkPropertyUtils.getSquadsOnChunk(map, chunk)
     return map.chunkToSquad[chunk.id] or map.emptySquadsOnChunk
 end
 
-function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
+function ChunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
     if (playerGenerator <= 0) then
         map.chunkToPlayerBase[chunk.id] = nil
         return 0
@@ -620,7 +625,7 @@ function chunkPropertyUtils.setPlayerBaseGenerator(map, chunk, playerGenerator)
     end
 end
 
-function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
+function ChunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
     local amount = (map.chunkToPlayerBase[chunk.id] or 0) + playerGenerator
     if amount <= 0 then
         map.chunkToPlayerBase[chunk.id] = nil
@@ -631,11 +636,11 @@ function chunkPropertyUtils.addPlayerBaseGenerator(map, chunk, playerGenerator)
     end
 end
 
-function chunkPropertyUtils.findNearbyBase(map, chunk)
+function ChunkPropertyUtils.findNearbyBase(map, chunk)
     local x = chunk.x
     local y = chunk.y
 
-    local foundBase = chunkPropertyUtils.getChunkBase(map, chunk)
+    local foundBase = ChunkPropertyUtils.getChunkBase(map, chunk)
     if foundBase then
         return foundBase
     end
@@ -652,7 +657,7 @@ function chunkPropertyUtils.findNearbyBase(map, chunk)
     return foundBase
 end
 
-function chunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
+function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     local foundBase
 
     local closest = MAGIC_MAXIMUM_NUMBER
@@ -667,47 +672,46 @@ function chunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     return foundBase
 end
 
-function chunkPropertyUtils.processNestActiveness(map, chunk)
-    local nests = chunkPropertyUtils.getNestCount(map, chunk)
-    local base = chunkPropertyUtils.findNearbyBase(map, chunk)
+function ChunkPropertyUtils.processNestActiveness(map, chunk)
+    local nests = ChunkPropertyUtils.getNestCount(chunk)
+    local base = ChunkPropertyUtils.findNearbyBase(map, chunk)
     if (nests > 0) then
         local surface = map.surface
-        local activeness = chunkPropertyUtils.getNestActiveness(map, chunk)
-        local universe = map.universe
-        local raidActiveness = chunkPropertyUtils.getRaidNestActiveness(map, chunk)
-        if universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > universe.attackPlayerThreshold) then
-            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+        local activeness = ChunkPropertyUtils.getNestActiveness(chunk)
+        local raidActiveness = ChunkPropertyUtils.getRaidNestActiveness(chunk)
+        if Universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > Universe.attackPlayerThreshold) then
+            ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
         elseif (chunk[BASE_PHEROMONE] > 0) then
             if (surface.get_pollution(chunk) > 0) then
-                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+                ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
             else
                 local x = chunk.x
                 local y = chunk.y
                 local position = {x=0,y=0}
-                local pollutionThreshold = universe.pollutionDiffuseMinimum
+                local pollutionThreshold = Universe.pollutionDiffuseMinimum
                 position.x = x + 32
                 position.y = y
                 if (surface.get_pollution(position) > pollutionThreshold) then
-                    chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+                    ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                 else
                     position.x = x - 32
                     if (surface.get_pollution(position) > pollutionThreshold) then
-                        chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+                        ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                     else
                         position.x = x
                         position.y = y - 32
                         if (surface.get_pollution(position) > pollutionThreshold) then
-                            chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+                            ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                         else
                             position.y = y + 32
                             if (surface.get_pollution(position) > pollutionThreshold) then
-                                chunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
+                                ChunkPropertyUtils.setNestActiveness(map, chunk, mMin(activeness + 5, 20), base)
                             else
-                                chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2, base)
+                                ChunkPropertyUtils.setNestActiveness(map, chunk, activeness - 2, base)
                                 if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
-                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20), base)
+                                    ChunkPropertyUtils.setRaidNestActiveness(map, chunk, mMin(raidActiveness + 3, 20), base)
                                 else
-                                    chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 1, base)
+                                    ChunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 1, base)
                                 end
                             end
                         end
@@ -715,15 +719,18 @@ function chunkPropertyUtils.processNestActiveness(map, chunk)
                 end
             end
         else
-            chunkPropertyUtils.setNestActiveness(map, chunk, activeness - 5, base)
-            chunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 5, base)
+            ChunkPropertyUtils.setNestActiveness(map, chunk, activeness - 5, base)
+            ChunkPropertyUtils.setRaidNestActiveness(map, chunk, raidActiveness - 5, base)
         end
     elseif base then
-        chunkPropertyUtils.setNestActiveness(map, chunk, 0, base)
-        chunkPropertyUtils.setRaidNestActiveness(map, chunk, 0, base)
+        ChunkPropertyUtils.setNestActiveness(map, chunk, 0, base)
+        ChunkPropertyUtils.setRaidNestActiveness(map, chunk, 0, base)
     end
 end
 
+function ChunkPropertyUtils.init(universe)
+    Universe = universe
+end
 
-chunkPropertyUtilsG = chunkPropertyUtils
-return chunkPropertyUtils
+ChunkPropertyUtilsG = ChunkPropertyUtils
+return ChunkPropertyUtils

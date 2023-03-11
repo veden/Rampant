@@ -52,6 +52,7 @@ Version: 3.2.0
     - Fixed bases being able to mutate to the same factions
     - Fixed players disconnecting on multiplayer could leave residual player pheromone that never dissipated
     - Fixed /rampantSetAIState command could error if not provide correct parameters or didn't display a message if parameters were missing
+    - Fixed the pheromone processing could skip the inner most chunks or the outer most chunks of a map
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

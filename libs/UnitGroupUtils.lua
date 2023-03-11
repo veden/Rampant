@@ -14,35 +14,39 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if unitGroupUtilsG then
-    return unitGroupUtilsG
+if UnitGroupUtilsG then
+    return UnitGroupUtilsG
 end
-local unitGroupUtils = {}
+local UnitGroupUtils = {}
+
+--
+
+local Universe
 
 -- imports
 
-local mapUtils = require("MapUtils")
-local constants = require("Constants")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
-local mathUtils = require("MathUtils")
+local MapUtils = require("MapUtils")
+local Constants = require("Constants")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
+local MathUtils = require("MathUtils")
 
--- constants
+-- Constants
 
-local MINIMUM_EXPANSION_DISTANCE = constants.MINIMUM_EXPANSION_DISTANCE
-local SQUAD_RETREATING = constants.SQUAD_RETREATING
-local SQUAD_GUARDING = constants.SQUAD_GUARDING
+local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
+local SQUAD_RETREATING = Constants.SQUAD_RETREATING
+local SQUAD_GUARDING = Constants.SQUAD_GUARDING
 
 -- imported functions
 
-local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
+local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 
-local getSquadsOnChunk = chunkPropertyUtils.getSquadsOnChunk
+local getSquadsOnChunk = ChunkPropertyUtils.getSquadsOnChunk
 
-local getNeighborChunks = mapUtils.getNeighborChunks
+local getNeighborChunks = MapUtils.getNeighborChunks
 
 -- module code
 
-function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
+function UnitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
     for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
         local unitGroup = squad.group
@@ -67,7 +71,7 @@ function unitGroupUtils.findNearbyRetreatingSquad(map, chunk)
     return nil
 end
 
-function unitGroupUtils.findNearbySquad(map, chunk)
+function UnitGroupUtils.findNearbySquad(map, chunk)
 
     for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
         local unitGroup = squad.group
@@ -93,28 +97,28 @@ function unitGroupUtils.findNearbySquad(map, chunk)
     return nil
 end
 
-function unitGroupUtils.calculateSettlerMaxDistance(universe)
+function UnitGroupUtils.calculateSettlerMaxDistance()
     local targetDistance
-    local distanceRoll = universe.random()
+    local distanceRoll = Universe.random()
     if distanceRoll < 0.05 then
         return 0
     elseif distanceRoll < 0.30 then
-        targetDistance = universe.expansionLowTargetDistance
+        targetDistance = Universe.expansionLowTargetDistance
     elseif distanceRoll < 0.70 then
-        targetDistance = universe.expansionMediumTargetDistance
+        targetDistance = Universe.expansionMediumTargetDistance
     elseif distanceRoll < 0.95 then
-        targetDistance = universe.expansionHighTargetDistance
+        targetDistance = Universe.expansionHighTargetDistance
     else
-        return universe.expansionMaxDistance
+        return Universe.expansionMaxDistance
     end
     return gaussianRandomRangeRG(targetDistance,
-                                 universe.expansionDistanceDeviation,
+                                 Universe.expansionDistanceDeviation,
                                  MINIMUM_EXPANSION_DISTANCE,
-                                 universe.expansionMaxDistance,
-                                 universe.random)
+                                 Universe.expansionMaxDistance,
+                                 Universe.random)
 end
 
-function unitGroupUtils.createSquad(position, map, group, settlers, base)
+function UnitGroupUtils.createSquad(position, map, group, settlers, base)
     local unitGroup = group or map.surface.create_unit_group({position=position})
 
     local squad = {
@@ -140,7 +144,7 @@ function unitGroupUtils.createSquad(position, map, group, settlers, base)
     }
 
     if settlers then
-        squad.maxDistance = unitGroupUtils.calculateSettlerMaxDistance(map.universe)
+        squad.maxDistance = UnitGroupUtils.calculateSettlerMaxDistance()
     end
 
     if position then
@@ -154,15 +158,19 @@ function unitGroupUtils.createSquad(position, map, group, settlers, base)
     return squad
 end
 
-function unitGroupUtils.calculateKamikazeSquadThreshold(memberCount, universe)
-    local threshold = (memberCount / universe.attackWaveMaxSize) * 0.2 + (universe.evolutionLevel * 0.2)
+function UnitGroupUtils.calculateKamikazeSquadThreshold(memberCount)
+    local threshold = (memberCount / Universe.attackWaveMaxSize) * 0.2 + (Universe.evolutionLevel * 0.2)
     return threshold
 end
 
-function unitGroupUtils.calculateKamikazeSettlerThreshold(memberCount, universe)
-    local threshold = (memberCount / universe.expansionMaxSize) * 0.2 + (universe.evolutionLevel * 0.2)
+function UnitGroupUtils.calculateKamikazeSettlerThreshold(memberCount)
+    local threshold = (memberCount / Universe.expansionMaxSize) * 0.2 + (Universe.evolutionLevel * 0.2)
     return threshold
 end
 
-unitGroupUtilsG = unitGroupUtils
-return unitGroupUtils
+function UnitGroupUtils.init(universe)
+    Universe = universe
+end
+
+UnitGroupUtilsG = UnitGroupUtils
+return UnitGroupUtils

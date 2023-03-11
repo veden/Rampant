@@ -14,47 +14,51 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if aiDefenseG then
-    return aiDefenseG
+if AiDefenseG then
+    return AiDefenseG
 end
-local aiDefense = {}
+local AiDefense = {}
+
+--
+
+local Universe
 
 -- imports
 
-local constants = require("Constants")
-local mapUtils = require("MapUtils")
-local unitGroupUtils = require("UnitGroupUtils")
-local movementUtils = require("MovementUtils")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
+local Constants = require("Constants")
+local MapUtils = require("MapUtils")
+local UnitGroupUtils = require("UnitGroupUtils")
+local MovementUtils = require("MovementUtils")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
 
--- constants
+-- Constants
 
-local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local BASE_PHEROMONE = constants.BASE_PHEROMONE
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 
-local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
+local PLAYER_PHEROMONE_MULTIPLER = Constants.PLAYER_PHEROMONE_MULTIPLER
 
-local SQUAD_RETREATING = constants.SQUAD_RETREATING
+local SQUAD_RETREATING = Constants.SQUAD_RETREATING
 
-local COOLDOWN_RETREAT = constants.COOLDOWN_RETREAT
+local COOLDOWN_RETREAT = Constants.COOLDOWN_RETREAT
 
 -- imported functions
 
-local findNearbyBase = chunkPropertyUtils.findNearbyBase
+local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
-local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
+local addSquadToChunk = ChunkPropertyUtils.addSquadToChunk
 
-local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
-local getNeighborChunks = mapUtils.getNeighborChunks
-local findNearbyRetreatingSquad = unitGroupUtils.findNearbyRetreatingSquad
-local createSquad = unitGroupUtils.createSquad
-local scoreNeighborsForRetreat = movementUtils.scoreNeighborsForRetreat
-local findMovementPosition = movementUtils.findMovementPosition
+local positionFromDirectionAndFlat = MapUtils.positionFromDirectionAndFlat
+local getNeighborChunks = MapUtils.getNeighborChunks
+local findNearbyRetreatingSquad = UnitGroupUtils.findNearbyRetreatingSquad
+local createSquad = UnitGroupUtils.createSquad
+local scoreNeighborsForRetreat = MovementUtils.scoreNeighborsForRetreat
+local findMovementPosition = MovementUtils.findMovementPosition
 
-local getRetreatTick = chunkPropertyUtils.getRetreatTick
-local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-local setRetreatTick = chunkPropertyUtils.setRetreatTick
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
+local getRetreatTick = ChunkPropertyUtils.getRetreatTick
+local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
+local setRetreatTick = ChunkPropertyUtils.setRetreatTick
+local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 
 -- module code
 
@@ -64,8 +68,8 @@ local function scoreRetreatLocation(map, neighborChunk)
             -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
 end
 
-function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
-    if (tick - getRetreatTick(map, chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
+function AiDefense.retreatUnits(chunk, cause, map, tick, radius)
+    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
 
         setRetreatTick(map, chunk, tick)
         local exitPath,exitDirection,
@@ -75,7 +79,6 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
                                                                                          chunk.y),
                                                                        scoreRetreatLocation,
                                                                        map)
-        local universe = map.universe
         local position = {
             x = chunk.x + 16,
             y = chunk.y + 16
@@ -117,7 +120,7 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         local created = false
 
         if not newSquad then
-            if (universe.squadCount < universe.AI_MAX_SQUAD_COUNT) then
+            if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT) then
                 created = true
                 local base = findNearbyBase(map, chunk)
                 if not base then
@@ -129,12 +132,12 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
             end
         end
 
-        universe.fleeCommand.from = cause
-        universe.retreatCommand.group = newSquad.group
+        Universe.fleeCommand.from = cause
+        Universe.retreatCommand.group = newSquad.group
 
-        universe.formRetreatCommand.unit_search_distance = radius
+        Universe.formRetreatCommand.unit_search_distance = radius
 
-        local foundUnits = surface.set_multi_command(universe.formRetreatCommand)
+        local foundUnits = surface.set_multi_command(Universe.formRetreatCommand)
 
         if (foundUnits == 0) then
             if created then
@@ -144,8 +147,8 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
         end
 
         if created then
-            universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
-            universe.squadCount = universe.squadCount + 1
+            Universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
+            Universe.squadCount = Universe.squadCount + 1
         end
 
         newSquad.status = SQUAD_RETREATING
@@ -159,5 +162,9 @@ function aiDefense.retreatUnits(chunk, cause, map, tick, radius)
     end
 end
 
-aiDefenseG = aiDefense
-return aiDefense
+function AiDefense.init(universe)
+    Universe = universe
+end
+
+AiDefenseG = AiDefense
+return AiDefense

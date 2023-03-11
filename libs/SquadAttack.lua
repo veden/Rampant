@@ -14,42 +14,46 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if (squadAttackG) then
-    return squadAttackG
+if SquadAttackG then
+    return SquadAttackG
 end
-local squadAttack = {}
+local SquadAttack = {}
+
+--
+
+local Universe
 
 -- imports
 
-local constants = require("Constants")
-local mapUtils = require("MapUtils")
-local movementUtils = require("MovementUtils")
-local mathUtils = require("MathUtils")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
-local queryUtils = require("QueryUtils")
+local Constants = require("Constants")
+local MapUtils = require("MapUtils")
+local MovementUtils = require("MovementUtils")
+local MathUtils = require("MathUtils")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
+local QueryUtils = require("QueryUtils")
 
--- constants
+-- Constants
 
-local PLAYER_PHEROMONE_GENERATOR_THRESHOLD = constants.PLAYER_PHEROMONE_GENERATOR_THRESHOLD
-local COMMAND_TIMEOUT = constants.COMMAND_TIMEOUT
-local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local BASE_PHEROMONE = constants.BASE_PHEROMONE
-local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
-local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
+local PLAYER_PHEROMONE_GENERATOR_THRESHOLD = Constants.PLAYER_PHEROMONE_GENERATOR_THRESHOLD
+local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 
-local FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT
+local FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT = Constants.FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
-local SQUAD_BUILDING = constants.SQUAD_BUILDING
+local SQUAD_BUILDING = Constants.SQUAD_BUILDING
 
-local SQUAD_RAIDING = constants.SQUAD_RAIDING
-local SQUAD_SETTLING = constants.SQUAD_SETTLING
-local SQUAD_GUARDING = constants.SQUAD_GUARDING
-local SQUAD_RETREATING = constants.SQUAD_RETREATING
+local SQUAD_RAIDING = Constants.SQUAD_RAIDING
+local SQUAD_SETTLING = Constants.SQUAD_SETTLING
+local SQUAD_GUARDING = Constants.SQUAD_GUARDING
+local SQUAD_RETREATING = Constants.SQUAD_RETREATING
 
-local BASE_AI_STATE_SIEGE = constants.BASE_AI_STATE_SIEGE
-local BASE_AI_STATE_AGGRESSIVE = constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_AGGRESSIVE = Constants.BASE_AI_STATE_AGGRESSIVE
 
-local PLAYER_PHEROMONE_MULTIPLER = constants.PLAYER_PHEROMONE_MULTIPLER
+local PLAYER_PHEROMONE_MULTIPLER = Constants.PLAYER_PHEROMONE_MULTIPLER
 
 local DEFINES_DISTRACTION_NONE = defines.distraction.none
 local DEFINES_DISTRACTION_BY_ENEMY = defines.distraction.by_enemy
@@ -57,33 +61,33 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
-local getPlayerGenerator = chunkPropertyUtils.getPlayerGenerator
-local setPositionInCommand = queryUtils.setPositionInCommand
+local getPlayerGenerator = ChunkPropertyUtils.getPlayerGenerator
+local setPositionInCommand = QueryUtils.setPositionInCommand
 
-local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+local euclideanDistancePoints = MathUtils.euclideanDistancePoints
 
-local findMovementPosition = movementUtils.findMovementPosition
+local findMovementPosition = MovementUtils.findMovementPosition
 
-local removeSquadFromChunk = chunkPropertyUtils.removeSquadFromChunk
-local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
+local removeSquadFromChunk = ChunkPropertyUtils.removeSquadFromChunk
+local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
-local getHiveCount = chunkPropertyUtils.getHiveCount
-local getNestCount = chunkPropertyUtils.getNestCount
+local getHiveCount = ChunkPropertyUtils.getHiveCount
+local getNestCount = ChunkPropertyUtils.getNestCount
 
-local getNeighborChunks = mapUtils.getNeighborChunks
-local addSquadToChunk = chunkPropertyUtils.addSquadToChunk
-local getChunkByXY = mapUtils.getChunkByXY
-local positionToChunkXY = mapUtils.positionToChunkXY
-local addMovementPenalty = movementUtils.addMovementPenalty
-local positionFromDirectionAndFlat = mapUtils.positionFromDirectionAndFlat
+local getNeighborChunks = MapUtils.getNeighborChunks
+local addSquadToChunk = ChunkPropertyUtils.addSquadToChunk
+local getChunkByXY = MapUtils.getChunkByXY
+local positionToChunkXY = MapUtils.positionToChunkXY
+local addMovementPenalty = MovementUtils.addMovementPenalty
+local positionFromDirectionAndFlat = MapUtils.positionFromDirectionAndFlat
 
-local euclideanDistanceNamed = mathUtils.euclideanDistanceNamed
+local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
 
-local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
+local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
+local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
 
-local scoreNeighborsForAttack = movementUtils.scoreNeighborsForAttack
-local scoreNeighborsForSettling = movementUtils.scoreNeighborsForSettling
+local scoreNeighborsForAttack = MovementUtils.scoreNeighborsForAttack
+local scoreNeighborsForSettling = MovementUtils.scoreNeighborsForSettling
 
 -- module code
 local function scoreResourceLocation(map, neighborChunk)
@@ -107,7 +111,6 @@ local function scoreAttackLocation(map, neighborChunk)
 end
 
 local function settleMove(map, squad)
-    local universe = map.universe
     local group = squad.group
     local targetPosition = {x=0,y=0}
 
@@ -141,7 +144,7 @@ local function settleMove(map, squad)
         (
             (distance >= squad.maxDistance) or
             (
-                (getResourceGenerator(map, chunk) ~= 0) and (getNestCount(map, chunk) == 0) and (getHiveCount(map, chunk) == 0)
+                (getResourceGenerator(map, chunk) ~= 0) and (getNestCount(chunk) == 0) and (getHiveCount(map, chunk) == 0)
             )
         )
     then
@@ -151,7 +154,7 @@ local function settleMove(map, squad)
             position = groupPosition
         end
 
-        cmd = universe.settleCommand
+        cmd = Universe.settleCommand
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
@@ -173,11 +176,11 @@ local function settleMove(map, squad)
                                                             scoreFunction)
 
         if (attackChunk == -1) then
-            cmd = universe.wanderCommand
+            cmd = Universe.wanderCommand
             group.set_command(cmd)
             return
         elseif (attackDirection ~= 0) then
-            local attackPlayerThreshold = universe.attackPlayerThreshold
+            local attackPlayerThreshold = Universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
                 if (getPlayerBaseGenerator(map, nextAttackChunk) == 0)
@@ -216,7 +219,7 @@ local function settleMove(map, squad)
                     addDeathGenerator(map, attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
-                cmd = universe.wanderCommand
+                cmd = Universe.wanderCommand
                 group.set_command(cmd)
                 return
             end
@@ -225,7 +228,7 @@ local function settleMove(map, squad)
                 ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
                     or (getPlayerGenerator(map, nextAttackChunk) >= PLAYER_PHEROMONE_GENERATOR_THRESHOLD))
             then
-                cmd = universe.settleCommand
+                cmd = Universe.settleCommand
                 squad.status = SQUAD_BUILDING
                 if squad.kamikaze then
                     cmd.distraction = DEFINES_DISTRACTION_NONE
@@ -235,7 +238,7 @@ local function settleMove(map, squad)
             elseif (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
                 (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
             then
-                cmd = universe.attackCommand
+                cmd = Universe.attackCommand
 
                 if not squad.rabid then
                     squad.frenzy = true
@@ -243,7 +246,7 @@ local function settleMove(map, squad)
                     squad.frenzyPosition.y = groupPosition.y
                 end
             else
-                cmd = universe.moveCommand
+                cmd = Universe.moveCommand
                 if squad.rabid or squad.kamikaze then
                     cmd.distraction = DEFINES_DISTRACTION_NONE
                 else
@@ -251,7 +254,7 @@ local function settleMove(map, squad)
                 end
             end
         else
-            cmd = universe.settleCommand
+            cmd = Universe.settleCommand
             targetPosition.x = groupPosition.x
             targetPosition.y = groupPosition.y
 
@@ -271,7 +274,6 @@ local function settleMove(map, squad)
 end
 
 local function attackMove(map, squad)
-    local universe = map.universe
     local targetPosition = {0,0}
 
     local group = squad.group
@@ -301,7 +303,7 @@ local function attackMove(map, squad)
                                                                        attackScorer)
     local cmd
     if (attackChunk == -1) then
-        cmd = universe.wanderCommand
+        cmd = Universe.wanderCommand
         group.set_command(cmd)
         return
     end
@@ -329,7 +331,7 @@ local function attackMove(map, squad)
     end
 
     if not position then
-        cmd = universe.wanderCommand
+        cmd = Universe.wanderCommand
         group.set_command(cmd)
         return
     else
@@ -343,9 +345,9 @@ local function attackMove(map, squad)
     end
 
     if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
-        (attackChunk[PLAYER_PHEROMONE] >= universe.attackPlayerThreshold)
+        (attackChunk[PLAYER_PHEROMONE] >= Universe.attackPlayerThreshold)
     then
-        cmd = universe.attackCommand
+        cmd = Universe.attackCommand
 
         if not squad.rabid then
             squad.frenzy = true
@@ -353,7 +355,7 @@ local function attackMove(map, squad)
             squad.frenzyPosition.y = groupPosition.y
         end
     else
-        cmd = universe.moveCommand
+        cmd = Universe.moveCommand
         if squad.rabid or squad.frenzy then
             cmd.distraction = DEFINES_DISTRACTION_BY_ANYTHING
         else
@@ -367,22 +369,21 @@ end
 
 local function buildMove(map, squad)
     local group = squad.group
-    local universe = map.universe
     local groupPosition = group.position
     local newGroupPosition = findMovementPosition(map.surface, groupPosition)
 
     if not newGroupPosition then
-        setPositionInCommand(universe.settleCommand, groupPosition)
+        setPositionInCommand(Universe.settleCommand, groupPosition)
     else
-        setPositionInCommand(universe.settleCommand, newGroupPosition)
+        setPositionInCommand(Universe.settleCommand, newGroupPosition)
     end
 
-    group.set_command(universe.compoundSettleCommand)
+    group.set_command(Universe.compoundSettleCommand)
 end
 
-function squadAttack.cleanSquads(universe, tick)
-    local squads = universe.groupNumberToSquad
-    local groupId = universe.squadIterator
+function SquadAttack.cleanSquads(tick)
+    local squads = Universe.groupNumberToSquad
+    local groupId = Universe.squadIterator
     local squad
     if not groupId then
         groupId, squad = next(squads, groupId)
@@ -390,13 +391,13 @@ function squadAttack.cleanSquads(universe, tick)
         squad = squads[groupId]
     end
     if not groupId then
-        universe.squadIterator = nil
+        Universe.squadIterator = nil
         if (table_size(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            universe.groupNumberToSquad = {}
+            Universe.groupNumberToSquad = {}
         end
     else
-        universe.squadIterator = next(squads, groupId)
+        Universe.squadIterator = next(squads, groupId)
         local group = squad.group
         if not group.valid then
             if squad.chunk ~= -1 then
@@ -404,14 +405,14 @@ function squadAttack.cleanSquads(universe, tick)
             end
             removeSquadFromChunk(squad.map, squad)
             if squad.settlers then
-                universe.builderCount = universe.builderCount - 1
-                if universe.builderCount < 0 then
-                    universe.builderCount = 0
+                Universe.builderCount = Universe.builderCount - 1
+                if Universe.builderCount < 0 then
+                    Universe.builderCount = 0
                 end
             else
-                universe.squadCount = universe.squadCount - 1
-                if universe.squadCount < 0 then
-                    universe.squadCount = 0
+                Universe.squadCount = Universe.squadCount - 1
+                if Universe.squadCount < 0 then
+                    Universe.squadCount = 0
                 end
                 if squad.type == BASE_AI_STATE_AGGRESSIVE then
                     local base = squad.base
@@ -424,13 +425,13 @@ function squadAttack.cleanSquads(universe, tick)
             squads[groupId] = nil
         elseif (group.state == 4) then
             squad.wanders = 0
-            squadAttack.squadDispatch(squad.map, squad, tick)
+            SquadAttack.squadDispatch(squad.map, squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             if squad.wanders > 5 then
                 squad.group.destroy()
             else
                 squad.wanders = squad.wanders + 1
-                local cmd = universe.wander2Command
+                local cmd = Universe.wander2Command
                 squad.commandTick = tick + COMMAND_TIMEOUT
                 group.set_command(cmd)
                 group.start_moving()
@@ -439,7 +440,7 @@ function squadAttack.cleanSquads(universe, tick)
     end
 end
 
-function squadAttack.squadDispatch(map, squad, tick)
+function SquadAttack.squadDispatch(map, squad, tick)
     local group = squad.group
     if group and group.valid then
         local status = squad.status
@@ -475,5 +476,9 @@ function squadAttack.squadDispatch(map, squad, tick)
     end
 end
 
-squadAttackG = squadAttack
-return squadAttack
+function SquadAttack.init(universe)
+    Universe = universe
+end
+
+SquadAttackG = SquadAttack
+return SquadAttack

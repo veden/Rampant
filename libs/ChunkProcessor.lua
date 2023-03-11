@@ -14,41 +14,45 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if (chunkProcessorG) then
-    return chunkProcessorG
+if (ChunkProcessorG) then
+    return ChunkProcessorG
 end
-local chunkProcessor = {}
+local ChunkProcessor = {}
+
+--
+
+local Universe
 
 -- imports
 
-local chunkUtils = require("ChunkUtils")
-local queryUtils = require("QueryUtils")
-local mapUtils = require("MapUtils")
-local mathUtils = require("MathUtils")
-local constants = require("Constants")
-local baseUtils = require("BaseUtils")
+local ChunkUtils = require("ChunkUtils")
+local QueryUtils = require("QueryUtils")
+local MapUtils = require("MapUtils")
+local MathUtils = require("MathUtils")
+local Constants = require("Constants")
+local BaseUtils = require("BaseUtils")
 
--- constants
+-- Constants
 
-local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
-local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
+local PROXY_ENTITY_LOOKUP = Constants.PROXY_ENTITY_LOOKUP
+local BASE_DISTANCE_TO_EVO_INDEX = Constants.BASE_DISTANCE_TO_EVO_INDEX
 
-local BUILDING_SPACE_LOOKUP = constants.BUILDING_SPACE_LOOKUP
+local BUILDING_SPACE_LOOKUP = Constants.BUILDING_SPACE_LOOKUP
 
 -- imported functions
 
-local findInsertionPoint = mapUtils.findInsertionPoint
-local removeChunkFromMap = mapUtils.removeChunkFromMap
-local setPositionInQuery = queryUtils.setPositionInQuery
-local registerEnemyBaseStructure = chunkUtils.registerEnemyBaseStructure
-local unregisterEnemyBaseStructure = chunkUtils.unregisterEnemyBaseStructure
-local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+local findInsertionPoint = MapUtils.findInsertionPoint
+local removeChunkFromMap = MapUtils.removeChunkFromMap
+local setPositionInQuery = QueryUtils.setPositionInQuery
+local registerEnemyBaseStructure = ChunkUtils.registerEnemyBaseStructure
+local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
+local euclideanDistancePoints = MathUtils.euclideanDistancePoints
 
-local findEntityUpgrade = baseUtils.findEntityUpgrade
+local findEntityUpgrade = BaseUtils.findEntityUpgrade
 
-local createChunk = chunkUtils.createChunk
-local initialScan = chunkUtils.initialScan
-local chunkPassScan = chunkUtils.chunkPassScan
+local createChunk = ChunkUtils.createChunk
+local initialScan = ChunkUtils.initialScan
+local chunkPassScan = ChunkUtils.chunkPassScan
 
 local mMin = math.min
 local mMax = math.max
@@ -59,9 +63,9 @@ local tInsert = table.insert
 
 -- module code
 
-function chunkProcessor.processPendingChunks(universe, tick, flush)
-    local pendingChunks = universe.pendingChunks
-    local eventId = universe.chunkProcessorIterator
+function ChunkProcessor.processPendingChunks(tick, flush)
+    local pendingChunks = Universe.pendingChunks
+    local eventId = Universe.chunkProcessorIterator
     local event
 
     if not eventId then
@@ -76,22 +80,22 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
     end
     for _=1,endCount do
         if not eventId then
-            universe.chunkProcessorIterator = nil
+            Universe.chunkProcessorIterator = nil
             if (table_size(pendingChunks) == 0) then
                 -- this is needed as the next command remembers the max length a table has been
-                universe.pendingChunks = {}
+                Universe.pendingChunks = {}
             end
             break
         else
             if not flush and (event.tick > tick) then
-                universe.chunkProcessorIterator = eventId
+                Universe.chunkProcessorIterator = eventId
                 return
             end
             local newEventId, newEvent = next(pendingChunks, eventId)
             pendingChunks[eventId] = nil
             local map = event.map
             if not map.surface.valid then
-                universe.chunkProcessorIterator = newEventId
+                Universe.chunkProcessorIterator = newEventId
                 return
             end
 
@@ -112,7 +116,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
             else
                 local initialChunk = createChunk(map, x, y)
                 map[x][y] = initialChunk
-                universe.chunkIdToChunk[initialChunk.id] = initialChunk
+                Universe.chunkIdToChunk[initialChunk.id] = initialChunk
                 local chunk = initialScan(initialChunk, map, tick)
                 if (chunk ~= -1) then
                     tInsert(
@@ -122,7 +126,7 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
                     )
                 else
                     map[x][y] = nil
-                    universe.chunkIdToChunk[initialChunk.id] = nil
+                    Universe.chunkIdToChunk[initialChunk.id] = nil
                 end
             end
 
@@ -130,30 +134,30 @@ function chunkProcessor.processPendingChunks(universe, tick, flush)
             event = newEvent
         end
     end
-    universe.chunkProcessorIterator = eventId
+    Universe.chunkProcessorIterator = eventId
 end
 
-function chunkProcessor.processPendingUpgrades(universe, tick)
-    local entityId = universe.pendingUpgradeIterator
+function ChunkProcessor.processPendingUpgrades(tick)
+    local entityId = Universe.pendingUpgradeIterator
     local entityData
     if not entityId then
-        entityId, entityData = next(universe.pendingUpgrades, nil)
+        entityId, entityData = next(Universe.pendingUpgrades, nil)
     else
-        entityData = universe.pendingUpgrades[entityId]
+        entityData = Universe.pendingUpgrades[entityId]
     end
     if not entityId then
-        universe.pendingUpgradeIterator = nil
-        if table_size(universe.pendingUpgrades) == 0 then
-            universe.pendingUpgrades = {}
+        Universe.pendingUpgradeIterator = nil
+        if table_size(Universe.pendingUpgrades) == 0 then
+            Universe.pendingUpgrades = {}
         end
     else
         local entity = entityData.entity
         if entity.valid then
-            universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
+            Universe.pendingUpgradeIterator = next(Universe.pendingUpgrades, entityId)
             if entityData.delayTLL and tick < entityData.delayTLL then
                 return
             end
-            universe.pendingUpgrades[entityId] = nil
+            Universe.pendingUpgrades[entityId] = nil
             local base = entityData.base
             local map = base.map
             local baseAlignment = base.alignment
@@ -173,7 +177,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             local currentEvo = entity.prototype.build_base_evolution_requirement or 0
 
             local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
-            local evoIndex = mMax(distance, universe.evolutionLevel)
+            local evoIndex = mMax(distance, Universe.evolutionLevel)
 
             local name = findEntityUpgrade(pickedBaseAlignment,
                                            currentEvo,
@@ -191,7 +195,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
             end
 
             local surface = entity.surface
-            local query = universe.ppuUpgradeEntityQuery
+            local query = Universe.ppuUpgradeEntityQuery
             query.name = name
 
             unregisterEnemyBaseStructure(map, entity, nil, true)
@@ -211,7 +215,7 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
                 if entityData.register then
                     registerEnemyBaseStructure(map, createdEntity, base, true)
                 end
-                if not entityData.evolve and universe.printBaseUpgrades then
+                if not entityData.evolve and Universe.printBaseUpgrades then
                     surface.print("["..base.id.."]:"..surface.name.." Upgrading ".. entityName .. " to " .. name .. " [gps=".. position.x ..",".. position.y .."]")
                 end
                 if remote.interfaces["kr-creep"] then
@@ -219,31 +223,31 @@ function chunkProcessor.processPendingUpgrades(universe, tick)
                 end
             end
         else
-            universe.pendingUpgradeIterator = next(universe.pendingUpgrades, entityId)
-            universe.pendingUpgrades[entityId] = nil
+            Universe.pendingUpgradeIterator = next(Universe.pendingUpgrades, entityId)
+            Universe.pendingUpgrades[entityId] = nil
         end
     end
 end
 
 
-function chunkProcessor.processScanChunks(universe)
-    local chunkId = universe.chunkToPassScanIterator
+function ChunkProcessor.processScanChunks()
+    local chunkId = Universe.chunkToPassScanIterator
     local chunkPack
     if not chunkId then
-        chunkId, chunkPack = next(universe.chunkToPassScan, nil)
+        chunkId, chunkPack = next(Universe.chunkToPassScan, nil)
     else
-        chunkPack = universe.chunkToPassScan[chunkId]
+        chunkPack = Universe.chunkToPassScan[chunkId]
     end
 
     if not chunkId then
-        universe.chunkToPassScanIterator = nil
-        if (table_size(universe.chunkToPassScan) == 0) then
+        Universe.chunkToPassScanIterator = nil
+        if (table_size(Universe.chunkToPassScan) == 0) then
             -- this is needed as the next command remembers the max length a table has been
-            universe.chunkToPassScan = {}
+            Universe.chunkToPassScan = {}
         end
     else
-        universe.chunkToPassScanIterator = next(universe.chunkToPassScan, chunkId)
-        universe.chunkToPassScan[chunkId] = nil
+        Universe.chunkToPassScanIterator = next(Universe.chunkToPassScan, chunkId)
+        Universe.chunkToPassScan[chunkId] = nil
         local map = chunkPack.map
         if not map.surface.valid then
             return
@@ -256,5 +260,9 @@ function chunkProcessor.processScanChunks(universe)
     end
 end
 
-chunkProcessorG = chunkProcessor
-return chunkProcessor
+function ChunkProcessor.init(universe)
+    Universe = universe
+end
+
+ChunkProcessorG = ChunkProcessor
+return ChunkProcessor

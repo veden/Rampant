@@ -19,6 +19,10 @@ if aiPlanningG then
 end
 local aiPlanning = {}
 
+--
+
+local universe
+
 -- imports
 
 local constants = require("Constants")
@@ -100,7 +104,7 @@ local function getTimeStringFromTick(tick)
     return days .. "d " .. hours .. "h " .. minutes .. "m " .. seconds .. "s"
 end
 
-function aiPlanning.planning(universe, evolutionLevel)
+function aiPlanning.planning(evolutionLevel)
     universe.evolutionLevel = evolutionLevel
     local maxPoints = mMax(AI_MAX_POINTS * evolutionLevel, MINIMUM_AI_POINTS)
     universe.maxPoints = maxPoints
@@ -140,7 +144,7 @@ function aiPlanning.planning(universe, evolutionLevel)
     universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolutionLevel * NO_RETREAT_EVOLUTION_BONUS_MAX)
 end
 
-local function processBase(universe, base, tick)
+local function processBase(base, tick)
 
     base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
     base.maxExpansionGroups = mCeil((base.activeNests + base.activeRaidNests) / ALL_NESTS_PER_EXPANSION_GROUPS)
@@ -204,7 +208,7 @@ local function processBase(universe, base, tick)
         deathThreshold = universe.adaptationModifier * deathThreshold
         if ((base.deathEvents > deathThreshold) and (universe.random() > 0.95)) then
             if (base.mutations < universe.MAX_BASE_MUTATIONS) then
-                if upgradeBaseBasedOnDamage(universe, base) then
+                if upgradeBaseBasedOnDamage(base) then
                     base.mutations = base.mutations + 1
                 end
             elseif (base.mutations == universe.MAX_BASE_MUTATIONS) then
@@ -345,8 +349,6 @@ local function temperamentPlanner(base, evolutionLevel)
         delta = delta + val
     end
 
-    local universe = base.universe
-
     delta = delta * universe.temperamentRateModifier
     base.temperamentScore = mMin(TEMPERAMENT_RANGE_MAX, mMax(TEMPERAMENT_RANGE_MIN, currentTemperament + delta))
     base.temperament = ((base.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
@@ -370,7 +372,7 @@ local function temperamentPlanner(base, evolutionLevel)
     end
 end
 
-local function processState(universe, base, tick)
+local function processState(base, tick)
 
     if (base.stateAITick > tick) or not universe.awake then
         if (not universe.awake) and (tick >= universe.initialPeaceTime) then
@@ -562,7 +564,7 @@ local function processState(universe, base, tick)
 
 end
 
-function aiPlanning.processBaseAIs(universe, tick)
+function aiPlanning.processBaseAIs(tick)
     local baseId = universe.processBaseAIIterator
     local base
     if not baseId then
@@ -579,9 +581,13 @@ function aiPlanning.processBaseAIs(universe, tick)
             return
         end
         temperamentPlanner(base, universe.evolutionLevel)
-        processState(universe, base, tick)
-        processBase(universe, base, tick)
+        processState(base, tick)
+        processBase(base, tick)
     end
+end
+
+function aiPlanning.init(universeGlobal)
+    universe = universeGlobal
 end
 
 aiPlanningG = aiPlanning

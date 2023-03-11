@@ -14,10 +14,14 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if baseUtilsG then
-    return baseUtilsG
+if BaseUtilsG then
+    return BaseUtilsG
 end
-local baseUtils = {}
+local BaseUtils = {}
+
+--
+
+local Universe
 
 -- imports
 
@@ -83,13 +87,13 @@ local next = next
 
 -- module code
 
-local function evoToTier(universe, evolutionFactor, maxSkips)
+local function evoToTier(evolutionFactor, maxSkips)
     local v
     local skipsRemaining = maxSkips
     for i=TIERS,1,-1 do
         if EVO_TO_TIER_MAPPING[i] <= evolutionFactor then
             v = i
-            if (skipsRemaining == 0) or (universe.random() <= 0.75) then
+            if (skipsRemaining == 0) or (Universe.random() <= 0.75) then
                 break
             end
             skipsRemaining = skipsRemaining - 1
@@ -98,8 +102,8 @@ local function evoToTier(universe, evolutionFactor, maxSkips)
     return v
 end
 
-local function findBaseMutation(universe, targetEvolution, excludeFactions)
-    local tier = evoToTier(universe, targetEvolution or universe.evolutionLevel, 2)
+local function findBaseMutation(targetEvolution, excludeFactions)
+    local tier = evoToTier(targetEvolution or Universe.evolutionLevel, 2)
     local availableAlignments
     local alignments = EVOLUTION_TABLE_ALIGNMENT[tier]
 
@@ -114,7 +118,7 @@ local function findBaseMutation(universe, targetEvolution, excludeFactions)
         availableAlignments = alignments
     end
 
-    local roll = universe.random()
+    local roll = Universe.random()
     for i=1,#availableAlignments do
         local alignment = availableAlignments[i]
 
@@ -132,7 +136,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
 
     local useTier
 
-    local tierRoll = map.random()
+    local tierRoll = Universe.random()
     if (tierRoll < 0.4) then
         useTier = maxTier
     elseif (tierRoll < 0.7) then
@@ -154,7 +158,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
                 if upgrade[3] == useHiveType then
-                    entity = upgrade[2][map.random(#upgrade[2])]
+                    entity = upgrade[2][Universe.random(#upgrade[2])]
                     break
                 end
             end
@@ -163,7 +167,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
             for ui=1,#upgrades do
                 local upgrade = upgrades[ui]
                 if upgrade[3] == entityType then
-                    entity = upgrade[2][map.random(#upgrade[2])]
+                    entity = upgrade[2][Universe.random(#upgrade[2])]
                 end
             end
             if not entity then
@@ -173,7 +177,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
                     for ui=1,#upgrades do
                         local upgrade = upgrades[ui]
                         if upgrade[3] == mappedType then
-                            return upgrade[2][map.random(#upgrade[2])]
+                            return upgrade[2][Universe.random(#upgrade[2])]
                         end
                     end
                 end
@@ -197,15 +201,15 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
             for i=1, #mapTypes do
                 local upgrade = factionLookup[mapTypes[i]]
                 if upgrade and (#upgrade > 0) then
-                    entity = upgrade[map.random(#upgrade)]
-                    if map.random() < 0.55 then
+                    entity = upgrade[Universe.random(#upgrade)]
+                    if Universe.random() < 0.55 then
                         return entity
                     end
                 end
             end
         elseif (#upgrades > 0) then
-            entity = upgrades[map.random(#upgrades)]
-            if map.random() < 0.55 then
+            entity = upgrades[Universe.random(#upgrades)]
+            if Universe.random() < 0.55 then
                 return entity
             end
         end
@@ -213,15 +217,14 @@ local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
     return entity
 end
 
-function baseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
-    local universe = map.universe
+function BaseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
     local adjCurrentEvo = mMax(
         ((baseAlignment ~= ENEMY_ALIGNMENT_LOOKUP[originalEntity.name]) and 0) or currentEvo,
         0
     )
 
-    local tier = evoToTier(universe, adjCurrentEvo, 5)
-    local maxTier = evoToTier(universe, evoIndex, 4)
+    local tier = evoToTier(adjCurrentEvo, 5)
+    local maxTier = evoToTier(evoIndex, 4)
 
     if (tier > maxTier) then
         maxTier = tier
@@ -232,13 +235,13 @@ function baseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
         local entityName = originalEntity.name
         local entityType = BUILDING_HIVE_TYPE_LOOKUP[entityName]
         if not entityType then
-            if map.random() < 0.5 then
+            if Universe.random() < 0.5 then
                 entityType = "biter-spawner"
             else
                 entityType = "spitter-spawner"
             end
         end
-        local roll = map.random()
+        local roll = Universe.random()
         local makeHive = (chunk ~= -1) and
             (
                 (entityType == "biter-spawner") or (entityType == "spitter-spawner")
@@ -262,23 +265,23 @@ function baseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
 end
 
 -- local
-function baseUtils.findBaseInitialAlignment(universe, evoIndex, excludeFactions)
+function BaseUtils.findBaseInitialAlignment(evoIndex, excludeFactions)
     local dev = evoIndex * 0.15
-    local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, universe.random)
+    local evoTop = gaussianRandomRangeRG(evoIndex - (evoIndex * 0.075), dev, 0, evoIndex, Universe.random)
 
     local result
-    if universe.random() < 0.05 then
-        result = {findBaseMutation(universe, evoTop, excludeFactions), findBaseMutation(universe, evoTop, excludeFactions)}
+    if Universe.random() < 0.05 then
+        result = {findBaseMutation(evoTop, excludeFactions), findBaseMutation(evoTop, excludeFactions)}
     else
-        result = {findBaseMutation(universe, evoTop, excludeFactions)}
+        result = {findBaseMutation(evoTop, excludeFactions)}
     end
 
     return result
 end
 
-function baseUtils.recycleBases(universe)
-    local bases = universe.bases
-    local id = universe.recycleBaseIterator
+function BaseUtils.recycleBases()
+    local bases = Universe.bases
+    local id = Universe.recycleBaseIterator
     local base
     if not id then
         id, base = next(bases, nil)
@@ -286,24 +289,24 @@ function baseUtils.recycleBases(universe)
         base = bases[id]
     end
     if not id then
-        universe.recycleBaseIterator = nil
+        Universe.recycleBaseIterator = nil
     else
-        universe.recycleBaseIterator = next(bases, id)
+        Universe.recycleBaseIterator = next(bases, id)
         local map = base.map
         if (base.chunkCount == 0) or not map.surface.valid then
             bases[id] = nil
-            if universe.processBaseAIIterator == id then
-                universe.processBaseAIIterator = nil
+            if Universe.processBaseAIIterator == id then
+                Universe.processBaseAIIterator = nil
             end
             if map.surface.valid then
-                map.universe.bases[id] = nil
+                Universe.bases[id] = nil
             end
         end
     end
 end
 
-function baseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDelay)
-    base.universe.pendingUpgrades[entity.unit_number] = {
+function BaseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDelay)
+    Universe.pendingUpgrades[entity.unit_number] = {
         ["position"] = disPos,
         ["register"] = register,
         ["evolve"] = evolve,
@@ -313,7 +316,7 @@ function baseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDela
     }
 end
 
-local function pickMutationFromDamageType(universe, damageType, roll, base)
+local function pickMutationFromDamageType(damageType, roll, base)
     local baseAlignment = base.alignment
 
     local damageFactions = FACTIONS_BY_DAMAGE_TYPE[damageType]
@@ -321,7 +324,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
     local mutated = false
 
     if damageFactions and (#damageFactions > 0) then
-        mutation = damageFactions[universe.random(#damageFactions)]
+        mutation = damageFactions[Universe.random(#damageFactions)]
         if not isMember(mutation, base.alignmentHistory) then
             if baseAlignment[2] then
                 if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
@@ -349,7 +352,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
             end
         end
     else
-        mutation = findBaseMutation(universe)
+        mutation = findBaseMutation()
         if not isMember(mutation, base.alignmentHistory) then
             if baseAlignment[2] then
                 if (baseAlignment[1] ~= mutation) and (baseAlignment[2] ~= mutation) then
@@ -377,7 +380,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
             end
         end
     end
-    if mutated and universe.printBaseAdaptation then
+    if mutated and Universe.printBaseAdaptation then
         if baseAlignment[2] then
             game.print({"description.rampant--adaptation2DebugMessage",
                         base.id,
@@ -388,7 +391,7 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                         base.x,
                         base.y,
                         base.mutations,
-                        universe.MAX_BASE_MUTATIONS})
+                        Universe.MAX_BASE_MUTATIONS})
         else
             game.print({"description.rampant--adaptation1DebugMessage",
                         base.id,
@@ -398,18 +401,18 @@ local function pickMutationFromDamageType(universe, damageType, roll, base)
                         base.x,
                         base.y,
                         base.mutations,
-                        universe.MAX_BASE_MUTATIONS})
+                        Universe.MAX_BASE_MUTATIONS})
         end
     end
     local alignmentCount = table_size(base.alignmentHistory)
-    while (alignmentCount > universe.MAX_BASE_ALIGNMENT_HISTORY) do
+    while (alignmentCount > Universe.MAX_BASE_ALIGNMENT_HISTORY) do
         tableRemove(base.alignmentHistory, 1)
         alignmentCount = alignmentCount - 1
     end
     return mutated
 end
 
-function baseUtils.upgradeBaseBasedOnDamage(universe, base)
+function BaseUtils.upgradeBaseBasedOnDamage(base)
 
     local total = 0
 
@@ -420,7 +423,7 @@ function baseUtils.upgradeBaseBasedOnDamage(universe, base)
     base.damagedBy["RandomMutation"] = mutationAmount
     total = total + mutationAmount
     local pickedDamage
-    local roll = universe.random()
+    local roll = Universe.random()
     for damageTypeName,amount in pairs(base.damagedBy) do
         base.damagedBy[damageTypeName] = amount / total
     end
@@ -432,68 +435,66 @@ function baseUtils.upgradeBaseBasedOnDamage(universe, base)
         end
     end
 
-    return pickMutationFromDamageType(universe, pickedDamage, roll, base)
+    return pickMutationFromDamageType(pickedDamage, roll, base)
 end
 
-function baseUtils.processBaseMutation(chunk, map, base)
+function BaseUtils.processBaseMutation(chunk, map, base)
     if not base.alignment[1] or
         (base.stateGeneration ~= BASE_GENERATION_STATE_ACTIVE) or
-        (map.random() >= 0.30)
+        (Universe.random() >= 0.30)
     then
         return
     end
 
     if (base.points >= MINIMUM_BUILDING_COST) then
         local surface = map.surface
-        local universe = map.universe
-        setPositionXYInQuery(universe.pbFilteredEntitiesPointQueryLimited,
-                             chunk.x + (CHUNK_SIZE * map.random()),
-                             chunk.y + (CHUNK_SIZE * map.random()))
+        setPositionXYInQuery(Universe.pbFilteredEntitiesPointQueryLimited,
+                             chunk.x + (CHUNK_SIZE * Universe.random()),
+                             chunk.y + (CHUNK_SIZE * Universe.random()))
 
-        local entities = surface.find_entities_filtered(universe.pbFilteredEntitiesPointQueryLimited)
+        local entities = surface.find_entities_filtered(Universe.pbFilteredEntitiesPointQueryLimited)
         if #entities ~= 0 then
             local entity = entities[1]
             local cost = (COST_LOOKUP[entity.name] or MAGIC_MAXIMUM_NUMBER)
             if (base.points >= cost) then
                 local position = entity.position
-                baseUtils.modifyBaseSpecialPoints(base, -cost, "Scheduling Entity upgrade", position.x, position.y)
-                baseUtils.queueUpgrade(entity, base, nil, false, true)
+                BaseUtils.modifyBaseSpecialPoints(base, -cost, "Scheduling Entity upgrade", position.x, position.y)
+                BaseUtils.queueUpgrade(entity, base, nil, false, true)
             end
         end
     end
 end
 
-function baseUtils.createBase(map, chunk, tick)
+function BaseUtils.createBase(map, chunk, tick)
     local x = chunk.x
     local y = chunk.y
     local distance = euclideanDistancePoints(x, y, 0, 0)
 
     local meanLevel = mFloor(distance * 0.005)
 
-    local universe = map.universe
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distanceIndex, universe.evolutionLevel)
+    local evoIndex = mMax(distanceIndex, Universe.evolutionLevel)
 
     local alignment =
-        (universe.NEW_ENEMIES and baseUtils.findBaseInitialAlignment(universe, evoIndex))
+        (Universe.NEW_ENEMIES and BaseUtils.findBaseInitialAlignment(evoIndex))
         or {"neutral"}
 
     local baseLevel = gaussianRandomRangeRG(meanLevel,
                                             meanLevel * 0.3,
                                             meanLevel * 0.50,
                                             meanLevel * 1.50,
-                                            universe.random)
+                                            Universe.random)
     local baseDistanceThreshold = gaussianRandomRangeRG(BASE_DISTANCE_THRESHOLD,
                                                         BASE_DISTANCE_THRESHOLD * 0.2,
                                                         BASE_DISTANCE_THRESHOLD * 0.75,
                                                         BASE_DISTANCE_THRESHOLD * 1.50,
-                                                        universe.random)
+                                                        Universe.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
 
     local base = {
         x = x,
         y = y,
-        distanceThreshold = distanceThreshold * universe.baseDistanceModifier,
+        distanceThreshold = distanceThreshold * Universe.baseDistanceModifier,
         tick = tick,
         alignment = alignment,
         alignmentHistory = {},
@@ -526,19 +527,18 @@ function baseUtils.createBase(map, chunk, tick)
         resourceChunkCount = 0,
         temperament = 0.5,
         temperamentScore = 0,
-        universe = universe,
         map = map,
-        id = universe.baseId
+        id = Universe.baseId
     }
-    universe.baseId = universe.baseId + 1
+    Universe.baseId = Universe.baseId + 1
 
     map.bases[base.id] = base
-    universe.bases[base.id] = base
+    Universe.bases[base.id] = base
 
     return base
 end
 
-function baseUtils.modifyBaseUnitPoints(base, points, tag, x, y)
+function BaseUtils.modifyBaseUnitPoints(base, points, tag, x, y)
 
     if points > 0 and base.stateAI == BASE_AI_STATE_PEACEFUL then
         return
@@ -550,17 +550,16 @@ function baseUtils.modifyBaseUnitPoints(base, points, tag, x, y)
 
     base.unitPoints = base.unitPoints + points
 
-    local universe = base.universe
     local overflowMessage = ""
-    if base.unitPoints > universe.maxOverflowPoints then
-        base.unitPoints = universe.maxOverflowPoints
+    if base.unitPoints > Universe.maxOverflowPoints then
+        base.unitPoints = Universe.maxOverflowPoints
         overflowMessage = " [Point cap reached]"
     end
 
     local printPointChange = ""
-    if points > 0 and universe.aiPointsPrintGainsToChat then
+    if points > 0 and Universe.aiPointsPrintGainsToChat then
         printPointChange =  "+" .. string.format("%.2f", points)
-    elseif points < 0 and universe.aiPointsPrintSpendingToChat then
+    elseif points < 0 and Universe.aiPointsPrintSpendingToChat then
         printPointChange = string.format("%.2f", points)
     end
 
@@ -573,7 +572,7 @@ function baseUtils.modifyBaseUnitPoints(base, points, tag, x, y)
     end
 end
 
-function baseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
+function BaseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
 
     if points > 0 and base.stateAI == BASE_AI_STATE_PEACEFUL then
         return
@@ -585,17 +584,16 @@ function baseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
 
     base.points = base.points + points
 
-    local universe = base.universe
     local overflowMessage = ""
-    if base.points > universe.maxOverflowPoints then
-        base.points = universe.maxOverflowPoints
+    if base.points > Universe.maxOverflowPoints then
+        base.points = Universe.maxOverflowPoints
         overflowMessage = " [Point cap reached]"
     end
 
     local printPointChange = ""
-    if points > 0 and universe.aiPointsPrintGainsToChat then
+    if points > 0 and Universe.aiPointsPrintGainsToChat then
         printPointChange =  "+" .. string.format("%.2f", points)
-    elseif points < 0 and universe.aiPointsPrintSpendingToChat then
+    elseif points < 0 and Universe.aiPointsPrintSpendingToChat then
         printPointChange = string.format("%.2f", points)
     end
 
@@ -608,5 +606,9 @@ function baseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
     end
 end
 
-baseUtilsG = baseUtils
-return baseUtils
+function BaseUtils.init(universe)
+    Universe = universe
+end
+
+BaseUtilsG = BaseUtils
+return BaseUtils

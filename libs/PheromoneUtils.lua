@@ -14,80 +14,84 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if pheromoneUtilsG then
-    return pheromoneUtilsG
+if PheromoneUtilsG then
+    return PheromoneUtilsG
 end
-local pheromoneUtils = {}
+local PheromoneUtils = {}
+
+--
+
+local Universe
 
 -- imports
-local mathUtils = require("MathUtils")
-local mapUtils = require("MapUtils")
-local constants = require("Constants")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
+local MathUtils = require("MathUtils")
+local MapUtils = require("MapUtils")
+local Constants = require("Constants")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
 
--- constants
+-- Constants
 
-local CHUNK_TICK = constants.CHUNK_TICK
+local CHUNK_TICK = Constants.CHUNK_TICK
 
-local ENEMY_PHEROMONE_MULTIPLER = constants.ENEMY_PHEROMONE_MULTIPLER
-local VICTORY_SCENT_MULTIPLER = constants.VICTORY_SCENT_MULTIPLER
-local VICTORY_SCENT_BOUND = constants.VICTORY_SCENT_BOUND
+local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
+local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
+local VICTORY_SCENT_BOUND = Constants.VICTORY_SCENT_BOUND
 
-local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
-local BASE_PHEROMONE = constants.BASE_PHEROMONE
-local PLAYER_PHEROMONE = constants.PLAYER_PHEROMONE
-local RESOURCE_PHEROMONE = constants.RESOURCE_PHEROMONE
-local ENEMY_PHEROMONE = constants.ENEMY_PHEROMONE
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
+local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 
-local VICTORY_SCENT = constants.VICTORY_SCENT
+local VICTORY_SCENT = Constants.VICTORY_SCENT
 
-local DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
-local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
+local DEATH_PHEROMONE_GENERATOR_AMOUNT = Constants.DEATH_PHEROMONE_GENERATOR_AMOUNT
+local TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT = Constants.TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
 
 -- imported functions
 
-local decayPlayerGenerator = chunkPropertyUtils.decayPlayerGenerator
-local addVictoryGenerator = chunkPropertyUtils.addVictoryGenerator
-local getCombinedDeathGenerator = chunkPropertyUtils.getCombinedDeathGenerator
-local getCombinedDeathGeneratorRating = chunkPropertyUtils.getCombinedDeathGeneratorRating
-local setDeathGenerator = chunkPropertyUtils.setDeathGenerator
+local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
+local addVictoryGenerator = ChunkPropertyUtils.addVictoryGenerator
+local getCombinedDeathGenerator = ChunkPropertyUtils.getCombinedDeathGenerator
+local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
+local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
 
-local getPlayerGenerator = chunkPropertyUtils.getPlayerGenerator
+local getPlayerGenerator = ChunkPropertyUtils.getPlayerGenerator
 
-local addPermanentDeathGenerator = chunkPropertyUtils.addPermanentDeathGenerator
+local addPermanentDeathGenerator = ChunkPropertyUtils.addPermanentDeathGenerator
 
-local canMoveChunkDirection = mapUtils.canMoveChunkDirection
-local getNeighborChunks = mapUtils.getNeighborChunks
-local getChunkById = mapUtils.getChunkById
+local canMoveChunkDirection = MapUtils.canMoveChunkDirection
+local getNeighborChunks = MapUtils.getNeighborChunks
+local getChunkById = MapUtils.getChunkById
 
-local getEnemyStructureCount = chunkPropertyUtils.getEnemyStructureCount
-local getPathRating = chunkPropertyUtils.getPathRating
-local getPlayerBaseGenerator = chunkPropertyUtils.getPlayerBaseGenerator
-local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
-local addDeathGenerator = chunkPropertyUtils.addDeathGenerator
+local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
+local getPathRating = ChunkPropertyUtils.getPathRating
+local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
+local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
+local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
-local decayDeathGenerator = chunkPropertyUtils.decayDeathGenerator
+local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
-local linearInterpolation = mathUtils.linearInterpolation
+local linearInterpolation = MathUtils.linearInterpolation
 
-local getChunkByXY = mapUtils.getChunkByXY
+local getChunkByXY = MapUtils.getChunkByXY
 
 local next = next
 local mMax = math.max
 
 -- module code
 
-function pheromoneUtils.victoryScent(map, chunk, entityType)
+function PheromoneUtils.victoryScent(map, chunk, entityType)
     local value = VICTORY_SCENT[entityType]
     if value then
         addVictoryGenerator(map, chunk, value)
     end
 end
 
-function pheromoneUtils.disperseVictoryScent(universe)
-    local chunkId = universe.victoryScentIterator
-    local chunkToVictory = universe.chunkToVictory
+function PheromoneUtils.disperseVictoryScent()
+    local chunkId = Universe.victoryScentIterator
+    local chunkToVictory = Universe.chunkToVictory
     local pheromonePack
     if not chunkId then
         chunkId, pheromonePack = next(chunkToVictory, nil)
@@ -95,15 +99,15 @@ function pheromoneUtils.disperseVictoryScent(universe)
         pheromonePack = chunkToVictory[chunkId]
     end
     if not chunkId then
-        universe.victoryScentIterator = nil
+        Universe.victoryScentIterator = nil
     else
-        universe.victoryScentIterator = next(chunkToVictory, chunkId)
+        Universe.victoryScentIterator = next(chunkToVictory, chunkId)
         chunkToVictory[chunkId] = nil
         local map = pheromonePack.map
         if not map.surface.valid then
             return
         end
-        local chunk = getChunkById(map, chunkId)
+        local chunk = getChunkById(chunkId)
         local chunkX = chunk.x
         local chunkY = chunk.y
         local i = 1
@@ -121,7 +125,7 @@ function pheromoneUtils.disperseVictoryScent(universe)
     end
 end
 
-function pheromoneUtils.deathScent(map, chunk, structure)
+function PheromoneUtils.deathScent(map, chunk, structure)
     local amount = -DEATH_PHEROMONE_GENERATOR_AMOUNT
     if structure then
         amount = -TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
@@ -130,7 +134,7 @@ function pheromoneUtils.deathScent(map, chunk, structure)
     addPermanentDeathGenerator(map, chunk, amount)
 end
 
-function pheromoneUtils.processPheromone(map, chunk, tick, player)
+function PheromoneUtils.processPheromone(map, chunk, tick, player)
     if chunk[CHUNK_TICK] > tick then
         return
     end
@@ -203,5 +207,9 @@ function pheromoneUtils.processPheromone(map, chunk, tick, player)
     chunk[RESOURCE_PHEROMONE] = chunkDeathRating * chunkResource * 0.9
 end
 
-pheromoneUtilsG = pheromoneUtils
-return pheromoneUtils
+function PheromoneUtils.init(universe)
+    Universe = universe
+end
+
+PheromoneUtilsG = PheromoneUtils
+return PheromoneUtils

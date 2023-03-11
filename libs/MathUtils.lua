@@ -14,10 +14,10 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if mathUtilsG then
-    return mathUtilsG
+if MathUtilsG then
+    return MathUtilsG
 end
-local mathUtils = {}
+local MathUtils = {}
 
 -- imports
 
@@ -35,26 +35,26 @@ local mAbs = math.abs
 
 -- module code
 
-function mathUtils.roundToFloor(number, multiple)
+function MathUtils.roundToFloor(number, multiple)
     return mFloor(number / multiple) * multiple
 end
 
-function mathUtils.roundToNearest(number, multiple)
+function MathUtils.roundToNearest(number, multiple)
     local num = number + (multiple * 0.5)
     return num - (num % multiple)
 end
 
-function mathUtils.randomTickEvent(rg, tick, low, high)
-    return tick + mathUtils.randomTickDuration(rg, low, high)
+function MathUtils.randomTickEvent(rg, tick, low, high)
+    return tick + MathUtils.randomTickDuration(rg, low, high)
 end
 
-function mathUtils.randomTickDuration(rg, low, high)
+function MathUtils.randomTickDuration(rg, low, high)
     local range = high - low
     local minutesToTick = (range * rg()) + low
-    return mathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
+    return MathUtils.roundToNearest(TICKS_A_MINUTE * minutesToTick, 1)
 end
 
-function mathUtils.distort(xorRandom, num, stdDev, min, max)
+function MathUtils.distort(xorRandom, num, stdDev, min, max)
     local amin = min or num * 0.70
     local amax = max or num * 1.30
     local sd = stdDev or 0.17
@@ -63,14 +63,14 @@ function mathUtils.distort(xorRandom, num, stdDev, min, max)
         amin = amax
         amax = t
     end
-    return mathUtils.roundToNearest(mathUtils.gaussianRandomRangeRG(num, num * sd, amin, amax, xorRandom), 0.01)
+    return MathUtils.roundToNearest(MathUtils.gaussianRandomRangeRG(num, num * sd, amin, amax, xorRandom), 0.01)
 end
 
-function mathUtils.linearInterpolation(percent, min, max)
+function MathUtils.linearInterpolation(percent, min, max)
     return ((max - min) * percent) + min
 end
 
-function mathUtils.xorRandom(state)
+function MathUtils.xorRandom(state)
     local xor = bit32.bxor
     local lshift = bit32.lshift
     local rshift = bit32.rshift
@@ -88,7 +88,7 @@ end
 --[[
     Used for gaussian random numbers
 --]]
-function mathUtils.gaussianRandomRG(mean, std_dev, rg)
+function MathUtils.gaussianRandomRG(mean, std_dev, rg)
     -- marsagliaPolarMethod
     local iid1
     local iid2
@@ -104,7 +104,7 @@ function mathUtils.gaussianRandomRG(mean, std_dev, rg)
     return mean + (v * std_dev)
 end
 
-function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
+function MathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
     local r
     if (min >= max) then
         return min
@@ -125,35 +125,35 @@ function mathUtils.gaussianRandomRangeRG(mean, std_dev, min, max, rg)
     return r
 end
 
-function mathUtils.euclideanDistanceNamed(p1, p2)
+function MathUtils.euclideanDistanceNamed(p1, p2)
     local xs = p1.x - p2.x
     local ys = p1.y - p2.y
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
-function mathUtils.euclideanDistancePoints(x1, y1, x2, y2)
+function MathUtils.euclideanDistancePoints(x1, y1, x2, y2)
     local xs = x1 - x2
     local ys = y1 - y2
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
-function mathUtils.manhattenDistancePoints(x1, y1, x2, y2)
+function MathUtils.manhattenDistancePoints(x1, y1, x2, y2)
     return mAbs((x1 - x2) + (y1 - y2))
 end
 
-function mathUtils.euclideanDistanceArray(p1, p2)
+function MathUtils.euclideanDistanceArray(p1, p2)
     local xs = p1[1] - p2[1]
     local ys = p1[2] - p2[2]
     return ((xs * xs) + (ys * ys)) ^ 0.5
 end
 
-function mathUtils.distortPosition(rg, position, size)
-    local xDistort = mathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
-    local yDistort = mathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
+function MathUtils.distortPosition(rg, position, size)
+    local xDistort = MathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
+    local yDistort = MathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
     position.x = position.x + (xDistort * size)
     position.y = position.y + (yDistort * size)
     return position
 end
 
-mathUtilsG = mathUtils
-return mathUtils
+MathUtilsG = MathUtils
+return MathUtils

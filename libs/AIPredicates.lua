@@ -19,6 +19,10 @@ if (aiPredicatesG) then
 end
 local aiPredicates = {}
 
+--
+
+local universe
+
 -- imports
 
 local constants = require("Constants")
@@ -36,7 +40,6 @@ local BASE_AI_STATE_ONSLAUGHT = constants.BASE_AI_STATE_ONSLAUGHT
 -- module code
 
 function aiPredicates.canAttack(map, base)
-    local universe = map.universe
     local isAggressive = ((base.stateAI == BASE_AI_STATE_AGGRESSIVE)
         and (base.sentAggressiveGroups < base.maxAggressiveGroups))
     local isRaiding = (base.stateAI == BASE_AI_STATE_RAIDING)
@@ -65,7 +68,6 @@ function aiPredicates.canMigrate(map, base)
     if badAIState then
         return false
     end
-    local universe = map.universe
     if not universe.expansion then
         return false
     end
@@ -79,6 +81,10 @@ function aiPredicates.canMigrate(map, base)
         return false
     end
     return true
+end
+
+function aiPredicates.init(universeGlobal)
+    universe = universeGlobal
 end
 
 aiPredicatesG = aiPredicates

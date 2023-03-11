@@ -14,34 +14,34 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if queryUtilsG then
-    return queryUtilsG
+if QueryUtilsG then
+    return QueryUtilsG
 end
-local queryUtils = {}
+local QueryUtils = {}
 
-local constants = require("Constants")
+local Constants = require("Constants")
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+local CHUNK_SIZE = Constants.CHUNK_SIZE
 
-function queryUtils.setPositionInQuery(query, position)
+function QueryUtils.setPositionInQuery(query, position)
     local point = query.position
     point[1] = position.x
     point[2] = position.y
 end
 
-function queryUtils.setPositionInCommand(cmd, position)
+function QueryUtils.setPositionInCommand(cmd, position)
     local point = cmd.destination
     point[1] = position.x
     point[2] = position.y
 end
 
-function queryUtils.setPositionXYInQuery(query, x, y)
+function QueryUtils.setPositionXYInQuery(query, x, y)
     local point = query.position
     point[1] = x
     point[2] = y
 end
 
-function queryUtils.setAreaInQuery(query, topLeftPosition, size)
+function QueryUtils.setAreaInQuery(query, topLeftPosition, size)
     local area = query.area
     area[1][1] = topLeftPosition.x
     area[1][2] = topLeftPosition.y
@@ -49,7 +49,7 @@ function queryUtils.setAreaInQuery(query, topLeftPosition, size)
     area[2][2] = topLeftPosition.y + size
 end
 
-function queryUtils.setAreaInQueryChunkSize(query, topLeftPosition)
+function QueryUtils.setAreaInQueryChunkSize(query, topLeftPosition)
     local area = query.area
     area[1][1] = topLeftPosition.x
     area[1][2] = topLeftPosition.y
@@ -57,7 +57,7 @@ function queryUtils.setAreaInQueryChunkSize(query, topLeftPosition)
     area[2][2] = topLeftPosition.y + CHUNK_SIZE
 end
 
-function queryUtils.setPointAreaInQuery(query, position, size)
+function QueryUtils.setPointAreaInQuery(query, position, size)
     local area = query.area
     area[1][1] = position.x - size
     area[1][2] = position.y - size
@@ -65,17 +65,17 @@ function queryUtils.setPointAreaInQuery(query, position, size)
     area[2][2] = position.y + size
 end
 
-function queryUtils.setAreaYInQuery(query, y1, y2)
+function QueryUtils.setAreaYInQuery(query, y1, y2)
     local area = query.area
     area[1][2] = y1
     area[2][2] = y2
 end
 
-function queryUtils.setAreaXInQuery(query, x1, x2)
+function QueryUtils.setAreaXInQuery(query, x1, x2)
     local area = query.area
     area[1][1] = x1
     area[2][1] = x2
 end
 
-queryUtilsG = queryUtils
-return queryUtils
+QueryUtilsG = QueryUtils
+return QueryUtils

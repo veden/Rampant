@@ -14,7 +14,7 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-local upgrade = {}
+local Upgrade = {}
 
 -- imports
 
@@ -22,6 +22,10 @@ local constants = require("libs/Constants")
 local chunkProcessor = require("libs/ChunkProcessor")
 local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
+
+--
+
+local Universe
 
 -- constants
 
@@ -60,7 +64,7 @@ local processPendingChunks = chunkProcessor.processPendingChunks
 
 -- module code
 
-function upgrade.isExcludedSurface(surfaceName)
+function Upgrade.isExcludedSurface(surfaceName)
     return
         (surfaceName == "aai-signals") or
         (surfaceName == "RTStasisRealm") or
@@ -414,96 +418,169 @@ local function addCommandSet(queriesAndCommands)
     }
 end
 
-function upgrade.excludeSurface(universe)
-    for mapId,map in pairs(universe.maps) do
-        local toBeRemoved = not map.surface.valid or upgrade.isExcludedSurface(map.surface.name) or universe.excludedSurfaces[map.surface.name]
+function Upgrade.excludeSurface()
+    for mapId,map in pairs(Universe.maps) do
+        local toBeRemoved = not map.surface.valid or Upgrade.isExcludedSurface(map.surface.name) or Universe.excludedSurfaces[map.surface.name]
         if toBeRemoved then
-            if universe.mapIterator == mapId then
-                universe.mapIterator, universe.activeMap = next(universe.maps, universe.mapIterator)
+            if Universe.mapIterator == mapId then
+                Universe.mapIterator, Universe.activeMap = next(Universe.maps, Universe.mapIterator)
             end
-            if universe.processMapAIIterator == mapId then
-                universe.processMapAIIterator = nil
+            if Universe.processMapAIIterator == mapId then
+                Universe.processMapAIIterator = nil
             end
-            universe.maps[mapId] = nil
+            Universe.maps[mapId] = nil
         end
     end
 end
 
-function upgrade.setCommandForces(universe, npcForces, enemyForces)
-    for force in pairs(universe.playerForces) do
-        universe.playerForces[force] = nil
+function Upgrade.setCommandForces(npcForces, enemyForces)
+    for force in pairs(Universe.playerForces) do
+        Universe.playerForces[force] = nil
     end
-    for force in pairs(universe.npcForces) do
-        universe.npcForces[force] = nil
+    for force in pairs(Universe.npcForces) do
+        Universe.npcForces[force] = nil
     end
-    for force in pairs(universe.enemyForces) do
-        universe.enemyForces[force] = nil
+    for force in pairs(Universe.enemyForces) do
+        Universe.enemyForces[force] = nil
     end
-    for force in pairs(universe.nonPlayerForces) do
-        universe.nonPlayerForces[force] = nil
+    for force in pairs(Universe.nonPlayerForces) do
+        Universe.nonPlayerForces[force] = nil
     end
     for _,force in pairs(game.forces) do
         if not npcForces[force.name] and not enemyForces[force.name] then
-            universe.playerForces[#universe.playerForces+1] = force.name
+            Universe.playerForces[#Universe.playerForces+1] = force.name
         end
     end
     for force in pairs(enemyForces) do
-        universe.enemyForces[#universe.enemyForces+1] = force
-        universe.nonPlayerForces[#universe.nonPlayerForces+1] = force
+        Universe.enemyForces[#Universe.enemyForces+1] = force
+        Universe.nonPlayerForces[#Universe.nonPlayerForces+1] = force
     end
     for force in pairs(npcForces) do
-        universe.npcForces[#universe.npcForces+1] = force
-        universe.nonPlayerForces[#universe.nonPlayerForces+1] = force
+        Universe.npcForces[#Universe.npcForces+1] = force
+        Universe.nonPlayerForces[#Universe.nonPlayerForces+1] = force
     end
 end
 
-function upgrade.attempt(universe)
-    local starting = global.version
-    if not global.version or global.version < 302 then
-        global.version = 302
-
-        if not universe then
-            universe = {}
-            global.universe = universe
+function Upgrade.addUniverseProperties()
+    if not global.universePropertyVersion then
+        for key in pairs(global) do
+            if key ~= "universe" then
+                global[key] = nil
+            end
         end
+        
+        for key in pairs(Universe) do
+            Universe[key] = nil
+        end
+        global.universePropertyVersion = 0
+    end
+
+    if global.universePropertyVersion < 1 then
+        global.universePropertyVersion = 1
+
+        Universe.safeEntities = {}
+
+        Universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
+
+        Universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
+        Universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
+
+        Universe.aiNocturnalMode = settings.global["rampant--permanentNocturnal"].value
+
+        Universe.retreatThreshold = 0
+        Universe.rallyThreshold = 0
+        Universe.formSquadThreshold = 0
+        Universe.attackWaveSize = 0
+        Universe.attackWaveDeviation = 0
+        Universe.attackWaveUpperBound = 0
+        Universe.unitRefundAmount = 0
+        Universe.regroupIndex = 1
+
+        Universe.kamikazeThreshold = 0
+        Universe.attackWaveLowerBound = 1
+
+        Universe.settlerCooldown = 0
+        Universe.settlerWaveDeviation = 0
+        Universe.settlerWaveSize = 0
+
+        Universe.enabledMigration = Universe.expansion and settings.global["rampant--enableMigration"].value
+        Universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
+        Universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
+        Universe.debugTemperament = settings.global["rampant--debugTemperament"].value
+
+        Universe.eventId = 0
+        Universe.chunkId = 0
+        Universe.maps = {}
+        Universe.chunkIdToChunk = {}
+        Universe.groupNumberToSquad = {}
+        Universe.chunkToVictory = {}
+        Universe.pendingChunks = {}
+        Universe.processActiveNest = {}
+        Universe.processActiveNestIterator = nil
+        Universe.deployVengenceIterator = nil
+        Universe.pendingUpgradeIterator = nil
+        Universe.victoryScentIterator = nil
+        Universe.squadIterator = nil
+        Universe.processMapAIIterator = nil
+        Universe.processNestIterator = nil
+        Universe.vengenceQueue = {}
+        Universe.activeMap = nil
+        Universe.mapIterator = nil
+        Universe.builderCount = 0
+        Universe.squadCount = 0
+        Universe.chunkToNests = {}
+        Universe.processActiveSpawnerIterator = nil
+        Universe.processActiveRaidSpawnerIterator = nil
+        Universe.processMigrationIterator = nil
+        Universe.chunkToDrainedIterator = nil
+        Universe.chunkToActiveNest = {}
+        Universe.chunkToActiveRaidNest = {}
+        Universe.chunkToDrained = {}
+        Universe.chunkToRetreatIterator = nil
+        Universe.chunkToRetreats = {}
+        Universe.chunkToRallyIterator = nil
+        Universe.chunkToRallys = {}
+        Universe.chunkToPassScan = {}
+        Universe.chunkToPassScanIterator = nil
+        Universe.baseId = 0
+        Universe.awake = false
+
+        Universe.recycleBaseIterator = nil
+
+        Universe.maxPoints = 0
+        Universe.maxOverflowPoints = 0
+
+        addCommandSet(Universe)
+
+        Universe.bases = {}
+        
+        Universe.processBaseAIIterator = nil
+
+        for _,map in pairs(Universe.maps) do
+            local processQueue = map.processQueue
+            for i=1,#processQueue do
+                local chunk = processQueue[i]
+                chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
+                chunk[ENEMY_PHEROMONE] = 0
+            end
+        end
+        
+        Universe.excludedSurfaces = {}
+
+        Universe.pendingUpgrades = {}
+        Universe.settlePurpleCloud = {}
+        Universe.settlePurpleCloud.len = 0
+    end
+end
+
+function Upgrade.attempt()
+    if not global.gameVersion then
+        global.gameVersion = 1
 
         game.forces.enemy.kill_all_units()
 
-        universe.safeEntities = {}
-
-        universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
-
-        universe.aiPointsPrintGainsToChat = settings.global["rampant--aiPointsPrintGainsToChat"].value
-        universe.aiPointsPrintSpendingToChat = settings.global["rampant--aiPointsPrintSpendingToChat"].value
-
-        universe.aiNocturnalMode = settings.global["rampant--permanentNocturnal"].value
-
-        universe.mapIterator = nil
-        universe.retreatThreshold = 0
-        universe.rallyThreshold = 0
-        universe.formSquadThreshold = 0
-        universe.attackWaveSize = 0
-        universe.attackWaveDeviation = 0
-        universe.attackWaveUpperBound = 0
-        universe.unitRefundAmount = 0
-        universe.regroupIndex = 1
-
         game.map_settings.path_finder.min_steps_to_check_path_find_termination =
             constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
-
-        universe.kamikazeThreshold = 0
-        universe.attackWaveLowerBound = 1
-
-        universe.expansionMaxDistanceDerivation = nil
-
-        universe.settlerCooldown = 0
-        universe.settlerWaveDeviation = 0
-        universe.settlerWaveSize = 0
-
-        universe.enabledMigration = universe.expansion and settings.global["rampant--enableMigration"].value
-        universe.peacefulAIToggle = settings.global["rampant--peacefulAIToggle"].value
-        universe.printAIStateChanges = settings.global["rampant--printAIStateChanges"].value
-        universe.debugTemperament = settings.global["rampant--debugTemperament"].value
 
         game.map_settings.unit_group.min_group_radius = constants.UNIT_GROUP_MAX_RADIUS * 0.5
         game.map_settings.unit_group.max_group_radius = constants.UNIT_GROUP_MAX_RADIUS
@@ -517,60 +594,9 @@ function upgrade.attempt(universe)
         game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
         game.forces.enemy.ai_controllable = true
 
-        universe.evolutionLevel = game.forces.enemy.evolution_factor
-        global.pendingChunks = nil -- removes old pendingChunks
-        global.natives = nil -- removes old natives
-        global.map = nil -- removes old map
+        Universe.evolutionLevel = game.forces.enemy.evolution_factor
 
-        universe.eventId = 0
-        universe.chunkId = 0
-        universe.randomGenerator = nil
-        game.forces.enemy.kill_all_units()
-        universe.maps = {}
-        universe.chunkIdToChunk = {}
-        universe.groupNumberToSquad = {}
-        universe.chunkToVictory = {}
-        universe.pendingChunks = {}
-        universe.processActiveNest = {}
-        universe.processActiveNestIterator = nil
-        universe.deployVengenceIterator = nil
-        universe.pendingUpgradeIterator = nil
-        universe.victoryScentIterator = nil
-        universe.squadIterator = nil
-        universe.processMapAIIterator = nil
-        universe.processNestIterator = nil
-        universe.vengenceQueue = {}
-        universe.activeMap = nil
-        universe.mapIterator = nil
-        universe.builderCount = 0
-        universe.squadCount = 0
-        universe.chunkToNests = {}
-        universe.processActiveSpawnerIterator = nil
-        universe.processActiveRaidSpawnerIterator = nil
-        universe.processMigrationIterator = nil
-        universe.chunkToDrainedIterator = nil
-        universe.chunkToActiveNest = {}
-        universe.chunkToActiveRaidNest = {}
-        universe.chunkToDrained = {}
-        universe.chunkToRetreatIterator = nil
-        universe.chunkToRetreats = {}
-        universe.chunkToRallyIterator = nil
-        universe.chunkToRallys = {}
-        universe.chunkToPassScan = {}
-        universe.chunkToPassScanIterator = nil
-        universe.baseId = 0
-        universe.awake = false
-
-        universe.recycleBaseIterator = nil
-
-        universe.maxPoints = 0
-        universe.maxOverflowPoints = 0
-
-        addCommandSet(universe)
-
-        universe.bases = {}
-
-        for _,map in pairs(universe.maps) do
+        for _,map in pairs(Universe.maps) do
             if (map.surface.valid) then
                 local entities = map.surface.find_entities_filtered({type="land-mine"})
                 for i=1,#entities do
@@ -582,73 +608,26 @@ function upgrade.attempt(universe)
             end
         end
 
-        upgrade.excludeSurface(universe)
+        Universe.random = game.create_random_generator()
 
-        universe.processBaseAIIterator = nil
-    end
-    if global.version < 304 then
-        global.version = 304
+        Upgrade.excludeSurface()
 
-        universe.random = game.create_random_generator()
-
-        for _,map in pairs(universe.maps) do
-            map.random = universe.random
-            local processQueue = map.processQueue
-            for i=1,#processQueue do
-                local chunk = processQueue[i]
-                chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
-                chunk[ENEMY_PHEROMONE] = 0
-            end
-        end
-    end
-    if global.version < 305 then
-        global.version = 305
-
-        universe.excludedSurfaces = {}
-
-        universe.evolutionTableAlignment = nil
-        universe.buildingSpaceLookup = nil
-        universe.enemyAlignmentLookup = nil
-        universe.upgradeLookup = nil
-        universe.buildingEvolveLookup = nil
-        universe.costLookup = nil
-        universe.buildingHiveTypeLookup = nil
-        universe.proxyEntityLookup = nil
-        universe.vanillaEntityTypeLookup = nil
-        universe.entitySkipCountLookup = nil
-        universe.evoToTierMapping = nil
-    end
-    if global.version < 307 then
-        global.version = 307
         local minDiffuse = game.map_settings.pollution.min_to_diffuse
-        universe.pollutionDiffuseMinimum = minDiffuse * 0.75
+        Universe.pollutionDiffuseMinimum = minDiffuse * 0.75
 
-        universe.expansion = game.map_settings.enemy_expansion.enabled
-        universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
-        universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown / TICKS_A_MINUTE
-        universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown / TICKS_A_MINUTE
-        universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
-        universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
+        Universe.expansion = game.map_settings.enemy_expansion.enabled
+        Universe.expansionMaxDistance = game.map_settings.enemy_expansion.max_expansion_distance * CHUNK_SIZE
+        Universe.expansionMinTime = game.map_settings.enemy_expansion.min_expansion_cooldown / TICKS_A_MINUTE
+        Universe.expansionMaxTime = game.map_settings.enemy_expansion.max_expansion_cooldown / TICKS_A_MINUTE
+        Universe.expansionMinSize = game.map_settings.enemy_expansion.settler_group_min_size
+        Universe.expansionMaxSize = game.map_settings.enemy_expansion.settler_group_max_size
 
-        universe.expansionLowTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
-        universe.expansionMediumTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
-        universe.expansionHighTargetDistance = (universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
-        universe.expansionDistanceDeviation = universe.expansionMediumTargetDistance * 0.33
+        Universe.expansionLowTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.33
+        Universe.expansionMediumTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
+        Universe.expansionHighTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
+        Universe.expansionDistanceDeviation = Universe.expansionMediumTargetDistance * 0.33
 
-        universe.pendingUpgrades = {}
-        universe.settlePurpleCloud = {}
-        universe.settlePurpleCloud.len = 0
-
-        for _,base in pairs(universe.bases) do
-            base.maxExpansionGroups = 0
-            base.sentExpansionGroups = 0
-            base.resetExpensionGroupsTick = 0
-            base.alignmentHistory = {}
-            base.resourceChunks = {}
-            base.resourceChunkCount = 0
-        end
-
-        for _,map in pairs(universe.maps) do
+        for _,map in pairs(Universe.maps) do
             if (map.surface.valid) then
                 for _, chunk in pairs(map.processQueue) do
                     if getResourceGenerator(map, chunk) > 0 then
@@ -663,16 +642,12 @@ function upgrade.attempt(universe)
                 map.chunkToPermanentDeathGenerator = {}
             end
         end
-
-        game.print("Rampant - Version 3.2.0")
     end
-
-    return (starting ~= global.version) and global.version
 end
 
-function upgrade.prepMap(universe, surface)
+function Upgrade.prepMap(surface)
     local surfaceName = surface.name
-    if upgrade.isExcludedSurface(surfaceName) then
+    if Upgrade.isExcludedSurface(surfaceName) then
         return
     end
 
@@ -680,12 +655,12 @@ function upgrade.prepMap(universe, surface)
 
     local surfaceIndex = surface.index
 
-    if not universe.maps then
-        universe.maps = {}
+    if not Universe.maps then
+        Universe.maps = {}
     end
 
     local map = {}
-    universe.maps[surfaceIndex] = map
+    Universe.maps[surfaceIndex] = map
 
     map.activatedMap = false
 
@@ -729,35 +704,35 @@ function upgrade.prepMap(universe, surface)
     map.emptySquadsOnChunk = {}
 
     map.surface = surface
-    map.universe = universe
 
     map.bases = {}
     map.squads = nil
     map.pendingAttack = nil
     map.building = nil
 
-    map.random = universe.random
-
     -- queue all current chunks that wont be generated during play
     local tick = game.tick
     for chunk in surface.get_chunks() do
         if surface.is_chunk_generated(chunk) then
-            queueGeneratedChunk(universe,
-                                {
-                                    surface = surface,
-                                    tick = tick,
-                                    area = {
-                                        left_top = {
-                                            x = chunk.x * 32,
-                                            y = chunk.y * 32
-                                        }
-                                    }
+            queueGeneratedChunk({
+                    surface = surface,
+                    tick = tick,
+                    area = {
+                        left_top = {
+                            x = chunk.x * 32,
+                            y = chunk.y * 32
+                        }
+                    }
                                 }
             )
         end
     end
 
-    processPendingChunks(universe, tick, true)
+    processPendingChunks(tick, true)
 end
 
-return upgrade
+function Upgrade.init(universe)
+    Universe = universe
+end
+
+return Upgrade

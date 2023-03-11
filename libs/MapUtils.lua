@@ -14,37 +14,42 @@
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-if mapUtilsG then
-    return mapUtilsG
+if MapUtilsG then
+    return MapUtilsG
 end
-local mapUtils = {}
+local MapUtils = {}
+
+--
+
+local Universe
+local NeighborChunks
 
 -- imports
 
-local constants = require("Constants")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
+local Constants = require("Constants")
+local ChunkPropertyUtils = require("ChunkPropertyUtils")
 
--- constants
+-- Constants
 
-local CHUNK_NORTH_SOUTH = constants.CHUNK_NORTH_SOUTH
-local CHUNK_EAST_WEST = constants.CHUNK_EAST_WEST
-local CHUNK_IMPASSABLE = constants.CHUNK_IMPASSABLE
-local CHUNK_ALL_DIRECTIONS = constants.CHUNK_ALL_DIRECTIONS
+local CHUNK_NORTH_SOUTH = Constants.CHUNK_NORTH_SOUTH
+local CHUNK_EAST_WEST = Constants.CHUNK_EAST_WEST
+local CHUNK_IMPASSABLE = Constants.CHUNK_IMPASSABLE
+local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+local CHUNK_SIZE = Constants.CHUNK_SIZE
 
-local CHUNK_SIZE_DIVIDER = constants.CHUNK_SIZE_DIVIDER
+local CHUNK_SIZE_DIVIDER = Constants.CHUNK_SIZE_DIVIDER
 
 -- imported functions
 
 local mFloor = math.floor
-local getPassable = chunkPropertyUtils.getPassable
+local getPassable = ChunkPropertyUtils.getPassable
 local tRemove = table.remove
 local mCeil = math.ceil
 
 -- module code
 
-function mapUtils.getChunkByXY(map, x, y)
+function MapUtils.getChunkByXY(map, x, y)
     local chunkX = map[x]
     if chunkX then
         return chunkX[y] or -1
@@ -52,7 +57,7 @@ function mapUtils.getChunkByXY(map, x, y)
     return -1
 end
 
-function mapUtils.getChunkByPosition(map, position)
+function MapUtils.getChunkByPosition(map, position)
     local chunkX = map[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
     if chunkX then
         local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -61,50 +66,50 @@ function mapUtils.getChunkByPosition(map, position)
     return -1
 end
 
-function mapUtils.getChunkById(map, chunkId)
-    return map.universe.chunkIdToChunk[chunkId] or -1
+function MapUtils.getChunkById(chunkId)
+    return Universe.chunkIdToChunk[chunkId] or -1
 end
 
-function mapUtils.positionToChunkXY(position)
+function MapUtils.positionToChunkXY(position)
     local chunkX = mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     return chunkX, chunkY
 end
 
-function mapUtils.queueGeneratedChunk(universe, event)
-    local map = universe.maps[event.surface.index]
+function MapUtils.queueGeneratedChunk(event)
+    local map = Universe.maps[event.surface.index]
     if not map then
         return
     end
     event.tick = (event.tick or game.tick) + 20
-    event.id = universe.eventId
+    event.id = Universe.eventId
     event.map = map
-    universe.pendingChunks[event.id] = event
-    universe.eventId = universe.eventId + 1
+    Universe.pendingChunks[event.id] = event
+    Universe.eventId = Universe.eventId + 1
 end
 
-function mapUtils.nextMap(universe)
-    local mapIterator = universe.mapIterator
+function MapUtils.nextMap()
+    local mapIterator = Universe.mapIterator
     repeat
         local map
-        universe.mapIterator, map = next(universe.maps, universe.mapIterator)
+        Universe.mapIterator, map = next(Universe.maps, Universe.mapIterator)
         if map and map.activeSurface then
             return map
         end
-    until mapIterator == universe.mapIterator
+    until mapIterator == Universe.mapIterator
 end
 
-function mapUtils.removeChunkToNest(universe, chunkId)
-    universe.chunkToNests[chunkId] = nil
-    if (chunkId == universe.processNestIterator) then
-        universe.processNestIterator = nil
+function MapUtils.removeChunkToNest(chunkId)
+    Universe.chunkToNests[chunkId] = nil
+    if (chunkId == Universe.processNestIterator) then
+        Universe.processNestIterator = nil
     end
-    if (chunkId == universe.processMigrationIterator) then
-        universe.processMigrationIterator = nil
+    if (chunkId == Universe.processMigrationIterator) then
+        Universe.processMigrationIterator = nil
     end
 end
 
-function mapUtils.findInsertionPoint(processQueue, chunk)
+function MapUtils.findInsertionPoint(processQueue, chunk)
     local low = 1
     local high = #processQueue
     local pivot
@@ -120,8 +125,8 @@ function mapUtils.findInsertionPoint(processQueue, chunk)
     return low
 end
 
-function mapUtils.removeProcessQueueChunk(processQueue, chunk)
-    local insertionPoint = mapUtils.findInsertionPoint(processQueue, chunk)
+function MapUtils.removeProcessQueueChunk(processQueue, chunk)
+    local insertionPoint = MapUtils.findInsertionPoint(processQueue, chunk)
     if insertionPoint > #processQueue then
         insertionPoint = insertionPoint - 1
     end
@@ -136,24 +141,23 @@ function mapUtils.removeProcessQueueChunk(processQueue, chunk)
     end
 end
 
-function mapUtils.removeChunkFromMap(map, chunk)
+function MapUtils.removeChunkFromMap(map, chunk)
     local chunkId = chunk.id
     local x = chunk.x
     local y = chunk.y
-    mapUtils.removeProcessQueueChunk(map.processQueue, chunk)
-    local universe = map.universe
+    MapUtils.removeProcessQueueChunk(map.processQueue, chunk)
     map[x][y] = nil
-    universe.chunkIdToChunk[chunkId] = nil
-    universe.chunkToActiveNest[chunkId] = nil
-    universe.chunkToActiveRaidNest[chunkId] = nil
-    universe.chunkToDrained[chunkId] = nil
-    universe.chunkToRetreats[chunkId] = nil
-    universe.chunkToRallys[chunkId] = nil
-    universe.chunkToPassScan[chunkId] = nil
-    universe.chunkToNests[chunkId] = nil
-    universe.vengenceQueue[chunkId] = nil
-    universe.processActiveNest[chunkId] = nil
-    universe.chunkToVictory[chunkId] = nil
+    Universe.chunkIdToChunk[chunkId] = nil
+    Universe.chunkToActiveNest[chunkId] = nil
+    Universe.chunkToActiveRaidNest[chunkId] = nil
+    Universe.chunkToDrained[chunkId] = nil
+    Universe.chunkToRetreats[chunkId] = nil
+    Universe.chunkToRallys[chunkId] = nil
+    Universe.chunkToPassScan[chunkId] = nil
+    Universe.chunkToNests[chunkId] = nil
+    Universe.vengenceQueue[chunkId] = nil
+    Universe.processActiveNest[chunkId] = nil
+    Universe.chunkToVictory[chunkId] = nil
     local base = map.chunkToBase[chunkId]
     if base then
         base.chunkCount = base.chunkCount - 1
@@ -176,38 +180,38 @@ function mapUtils.removeChunkFromMap(map, chunk)
     map.chunkToPathRating[chunkId] = nil
     map.chunkToDeathGenerator[chunkId] = nil
 
-    if universe.processActiveNestIterator == chunkId then
-        universe.processActiveNestIterator = nil
+    if Universe.processActiveNestIterator == chunkId then
+        Universe.processActiveNestIterator = nil
     end
-    if universe.victoryScentIterator == chunkId then
-        universe.victoryScentIterator = nil
+    if Universe.victoryScentIterator == chunkId then
+        Universe.victoryScentIterator = nil
     end
-    if universe.processNestIterator == chunkId then
-        universe.processNestIterator = nil
+    if Universe.processNestIterator == chunkId then
+        Universe.processNestIterator = nil
     end
-    if universe.chunkToDrainedIterator == chunkId then
-        universe.chunkToDrainedIterator = nil
+    if Universe.chunkToDrainedIterator == chunkId then
+        Universe.chunkToDrainedIterator = nil
     end
-    if universe.chunkToRetreatIterator == chunkId then
-        universe.chunkToRetreatIterator = nil
+    if Universe.chunkToRetreatIterator == chunkId then
+        Universe.chunkToRetreatIterator = nil
     end
-    if universe.chunkToRallyIterator == chunkId then
-        universe.chunkToRallyIterator = nil
+    if Universe.chunkToRallyIterator == chunkId then
+        Universe.chunkToRallyIterator = nil
     end
-    if universe.chunkToPassScanIterator == chunkId then
-        universe.chunkToPassScanIterator = nil
+    if Universe.chunkToPassScanIterator == chunkId then
+        Universe.chunkToPassScanIterator = nil
     end
-    if universe.processActiveSpawnerIterator == chunkId then
-        universe.processActiveSpawnerIterator = nil
+    if Universe.processActiveSpawnerIterator == chunkId then
+        Universe.processActiveSpawnerIterator = nil
     end
-    if universe.processActiveRaidSpawnerIterator == chunkId then
-        universe.processActiveRaidSpawnerIterator = nil
+    if Universe.processActiveRaidSpawnerIterator == chunkId then
+        Universe.processActiveRaidSpawnerIterator = nil
     end
-    if universe.processMigrationIterator == chunkId then
-        universe.processMigrationIterator = nil
+    if Universe.processMigrationIterator == chunkId then
+        Universe.processMigrationIterator = nil
     end
-    if universe.deployVengenceIterator == chunkId then
-        universe.deployVengenceIterator = nil
+    if Universe.deployVengenceIterator == chunkId then
+        Universe.deployVengenceIterator = nil
     end
 end
 
@@ -218,41 +222,40 @@ end
     /|\
     6 7 8
 ]]--
-function mapUtils.getNeighborChunks(map, x, y)
-    local neighbors = map.universe.neighbors
+function MapUtils.getNeighborChunks(map, x, y)
     local chunkYRow1 = y - CHUNK_SIZE
     local chunkYRow3 = y + CHUNK_SIZE
     local xChunks = map[x-CHUNK_SIZE]
     if xChunks then
-        neighbors[1] = xChunks[chunkYRow1] or -1
-        neighbors[4] = xChunks[y] or -1
-        neighbors[6] = xChunks[chunkYRow3] or -1
+        NeighborChunks[1] = xChunks[chunkYRow1] or -1
+        NeighborChunks[4] = xChunks[y] or -1
+        NeighborChunks[6] = xChunks[chunkYRow3] or -1
     else
-        neighbors[1] = -1
-        neighbors[4] = -1
-        neighbors[6] = -1
+        NeighborChunks[1] = -1
+        NeighborChunks[4] = -1
+        NeighborChunks[6] = -1
     end
 
     xChunks = map[x+CHUNK_SIZE]
     if xChunks then
-        neighbors[3] = xChunks[chunkYRow1] or -1
-        neighbors[5] = xChunks[y] or -1
-        neighbors[8] = xChunks[chunkYRow3] or -1
+        NeighborChunks[3] = xChunks[chunkYRow1] or -1
+        NeighborChunks[5] = xChunks[y] or -1
+        NeighborChunks[8] = xChunks[chunkYRow3] or -1
     else
-        neighbors[3] = -1
-        neighbors[5] = -1
-        neighbors[8] = -1
+        NeighborChunks[3] = -1
+        NeighborChunks[5] = -1
+        NeighborChunks[8] = -1
     end
 
     xChunks = map[x]
     if xChunks then
-        neighbors[2] = xChunks[chunkYRow1] or -1
-        neighbors[7] = xChunks[chunkYRow3] or -1
+        NeighborChunks[2] = xChunks[chunkYRow1] or -1
+        NeighborChunks[7] = xChunks[chunkYRow3] or -1
     else
-        neighbors[2] = -1
-        neighbors[7] = -1
+        NeighborChunks[2] = -1
+        NeighborChunks[7] = -1
     end
-    return neighbors
+    return NeighborChunks
 end
 
 
@@ -263,7 +266,7 @@ end
     /|\
     6 7 8
 ]]--
-function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
+function MapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local canMove = false
     local startPassable = getPassable(map, startChunk)
     local endPassable = getPassable(map, endChunk)
@@ -293,8 +296,8 @@ function mapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     return canMove
 end
 
-function mapUtils.getCardinalChunks(map, x, y)
-    local neighbors = map.universe.cardinalNeighbors
+function MapUtils.getCardinalChunks(map, x, y)
+    local neighbors = Universe.cardinalNeighbors
     local xChunks = map[x]
     if xChunks then
         neighbors[1] = xChunks[y-CHUNK_SIZE] or -1
@@ -320,7 +323,7 @@ function mapUtils.getCardinalChunks(map, x, y)
     return neighbors
 end
 
-function mapUtils.positionFromDirectionAndChunk(direction, startPosition, scaling)
+function MapUtils.positionFromDirectionAndChunk(direction, startPosition, scaling)
     local endPosition = {}
     if (direction == 1) then
         endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
@@ -350,7 +353,7 @@ function mapUtils.positionFromDirectionAndChunk(direction, startPosition, scalin
     return endPosition
 end
 
-function mapUtils.positionFromDirectionAndFlat(direction, startPosition, multipler)
+function MapUtils.positionFromDirectionAndFlat(direction, startPosition, multipler)
     local lx = startPosition.x
     local ly = startPosition.y
     if not multipler then
@@ -383,5 +386,10 @@ function mapUtils.positionFromDirectionAndFlat(direction, startPosition, multipl
     }
 end
 
-mapUtilsG = mapUtils
-return mapUtils
+function MapUtils.init(universe)
+    Universe = universe
+    NeighborChunks = universe.neighbors
+end
+
+MapUtilsG = MapUtils
+return MapUtils
