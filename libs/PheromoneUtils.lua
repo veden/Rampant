@@ -57,8 +57,6 @@ local getCombinedDeathGenerator = ChunkPropertyUtils.getCombinedDeathGenerator
 local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
 
-local getPlayerGenerator = ChunkPropertyUtils.getPlayerGenerator
-
 local addPermanentDeathGenerator = ChunkPropertyUtils.addPermanentDeathGenerator
 
 local canMoveChunkDirection = MapUtils.canMoveChunkDirection
@@ -67,8 +65,6 @@ local getChunkById = MapUtils.getChunkById
 
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local getPathRating = ChunkPropertyUtils.getPathRating
-local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
-local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
 local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
@@ -116,8 +112,8 @@ function PheromoneUtils.disperseVictoryScent()
                 local c = getChunkByXY(map, x, y)
                 if (c ~= -1) then
                     local amount = pheromonePack.v * VICTORY_SCENT_MULTIPLER[i]
-                    addDeathGenerator(map, c, amount)
-                    addPermanentDeathGenerator(map, c, amount)
+                    addDeathGenerator(c, amount)
+                    addPermanentDeathGenerator(c, amount)
                 end
                 i = i + 1
             end
@@ -130,8 +126,8 @@ function PheromoneUtils.deathScent(map, chunk, structure)
     if structure then
         amount = -TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT
     end
-    addDeathGenerator(map, chunk, amount)
-    addPermanentDeathGenerator(map, chunk, amount)
+    addDeathGenerator(chunk, amount)
+    addPermanentDeathGenerator(chunk, amount)
 end
 
 function PheromoneUtils.processPheromone(map, chunk, tick, player)
@@ -142,13 +138,13 @@ function PheromoneUtils.processPheromone(map, chunk, tick, player)
 
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
-    local chunkDeath = getCombinedDeathGenerator(map, chunk)
+    local chunkDeath = getCombinedDeathGenerator(chunk)
     local chunkResource = -MAGIC_MAXIMUM_NUMBER
     local chunkEnemy = chunk[ENEMY_PHEROMONE]
 
     local chunkCount = 1
 
-    local enemyStructureCount = getEnemyStructureCount(map, chunk)
+    local enemyStructureCount = getEnemyStructureCount(chunk)
 
     local tempNeighbors = getNeighborChunks(map, chunk.x, chunk.y)
     for i=1,8 do
@@ -159,7 +155,7 @@ function PheromoneUtils.processPheromone(map, chunk, tick, player)
                 chunkCount = chunkCount + 1
                 chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
                 chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
-                chunkDeath = chunkDeath + getCombinedDeathGenerator(map, neighbor)
+                chunkDeath = chunkDeath + getCombinedDeathGenerator(neighbor)
                 tempPheromone = neighbor[BASE_PHEROMONE]
                 if chunkBase < tempPheromone then
                     chunkBase = tempPheromone
@@ -172,23 +168,23 @@ function PheromoneUtils.processPheromone(map, chunk, tick, player)
         end
     end
 
-    setDeathGenerator(map, chunk, (chunkDeath / chunkCount) * 0.75)
+    setDeathGenerator(chunk, (chunkDeath / chunkCount) * 0.75)
 
     if not player then
-        decayDeathGenerator(map, chunk)
+        decayDeathGenerator(chunk)
     end
 
-    decayPlayerGenerator(map, chunk)
+    decayPlayerGenerator(chunk)
 
-    local chunkDeathRating = getCombinedDeathGeneratorRating(map, chunk) * getPathRating(map, chunk)
+    local chunkDeathRating = getCombinedDeathGeneratorRating(chunk) * getPathRating(chunk)
 
     chunk[PLAYER_PHEROMONE] = chunkDeathRating * mMax(
-        getPlayerGenerator(map, chunk),
+        chunk.playerGenerator or 0,
         (chunkPlayer / chunkCount) * 0.98
                                                      )
 
     chunk[BASE_PHEROMONE] = chunkDeathRating * mMax(
-        getPlayerBaseGenerator(map, chunk),
+        chunk.playerBaseGenerator or 0,
         chunkBase * 0.9
                                                    )
 
@@ -197,7 +193,7 @@ function PheromoneUtils.processPheromone(map, chunk, tick, player)
         (chunkEnemy / chunkCount) * 0.9
                                                     )
 
-    local resourcePheromoneGenerator = getResourceGenerator(map, chunk)
+    local resourcePheromoneGenerator = chunk.resourceGenerator or 0
     if (resourcePheromoneGenerator > 0) then
         chunkResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
     end

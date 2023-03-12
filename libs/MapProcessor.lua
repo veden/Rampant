@@ -76,7 +76,6 @@ local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGener
 local processBaseMutation = BaseUtils.processBaseMutation
 
 local processNestActiveness = ChunkPropertyUtils.processNestActiveness
-local getChunkBase = ChunkPropertyUtils.getChunkBase
 
 local formSquads = AiAttackWave.formSquads
 local formVengenceSquad = AiAttackWave.formVengenceSquad
@@ -93,11 +92,7 @@ local mapScanEnemyChunk = ChunkUtils.mapScanEnemyChunk
 local mapScanPlayerChunk = ChunkUtils.mapScanPlayerChunk
 local mapScanResourceChunk = ChunkUtils.mapScanResourceChunk
 
-local getNestCount = ChunkPropertyUtils.getNestCount
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
-local getNestActiveness = ChunkPropertyUtils.getNestActiveness
-
-local getRaidNestActiveness = ChunkPropertyUtils.getRaidNestActiveness
 
 local canAttack = AiPredicates.canAttack
 local canMigrate = AiPredicates.canMigrate
@@ -155,21 +150,6 @@ function MapProcessor.processMap(map, tick)
     end
 end
 
-local function queueNestSpawners(map, chunk, tick)
-    local processActiveNest = Universe.processActiveNest
-
-    local chunkId = chunk.id
-    if not processActiveNest[chunkId] then
-        if (getNestActiveness(chunk) > 0) or (getRaidNestActiveness(chunk) > 0) then
-            processActiveNest[chunkId] = {
-                map = map,
-                chunk = chunk,
-                tick = tick + DURATION_ACTIVE_NEST
-            }
-        end
-    end
-end
-
 --[[
     Localized player radius were processing takes place in realtime, doesn't store state
     between calls.
@@ -191,7 +171,7 @@ function MapProcessor.processPlayers(players, tick)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
-                    addPlayerGenerator(map, playerChunk, playerMaxGenerator)
+                    addPlayerGenerator(playerChunk, playerMaxGenerator)
                 end
             end
         end
@@ -206,15 +186,15 @@ function MapProcessor.processPlayers(players, tick)
                 local playerChunk = getChunkByPosition(map, char.position)
 
                 if (playerChunk ~= -1) then
-                    local base = findNearbyBase(map, playerChunk)
+                    local base = findNearbyBase(playerChunk)
                     if not base then
                         return
                     end
                     local allowingAttacks = canAttack(map, base)
                     local vengence = allowingAttacks and
                         (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
-                        ((getEnemyStructureCount(map, playerChunk) > 0) or
-                            (getCombinedDeathGeneratorRating(map, playerChunk) < Universe.retreatThreshold))
+                        ((getEnemyStructureCount(playerChunk) > 0) or
+                            (getCombinedDeathGeneratorRating(playerChunk) < Universe.retreatThreshold))
 
                     for x=playerChunk.x - PROCESS_PLAYER_BOUND, playerChunk.x + PROCESS_PLAYER_BOUND, 32 do
                         for y=playerChunk.y - PROCESS_PLAYER_BOUND, playerChunk.y + PROCESS_PLAYER_BOUND, 32 do
@@ -223,9 +203,8 @@ function MapProcessor.processPlayers(players, tick)
                             if (chunk ~= -1) then
                                 processPheromone(map, chunk, tick, true)
 
-                                if (getNestCount(chunk) > 0) then
-                                    processNestActiveness(map, chunk)
-                                    queueNestSpawners(map, chunk, tick)
+                                if chunk.nestCount then
+                                    processNestActiveness(chunk, tick)
 
                                     if vengence then
                                         local pack = Universe.vengenceQueue[chunk.id]
@@ -251,17 +230,17 @@ end
 
 local function processCleanUp(chunks, iterator, tick, duration)
     local chunkId = Universe[iterator]
-    local chunkPack
+    local eventTick
     if not chunkId then
-        chunkId, chunkPack = next(chunks, nil)
+        chunkId, eventTick = next(chunks, nil)
     else
-        chunkPack = chunks[chunkId]
+        eventTick = chunks[chunkId]
     end
     if not chunkId then
         Universe[iterator] = nil
     else
         Universe[iterator] = next(chunks, chunkId)
-        if (tick - chunkPack.tick) > duration then
+        if (tick - eventTick) > duration then
             chunks[chunkId] = nil
         end
     end
@@ -367,36 +346,6 @@ function MapProcessor.scanResourceMap(map, tick)
     end
 end
 
-function MapProcessor.processActiveNests(tick)
-    local processActiveNest = Universe.processActiveNest
-    local chunkId = Universe.processActiveNestIterator
-    local chunkPack
-    if not chunkId then
-        chunkId, chunkPack = next(processActiveNest, nil)
-    else
-        chunkPack = processActiveNest[chunkId]
-    end
-    if not chunkId then
-        Universe.processActiveNestIterator = nil
-    else
-        Universe.processActiveNestIterator = next(processActiveNest, chunkId)
-        if chunkPack.tick < tick  then
-            local map = chunkPack.map
-            if not map.surface.valid then
-                processActiveNest[chunkId] = nil
-                return
-            end
-            local chunk = chunkPack.chunk
-            processNestActiveness(map, chunk)
-            if (getNestActiveness(chunk) == 0) and (getRaidNestActiveness(chunk) == 0) then
-                processActiveNest[chunkId] = nil
-            else
-                chunkPack.tick = tick + DURATION_ACTIVE_NEST
-            end
-        end
-    end
-end
-
 function MapProcessor.processVengence()
     local vengenceQueue = Universe.vengenceQueue
     local chunkId = Universe.deployVengenceIterator
@@ -446,13 +395,12 @@ function MapProcessor.processNests(tick)
             return
         end
         local chunk = getChunkById(chunkId)
-        processNestActiveness(map, chunk)
-        queueNestSpawners(map, chunk, tick)
+        processNestActiveness(chunk, tick)
 
         if Universe.NEW_ENEMIES then
             processBaseMutation(chunk,
                                 map,
-                                getChunkBase(map, chunk))
+                                chunk.base)
         end
     end
 end
@@ -479,7 +427,7 @@ local function processSpawnersBody(iterator, chunks)
             return
         end
         local chunk = getChunkById(chunkId)
-        local base = findNearbyBase(map, chunk)
+        local base = findNearbyBase(chunk)
         if base.stateAI == BASE_AI_STATE_PEACEFUL then
             return
         end

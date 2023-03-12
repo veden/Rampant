@@ -81,8 +81,6 @@ local tableRemove = table.remove
 local mMin = math.min
 local mMax = math.max
 
-local getResourceGenerator = chunkPropertyUtils.getResourceGenerator
-
 local next = next
 
 -- module code
@@ -255,7 +253,7 @@ function BaseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
                 or
                 (
                     (roll <= 0.210) and
-                    (getResourceGenerator(map, chunk) > 0)
+                    chunk.resourceGenerator
                 )
             )
         return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"), entityType)

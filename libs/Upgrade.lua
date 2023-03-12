@@ -56,8 +56,6 @@ local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 -- imported functions
 
 local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
-local getChunkBase = ChunkPropertyUtils.getChunkBase
-local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
 local sFind = string.find
 local queueGeneratedChunk = MapUtils.queueGeneratedChunk
 local processPendingChunks = ChunkProcessor.processPendingChunks
@@ -115,6 +113,9 @@ local function addCommandSet(queriesAndCommands)
     queriesAndCommands.enemyForces = {}
     queriesAndCommands.npcForces = {}
     queriesAndCommands.nonPlayerForces = {}
+
+    queriesAndCommands.chunkPropertyUtilsQueries = {}
+    queriesAndCommands.chunkPropertyUtilsQueries.position = {0,0}
 
     -- pb
     queriesAndCommands.pbFilteredEntitiesPointQueryLimited = {
@@ -468,7 +469,7 @@ function Upgrade.addUniverseProperties()
                 global[key] = nil
             end
         end
-        
+
         for key in pairs(Universe) do
             Universe[key] = nil
         end
@@ -529,6 +530,8 @@ function Upgrade.addUniverseProperties()
         Universe.builderCount = 0
         Universe.squadCount = 0
         Universe.chunkToNests = {}
+        Universe.chunkToHives = {}
+        Universe.chunkToUtilities = {}
         Universe.processActiveSpawnerIterator = nil
         Universe.processActiveRaidSpawnerIterator = nil
         Universe.processMigrationIterator = nil
@@ -553,7 +556,7 @@ function Upgrade.addUniverseProperties()
         addCommandSet(Universe)
 
         Universe.bases = {}
-        
+
         Universe.processBaseAIIterator = nil
 
         for _,map in pairs(Universe.maps) do
@@ -562,9 +565,10 @@ function Upgrade.addUniverseProperties()
                 local chunk = processQueue[i]
                 chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
                 chunk[ENEMY_PHEROMONE] = 0
+                chunk.map = map
             end
         end
-        
+
         Universe.excludedSurfaces = {}
 
         Universe.pendingUpgrades = {}
@@ -630,8 +634,8 @@ function Upgrade.attempt()
         for _,map in pairs(Universe.maps) do
             if (map.surface.valid) then
                 for _, chunk in pairs(map.processQueue) do
-                    if getResourceGenerator(map, chunk) > 0 then
-                        local base = getChunkBase(map, chunk)
+                    if chunk.resourceGenerator then
+                        local base = chunk.base
                         if base then
                             addBaseResourceChunk(base, chunk)
                         end

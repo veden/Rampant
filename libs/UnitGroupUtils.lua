@@ -40,18 +40,18 @@ local SQUAD_GUARDING = Constants.SQUAD_GUARDING
 
 local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 
-local getSquadsOnChunk = ChunkPropertyUtils.getSquadsOnChunk
-
 local getNeighborChunks = MapUtils.getNeighborChunks
 
 -- module code
 
 function UnitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
-    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
-        local unitGroup = squad.group
-        if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
-            return squad
+    if chunk.squads then
+        for _,squad in pairs(chunk.squads) do
+            local unitGroup = squad.group
+            if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
+                return squad
+            end
         end
     end
 
@@ -59,8 +59,8 @@ function UnitGroupUtils.findNearbyRetreatingSquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= -1 then
-            for _,squad in pairs(getSquadsOnChunk(map, neighbor)) do
+        if (neighbor ~= -1) and neighbor.squads then
+            for _,squad in pairs(neighbor.squads) do
                 local unitGroup = squad.group
                 if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
                     return squad
@@ -73,10 +73,12 @@ end
 
 function UnitGroupUtils.findNearbySquad(map, chunk)
 
-    for _,squad in pairs(getSquadsOnChunk(map, chunk)) do
-        local unitGroup = squad.group
-        if unitGroup and unitGroup.valid then
-            return squad
+    if chunk.squads then
+        for _,squad in pairs(chunk.squads) do
+            local unitGroup = squad.group
+            if unitGroup and unitGroup.valid then
+                return squad
+            end
         end
     end
 
@@ -84,8 +86,8 @@ function UnitGroupUtils.findNearbySquad(map, chunk)
 
     for i=1,#neighbors do
         local neighbor = neighbors[i]
-        if neighbor ~= -1 then
-            for _,squad in pairs(getSquadsOnChunk(map, neighbor)) do
+        if (neighbor ~= -1) and neighbor.squads then
+            for _,squad in pairs(neighbor.squads) do
                 local unitGroup = squad.group
                 if unitGroup and unitGroup.valid then
                     return squad

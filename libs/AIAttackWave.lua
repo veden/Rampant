@@ -64,9 +64,8 @@ local calculateKamikazeSquadThreshold = unitGroupUtils.calculateKamikazeSquadThr
 local positionFromDirectionAndChunk = mapUtils.positionFromDirectionAndChunk
 
 local getPassable = chunkPropertyUtils.getPassable
-local getNestCount = chunkPropertyUtils.getNestCount
-local getRaidNestActiveness = chunkPropertyUtils.getRaidNestActiveness
-local getNestActiveness = chunkPropertyUtils.getNestActiveness
+local isActiveRaidNest = chunkPropertyUtils.isActiveRaidNest
+local isActiveNest = chunkPropertyUtils.isActiveNest
 local getRallyTick = chunkPropertyUtils.getRallyTick
 local setRallyTick = chunkPropertyUtils.setRallyTick
 
@@ -101,14 +100,16 @@ local function attackWaveScaling()
 end
 
 local function attackWaveValidCandidate(chunk, base)
-    local isValid = getNestActiveness(chunk)
+    if isActiveNest(chunk) then
+        return true
+    end
     if (base.stateAI == BASE_AI_STATE_RAIDING) or
         (base.stateAI == BASE_AI_STATE_SIEGE) or
         (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
     then
-        isValid = isValid + getRaidNestActiveness(chunk)
+        return isActiveRaidNest(chunk)
     end
-    return (isValid > 0)
+    return false
 end
 
 local function scoreSettlerLocation(map, neighborChunk)
@@ -124,20 +125,20 @@ local function scoreUnitGroupLocation(map, neighborChunk)
 end
 
 local function validSiegeSettlerLocation(map, neighborChunk)
-    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and
-        (getNestCount(neighborChunk) == 0)
+    return (getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS) and
+        (not neighborChunk.nestCount)
 end
 
 local function validSettlerLocation(map, chunk, neighborChunk)
     local chunkResource = chunk[RESOURCE_PHEROMONE]
-    return (getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS) and
-        (getNestCount(neighborChunk) == 0) and
+    return (getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS) and
+        (not neighborChunk.nestCount) and
         (neighborChunk[RESOURCE_PHEROMONE] >= chunkResource)
 end
 
 local function validUnitGroupLocation(map, neighborChunk)
-    return getPassable(map, neighborChunk) == CHUNK_ALL_DIRECTIONS and
-        (getNestCount(neighborChunk) == 0)
+    return getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS and
+        (not neighborChunk.nestCount)
 end
 
 local function visitPattern(o, cX, cY, distance)
@@ -179,18 +180,19 @@ local function visitPattern(o, cX, cY, distance)
     return startX, endX, stepX, startY, endY, stepY
 end
 
-function aiAttackWave.rallyUnits(chunk, map, tick, base)
+function aiAttackWave.rallyUnits(chunk, tick, base)
     if ((tick - getRallyTick(chunk) > COOLDOWN_RALLY) and (base.unitPoints >= AI_VENGENCE_SQUAD_COST)) then
-        setRallyTick(map, chunk, tick)
+        setRallyTick(chunk, tick)
         local cX = chunk.x
         local cY = chunk.y
         local startX, endX, stepX, startY, endY, stepY = visitPattern(tick % 4, cX, cY, RALLY_CRY_DISTANCE)
         local vengenceQueue = Universe.vengenceQueue
+        local map = chunk.map
         for x=startX, endX, stepX do
             for y=startY, endY, stepY do
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
-                    if (rallyChunk ~= -1) and (getNestCount(rallyChunk) > 0) then
+                    if (rallyChunk ~= -1) and rallyChunk.nestCount then
                         local pack = vengenceQueue[rallyChunk.id]
                         if not pack then
                             pack = {
@@ -210,12 +212,13 @@ function aiAttackWave.rallyUnits(chunk, map, tick, base)
     end
 end
 
-function aiAttackWave.formSettlers(map, chunk, base)
+function aiAttackWave.formSettlers(chunk, base)
     if (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
         and (base.sentExpansionGroups < base.maxExpansionGroups)
         and ((base.unitPoints - AI_SETTLER_COST) > 0)
         and (Universe.random() < Universe.formSquadThreshold)
     then
+        local map = chunk.map
         local surface = map.surface
         local squadPath, squadDirection
         if (base.stateAI == BASE_AI_STATE_SIEGE) then
@@ -269,7 +272,7 @@ function aiAttackWave.formSettlers(map, chunk, base)
     end
 end
 
-function aiAttackWave.formVengenceSquad(map, chunk, base)
+function aiAttackWave.formVengenceSquad(chunk, base)
     if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT)
         and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
         and (Universe.random() < Universe.formSquadThreshold)
@@ -277,6 +280,7 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
         if (chunk[BASE_PHEROMONE] < 0.0001) or (chunk[PLAYER_PHEROMONE] < 0.0001) then
             return
         end
+        local map = chunk.map
 
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
@@ -316,12 +320,13 @@ function aiAttackWave.formVengenceSquad(map, chunk, base)
     end
 end
 
-function aiAttackWave.formVengenceSettler(map, chunk, base)
+function aiAttackWave.formVengenceSettler(chunk, base)
     if (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
         and (base.sentExpansionGroups < base.maxExpansionGroups)
         and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
         and (Universe.random() < Universe.formSquadThreshold)
     then
+        local map = chunk.map
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,
@@ -362,7 +367,7 @@ function aiAttackWave.formVengenceSettler(map, chunk, base)
     end
 end
 
-function aiAttackWave.formSquads(map, chunk, base)
+function aiAttackWave.formSquads(chunk, base)
     if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT)
         and attackWaveValidCandidate(chunk, base)
         and ((base.unitPoints - AI_SQUAD_COST) > 0)
@@ -372,6 +377,7 @@ function aiAttackWave.formSquads(map, chunk, base)
             return
         end
 
+        local map = chunk.map
         local surface = map.surface
         local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
                                                                      validUnitGroupLocation,

@@ -268,8 +268,8 @@ end
 ]]--
 function MapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
     local canMove = false
-    local startPassable = getPassable(map, startChunk)
-    local endPassable = getPassable(map, endChunk)
+    local startPassable = getPassable(startChunk)
+    local endPassable = getPassable(endChunk)
     if (startPassable == CHUNK_ALL_DIRECTIONS) then
         if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
             canMove = (endPassable == CHUNK_ALL_DIRECTIONS)

@@ -61,7 +61,7 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 
 -- imported functions
 
-local getPlayerGenerator = ChunkPropertyUtils.getPlayerGenerator
+local tableSize = table_size
 local setPositionInCommand = QueryUtils.setPositionInCommand
 
 local euclideanDistancePoints = MathUtils.euclideanDistancePoints
@@ -71,9 +71,6 @@ local findMovementPosition = MovementUtils.findMovementPosition
 local removeSquadFromChunk = ChunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
-local getHiveCount = ChunkPropertyUtils.getHiveCount
-local getNestCount = ChunkPropertyUtils.getNestCount
-
 local getNeighborChunks = MapUtils.getNeighborChunks
 local addSquadToChunk = ChunkPropertyUtils.addSquadToChunk
 local getChunkByXY = MapUtils.getChunkByXY
@@ -82,9 +79,6 @@ local addMovementPenalty = MovementUtils.addMovementPenalty
 local positionFromDirectionAndFlat = MapUtils.positionFromDirectionAndFlat
 
 local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
-
-local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
-local getResourceGenerator = ChunkPropertyUtils.getResourceGenerator
 
 local scoreNeighborsForAttack = MovementUtils.scoreNeighborsForAttack
 local scoreNeighborsForSettling = MovementUtils.scoreNeighborsForSettling
@@ -123,10 +117,10 @@ local function settleMove(map, squad)
     end
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
-        addDeathGenerator(map, squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+        addDeathGenerator(squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     end
     if chunk ~= -1 then
-        addSquadToChunk(map, chunk, squad)
+        addSquadToChunk(chunk, squad)
         addMovementPenalty(squad, chunk)
         if not squad.group.valid then
             return
@@ -144,7 +138,7 @@ local function settleMove(map, squad)
         (
             (distance >= squad.maxDistance) or
             (
-                (getResourceGenerator(map, chunk) ~= 0) and (getNestCount(chunk) == 0) and (getHiveCount(map, chunk) == 0)
+                chunk.resourceGenerator and (not chunk.nestCount) and (not chunk.hiveCount)
             )
         )
     then
@@ -183,8 +177,8 @@ local function settleMove(map, squad)
             local attackPlayerThreshold = Universe.attackPlayerThreshold
 
             if (nextAttackChunk ~= -1) then
-                if (getPlayerBaseGenerator(map, nextAttackChunk) == 0)
-                    and (getPlayerGenerator(map, nextAttackChunk) < PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
+                if (not nextAttackChunk.playerBaseGenerator)
+                    and ((nextAttackChunk.playerGenerator or 0) < PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
                 then
                     attackChunk = nextAttackChunk
                     position = findMovementPosition(
@@ -214,9 +208,9 @@ local function settleMove(map, squad)
                 targetPosition.x = position.x
                 targetPosition.y = position.y
                 if nextAttackChunk ~= -1 then
-                    addDeathGenerator(map, nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 else
-                    addDeathGenerator(map, attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                    addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
                 end
             else
                 cmd = Universe.wanderCommand
@@ -224,9 +218,11 @@ local function settleMove(map, squad)
                 return
             end
 
-            if (nextAttackChunk ~= -1) and
-                ((getPlayerBaseGenerator(map, nextAttackChunk) ~= 0)
-                    or (getPlayerGenerator(map, nextAttackChunk) >= PLAYER_PHEROMONE_GENERATOR_THRESHOLD))
+            if (nextAttackChunk ~= -1)
+                and (
+                    nextAttackChunk.playerBaseGenerator
+                    or ((nextAttackChunk.playerBaseGenerator or 0) >= PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
+                )
             then
                 cmd = Universe.settleCommand
                 squad.status = SQUAD_BUILDING
@@ -235,8 +231,8 @@ local function settleMove(map, squad)
                 else
                     cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
                 end
-            elseif (getPlayerBaseGenerator(map, attackChunk) ~= 0) or
-                (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
+            elseif attackChunk.playerBaseGenerator
+                or (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
             then
                 cmd = Universe.attackCommand
 
@@ -286,10 +282,10 @@ local function attackMove(map, squad)
     local attackScorer = scoreAttackLocation
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
-        addDeathGenerator(map, squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+        addDeathGenerator(squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     end
     if chunk ~= -1 then
-        addSquadToChunk(map, chunk, squad)
+        addSquadToChunk(chunk, squad)
         addMovementPenalty(squad, chunk)
         if not squad.group.valid then
             return
@@ -338,13 +334,13 @@ local function attackMove(map, squad)
         targetPosition.x = position.x
         targetPosition.y = position.y
         if (nextAttackChunk ~= -1) then
-            addDeathGenerator(map, nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         else
-            addDeathGenerator(map, attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
         end
     end
 
-    if (getPlayerBaseGenerator(map, attackChunk) ~= 0) and
+    if attackChunk.playerBaseGenerator and
         (attackChunk[PLAYER_PHEROMONE] >= Universe.attackPlayerThreshold)
     then
         cmd = Universe.attackCommand
@@ -392,7 +388,7 @@ function SquadAttack.cleanSquads(tick)
     end
     if not groupId then
         Universe.squadIterator = nil
-        if (table_size(squads) == 0) then
+        if (tableSize(squads) == 0) then
             -- this is needed as the next command remembers the max length a table has been
             Universe.groupNumberToSquad = {}
         end
@@ -401,9 +397,9 @@ function SquadAttack.cleanSquads(tick)
         local group = squad.group
         if not group.valid then
             if squad.chunk ~= -1 then
-                addDeathGenerator(squad.map, squad.chunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+                addDeathGenerator(squad.chunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             end
-            removeSquadFromChunk(squad.map, squad)
+            removeSquadFromChunk(squad)
             if squad.settlers then
                 Universe.builderCount = Universe.builderCount - 1
                 if Universe.builderCount < 0 then
@@ -461,7 +457,7 @@ function SquadAttack.squadDispatch(map, squad, tick)
             end
         elseif (status == SQUAD_BUILDING) then
             squad.commandTick = tick + COMMAND_TIMEOUT
-            removeSquadFromChunk(map, squad)
+            removeSquadFromChunk(squad)
             buildMove(map, squad)
         elseif (status == SQUAD_GUARDING) then
             squad.commandTick = tick + COMMAND_TIMEOUT

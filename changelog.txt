@@ -61,6 +61,7 @@ Version: 3.2.0
     - Centralized base points manipulation and chat messaging (Dagothur)
     - Base point deductions for unit losses are now batched in 20 to reduce chat spam when using the print AI points to chat options (Dagothur)
     - Reduced corpse and particle variation to optimize increased entity times due to high entity counts
+    - Moved map properties directly into chunk object
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2

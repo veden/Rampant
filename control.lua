@@ -189,10 +189,10 @@ local function onIonCannonFired(event)
 
     local chunk = getChunkByPosition(map, event.position)
     if (chunk ~= -1) then
-        local base = findNearbyBase(map, chunk)
+        local base = findNearbyBase(chunk)
         if base then
             base.ionCannonBlasts = base.ionCannonBlasts + 1
-            rallyUnits(chunk, map, event.tick, base)
+            rallyUnits(chunk, event.tick, base)
             modifyBaseUnitPoints(base, 4000, "Ion Cannon")
         end
     end
@@ -239,8 +239,6 @@ end
 
 local function onLoad()
     Universe = global.universe
-
-    initializeLibraries()
 
     hookEvents()
 end
@@ -353,7 +351,7 @@ local function onConfigChanged()
             prepMap(surface)
         end
     end
-    addBasesToAllEnemyStructures(game.tick)
+    -- addBasesToAllEnemyStructures(game.tick)
 
     if not Universe.ranIncompatibleMessage and Universe.newEnemies and
         (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
@@ -372,14 +370,14 @@ local function onEnemyBaseBuild(event)
         map.activeSurface = true
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
-            local base = findNearbyBase(map, chunk)
+            local base = findNearbyBase(chunk)
             if not base then
                 base = createBase(map,
                                   chunk,
                                   event.tick)
             end
 
-            registerEnemyBaseStructure(map, entity, base)
+            registerEnemyBaseStructure(map, entity, base, event.tick)
 
             if Universe.NEW_ENEMIES then
                 queueUpgrade(entity,
@@ -483,7 +481,7 @@ local function onDeath(event)
 
         if (chunk ~= -1) then
             if not base then
-                base = findNearbyBase(map, chunk)
+                base = findNearbyBase(chunk)
             end
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
@@ -499,14 +497,14 @@ local function onDeath(event)
                         modifyBaseUnitPoints(base, -(20*UNIT_DEATH_POINT_COST), "20 Units Lost")
                     end
                     if (Universe.random() < Universe.rallyThreshold) and not surface.peaceful_mode then
-                        rallyUnits(chunk, map, tick, base)
+                        rallyUnits(chunk, tick, base)
                     end
                     if artilleryBlast then
                         base.artilleryBlasts = base.artilleryBlasts + 1
                     end
                 end
 
-                if (getCombinedDeathGeneratorRating(map, chunk) < Universe.retreatThreshold) and cause and cause.valid then
+                if (getCombinedDeathGeneratorRating(chunk) < Universe.retreatThreshold) and cause and cause.valid then
                     retreatUnits(chunk,
                                  cause,
                                  map,
@@ -517,14 +515,14 @@ local function onDeath(event)
                 (entityType == "unit-spawner") or
                 (entityType == "turret")
             then
-                deathScent(map, chunk, true)
+                deathScent(chunk, true)
                 if base then
                     if (entityType == "unit-spawner") then
                         modifyBaseUnitPoints(base, RECOVER_NEST_COST, "Nest Lost")
                     elseif (entityType == "turret") then
                         modifyBaseUnitPoints(base, RECOVER_WORM_COST, "Worm Lost")
                     end
-                    rallyUnits(chunk, map, tick, base)
+                    rallyUnits(chunk, tick, base)
                     if artilleryBlast then
                         base.artilleryBlasts = base.artilleryBlasts + 1
                     end
@@ -545,7 +543,7 @@ local function onDeath(event)
             creditNatives = true
             local drained = false
             if chunk ~= -1 then
-                victoryScent(map, chunk, entityType)
+                victoryScent(chunk, entityType)
                 drained = (entityType == "electric-turret") and isDrained(chunk, tick)
                 if cause and cause.type == "unit" then
                     local group = cause.unit_group
@@ -557,7 +555,7 @@ local function onDeath(event)
                     end
                 end
                 if not base then
-                    base = findNearbyBase(map, chunk)
+                    base = findNearbyBase(chunk)
                 end
             end
 
@@ -680,7 +678,7 @@ local function onRocketLaunch(event)
         end
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
-            local base = findNearbyBase(map, chunk)
+            local base = findNearbyBase(chunk)
             if base then
                 base.rocketLaunched = base.rocketLaunched + 1
                 modifyBaseUnitPoints(base, 5000, "Rocket Launch")
@@ -701,7 +699,7 @@ local function onEntitySpawned(entity, tick)
 
             local chunk = getChunkByPosition(map, disPos)
             if (chunk ~= -1) then
-                local base = findNearbyBase(map, chunk)
+                local base = findNearbyBase(chunk)
                 if not base then
                     base = createBase(map,
                                       chunk,
@@ -750,7 +748,7 @@ local function onTriggerEntityCreated(event)
             end
             local chunk = getChunkByPosition(map, entity.position)
             if (chunk ~= -1) then
-                setDrainedTick(map, chunk, event.tick)
+                setDrainedTick(chunk, event.tick)
             end
         elseif (event.target_position) then
             local map = Universe.maps[event.surface_index]
@@ -759,7 +757,7 @@ local function onTriggerEntityCreated(event)
             end
             local chunk = getChunkByPosition(map, event.target_position)
             if (chunk ~= -1) then
-                setDrainedTick(map, chunk, event.tick)
+                setDrainedTick(chunk, event.tick)
             end
         end
     elseif (event.effect_id == "deathLandfillParticle--rampant") then
@@ -806,7 +804,7 @@ local function onUnitGroupCreated(event)
     if (chunk == -1) then
         base = findNearbyBaseByPosition(map, position.x, position.y)
     else
-        base = findNearbyBase(map, chunk)
+        base = findNearbyBase(chunk)
     end
     if not base then
         group.destroy()
@@ -908,7 +906,7 @@ local function onGroupFinishedGathering(event)
         if chunk == -1 then
             base = findNearbyBaseByPosition(map, position.x, position.y)
         else
-            base = findNearbyBase(map, chunk)
+            base = findNearbyBase(chunk)
         end
         if not base then
             group.destroy()
@@ -1057,7 +1055,6 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 3) then
                         disperseVictoryScent()
                         processAttackWaves()
-                        processNests(tick)
                         processClouds(tick)
                     elseif (pick == 4) then
                         if map then
@@ -1083,7 +1080,7 @@ script.on_event(defines.events.on_tick,
                     end
 
                     processBaseAIs(tick)
-                    processActiveNests(tick)
+                    processNests(tick)
                     processPendingUpgrades(tick)
                     processPendingUpgrades(tick)
                     cleanSquads(tick)
@@ -1229,13 +1226,14 @@ local function removeNewEnemies()
                     })
                     local chunk = getChunkByPosition(map, position)
                     if chunk ~= -1 then
-                        local base = findNearbyBase(map, chunk)
+                        local tick = game.tick
+                        local base = findNearbyBase(chunk)
                         if not base then
                             base = createBase(map,
                                               chunk,
-                                              game.tick)
+                                              tick)
                         end
-                        registerEnemyBaseStructure(map, newEntity, base)
+                        registerEnemyBaseStructure(map, newEntity, base, tick)
                     end
                 end
             end
@@ -1324,13 +1322,14 @@ local function removeFaction(cmd)
                     })
                     local chunk = getChunkByPosition(map, position)
                     if chunk ~= -1 then
-                        local base = findNearbyBase(map, chunk)
+                        local tick = game.tick
+                        local base = findNearbyBase(chunk)
                         if not base then
                             base = createBase(map,
                                               chunk,
-                                              game.tick)
+                                              tick)
                         end
-                        registerEnemyBaseStructure(map, newEntity, base)
+                        registerEnemyBaseStructure(map, newEntity, base, tick)
                     end
                 end
             end

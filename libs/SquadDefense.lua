@@ -56,7 +56,6 @@ local scoreNeighborsForRetreat = MovementUtils.scoreNeighborsForRetreat
 local findMovementPosition = MovementUtils.findMovementPosition
 
 local getRetreatTick = ChunkPropertyUtils.getRetreatTick
-local getPlayerBaseGenerator = ChunkPropertyUtils.getPlayerBaseGenerator
 local setRetreatTick = ChunkPropertyUtils.setRetreatTick
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 
@@ -65,13 +64,13 @@ local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local function scoreRetreatLocation(map, neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
             -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
-            -(getPlayerBaseGenerator(map, neighborChunk) * 1000))
+            -((neighborChunk.playerBaseGenerator or 0) * 1000))
 end
 
 function AiDefense.retreatUnits(chunk, cause, map, tick, radius)
-    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(map, chunk) == 0) then
+    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(chunk) == 0) then
 
-        setRetreatTick(map, chunk, tick)
+        setRetreatTick(chunk, tick)
         local exitPath,exitDirection,
             nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
                                                                        getNeighborChunks(map,
@@ -122,7 +121,7 @@ function AiDefense.retreatUnits(chunk, cause, map, tick, radius)
         if not newSquad then
             if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT) then
                 created = true
-                local base = findNearbyBase(map, chunk)
+                local base = findNearbyBase(chunk)
                 if not base then
                     return
                 end
@@ -153,7 +152,7 @@ function AiDefense.retreatUnits(chunk, cause, map, tick, radius)
 
         newSquad.status = SQUAD_RETREATING
 
-        addSquadToChunk(map, chunk, newSquad)
+        addSquadToChunk(chunk, newSquad)
 
         newSquad.frenzy = true
         local squadPosition = newSquad.group.position

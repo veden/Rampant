@@ -165,7 +165,7 @@ function ChunkProcessor.processPendingUpgrades(tick)
 
             local pickedBaseAlignment
             if baseAlignment[2] then
-                if map.random() < 0.75 then
+                if Universe.random() < 0.75 then
                     pickedBaseAlignment = baseAlignment[2]
                 else
                     pickedBaseAlignment = baseAlignment[1]
@@ -213,7 +213,7 @@ function ChunkProcessor.processPendingUpgrades(tick)
             })
             if createdEntity and createdEntity.valid then
                 if entityData.register then
-                    registerEnemyBaseStructure(map, createdEntity, base, true)
+                    registerEnemyBaseStructure(map, createdEntity, base, tick, true)
                 end
                 if not entityData.evolve and Universe.printBaseUpgrades then
                     surface.print("["..base.id.."]:"..surface.name.." Upgrading ".. entityName .. " to " .. name .. " [gps=".. position.x ..",".. position.y .."]")
