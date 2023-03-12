@@ -900,10 +900,11 @@ local function attackWaveScaling()
                                        Universe.random))
 end
 
-local function attackWaveValidCandidate(chunk, base)
+local function attackWaveValidCandidate(chunk)
     if isActiveNest(chunk) then
         return true
     end
+    local base = chunk.base
     if (base.stateAI == BASE_AI_STATE_RAIDING) or
         (base.stateAI == BASE_AI_STATE_SIEGE) or
         (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
@@ -1055,7 +1056,8 @@ function Squad.rallyUnits(chunk, tick, base)
     end
 end
 
-function Squad.formSettlers(chunk, base)
+function Squad.formSettlers(chunk)
+    local base = chunk.base
     if (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
         and (base.sentExpansionGroups < base.maxExpansionGroups)
         and ((base.unitPoints - AI_SETTLER_COST) > 0)
@@ -1210,9 +1212,10 @@ function Squad.formVengenceSettler(chunk, base)
     end
 end
 
-function Squad.formSquads(chunk, base)
+function Squad.formSquads(chunk)
+    local base = chunk.base
     if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT)
-        and attackWaveValidCandidate(chunk, base)
+        and attackWaveValidCandidate(chunk)
         and ((base.unitPoints - AI_SQUAD_COST) > 0)
         and (Universe.random() < Universe.formSquadThreshold)
     then

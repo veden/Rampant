@@ -49,11 +49,6 @@ local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 
-local BASE_AI_STATE_AGGRESSIVE = Constants.BASE_AI_STATE_AGGRESSIVE
-local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
-local BASE_AI_STATE_PEACEFUL = Constants.BASE_AI_STATE_PEACEFUL
-local BASE_AI_STATE_MIGRATING = Constants.BASE_AI_STATE_MIGRATING
-
 local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = Constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = Constants.COOLDOWN_RETREAT
@@ -97,7 +92,6 @@ local formSettlers = Squad.formSettlers
 
 local getChunkByPosition = MapUtils.getChunkByPosition
 local getChunkByXY = MapUtils.getChunkByXY
-local getChunkById = MapUtils.getChunkById
 
 local validPlayer = Utils.validPlayer
 
@@ -204,7 +198,7 @@ function Processor.processPlayers(players, tick)
                     if not base then
                         return
                     end
-                    local allowingAttacks = canAttack(map, base)
+                    local allowingAttacks = canAttack(base)
                     local vengence = allowingAttacks and
                         (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
                         ((getEnemyStructureCount(playerChunk) > 0) or
@@ -261,11 +255,6 @@ end
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
 function Processor.scanPlayerMap(map, tick)
-    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or
-        (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick)
-    then
-        return
-    end
     local index = map.scanPlayerIndex
 
     local processQueue = map.processQueue
@@ -350,7 +339,7 @@ function Processor.processVengence()
         return
     end
     local base = chunk.base
-    if canMigrate(map, base) and (Universe.random() < 0.075) then
+    if canMigrate(base) and (Universe.random() < 0.075) then
         formVengenceSettler(chunk, base)
     else
         formVengenceSquad(chunk, base)
@@ -359,105 +348,97 @@ end
 
 function Processor.processNests(tick)
     local chunkId = Universe.processNestIterator
-    local chunkPack
+    local chunk
     if not chunkId then
-        chunkId,chunkPack = next(Universe.chunkToNests, nil)
+        chunkId,chunk = next(Universe.chunkToNests, nil)
     else
-        chunkPack = Universe.chunkToNests[chunkId]
+        chunk = Universe.chunkToNests[chunkId]
     end
     if not chunkId then
         Universe.processNestIterator = nil
-    else
-        Universe.processNestIterator = next(Universe.chunkToNests, chunkId)
-        local map = chunkPack.map
-        if not map.surface.valid then
-            removeChunkToNest(chunkId)
-            return
-        end
-        local chunk = getChunkById(chunkId)
-        processNestActiveness(chunk, tick)
+        return
+    end
 
-        if Universe.NEW_ENEMIES then
-            processBaseMutation(chunk,
-                                map,
-                                chunk.base)
-        end
+    Universe.processNestIterator = next(Universe.chunkToNests, chunkId)
+    local map = chunk.map
+    if not map.surface.valid then
+        removeChunkToNest(chunkId)
+        return
+    end
+    processNestActiveness(chunk, tick)
+
+    if Universe.NEW_ENEMIES then
+        processBaseMutation(chunk,
+                            map,
+                            chunk.base)
     end
 end
 
 local function processSpawnersBody(iterator, chunks)
     local chunkId = Universe[iterator]
-    local chunkPack
+    local chunk
     if not chunkId then
-        chunkId,chunkPack = next(chunks, nil)
+        chunkId,chunk = next(chunks, nil)
     else
-        chunkPack = chunks[chunkId]
+        chunk = chunks[chunkId]
     end
     if not chunkId then
         Universe[iterator] = nil
-    else
-        Universe[iterator] = next(chunks, chunkId)
-        local map = chunkPack.map -- error
-        if not map.surface.valid then
-            if (iterator == "processMigrationIterator") then
-                removeChunkToNest(chunkId)
-            else
-                chunks[chunkId] = nil
-            end
-            return
+        return
+    end
+    Universe[iterator] = next(chunks, chunkId)
+    local map = chunk.map
+    if not map.surface.valid then
+        if (iterator == "processMigrationIterator") then
+            removeChunkToNest(chunkId)
+        else
+            chunks[chunkId] = nil
         end
-        local chunk = getChunkById(chunkId)
-        local base = findNearbyBase(chunk)
-        if base.stateAI == BASE_AI_STATE_PEACEFUL then
-            return
-        end
-        if iterator == "processMigrationIterator" then
-            if (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE) then
-                return
-            end
-        elseif iterator == "processActiveRaidSpawnerIterator" then
-            if (base.stateAI == BASE_AI_STATE_AGGRESSIVE) or (base.stateAI == BASE_AI_STATE_MIGRATING) then
-                return
-            end
-        elseif iterator == "processActiveSpawnerIterator" then
-            if (base.stateAI == BASE_AI_STATE_MIGRATING) then
-                return
-            end
-        end
-
-        local migrate = canMigrate(base)
-        local attack = canAttack(base)
-        if migrate then
-            formSettlers(chunk, base)
-        end
-        if attack then
-            formSquads(chunk, base)
-        end
+        return
+    end
+    local base = chunk.base
+    local migrate = canMigrate(base)
+    local attack = canAttack(base)
+    if migrate then
+        formSettlers(chunk)
+    end
+    if attack then
+        formSquads(chunk)
     end
 end
 
 function Processor.processAttackWaves()
-    processSpawnersBody("processActiveSpawnerIterator",
-                        Universe.chunkToActiveNest)
-    processSpawnersBody("processActiveRaidSpawnerIterator",
-                        Universe.chunkToActiveRaidNest)
-    processSpawnersBody("processMigrationIterator",
-                        Universe.chunkToNests)
+    processSpawnersBody(
+        "processActiveSpawnerIterator",
+        Universe.chunkToActiveNest
+    )
+    processSpawnersBody(
+        "processActiveRaidSpawnerIterator",
+        Universe.chunkToActiveRaidNest
+    )
+    processSpawnersBody(
+        "processMigrationIterator",
+        Universe.chunkToNests
+    )
 end
 
 function Processor.processClouds(tick)
     local eventId, builderPack = next(Universe.settlePurpleCloud, nil)
-    if builderPack and (builderPack.tick <= tick) then
-        Universe.settlePurpleCloud[eventId] = nil
-        local map = builderPack.map
-        if builderPack.group.valid and map.surface.valid then
-            setPositionInQuery(
-                Universe.obaCreateBuildCloudQuery,
-                builderPack.group.position
-            )
-            map.surface.create_entity(Universe.obaCreateBuildCloudQuery)
-        end
+    if not builderPack or (builderPack.tick > tick) then
+        return
     end
+
+    Universe.settlePurpleCloud[eventId] = nil
+    local map = builderPack.map
+    if not builderPack.group.valid or not map.surface.valid then
+        return
+    end
+
+    setPositionInQuery(
+        Universe.obaCreateBuildCloudQuery,
+        builderPack.group.position
+    )
+    map.surface.create_entity(Universe.obaCreateBuildCloudQuery)
 end
 
 
@@ -505,7 +486,6 @@ function Processor.processPendingChunks(tick, flush)
         else
             local initialChunk = createChunk(map, x, y)
             map[x][y] = initialChunk
-            Universe.chunkIdToChunk[initialChunk.id] = initialChunk
             local chunk = initialScan(initialChunk, map, tick)
             if (chunk ~= -1) then
                 tableInsert(
@@ -515,7 +495,6 @@ function Processor.processPendingChunks(tick, flush)
                 )
             else
                 map[x][y] = nil
-                Universe.chunkIdToChunk[initialChunk.id] = nil
             end
         end
 
@@ -598,7 +577,7 @@ function Processor.processPendingUpgrades(tick)
     })
     if createdEntity and createdEntity.valid then
         if entityData.register then
-            registerEnemyBaseStructure(map, createdEntity, base, tick, true)
+            registerEnemyBaseStructure(createdEntity, base, tick, true)
         end
         if not entityData.evolve and Universe.printBaseUpgrades then
             surface.print("["..base.id.."]:"..surface.name.." Upgrading ".. entityName .. " to " .. name .. " [gps=".. position.x ..",".. position.y .."]")

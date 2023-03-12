@@ -512,12 +512,8 @@ function Upgrade.addUniverseProperties()
         Universe.eventId = 0
         Universe.chunkId = 0
         Universe.maps = {}
-        Universe.chunkIdToChunk = {}
         Universe.groupNumberToSquad = {}
-        Universe.chunkToVictory = {}
         Universe.pendingChunks = {}
-        Universe.processActiveNest = {}
-        Universe.processActiveNestIterator = nil
         Universe.squadIterator = nil
         Universe.processMapAIIterator = nil
         Universe.processNestIterator = nil
@@ -526,18 +522,21 @@ function Upgrade.addUniverseProperties()
         Universe.mapIterator = nil
         Universe.builderCount = 0
         Universe.squadCount = 0
-        Universe.chunkToNests = {}
-        Universe.chunkToHives = {}
-        Universe.chunkToUtilities = {}
         Universe.processActiveSpawnerIterator = nil
         Universe.processActiveRaidSpawnerIterator = nil
         Universe.processMigrationIterator = nil
+
+        Universe.chunkToNests = {}
+        Universe.chunkToHives = {}
+        Universe.chunkToUtilities = {}
+        Universe.chunkToVictory = {}
         Universe.chunkToActiveNest = {}
         Universe.chunkToActiveRaidNest = {}
         Universe.chunkToDrained = {}
         Universe.chunkToRetreats = {}
         Universe.chunkToRallys = {}
         Universe.chunkToPassScan = {}
+
         Universe.baseId = 0
         Universe.awake = false
 
@@ -671,10 +670,6 @@ function Upgrade.prepMap(surface)
 
     map.drainPylons = {}
 
-    map.chunkToSquad = {}
-
-    map.chunkScanCounts = {}
-
     map.surface = surface
 
     map.bases = {}
@@ -698,6 +693,8 @@ function Upgrade.prepMap(surface)
     end
 
     processPendingChunks(tick, true)
+
+    return map
 end
 
 function Upgrade.init(universe)

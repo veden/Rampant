@@ -62,7 +62,8 @@ local function getActiveTick(chunk)
 end
 
 local function registerActiveSpawner(chunk, register, activeType, tick)
-    if Universe[register][chunk.id] then
+    local chunkId = chunk.id
+    if Universe[register][chunkId] then
         return
     end
 
@@ -70,11 +71,12 @@ local function registerActiveSpawner(chunk, register, activeType, tick)
 
     local base = chunk.base
     base[activeType] = base[activeType] + 1
-    Universe[register][chunk.id] = chunk
+    Universe[register][chunkId] = chunk
 end
 
-local function unregisterActiveSpawner(chunk, register, activeType)
-    if not Universe[register][chunk.id] then
+local function unregisterActiveSpawner(chunk, register, iterator, activeType)
+    local chunkId = chunk.id
+    if not Universe[register][chunkId] then
         return
     end
 
@@ -82,10 +84,10 @@ local function unregisterActiveSpawner(chunk, register, activeType)
 
     local base = chunk.base
     base[activeType] = base[activeType] - 1
-    if (Universe.processActiveSpawnerIterator == chunk.id) then
-        Universe.processActiveSpawnerIterator = nil
+    Universe[register][chunkId] = nil
+    if (Universe[iterator] == chunkId) then
+        Universe[iterator] = nil
     end
-    Universe[register][chunk.id] = nil
 end
 
 local function registerActiveNest(chunk, tick)
@@ -97,11 +99,21 @@ local function registerActiveRaidNest(chunk, tick)
 end
 
 local function unregisterActiveNest(chunk)
-    unregisterActiveSpawner(chunk, "chunkToActiveNest", "activeNests")
+    unregisterActiveSpawner(
+        chunk,
+        "chunkToActiveNest",
+        "processActiveSpawnerIterator",
+        "activeNests"
+    )
 end
 
 local function unregisterActiveRaidNest(chunk)
-    unregisterActiveSpawner(chunk, "chunkToActiveRaidNest", "activeRaidNests")
+    unregisterActiveSpawner(
+        chunk,
+        "chunkToActiveRaidNest",
+        "processActiveRaidSpawnerIterator",
+        "activeRaidNests"
+    )
 end
 
 local function addEnemyStructure(chunk, unitNumber, ids, counts, register)
@@ -112,41 +124,48 @@ local function addEnemyStructure(chunk, unitNumber, ids, counts, register)
         entityIds = {}
         chunk[ids] = entityIds
     end
-    if not entityIds[unitNumber] then
-        entityIds[unitNumber] = true
-        chunk[counts] = (chunk[counts] or 0) + 1
-        if register then
-            Universe[register][chunkId] = chunk
-        end
-        return true
+
+    if entityIds[unitNumber] then
+        return false
     end
-    return false
+
+    entityIds[unitNumber] = true
+    chunk[counts] = (chunk[counts] or 0) + 1
+    if register then
+        Universe[register][chunkId] = chunk
+    end
+    return true
 end
 
 local function removeEnemyStructure(chunk, unitNumber, ids, counts, register)
     local chunkId = chunk.id
     local entityIds = chunk[ids]
-    if entityIds and entityIds[unitNumber] then
-        entityIds[unitNumber] = nil
-        chunk[counts] = chunk[counts] - 1
-        if chunk[counts] > 0 then
-            return true
-        end
+    if not (entityIds and entityIds[unitNumber]) then
+        return false
+    end
 
-        chunk[ids] = nil
-        chunk[counts] = nil
-        if register then
-            Universe[register][chunkId] = nil
-        end
+    entityIds[unitNumber] = nil
+    chunk[counts] = chunk[counts] - 1
+    if chunk[counts] > 0 then
+        return true
+    end
+
+    chunk[ids] = nil
+    chunk[counts] = nil
+    if register then
+        Universe[register][chunkId] = nil
+    end
+    if (ids == "nestIds") then
+        unregisterActiveNest(chunk)
+        unregisterActiveRaidNest(chunk)
         if (Universe.processMigrationIterator == chunkId) then
             Universe.processMigrationIterator = nil
         end
         if (Universe.processNestIterator == chunkId) then
             Universe.processNestIterator = nil
         end
-        return true
     end
-    return false
+    return true
 end
 
 function ChunkPropertyUtils.addTurretCount(chunk, unitNumber)

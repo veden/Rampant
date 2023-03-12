@@ -37,7 +37,6 @@ local Utils = require("Utils")
 
 local VANILLA_ENTITY_TYPE_LOOKUP = Constants.VANILLA_ENTITY_TYPE_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
-local HIVE_BUILDINGS_TYPES = Constants.HIVE_BUILDINGS_TYPES
 
 local DEFINES_WIRE_TYPE_RED = defines.wire_type.red
 local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
@@ -217,6 +216,24 @@ local function scorePlayerBuildings(map, chunk)
     return 0
 end
 
+local registerTypeToAddFn = {
+    ["spitter-spawner"] = addNestCount,
+    ["biter-spawner"] = addNestCount,
+    ["turret"] = addTurretCount,
+    ["utility"] = addUtilityCount,
+    ["hive"] = addHiveCount,
+    ["unit-spawner"] = addNestCount
+}
+
+local unregisterTypeToRemoveFn = {
+    ["spitter-spawner"] = removeNestCount,
+    ["biter-spawner"] = removeNestCount,
+    ["turret"] = removeTurretCount,
+    ["utility"] = removeUtilityCount,
+    ["hive"] = removeHiveCount,
+    ["unit-spawner"] = removeNestCount
+}
+
 function ChunkUtils.initialScan(chunk, map, tick)
     local surface = map.surface
     setAreaInQueryChunkSize(Universe.isFilteredTilesQuery, chunk)
@@ -243,11 +260,6 @@ function ChunkUtils.initialScan(chunk, map, tick)
             local resources = surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
             setResourceGenerator(chunk, resources)
 
-            local counts = map.chunkScanCounts
-            for i=1,#HIVE_BUILDINGS_TYPES do
-                counts[HIVE_BUILDINGS_TYPES[i]] = 0
-            end
-
             if (#enemyBuildings > 0) then
                 local base = findNearbyBase(chunk)
                 if not base then
@@ -265,7 +277,7 @@ function ChunkUtils.initialScan(chunk, map, tick)
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
-                        ChunkUtils.registerEnemyBaseStructure(map, enemyBuilding, base, tick)
+                        ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
                         local entityName = enemyBuilding.name
                         local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
                         if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
@@ -279,7 +291,7 @@ function ChunkUtils.initialScan(chunk, map, tick)
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        ChunkUtils.registerEnemyBaseStructure(map, building, base, tick)
+                        ChunkUtils.registerEnemyBaseStructure(building, base, tick)
                     end
                 end
             end
@@ -337,10 +349,6 @@ end
 function ChunkUtils.mapScanEnemyChunk(chunk, map, tick)
     setAreaInQueryChunkSize(Universe.msecFilteredEntitiesEnemyStructureQuery, chunk)
     local buildings = map.surface.find_entities_filtered(Universe.msecFilteredEntitiesEnemyStructureQuery)
-    local counts = map.chunkScanCounts
-    for i=1,#HIVE_BUILDINGS_TYPES do
-        counts[HIVE_BUILDINGS_TYPES[i]] = 0
-    end
     if (#buildings > 0) then
         local base = findNearbyBase(chunk)
         if not base then
@@ -349,60 +357,10 @@ function ChunkUtils.mapScanEnemyChunk(chunk, map, tick)
         for i=1,#buildings do
             local building = buildings[i]
 
-            ChunkUtils.registerEnemyBaseStructure(map, building, base, tick)
+            ChunkUtils.registerEnemyBaseStructure(building, base, tick)
         end
     end
 end
-
--- function ChunkUtils.addBasesToAllEnemyStructures(tick)
---     for chunkId, chunkPack in pairs(Universe.chunkToNests) do
---         local map = chunkPack.map
---         if map.surface.valid then
---             local chunk = getChunkById(chunkId)
---             local base = findNearbyBase(chunk)
---             if not base then
---                 base = createBase(map, chunk, tick)
---             end
---             setChunkBase(chunk, base)
---         end
---     end
---     for _, map in pairs(Universe.maps) do
---         if map.surface.valid then
---             for chunkId in pairs(map.chunkToTurrets) do
---                 local chunk = getChunkById(chunkId)
---                 local base = findNearbyBase(chunk)
---                 if not base then
---                     base = createBase(map, chunk, tick)
---                 end
---                 setChunkBase(chunk, base)
---             end
---             for chunkId in pairs(map.chunkToHives) do
---                 local chunk = getChunkById(chunkId)
---                 local base = findNearbyBase(chunk)
---                 if not base then
---                     base = createBase(map, chunk, tick)
---                 end
---                 setChunkBase(chunk, base)
---             end
---             for chunkId in pairs(map.chunkToUtilities) do
---                 local chunk = getChunkById(chunkId)
---                 local base = findNearbyBase(chunk)
---                 if not base then
---                     base = createBase(map, chunk, tick)
---                 end
---                 setChunkBase(chunk, base)
---             end
---             for chunkId in pairs(map.chunkToTraps) do
---                 local chunk = getChunkById(chunkId)
---                 local base = findNearbyBase(chunk)
---                 if not base then
---                     base = createBase(map, chunk, tick)
---                 end
---                 setChunkBase(chunk, base)
---             end
---         end
---     end
--- end
 
 function ChunkUtils.entityForPassScan(map, entity)
     local overlapArray = getEntityOverlapChunks(map, entity)
@@ -472,32 +430,17 @@ function ChunkUtils.colorXY(x, y, surface, color)
     })
 end
 
-function ChunkUtils.registerEnemyBaseStructure(map, entity, base, tick, skipCount)
-    local entityType = entity.type
-
-    local addFunc
+function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
-    if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-        addFunc = addNestCount
-    elseif (hiveType == "turret") then
-        addFunc = addTurretCount
-    elseif (hiveType == "trap") then
-        addFunc = addTrapCount
-    elseif (hiveType == "utility") then
-        addFunc = addUtilityCount
-    elseif (hiveType == "hive") then
-        addFunc = addHiveCount
-    else
-        if (entityType == "turret") then
-            addFunc = addTurretCount
-        else
-            addFunc = addNestCount
-        end
-    end
+
+    local addFunc =
+        registerTypeToAddFn[hiveType]
+        or registerTypeToAddFn[entity.type]
+        or addNestCount
 
     local added = false
     local entityUnitNumber = entity.unit_number
-    local chunks = getEntityOverlapChunks(map, entity)
+    local chunks = getEntityOverlapChunks(base.map, entity)
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
@@ -505,9 +448,9 @@ function ChunkUtils.registerEnemyBaseStructure(map, entity, base, tick, skipCoun
                 added = true
                 setChunkBase(chunk, base)
                 addBaseResourceChunk(base, chunk)
-            end
-            if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-                processNestActiveness(chunk, tick)
+                if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
+                    processNestActiveness(chunk, tick)
+                end
             end
         end
     end
@@ -517,28 +460,12 @@ function ChunkUtils.registerEnemyBaseStructure(map, entity, base, tick, skipCoun
 end
 
 function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, skipCount)
-    local entityType = entity.type
-
-    local removeFunc
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
-    if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-        removeFunc = removeNestCount
-    elseif (hiveType == "turret") then
-        removeFunc = removeTurretCount
-    elseif (hiveType == "trap") then
-        removeFunc = removeTrapCount
-    elseif (hiveType == "utility") then
-        removeFunc = removeUtilityCount
-    elseif (hiveType == "hive") then
-        removeFunc = removeHiveCount
-    else
-        if (entityType == "turret") then
-            removeFunc = removeTurretCount
-        else
-            hiveType = "biter-spawner"
-            removeFunc = removeNestCount
-        end
-    end
+
+    local removeFunc =
+        unregisterTypeToRemoveFn[hiveType]
+        or unregisterTypeToRemoveFn[entity.type]
+        or removeNestCount
 
     local entityUnitNumber = entity.unit_number
     local usedBases = {}
@@ -548,13 +475,14 @@ function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
         if (chunk ~= -1) then
             if removeFunc(chunk, entityUnitNumber) then
                 local base = chunk.base
-                if not usedBases[base.id] then
-                    usedBases[base.id] = true
+                local baseId = base.id
+                if not usedBases[baseId] then
+                    usedBases[baseId] = true
                     if damageTypeName then
                         base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 3
                         base.deathEvents = base.deathEvents + 3
                     end
-                    if (not skipCount) and (hiveType ~= "trap") then
+                    if (not skipCount) then
                         base.lostEnemyBuilding = base.lostEnemyBuilding + 1
                     end
                 end

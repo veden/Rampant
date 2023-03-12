@@ -327,15 +327,11 @@ local function onConfigChanged()
 
     Upgrade.setCommandForces(npcForces, enemyForces)
 
-    if not Universe.maps then
-        Universe.maps = {}
-    end
     for _,surface in pairs(game.surfaces) do
         if not Universe.maps[surface.index] then
             prepMap(surface)
         end
     end
-    -- addBasesToAllEnemyStructures(game.tick)
 
     if not Universe.ranIncompatibleMessage and Universe.newEnemies and
         (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
@@ -361,7 +357,7 @@ local function onEnemyBaseBuild(event)
                                   event.tick)
             end
 
-            registerEnemyBaseStructure(map, entity, base, event.tick)
+            registerEnemyBaseStructure(entity, base, event.tick)
 
             if Universe.NEW_ENEMIES then
                 queueUpgrade(entity,
@@ -1210,7 +1206,7 @@ local function removeNewEnemies()
                                               chunk,
                                               tick)
                         end
-                        registerEnemyBaseStructure(map, newEntity, base, tick)
+                        registerEnemyBaseStructure(newEntity, base, tick)
                     end
                 end
             end
@@ -1306,7 +1302,7 @@ local function removeFaction(cmd)
                                               chunk,
                                               tick)
                         end
-                        registerEnemyBaseStructure(map, newEntity, base, tick)
+                        registerEnemyBaseStructure(newEntity, base, tick)
                     end
                 end
             end

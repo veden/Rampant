@@ -94,10 +94,6 @@ function MapUtils.getChunkByPosition(map, position)
     return -1
 end
 
-function MapUtils.getChunkById(chunkId)
-    return Universe.chunkIdToChunk[chunkId] or -1
-end
-
 function MapUtils.positionToChunkXY(position)
     local chunkX = mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
     local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
@@ -170,12 +166,17 @@ function MapUtils.removeProcessQueueChunk(processQueue, chunk)
 end
 
 function MapUtils.removeChunkFromMap(map, chunk)
-    local chunkId = chunk.id
     local x = chunk.x
     local y = chunk.y
-    MapUtils.removeProcessQueueChunk(map.processQueue, chunk)
+
+    if not map[x][y] then
+        return
+    end
+
     map[x][y] = nil
-    Universe.chunkIdToChunk[chunkId] = nil
+    local chunkId = chunk.id
+    MapUtils.removeProcessQueueChunk(map.processQueue, chunk)
+
     Universe.chunkToActiveNest[chunkId] = nil
     Universe.chunkToActiveRaidNest[chunkId] = nil
     Universe.chunkToDrained[chunkId] = nil
@@ -187,17 +188,13 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.chunkToUtilities[chunkId] = nil
     Universe.chunkToHives[chunkId] = nil
     Universe.vengenceQueue[chunkId] = nil
-    Universe.processActiveNest[chunkId] = nil
     Universe.chunkToVictory[chunkId] = nil
-    local base = map.chunkToBase[chunkId]
+
+    local base = chunk.base
     if base then
         base.chunkCount = base.chunkCount - 1
-        map.chunkToBase[chunkId] = nil
     end
 
-    if Universe.processActiveNestIterator == chunkId then
-        Universe.processActiveNestIterator = nil
-    end
     if Universe.processNestIterator == chunkId then
         Universe.processNestIterator = nil
     end
