@@ -183,7 +183,7 @@ local function onIonCannonFired(event)
         local base = findNearbyBase(chunk)
         if base then
             base.ionCannonBlasts = base.ionCannonBlasts + 1
-            rallyUnits(chunk, event.tick, base)
+            rallyUnits(chunk, event.tick)
             modifyBaseUnitPoints(base, 4000, "Ion Cannon")
         end
     end
@@ -477,7 +477,7 @@ local function onDeath(event)
                         modifyBaseUnitPoints(base, -(20*UNIT_DEATH_POINT_COST), "20 Units Lost")
                     end
                     if (Universe.random() < Universe.rallyThreshold) and not surface.peaceful_mode then
-                        rallyUnits(chunk, tick, base)
+                        rallyUnits(chunk, tick)
                     end
                     if artilleryBlast then
                         base.artilleryBlasts = base.artilleryBlasts + 1
@@ -502,7 +502,7 @@ local function onDeath(event)
                     elseif (entityType == "turret") then
                         modifyBaseUnitPoints(base, RECOVER_WORM_COST, "Worm Lost")
                     end
-                    rallyUnits(chunk, tick, base)
+                    rallyUnits(chunk, tick)
                     if artilleryBlast then
                         base.artilleryBlasts = base.artilleryBlasts + 1
                     end

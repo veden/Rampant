@@ -1033,26 +1033,30 @@ local function scoreNeighborsForFormation(neighborChunks, validFunction, scoreFu
     return highestChunk, highestDirection
 end
 
-function Squad.rallyUnits(chunk, tick, base)
-    if ((tick - getRallyTick(chunk) > COOLDOWN_RALLY) and (base.unitPoints >= AI_VENGENCE_SQUAD_COST)) then
-        setRallyTick(chunk, tick)
-        local cX = chunk.x
-        local cY = chunk.y
-        local startX, endX, stepX, startY, endY, stepY = visitPattern(tick % 4, cX, cY, RALLY_CRY_DISTANCE)
-        local vengenceQueue = Universe.vengenceQueue
-        local map = chunk.map
-        for x=startX, endX, stepX do
-            for y=startY, endY, stepY do
-                if (x ~= cX) and (y ~= cY) then
-                    local rallyChunk = getChunkByXY(map, x, y)
-                    if (rallyChunk ~= -1) and rallyChunk.nestCount then
+function Squad.rallyUnits(chunk, tick)
+    if (tick - getRallyTick(chunk)) < COOLDOWN_RALLY then
+        return
+    end
+    setRallyTick(chunk, tick)
+    local cX = chunk.x
+    local cY = chunk.y
+    local startX, endX, stepX, startY, endY, stepY = visitPattern(tick % 4, cX, cY, RALLY_CRY_DISTANCE)
+    local vengenceQueue = Universe.vengenceQueue
+    local map = chunk.map
+    for x=startX, endX, stepX do
+        for y=startY, endY, stepY do
+            if (x ~= cX) and (y ~= cY) then
+                local rallyChunk = getChunkByXY(map, x, y)
+                if rallyChunk ~= -1 then
+                    local base = rallyChunk.base
+                    if rallyChunk.nestCount
+                        and (base.unitPoints >= AI_VENGENCE_SQUAD_COST)
+                    then
                         vengenceQueue[rallyChunk.id] = rallyChunk
                     end
                 end
             end
         end
-
-        return true
     end
 end
 
