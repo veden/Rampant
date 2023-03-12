@@ -19,7 +19,7 @@ local Upgrade = {}
 -- imports
 
 local Constants = require("libs/Constants")
-local ChunkProcessor = require("libs/ChunkProcessor")
+local Processor = require("libs/Processor")
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local MapUtils = require("libs/MapUtils")
 
@@ -58,7 +58,7 @@ local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
 local sFind = string.find
 local queueGeneratedChunk = MapUtils.queueGeneratedChunk
-local processPendingChunks = ChunkProcessor.processPendingChunks
+local processPendingChunks = Processor.processPendingChunks
 
 -- module code
 

@@ -25,57 +25,99 @@ local Universe
 
 -- imports
 
-local stringUtils = require("StringUtils")
-local mathUtils = require("MathUtils")
-local constants = require("Constants")
-local chunkPropertyUtils = require("ChunkPropertyUtils")
-local mapUtils = require("MapUtils")
-local queryUtils = require("QueryUtils")
+local Utils = require("Utils")
+local MathUtils = require("MathUtils")
+local Constants = require("Constants")
+local MapUtils = require("MapUtils")
 
--- constants
+-- Constants
 
-local TIERS = constants.TIERS
-local EVO_TO_TIER_MAPPING = constants.EVO_TO_TIER_MAPPING
-local PROXY_ENTITY_LOOKUP = constants.PROXY_ENTITY_LOOKUP
-local BUILDING_HIVE_TYPE_LOOKUP = constants.BUILDING_HIVE_TYPE_LOOKUP
-local COST_LOOKUP = constants.COST_LOOKUP
-local UPGRADE_LOOKUP = constants.UPGRADE_LOOKUP
+local TIERS = Constants.TIERS
+local EVO_TO_TIER_MAPPING = Constants.EVO_TO_TIER_MAPPING
+local PROXY_ENTITY_LOOKUP = Constants.PROXY_ENTITY_LOOKUP
+local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
+local COST_LOOKUP = Constants.COST_LOOKUP
+local UPGRADE_LOOKUP = Constants.UPGRADE_LOOKUP
 
-local ENEMY_ALIGNMENT_LOOKUP = constants.ENEMY_ALIGNMENT_LOOKUP
+local ENEMY_ALIGNMENT_LOOKUP = Constants.ENEMY_ALIGNMENT_LOOKUP
 
-local EVOLUTION_TABLE_ALIGNMENT = constants.EVOLUTION_TABLE_ALIGNMENT
-local BUILDING_EVOLVE_LOOKUP = constants.BUILDING_EVOLVE_LOOKUP
+local EVOLUTION_TABLE_ALIGNMENT = Constants.EVOLUTION_TABLE_ALIGNMENT
+local BUILDING_EVOLVE_LOOKUP = Constants.BUILDING_EVOLVE_LOOKUP
 
-local MINIMUM_BUILDING_COST = constants.MINIMUM_BUILDING_COST
-local FACTION_MUTATION_MAPPING = constants.FACTION_MUTATION_MAPPING
+local BASE_AI_STATE_RAIDING = Constants.BASE_AI_STATE_RAIDING
+local BASE_AI_STATE_AGGRESSIVE = Constants.BASE_AI_STATE_AGGRESSIVE
+local BASE_AI_STATE_MIGRATING = Constants.BASE_AI_STATE_MIGRATING
+local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
+local BASE_AI_STATE_ONSLAUGHT = Constants.BASE_AI_STATE_ONSLAUGHT
 
-local MAGIC_MAXIMUM_NUMBER = constants.MAGIC_MAXIMUM_NUMBER
+local MINIMUM_BUILDING_COST = Constants.MINIMUM_BUILDING_COST
+local FACTION_MUTATION_MAPPING = Constants.FACTION_MUTATION_MAPPING
 
-local FACTIONS_BY_DAMAGE_TYPE = constants.FACTIONS_BY_DAMAGE_TYPE
+local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
-local BASE_GENERATION_STATE_ACTIVE = constants.BASE_GENERATION_STATE_ACTIVE
+local FACTIONS_BY_DAMAGE_TYPE = Constants.FACTIONS_BY_DAMAGE_TYPE
 
-local BASE_DISTANCE_THRESHOLD = constants.BASE_DISTANCE_THRESHOLD
-local BASE_DISTANCE_LEVEL_BONUS = constants.BASE_DISTANCE_LEVEL_BONUS
-local BASE_DISTANCE_TO_EVO_INDEX = constants.BASE_DISTANCE_TO_EVO_INDEX
+local BASE_GENERATION_STATE_ACTIVE = Constants.BASE_GENERATION_STATE_ACTIVE
 
-local CHUNK_SIZE = constants.CHUNK_SIZE
+local BASE_DISTANCE_THRESHOLD = Constants.BASE_DISTANCE_THRESHOLD
+local BASE_DISTANCE_LEVEL_BONUS = Constants.BASE_DISTANCE_LEVEL_BONUS
+local BASE_DISTANCE_TO_EVO_INDEX = Constants.BASE_DISTANCE_TO_EVO_INDEX
 
-local BASE_AI_STATE_PEACEFUL = constants.BASE_AI_STATE_PEACEFUL
+local CHUNK_SIZE = Constants.CHUNK_SIZE
+
+local BASE_AI_STATE_PEACEFUL = Constants.BASE_AI_STATE_PEACEFUL
+
+local BASE_RALLY_CHANCE = Constants.BASE_RALLY_CHANCE
+local BONUS_RALLY_CHANCE = Constants.BONUS_RALLY_CHANCE
+
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN = Constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN
+local RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX = Constants.RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX
+local MINIMUM_AI_POINTS = Constants.MINIMUM_AI_POINTS
+
+local AI_POINT_GENERATOR_AMOUNT = Constants.AI_POINT_GENERATOR_AMOUNT
+
+local BASE_AI_MIN_STATE_DURATION = Constants.BASE_AI_MIN_STATE_DURATION
+local BASE_AI_MAX_STATE_DURATION = Constants.BASE_AI_MAX_STATE_DURATION
+local NO_RETREAT_BASE_PERCENT = Constants.NO_RETREAT_BASE_PERCENT
+local NO_RETREAT_EVOLUTION_BONUS_MAX = Constants.NO_RETREAT_EVOLUTION_BONUS_MAX
+
+local AI_UNIT_REFUND = Constants.AI_UNIT_REFUND
+local AI_MAX_POINTS = Constants.AI_MAX_POINTS
+local BASE_GENERATION_MIN_STATE_DURATION = Constants.BASE_GENERATION_MIN_STATE_DURATION
+local BASE_GENERATION_MAX_STATE_DURATION = Constants.BASE_GENERATION_MAX_STATE_DURATION
+local BASE_GENERATION_STATE_DORMANT = Constants.BASE_GENERATION_STATE_DORMANT
+local STATE_ENGLISH = Constants.STATE_ENGLISH
+
+local ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS = Constants.ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS
+local ALL_NESTS_PER_EXPANSION_GROUPS = Constants.ALL_NESTS_PER_EXPANSION_GROUPS
+local TEMPERAMENT_RANGE_MAX = Constants.TEMPERAMENT_RANGE_MAX
+local TEMPERAMENT_RANGE_MIN = Constants.TEMPERAMENT_RANGE_MIN
+local TEMPERAMENT_DIVIDER = Constants.TEMPERAMENT_DIVIDER
+local UNIT_DEATH_POINT_COST = Constants.UNIT_DEATH_POINT_COST
+local BASE_PROCESS_INTERVAL = Constants.BASE_PROCESS_INTERVAL
 
 -- imported functions
 
-local isMember = stringUtils.isMember
+local getTimeStringFromTick = Utils.getTimeStringFromTick
 
-local setPositionXYInQuery = queryUtils.setPositionXYInQuery
+local randomTickEvent = MathUtils.randomTickEvent
+local linearInterpolation = MathUtils.linearInterpolation
+local randomTickDuration = MathUtils.randomTickDuration
 
-local euclideanDistancePoints = mathUtils.euclideanDistancePoints
+local isMember = Utils.isMember
 
-local getChunkByPosition = mapUtils.getChunkByPosition
+local setPositionXYInQuery = Utils.setPositionXYInQuery
 
-local gaussianRandomRangeRG = mathUtils.gaussianRandomRangeRG
+local euclideanDistancePoints = MathUtils.euclideanDistancePoints
+
+local getChunkByPosition = MapUtils.getChunkByPosition
+
+local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 
 local mFloor = math.floor
+local mCeil = math.ceil
+
+local tableSize = table_size
 
 local tableRemove = table.remove
 local mMin = math.min
@@ -303,6 +345,50 @@ function BaseUtils.recycleBases()
     end
 end
 
+function BaseUtils.canAttack(base)
+    local isAggressive = ((base.stateAI == BASE_AI_STATE_AGGRESSIVE)
+        and (base.sentAggressiveGroups < base.maxAggressiveGroups))
+    local isRaiding = (base.stateAI == BASE_AI_STATE_RAIDING)
+    local isOnslaught = (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
+    local isRaidSieging = Universe.raidAIToggle
+        and (base.stateAI == BASE_AI_STATE_SIEGE)
+        and (base.sentExpansionGroups >= base.maxExpansionGroups)
+    local goodAI = isAggressive or isRaiding or isOnslaught or isRaidSieging
+    if not goodAI then
+        return false
+    end
+    local surface = base.map.surface
+    if surface.peaceful_mode then
+        return false
+    end
+    local nocturalMode = Universe.aiNocturnalMode
+    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
+    if not noctural then
+        return false
+    end
+    return true
+end
+
+function BaseUtils.canMigrate(base)
+    local badAIState = (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE)
+    if badAIState then
+        return false
+    end
+    if not Universe.expansion then
+        return false
+    end
+    local surface = base.map.surface
+    if surface.peaceful_mode then
+        return false
+    end
+    local nocturalMode = Universe.aiNocturnalMode
+    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
+    if not noctural then
+        return false
+    end
+    return true
+end
+
 function BaseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDelay)
     Universe.pendingUpgrades[entity.unit_number] = {
         ["position"] = disPos,
@@ -402,7 +488,7 @@ local function pickMutationFromDamageType(damageType, roll, base)
                         Universe.MAX_BASE_MUTATIONS})
         end
     end
-    local alignmentCount = table_size(base.alignmentHistory)
+    local alignmentCount = tableSize(base.alignmentHistory)
     while (alignmentCount > Universe.MAX_BASE_ALIGNMENT_HISTORY) do
         tableRemove(base.alignmentHistory, 1)
         alignmentCount = alignmentCount - 1
@@ -601,6 +687,488 @@ function BaseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
             gps = " [gps=" .. x .. "," .. y .. "]"
         end
         game.print("[" .. base.id .. "]:" .. base.map.surface.name .. " " .. printPointChange .. " [" .. tag .. "] Special Total:" .. string.format("%.2f", base.points) .. overflowMessage .. gps)
+    end
+end
+
+function BaseUtils.planning(evolutionLevel)
+    Universe.evolutionLevel = evolutionLevel
+    local maxPoints = mMax(AI_MAX_POINTS * evolutionLevel, MINIMUM_AI_POINTS)
+    Universe.maxPoints = maxPoints
+
+    local maxOverflowPoints = maxPoints * 3
+    Universe.maxOverflowPoints = maxOverflowPoints
+
+    local attackWaveMaxSize = Universe.attackWaveMaxSize
+    Universe.retreatThreshold = linearInterpolation(evolutionLevel,
+                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MIN,
+                                                    RETREAT_MOVEMENT_PHEROMONE_LEVEL_MAX)
+    Universe.rallyThreshold = BASE_RALLY_CHANCE + (evolutionLevel * BONUS_RALLY_CHANCE)
+    Universe.formSquadThreshold = mMax((0.35 * evolutionLevel), 0.1)
+
+    Universe.attackWaveSize = attackWaveMaxSize * (evolutionLevel ^ 1.4)
+    Universe.attackWaveDeviation = (Universe.attackWaveSize * 0.333)
+    Universe.attackWaveUpperBound = Universe.attackWaveSize + (Universe.attackWaveSize * 0.35)
+
+    if (Universe.attackWaveSize < 1) then
+        Universe.attackWaveSize = 2
+        Universe.attackWaveDeviation = 1
+        Universe.attackWaveUpperBound = 3
+    end
+
+    Universe.settlerWaveSize = linearInterpolation(evolutionLevel ^ 1.66667,
+                                                   Universe.expansionMinSize,
+                                                   Universe.expansionMaxSize)
+    Universe.settlerWaveDeviation = (Universe.settlerWaveSize * 0.33)
+
+    Universe.settlerCooldown = randomTickDuration(Universe.random,
+                                                  Universe.expansionMinTime,
+                                                  mFloor(linearInterpolation(evolutionLevel ^ 1.66667,
+                                                                             Universe.expansionMaxTime,
+                                                                             Universe.expansionMinTime)))
+
+    Universe.unitRefundAmount = AI_UNIT_REFUND * evolutionLevel
+    Universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolutionLevel * NO_RETREAT_EVOLUTION_BONUS_MAX)
+end
+
+local function processBase(base, tick)
+
+    base.maxAggressiveGroups = mCeil(base.activeNests / ACTIVE_NESTS_PER_AGGRESSIVE_GROUPS)
+    base.maxExpansionGroups = mCeil((base.activeNests + base.activeRaidNests) / ALL_NESTS_PER_EXPANSION_GROUPS)
+
+    if (base.stateAI == BASE_AI_STATE_MIGRATING or base.stateAI == BASE_AI_STATE_SIEGE)
+        and base.resetExpensionGroupsTick <= tick
+    then
+        base.resetExpensionGroupsTick = tick + Universe.settlerCooldown
+        base.sentExpansionGroups = 0
+    end
+
+    local points = (AI_POINT_GENERATOR_AMOUNT * Universe.random()) +
+        (base.activeNests * 0.144) +
+        (AI_POINT_GENERATOR_AMOUNT * mMax(Universe.evolutionLevel ^ 2.5, 0.1))
+
+    if (base.temperament == 0) or (base.temperament == 1) then
+        points = points + 24
+    elseif (base.temperament < 0.20) or (base.temperament > 0.80) then
+        points = points + 14.4
+    elseif (base.temperament < 0.35) or (base.temperament > 0.65) then
+        points = points + 9.6
+    elseif (base.temperament < 0.45) or (base.temperament > 0.55) then
+        points = points + 4.8
+    end
+
+    if (base.stateAI == BASE_AI_STATE_ONSLAUGHT) then
+        points = points * 2
+    end
+
+    points = points * Universe.aiPointsScaler
+
+    local currentPoints = base.unitPoints
+
+    if (currentPoints <= 0) then
+        currentPoints = 0
+    end
+
+    if (currentPoints < Universe.maxPoints) then
+        BaseUtils.modifyBaseUnitPoints(base, points, "Logic Cycle", base.x, base.y)
+    end
+
+    if (base.points < Universe.maxPoints) then
+        BaseUtils.modifyBaseSpecialPoints(base, (points * 0.75), "Logic Cycle", base.x, base.y)
+    end
+
+    if Universe.NEW_ENEMIES then
+        local deathThreshold = 0
+        local evolutionLevel = Universe.evolutionLevel
+        if (evolutionLevel < Universe.minimumAdaptationEvolution) then
+            base.deathEvents = 0
+        elseif (evolutionLevel < 0.5) then
+            deathThreshold = 17000
+        elseif (evolutionLevel < 0.7) then
+            deathThreshold = 34000
+        elseif (evolutionLevel < 0.9) then
+            deathThreshold = 60000
+        else
+            deathThreshold = 100000
+        end
+
+        deathThreshold = Universe.adaptationModifier * deathThreshold
+        if ((base.deathEvents > deathThreshold) and (Universe.random() > 0.95)) then
+            if (base.mutations < Universe.MAX_BASE_MUTATIONS) then
+                if BaseUtils.upgradeBaseBasedOnDamage(base) then
+                    base.mutations = base.mutations + 1
+                end
+            elseif (base.mutations == Universe.MAX_BASE_MUTATIONS) then
+                local roll = Universe.random()
+                if (roll < 0.001) then
+                    base.mutations = 0
+                    if (Universe.printBaseAdaptation) then
+                        game.print({"description.rampant--adaptationResetDebugMessage",
+                                    base.x,
+                                    base.y,
+                                    base.mutations,
+                                    Universe.MAX_BASE_MUTATIONS})
+                    end
+                elseif (roll > 0.999) then
+                    base.mutations = base.mutations + 1
+                    if (Universe.printBaseAdaptation) then
+                        game.print({"description.rampant--adaptationFrozenDebugMessage",
+                                    base.x,
+                                    base.y})
+                    end
+                end
+            end
+            base.damagedBy = {}
+            base.deathEvents = 0
+        end
+    else
+        base.damagedBy = {}
+        base.deathEvents = 0
+    end
+
+    if (base.stateGenerationTick <= tick) then
+        local roll = Universe.random()
+        if (roll < 0.85) then
+            base.stateGeneration = BASE_GENERATION_STATE_ACTIVE
+        else
+            base.stateGeneration = BASE_GENERATION_STATE_DORMANT
+        end
+        base.stateGenerationTick = randomTickEvent(Universe.random,
+                                                   tick,
+                                                   BASE_GENERATION_MIN_STATE_DURATION,
+                                                   BASE_GENERATION_MAX_STATE_DURATION)
+    end
+
+    base.tick = tick
+end
+
+local function temperamentPlanner(base, evolutionLevel)
+    local destroyPlayerBuildings = base.destroyPlayerBuildings
+    local lostEnemyUnits = base.lostEnemyUnits
+    local lostEnemyBuilding = base.lostEnemyBuilding
+    local rocketLaunched = base.rocketLaunched
+    local builtEnemyBuilding = base.builtEnemyBuilding
+    local ionCannonBlasts = base.ionCannonBlasts
+    local artilleryBlasts = base.artilleryBlasts
+    local activeNests = base.activeNests
+    local activeRaidNests = base.activeRaidNests
+
+    local currentTemperament = base.temperamentScore
+    local delta = 0
+
+    if activeNests > 0 then
+        local val = (5.76 * activeNests)
+        delta = delta + val
+    else
+        delta = delta - 5.553792
+    end
+
+    if destroyPlayerBuildings > 0 then
+        if currentTemperament > 0 then
+            delta = delta - (5.553792 * destroyPlayerBuildings)
+        else
+            delta = delta + (5.553792 * destroyPlayerBuildings)
+        end
+    end
+
+    if activeRaidNests > 0 then
+        local val = (0.2304 * activeRaidNests)
+        delta = delta - val
+    else
+        delta = delta - 3.84
+    end
+
+    if lostEnemyUnits > 0 then
+        local multipler
+        if evolutionLevel < 0.3 then
+            multipler = 0.083328
+        elseif evolutionLevel < 0.5 then
+            multipler = 0.041472
+        elseif evolutionLevel < 0.7 then
+            multipler = 0.020736
+        elseif evolutionLevel < 0.9 then
+            multipler = 0.010368
+        elseif evolutionLevel < 0.9 then
+            multipler = 0.005184
+        else
+            multipler = 0.002592
+        end
+        local val = (multipler * lostEnemyUnits)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    end
+
+    if lostEnemyBuilding > 0 then
+        local val = (0.576 * lostEnemyBuilding)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    end
+
+    if builtEnemyBuilding > 0 then
+        local val = (0.261952 * builtEnemyBuilding)
+        if (currentTemperament > 0) then
+            delta = delta - val
+        else
+            delta = delta + val
+        end
+    else
+        delta = delta - 2.777088
+    end
+
+    if (rocketLaunched > 0) then
+        local val = (27.76 * rocketLaunched)
+        delta = delta + val
+    end
+
+    if (ionCannonBlasts > 0) then
+        local val = (13.924864 * ionCannonBlasts)
+        delta = delta + val
+    end
+
+    if (artilleryBlasts > 0) then
+        local val = (13.924864 * artilleryBlasts)
+        delta = delta + val
+    end
+
+    delta = delta * Universe.temperamentRateModifier
+    base.temperamentScore = mMin(TEMPERAMENT_RANGE_MAX, mMax(TEMPERAMENT_RANGE_MIN, currentTemperament + delta))
+    base.temperament = ((base.temperamentScore + TEMPERAMENT_RANGE_MAX) * TEMPERAMENT_DIVIDER)
+
+    if Universe.debugTemperament then
+        local strConsole = "Rampant Stats:\nbaseId:".. base.id .. ", aN:" .. base.activeNests ..
+            ", aRN:" .. base.activeRaidNests .. ", dPB:" ..
+            base.destroyPlayerBuildings .. ", lEU:" .. base.lostEnemyUnits .. ", lEB:" ..
+            base.lostEnemyBuilding .. ", rL:" .. base.rocketLaunched .. ", bEB:" ..
+            base.builtEnemyBuilding .. ", iCB:" .. base.ionCannonBlasts .. ", aB:" ..
+            base.artilleryBlasts .. ", temp:" .. base.temperament .. ", tempScore:" .. base.temperamentScore ..
+            ", points:" .. base.points .. ", unitPoints:" .. base.unitPoints .. ", state:" ..
+            STATE_ENGLISH[base.stateAI] .. ", surface:" .. base.map.surface.index .. " [" ..
+            base.map.surface.name .. "]" .. ", aS:" .. Universe.squadCount .. ", aB:" .. Universe.builderCount ..
+            ", atkSize:" .. Universe.attackWaveSize .. ", stlSize:" .. Universe.settlerWaveSize ..
+            ", formGroup:" .. Universe.formSquadThreshold .. ", sAgg:".. base.sentAggressiveGroups ..
+            ", mAgg:" .. base.maxAggressiveGroups .. ", baseState:" .. base.stateGeneration .. ", sE:"
+            .. base.sentExpansionGroups .. ", mE:" .. base.maxExpansionGroups
+        game.print(strConsole)
+        print(strConsole)
+    end
+end
+
+local function processState(base, tick)
+
+    if (base.stateAITick > tick) or not Universe.awake then
+        if (not Universe.awake) and (tick >= Universe.initialPeaceTime) then
+            Universe.awake = true
+            if Universe.printAwakenMessage then
+                game.print({"description.rampant--planetHasAwoken"})
+            end
+        else
+            return
+        end
+    end
+    local roll = Universe.random()
+    if (base.temperament < 0.05) then -- 0 - 0.05
+        if Universe.enabledMigration then
+            if (roll < 0.30) then
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            elseif (roll < 0.50) and Universe.raidAIToggle then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            elseif Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            else
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            end
+        else
+            if Universe.raidAIToggle then
+                if (roll < 0.70) then
+                    base.stateAI = BASE_AI_STATE_RAIDING
+                else
+                    base.stateAI = BASE_AI_STATE_AGGRESSIVE
+                end
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (base.temperament < 0.20) then -- 0.05 - 0.2
+        if (Universe.enabledMigration) then
+            if (roll < 0.4) then
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            elseif (roll < 0.55) and Universe.raidAIToggle then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            elseif Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            else
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            end
+        else
+            if Universe.raidAIToggle then
+                if (roll < 0.40) then
+                    base.stateAI = BASE_AI_STATE_AGGRESSIVE
+                else
+                    base.stateAI = BASE_AI_STATE_RAIDING
+                end
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (base.temperament < 0.4) then -- 0.2 - 0.4
+        if (Universe.enabledMigration) then
+            if (roll < 0.2) and Universe.raidAIToggle then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            elseif (roll < 0.2) then
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            elseif (roll < 0.8) then
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            elseif Universe.peacefulAIToggle then
+                base.stateAI = BASE_AI_STATE_PEACEFUL
+            else
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            end
+        else
+            if (roll < 0.3) then
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            elseif (roll < 0.6) and Universe.raidAIToggle then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            elseif (roll < 0.6) then
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            elseif Universe.peacefulAIToggle then
+                base.stateAI = BASE_AI_STATE_PEACEFUL
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (base.temperament < 0.6) then -- 0.4 - 0.6
+        if (roll < 0.4) then
+            base.stateAI = BASE_AI_STATE_AGGRESSIVE
+        elseif (roll < 0.5) and Universe.raidAIToggle then
+            base.stateAI = BASE_AI_STATE_RAIDING
+        elseif (roll < 0.75) and Universe.peacefulAIToggle then
+            base.stateAI = BASE_AI_STATE_PEACEFUL
+        else
+            if Universe.enabledMigration then
+                base.stateAI = BASE_AI_STATE_MIGRATING
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        end
+    elseif (base.temperament < 0.8) then -- 0.6 - 0.8
+        if (roll < 0.4) then
+            base.stateAI = BASE_AI_STATE_AGGRESSIVE
+        elseif (roll < 0.6) then
+            base.stateAI = BASE_AI_STATE_ONSLAUGHT
+        elseif (roll < 0.8) then
+            base.stateAI = BASE_AI_STATE_RAIDING
+        elseif Universe.peacefulAIToggle then
+            base.stateAI = BASE_AI_STATE_PEACEFUL
+        else
+            base.stateAI = BASE_AI_STATE_AGGRESSIVE
+        end
+    elseif (base.temperament < 0.95) then -- 0.8 - 0.95
+        if (Universe.enabledMigration and Universe.raidAIToggle) then
+            if (roll < 0.20) and Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            elseif (roll < 0.45) then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            elseif (roll < 0.85) then
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        elseif (Universe.enabledMigration) then
+            if (roll < 0.20) and Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            elseif (roll < 0.75) then
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        elseif (Universe.raidAIToggle) then
+            if (roll < 0.45) then
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            elseif (roll < 0.75) then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        else
+            if (roll < 0.65) then
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            else
+                base.stateAI = BASE_AI_STATE_AGGRESSIVE
+            end
+        end
+    else
+        if (Universe.enabledMigration and Universe.raidAIToggle) then
+            if (roll < 0.30) and Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            elseif (roll < 0.65) then
+                base.stateAI = BASE_AI_STATE_RAIDING
+            else
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            end
+        elseif (Universe.enabledMigration) then
+            if (roll < 0.30) and Universe.siegeAIToggle then
+                base.stateAI = BASE_AI_STATE_SIEGE
+            else
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            end
+        elseif (Universe.raidAIToggle) then
+            if (roll < 0.45) then
+                base.stateAI = BASE_AI_STATE_ONSLAUGHT
+            else
+                base.stateAI = BASE_AI_STATE_RAIDING
+            end
+        else
+            base.stateAI = BASE_AI_STATE_ONSLAUGHT
+        end
+    end
+
+    local remainingUnits = base.lostEnemyUnits % 20
+    if remainingUnits ~= 0 then
+        BaseUtils.modifyBaseUnitPoints(base, -(remainingUnits*UNIT_DEATH_POINT_COST), remainingUnits.." Units Lost")
+    end
+
+    base.destroyPlayerBuildings = 0
+    base.lostEnemyUnits = 0
+    base.lostEnemyBuilding = 0
+    base.rocketLaunched = 0
+    base.builtEnemyBuilding = 0
+    base.ionCannonBlasts = 0
+    base.artilleryBlasts = 0
+
+    base.stateAITick = randomTickEvent(Universe.random, tick, BASE_AI_MIN_STATE_DURATION, BASE_AI_MAX_STATE_DURATION)
+
+    if Universe.printAIStateChanges then
+        game.print(base.id .. ": AI is now: " .. STATE_ENGLISH[base.stateAI] .. ", Next state change is in "
+                   .. string.format("%.2f", (base.stateAITick - tick) / (60*60)) .. " minutes @ " ..
+                   getTimeStringFromTick(base.stateAITick) .. " playtime")
+    end
+
+end
+
+function BaseUtils.processBaseAIs(tick)
+    local baseId = Universe.processBaseAIIterator
+    local base
+    if not baseId then
+        baseId, base = next(Universe.bases, nil)
+    else
+        base = Universe.bases[baseId]
+    end
+    if not baseId then
+        Universe.processBaseAIIterator = nil
+        return
+    else
+        Universe.processBaseAIIterator = next(Universe.bases, baseId)
+        if (tick - base.tick) <= BASE_PROCESS_INTERVAL then
+            return
+        end
+        temperamentPlanner(base, Universe.evolutionLevel)
+        processState(base, tick)
+        processBase(base, tick)
     end
 end
 

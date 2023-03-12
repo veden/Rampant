@@ -22,7 +22,7 @@ local chunkUtils = require("libs/ChunkUtils")
 local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local mapUtils = require("libs/MapUtils")
 local baseUtils = require("libs/BaseUtils")
-local queryUtils = require("libs/QueryUtils")
+local Utils = require("libs/Utils")
 -- local tendrilUtils = require("libs/TendrilUtils")
 
 function tests.chunkCount()
@@ -364,7 +364,7 @@ function tests.scanEnemy()
     local chunk = mapUtils.getChunkByPosition(map, game.player.character.position)
     local universe = map.universe
     local query = universe.filteredEntitiesEnemyStructureQuery
-    queryUtils.setAreaInQuery(query, chunk, constants.CHUNK_SIZE)
+    Utils.setAreaInQuery(query, chunk, constants.CHUNK_SIZE)
     local buildings = map.surface.find_entities_filtered(query)
     local counts = map.chunkScanCounts
     for i=1,#constants.HIVE_BUILDINGS_TYPES do

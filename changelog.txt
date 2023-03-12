@@ -63,6 +63,8 @@ Version: 3.2.0
     - Reduced corpse and particle variation to optimize increased entity times due to high entity counts
     - Removed unneeded iterators
     - Moved map properties directly into chunk object
+  Framework:
+    - Consolidated most libraries
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.2

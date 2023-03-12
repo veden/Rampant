@@ -18,24 +18,15 @@
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local UnitUtils = require("libs/UnitUtils")
 local BaseUtils = require("libs/BaseUtils")
-local MapUtils = require("libs/MapUtils")
 local MathUtils = require("libs/MathUtils")
-local UnitGroupUtils = require("libs/UnitGroupUtils")
-local ChunkProcessor = require("libs/ChunkProcessor")
-local MapProcessor = require("libs/MapProcessor")
+local Processor = require("libs/Processor")
 local Constants = require("libs/Constants")
-local PheromoneUtils = require("libs/PheromoneUtils")
-local SquadDefense = require("libs/SquadDefense")
-local SquadAttack = require("libs/SquadAttack")
-local AiAttackWave = require("libs/AIAttackWave")
-local AiPlanning = require("libs/AIPlanning")
-local MovementUtils = require("libs/MovementUtils")
+local MapUtils = require("libs/MapUtils")
+local Squad = require("libs/Squad")
 local tests = require("tests")
 local ChunkUtils = require("libs/ChunkUtils")
 local Upgrade = require("libs/Upgrade")
-local AiPredicates = require("libs/AIPredicates")
-local stringUtils = require("libs/StringUtils")
-local queryUtils = require("libs/QueryUtils")
+local Utils = require("libs/Utils")
 
 -- Constants
 
@@ -68,18 +59,18 @@ local SETTLE_CLOUD_WARMUP = Constants.SETTLE_CLOUD_WARMUP
 
 -- imported functions
 
-local isMember = stringUtils.isMember
-local split = stringUtils.split
+local isMember = Utils.isMember
+local split = Utils.split
 
-local planning = AiPlanning.planning
+local planning = BaseUtils.planning
 
 local addBasesToAllEnemyStructures = ChunkUtils.addBasesToAllEnemyStructures
 
-local setPointAreaInQuery = queryUtils.setPointAreaInQuery
+local setPointAreaInQuery = Utils.setPointAreaInQuery
 
 local nextMap = MapUtils.nextMap
 
-local processClouds = MapProcessor.processClouds
+local processClouds = Processor.processClouds
 
 local distortPosition = MathUtils.distortPosition
 local linearInterpolation = MathUtils.linearInterpolation
@@ -88,26 +79,26 @@ local prepMap = Upgrade.prepMap
 
 local findBaseInitialAlignment = BaseUtils.findBaseInitialAlignment
 
-local processBaseAIs = AiPlanning.processBaseAIs
+local processBaseAIs = BaseUtils.processBaseAIs
 
 local registerEnemyBaseStructure = ChunkUtils.registerEnemyBaseStructure
 
 local queueGeneratedChunk = MapUtils.queueGeneratedChunk
-local isRampantSetting = stringUtils.isRampantSetting
+local isRampantSetting = Utils.isRampantSetting
 
-local processPendingUpgrades = ChunkProcessor.processPendingUpgrades
-local canMigrate = AiPredicates.canMigrate
+local processPendingUpgrades = Processor.processPendingUpgrades
+local canMigrate = BaseUtils.canMigrate
 
-local squadDispatch = SquadAttack.squadDispatch
+local squadDispatch = Squad.squadDispatch
 
-local cleanUpMapTables = MapProcessor.cleanUpMapTables
+local cleanUpMapTables = Processor.cleanUpMapTables
 
 local positionToChunkXY = MapUtils.positionToChunkXY
 
-local processVengence = MapProcessor.processVengence
-local processAttackWaves = MapProcessor.processAttackWaves
+local processVengence = Processor.processVengence
+local processAttackWaves = Processor.processAttackWaves
 
-local disperseVictoryScent = PheromoneUtils.disperseVictoryScent
+local disperseVictoryScent = MapUtils.disperseVictoryScent
 
 local getChunkByPosition = MapUtils.getChunkByPosition
 
@@ -116,31 +107,31 @@ local getChunkByXY = MapUtils.getChunkByXY
 
 local entityForPassScan = ChunkUtils.entityForPassScan
 
-local processPendingChunks = ChunkProcessor.processPendingChunks
-local processScanChunks = ChunkProcessor.processScanChunks
+local processPendingChunks = Processor.processPendingChunks
+local processScanChunks = Processor.processScanChunks
 
-local processMap = MapProcessor.processMap
-local processPlayers = MapProcessor.processPlayers
-local scanEnemyMap = MapProcessor.scanEnemyMap
-local scanPlayerMap = MapProcessor.scanPlayerMap
-local scanResourceMap = MapProcessor.scanResourceMap
+local processMap = Processor.processMap
+local processPlayers = Processor.processPlayers
+local scanEnemyMap = Processor.scanEnemyMap
+local scanPlayerMap = Processor.scanPlayerMap
+local scanResourceMap = Processor.scanResourceMap
 
-local processNests = MapProcessor.processNests
+local processNests = Processor.processNests
 
-local rallyUnits = AiAttackWave.rallyUnits
+local rallyUnits = Squad.rallyUnits
 
 local recycleBases = BaseUtils.recycleBases
 
-local deathScent = PheromoneUtils.deathScent
-local victoryScent = PheromoneUtils.victoryScent
+local deathScent = MapUtils.deathScent
+local victoryScent = MapUtils.victoryScent
 
-local createSquad = UnitGroupUtils.createSquad
+local createSquad = Squad.createSquad
 
 local createBase = BaseUtils.createBase
 local findNearbyBaseByPosition = ChunkPropertyUtils.findNearbyBaseByPosition
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
-local processActiveNests = MapProcessor.processActiveNests
+local processActiveNests = Processor.processActiveNests
 
 local removeDrainPylons = ChunkPropertyUtils.removeDrainPylons
 local getDrainPylonPair = ChunkPropertyUtils.getDrainPylonPair
@@ -151,7 +142,7 @@ local isDrained = ChunkPropertyUtils.isDrained
 local setDrainedTick = ChunkPropertyUtils.setDrainedTick
 local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 
-local retreatUnits = SquadDefense.retreatUnits
+local retreatUnits = Squad.retreatUnits
 
 local accountPlayerEntity = ChunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
@@ -160,7 +151,7 @@ local makeImmortalEntity = ChunkUtils.makeImmortalEntity
 local registerResource = ChunkUtils.registerResource
 local unregisterResource = ChunkUtils.unregisterResource
 
-local cleanSquads = SquadAttack.cleanSquads
+local cleanSquads = Squad.cleanSquads
 
 local queueUpgrade = BaseUtils.queueUpgrade
 
@@ -221,20 +212,13 @@ local function hookEvents()
 end
 
 local function initializeLibraries()
-    MapProcessor.init(Universe)
-    AiPlanning.init(Universe)
-    AiAttackWave.init(Universe)
-    AiPredicates.init(Universe)
     BaseUtils.init(Universe)
-    ChunkProcessor.init(Universe)
+    Squad.init(Universe)
+    BaseUtils.init(Universe)
+    Processor.init(Universe)
     ChunkPropertyUtils.init(Universe)
     ChunkUtils.init(Universe)
     MapUtils.init(Universe)
-    MovementUtils.init(Universe)
-    PheromoneUtils.init(Universe)
-    SquadAttack.init(Universe)
-    SquadDefense.init(Universe)
-    UnitGroupUtils.init(Universe)
 end
 
 local function onLoad()

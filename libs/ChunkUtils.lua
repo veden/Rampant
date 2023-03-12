@@ -31,7 +31,7 @@ local Constants = require("Constants")
 local MapUtils = require("MapUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local MathUtils = require("MathUtils")
-local QueryUtils = require("QueryUtils")
+local Utils = require("Utils")
 
 -- Constants
 
@@ -73,9 +73,9 @@ local GENERATOR_PHEROMONE_LEVEL_6 = Constants.GENERATOR_PHEROMONE_LEVEL_6
 local removeBaseResourceChunk = ChunkPropertyUtils.removeBaseResourceChunk
 local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
 
-local setAreaInQueryChunkSize = QueryUtils.setAreaInQueryChunkSize
-local setAreaXInQuery = QueryUtils.setAreaXInQuery
-local setAreaYInQuery = QueryUtils.setAreaYInQuery
+local setAreaInQueryChunkSize = Utils.setAreaInQueryChunkSize
+local setAreaXInQuery = Utils.setAreaXInQuery
+local setAreaYInQuery = Utils.setAreaYInQuery
 
 local setPlayerBaseGenerator = ChunkPropertyUtils.setPlayerBaseGenerator
 local addPlayerBaseGenerator = ChunkPropertyUtils.addPlayerBaseGenerator
