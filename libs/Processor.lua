@@ -517,7 +517,9 @@ function Processor.processPendingUpgrades(tick)
     local entity = entityData.entity
     if not entity.valid then
         Universe.pendingUpgrades[entityId] = nil
+        return
     end
+
     if entityData.delayTLL and tick < entityData.delayTLL then
         return
     end
