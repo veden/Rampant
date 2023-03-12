@@ -82,10 +82,10 @@ function MapUtils.queueGeneratedChunk(event)
         return
     end
     event.tick = (event.tick or game.tick) + 20
+    Universe.eventId = Universe.eventId + 1
     event.id = Universe.eventId
     event.map = map
     Universe.pendingChunks[event.id] = event
-    Universe.eventId = Universe.eventId + 1
 end
 
 function MapUtils.nextMap()
@@ -155,6 +155,9 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.chunkToRallys[chunkId] = nil
     Universe.chunkToPassScan[chunkId] = nil
     Universe.chunkToNests[chunkId] = nil
+    Universe.chunkToTurrets[chunkId] = nil
+    Universe.chunkToUtilities[chunkId] = nil
+    Universe.chunkToHives[chunkId] = nil
     Universe.vengenceQueue[chunkId] = nil
     Universe.processActiveNest[chunkId] = nil
     Universe.chunkToVictory[chunkId] = nil
@@ -163,43 +166,12 @@ function MapUtils.removeChunkFromMap(map, chunk)
         base.chunkCount = base.chunkCount - 1
         map.chunkToBase[chunkId] = nil
     end
-    map.chunkToTurrets[chunkId] = nil
-    map.chunkToTraps[chunkId] = nil
-    map.chunkToUtilities[chunkId] = nil
-    map.chunkToHives[chunkId] = nil
-    map.chunkToNestIds[chunkId] = nil
-    map.chunkToHiveIds[chunkId] = nil
-    map.chunkToTrapIds[chunkId] = nil
-    map.chunkToTurretIds[chunkId] = nil
-    map.chunkToUtilityIds[chunkId] = nil
-    map.chunkToPlayerBase[chunkId] = nil
-    map.chunkToResource[chunkId] = nil
-    map.chunkToPlayerCount[chunkId] = nil
-    map.chunkToSquad[chunkId] = nil
-    map.chunkToPassable[chunkId] = nil
-    map.chunkToPathRating[chunkId] = nil
-    map.chunkToDeathGenerator[chunkId] = nil
 
     if Universe.processActiveNestIterator == chunkId then
         Universe.processActiveNestIterator = nil
     end
-    if Universe.victoryScentIterator == chunkId then
-        Universe.victoryScentIterator = nil
-    end
     if Universe.processNestIterator == chunkId then
         Universe.processNestIterator = nil
-    end
-    if Universe.chunkToDrainedIterator == chunkId then
-        Universe.chunkToDrainedIterator = nil
-    end
-    if Universe.chunkToRetreatIterator == chunkId then
-        Universe.chunkToRetreatIterator = nil
-    end
-    if Universe.chunkToRallyIterator == chunkId then
-        Universe.chunkToRallyIterator = nil
-    end
-    if Universe.chunkToPassScanIterator == chunkId then
-        Universe.chunkToPassScanIterator = nil
     end
     if Universe.processActiveSpawnerIterator == chunkId then
         Universe.processActiveSpawnerIterator = nil
@@ -209,9 +181,6 @@ function MapUtils.removeChunkFromMap(map, chunk)
     end
     if Universe.processMigrationIterator == chunkId then
         Universe.processMigrationIterator = nil
-    end
-    if Universe.deployVengenceIterator == chunkId then
-        Universe.deployVengenceIterator = nil
     end
 end
 

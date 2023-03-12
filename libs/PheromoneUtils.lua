@@ -78,50 +78,43 @@ local mMax = math.max
 
 -- module code
 
-function PheromoneUtils.victoryScent(map, chunk, entityType)
+function PheromoneUtils.victoryScent(chunk, entityType)
     local value = VICTORY_SCENT[entityType]
     if value then
-        addVictoryGenerator(map, chunk, value)
+        addVictoryGenerator(chunk, value)
     end
 end
 
 function PheromoneUtils.disperseVictoryScent()
-    local chunkId = Universe.victoryScentIterator
     local chunkToVictory = Universe.chunkToVictory
-    local pheromonePack
+    local chunkId, pheromonePack = next(chunkToVictory, nil)
     if not chunkId then
-        chunkId, pheromonePack = next(chunkToVictory, nil)
-    else
-        pheromonePack = chunkToVictory[chunkId]
+        return
     end
-    if not chunkId then
-        Universe.victoryScentIterator = nil
-    else
-        Universe.victoryScentIterator = next(chunkToVictory, chunkId)
-        chunkToVictory[chunkId] = nil
-        local map = pheromonePack.map
-        if not map.surface.valid then
-            return
-        end
-        local chunk = getChunkById(chunkId)
-        local chunkX = chunk.x
-        local chunkY = chunk.y
-        local i = 1
-        for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND,32 do
-            for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND,32 do
-                local c = getChunkByXY(map, x, y)
-                if (c ~= -1) then
-                    local amount = pheromonePack.v * VICTORY_SCENT_MULTIPLER[i]
-                    addDeathGenerator(c, amount)
-                    addPermanentDeathGenerator(c, amount)
-                end
-                i = i + 1
+
+    chunkToVictory[chunkId] = nil
+    local chunk = pheromonePack.chunk
+    local map = chunk.map
+    if not map.surface.valid then
+        return
+    end
+    local chunkX = chunk.x
+    local chunkY = chunk.y
+    local i = 1
+    for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND,32 do
+        for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND,32 do
+            local c = getChunkByXY(map, x, y)
+            if (c ~= -1) then
+                local amount = pheromonePack.v * VICTORY_SCENT_MULTIPLER[i]
+                addDeathGenerator(c, amount)
+                addPermanentDeathGenerator(c, amount)
             end
+            i = i + 1
         end
     end
 end
 
-function PheromoneUtils.deathScent(map, chunk, structure)
+function PheromoneUtils.deathScent(chunk, structure)
     local amount = -DEATH_PHEROMONE_GENERATOR_AMOUNT
     if structure then
         amount = -TEN_DEATH_PHEROMONE_GENERATOR_AMOUNT

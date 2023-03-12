@@ -207,16 +207,7 @@ function MapProcessor.processPlayers(players, tick)
                                     processNestActiveness(chunk, tick)
 
                                     if vengence then
-                                        local pack = Universe.vengenceQueue[chunk.id]
-                                        if not pack then
-                                            pack = {
-                                                v = 0,
-                                                map = map,
-                                                base = base
-                                            }
-                                            Universe.vengenceQueue[chunk.id] = pack
-                                        end
-                                        pack.v = pack.v + 1
+                                        Universe.vengenceQueue[chunk.id] = chunk
                                     end
                                 end
                             end
@@ -228,21 +219,13 @@ function MapProcessor.processPlayers(players, tick)
     end
 end
 
-local function processCleanUp(chunks, iterator, tick, duration)
-    local chunkId = Universe[iterator]
-    local eventTick
+local function processCleanUp(chunks, tick, duration)
+    local chunkId, eventTick = next(chunks, nil)
     if not chunkId then
-        chunkId, eventTick = next(chunks, nil)
-    else
-        eventTick = chunks[chunkId]
+        return
     end
-    if not chunkId then
-        Universe[iterator] = nil
-    else
-        Universe[iterator] = next(chunks, chunkId)
-        if (tick - eventTick) > duration then
-            chunks[chunkId] = nil
-        end
+    if (tick - eventTick) > duration then
+        chunks[chunkId] = nil
     end
 end
 
@@ -252,11 +235,11 @@ function MapProcessor.cleanUpMapTables(tick)
     local drained = Universe.chunkToDrained
 
     for _=1,CLEANUP_QUEUE_SIZE do
-        processCleanUp(retreats, "chunkToRetreatIterator", tick, COOLDOWN_RETREAT)
+        processCleanUp(retreats, tick, COOLDOWN_RETREAT)
 
-        processCleanUp(rallys, "chunkToRallyIterator", tick, COOLDOWN_RALLY)
+        processCleanUp(rallys, tick, COOLDOWN_RALLY)
 
-        processCleanUp(drained, "chunkToDrainedIterator", tick, COOLDOWN_DRAIN)
+        processCleanUp(drained, tick, COOLDOWN_DRAIN)
     end
 end
 
@@ -292,10 +275,6 @@ function MapProcessor.scanPlayerMap(map, tick)
 end
 
 function MapProcessor.scanEnemyMap(map, tick)
-    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or (map.nextChunkProcess == tick) then
-        return
-    end
-
     local index = map.scanEnemyIndex
 
     local processQueue = map.processQueue
@@ -319,11 +298,6 @@ function MapProcessor.scanEnemyMap(map, tick)
 end
 
 function MapProcessor.scanResourceMap(map, tick)
-    if (map.nextProcessMap == tick) or (map.nextPlayerScan == tick) or
-        (map.nextEnemyScan == tick) or (map.nextChunkProcess == tick)
-    then
-        return
-    end
     local index = map.scanResourceIndex
 
     local processQueue = map.processQueue
@@ -348,32 +322,24 @@ end
 
 function MapProcessor.processVengence()
     local vengenceQueue = Universe.vengenceQueue
-    local chunkId = Universe.deployVengenceIterator
-    local vengencePack
+    local chunkId, chunk = next(vengenceQueue, nil)
     if not chunkId then
-        chunkId, vengencePack = next(vengenceQueue, nil)
-    else
-        vengencePack = vengenceQueue[chunkId]
-    end
-    if not chunkId then
-        Universe.deployVengenceIterator = nil
         if (tableSize(vengenceQueue) == 0) then
             Universe.vengenceQueue = {}
         end
+        return
+    end
+
+    vengenceQueue[chunkId] = nil
+    local map = chunk.map
+    if not map.surface.valid then
+        return
+    end
+    local base = chunk.base
+    if canMigrate(map, base) and (Universe.random() < 0.075) then
+        formVengenceSettler(chunk, base)
     else
-        Universe.deployVengenceIterator = next(vengenceQueue, chunkId)
-        vengenceQueue[chunkId] = nil
-        local map = vengencePack.map
-        if not map.surface.valid then
-            return
-        end
-        local chunk = getChunkById(chunkId)
-        local base = vengencePack.base
-        if canMigrate(map, base) and (Universe.random() < 0.075) then
-            formVengenceSettler(map, chunk, base)
-        else
-            formVengenceSquad(map, chunk, base)
-        end
+        formVengenceSquad(chunk, base)
     end
 end
 
@@ -448,10 +414,10 @@ local function processSpawnersBody(iterator, chunks)
         local migrate = canMigrate(map, base)
         local attack = canAttack(map, base)
         if migrate then
-            formSettlers(map, chunk, base)
+            formSettlers(chunk, base)
         end
         if attack then
-            formSquads(map, chunk, base)
+            formSquads(chunk, base)
         end
     end
 end
@@ -466,16 +432,14 @@ function MapProcessor.processAttackWaves()
 end
 
 function MapProcessor.processClouds(tick)
-    local len = Universe.settlePurpleCloud.len
-    local builderPack = Universe.settlePurpleCloud[len]
+    local eventId, builderPack = next(Universe.settlePurpleCloud, nil)
     if builderPack and (builderPack.tick <= tick) then
-        Universe.settlePurpleCloud[len] = nil
-        Universe.settlePurpleCloud.len = len - 1
+        Universe.settlePurpleCloud[eventId] = nil
         local map = builderPack.map
         if builderPack.group.valid and map.surface.valid then
             setPositionInQuery(
                 Universe.obaCreateBuildCloudQuery,
-                builderPack.position
+                builderPack.group.position
             )
             map.surface.create_entity(Universe.obaCreateBuildCloudQuery)
         end

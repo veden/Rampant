@@ -518,9 +518,6 @@ function Upgrade.addUniverseProperties()
         Universe.pendingChunks = {}
         Universe.processActiveNest = {}
         Universe.processActiveNestIterator = nil
-        Universe.deployVengenceIterator = nil
-        Universe.pendingUpgradeIterator = nil
-        Universe.victoryScentIterator = nil
         Universe.squadIterator = nil
         Universe.processMapAIIterator = nil
         Universe.processNestIterator = nil
@@ -535,16 +532,12 @@ function Upgrade.addUniverseProperties()
         Universe.processActiveSpawnerIterator = nil
         Universe.processActiveRaidSpawnerIterator = nil
         Universe.processMigrationIterator = nil
-        Universe.chunkToDrainedIterator = nil
         Universe.chunkToActiveNest = {}
         Universe.chunkToActiveRaidNest = {}
         Universe.chunkToDrained = {}
-        Universe.chunkToRetreatIterator = nil
         Universe.chunkToRetreats = {}
-        Universe.chunkToRallyIterator = nil
         Universe.chunkToRallys = {}
         Universe.chunkToPassScan = {}
-        Universe.chunkToPassScanIterator = nil
         Universe.baseId = 0
         Universe.awake = false
 
@@ -573,7 +566,6 @@ function Upgrade.addUniverseProperties()
 
         Universe.pendingUpgrades = {}
         Universe.settlePurpleCloud = {}
-        Universe.settlePurpleCloud.len = 0
     end
 end
 
@@ -674,45 +666,18 @@ function Upgrade.prepMap(surface)
     map.scanPlayerIndex = 1
     map.scanResourceIndex = 1
     map.scanEnemyIndex = 1
-    map.processStaticIndex = 1
     map.outgoingScanWave = true
     map.outgoingStaticScanWave = true
 
-    map.chunkToBase = {}
-    map.chunkToTurrets = {}
-    map.chunkToTraps = {}
-    map.chunkToUtilities = {}
-    map.chunkToHives = {}
-    map.chunkToNestIds = {}
-    map.chunkToHiveIds = {}
-    map.chunkToTrapIds = {}
-    map.chunkToTurretIds = {}
-    map.chunkToUtilityIds = {}
     map.drainPylons = {}
-
-    map.chunkToPlayerBase = {}
-    map.chunkToResource = {}
-    map.chunkToPlayerCount = {}
-    map.playerToChunk = {}
 
     map.chunkToSquad = {}
 
-    map.chunkToPassable = {}
-    map.chunkToPathRating = {}
-    map.chunkToDeathGenerator = {}
-    map.chunkToPermanentDeathGenerator = {}
-    map.chunkToPlayerGenerator = {}
-
     map.chunkScanCounts = {}
-
-    map.emptySquadsOnChunk = {}
 
     map.surface = surface
 
     map.bases = {}
-    map.squads = nil
-    map.pendingAttack = nil
-    map.building = nil
 
     -- queue all current chunks that wont be generated during play
     local tick = game.tick

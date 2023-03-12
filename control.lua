@@ -576,12 +576,7 @@ local function processSurfaceTile(map, position, chunks, tick)
     local chunk = getChunkByPosition(map, position)
 
     if (chunk ~= -1) then
-        if not map.Universe.chunkToPassScan[chunk.id] then
-            map.Universe.chunkToPassScan[chunk.id] = {
-                map=map,
-                chunk=chunk
-            }
-        end
+        Universe.chunkToPassScan[chunk.id] = chunk
     else
         local x,y = positionToChunkXY(position)
         local addMe = true
@@ -1015,11 +1010,9 @@ local function onBuilderArrived(event)
         game.print(map.surface.name.." Settled: [gps=" .. builder.position.x .. "," .. builder.position.y .."]")
     end
     if Universe.enabledPurpleSettlerCloud then
-        local len = Universe.settlePurpleCloud.len + 1
-        Universe.settlePurpleCloud.len = len
-        Universe.settlePurpleCloud[len] = {
+        Universe.eventId = Universe.eventId + 1
+        Universe.settlePurpleCloud[Universe.eventId] = {
             map = map,
-            position = builder.position,
             group = builder,
             tick = event.tick + SETTLE_CLOUD_WARMUP
         }

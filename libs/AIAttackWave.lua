@@ -193,16 +193,7 @@ function aiAttackWave.rallyUnits(chunk, tick, base)
                 if (x ~= cX) and (y ~= cY) then
                     local rallyChunk = getChunkByXY(map, x, y)
                     if (rallyChunk ~= -1) and rallyChunk.nestCount then
-                        local pack = vengenceQueue[rallyChunk.id]
-                        if not pack then
-                            pack = {
-                                v = 0,
-                                map = map,
-                                base = base
-                            }
-                            vengenceQueue[rallyChunk.id] = pack
-                        end
-                        pack.v = pack.v + 1
+                        vengenceQueue[rallyChunk.id] = rallyChunk
                     end
                 end
             end
