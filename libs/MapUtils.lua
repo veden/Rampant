@@ -395,7 +395,7 @@ end
     /|\
     6 7 8
 ]]--
-function MapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
+function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     local canMove = false
     local startPassable = getPassable(startChunk)
     local endPassable = getPassable(endChunk)
@@ -423,33 +423,6 @@ function MapUtils.canMoveChunkDirection(map, direction, startChunk, endChunk)
         canMove = (endPassable ~= CHUNK_IMPASSABLE)
     end
     return canMove
-end
-
-function MapUtils.getCardinalChunks(map, x, y)
-    local neighbors = Universe.cardinalNeighbors
-    local xChunks = map[x]
-    if xChunks then
-        neighbors[1] = xChunks[y-CHUNK_SIZE] or -1
-        neighbors[4] = xChunks[y+CHUNK_SIZE] or -1
-    else
-        neighbors[1] = -1
-        neighbors[4] = -1
-    end
-
-    xChunks = map[x-CHUNK_SIZE]
-    if xChunks then
-        neighbors[2] = xChunks[y] or -1
-    else
-        neighbors[2] = -1
-    end
-
-    xChunks = map[x+CHUNK_SIZE]
-    if xChunks then
-        neighbors[3] = xChunks[y] or -1
-    else
-        neighbors[3] = -1
-    end
-    return neighbors
 end
 
 function MapUtils.positionFromDirectionAndChunk(direction, startPosition, scaling)
@@ -560,7 +533,7 @@ function MapUtils.deathScent(chunk, structure)
     addPermanentDeathGenerator(chunk, amount)
 end
 
-function MapUtils.processPheromone(map, chunk, tick, player)
+function MapUtils.processPheromone(chunk, tick, player)
     if chunk[CHUNK_TICK] > tick then
         return
     end
@@ -576,12 +549,12 @@ function MapUtils.processPheromone(map, chunk, tick, player)
 
     local enemyStructureCount = getEnemyStructureCount(chunk)
 
-    local tempNeighbors = MapUtils.getNeighborChunks(map, chunk.x, chunk.y)
+    local tempNeighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
     for i=1,8 do
         local tempPheromone
         local neighbor = tempNeighbors[i]
         if (neighbor ~= -1) then
-            if MapUtils.canMoveChunkDirection(map, i, chunk, neighbor) then
+            if MapUtils.canMoveChunkDirection(i, chunk, neighbor) then
                 chunkCount = chunkCount + 1
                 chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
                 chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]

@@ -19,8 +19,14 @@
 
 ((nil . ((projectile-project-install-cmd . "./make.sh copy")
 	 (projectile-install-buffer-suffix . "install")
+
+         (projectile-project-compile-cmd . "luacheck .")
+         (projectile-compile-buffer-suffix . "lint")
+
 	 (projectile-project-package-cmd . "./make.sh zip")
 	 (projectile-package-buffer-suffix . "install")
-	 (projectile-project-uninstall-cmd . "./make.sh clear")
+
+         (projectile-project-uninstall-cmd . "./make.sh clear")
 	 (projectile-uninstall-buffer-suffix . "install")
-	 (projectile-project-run-cmd . "factorio"))))
+
+         (projectile-project-run-cmd . "factorio"))))

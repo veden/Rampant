@@ -19,8 +19,6 @@ local Upgrade = {}
 -- imports
 
 local Constants = require("libs/Constants")
-local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
-local MapUtils = require("libs/MapUtils")
 
 --
 
@@ -50,8 +48,6 @@ local TRIPLE_CHUNK_SIZE = Constants.TRIPLE_CHUNK_SIZE
 local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 
 -- imported functions
-
-local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
 
 -- module code
 

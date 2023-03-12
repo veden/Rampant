@@ -71,6 +71,7 @@ local RALLY_CRY_DISTANCE = Constants.RALLY_CRY_DISTANCE
 local AI_SQUAD_COST = Constants.AI_SQUAD_COST
 local AI_SETTLER_COST = Constants.AI_SETTLER_COST
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
+local AI_VENGENCE_SETTLER_COST = Constants.AI_VENGENCE_SETTLER_COST
 local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
 -- imported functions
@@ -113,19 +114,19 @@ local positionFromDirectionAndFlat = MapUtils.positionFromDirectionAndFlat
 local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
 
 -- module code
-local function scoreRetreatLocation(map, neighborChunk)
+local function scoreRetreatLocation(neighborChunk)
     return (-neighborChunk[BASE_PHEROMONE] +
             -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
             -((neighborChunk.playerBaseGenerator or 0) * 1000))
 end
 
-local function scoreResourceLocation(map, neighborChunk)
+local function scoreResourceLocation(neighborChunk)
     return neighborChunk[RESOURCE_PHEROMONE]
         - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
         - neighborChunk[ENEMY_PHEROMONE]
 end
 
-local function scoreSiegeLocation(map, neighborChunk)
+local function scoreSiegeLocation(neighborChunk)
     local settle = neighborChunk[BASE_PHEROMONE]
         + neighborChunk[RESOURCE_PHEROMONE] * 0.5
         + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
@@ -133,16 +134,30 @@ local function scoreSiegeLocation(map, neighborChunk)
     return settle - neighborChunk[ENEMY_PHEROMONE]
 end
 
-local function scoreAttackLocation(map, neighborChunk)
+local function scoreAttackLocation(neighborChunk)
     local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
     return damage
 end
 
 local function findMovementPosition(surface, position)
-    local pos = position
-    pos = surface.find_non_colliding_position("behemoth-biter", pos, 10, 2, false)
-    return pos
+    return surface.find_non_colliding_position(
+        "behemoth-biter",
+        position,
+        10,
+        2,
+        false
+    )
+end
+
+local function findDeploymentPosition(surface, position)
+    return surface.find_non_colliding_position(
+        "biter-spawner",
+        position,
+        CHUNK_SIZE,
+        4,
+        true
+    )
 end
 
 local function calculateSettlerMaxDistance()
@@ -204,7 +219,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
+local function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection = 0
@@ -212,8 +227,8 @@ function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFun
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
-                local score = scoreFunction(map, neighborChunk)
+            if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
+                local score = scoreFunction(neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -223,7 +238,7 @@ function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFun
         end
     end
 
-    if (chunk ~= -1) and (scoreFunction(map, chunk) > highestScore) then
+    if (chunk ~= -1) and (scoreFunction(chunk) > highestScore) then
         return chunk, 0, -1, 0
     end
 
@@ -236,8 +251,8 @@ function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFun
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
-                canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(map, neighborChunk)
+                canMoveChunkDirection(x, highestChunk, neighborChunk)) then
+                local score = scoreFunction(neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -426,8 +441,8 @@ local function scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scor
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
-                local score = scoreFunction(map, neighborChunk)
+            if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
+                local score = scoreFunction(neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -446,8 +461,8 @@ local function scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scor
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
-                canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(map, neighborChunk)
+                canMoveChunkDirection(x, highestChunk, neighborChunk)) then
+                local score = scoreFunction(neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -674,8 +689,8 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
-            if (chunk == -1) or canMoveChunkDirection(map, x, chunk, neighborChunk) then
-                local score = scoreFunction(map, neighborChunk)
+            if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
+                local score = scoreFunction(neighborChunk)
                 if (score > highestScore) then
                     highestScore = score
                     highestChunk = neighborChunk
@@ -695,8 +710,8 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
             local neighborChunk = neighborDirectionChunks[x]
 
             if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
-                canMoveChunkDirection(map, x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(map, neighborChunk)
+                canMoveChunkDirection(x, highestChunk, neighborChunk)) then
+                local score = scoreFunction(neighborChunk)
                 if (score > nextHighestScore) then
                     nextHighestScore = score
                     nextHighestChunk = neighborChunk
@@ -914,32 +929,20 @@ local function attackWaveValidCandidate(chunk)
     return false
 end
 
-local function scoreSettlerLocation(map, neighborChunk)
+local function scoreSettlerLocation(neighborChunk)
     return neighborChunk[RESOURCE_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreSiegeSettlerLocation(map, neighborChunk)
+local function scoreSiegeSettlerLocation(neighborChunk)
     return (neighborChunk[RESOURCE_PHEROMONE] + neighborChunk[BASE_PHEROMONE]) + -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreUnitGroupLocation(map, neighborChunk)
+local function scoreUnitGroupLocation(neighborChunk)
     return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
 
-local function validSiegeSettlerLocation(map, neighborChunk)
+local function validUnitGroupLocation(neighborChunk)
     return (getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS) and
-        (not neighborChunk.nestCount)
-end
-
-local function validSettlerLocation(map, chunk, neighborChunk)
-    local chunkResource = chunk[RESOURCE_PHEROMONE]
-    return (getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS) and
-        (not neighborChunk.nestCount) and
-        (neighborChunk[RESOURCE_PHEROMONE] >= chunkResource)
-end
-
-local function validUnitGroupLocation(map, neighborChunk)
-    return getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS and
         (not neighborChunk.nestCount)
 end
 
@@ -985,43 +988,15 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-local function scoreNeighborsForResource(chunk, neighborDirectionChunks, validFunction, scoreFunction, map)
+local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
-    for x=1,8 do
-        local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= -1) and
-            canMoveChunkDirection(map, x, chunk, neighborChunk) and
-            validFunction(map, chunk, neighborChunk)
-        then
-            local score = scoreFunction(map, neighborChunk)
-            if (score > highestScore) then
-                highestScore = score
-                highestChunk = neighborChunk
-                highestDirection = x
-            end
-        end
-    end
-
-    if (chunk ~= -1) and (scoreFunction(map, chunk) > highestScore) then
-        return -1, -1
-    end
-
-    return highestChunk, highestDirection
-end
-
---[[
-    Expects all neighbors adjacent to a chunk
---]]
-local function scoreNeighborsForFormation(neighborChunks, validFunction, scoreFunction, map)
-    local highestChunk = -1
-    local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection
+    local neighborChunks = getNeighborChunks(chunk.map, chunk.x, chunk.y)
     for x=1,8 do
         local neighborChunk = neighborChunks[x]
-        if (neighborChunk ~= -1) and validFunction(map, neighborChunk) then
-            local score = scoreFunction(map, neighborChunk)
+        if (neighborChunk ~= -1) and validFunction(neighborChunk) then
+            local score = scoreFunction(neighborChunk)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -1060,213 +1035,116 @@ function Squad.rallyUnits(chunk, tick)
     end
 end
 
-function Squad.formSettlers(chunk)
+local function deploySquad(name, chunk, cost, vengence, attacker)
     local base = chunk.base
-    if (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
-        and (base.sentExpansionGroups < base.maxExpansionGroups)
-        and ((base.unitPoints - AI_SETTLER_COST) > 0)
-        and (Universe.random() < Universe.formSquadThreshold)
-    then
-        local map = chunk.map
-        local surface = map.surface
-        local squadPath, squadDirection
-        if (base.stateAI == BASE_AI_STATE_SIEGE) then
-            squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-                                                                   validSiegeSettlerLocation,
-                                                                   scoreSiegeSettlerLocation,
-                                                                   map)
-        else
-            squadPath, squadDirection = scoreNeighborsForResource(chunk,
-                                                                  getNeighborChunks(map, chunk.x, chunk.y),
-                                                                  validSettlerLocation,
-                                                                  scoreSettlerLocation,
-                                                                  map)
-        end
 
-        if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("biter-spawner",
-                                                                      positionFromDirectionAndChunk(squadDirection,
-                                                                                                    chunk,
-                                                                                                    0.98),
-                                                                      CHUNK_SIZE,
-                                                                      4,
-                                                                      true)
-            if squadPosition then
-                local squad = Squad.createSquad(squadPosition, map, nil, true, base)
-
-                local scaledWaveSize = settlerWaveScaling()
-                Universe.formGroupCommand.group = squad.group
-                Universe.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(Universe.formCommand)
-                if (foundUnits > 0) then
-                    base.sentExpansionGroups = base.sentExpansionGroups + 1
-
-                    squad.base = base
-                    local kamikazeThreshold = Squad.calculateKamikazeSettlerThreshold(foundUnits)
-                    if base.stateAI == BASE_AI_STATE_SIEGE then
-                        kamikazeThreshold = kamikazeThreshold * 2.5
-                    end
-                    squad.kamikaze = Universe.random() < kamikazeThreshold
-
-                    Universe.builderCount = Universe.builderCount + 1
-                    modifyBaseUnitPoints(base, -AI_SETTLER_COST, "Settler", squadPosition.x, squadPosition.y)
-                    Universe.groupNumberToSquad[squad.groupNumber] = squad
-                else
-                    if (squad.group.valid) then
-                        squad.group.destroy()
-                    end
-                end
-            end
-        end
-    end
-end
-
-function Squad.formVengenceSquad(chunk, base)
-    if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT)
-        and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
-        and (Universe.random() < Universe.formSquadThreshold)
-    then
-        if (chunk[BASE_PHEROMONE] < 0.0001) or (chunk[PLAYER_PHEROMONE] < 0.0001) then
+    local lackingPoints = ((base.unitPoints - cost) < 0)
+    if attacker then
+        if lackingPoints
+            or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
+            or (Universe.squadCount > Universe.AI_MAX_SQUAD_COUNT)
+            or (not vengence and not attackWaveValidCandidate(chunk))
+            or (Universe.random() > Universe.formSquadThreshold)
+        then
             return
         end
-        local map = chunk.map
-
-        local surface = map.surface
-        local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-                                                                     validUnitGroupLocation,
-                                                                     scoreUnitGroupLocation,
-                                                                     map)
-        if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("biter-spawner",
-                                                                      positionFromDirectionAndChunk(squadDirection,
-                                                                                                    chunk,
-                                                                                                    0.98),
-                                                                      CHUNK_SIZE,
-                                                                      4,
-                                                                      true)
-            if squadPosition then
-                local squad = Squad.createSquad(squadPosition, map, nil, false, base)
-
-                squad.rabid = Universe.random() < 0.03
-
-                local scaledWaveSize = attackWaveScaling()
-                Universe.formGroupCommand.group = squad.group
-                Universe.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(Universe.formCommand)
-                if (foundUnits > 0) then
-                    squad.base = base
-                    squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThreshold(foundUnits)
-                    Universe.groupNumberToSquad[squad.groupNumber] = squad
-                    Universe.squadCount = Universe.squadCount + 1
-                    modifyBaseUnitPoints(base, -AI_VENGENCE_SQUAD_COST, "Vengence", squadPosition.x, squadPosition.y)
-                else
-                    if (squad.group.valid) then
-                        squad.group.destroy()
-                    end
-                end
-            end
+    else
+        if lackingPoints
+            or (Universe.builderCount > Universe.AI_MAX_BUILDER_COUNT)
+            or (not vengence and (base.sentExpansionGroups > base.maxExpansionGroups))
+            or (Universe.random() > Universe.formSquadThreshold)
+        then
+            return
         end
     end
+
+    local scoringFunction
+    if attacker then
+        scoringFunction = scoreUnitGroupLocation
+    else
+        scoringFunction = scoreSettlerLocation
+        if base.stateAI == BASE_AI_STATE_SIEGE then
+            scoringFunction = scoreSiegeSettlerLocation
+        end
+    end
+
+    local squadPath, squadDirection = scoreNeighborsForFormation(
+        chunk,
+        validUnitGroupLocation,
+        scoringFunction
+    )
+    if (squadPath == -1) then
+        return
+    end
+
+    local map = chunk.map
+    local surface = map.surface
+
+    local squadPosition = findDeploymentPosition(
+        surface,
+        positionFromDirectionAndChunk(squadDirection,
+                                      chunk,
+                                      0.98)
+    )
+
+    if not squadPosition then
+        return
+    end
+
+    local squad = Squad.createSquad(squadPosition, map, nil, not attacker, base)
+
+    local scaledWaveSize
+    if attacker then
+        scaledWaveSize = attackWaveScaling()
+    else
+        scaledWaveSize = settlerWaveScaling()
+    end
+    Universe.formGroupCommand.group = squad.group
+    Universe.formCommand.unit_count = scaledWaveSize
+    local foundUnits = surface.set_multi_command(Universe.formCommand)
+    if (foundUnits == 0) then
+        if squad.group.valid then
+            squad.group.destroy()
+        end
+        return
+    end
+
+    if attacker then
+        squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThreshold(foundUnits)
+        Universe.squadCount = Universe.squadCount + 1
+        if not vengence and (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
+            base.sentAggressiveGroups = base.sentAggressiveGroups + 1
+        end
+    else
+        local kamikazeThreshold = Squad.calculateKamikazeSettlerThreshold(foundUnits)
+        if base.stateAI == BASE_AI_STATE_SIEGE then
+            kamikazeThreshold = kamikazeThreshold * 2.5
+        end
+        squad.kamikaze = Universe.random() < kamikazeThreshold
+        base.sentExpansionGroups = base.sentExpansionGroups + 1
+        Universe.builderCount = Universe.builderCount + 1
+    end
+
+    squad.rabid = Universe.random() < 0.03
+
+    Universe.groupNumberToSquad[squad.groupNumber] = squad
+    modifyBaseUnitPoints(base, -cost, name, squadPosition.x, squadPosition.y)
 end
 
-function Squad.formVengenceSettler(chunk, base)
-    if (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
-        and (base.sentExpansionGroups < base.maxExpansionGroups)
-        and ((base.unitPoints - AI_VENGENCE_SQUAD_COST) > 0)
-        and (Universe.random() < Universe.formSquadThreshold)
-    then
-        local map = chunk.map
-        local surface = map.surface
-        local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-                                                                     validUnitGroupLocation,
-                                                                     scoreUnitGroupLocation,
-                                                                     map)
-        if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("biter-spawner",
-                                                                      positionFromDirectionAndChunk(squadDirection,
-                                                                                                    chunk,
-                                                                                                    0.98),
-                                                                      CHUNK_SIZE,
-                                                                      4,
-                                                                      true)
-            if squadPosition then
-                local squad = Squad.createSquad(squadPosition, map, nil, true, base)
+function Squad.formSettlers(chunk)
+    deploySquad("Settler", chunk, AI_SETTLER_COST, false, false)
+end
 
-                squad.rabid = Universe.random() < 0.03
-
-                local scaledWaveSize = settlerWaveScaling()
-                Universe.formGroupCommand.group = squad.group
-                Universe.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(Universe.formCommand)
-                if (foundUnits > 0) then
-                    base.sentExpansionGroups = base.sentExpansionGroups + 1
-
-                    squad.base = base
-                    squad.kamikaze = Universe.random() < Squad.calculateKamikazeSettlerThreshold(foundUnits)
-                    Universe.groupNumberToSquad[squad.groupNumber] = squad
-                    Universe.builderCount = Universe.builderCount + 1
-                    modifyBaseUnitPoints(base, -AI_VENGENCE_SQUAD_COST, "Vengence Settlers", squadPosition.x, squadPosition.y)
-                else
-                    if (squad.group.valid) then
-                        squad.group.destroy()
-                    end
-                end
-            end
-        end
-    end
+function Squad.formVengenceSettler(chunk)
+    deploySquad("Vengence Settler", chunk, AI_VENGENCE_SETTLER_COST, true, false)
 end
 
 function Squad.formSquads(chunk)
-    local base = chunk.base
-    if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT)
-        and attackWaveValidCandidate(chunk)
-        and ((base.unitPoints - AI_SQUAD_COST) > 0)
-        and (Universe.random() < Universe.formSquadThreshold)
-    then
-        if (chunk[BASE_PHEROMONE] < 0.0001) or (chunk[PLAYER_PHEROMONE] < 0.0001) then
-            return
-        end
+    deploySquad("Squad", chunk, AI_SQUAD_COST, false, true)
+end
 
-        local map = chunk.map
-        local surface = map.surface
-        local squadPath, squadDirection = scoreNeighborsForFormation(getNeighborChunks(map, chunk.x, chunk.y),
-                                                                     validUnitGroupLocation,
-                                                                     scoreUnitGroupLocation,
-                                                                     map)
-        if (squadPath ~= -1) then
-            local squadPosition = surface.find_non_colliding_position("biter-spawner",
-                                                                      positionFromDirectionAndChunk(squadDirection,
-                                                                                                    chunk,
-                                                                                                    0.98),
-                                                                      CHUNK_SIZE,
-                                                                      4,
-                                                                      true)
-            if squadPosition then
-                local squad = Squad.createSquad(squadPosition, map, nil, false, base)
-
-                squad.rabid = Universe.random() < 0.03
-
-                local scaledWaveSize = attackWaveScaling()
-                Universe.formGroupCommand.group = squad.group
-                Universe.formCommand.unit_count = scaledWaveSize
-                local foundUnits = surface.set_multi_command(Universe.formCommand)
-                if (foundUnits > 0) then
-                    squad.base = base
-                    squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThreshold(foundUnits)
-                    Universe.squadCount = Universe.squadCount + 1
-                    Universe.groupNumberToSquad[squad.groupNumber] = squad
-                    if (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
-                        base.sentAggressiveGroups = base.sentAggressiveGroups + 1
-                    end
-                    modifyBaseUnitPoints(base, -AI_SQUAD_COST, "Squad", squadPosition.x, squadPosition.y)
-                else
-                    if (squad.group.valid) then
-                        squad.group.destroy()
-                    end
-                end
-            end
-        end
-    end
+function Squad.formVengenceSquad(chunk)
+    deploySquad("Vengence Squad", chunk, AI_VENGENCE_SQUAD_COST, true, true)
 end
 
 function Squad.init(universe)

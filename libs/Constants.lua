@@ -97,6 +97,7 @@ constants.AI_SQUAD_COST = 175
 constants.RECOVER_NEST_COST = constants.AI_SQUAD_COST
 constants.RECOVER_WORM_COST = constants.AI_SQUAD_COST * 0.5
 constants.AI_VENGENCE_SQUAD_COST = 45
+constants.AI_VENGENCE_SETTLER_COST = 120
 constants.AI_SETTLER_COST = 300
 constants.AI_BASE_BUILDING_COST = 500
 constants.AI_TUNNEL_COST = 100

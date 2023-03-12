@@ -786,7 +786,7 @@ local function onUnitGroupCreated(event)
         return
     end
     if not Universe.aiNocturnalMode then
-        local settler = canMigrate(map, base) and
+        local settler = canMigrate(base) and
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 
@@ -887,7 +887,7 @@ local function onGroupFinishedGathering(event)
             group.destroy()
             return
         end
-        local settler = canMigrate(map, base) and
+        local settler = canMigrate(base) and
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 

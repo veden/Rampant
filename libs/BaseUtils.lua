@@ -171,7 +171,7 @@ local function findBaseMutation(targetEvolution, excludeFactions)
     return availableAlignments[#availableAlignments]
 end
 
-local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveType, entityType)
+local function initialEntityUpgrade(baseAlignment, tier, maxTier, useHiveType, entityType)
     local entity
 
     local useTier
@@ -228,7 +228,7 @@ local function initialEntityUpgrade(baseAlignment, tier, maxTier, map, useHiveTy
     return entity
 end
 
-local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
+local function entityUpgrade(baseAlignment, tier, maxTier, originalEntity)
     local entity
 
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[originalEntity.name]
@@ -298,9 +298,9 @@ function BaseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
                     chunk.resourceGenerator
                 )
             )
-        return initialEntityUpgrade(baseAlignment, tier, maxTier, map, (makeHive and "hive"), entityType)
+        return initialEntityUpgrade(baseAlignment, tier, maxTier, (makeHive and "hive"), entityType)
     else
-        return entityUpgrade(baseAlignment, tier, maxTier, originalEntity, map)
+        return entityUpgrade(baseAlignment, tier, maxTier, originalEntity)
     end
 end
 

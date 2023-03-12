@@ -154,7 +154,7 @@ function Processor.processMap(map, tick)
     Universe.processedChunks = Universe.processedChunks + ((startIndex - endIndex) * step)
 
     for x=startIndex,endIndex,step do
-        processPheromone(map, processQueue[x], tick)
+        processPheromone(processQueue[x], tick)
     end
 end
 
@@ -209,7 +209,7 @@ function Processor.processPlayers(players, tick)
                             local chunk = getChunkByXY(map, x, y)
 
                             if (chunk ~= -1) then
-                                processPheromone(map, chunk, tick, true)
+                                processPheromone(chunk, tick, true)
 
                                 if chunk.nestCount then
                                     processNestActiveness(chunk, tick)
@@ -254,7 +254,7 @@ end
 --[[
     Passive scan to find entities that have been generated outside the factorio event system
 --]]
-function Processor.scanPlayerMap(map, tick)
+function Processor.scanPlayerMap(map)
     local index = map.scanPlayerIndex
 
     local processQueue = map.processQueue
@@ -300,7 +300,7 @@ function Processor.scanEnemyMap(map, tick)
     end
 end
 
-function Processor.scanResourceMap(map, tick)
+function Processor.scanResourceMap(map)
     local index = map.scanResourceIndex
 
     local processQueue = map.processQueue
@@ -340,9 +340,9 @@ function Processor.processVengence()
     end
     local base = chunk.base
     if canMigrate(base) and (Universe.random() < 0.075) then
-        formVengenceSettler(chunk, base)
+        formVengenceSettler(chunk)
     else
-        formVengenceSquad(chunk, base)
+        formVengenceSquad(chunk)
     end
 end
 
