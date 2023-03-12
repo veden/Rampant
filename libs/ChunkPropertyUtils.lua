@@ -50,6 +50,8 @@ local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
 -- imported functions
 
+local activateMap
+
 local manhattenDistancePoints = MathUtils.manhattenDistancePoints
 local tableSize = table_size
 
@@ -117,7 +119,7 @@ local function unregisterActiveRaidNest(chunk)
 end
 
 local function addEnemyStructure(chunk, unitNumber, ids, counts, register)
-    chunk.map.activeSurface = true
+    activateMap(chunk.map)
     local chunkId = chunk.id
     local entityIds = chunk[ids]
     if not entityIds then
@@ -615,9 +617,10 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     end
 end
 
-function ChunkPropertyUtils.init(universe)
+function ChunkPropertyUtils.init(universe, mapUtils)
     Universe = universe
     Position = universe.chunkPropertyUtilsQueries.position
+    activateMap = mapUtils.activateMap
 end
 
 ChunkPropertyUtilsG = ChunkPropertyUtils

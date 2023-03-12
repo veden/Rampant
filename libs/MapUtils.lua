@@ -74,6 +74,7 @@ local mFloor = math.floor
 local getPassable = ChunkPropertyUtils.getPassable
 local tRemove = table.remove
 local mCeil = math.ceil
+local sFind = string.find
 
 -- module code
 
@@ -112,15 +113,149 @@ function MapUtils.queueGeneratedChunk(event)
     Universe.pendingChunks[event.id] = event
 end
 
+function MapUtils.activateMap(map)
+    local mapId = map.id
+    if Universe.activeMaps[mapId] then
+	return
+    end
+
+    Universe.activeMaps[mapId] = map
+end
+
+function MapUtils.deactivateMap(map)
+    local mapId = map.id
+    if not Universe.activeMaps[mapId] then
+	return
+    end
+
+    Universe.activeMaps[mapId] = nil
+end
+
+function MapUtils.excludeSurface()
+    for mapId,map in pairs(Universe.maps) do
+        local toBeRemoved = not map.surface.valid
+            or MapUtils.isExcludedSurface(map.surface.name)
+            or Universe.excludedSurfaces[map.surface.name]
+
+        if toBeRemoved then
+            if Universe.mapIterator == mapId then
+                Universe.mapIterator, Universe.currentMap = next(
+                    Universe.activeMaps,
+                    Universe.mapIterator
+                )
+            end
+            if Universe.processMapAIIterator == mapId then
+                Universe.processMapAIIterator = nil
+            end
+            Universe.maps[mapId] = nil
+        end
+    end
+end
+
+function MapUtils.addExcludedSurface(surfaceName)
+    Universe.excludedSurfaces[surfaceName] = true
+    MapUtils.excludeSurface()
+end
+
+function MapUtils.removeExcludedSurface(surfaceName)
+    Universe.excludedSurfaces[surfaceName] = nil
+    local surface = game.get_surface(surfaceName)
+    if surface then
+        MapUtils.prepMap(surface)
+    end
+end
+
+function MapUtils.isExcludedSurface(surfaceName)
+    return
+        (surfaceName == "aai-signals") or
+        (surfaceName == "RTStasisRealm") or
+        (surfaceName == "minime_dummy_dungeon") or
+        (surfaceName == "minime-preview-character") or
+        (surfaceName == "pipelayer") or
+        (surfaceName == "beltlayer") or
+
+        sFind(surfaceName, "Factory floor") or
+        sFind(surfaceName, " Orbit") or
+        sFind(surfaceName, "clonespace") or
+        sFind(surfaceName, "BPL_TheLabplayer") or
+        sFind(surfaceName, "starmap%-") or
+        sFind(surfaceName, "NiceFill") or
+        sFind(surfaceName, "Asteroid Belt") or
+        sFind(surfaceName, "Vault ") or
+        sFind(surfaceName, "spaceship") or
+        sFind(surfaceName, "bpsb%-lab%-")
+end
+
+function MapUtils.prepMap(surface)
+    if Universe.maps[surface.index] then
+        return Universe.maps[surface.index]
+    end
+
+    local surfaceName = surface.name
+    if MapUtils.isExcludedSurface(surfaceName) or Universe.excludedSurfaces[surfaceName] then
+        return
+    end
+
+    game.print("Rampant - Indexing surface:" .. surfaceName .. ", index:" .. tostring(surface.index) .. ", please wait.")
+
+    local map = {
+        id = surface.index,
+        processedChunks = 0,
+        processQueue = {},
+        processIndex = 1,
+        scanPlayerIndex = 1,
+        scanResourceIndex = 1,
+        scanEnemyIndex = 1,
+        outgoingScanWave = true,
+        outgoingStaticScanWave = true,
+
+        drainPylons = {},
+
+        surface = surface,
+
+        bases = {}
+    }
+
+    Universe.maps[map.id] = map
+
+    -- queue all current chunks that wont be generated during play
+    local tick = game.tick
+    for chunk in surface.get_chunks() do
+        if surface.is_chunk_generated(chunk) then
+            MapUtils.queueGeneratedChunk({
+                    surface = surface,
+                    tick = tick,
+                    area = {
+                        left_top = {
+                            x = chunk.x * 32,
+                            y = chunk.y * 32
+                        }
+                    }
+                                }
+            )
+        end
+    end
+
+    return map
+end
+
 function MapUtils.nextMap()
+    local map = Universe.currentMap
+    if map and (Universe.processedChunks < (#map.processQueue * 0.05)) then
+        return map
+    end
+
     local mapIterator = Universe.mapIterator
     repeat
-        local map
-        Universe.mapIterator, map = next(Universe.maps, Universe.mapIterator)
-        if map and map.activeSurface then
+        Universe.mapIterator, map = next(Universe.activeMaps, Universe.mapIterator)
+        if map then
+            Universe.processedChunks = 0
+            Universe.currentMap = map
             return map
         end
     until mapIterator == Universe.mapIterator
+
+    return nil
 end
 
 function MapUtils.removeChunkToNest(chunkId)

@@ -64,7 +64,8 @@ local split = Utils.split
 
 local planning = BaseUtils.planning
 
-local addBasesToAllEnemyStructures = ChunkUtils.addBasesToAllEnemyStructures
+local addExcludeSurface = MapUtils.addExcludedSurface
+local removeExcludeSurface = MapUtils.removeExcludedSurface
 
 local setPointAreaInQuery = Utils.setPointAreaInQuery
 
@@ -75,7 +76,8 @@ local processClouds = Processor.processClouds
 local distortPosition = MathUtils.distortPosition
 local linearInterpolation = MathUtils.linearInterpolation
 local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
-local prepMap = Upgrade.prepMap
+local prepMap = MapUtils.prepMap
+local activateMap = MapUtils.activateMap
 
 local findBaseInitialAlignment = BaseUtils.findBaseInitialAlignment
 
@@ -130,8 +132,6 @@ local createSquad = Squad.createSquad
 local createBase = BaseUtils.createBase
 local findNearbyBaseByPosition = ChunkPropertyUtils.findNearbyBaseByPosition
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
-
-local processActiveNests = Processor.processActiveNests
 
 local removeDrainPylons = ChunkPropertyUtils.removeDrainPylons
 local getDrainPylonPair = ChunkPropertyUtils.getDrainPylonPair
@@ -216,9 +216,9 @@ local function initializeLibraries()
     Squad.init(Universe)
     BaseUtils.init(Universe)
     Processor.init(Universe)
-    ChunkPropertyUtils.init(Universe)
-    ChunkUtils.init(Universe)
     MapUtils.init(Universe)
+    ChunkPropertyUtils.init(Universe, MapUtils)
+    ChunkUtils.init(Universe)
 end
 
 local function onLoad()
@@ -347,7 +347,7 @@ local function onEnemyBaseBuild(event)
         if not map then
             return
         end
-        map.activeSurface = true
+        activateMap(map)
         local chunk = getChunkByPosition(map, entity.position)
         if (chunk ~= -1) then
             local base = findNearbyBase(chunk)
@@ -669,7 +669,7 @@ local function onEntitySpawned(entity, tick)
             return
         end
         if BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
-            map.activeSurface = true
+            activateMap(map)
             local disPos = distortPosition(Universe.random, entity.position, 8)
 
             local chunk = getChunkByPosition(map, disPos)
@@ -772,7 +772,7 @@ local function onUnitGroupCreated(event)
     if not map then
         return
     end
-    map.activeSurface = true
+    activateMap(map)
     local position = group.position
     local chunk = getChunkByPosition(map, position)
     local base
@@ -852,7 +852,7 @@ local function onGroupFinishedGathering(event)
     if not map then
         return
     end
-    map.activeSurface = true
+    activateMap(map)
     local squad = Universe.groupNumberToSquad[group.group_number]
     if squad then
         if squad.settler then
@@ -934,7 +934,10 @@ end
 local function onSurfaceDeleted(event)
     local surfaceIndex = event.surface_index
     if (Universe.mapIterator == surfaceIndex) then
-        Universe.mapIterator, Universe.activeMap = next(Universe.maps, Universe.mapIterator)
+        Universe.mapIterator, Universe.currentMap = next(
+            Universe.activeMaps,
+            Universe.mapIterator
+        )
     end
     if (Universe.processMapAIIterator == surfaceIndex) then
         Universe.processMapAIIterator = nil
@@ -981,7 +984,7 @@ local function onBuilderArrived(event)
     if not map then
         return
     end
-    map.activeSurface = true
+    activateMap(map)
     if not usingUnit then
         local squad = Universe.groupNumberToSquad[builder.group_number]
         squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
@@ -1008,12 +1011,7 @@ script.on_event(defines.events.on_tick,
                     local pick = tick % 8
                     -- local profiler = game.create_profiler()
 
-                    local map = Universe.activeMap
-                    if (not map) or (Universe.processedChunks > (#map.processQueue * 0.05)) then
-                        Universe.processedChunks = 0
-                        map = nextMap()
-                        Universe.activeMap = map
-                    end
+                    local map = nextMap()
 
                     if (pick == 0) then
                         processPendingChunks(tick)
@@ -1141,19 +1139,6 @@ remote.add_interface("rampantTests",
                          chunkCount = tests.chunkCount
                      }
 )
-
-local function addExcludeSurface(surfaceName)
-    Universe.excludedSurfaces[surfaceName] = true
-    Upgrade.excludeSurface()
-end
-
-local function removeExcludeSurface(surfaceName)
-    Universe.excludedSurfaces[surfaceName] = nil
-    local surface = game.get_surface(surfaceName)
-    if surface then
-        prepMap(surface)
-    end
-end
 
 local function removeNewEnemies()
     game.print({"description.rampant--removeNewEnemies"})

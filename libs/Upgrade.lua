@@ -19,7 +19,6 @@ local Upgrade = {}
 -- imports
 
 local Constants = require("libs/Constants")
-local Processor = require("libs/Processor")
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local MapUtils = require("libs/MapUtils")
 
@@ -48,40 +47,13 @@ local DEFINES_DISTRACTION_BY_ANYTHING = defines.distraction.by_anything
 local CHUNK_SIZE = Constants.CHUNK_SIZE
 local TRIPLE_CHUNK_SIZE = Constants.TRIPLE_CHUNK_SIZE
 
-local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
-local CHUNK_TICK = Constants.CHUNK_TICK
-
 local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 
 -- imported functions
 
 local addBaseResourceChunk = ChunkPropertyUtils.addBaseResourceChunk
-local sFind = string.find
-local queueGeneratedChunk = MapUtils.queueGeneratedChunk
-local processPendingChunks = Processor.processPendingChunks
 
 -- module code
-
-function Upgrade.isExcludedSurface(surfaceName)
-    return
-        (surfaceName == "aai-signals") or
-        (surfaceName == "RTStasisRealm") or
-        (surfaceName == "minime_dummy_dungeon") or
-        (surfaceName == "minime-preview-character") or
-        (surfaceName == "pipelayer") or
-        (surfaceName == "beltlayer") or
-
-        sFind(surfaceName, "Factory floor") or
-        sFind(surfaceName, " Orbit") or
-        sFind(surfaceName, "clonespace") or
-        sFind(surfaceName, "BPL_TheLabplayer") or
-        sFind(surfaceName, "starmap%-") or
-        sFind(surfaceName, "NiceFill") or
-        sFind(surfaceName, "Asteroid Belt") or
-        sFind(surfaceName, "Vault ") or
-        sFind(surfaceName, "spaceship") or
-        sFind(surfaceName, "bpsb%-lab%-")
-end
 
 local function addCommandSet(queriesAndCommands)
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
@@ -419,21 +391,6 @@ local function addCommandSet(queriesAndCommands)
     }
 end
 
-function Upgrade.excludeSurface()
-    for mapId,map in pairs(Universe.maps) do
-        local toBeRemoved = not map.surface.valid or Upgrade.isExcludedSurface(map.surface.name) or Universe.excludedSurfaces[map.surface.name]
-        if toBeRemoved then
-            if Universe.mapIterator == mapId then
-                Universe.mapIterator, Universe.activeMap = next(Universe.maps, Universe.mapIterator)
-            end
-            if Universe.processMapAIIterator == mapId then
-                Universe.processMapAIIterator = nil
-            end
-            Universe.maps[mapId] = nil
-        end
-    end
-end
-
 function Upgrade.setCommandForces(npcForces, enemyForces)
     for force in pairs(Universe.playerForces) do
         Universe.playerForces[force] = nil
@@ -512,13 +469,14 @@ function Upgrade.addUniverseProperties()
         Universe.eventId = 0
         Universe.chunkId = 0
         Universe.maps = {}
+        Universe.activeMaps = {}
         Universe.groupNumberToSquad = {}
         Universe.pendingChunks = {}
         Universe.squadIterator = nil
         Universe.processMapAIIterator = nil
         Universe.processNestIterator = nil
         Universe.vengenceQueue = {}
-        Universe.activeMap = nil
+        Universe.currentMap = nil
         Universe.mapIterator = nil
         Universe.builderCount = 0
         Universe.squadCount = 0
@@ -551,16 +509,6 @@ function Upgrade.addUniverseProperties()
 
         Universe.processBaseAIIterator = nil
 
-        for _,map in pairs(Universe.maps) do
-            local processQueue = map.processQueue
-            for i=1,#processQueue do
-                local chunk = processQueue[i]
-                chunk[CHUNK_TICK] = chunk[ENEMY_PHEROMONE]
-                chunk[ENEMY_PHEROMONE] = 0
-                chunk.map = map
-            end
-        end
-
         Universe.excludedSurfaces = {}
 
         Universe.pendingUpgrades = {}
@@ -591,21 +539,7 @@ function Upgrade.attempt()
 
         Universe.evolutionLevel = game.forces.enemy.evolution_factor
 
-        for _,map in pairs(Universe.maps) do
-            if (map.surface.valid) then
-                local entities = map.surface.find_entities_filtered({type="land-mine"})
-                for i=1,#entities do
-                    local entity = entities[i]
-                    if entity.valid and string.find(entity.name, "entity-proxy-") then
-                        entity.destroy()
-                    end
-                end
-            end
-        end
-
         Universe.random = game.create_random_generator(Constants.ENEMY_SEED)
-
-        Upgrade.excludeSurface()
 
         local minDiffuse = game.map_settings.pollution.min_to_diffuse
         Universe.pollutionDiffuseMinimum = minDiffuse * 0.75
@@ -621,80 +555,7 @@ function Upgrade.attempt()
         Universe.expansionMediumTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
         Universe.expansionHighTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
         Universe.expansionDistanceDeviation = Universe.expansionMediumTargetDistance * 0.33
-
-        for _,map in pairs(Universe.maps) do
-            if (map.surface.valid) then
-                for _, chunk in pairs(map.processQueue) do
-                    if chunk.resourceGenerator then
-                        local base = chunk.base
-                        if base then
-                            addBaseResourceChunk(base, chunk)
-                        end
-                    end
-                end
-
-                map.chunkToPlayerGenerator = {}
-                map.chunkToPermanentDeathGenerator = {}
-            end
-        end
     end
-end
-
-function Upgrade.prepMap(surface)
-    local surfaceName = surface.name
-    if Upgrade.isExcludedSurface(surfaceName) then
-        return
-    end
-
-    game.print("Rampant - Indexing surface:" .. surfaceName .. ", index:" .. tostring(surface.index) .. ", please wait.")
-
-    local surfaceIndex = surface.index
-
-    if not Universe.maps then
-        Universe.maps = {}
-    end
-
-    local map = {}
-    Universe.maps[surfaceIndex] = map
-
-    map.activatedMap = false
-
-    map.processedChunks = 0
-    map.processQueue = {}
-    map.processIndex = 1
-    map.scanPlayerIndex = 1
-    map.scanResourceIndex = 1
-    map.scanEnemyIndex = 1
-    map.outgoingScanWave = true
-    map.outgoingStaticScanWave = true
-
-    map.drainPylons = {}
-
-    map.surface = surface
-
-    map.bases = {}
-
-    -- queue all current chunks that wont be generated during play
-    local tick = game.tick
-    for chunk in surface.get_chunks() do
-        if surface.is_chunk_generated(chunk) then
-            queueGeneratedChunk({
-                    surface = surface,
-                    tick = tick,
-                    area = {
-                        left_top = {
-                            x = chunk.x * 32,
-                            y = chunk.y * 32
-                        }
-                    }
-                                }
-            )
-        end
-    end
-
-    processPendingChunks(tick, true)
-
-    return map
 end
 
 function Upgrade.init(universe)
