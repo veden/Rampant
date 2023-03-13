@@ -238,6 +238,8 @@ function MapUtils.prepMap(surface)
         end
     end
 
+    Universe.flushPendingChunks = true
+
     return map
 end
 

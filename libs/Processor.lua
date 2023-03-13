@@ -455,11 +455,13 @@ function Processor.processPendingChunks(tick, flush)
     end
 
     local endCount = 1
-    if flush then
+    local flushAllChunks = flush or Universe.flushPendingChunks
+    if flushAllChunks then
         endCount = tableSize(pendingChunks)
+        Universe.flushPendingChunks = false
     end
     for _=1,endCount do
-        if not flush and (event.tick > tick) then
+        if not flushAllChunks and (event.tick > tick) then
             return
         end
         local newEventId, newEvent = next(pendingChunks, eventId)

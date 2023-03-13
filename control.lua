@@ -466,7 +466,7 @@ local function onDeath(event)
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
             if (entityType == "unit") and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
-                deathScent(map, chunk)
+                deathScent(chunk)
                 if base then
                     base.lostEnemyUnits = base.lostEnemyUnits + 1
                     if damageTypeName then
@@ -803,8 +803,6 @@ local function onUnitGroupCreated(event)
         squad = createSquad(nil, map, group, settler, base)
         Universe.groupNumberToSquad[group.group_number] = squad
 
-        squad.base = base
-
         if settler then
             Universe.builderCount = Universe.builderCount + 1
         else
@@ -816,7 +814,7 @@ local function onUnitGroupCreated(event)
             return
         end
 
-        local settler = canMigrate(map, base) and
+        local settler = canMigrate(base) and
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 
@@ -832,8 +830,6 @@ local function onUnitGroupCreated(event)
 
         squad = createSquad(nil, map, group, settler, base)
         Universe.groupNumberToSquad[group.group_number] = squad
-
-        squad.base = base
 
         if settler then
             Universe.builderCount = Universe.builderCount + 1

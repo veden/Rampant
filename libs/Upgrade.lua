@@ -419,6 +419,7 @@ function Upgrade.addUniverseProperties()
         global.universePropertyVersion = 1
 
         Universe.safeEntities = {}
+        Universe.flushPendingChunks = false
 
         Universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
 
