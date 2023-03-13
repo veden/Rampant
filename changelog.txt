@@ -35,6 +35,7 @@ Version: 3.2.0
     - Recording the resource chunks covered by a given base as a property of a base
     - Use the enemy seed value instead of the map seed for puesdo random generating used by AI
     - Vengence settlers now cost ~3x of vengence squad
+    - Enemy regional bases now are centered on the average of all chunks that are part of the base
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

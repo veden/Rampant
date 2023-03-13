@@ -234,6 +234,10 @@ function ChunkPropertyUtils.removeChunkBase(chunk, base)
     end
 
     base.chunkCount = base.chunkCount - 1
+    base.totalX = base.totalX - chunk.x
+    base.totalY = base.totalY - chunk.y
+    base.x = base.totalX / base.chunkCount
+    base.y = base.totalY / base.chunkCount
     chunk.base = nil
 end
 
@@ -243,6 +247,10 @@ function ChunkPropertyUtils.setChunkBase(chunk, base)
     end
 
     base.chunkCount = base.chunkCount + 1
+    base.totalX = base.totalX + chunk.x
+    base.totalY = base.totalY + chunk.y
+    base.x = base.totalX / base.chunkCount
+    base.y = base.totalY / base.chunkCount
     chunk.base = base
 end
 
