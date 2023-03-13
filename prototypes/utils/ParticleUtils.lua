@@ -654,6 +654,8 @@ end
 
 function particleUtils.makeBloodFountains(attributes)
 
+    local particleScaler = settings.startup["rampant--scaleParticleCount"].value
+
     local bloodParticle = makeBloodParticle(attributes)
 
     data:extend({
@@ -727,8 +729,8 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-rampant",
-                                            repeat_count = 10,
-                                            repeat_count_deviation = 3,
+                                            repeat_count = math.max(10 * particleScaler, 1),
+                                            repeat_count_deviation = math.max(3 * particleScaler, 1),
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         },
                                         {
@@ -784,8 +786,8 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 65,
-                                            repeat_count_deviation = 20,
+                                            repeat_count = math.max(65 * particleScaler, 1),
+                                            repeat_count_deviation = math.max(20 * particleScaler, 1),
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
@@ -847,8 +849,8 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-rampant",
-                                            repeat_count = 20,
-                                            repeat_count_deviation = 5,
+                                            repeat_count = math.max(20 * particleScaler, 1),
+                                            repeat_count_deviation = math.max(5 * particleScaler, 1),
                                             offset_deviation = {{-0.4, -0.4}, {0.4, 0.4}}
                                         }
                                     }
@@ -880,8 +882,8 @@ function particleUtils.makeBloodFountains(attributes)
                                     {
                                         {
                                             type = "create-particle",
-                                            repeat_count = 100,
-                                            repeat_count_deviation = 20,
+                                            repeat_count = math.max(100 * particleScaler, 1),
+                                            repeat_count_deviation = math.max(20 * particleScaler, 1),
                                             particle_name = bloodParticle,
                                             initial_height = 0.5,
                                             speed_from_center = 0.08,
@@ -943,8 +945,8 @@ function particleUtils.makeBloodFountains(attributes)
                                         {
                                             type = "create-entity",
                                             entity_name = attributes.name .. "-blood-fountain-big-rampant",
-                                            repeat_count = 30,
-                                            repeat_count_deviation = 5,
+                                            repeat_count = math.max(30 * particleScaler, 1),
+                                            repeat_count_deviation = math.max(5 * particleScaler, 1),
                                             offset_deviation = {{-1.6, -1.6}, {1.6, 1.6}}
                                         }
                                     }

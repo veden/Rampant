@@ -671,6 +671,18 @@ data:extend({
         },
 
         {
+            type = "double-setting",
+            name = "rampant--scaleParticleCount",
+            description = "rampant--scaleParticleCount",
+            setting_type = "startup",
+            default_value = 1,
+            minimum_value = 0.01,
+            maximum_value = 5.0,
+            order = "n[modifier]-a[optimize]",
+            per_user = false
+        },
+
+        {
             type = "bool-setting",
             name = "rampant--enableLandfillOnDeath",
             description = "rampant--reduceBloodParticles",
