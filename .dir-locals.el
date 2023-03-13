@@ -29,4 +29,7 @@
          (projectile-project-uninstall-cmd . "./make.sh clear")
 	 (projectile-uninstall-buffer-suffix . "install")
 
+         (projectile-project-test-cmd . "./make.sh visualize")
+	 (projectile-test-buffer-suffix . "visual")
+
          (projectile-project-run-cmd . "factorio"))))

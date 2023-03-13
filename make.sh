@@ -3,6 +3,8 @@
 
 (require file/zip)
 (require json)
+(require "visualizer/visual.rkt")
+(provide (all-from-out "visualizer/visual.rkt"))
 
 (define modFolder "/mnt/gallery/gameFiles/factorio/mods/")
 (define serverModFolder "/home/veden/Downloads/factorio/mods/")
@@ -112,4 +114,5 @@
   (cond ((equal? arg "copy") (copy))
         ((equal? arg "zip") (zipIt))
         ((equal? arg "clear") (clear))
-        (else "Invalid command arg [copy,zip]")))
+        ((equal? arg "visualize") (visualize))
+        (else "Invalid command arg [copy,zip,clear,visualize]")))
