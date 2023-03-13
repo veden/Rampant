@@ -51,9 +51,15 @@ local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 
 -- module code
 
-local function addCommandSet(queriesAndCommands)
+local function addCommandSet()
     -- preallocating memory to be used in code, making it fast by reducing garbage generated.
-    queriesAndCommands.neighbors = {
+    Universe.playerForces = {}
+    Universe.enemyForces = {}
+    Universe.npcForces = {}
+    Universe.nonPlayerForces = {}
+
+    Universe.mapUtilsQueries = {}
+    Universe.mapUtilsQueries.neighbors = {
             -1,
             -1,
             -1,
@@ -63,34 +69,24 @@ local function addCommandSet(queriesAndCommands)
             -1,
             -1
     }
-    queriesAndCommands.cardinalNeighbors = {
+    Universe.mapUtilsQueries.position = {0,0}
+
+    Universe.chunkOverlapArray = {
             -1,
             -1,
             -1,
             -1
     }
 
-    queriesAndCommands.chunkOverlapArray = {
-            -1,
-            -1,
-            -1,
-            -1
-    }
-
-    queriesAndCommands.playerForces = {}
-    queriesAndCommands.enemyForces = {}
-    queriesAndCommands.npcForces = {}
-    queriesAndCommands.nonPlayerForces = {}
-
-    queriesAndCommands.chunkPropertyUtilsQueries = {}
-    queriesAndCommands.chunkPropertyUtilsQueries.position = {0,0}
+    Universe.chunkPropertyUtilsQueries = {}
+    Universe.chunkPropertyUtilsQueries.position = {0,0}
 
     -- pb
-    queriesAndCommands.pbFilteredEntitiesPointQueryLimited = {
+    Universe.pbFilteredEntitiesPointQueryLimited = {
         position = {0, 0},
         radius = 10,
         limit = 1,
-        force = queriesAndCommands.enemyForces,
+        force = Universe.enemyForces,
         type = {
             "unit-spawner",
             "turret"
@@ -98,12 +94,12 @@ local function addCommandSet(queriesAndCommands)
     }
 
     -- msec
-    queriesAndCommands.msecFilteredEntitiesEnemyStructureQuery = {
+    Universe.msecFilteredEntitiesEnemyStructureQuery = {
         area={
             {0,0},
             {0,0}
         },
-        force=queriesAndCommands.enemyForces,
+        force=Universe.enemyForces,
         type={
             "turret",
             "unit-spawner"
@@ -111,7 +107,7 @@ local function addCommandSet(queriesAndCommands)
     }
 
     -- oba
-    queriesAndCommands.obaCreateBuildCloudQuery = {
+    Universe.obaCreateBuildCloudQuery = {
         name = "build-clear-cloud-rampant",
         position = {0,0}
     }
@@ -121,24 +117,24 @@ local function addCommandSet(queriesAndCommands)
         {0,0},
         {0,0}
     }
-    queriesAndCommands.spbHasPlayerStructuresQuery = {
+    Universe.spbHasPlayerStructuresQuery = {
         area=spbSharedChunkArea,
-        force=queriesAndCommands.nonPlayerForces,
+        force=Universe.nonPlayerForces,
         invert=true,
         limit=1
     }
-    queriesAndCommands.spbFilteredEntitiesPlayerQueryLowest = {
+    Universe.spbFilteredEntitiesPlayerQueryLowest = {
         area=spbSharedChunkArea,
-        force=queriesAndCommands.playerForces,
+        force=Universe.playerForces,
         collision_mask = "player-layer",
         type={
             "wall",
             "transport-belt"
         }
     }
-    queriesAndCommands.spbFilteredEntitiesPlayerQueryLow = {
+    Universe.spbFilteredEntitiesPlayerQueryLow = {
         area=spbSharedChunkArea,
-        force=queriesAndCommands.playerForces,
+        force=Universe.playerForces,
         collision_mask = "player-layer",
         type={
             "splitter",
@@ -153,9 +149,9 @@ local function addCommandSet(queriesAndCommands)
             "ammo-turret"
         }
     }
-    queriesAndCommands.spbFilteredEntitiesPlayerQueryHigh = {
+    Universe.spbFilteredEntitiesPlayerQueryHigh = {
         area=spbSharedChunkArea,
-        force=queriesAndCommands.playerForces,
+        force=Universe.playerForces,
         collision_mask = "player-layer",
         type={
             "furnace",
@@ -170,9 +166,9 @@ local function addCommandSet(queriesAndCommands)
             "mining-drill"
         }
     }
-    queriesAndCommands.spbFilteredEntitiesPlayerQueryHighest = {
+    Universe.spbFilteredEntitiesPlayerQueryHighest = {
         area=spbSharedChunkArea,
-        force=queriesAndCommands.playerForces,
+        force=Universe.playerForces,
         collision_mask = "player-layer",
         type={
             "artillery-turret",
@@ -186,11 +182,11 @@ local function addCommandSet(queriesAndCommands)
         {0,0},
         {0,0}
     }
-    queriesAndCommands.isFilteredTilesQuery = {
+    Universe.isFilteredTilesQuery = {
         collision_mask="water-tile",
         area=isSharedChunkArea
     }
-    queriesAndCommands.isFilteredEntitiesChunkNeutral = {
+    Universe.isFilteredEntitiesChunkNeutral = {
         area=isSharedChunkArea,
         collision_mask = "player-layer",
         type={
@@ -198,21 +194,21 @@ local function addCommandSet(queriesAndCommands)
             "simple-entity"
         }
     }
-    queriesAndCommands.isFilteredEntitiesEnemyStructureQuery = {
+    Universe.isFilteredEntitiesEnemyStructureQuery = {
         area=isSharedChunkArea,
-        force=queriesAndCommands.enemyForces,
+        force=Universe.enemyForces,
         type={
             "turret",
             "unit-spawner"
         }
     }
-    queriesAndCommands.isCountResourcesQuery = {
+    Universe.isCountResourcesQuery = {
         area=isSharedChunkArea,
         type="resource"
     }
-    queriesAndCommands.isFilteredEntitiesUnitQuery = {
+    Universe.isFilteredEntitiesUnitQuery = {
         area=isSharedChunkArea,
-        force=queriesAndCommands.enemyForces,
+        force=Universe.enemyForces,
         type="unit"
     }
 
@@ -221,11 +217,11 @@ local function addCommandSet(queriesAndCommands)
         {0,0},
         {0,0}
     }
-    queriesAndCommands.cpsFilteredTilesQuery = {
+    Universe.cpsFilteredTilesQuery = {
         collision_mask="water-tile",
         area=cpsSharedChunkArea
     }
-    queriesAndCommands.cpsFilteredEntitiesChunkNeutral = {
+    Universe.cpsFilteredEntitiesChunkNeutral = {
         area=cpsSharedChunkArea,
         collision_mask = "player-layer",
         type={
@@ -233,9 +229,9 @@ local function addCommandSet(queriesAndCommands)
             "simple-entity"
         }
     }
-    queriesAndCommands.cpsFilteredEnemyAnyFound = {
+    Universe.cpsFilteredEnemyAnyFound = {
         area=cpsSharedChunkArea,
-        force=queriesAndCommands.enemyForces,
+        force=Universe.enemyForces,
         type={
             "turret",
             "unit-spawner"
@@ -248,11 +244,11 @@ local function addCommandSet(queriesAndCommands)
         {0,0},
         {0,0}
     }
-    queriesAndCommands.msrcFilteredTilesQuery = {
+    Universe.msrcFilteredTilesQuery = {
         collision_mask="water-tile",
         area=msrcSharedChunkArea
     }
-    queriesAndCommands.msrcFilteredEntitiesChunkNeutral = {
+    Universe.msrcFilteredEntitiesChunkNeutral = {
         area=msrcSharedChunkArea,
         collision_mask = "player-layer",
         type={
@@ -260,7 +256,7 @@ local function addCommandSet(queriesAndCommands)
             "simple-entity"
         }
     }
-    queriesAndCommands.msrcCountResourcesQuery = {
+    Universe.msrcCountResourcesQuery = {
         area=msrcSharedChunkArea,
         type="resource"
     }
@@ -270,19 +266,19 @@ local function addCommandSet(queriesAndCommands)
         {0,0},
         {0,0}
     }
-    queriesAndCommands.spFilteredEntitiesCliffQuery = {
+    Universe.spFilteredEntitiesCliffQuery = {
         area=spSharedAreaChunk,
         type="cliff",
         limit = 1
     }
-    queriesAndCommands.spFilteredTilesPathQuery = {
+    Universe.spFilteredTilesPathQuery = {
         area=spSharedAreaChunk,
         collision_mask="water-tile",
         limit = 1
     }
 
     -- ouc
-    queriesAndCommands.oucCliffQuery = {
+    Universe.oucCliffQuery = {
         area={
             {0,0},
             {0,0}
@@ -291,97 +287,87 @@ local function addCommandSet(queriesAndCommands)
     }
 
     -- ppu
-    queriesAndCommands.ppuUpgradeEntityQuery = {
+    Universe.ppuUpgradeEntityQuery = {
         name = "",
         position = {0,0}
     }
 
-    queriesAndCommands.attackCommand = {
+    Universe.squadQueries = {}
+    Universe.squadQueries.targetPosition = {0,0}
+    Universe.squadQueries.attackCommand = {
         type = DEFINES_COMMAND_ATTACK_AREA,
         destination = {0,0},
         radius = CHUNK_SIZE * 1.5,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING
     }
-
-    queriesAndCommands.moveCommand = {
+    Universe.squadQueries.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = {0,0},
         pathfind_flags = { cache = true },
         distraction = DEFINES_DISTRACTION_BY_ENEMY
     }
-
-    queriesAndCommands.settleCommand = {
+    Universe.squadQueries.settleCommand = {
         type = DEFINES_COMMAND_BUILD_BASE,
         destination = {0,0},
         distraction = DEFINES_DISTRACTION_BY_ENEMY,
         ignore_planner = true
     }
-
-    queriesAndCommands.wanderCommand = {
+    Universe.squadQueries.wanderCommand = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = false,
         radius = TRIPLE_CHUNK_SIZE*2,
         ticks_to_wait = 20 * 60
     }
-
-    queriesAndCommands.wander2Command = {
+    Universe.squadQueries.wander2Command = {
         type = DEFINES_COMMAND_WANDER,
         wander_in_group = true,
         radius = TRIPLE_CHUNK_SIZE*2,
         ticks_to_wait = 2 * 60
     }
-
-    queriesAndCommands.stopCommand = {
+    Universe.squadQueries.stopCommand = {
         type = DEFINES_COMMAND_STOP
     }
-
-    queriesAndCommands.compoundSettleCommand = {
+    Universe.squadQueries.compoundSettleCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
-            queriesAndCommands.wonder2Command,
-            queriesAndCommands.settleCommand
+            Universe.squadQueries.wonder2Command,
+            Universe.squadQueries.settleCommand
         }
     }
-
-    queriesAndCommands.retreatCommand = {
+    Universe.squadQueries.retreatCommand = {
         type = DEFINES_COMMAND_GROUP,
         group = nil,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING,
         use_group_distraction = true
     }
-
-    queriesAndCommands.fleeCommand = {
+    Universe.squadQueries.fleeCommand = {
         type = DEFINES_COMMAND_FLEE,
         from = nil,
         distraction = DEFINES_DISTRACTION_NONE
     }
-
-    queriesAndCommands.compoundRetreatGroupCommand = {
+    Universe.squadQueries.compoundRetreatGroupCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
-            queriesAndCommands.stopCommand,
-            queriesAndCommands.fleeCommand,
-            queriesAndCommands.retreatCommand
+            Universe.squadQueries.stopCommand,
+            Universe.squadQueries.fleeCommand,
+            Universe.squadQueries.retreatCommand
         }
     }
-
-    queriesAndCommands.formGroupCommand = {
+    Universe.squadQueries.formGroupCommand = {
         type = DEFINES_COMMAND_GROUP,
         group = nil,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING,
         use_group_distraction = false
     }
-
-    queriesAndCommands.formCommand = {
-        command = queriesAndCommands.formGroupCommand,
+    Universe.squadQueries.formCommand = {
+        command = Universe.squadQueries.formGroupCommand,
         unit_count = 0,
         unit_search_distance = TRIPLE_CHUNK_SIZE
     }
-
-    queriesAndCommands.formRetreatCommand = {
-        command = queriesAndCommands.compoundRetreatGroupCommand,
+    Universe.squadQueries.formRetreatCommand = {
+        command = Universe.squadQueries.compoundRetreatGroupCommand,
         unit_count = 1,
         unit_search_distance = CHUNK_SIZE
     }
@@ -499,7 +485,7 @@ function Upgrade.addUniverseProperties()
         Universe.maxPoints = 0
         Universe.maxOverflowPoints = 0
 
-        addCommandSet(Universe)
+        addCommandSet()
 
         Universe.bases = {}
 

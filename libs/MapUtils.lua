@@ -23,6 +23,7 @@ local MapUtils = {}
 
 local Universe
 local NeighborChunks
+local MapPosition
 
 -- imports
 
@@ -222,7 +223,8 @@ function MapUtils.prepMap(surface)
     local tick = game.tick
     for chunk in surface.get_chunks() do
         if surface.is_chunk_generated(chunk) then
-            MapUtils.queueGeneratedChunk({
+            MapUtils.queueGeneratedChunk(
+                {
                     surface = surface,
                     tick = tick,
                     area = {
@@ -231,7 +233,7 @@ function MapUtils.prepMap(surface)
                             y = chunk.y * 32
                         }
                     }
-                                }
+                }
             )
         end
     end
@@ -425,67 +427,56 @@ function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     return canMove
 end
 
-function MapUtils.positionFromDirectionAndChunk(direction, startPosition, scaling)
-    local endPosition = {}
-    if (direction == 1) then
-        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
-        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
-    elseif (direction == 2) then
-        endPosition.x = startPosition.x
-        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling + 0.25)
-    elseif (direction == 3) then
-        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
-        endPosition.y = startPosition.y - CHUNK_SIZE * (scaling - 0.1)
-    elseif (direction == 4) then
-        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling + 0.25)
-        endPosition.y = startPosition.y
-    elseif (direction == 5) then
-        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling + 0.25)
-        endPosition.y = startPosition.y
-    elseif (direction == 6) then
-        endPosition.x = startPosition.x - CHUNK_SIZE * (scaling - 0.1)
-        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
-    elseif (direction == 7) then
-        endPosition.x = startPosition.x
-        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling + 0.25)
-    elseif (direction == 8) then
-        endPosition.x = startPosition.x + CHUNK_SIZE * (scaling - 0.1)
-        endPosition.y = startPosition.y + CHUNK_SIZE * (scaling - 0.1)
-    end
-    return endPosition
-end
-
-function MapUtils.positionFromDirectionAndFlat(direction, startPosition, multipler)
+function MapUtils.positionFromScaledDirections(startPosition, multipler, direction, nextDirection)
     local lx = startPosition.x
     local ly = startPosition.y
-    if not multipler then
-        multipler = 1
-    end
     if (direction == 1) then
-        lx = lx - CHUNK_SIZE * multipler
-        ly = ly - CHUNK_SIZE * multipler
+        lx = lx - (CHUNK_SIZE * multipler)
+        ly = ly - (CHUNK_SIZE * multipler)
     elseif (direction == 2) then
-        ly = ly - CHUNK_SIZE * multipler
+        ly = ly - (CHUNK_SIZE * multipler)
     elseif (direction == 3) then
-        lx = lx + CHUNK_SIZE * multipler
-        ly = ly - CHUNK_SIZE * multipler
+        lx = lx + (CHUNK_SIZE * multipler)
+        ly = ly - (CHUNK_SIZE * multipler)
     elseif (direction == 4) then
-        lx = lx - CHUNK_SIZE * multipler
+        lx = lx - (CHUNK_SIZE * multipler)
     elseif (direction == 5) then
-        lx = lx + CHUNK_SIZE * multipler
+        lx = lx + (CHUNK_SIZE * multipler)
     elseif (direction == 6) then
-        lx = lx - CHUNK_SIZE * multipler
-        ly = ly + CHUNK_SIZE * multipler
+        lx = lx - (CHUNK_SIZE * multipler)
+        ly = ly + (CHUNK_SIZE * multipler)
     elseif (direction == 7) then
-        ly = ly + CHUNK_SIZE * multipler
+        ly = ly + (CHUNK_SIZE * multipler)
     elseif (direction == 8) then
-        lx = lx + CHUNK_SIZE * multipler
-        ly = ly + CHUNK_SIZE * multipler
+        lx = lx + (CHUNK_SIZE * multipler)
+        ly = ly + (CHUNK_SIZE * multipler)
     end
-    return {
-        x = lx,
-        y = ly
-    }
+    if nextDirection then
+        if (nextDirection == 1) then
+            lx = lx - (CHUNK_SIZE * multipler)
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 2) then
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 3) then
+            lx = lx + (CHUNK_SIZE * multipler)
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 4) then
+            lx = lx - (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 5) then
+            lx = lx + (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 6) then
+            lx = lx - (CHUNK_SIZE * multipler)
+            ly = ly + (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 7) then
+            ly = ly + (CHUNK_SIZE * multipler)
+        elseif (nextDirection == 8) then
+            lx = lx + (CHUNK_SIZE * multipler)
+            ly = ly + (CHUNK_SIZE * multipler)
+        end
+    end
+    MapPosition.x = lx
+    MapPosition.y = ly
+    return MapPosition
 end
 
 function MapUtils.victoryScent(chunk, entityType)
@@ -608,7 +599,8 @@ end
 
 function MapUtils.init(universe)
     Universe = universe
-    NeighborChunks = universe.neighbors
+    NeighborChunks = universe.mapUtilsQueries.neighbors
+    MapPosition = universe.mapUtilsQueries.position
 end
 
 MapUtilsG = MapUtils

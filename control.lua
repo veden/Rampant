@@ -1029,7 +1029,7 @@ script.on_event(defines.events.on_tick,
                         processClouds(tick)
                     elseif (pick == 4) then
                         if map then
-                            scanResourceMap(map, tick)
+                            scanResourceMap(map)
                             scanEnemyMap(map, tick)
                         end
                     elseif (pick == 5) then
@@ -1038,7 +1038,7 @@ script.on_event(defines.events.on_tick,
                         end
                     elseif (pick == 6) then
                         if map then
-                            scanPlayerMap(map, tick)
+                            scanPlayerMap(map)
                         end
                     elseif (pick == 7) then
                         processPendingChunks(tick)
