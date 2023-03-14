@@ -306,7 +306,7 @@ function ChunkUtils.chunkPassScan(chunk, map)
     setAreaInQueryChunkSize(Universe.cpsFilteredTilesQuery, chunk)
     local pass = scanPaths(chunk, map)
     local enemyCount = surface.count_entities_filtered(Universe.cpsFilteredEnemyAnyFound)
-    local playerObjects = chunk.playerBaseGenerator
+    local playerObjects = (chunk.playerBaseGenerator or 0)
 
     if (pass ~= CHUNK_IMPASSABLE) or (enemyCount > 0) or playerObjects then
         local neutralObjects = mMax(0,
