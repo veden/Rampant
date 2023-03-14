@@ -281,6 +281,17 @@ function biterUtils.getLocalisedName(attributes)
     return {attributes.name .. "-rampant"}
 end
 
+function biterUtils.getLocalisedDescription(attributes)
+    if attributes.isRampant then
+        return {
+            "",
+            {"entity-description."..attributes.unit_name}
+        }
+    end
+
+    return {attributes.name .. "-rampant"}
+end
+
 function biterUtils.makeBiter(attributes)
     local resistances = {}
     for k,v in pairs(attributes.resistances) do
@@ -410,6 +421,7 @@ function biterUtils.makeUnitSpawner(attributes)
         type = "unit-spawner",
         name = attributes.name .. "-rampant",
         localised_name = biterUtils.getLocalisedName(attributes),
+        localised_description = biterUtils.getLocalisedDescription(attributes),
         icon = "__base__/graphics/icons/biter-spawner.png",
         icon_size = 64,
         icon_mipmaps = 4,

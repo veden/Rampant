@@ -534,15 +534,15 @@ end
 local function unitSetToProbabilityTable(unitSet, tier)
     local result = {}
 
-    fillUnitTable(tier, result, unitSet, 1, {{0, 1}, {0.65, 0.0}})
-    fillUnitTable(tier, result, unitSet, 2, {{0.3, 0}, {0.35, 0.5}, {0.80, 0.0}})
-    fillUnitTable(tier, result, unitSet, 3, {{0.4, 0}, {0.45, 0.5}, {0.90, 0.0}})
-    fillUnitTable(tier, result, unitSet, 4, {{0.5, 0}, {0.55, 0.5}, {0.90, 0.0}})
-    fillUnitTable(tier, result, unitSet, 5, {{0.6, 0}, {0.65, 0.5}, {0.95, 0.0}})
-    fillUnitTable(tier, result, unitSet, 6, {{0.7, 0}, {0.75, 0.5}, {0.975, 0.0}})
-    fillUnitTable(tier, result, unitSet, 7, {{0.8, 0}, {0.825, 0.5}, {0.975, 0.0}})
-    fillUnitTable(tier, result, unitSet, 8, {{0.85, 0}, {0.875, 0.5}, {0.975, 0.0}})
-    fillUnitTable(tier, result, unitSet, 9, {{0.90, 0}, {0.925, 0.5}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 1, {{0, 1}, {0.50, 0.0}})
+    fillUnitTable(tier, result, unitSet, 2, {{0.3, 0}, {0.35, 1.0}, {0.80, 0.0}})
+    fillUnitTable(tier, result, unitSet, 3, {{0.4, 0}, {0.45, 1.0}, {0.90, 0.0}})
+    fillUnitTable(tier, result, unitSet, 4, {{0.5, 0}, {0.55, 1.0}, {0.90, 0.0}})
+    fillUnitTable(tier, result, unitSet, 5, {{0.6, 0}, {0.65, 1.0}, {0.95, 0.0}})
+    fillUnitTable(tier, result, unitSet, 6, {{0.7, 0}, {0.75, 1.0}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 7, {{0.8, 0}, {0.825, 1.0}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 8, {{0.85, 0}, {0.875, 1.0}, {0.975, 0.0}})
+    fillUnitTable(tier, result, unitSet, 9, {{0.90, 0}, {0.925, 1.0}, {0.975, 0.0}})
     fillUnitTable(tier, result, unitSet, 10, {{0.93, 0}, {1, 1.0}})
 
     return result
@@ -822,6 +822,9 @@ local function fillEntityTemplate(entity)
                 entity.maxSpawnDarkness = 0.45
             elseif (attribute == "followsPlayer") then
                 entity.followsPlayer = true
+            elseif (attribute == "singleUnit") then
+                entity.unitsOwned = 1
+                entity.unitsToSpawn = 30
             elseif (attribute == "stationary") then
                 entity.movement = 0
                 entity.distancePerFrame = 0
@@ -991,30 +994,7 @@ local function buildUnits(template)
     return unitSet
 end
 
-local function buildEntities(entityTemplates)
-    local unitSet = {}
-
-    for tier=1, TIERS do
-        local effectiveLevel = TIER_UPGRADE_SET[tier]
-
-        local entityTemplate = entityTemplates[effectiveLevel]
-
-        for ei=1,#entityTemplate do
-            local template = entityTemplate[ei]
-
-            local probability = deepcopy(propTables[tier])
-
-            for z=1,#probability do
-                probability[z][2] = probability[z][2] * template[2]
-            end
-            unitSet[#unitSet+1] = {template[1] .. "-t" .. tier .. "-rampant", probability}
-        end
-    end
-
-    return unitSet
-end
-
-local function buildEntitySpawner(template)
+local function buildEntitySpawner(template, tierBonus)
     local variations = constants.ENEMY_VARIATIONS
 
     for tier=1, TIERS do
@@ -1027,6 +1007,11 @@ local function buildEntitySpawner(template)
             unitSpawner.effectiveLevel = effectiveLevel
             unitSpawner.variation = i
             generateApperance(unitSpawner, true)
+            local unitTable = unitSetToProbabilityTable(
+                template.unitSet,
+                tier + (tierBonus or 0)
+            )
+            unitSpawner.unitSet = unitTable
             unitSpawner.death = (unitSpawner.deathGenerator and unitSpawner.deathGenerator(unitSpawner)) or nil
             fillEntityTemplate(unitSpawner)
 
@@ -1564,7 +1549,7 @@ local function buildUnitSpawnerTemplate(faction, incomingTemplate, unitSets)
     return template
 end
 
-local function buildHiveTemplate(faction, incomingTemplate)
+local function buildHiveTemplate(faction, incomingTemplate, unitSets)
     local template = deepcopy(incomingTemplate)
 
     template.name = faction.type .. "-" .. template.name
@@ -1594,93 +1579,30 @@ local function buildHiveTemplate(faction, incomingTemplate)
     local unitSet = {}
 
     for t=1,TIERS do
-        local unitSetTier = unitSet[t]
         for i=1,#template.buildSets do
             local buildSet = template.buildSets[i]
             if (buildSet.tierStart <= t) and (t <= buildSet.tierEnd) then
-                if not unitSetTier then
-                    unitSetTier = {}
-                    unitSet[t] = unitSetTier
+                local activeUnitSet = unitSets[buildSet.name][t]
+                local unitSetTier = unitSet[t]
+                if unitSetTier then
+                    for b=1,#activeUnitSet do
+                        unitSetTier[#unitSetTier+1] = activeUnitSet[b]
+                    end
+                else
+                    unitSet[t] = deepcopy(activeUnitSet)
                 end
-
-                unitSetTier[#unitSetTier+1] = {
-                    "entity-proxy-" .. buildSet.name,
-                    mathUtils.linearInterpolation(
-                        (t-1)/9,
-                        buildSet.tierChanceStart,
-                        buildSet.tierChanceEnd
-                    )
-                }
             end
-        end
-        local total = 0
-        for i=1,#unitSetTier do
-            total = total + unitSetTier[i][2]
-        end
-        for i=1,#unitSetTier do
-            unitSetTier[i][2] = unitSetTier[i][2] / total
         end
     end
 
-    template.unitSet = buildEntities(unitSet)
+
+    template.unitSet = unitSet
 
     if template.drops then
         template.drops = makeLootTables(template)
     end
 
     return template
-end
-
-local function generateSpawnerProxyTemplate(name, health, result_units)
-    return {
-        type = "unit-spawner",
-        name = name,
-        icon = "__base__/graphics/icons/biter-spawner.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        flags = {"placeable-player", "placeable-enemy", "not-repairable"},
-        max_health = health,
-        order="b-b-g",
-        subgroup="enemies",
-        loot = nil,
-        resistances = nil,
-        working_sound = nil,
-        dying_sound = nil,
-        damaged_trigger_effect = nil,
-        healing_per_tick = -1,
-        collision_box = nil,
-        selection_box = nil,
-        -- in ticks per 1 pu
-        pollution_absorption_absolute = 10,
-        pollution_absorption_proportional = 0.005,
-        map_generator_bounding_box = nil,
-        corpse = nil,
-        dying_explosion = nil,
-        dying_trigger_effect = nil,
-        max_count_of_owned_units = 0,
-        max_friends_around_to_spawn = 0,
-        enemy_map_color = {r=0,g=0,b=0,a=0},
-        animations = { filename = "__core__/graphics/empty.png", size = 1 },
-        integration = nil,
-        result_units = result_units,
-        -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-        spawning_cooldown = {360, 150},
-        spawning_radius = 10,
-        spawning_spacing = 3,
-        max_spawn_shift = 0,
-        max_richness_for_spawn_shift = 100,
-        build_base_evolution_requirement = 0.0,
-        call_for_help_radius = 50
-    }
-end
-
-function swarmUtils.generateSpawnerProxy(result_units)
-
-    data:extend({
-            generateSpawnerProxyTemplate("spawner-proxy-1-rampant", 1 * 60 * 60, result_units),
-            generateSpawnerProxyTemplate("spawner-proxy-2-rampant", 2 * 60 * 60, result_units),
-            generateSpawnerProxyTemplate("spawner-proxy-3-rampant", 3 * 60 * 60, result_units)
-    })
 end
 
 function swarmUtils.processFactions()
@@ -1729,9 +1651,9 @@ function swarmUtils.processFactions()
 
                 buildWorm(template)
             elseif (building.type == "hive") then
-                local template = buildHiveTemplate(faction, building)
+                local template = buildHiveTemplate(faction, building, unitSets)
 
-                buildEntitySpawner(template)
+                buildEntitySpawner(template, 5)
             elseif (building.type == "trap") then
 
             elseif (building.type == "utility") then

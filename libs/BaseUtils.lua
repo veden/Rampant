@@ -34,7 +34,6 @@ local MapUtils = require("MapUtils")
 
 local TIERS = Constants.TIERS
 local EVO_TO_TIER_MAPPING = Constants.EVO_TO_TIER_MAPPING
-local PROXY_ENTITY_LOOKUP = Constants.PROXY_ENTITY_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
 local COST_LOOKUP = Constants.COST_LOOKUP
 local UPGRADE_LOOKUP = Constants.UPGRADE_LOOKUP
@@ -289,8 +288,7 @@ function BaseUtils.findEntityUpgrade(baseAlignment, currentEvo, evoIndex, origin
             and
             (
                 (
-                    (roll <= 0.01) and
-                    not PROXY_ENTITY_LOOKUP[entityName]
+                    (roll <= 0.01)
                 )
                 or
                 (

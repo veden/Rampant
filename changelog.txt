@@ -15,6 +15,7 @@ Version: 3.2.0
     - Added a mod setting to toggle the purple settler cloud
     - When enemies die there body parts can fill in water tiles. Can be disabled in mod settings.
     - Added base mutation history to prevent mutations to previously mutated factions. Configurable amount of history in Mod Settings.
+    - Hives now produce a single upper tier unit
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:

@@ -52,10 +52,7 @@ local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = Constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = Constants.COOLDOWN_RETREAT
-local PROXY_ENTITY_LOOKUP = Constants.PROXY_ENTITY_LOOKUP
 local BASE_DISTANCE_TO_EVO_INDEX = Constants.BASE_DISTANCE_TO_EVO_INDEX
-
-local BUILDING_SPACE_LOOKUP = Constants.BUILDING_SPACE_LOOKUP
 
 -- imported functions
 
@@ -555,7 +552,7 @@ function Processor.processPendingUpgrades(tick)
                                    entityData.evolve)
 
     local entityName = entity.name
-    if not name and PROXY_ENTITY_LOOKUP[entityName] then
+    if not name then
         entity.destroy()
         return
     elseif (name == entityName) or not name then
@@ -568,7 +565,7 @@ function Processor.processPendingUpgrades(tick)
 
     unregisterEnemyBaseStructure(map, entity, nil, true)
     entity.destroy()
-    local foundPosition = surface.find_non_colliding_position(BUILDING_SPACE_LOOKUP[name],
+    local foundPosition = surface.find_non_colliding_position(name,
                                                               position,
                                                               2,
                                                               1,
