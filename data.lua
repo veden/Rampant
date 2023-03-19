@@ -19,7 +19,6 @@
 local colorUtils = require("prototypes/utils/ColorUtils")
 local smokeUtils = require("prototypes/utils/SmokeUtils")
 local swarmUtils = require("prototypes/SwarmUtils")
-local constants = require("libs/Constants")
 local collision_mask_util = require("collision-mask-util")
 
 -- imported functions

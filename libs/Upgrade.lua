@@ -287,9 +287,11 @@ local function addCommandSet()
     }
 
     -- ppu
-    Universe.ppuUpgradeEntityQuery = {
+    Universe.baseUtilsQueries = {}
+    Universe.baseUtilsQueries.createEntityQuery = {
         name = "",
-        position = {0,0}
+        position = {0,0},
+        raise_built = true
     }
 
     Universe.squadQueries = {}

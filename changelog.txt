@@ -68,6 +68,7 @@ Version: 3.2.0
     - Reduced corpse and particle variation to optimize increased entity times due to high entity counts
     - Removed unneeded iterators
     - Moved map properties directly into chunk object
+    - Moved background chunk scanning under a mod setting for when mods don't raise events
   Framework:
     - Consolidated most libraries
 

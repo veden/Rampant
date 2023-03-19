@@ -387,14 +387,54 @@ function BaseUtils.canMigrate(base)
     return true
 end
 
-function BaseUtils.queueUpgrade(entity, base, disPos, evolve, register, timeDelay)
+function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
+    local map = base.map
+    local baseAlignment = base.alignment
+    local position = disPos or entity.position
+
+    local pickedBaseAlignment
+    if baseAlignment[2] then
+        if Universe.random() < 0.75 then
+            pickedBaseAlignment = baseAlignment[2]
+        else
+            pickedBaseAlignment = baseAlignment[1]
+        end
+    else
+        pickedBaseAlignment = baseAlignment[1]
+    end
+
+    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
+
+    local distance = mMin(1, euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX)
+    local evoIndex = mMax(distance, Universe.evolutionLevel)
+
+    local name = BaseUtils.findEntityUpgrade(pickedBaseAlignment,
+                                             currentEvo,
+                                             evoIndex,
+                                             entity,
+                                             map,
+                                             evolve)
+
+    if name == entity.name then
+        return
+    end
+
+    if not evolve and Universe.printBaseUpgrades then
+        local surface = base.map.surface
+        surface.print(
+            "["..base.id.."]:"..surface.name.." Upgrading "
+            .. entity.name .. " to " .. name
+            .. " [gps=".. position.x ..",".. position.y .."]"
+        )
+    end
+
     Universe.pendingUpgrades[entity.unit_number] = {
-        ["position"] = disPos,
-        ["register"] = register,
-        ["evolve"] = evolve,
-        ["base"] = base,
+        ["position"] = position,
+        ["map"] = map,
+        ["name"] = name,
         ["entity"] = entity,
-        ["delayTLL"] = timeDelay
+        ["delayTLL"] = timeDelay,
+        ["state"] = 1
     }
 end
 
@@ -541,7 +581,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
             if (base.points >= cost) then
                 local position = entity.position
                 BaseUtils.modifyBaseSpecialPoints(base, -cost, "Scheduling Entity upgrade", position.x, position.y)
-                BaseUtils.queueUpgrade(entity, base, nil, false, true)
+                BaseUtils.queueUpgrade(entity, base, nil, false)
             end
         end
     end

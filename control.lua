@@ -281,6 +281,7 @@ local function onModSettingsChange(event)
     Universe["peacefulAIToggle"] = settings.global["rampant--peacefulAIToggle"].value
     Universe["printAIStateChanges"] = settings.global["rampant--printAIStateChanges"].value
     Universe["debugTemperament"] = settings.global["rampant--debugTemperament"].value
+    Universe["legacyChunkScanning"] = settings.global["rampant--legacyChunkScanning"].value
 
     Universe["enabledPurpleSettlerCloud"] = settings.global["rampant--enabledPurpleSettlerCloud"].value
 
@@ -340,45 +341,44 @@ local function onConfigChanged()
     end
 end
 
-local function onEnemyBaseBuild(event)
-    local entity = event.entity or event.created_entity
-    if entity.valid then
-        local map = Universe.maps[entity.surface.index]
-        if not map then
-            return
+local function onEnemyBaseBuild(entity, tick)
+    local map = Universe.maps[entity.surface.index]
+    if not map then
+        return
+    end
+    local chunk = getChunkByPosition(map, entity.position)
+    if (chunk ~= -1) then
+        local base = findNearbyBase(chunk)
+        if not base then
+            base = createBase(map,
+                              chunk,
+                              tick)
         end
-        activateMap(map)
-        local chunk = getChunkByPosition(map, entity.position)
-        if (chunk ~= -1) then
-            local base = findNearbyBase(chunk)
-            if not base then
-                base = createBase(map,
-                                  chunk,
-                                  event.tick)
-            end
 
-            registerEnemyBaseStructure(entity, base, event.tick)
-
-            if Universe.NEW_ENEMIES then
+        if Universe.NEW_ENEMIES then
+            if VANILLA_ENTITY_TYPE_LOOKUP[entity.name] then
                 queueUpgrade(entity,
                              base,
                              nil,
-                             true,
                              true)
+            else
+                registerEnemyBaseStructure(entity, base, tick, true)
             end
         else
-            local x,y = positionToChunkXY(entity.position)
-            onChunkGenerated({
-                    surface = entity.surface,
-                    tick = event.tick,
-                    area = {
-                        left_top = {
-                            x = x,
-                            y = y
-                        }
-                    }
-            })
+            registerEnemyBaseStructure(entity, base, tick)
         end
+    else
+        local x,y = positionToChunkXY(entity.position)
+        onChunkGenerated({
+                surface = entity.surface,
+                tick = tick,
+                area = {
+                    left_top = {
+                        x = x,
+                        y = y
+                    }
+                }
+        })
     end
 end
 
@@ -386,14 +386,16 @@ local function onBuild(event)
     local entity = event.created_entity or event.entity
     if entity.valid then
         local entityForceName = entity.force.name
-        if entityForceName == "enemy" and BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
-            onEnemyBaseBuild(event)
+        if entityForceName == "enemy" then
+            if BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
+                onEnemyBaseBuild(entity, event.tick)
+            end
         else
             local map = Universe.maps[entity.surface.index]
             if not map then
                 return
             end
-            if (entity.type == "resource") and (entityForceName == "neutral") then
+            if entity.type == "resource" then
                 registerResource(entity, map)
             else
                 accountPlayerEntity(entity, map, true)
@@ -662,59 +664,8 @@ local function onRocketLaunch(event)
     end
 end
 
-local function onEntitySpawned(entity, tick)
-    if Universe.NEW_ENEMIES and entity.valid then
-        local map = Universe.maps[entity.surface.index]
-        if not map then
-            return
-        end
-        if BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
-            activateMap(map)
-            local disPos = distortPosition(Universe.random, entity.position, 8)
-
-            local chunk = getChunkByPosition(map, disPos)
-            if (chunk ~= -1) then
-                local base = findNearbyBase(chunk)
-                if not base then
-                    base = createBase(map,
-                                      chunk,
-                                      tick)
-                end
-
-                local meanTTL = linearInterpolation(Universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL)
-
-                queueUpgrade(entity,
-                             base,
-                             disPos,
-                             true,
-                             true,
-                             tick + gaussianRandomRangeRG(meanTTL,
-                                                          DEV_HIVE_TTL,
-                                                          MIN_HIVE_TTL,
-                                                          MAX_HIVE_TTL,
-                                                          Universe.random))
-            else
-                local x,y = positionToChunkXY(entity.position)
-                onChunkGenerated({
-                        surface = entity.surface,
-                        tick = tick,
-                        area = {
-                            left_top = {
-                                x = x,
-                                y = y
-                            }
-                        }
-                })
-                entity.destroy()
-            end
-        end
-    end
-end
-
 local function onTriggerEntityCreated(event)
-    if (event.effect_id == "hive-spawned--rampant") then
-        onEntitySpawned(event.source_entity, event.tick)
-    elseif (event.effect_id == "rampant-drain-trigger") then
+    if (event.effect_id == "rampant-drain-trigger") then
         local entity = event.target_entity
         if (entity and entity.valid) then
             local map = Universe.maps[event.surface_index]
@@ -1004,7 +955,8 @@ script.on_event(defines.events.on_tick,
                 function ()
                     local gameRef = game
                     local tick = gameRef.tick
-                    local pick = tick % 8
+                    local range = (Universe.legacyChunkScanning and 5) or 4
+                    local pick = tick % range
                     -- local profiler = game.create_profiler()
 
                     local map = nextMap()
@@ -1018,38 +970,31 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, tick)
                     elseif (pick == 2) then
+                        processPendingUpgrades(tick)
                         processVengence()
-                    elseif (pick == 3) then
                         disperseVictoryScent()
                         processAttackWaves()
                         processClouds(tick)
+                    elseif (pick == 3) then
+                        processPendingUpgrades(tick)
+                        processScanChunks()
+                        planning(gameRef.forces.enemy.evolution_factor)
                     elseif (pick == 4) then
                         if map then
+                            scanPlayerMap(map)
                             scanResourceMap(map)
                             scanEnemyMap(map, tick)
                         end
-                    elseif (pick == 5) then
-                        if map then
-                            scanEnemyMap(map, tick)
-                        end
-                    elseif (pick == 6) then
-                        if map then
-                            scanPlayerMap(map)
-                        end
-                    elseif (pick == 7) then
-                        processPendingChunks(tick)
-                        processScanChunks()
-                        planning(gameRef.forces.enemy.evolution_factor)
                     end
 
                     if map then
                         processMap(map, tick)
                     end
 
+                    -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
+
                     processBaseAIs(tick)
                     processNests(tick)
-                    processPendingUpgrades(tick)
-                    processPendingUpgrades(tick)
                     cleanSquads(tick)
 
                     -- game.print({"", "--dispatch4 ", profiler, " , ", pick," , ",math.random()})
@@ -1076,14 +1021,18 @@ script.on_event(defines.events.on_script_trigger_effect, onTriggerEntityCreated)
 
 script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
 
-script.on_event(defines.events.on_biter_base_built, onEnemyBaseBuild)
 script.on_event({defines.events.on_player_mined_entity,
                  defines.events.on_robot_mined_entity}, onMine)
 
-script.on_event({defines.events.on_built_entity,
-                 defines.events.on_robot_built_entity,
-                 defines.events.script_raised_built,
-                 defines.events.script_raised_revive}, onBuild)
+script.on_event(
+    {
+        defines.events.on_built_entity,
+        defines.events.on_robot_built_entity,
+        defines.events.script_raised_built,
+        defines.events.script_raised_revive,
+        defines.events.on_biter_base_built
+    },
+    onBuild)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event({defines.events.on_entity_died,

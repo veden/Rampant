@@ -607,6 +607,16 @@ data:extend({
         },
 
         {
+            type = "bool-setting",
+            name = "rampant--legacyChunkScanning",
+            description = "rampant--legacyChunkScanning",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "m[total]-c[ai]zz",
+            per_user = false
+        },
+
+        {
             type = "double-setting",
             name = "rampant--minimumAdaptationEvolution",
             description = "rampant--minimumAdaptationEvolution",

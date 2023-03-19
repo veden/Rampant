@@ -282,7 +282,6 @@ function ChunkUtils.initialScan(chunk, map, tick)
                             queueUpgrade(enemyBuilding,
                                          base,
                                          nil,
-                                         true,
                                          true)
                         end
                     end
