@@ -52,7 +52,7 @@ local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
 local activateMap
 
-local manhattenDistancePoints = MathUtils.manhattenDistancePoints
+local euclideanDistancePoints = MathUtils.euclideanDistancePoints
 local tableSize = table_size
 
 local mMin = math.min
@@ -539,19 +539,12 @@ function ChunkPropertyUtils.findNearbyBase(chunk)
     if foundBase then
         return foundBase
     end
-    local x = chunk.x
-    local y = chunk.y
 
-    local closest = MAGIC_MAXIMUM_NUMBER
-    for _, base in pairs(chunk.map.bases) do
-        local distance = manhattenDistancePoints(base.x, base.y, x, y)
-        if (distance <= base.distanceThreshold) and (distance < closest) then
-            closest = distance
-            foundBase = base
-        end
-    end
-
-    return foundBase
+    return ChunkPropertyUtils.findNearbyBaseByPosition(
+        chunk.map,
+        chunk.x,
+        chunk.y
+    )
 end
 
 function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
@@ -559,7 +552,7 @@ function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
 
     local closest = MAGIC_MAXIMUM_NUMBER
     for _, base in pairs(map.bases) do
-        local distance = manhattenDistancePoints(base.x, base.y, x, y)
+        local distance = euclideanDistancePoints(base.x, base.y, x, y)
         if (distance <= base.distanceThreshold) and (distance < closest) then
             closest = distance
             foundBase = base

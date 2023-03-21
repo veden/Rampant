@@ -616,8 +616,8 @@ function BaseUtils.createBase(map, chunk, tick)
     local base = {
         x = x,
         y = y,
-        totalX = x,
-        totalY = y,
+        totalX = 0,
+        totalY = 0,
         distanceThreshold = distanceThreshold * Universe.baseDistanceModifier,
         tick = tick,
         alignment = alignment,
