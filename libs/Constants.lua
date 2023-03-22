@@ -72,6 +72,7 @@ constants.DOUBLE_CHUNK_SIZE = constants.CHUNK_SIZE * 2
 constants.TRIPLE_CHUNK_SIZE = constants.CHUNK_SIZE * 3
 constants.HALF_CHUNK_SIZE = constants.CHUNK_SIZE / 2
 constants.QUARTER_CHUNK_SIZE = constants.HALF_CHUNK_SIZE / 2
+constants.EIGHTH_CHUNK_SIZE = constants.QUARTER_CHUNK_SIZE / 2
 
 constants.CHUNK_SIZE_DIVIDER = 1 / constants.CHUNK_SIZE
 
@@ -1529,6 +1530,8 @@ constants.HIVE_BUILDINGS_TYPES = {
     "hive"
 }
 
+constants.PENDING_UPGRADE_CREATION_THESHOLD = 100
+
 constants.VICTORY_SCENT_MULTIPLER = {}
 for x=1,9 do
     for y=1,9 do
@@ -1569,21 +1572,57 @@ for _,cost in pairs(constants.HIVE_BUILDINGS_COST) do
     end
 end
 
+constants.HIVE_MAX_NESTS = {
+    2,
+    3,
+    3,
+    4,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6
+}
+constants.HIVE_MAX_TURRETS = {
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8
+}
+constants.HIVE_MAX_HIVES = {
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+}
+
 constants.FACTION_MUTATION_MAPPING = {}
 constants.FACTION_MUTATION_MAPPING["spitter-spawner"] = {"biter-spawner", "hive"}
 constants.FACTION_MUTATION_MAPPING["biter-spawner"] = {"spitter-spawner", "hive"}
 constants.FACTION_MUTATION_MAPPING["hive"] = {"utility", "biter-spawner", "spitter-spawner"}
-constants.FACTION_MUTATION_MAPPING["turret"] = {"trap"}
-constants.FACTION_MUTATION_MAPPING["trap"] = {"turret"}
+constants.FACTION_MUTATION_MAPPING["turret"] = {}
 constants.FACTION_MUTATION_MAPPING["utility"] = {"hive", "biter-spawner", "spitter-spawner"}
 
 function constants.gpsDebug(x, y, msg)
     game.print("[gps=".. x .. "," .. y .. "]" .. msg)
 end
 
-constants.MAX_HIVE_TTL = 2485
-constants.MIN_HIVE_TTL = 890
-constants.DEV_HIVE_TTL = 150
+constants.MAX_HIVE_TTL = 12400
+constants.MIN_HIVE_TTL = 4800
+constants.DEV_HIVE_TTL = 450
 
 local rg = mathUtils.xorRandom(settings.startup["rampant--enemySeed"].value)
 
@@ -1599,6 +1638,8 @@ local costLookup = {}
 constants.COST_LOOKUP = costLookup --costLookup
 local buildingHiveTypeLookup = {}
 constants.BUILDING_HIVE_TYPE_LOOKUP = buildingHiveTypeLookup --buildingHiveTypeLookup
+local buildingHiveTierLookup = {}
+constants.BUILDING_HIVE_TIER_LOOKUP = buildingHiveTierLookup --buildingHiveTierLookup
 local vanillaEntityLookup = {}
 constants.VANILLA_ENTITY_TYPE_LOOKUP = vanillaEntityLookup --vanillaEntityTypeLookup
 local entitySkipCountLookup = {}
@@ -1610,6 +1651,13 @@ buildingHiveTypeLookup["small-worm-turret"] = "turret"
 buildingHiveTypeLookup["medium-worm-turret"] = "turret"
 buildingHiveTypeLookup["big-worm-turret"] = "turret"
 buildingHiveTypeLookup["behemoth-worm-turret"] = "turret"
+
+buildingHiveTierLookup["biter-spawner"] = 1
+buildingHiveTierLookup["spitter-spawner"] = 1
+buildingHiveTierLookup["small-worm-turret"] = 1
+buildingHiveTierLookup["medium-worm-turret"] = 1
+buildingHiveTierLookup["big-worm-turret"] = 1
+buildingHiveTierLookup["behemoth-worm-turret"] = 1
 
 vanillaEntityLookup["biter-spawner"] = true
 vanillaEntityLookup["spitter-spawner"] = true
@@ -1696,6 +1744,7 @@ for i=1,#constants.FACTION_SET do
                 enemyAlignmentLookup[entry] = faction.type
                 costLookup[entry] = constants.HIVE_BUILDINGS_COST[building.type]
                 buildingHiveTypeLookup[entry] = building.type
+                buildingHiveTierLookup[entry] = t
                 variationSet[#variationSet+1] = entry
                 for _,unit in pairs(faction.units) do
                     if isMember(unit.attributes, "skipKillCount") then

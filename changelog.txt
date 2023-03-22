@@ -16,6 +16,7 @@ Version: 3.2.0
     - When enemies die there body parts can fill in water tiles. Can be disabled in mod settings.
     - Added base mutation history to prevent mutations to previously mutated factions. Configurable amount of history in Mod Settings.
     - Hives now produce a single upper tier unit
+    - Hives now have a controlled expansion that doesn't use the unit-spawner non-unit spawning capabilities of the factorio engine
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
@@ -69,6 +70,7 @@ Version: 3.2.0
     - Removed unneeded iterators
     - Moved map properties directly into chunk object
     - Moved background chunk scanning under a mod setting for when mods don't raise events
+    - Pending upgrades are limited to 100 queued events for existing entity mutation and hive entity creation
   Framework:
     - Consolidated most libraries
 

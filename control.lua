@@ -51,6 +51,8 @@ local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 
 local UNIT_DEATH_POINT_COST = Constants.UNIT_DEATH_POINT_COST
 
+local PENDING_UPGRADE_CREATION_THESHOLD = Constants.PENDING_UPGRADE_CREATION_THESHOLD
+
 local MAX_HIVE_TTL = Constants.MAX_HIVE_TTL
 local MIN_HIVE_TTL = Constants.MIN_HIVE_TTL
 local DEV_HIVE_TTL = Constants.DEV_HIVE_TTL
@@ -119,6 +121,7 @@ local scanPlayerMap = Processor.scanPlayerMap
 local scanResourceMap = Processor.scanResourceMap
 
 local processNests = Processor.processNests
+local processHives = Processor.processHives
 
 local rallyUnits = Squad.rallyUnits
 
@@ -955,7 +958,7 @@ script.on_event(defines.events.on_tick,
                 function ()
                     local gameRef = game
                     local tick = gameRef.tick
-                    local range = (Universe.legacyChunkScanning and 5) or 4
+                    local range = (Universe.legacyChunkScanning and 4) or 3
                     local pick = tick % range
                     -- local profiler = game.create_profiler()
 
@@ -967,6 +970,8 @@ script.on_event(defines.events.on_tick,
                             recycleBases()
                         end
                         cleanUpMapTables(tick)
+                        planning(gameRef.forces.enemy.evolution_factor)
+                        processHives(tick)
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, tick)
                     elseif (pick == 2) then
@@ -975,11 +980,8 @@ script.on_event(defines.events.on_tick,
                         disperseVictoryScent()
                         processAttackWaves()
                         processClouds(tick)
-                    elseif (pick == 3) then
-                        processPendingUpgrades(tick)
                         processScanChunks()
-                        planning(gameRef.forces.enemy.evolution_factor)
-                    elseif (pick == 4) then
+                    elseif (pick == 3) then
                         if map then
                             scanPlayerMap(map)
                             scanResourceMap(map)

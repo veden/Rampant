@@ -38,6 +38,8 @@ local MathUtils = require("MathUtils")
 -- Constants
 
 local CHUNK_SIZE = Constants.CHUNK_SIZE
+local EIGHTH_CHUNK_SIZE = Constants.EIGHTH_CHUNK_SIZE
+local HALF_CHUNK_SIZE = Constants.HALF_CHUNK_SIZE
 
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 
@@ -55,28 +57,35 @@ local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
 local COOLDOWN_RALLY = Constants.COOLDOWN_RALLY
 local COOLDOWN_RETREAT = Constants.COOLDOWN_RETREAT
-local BASE_DISTANCE_TO_EVO_INDEX = Constants.BASE_DISTANCE_TO_EVO_INDEX
+
+local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
+
+local DEV_HIVE_TTL = Constants.DEV_HIVE_TTL
+local MAX_HIVE_TTL = Constants.MAX_HIVE_TTL
+local MIN_HIVE_TTL = Constants.MIN_HIVE_TTL
 
 -- imported functions
 
+local distortPositionConcentricCircles = MathUtils.distortPositionConcentricCircles
+local linearInterpolation = MathUtils.linearInterpolation
+local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 local findInsertionPoint = MapUtils.findInsertionPoint
 
 local createChunk = ChunkUtils.createChunk
 local initialScan = ChunkUtils.initialScan
-local euclideanDistancePoints = MathUtils.euclideanDistancePoints
 
 local removeChunkFromMap = MapUtils.removeChunkFromMap
 local chunkPassScan = ChunkUtils.chunkPassScan
-local findEntityUpgrade = BaseUtils.findEntityUpgrade
 
 local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
-local registerEnemyBaseStructure = ChunkUtils.registerEnemyBaseStructure
 local setPositionInQuery = Utils.setPositionInQuery
 
 local addPlayerGenerator = ChunkPropertyUtils.addPlayerGenerator
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
 local removeChunkToNest = MapUtils.removeChunkToNest
+
+local queueCreation = BaseUtils.queueCreation
 
 local processPheromone = MapUtils.processPheromone
 
@@ -476,6 +485,60 @@ function Processor.processClouds(tick)
     map.surface.create_entity(Universe.obaCreateBuildCloudQuery)
 end
 
+function Processor.processHives(tick)
+    local entityId = Universe.hiveIterator
+    local hiveData
+    if not entityId then
+        entityId, hiveData = next(Universe.activeHives, nil)
+    else
+        hiveData = Universe.activeHives[entityId]
+    end
+    if not entityId then
+        Universe.hiveIterator = nil
+        return
+    end
+    if tick < hiveData.tick then
+        return
+    end
+    Universe.hiveIterator = next(Universe.activeHives, entityId)
+    local base = hiveData.base
+    local map = base.map
+    if not map.surface.valid then
+        Universe.activeHives[entityId] = nil
+        return
+    end
+    hiveData.tick = tick +
+        gaussianRandomRangeRG(
+            linearInterpolation(Universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL),
+            DEV_HIVE_TTL,
+            MIN_HIVE_TTL,
+            MAX_HIVE_TTL,
+            Universe.random
+        )
+
+    local timeDelay = 0
+
+    local position = distortPositionConcentricCircles(
+        Universe.random,
+        hiveData.position,
+        EIGHTH_CHUNK_SIZE * hiveData.tier,
+        EIGHTH_CHUNK_SIZE
+    )
+
+    if hiveData.nest < hiveData.maxNests then
+        local entityType = "biter-spawner"
+        if Universe.random() < 0.5 then
+            entityType = "spitter-spawner"
+        end
+        queueCreation(base, position, entityType, timeDelay, hiveData)
+    elseif hiveData.turret < hiveData.maxTurrets then
+        queueCreation(base, position, "turret", timeDelay, hiveData)
+    elseif hiveData.hive < hiveData.maxHives then
+        queueCreation(base, position, "hive", timeDelay, hiveData)
+    else
+        Universe.activeHives[entityId] = nil
+    end
+end
 
 function Processor.processPendingChunks(tick, flush)
     local pendingChunks = Universe.pendingChunks
@@ -544,52 +607,64 @@ function Processor.processPendingChunks(tick, flush)
 end
 
 function Processor.processPendingUpgrades(tick)
-    local entityId, entityData = next(Universe.pendingUpgrades, nil)
-    if not entityId then
-        if tableSize(Universe.pendingUpgrades) == 0 then
+    local upgradeId, entityData = next(Universe.pendingUpgrades, nil)
+    if not upgradeId then
+        if Universe.pendingUpgradesLength == 0 then
             Universe.pendingUpgrades = {}
         end
         return
     end
     local entity = entityData.entity
-    if (entityData.state ~= 3) and not entity.valid then
-        Universe.pendingUpgrades[entityId] = nil
+    if (entityData.state ~= 2) and not entity.valid then
+        Universe.pendingUpgrades[upgradeId] = nil
+        Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
         return
     end
 
     if entityData.delayTLL and tick < entityData.delayTLL then
         return
     end
+
     local state = entityData.state
     if state == 1 then
         local map = entityData.map
         unregisterEnemyBaseStructure(map, entity, nil, true)
-
-        entityData.position = map.surface.find_non_colliding_position(
-            entityData.name,
-            entityData.position,
-            8,
-            1,
-            true
-        )
-
-        entityData.state = 2
-    elseif state == 2 then
         entity.destroy()
         if not entityData.name or not entityData.position then
-            Universe.pendingUpgrades[entityId] = nil
+            Universe.pendingUpgrades[upgradeId] = nil
+            Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
             return
         end
-        entityData.state = 3
-    elseif state == 3 then
-        Universe.pendingUpgrades[entityId] = nil
+        entityData.state = 2
+    else
+        Universe.pendingUpgrades[upgradeId] = nil
+        Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
         local query = Queries.createEntityQuery
         local name = entityData.name
         query.name = name
         local position = entityData.position
         setPositionInQuery(query, position)
         local surface = entityData.map.surface
-        surface.create_entity(query)
+        local newEntity = surface.create_entity(query)
+        if newEntity and newEntity.valid then
+            local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
+            if hiveType == "hive" then
+                Universe.hives[newEntity.unit_number] = entityData.hive
+            else
+                local hiveData = entityData.hive
+                if hiveData then
+                    Universe.hiveData[newEntity.unit_number] = entityData.hive
+                    local adjustedHiveType = (
+                        (
+                            (hiveType == "spitter-spawner")
+                            or (hiveType == "biter-spawner")
+                        )
+                        and "nest"
+                    ) or hiveType
+                    hiveData[adjustedHiveType] = hiveData[adjustedHiveType] + 1
+                end
+            end
+        end
         if remote.interfaces["kr-creep"] then
             remote.call(
                 "kr-creep",

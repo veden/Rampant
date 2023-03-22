@@ -35,6 +35,8 @@ local Utils = require("Utils")
 
 -- Constants
 
+local BUILDING_HIVE_TIER_LOOKUP = Constants.BUILDING_HIVE_TIER_LOOKUP
+
 local VANILLA_ENTITY_TYPE_LOOKUP = Constants.VANILLA_ENTITY_TYPE_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
 
@@ -61,6 +63,14 @@ local CHUNK_IMPASSABLE = Constants.CHUNK_IMPASSABLE
 local RESOURCE_NORMALIZER = Constants.RESOURCE_NORMALIZER
 
 local CHUNK_TICK = Constants.CHUNK_TICK
+
+local DEV_HIVE_TTL = Constants.DEV_HIVE_TTL
+local MAX_HIVE_TTL = Constants.MAX_HIVE_TTL
+local MIN_HIVE_TTL = Constants.MIN_HIVE_TTL
+
+local HIVE_MAX_NESTS = Constants.HIVE_MAX_NESTS
+local HIVE_MAX_TURRETS = Constants.HIVE_MAX_TURRETS
+local HIVE_MAX_HIVES = Constants.HIVE_MAX_HIVES
 
 local GENERATOR_PHEROMONE_LEVEL_1 = Constants.GENERATOR_PHEROMONE_LEVEL_1
 local GENERATOR_PHEROMONE_LEVEL_3 = Constants.GENERATOR_PHEROMONE_LEVEL_3
@@ -104,6 +114,8 @@ local createBase = BaseUtils.createBase
 local modifyBaseUnitPoints = BaseUtils.modifyBaseUnitPoints
 
 local euclideanDistancePoints = MathUtils.euclideanDistancePoints
+local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
+local linearInterpolation = MathUtils.linearInterpolation
 
 local setPassable = ChunkPropertyUtils.setPassable
 local setPathRating = ChunkPropertyUtils.setPathRating
@@ -427,8 +439,47 @@ function ChunkUtils.colorXY(x, y, surface, color)
     })
 end
 
+local function registerHive(base, entityUnitNumber, hiveType, name, position, tick)
+    if hiveType == "hive" then
+        if not Universe.hives[entityUnitNumber] then
+            local tier = BUILDING_HIVE_TIER_LOOKUP[name]
+            local maxNests = HIVE_MAX_NESTS[tier]
+            local maxTurrets = HIVE_MAX_TURRETS[tier]
+            local maxHives
+            local rollHives = Universe.random()
+            if rollHives < 0.05 then
+                maxHives = HIVE_MAX_HIVES[tier]
+            else
+                maxHives = 0
+            end
+            local hiveData = {
+                hiveId = entityUnitNumber,
+                position = position,
+                base = base,
+                hive = 0,
+                nest = 0,
+                turret = 0,
+                maxNests = ((maxNests > 0) and (Universe.random(maxNests) - 1)) or 0,
+                maxTurrets = ((maxTurrets > 0) and (Universe.random(maxTurrets) - 1)) or 0,
+                maxHives = ((maxHives > 0) and (Universe.random(maxHives) - 1)) or 0,
+                tier = tier,
+                tick = tick + gaussianRandomRangeRG(
+                    linearInterpolation(Universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL),
+                    DEV_HIVE_TTL,
+                    MIN_HIVE_TTL,
+                    MAX_HIVE_TTL,
+                    Universe.random
+                                                   )
+            }
+            Universe.hives[entityUnitNumber] = hiveData
+            Universe.activeHives[entityUnitNumber] = hiveData
+        end
+    end
+end
+
 function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
-    local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
+    local name = entity.name
+    local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
 
     local addFunc =
         registerTypeToAddFn[hiveType]
@@ -451,8 +502,36 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
             end
         end
     end
+    registerHive(base, entityUnitNumber, hiveType, name, entity.position, tick)
     if added and (not skipCount) then
         base.builtEnemyBuilding = base.builtEnemyBuilding + 1
+    end
+end
+
+local function unregisterHive(entityUnitNumber, hiveType)
+    if Universe.hives[entityUnitNumber] then
+        Universe.hives[entityUnitNumber] = nil
+        Universe.activeHives[entityUnitNumber] = nil
+        if Universe.hiveIterator == entityUnitNumber then
+            Universe.hiveIterator = nil
+        end
+    else
+        local hiveData = Universe.hiveData[entityUnitNumber]
+        if hiveData then
+            Universe.activeHives[hiveData.hiveId] = hiveData
+            local adjustedHiveType = (
+                (
+                    (hiveType == "spitter-spawner")
+                    or (hiveType == "biter-spawner")
+                )
+                and "nest"
+            ) or hiveType
+            hiveData[adjustedHiveType] = hiveData.nest - 1
+            if hiveData[adjustedHiveType] < 0 then
+                hiveData[adjustedHiveType] = 0
+            end
+            Universe.hiveData[entityUnitNumber] = nil
+        end
     end
 end
 
@@ -490,6 +569,7 @@ function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
             end
         end
     end
+    unregisterHive(entityUnitNumber, hiveType)
 end
 
 function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
