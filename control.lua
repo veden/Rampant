@@ -296,7 +296,9 @@ local function onModSettingsChange(event)
 
     Universe["MAX_BASE_ALIGNMENT_HISTORY"] = settings.global["rampant--maxBaseAlignmentHistory"].value
 
-    Universe["initialPeaceTime"] = settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE
+    Universe["initialPeaceTime"] =
+        (settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE) + Universe.modAddedTick
+
     Universe["printAwakenMessage"] = settings.global["rampant--printAwakenMessage"].value
 
     Universe["minimumAdaptationEvolution"] = settings.global["rampant--minimumAdaptationEvolution"].value

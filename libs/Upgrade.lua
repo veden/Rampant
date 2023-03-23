@@ -546,6 +546,8 @@ function Upgrade.attempt()
         Universe.expansionMediumTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.50
         Universe.expansionHighTargetDistance = (Universe.expansionMaxDistance + MINIMUM_EXPANSION_DISTANCE) * 0.75
         Universe.expansionDistanceDeviation = Universe.expansionMediumTargetDistance * 0.33
+
+        Universe.modAddedTick = game.tick
     end
 end
 

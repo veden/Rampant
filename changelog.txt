@@ -42,6 +42,7 @@ Version: 3.2.0
     - Settler expansion cooldown is now different for every base instead of the same for all bases
     - Changed reduction collision boxes of enemy entities to 25% instead of 50% and enemy units to 30% instead of 80%
     - Changed mod settings default to false for shrink enemy buildings
+    - Initial peace mod settings now takes into account when the mod is added to the game
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed
