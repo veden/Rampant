@@ -442,7 +442,6 @@ function Upgrade.addUniverseProperties()
         Universe.kamikazeThreshold = 0
         Universe.attackWaveLowerBound = 1
 
-        Universe.settlerCooldown = 0
         Universe.settlerWaveDeviation = 0
         Universe.settlerWaveSize = 0
 

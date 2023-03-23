@@ -39,6 +39,7 @@ Version: 3.2.0
     - Vengence settlers now cost ~3x of vengence squad
     - Enemy regional bases now are centered on the average of all chunks that are part of the base
     - Set number of chunks to max evolution from 0,0 to 300
+    - Settler expansion cooldown is now different for every base instead of the same for all bases
   Bugfixes:
     - Removed layer-13 from projectiles
     - script_raised_built now looks for enemy faction and registers as needed

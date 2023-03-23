@@ -876,12 +876,6 @@ function BaseUtils.planning(evolutionLevel)
                                                    Universe.expansionMaxSize)
     Universe.settlerWaveDeviation = (Universe.settlerWaveSize * 0.33)
 
-    Universe.settlerCooldown = randomTickDuration(Universe.random,
-                                                  Universe.expansionMinTime,
-                                                  mFloor(linearInterpolation(evolutionLevel ^ 1.66667,
-                                                                             Universe.expansionMaxTime,
-                                                                             Universe.expansionMinTime)))
-
     Universe.unitRefundAmount = AI_UNIT_REFUND * evolutionLevel
     Universe.kamikazeThreshold = NO_RETREAT_BASE_PERCENT + (evolutionLevel * NO_RETREAT_EVOLUTION_BONUS_MAX)
 end
@@ -894,7 +888,12 @@ local function processBase(base, tick)
     if (base.stateAI == BASE_AI_STATE_MIGRATING or base.stateAI == BASE_AI_STATE_SIEGE)
         and base.resetExpensionGroupsTick <= tick
     then
-        base.resetExpensionGroupsTick = tick + Universe.settlerCooldown
+        local randomDuration = randomTickDuration(Universe.random,
+                                                  Universe.expansionMinTime,
+                                                  mFloor(linearInterpolation(Universe.evolutionLevel ^ 1.66667,
+                                                                             Universe.expansionMaxTime,
+                                                                             Universe.expansionMinTime)))
+        base.resetExpensionGroupsTick = tick + randomDuration
         base.sentExpansionGroups = 0
     end
 
