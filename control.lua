@@ -724,6 +724,10 @@ local function onUnitGroupCreated(event)
     if group.is_script_driven then
         return
     end
+    if not Universe.awake then
+        group.destroy()
+        return
+    end
     local map = Universe.maps[surface.index]
     if not map then
         return
@@ -799,6 +803,9 @@ local function onGroupFinishedGathering(event)
     local group = event.group
     if not group.valid or (group.force.name ~= "enemy") then
         return
+    end
+    if not Universe.awake then
+        group.destroy()
     end
     local map = Universe.maps[group.surface.index]
     if not map then
