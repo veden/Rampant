@@ -822,8 +822,8 @@ local function fillEntityTemplate(entity)
                 entity.maxSpawnDarkness = 0.45
             elseif (attribute == "followsPlayer") then
                 entity.followsPlayer = true
-            elseif (attribute == "singleUnit") then
-                entity.unitsOwned = 1
+            elseif (attribute == "twoUnits") then
+                entity.unitsOwned = 2
                 entity.unitsToSpawn = 30
             elseif (attribute == "stationary") then
                 entity.movement = 0
