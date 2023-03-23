@@ -72,8 +72,8 @@ for k, unit in pairs(data.raw["unit"]) do
     if (string.find(k, "biter") or string.find(k, "spitter")) and unit.collision_box then
         if settings.startup["rampant--enableSwarm"].value then
             unit.collision_box = {
-                {unit.collision_box[1][1] * 0.20, unit.collision_box[1][2] * 0.20},
-                {unit.collision_box[2][1] * 0.20, unit.collision_box[2][2] * 0.20}
+                {unit.collision_box[1][1] * 0.70, unit.collision_box[1][2] * 0.70},
+                {unit.collision_box[2][1] * 0.70, unit.collision_box[2][2] * 0.70}
             }
         end
 
@@ -90,8 +90,8 @@ if settings.startup["rampant--enableShrinkNestsAndWorms"].value then
     for k, unit in pairs(data.raw["unit-spawner"]) do
         if (string.find(k, "biter") or string.find(k, "spitter") or string.find(k, "hive")) and unit.collision_box then
             unit.collision_box = {
-                {unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
-                {unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
+                {unit.collision_box[1][1] * 0.75, unit.collision_box[1][2] * 0.75},
+                {unit.collision_box[2][1] * 0.75, unit.collision_box[2][2] * 0.75}
             }
         end
     end
@@ -99,8 +99,8 @@ if settings.startup["rampant--enableShrinkNestsAndWorms"].value then
     for k, unit in pairs(data.raw["turret"]) do
         if string.find(k, "worm") and unit.collision_box then
             unit.collision_box = {
-                {unit.collision_box[1][1] * 0.50, unit.collision_box[1][2] * 0.50},
-                {unit.collision_box[2][1] * 0.50, unit.collision_box[2][2] * 0.50}
+                {unit.collision_box[1][1] * 0.75, unit.collision_box[1][2] * 0.75},
+                {unit.collision_box[2][1] * 0.75, unit.collision_box[2][2] * 0.75}
             }
         end
     end

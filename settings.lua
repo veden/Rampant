@@ -129,7 +129,7 @@ data:extend({
             name = "rampant--enableShrinkNestsAndWorms",
             description = "rampant--enableShrinkNestsAndWorms",
             setting_type = "startup",
-            default_value = true,
+            default_value = false,
             order = "b[modifier]-j[unit]",
             per_user = false
         },
