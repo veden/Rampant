@@ -155,5 +155,26 @@ function MathUtils.distortPosition(rg, position, size)
     return position
 end
 
+function MathUtils.distortPositionConcentricCircles(rg, position, size, min)
+    local xDistort = MathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
+    local yDistort = MathUtils.gaussianRandomRangeRG(1, 0.5, 0, 2, rg) - 1
+    local xModifier = (xDistort * size)
+    if xModifier < 0 then
+        xModifier = xModifier + -min
+    else
+        xModifier = xModifier + min
+    end
+    local yModifier = (yDistort * size)
+    if yModifier < 0 then
+        yModifier = yModifier + -min
+    else
+        yModifier = yModifier + min
+    end
+
+    position.x = position.x + xModifier
+    position.y = position.y + yModifier
+    return position
+end
+
 MathUtilsG = MathUtils
 return MathUtils
