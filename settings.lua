@@ -612,7 +612,19 @@ data:extend({
             description = "rampant--legacyChunkScanning",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-c[ai]zz",
+            order = "m[total]-c[ai]z",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
+            name = "rampant--squadCompressionThreshold",
+            description = "rampant--squadCompressionThreshold",
+            setting_type = "runtime-global",
+            minimum_value = -1,
+            default_value = 60,
+            maximum_value = 600,
+            order = "m[total]-c[ai]z",
             per_user = false
         },
 

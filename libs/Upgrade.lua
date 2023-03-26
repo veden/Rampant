@@ -296,6 +296,10 @@ local function addCommandSet()
 
     Universe.squadQueries = {}
     Universe.squadQueries.targetPosition = {0,0}
+    Universe.squadQueries.createEntityQuery = {
+        name = "",
+        position = {0,0}
+    }
     Universe.squadQueries.attackCommand = {
         type = DEFINES_COMMAND_ATTACK_AREA,
         destination = {0,0},
@@ -378,6 +382,14 @@ local function addCommandSet()
         {chunk=-1, direction=-1},
         {chunk=-1, direction=-1},
         {chunk=-1, direction=-1}
+    }
+    Universe.squadQueries.renderText = {
+            target = nil,
+            text = "",
+            target_offset = {0, -10},
+            color = {r=1,g=1,b=1,a=0.5},
+            surface = nil,
+            scale = 5
     }
 end
 

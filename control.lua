@@ -141,6 +141,9 @@ local getDrainPylonPair = ChunkPropertyUtils.getDrainPylonPair
 
 local createDrainPylon = UnitUtils.createDrainPylon
 
+local compressSquad = Squad.compressSquad
+local decompressSquad = Squad.decompressSquad
+
 local isDrained = ChunkPropertyUtils.isDrained
 local setDrainedTick = ChunkPropertyUtils.setDrainedTick
 local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
@@ -293,6 +296,7 @@ local function onModSettingsChange(event)
     Universe["legacyChunkScanning"] = settings.global["rampant--legacyChunkScanning"].value
 
     Universe["enabledPurpleSettlerCloud"] = settings.global["rampant--enabledPurpleSettlerCloud"].value
+    Universe["squadCompressionThreshold"] = settings.global["rampant--squadCompressionThreshold"].value
 
     Universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
     Universe["AI_MAX_BUILDER_COUNT"] = settings.global["rampant--maxNumberOfBuilders"].value
@@ -464,8 +468,11 @@ local function onDeath(event)
             local group = entity.unit_group
             if group then
                 local squad = Universe.groupNumberToSquad[group.group_number]
-                if damageTypeName and squad then
-                    base = squad.base
+                if squad then
+                    decompressSquad(squad)
+                    if damageTypeName then
+                        base = squad.base
+                    end
                 end
             end
         end
@@ -820,6 +827,7 @@ local function onGroupFinishedGathering(event)
     if squad then
         if squad.settler then
             if (Universe.builderCount <= Universe.AI_MAX_BUILDER_COUNT) then
+                compressSquad(squad)
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
@@ -832,6 +840,7 @@ local function onGroupFinishedGathering(event)
             end
 
             if (Universe.squadCount <= Universe.AI_MAX_SQUAD_COUNT) then
+                compressSquad(squad)
                 squadDispatch(map, squad, event.tick)
             else
                 group.destroy()
@@ -871,6 +880,7 @@ local function onGroupFinishedGathering(event)
         else
             Universe.squadCount = Universe.squadCount + 1
         end
+        compressSquad(squad)
         squadDispatch(map, squad, event.tick)
     end
 end

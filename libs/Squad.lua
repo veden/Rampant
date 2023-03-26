@@ -81,6 +81,8 @@ local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
 -- imported functions
 
+local setPositionInQuery = Utils.setPositionInQuery
+
 local getPassable = ChunkPropertyUtils.getPassable
 local getRallyTick = ChunkPropertyUtils.getRallyTick
 local setRallyTick = ChunkPropertyUtils.setRallyTick
@@ -253,6 +255,69 @@ local function addMovementPenalty(squad, chunk)
                   c = chunk })
 end
 
+function Squad.compressSquad(squad)
+    if not squad.canBeCompressed then
+        return
+    end
+
+    local compressionSet = {}
+    local group = squad.group
+    local members = group.members
+    if #members < Universe.squadCompressionThreshold then
+        squad.canBeCompressed = false
+        return
+    end
+    local compressedTotal = 0
+    local totalTypes = 0
+    for _, entity in pairs(members) do
+        local entityName = entity.name
+        local count = compressionSet[entityName]
+        if not count then
+            totalTypes = totalTypes + 1
+            if totalTypes > 6 then
+                entity.destroy()
+                compressionSet[entityName] = 1
+            else
+                compressionSet[entityName] = 0
+            end
+        else
+            compressionSet[entityName] = count + 1
+            compressedTotal = compressedTotal + 1
+            entity.destroy()
+        end
+    end
+    local query = Queries.renderText
+    query.surface = group.surface
+    query.text = compressedTotal
+    query.target = members[1]
+    squad.compressionText = rendering.draw_text(query)
+    squad.compressionSet = compressionSet
+    squad.canBeCompressed = false
+end
+
+function Squad.decompressSquad(squad)
+    if not squad.compressionSet then
+        return
+    end
+
+    local group = squad.group
+    local query = Queries.createEntityQuery
+    local add_member = group.add_member
+    local create_entity = squad.map.surface.create_entity
+    setPositionInQuery(
+        query,
+        group.position
+    )
+    for name,count in pairs(squad.compressionSet) do
+        query.name = name
+        for _ = 1, count do
+            add_member(create_entity(query))
+        end
+    end
+    rendering.destroy(squad.compressionText)
+    squad.compressionSet = nil
+end
+
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
@@ -365,6 +430,8 @@ local function settleMove(squad)
             )
         )
     then
+        Squad.decompressSquad(squad)
+
         position = findMovementPosition(surface, groupPosition) or groupPosition
 
         cmd = Queries.settleCommand
@@ -438,6 +505,7 @@ local function settleMove(squad)
     if lastChunk ~= 4 then
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING
+        Squad.decompressSquad(squad)
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
@@ -521,6 +589,7 @@ local function attackMove(squad)
     end
 
     if attack then
+        Squad.decompressSquad(squad)
         cmd = Queries.attackCommand
 
         if not squad.rabid then
@@ -550,6 +619,8 @@ local function buildMove(map, squad)
     local position = findMovementPosition(map.surface, groupPosition) or groupPosition
 
     setPositionInCommand(Queries.settleCommand, position)
+
+    Squad.decompressSquad(squad)
 
     group.set_command(Queries.compoundSettleCommand)
 end
@@ -824,6 +895,9 @@ function Squad.createSquad(position, map, group, settlers, base)
 
     local squad = {
         group = unitGroup,
+        canBeCompressed = true,
+        compressionSet = nil,
+        compressionText = nil,
         status = SQUAD_GUARDING,
         rabid = false,
         penalties = {},
@@ -1101,6 +1175,8 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     end
 
     squad.rabid = Universe.random() < 0.03
+
+    Squad.compressSquad(squad)
 
     Universe.groupNumberToSquad[squad.groupNumber] = squad
     modifyBaseUnitPoints(base, -cost, name, squadPosition.x, squadPosition.y)
