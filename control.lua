@@ -214,7 +214,11 @@ local function hookEvents()
     end
 end
 
-local function initializeLibraries()
+local function initializeLibraries(addProperties)
+    Upgrade.init(Universe)
+    if addProperties then
+        Upgrade.addUniverseProperties()
+    end
     BaseUtils.init(Universe)
     Squad.init(Universe)
     BaseUtils.init(Universe)
@@ -226,6 +230,8 @@ end
 
 local function onLoad()
     Universe = global.universe
+
+    initializeLibraries()
 
     hookEvents()
 end
@@ -307,10 +313,8 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    Upgrade.init(Universe)
     game.print("Rampant - Version 3.2.0")
-    Upgrade.addUniverseProperties()
-    initializeLibraries()
+    initializeLibraries(true)
     Upgrade.attempt()
 
     onModSettingsChange({setting="rampant--"})

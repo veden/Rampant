@@ -639,8 +639,10 @@ end
 
 function MapUtils.init(universe)
     Universe = universe
-    NeighborChunks = universe.mapUtilsQueries.neighbors
-    MapPosition = universe.mapUtilsQueries.position
+    if universe.mapUtilsQueries then
+        NeighborChunks = universe.mapUtilsQueries.neighbors
+        MapPosition = universe.mapUtilsQueries.position
+    end
 end
 
 MapUtilsG = MapUtils

@@ -1124,8 +1124,11 @@ end
 
 function Squad.init(universe)
     Universe = universe
-    Queries = Universe.squadQueries
-    TargetPosition = Universe.squadQueries.targetPosition
+    Queries = universe.squadQueries
+    if Queries then
+        TargetPosition = Queries.targetPosition
+        SearchPath = Queries.searchPath
+    end
 end
 
 SquadG = Squad

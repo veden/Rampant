@@ -620,8 +620,10 @@ end
 
 function ChunkPropertyUtils.init(universe, mapUtils)
     Universe = universe
-    Position = universe.chunkPropertyUtilsQueries.position
     activateMap = mapUtils.activateMap
+    if universe.chunkPropertyUtilsQueries then
+        Position = universe.chunkPropertyUtilsQueries.position
+    end
 end
 
 ChunkPropertyUtilsG = ChunkPropertyUtils
