@@ -531,21 +531,6 @@ function Upgrade.attempt()
 
         game.forces.enemy.kill_all_units()
 
-        game.map_settings.path_finder.min_steps_to_check_path_find_termination =
-            Constants.PATH_FINDER_MIN_STEPS_TO_CHECK_PATH
-
-        game.map_settings.unit_group.min_group_radius = Constants.UNIT_GROUP_MAX_RADIUS * 0.5
-        game.map_settings.unit_group.max_group_radius = Constants.UNIT_GROUP_MAX_RADIUS
-
-        game.map_settings.unit_group.max_member_speedup_when_behind = Constants.UNIT_GROUP_MAX_SPEED_UP
-        game.map_settings.unit_group.max_member_slowdown_when_ahead = Constants.UNIT_GROUP_MAX_SLOWDOWN
-        game.map_settings.unit_group.max_group_slowdown_factor = Constants.UNIT_GROUP_SLOWDOWN_FACTOR
-
-        game.map_settings.max_failed_behavior_count = 3
-        game.map_settings.unit_group.member_disown_distance = 10
-        game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
-        game.forces.enemy.ai_controllable = true
-
         Universe.evolutionLevel = game.forces.enemy.evolution_factor
 
         Universe.random = game.create_random_generator(Constants.ENEMY_SEED)

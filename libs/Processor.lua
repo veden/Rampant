@@ -39,7 +39,6 @@ local MathUtils = require("MathUtils")
 
 local CHUNK_SIZE = Constants.CHUNK_SIZE
 local EIGHTH_CHUNK_SIZE = Constants.EIGHTH_CHUNK_SIZE
-local HALF_CHUNK_SIZE = Constants.HALF_CHUNK_SIZE
 
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 

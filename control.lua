@@ -18,7 +18,6 @@
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local UnitUtils = require("libs/UnitUtils")
 local BaseUtils = require("libs/BaseUtils")
-local MathUtils = require("libs/MathUtils")
 local Processor = require("libs/Processor")
 local Constants = require("libs/Constants")
 local MapUtils = require("libs/MapUtils")
@@ -51,12 +50,6 @@ local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 
 local UNIT_DEATH_POINT_COST = Constants.UNIT_DEATH_POINT_COST
 
-local PENDING_UPGRADE_CREATION_THESHOLD = Constants.PENDING_UPGRADE_CREATION_THESHOLD
-
-local MAX_HIVE_TTL = Constants.MAX_HIVE_TTL
-local MIN_HIVE_TTL = Constants.MIN_HIVE_TTL
-local DEV_HIVE_TTL = Constants.DEV_HIVE_TTL
-
 local SETTLE_CLOUD_WARMUP = Constants.SETTLE_CLOUD_WARMUP
 
 -- imported functions
@@ -75,9 +68,6 @@ local nextMap = MapUtils.nextMap
 
 local processClouds = Processor.processClouds
 
-local distortPosition = MathUtils.distortPosition
-local linearInterpolation = MathUtils.linearInterpolation
-local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 local prepMap = MapUtils.prepMap
 local activateMap = MapUtils.activateMap
 

@@ -280,18 +280,6 @@ data:extend({
             per_user = false
         },
 
-        -- {
-        --     type = "double-setting",
-        --     name = "rampant--deadZoneFrequency",
-        --     description = "rampant--deadZoneFrequency",
-        --     setting_type = "runtime-global",
-        --     default_value = 0.1,
-        --     minimum_value = 0.0,
-        --     maximum_value = 1.0,
-        --     order = "d[modifier]-a[ai]",
-        --     per_user = false
-        -- },
-
         {
             type = "bool-setting",
             name = "rampant--newEnemies",
@@ -526,7 +514,7 @@ data:extend({
             name = "rampant--enabledPurpleSettlerCloud",
             setting_type = "runtime-global",
             default_value = true,
-            order = "m[total]-c[ai]",
+            order = "d[modifier]-a[ai]",
             per_user = false
         },
 
@@ -612,7 +600,7 @@ data:extend({
             description = "rampant--legacyChunkScanning",
             setting_type = "runtime-global",
             default_value = false,
-            order = "m[total]-c[ai]z",
+            order = "d[modifier]-a[ai]z",
             per_user = false
         },
 
@@ -624,7 +612,7 @@ data:extend({
             minimum_value = -1,
             default_value = 60,
             maximum_value = 600,
-            order = "m[total]-c[ai]z",
+            order = "d[modifier]-a[ai]z",
             per_user = false
         },
 
