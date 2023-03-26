@@ -481,6 +481,44 @@ function MapUtils.positionFromScaledDirections(startPosition, multipler, directi
     return MapPosition
 end
 
+function MapUtils.positionFromScaledSearchPath(startPosition, multipler, searchPath)
+    local lx = startPosition.x
+    local ly = startPosition.y
+    for i = 1, 4 do
+        local path = searchPath[i]
+        if path.chunk == -1 then
+            MapPosition.x = lx
+            MapPosition.y = ly
+            return MapPosition
+        end
+        local direction = path.direction
+        if (direction == 1) then
+            lx = lx - (CHUNK_SIZE * multipler)
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (direction == 2) then
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (direction == 3) then
+            lx = lx + (CHUNK_SIZE * multipler)
+            ly = ly - (CHUNK_SIZE * multipler)
+        elseif (direction == 4) then
+            lx = lx - (CHUNK_SIZE * multipler)
+        elseif (direction == 5) then
+            lx = lx + (CHUNK_SIZE * multipler)
+        elseif (direction == 6) then
+            lx = lx - (CHUNK_SIZE * multipler)
+            ly = ly + (CHUNK_SIZE * multipler)
+        elseif (direction == 7) then
+            ly = ly + (CHUNK_SIZE * multipler)
+        elseif (direction == 8) then
+            lx = lx + (CHUNK_SIZE * multipler)
+            ly = ly + (CHUNK_SIZE * multipler)
+        end
+    end
+    MapPosition.x = lx
+    MapPosition.y = ly
+    return MapPosition
+end
+
 function MapUtils.victoryScent(chunk, entityType)
     local value = VICTORY_SCENT[entityType]
     if value then

@@ -17,6 +17,7 @@ Version: 3.2.0
     - Added base mutation history to prevent mutations to previously mutated factions. Configurable amount of history in Mod Settings.
     - Hives now produce two upper tier units
     - Hives now have a controlled expansion that doesn't use the unit-spawner non-unit spawning capabilities of the factorio engine
+    - Unit groups now path upto 4 chunks at a time
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
@@ -65,6 +66,7 @@ Version: 3.2.0
     - Fixed the pheromone processing could skip the inner most chunks or the outer most chunks of a map
     - Fixed rallying units didn't use the base associated with the chunk for determining cost
     - Fixed that vanilla unit groups didn't respect initial peace time
+    - Fixed attack squads required both player structures and player pheromone above threshold to switch into attack mode
   Optimizations:
     - Moved most constants out of global
     - Removed new enemy variations setting

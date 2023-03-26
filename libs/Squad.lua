@@ -23,6 +23,7 @@ local Squad = {}
 
 local Universe
 local TargetPosition
+local SearchPath
 local Queries
 
 -- imports
@@ -113,6 +114,7 @@ local addSquadToChunk = ChunkPropertyUtils.addSquadToChunk
 local getChunkByXY = MapUtils.getChunkByXY
 local positionToChunkXY = MapUtils.positionToChunkXY
 local positionFromScaledDirections = MapUtils.positionFromScaledDirections
+local positionFromScaledSearchPath = MapUtils.positionFromScaledSearchPath
 
 local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
 
@@ -124,23 +126,55 @@ local function scoreRetreatLocation(neighborChunk)
 end
 
 local function scoreResourceLocation(neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE]
+    local preferred = false
+    if (
+        not neighborChunk.playerBaseGenerator
+        and not neighborChunk.playerGenerator
+        and neighborChunk.resourceGenerator
+        and getEnemyStructureCount(neighborChunk) == 0
+    )
+    then
+        preferred = true
+    end
+    local score = neighborChunk[RESOURCE_PHEROMONE]
         - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
         - neighborChunk[ENEMY_PHEROMONE]
+    return score, preferred
 end
 
 local function scoreSiegeLocation(neighborChunk)
+    local preferred = false
+    if (
+        not neighborChunk.playerBaseGenerator
+        and not neighborChunk.playerGenerator
+    )
+    then
+        preferred = true
+    end
     local settle = neighborChunk[BASE_PHEROMONE]
         + neighborChunk[RESOURCE_PHEROMONE] * 0.5
         + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
 
-    return settle - neighborChunk[ENEMY_PHEROMONE]
+    local score = settle - neighborChunk[ENEMY_PHEROMONE]
+
+    return score, preferred
 end
 
 local function scoreAttackLocation(neighborChunk)
+    local preferred = false
+    if (
+        neighborChunk.playerBaseGenerator
+        or neighborChunk.playerGenerator
+    )
+    then
+        preferred = true
+    end
     local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-    return damage
+    if preferred then
+        damage = damage * 2
+    end
+    return damage, preferred
 end
 
 local function findMovementPosition(surface, position)
@@ -222,50 +256,74 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-local function scoreNeighborsForSettling(map, chunk, neighborDirectionChunks, scoreFunction)
-    local highestChunk = -1
+local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction)
+    local highest = SearchPath[1]
     local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection = 0
+    local highestPreferred = false
+
+    highest.chunk = -1
 
     for x=1,8 do
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
-                local score = scoreFunction(neighborChunk)
-                if (score > highestScore) then
+                local score, preferred = scoreFunction(neighborChunk)
+                if (highestPreferred and preferred and (score > highestScore))
+                    or (not highestPreferred and (score > highestScore))
+                    or (not highestPreferred and preferred)
+                then
+                    highest.chunk = neighborChunk
+                    highest.direction = x
                     highestScore = score
-                    highestChunk = neighborChunk
-                    highestDirection = x
+                    highestPreferred = preferred
                 end
             end
         end
     end
 
-    if (chunk ~= -1) and (scoreFunction(chunk) > highestScore) then
-        return chunk, 0, -1, 0
+    if (highest.chunk == -1) then
+        return SearchPath
     end
 
-    local nextHighestChunk = -1
-    local nextHighestScore = highestScore
-    local nextHighestDirection = 0
+    if highestPreferred then
+        SearchPath[2].chunk = -1
+        return SearchPath
+    end
 
-    if (highestChunk ~= -1) then
-        neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
+    for i = 2, 4 do
+        local lastChunk = SearchPath[i-1].chunk
+        highest = SearchPath[i]
+        highest.chunk = -1
+        highestPreferred = false
+
+        neighborDirectionChunks = getNeighborChunks(map, lastChunk.x, lastChunk.y)
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
-            if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
-                canMoveChunkDirection(x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(neighborChunk)
-                if (score > nextHighestScore) then
-                    nextHighestScore = score
-                    nextHighestChunk = neighborChunk
-                    nextHighestDirection = x
+            if ((neighborChunk ~= -1) and (neighborChunk.id ~= lastChunk.id) and
+                canMoveChunkDirection(x, lastChunk, neighborChunk))
+            then
+                local score, preferred = scoreFunction(neighborChunk)
+                if (highestPreferred and preferred and (score > highestScore))
+                    or (not highestPreferred and (score > highestScore))
+                    or (not highestPreferred and preferred)
+                then
+                    highestScore = score
+                    highest.chunk = neighborChunk
+                    highest.direction = x
+                    highestPreferred = preferred
                 end
             end
         end
+        if highest.chunk == -1 then
+            return SearchPath
+        end
+        if highestPreferred and (i ~= 4) then
+            SearchPath[i+1].chunk = -1
+            return SearchPath
+        end
     end
 
-    return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
+    return SearchPath
 end
 
 local function settleMove(squad)
@@ -290,10 +348,11 @@ local function settleMove(squad)
             return
         end
     end
+    local originPosition = squad.originPosition
     local distance = euclideanDistancePoints(groupPosition.x,
                                              groupPosition.y,
-                                             squad.originPosition.x,
-                                             squad.originPosition.y)
+                                             originPosition.x,
+                                             originPosition.y)
     local cmd
     local position
     local surface = map.surface
@@ -306,11 +365,7 @@ local function settleMove(squad)
             )
         )
     then
-        position = findMovementPosition(surface, groupPosition)
-
-        if not position then
-            position = groupPosition
-        end
+        position = findMovementPosition(surface, groupPosition) or groupPosition
 
         cmd = Queries.settleCommand
         if squad.kamikaze then
@@ -324,157 +379,82 @@ local function settleMove(squad)
         squad.status = SQUAD_BUILDING
 
         group.set_command(cmd)
-    else
-        local attackChunk, attackDirection,
-            nextAttackChunk, nextAttackDirection = scoreNeighborsForSettling(
-                map,
-                chunk,
-                getNeighborChunks(map, x, y),
-                scoreFunction
-            )
+        return
+    end
 
-        if (attackChunk == -1) then
-            cmd = Queries.wanderCommand
-            group.set_command(cmd)
-            return
-        elseif (attackDirection == 0) then
-            cmd = Queries.settleCommand
-            TargetPosition.x = groupPosition.x
-            TargetPosition.y = groupPosition.y
+    local searchPath = scoreNeighbors(
+        map,
+        chunk,
+        getNeighborChunks(map, x, y),
+        scoreFunction
+    )
 
-            if squad.kamikaze then
-                cmd.distraction = DEFINES_DISTRACTION_NONE
-            else
-                cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-            end
-
-            squad.status = SQUAD_BUILDING
-        else
-            local attackPlayerThreshold = Universe.attackPlayerThreshold
-
-            if (nextAttackChunk ~= -1) then
-                if (not nextAttackChunk.playerBaseGenerator)
-                    and ((nextAttackChunk.playerGenerator or 0) < PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
-                then
-                    position = findMovementPosition(
-                        surface,
-                        positionFromScaledDirections(
-                            groupPosition,
-                            1,
-                            attackDirection,
-                            nextAttackDirection
-                        )
-                    )
-                else
-                    position = groupPosition
-                end
-            else
-                position = findMovementPosition(
-                    surface,
-                    positionFromScaledDirections(
-                        groupPosition,
-                        1,
-                        attackDirection
-                    )
-                )
-            end
-
-            if position then
-                TargetPosition.x = position.x
-                TargetPosition.y = position.y
-                if nextAttackChunk ~= -1 then
-                    addDeathGenerator(nextAttackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-                else
-                    addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-                end
-            else
-                cmd = Queries.wanderCommand
-                group.set_command(cmd)
-                return
-            end
-
-            if (nextAttackChunk ~= -1)
-                and (
-                    nextAttackChunk.playerBaseGenerator
-                    or ((nextAttackChunk.playerBaseGenerator or 0) >= PLAYER_PHEROMONE_GENERATOR_THRESHOLD)
-                )
-            then
-                cmd = Queries.settleCommand
-                squad.status = SQUAD_BUILDING
-                if squad.kamikaze then
-                    cmd.distraction = DEFINES_DISTRACTION_NONE
-                else
-                    cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-                end
-            elseif attackChunk.playerBaseGenerator
-                or (attackChunk[PLAYER_PHEROMONE] >= attackPlayerThreshold)
-            then
-                cmd = Queries.attackCommand
-
-                if not squad.rabid then
-                    squad.frenzy = true
-                    squad.frenzyPosition.x = groupPosition.x
-                    squad.frenzyPosition.y = groupPosition.y
-                end
-            else
-                cmd = Queries.moveCommand
-                if squad.rabid or squad.kamikaze then
-                    cmd.distraction = DEFINES_DISTRACTION_NONE
-                else
-                    cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-                end
-            end
-        end
-
-        setPositionInCommand(cmd, TargetPosition)
-
+    if (searchPath[1].chunk == -1) then
+        cmd = Queries.wanderCommand
         group.set_command(cmd)
+        return
     end
-end
 
---[[
-    Expects all neighbors adjacent to a chunk
---]]
-local function scoreNeighborsForAttack(map, chunk, neighborDirectionChunks, scoreFunction)
-    local highestChunk = -1
-    local highestScore = -MAGIC_MAXIMUM_NUMBER
-    local highestDirection
-
-    for x=1,8 do
-        local neighborChunk = neighborDirectionChunks[x]
-        if (neighborChunk ~= -1) then
-            if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
-                local score = scoreFunction(neighborChunk)
-                if (score > highestScore) then
-                    highestScore = score
-                    highestChunk = neighborChunk
-                    highestDirection = x
+    local lastChunk = 0
+    for i = 1, 4 do
+        local moveChunk = searchPath[i].chunk
+        if (moveChunk ~= -1) then
+            distance = euclideanDistancePoints(
+                moveChunk.x + HALF_CHUNK_SIZE,
+                moveChunk.y + HALF_CHUNK_SIZE,
+                originPosition.x,
+                originPosition.y
+            )
+            if distance >= squad.maxDistance then
+                searchPath[i].chunk = -1
+                if i < 4 then
+                    searchPath[i+1].chunk = -1
                 end
+            else
+                lastChunk = i
+                addDeathGenerator(moveChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             end
         end
     end
 
-    local nextHighestChunk = -1
-    local nextHighestScore = highestScore
-    local nextHighestDirection
+    position = findMovementPosition(
+        surface,
+        positionFromScaledSearchPath(
+            groupPosition,
+            1,
+            searchPath
+        )
+    )
 
-    if (highestChunk ~= -1) then
-        neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
-        for x=1,8 do
-            local neighborChunk = neighborDirectionChunks[x]
-            if ((neighborChunk ~= -1) and ((chunk == -1) or (neighborChunk.id ~= chunk.id)) and
-                canMoveChunkDirection(x, highestChunk, neighborChunk)) then
-                local score = scoreFunction(neighborChunk)
-                if (score > nextHighestScore) then
-                    nextHighestScore = score
-                    nextHighestChunk = neighborChunk
-                    nextHighestDirection = x
-                end
-            end
+    if not position then
+        cmd = Queries.wanderCommand
+        group.set_command(cmd)
+        return
+    end
+
+    TargetPosition.x = position.x
+    TargetPosition.y = position.y
+
+    if lastChunk ~= 4 then
+        cmd = Queries.settleCommand
+        squad.status = SQUAD_BUILDING
+        if squad.kamikaze then
+            cmd.distraction = DEFINES_DISTRACTION_NONE
+        else
+            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+        end
+    else
+        cmd = Queries.moveCommand
+        if squad.rabid or squad.kamikaze then
+            cmd.distraction = DEFINES_DISTRACTION_NONE
+        else
+            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
         end
     end
 
-    return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
+    setPositionInCommand(cmd, TargetPosition)
+
+    group.set_command(cmd)
 end
 
 local function attackMove(squad)
@@ -499,56 +479,48 @@ local function attackMove(squad)
     local attackScorer = scoreAttackLocation
 
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
-    local attackChunk, attackDirection,
-        nextAttackChunk, nextAttackDirection = scoreNeighborsForAttack(map,
-                                                                       chunk,
-                                                                       getNeighborChunks(map, x, y),
-                                                                       attackScorer)
+    local searchPath = scoreNeighbors(
+        map,
+        chunk,
+        getNeighborChunks(map, x, y),
+        attackScorer
+    )
     local cmd
-    if (attackChunk == -1) then
+    if (searchPath[1].chunk == -1) then
         cmd = Queries.wanderCommand
         group.set_command(cmd)
         return
     end
 
-    local position
-    local surface = map.surface
-
-    if (nextAttackChunk ~= -1) then
-        attackChunk = nextAttackChunk
-        position = findMovementPosition(
-            surface,
-            positionFromScaledDirections(
-                groupPosition,
-                1,
-                attackDirection,
-                nextAttackDirection
-            )
+    local position = findMovementPosition(
+        map.surface,
+        positionFromScaledSearchPath(
+            groupPosition,
+            1,
+            searchPath
         )
-    else
-        position = findMovementPosition(
-            surface,
-            positionFromScaledDirections(
-                groupPosition,
-                1,
-                attackDirection
-            )
-        )
-    end
+    )
 
     if not position then
         cmd = Queries.wanderCommand
         group.set_command(cmd)
         return
-    else
-        TargetPosition.x = position.x
-        TargetPosition.y = position.y
-        addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
     end
 
-    if attackChunk.playerBaseGenerator and
-        (attackChunk[PLAYER_PHEROMONE] >= Universe.attackPlayerThreshold)
-    then
+    local attack = false
+    for i = 1, 4 do
+        local attackChunk = searchPath[i].chunk
+        if (attackChunk ~= -1) then
+            addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
+            if attackChunk.playerBaseGenerator or
+                (attackChunk[PLAYER_PHEROMONE] >= Universe.attackPlayerThreshold)
+            then
+                attack = true
+            end
+        end
+    end
+
+    if attack then
         cmd = Queries.attackCommand
 
         if not squad.rabid then
@@ -564,6 +536,9 @@ local function attackMove(squad)
             cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
         end
     end
+
+    TargetPosition.x = position.x
+    TargetPosition.y = position.y
     setPositionInCommand(cmd, TargetPosition)
 
     group.set_command(cmd)
@@ -572,13 +547,9 @@ end
 local function buildMove(map, squad)
     local group = squad.group
     local groupPosition = group.position
-    local newGroupPosition = findMovementPosition(map.surface, groupPosition)
+    local position = findMovementPosition(map.surface, groupPosition) or groupPosition
 
-    if not newGroupPosition then
-        setPositionInCommand(Queries.settleCommand, groupPosition)
-    else
-        setPositionInCommand(Queries.settleCommand, newGroupPosition)
-    end
+    setPositionInCommand(Queries.settleCommand, position)
 
     group.set_command(Queries.compoundSettleCommand)
 end

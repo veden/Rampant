@@ -373,6 +373,12 @@ local function addCommandSet()
         unit_count = 1,
         unit_search_distance = CHUNK_SIZE
     }
+    Universe.squadQueries.searchPath = {
+        {chunk=-1, direction=-1},
+        {chunk=-1, direction=-1},
+        {chunk=-1, direction=-1},
+        {chunk=-1, direction=-1}
+    }
 end
 
 function Upgrade.setCommandForces(npcForces, enemyForces)
