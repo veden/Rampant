@@ -1080,6 +1080,7 @@ remote.add_interface("rampantTests",
 local function removeNewEnemies()
     game.print({"description.rampant--removeNewEnemies"})
     Universe.NEW_ENEMIES = false
+    game.forces.enemy.kill_all_units()
     for _,map in pairs(Universe.maps) do
         local surface = map.surface
         if surface.valid then
@@ -1142,6 +1143,7 @@ local function removeFaction(cmd)
         game.print({"description.rampant--removeFactionNames"})
         return
     end
+    game.forces.enemy.kill_all_units()
     factionNames = split(factionNames)
     for _,factionName in pairs(factionNames) do
         local found = false
