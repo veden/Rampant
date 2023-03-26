@@ -20,7 +20,7 @@
 ((nil . ((projectile-project-install-cmd . "./make.sh copy")
 	 (projectile-install-buffer-suffix . "install")
 
-         (projectile-project-compile-cmd . "luacheck .")
+         (projectile-project-compilation-cmd . "luacheck .")
          (projectile-compile-buffer-suffix . "lint")
 
 	 (projectile-project-package-cmd . "./make.sh zip")
