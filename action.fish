@@ -50,6 +50,9 @@ set modName "Rampant"
 switch $argv[1]
     case copy
         echo "copying"
+        set zipName "$modFolder/$title.zip"
+        rm -f zipName
+
         copyFiles "$modFolder/$title"
 
         if test -n "$_flag_serverDir"
@@ -60,6 +63,7 @@ switch $argv[1]
             echo "zipping"
         end
         set zipName "$modFolder/$title.zip"
+        rm -rf "$modFolder/$title"
         rm -f zipName
         ln -s (pwd) $title
 
@@ -70,7 +74,7 @@ switch $argv[1]
 
         if test -z "$_flag_silent"
             echo $zipProgress
-        end        
+        end
 
         if test -n "$_flag_serverDir"
             cp $zipName $_flag_serverDir
