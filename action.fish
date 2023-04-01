@@ -16,12 +16,6 @@ if test $_flag_help
     return 0
 end
 
-function getTitle
-    set title (jq -r .title info.json)
-    set ver (jq -r .version info.json)
-    echo $title"_"$ver
-end
-
 function copyFiles --argument-names copyFolder
     mkdir -p $copyFolder
 
@@ -44,16 +38,18 @@ if test -z "$modFolder"
     set modFolder "/mnt/gallery/gameFiles/factorio/mods"
 end
 
-set title (getTitle)
-set modName "Rampant"
+set modName (jq -r .name info.json)
+set modVersion (jq -r .version info.json)
+set title $modName"_"$modVersion
+set zipName "$modFolder/$title.zip"
+set modPath "$modFolder/$title"
 
 switch $argv[1]
     case copy
         echo "copying"
-        set zipName "$modFolder/$title.zip"
-        rm -f zipName
+        rm -f $zipName
 
-        copyFiles "$modFolder/$title"
+        copyFiles $modPath
 
         if test -n "$_flag_serverDir"
             copyFiles $_flag_serverDir
@@ -62,9 +58,8 @@ switch $argv[1]
         if test -z "$_flag_silent"
             echo "zipping"
         end
-        set zipName "$modFolder/$title.zip"
-        rm -rf "$modFolder/$title"
-        rm -f zipName
+        rm -rf $modPath
+        rm -f $zipName
         ln -s (pwd) $title
 
         set zipProgress (zip $zipName \
