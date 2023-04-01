@@ -25,6 +25,7 @@ Version: 3.2.0
     - Hives now have a controlled expansion that doesn't use the unit-spawner non-unit spawning capabilities of the factorio engine
     - Unit groups now path upto 4 chunks at a time
     - Added biter squad compression with adjustable unit group size threshold for when to apply compression
+    - Entity structure upgrades and hive structure creation now use raise_built flag
   Compatibility:
     - Added interface for adding and removing excluded surfaces
   Tweaks:
