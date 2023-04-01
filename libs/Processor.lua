@@ -382,10 +382,12 @@ function Processor.processVengence()
         return
     end
     local base = chunk.base
-    if canMigrate(base) and (Universe.random() < 0.075) then
-        formVengenceSettler(chunk)
-    else
-        formVengenceSquad(chunk)
+    if base then
+        if canMigrate(base) and (Universe.random() < 0.075) then
+            formVengenceSettler(chunk)
+        else
+            formVengenceSquad(chunk)
+        end
     end
 end
 
