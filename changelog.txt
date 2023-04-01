@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.2.1
+  Bugfixes:
+    - Squad compression setting would trigger squad compression even with -1 as mod setting
+
+---------------------------------------------------------------------------------------------------
 Version: 3.2.0
   Contributions:
     - Garrotte13: Missing turret sounds due too many sounds triggering at once
@@ -70,7 +75,7 @@ Version: 3.2.0
     - Fixed attack squads required both player structures and player pheromone above threshold to switch into attack mode
   Optimizations:
     - Moved most constants out of global
-    - Removed new enemy variations setting
+    - Reduced new enemy variations setting
     - Moved neturalObject scan chunk to after a chunk is determined to be passable
     - Centralized base points manipulation and chat messaging (Dagothur)
     - Base point deductions for unit losses are now batched in 20 to reduce chat spam when using the print AI points to chat options (Dagothur)

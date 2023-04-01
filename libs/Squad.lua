@@ -262,7 +262,9 @@ function Squad.compressSquad(squad)
     local compressionSet = {}
     local group = squad.group
     local members = group.members
-    if #members < Universe.squadCompressionThreshold then
+    if (Universe.squadCompressionThreshold == -1)
+        or (#members <= Universe.squadCompressionThreshold)
+    then
         squad.canBeCompressed = false
         return
     end
