@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.1
+  Contributions:
+    - Astorin provide RU translation for 3.2.0
   Bugfixes:
     - Squad compression setting would trigger squad compression even with -1 as mod setting
     - Fixed base being nil in processVengence function
