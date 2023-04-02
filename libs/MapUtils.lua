@@ -323,7 +323,6 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.chunkToRallys[chunkId] = nil
     Universe.chunkToPassScan[chunkId] = nil
     Universe.chunkToNests[chunkId] = nil
-    Universe.chunkToTurrets[chunkId] = nil
     Universe.chunkToUtilities[chunkId] = nil
     Universe.chunkToHives[chunkId] = nil
     Universe.vengenceQueue[chunkId] = nil
@@ -332,6 +331,7 @@ function MapUtils.removeChunkFromMap(map, chunk)
     local base = chunk.base
     if base then
         base.chunkCount = base.chunkCount - 1
+        chunk.base = nil
     end
 
     if Universe.processNestIterator == chunkId then

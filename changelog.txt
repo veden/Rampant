@@ -2,6 +2,7 @@
 Version: 3.2.2
   Bugfixes:
     - Fixed invalid unit group in gathering when the AI hasn't awakened
+    - Fixed invalid reference to chunkToTurrets on removing map chunk
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.1
