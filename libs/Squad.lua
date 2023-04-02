@@ -270,6 +270,7 @@ function Squad.compressSquad(squad)
     end
     local compressedTotal = 0
     local totalTypes = 0
+    local entityToTag
     for _, entity in pairs(members) do
         local entityName = entity.name
         local count = compressionSet[entityName]
@@ -277,8 +278,10 @@ function Squad.compressSquad(squad)
             totalTypes = totalTypes + 1
             if totalTypes > 6 then
                 entity.destroy()
+                compressedTotal = compressedTotal + 1
                 compressionSet[entityName] = 1
             else
+                entityToTag = entity
                 compressionSet[entityName] = 0
             end
         else
@@ -290,7 +293,7 @@ function Squad.compressSquad(squad)
     local query = Queries.renderText
     query.surface = group.surface
     query.text = compressedTotal
-    query.target = members[1]
+    query.target = entityToTag
     squad.compressionText = rendering.draw_text(query)
     squad.compressionSet = compressionSet
     squad.canBeCompressed = false
