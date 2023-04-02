@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.2.2
+  Bugfixes:
+    - Fixed invalid unit group in gathering when the AI hasn't awakened
+
+---------------------------------------------------------------------------------------------------
 Version: 3.2.1
   Contributions:
     - Astorin provide RU translation for 3.2.0

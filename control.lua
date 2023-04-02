@@ -807,6 +807,7 @@ local function onGroupFinishedGathering(event)
     end
     if not Universe.awake then
         group.destroy()
+        return
     end
     local map = Universe.maps[group.surface.index]
     if not map then
