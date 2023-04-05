@@ -818,8 +818,7 @@ local function onGroupFinishedGathering(event)
     if squad then
         if squad.settler then
             if (Universe.builderCount <= Universe.AI_MAX_BUILDER_COUNT) then
-                compressSquad(squad)
-                squadDispatch(map, squad, event.tick)
+                squadDispatch(squad, event.tick)
             else
                 group.destroy()
             end
@@ -831,8 +830,7 @@ local function onGroupFinishedGathering(event)
             end
 
             if (Universe.squadCount <= Universe.AI_MAX_SQUAD_COUNT) then
-                compressSquad(squad)
-                squadDispatch(map, squad, event.tick)
+                squadDispatch(squad, event.tick)
             else
                 group.destroy()
             end
@@ -871,8 +869,7 @@ local function onGroupFinishedGathering(event)
         else
             Universe.squadCount = Universe.squadCount + 1
         end
-        compressSquad(squad)
-        squadDispatch(map, squad, event.tick)
+        squadDispatch(squad, event.tick)
     end
 end
 
