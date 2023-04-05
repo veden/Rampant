@@ -45,6 +45,7 @@ local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 
 local HALF_CHUNK_SIZE = Constants.HALF_CHUNK_SIZE
@@ -161,6 +162,23 @@ local function scoreSiegeLocation(neighborChunk)
     return score, preferred
 end
 
+local function scoreSiegeKamikazeLocation(neighborChunk)
+    local preferred = false
+    if (
+        not neighborChunk.playerBaseGenerator
+        and not neighborChunk.playerGenerator
+    )
+    then
+        preferred = true
+    end
+    local settle = neighborChunk[KAMIKAZE_PHEROMONE]
+        + neighborChunk[RESOURCE_PHEROMONE] * 0.5
+
+    local score = settle - neighborChunk[ENEMY_PHEROMONE]
+
+    return score, preferred
+end
+
 local function scoreAttackLocation(neighborChunk)
     local preferred = false
     if (
@@ -172,6 +190,22 @@ local function scoreAttackLocation(neighborChunk)
     end
     local damage = neighborChunk[BASE_PHEROMONE] +
         (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    if preferred then
+        damage = damage * 2
+    end
+    return damage, preferred
+end
+
+local function scoreAttackKamikazeLocation(neighborChunk)
+    local preferred = false
+    if (
+        neighborChunk.playerBaseGenerator
+        or neighborChunk.playerGenerator
+    )
+    then
+        preferred = true
+    end
+    local damage = neighborChunk[KAMIKAZE_PHEROMONE]
     if preferred then
         damage = damage * 2
     end
@@ -238,7 +272,15 @@ local function addMovementPenalty(squad, chunk)
                     squad.maxDistance = calculateSettlerMaxDistance()
 
                     squad.status = SQUAD_SETTLING
+                elseif not squad.kamikaze then
+                    squad.kamikaze = true
+                    squad.penalties = {}
                 else
+                    for entity in pairs(squad.group.members) do
+                        if entity.valid then
+                            entity.destroy()
+                        end
+                    end
                     squad.group.destroy()
                 end
             end
@@ -405,6 +447,9 @@ local function settleMove(squad)
     local scoreFunction = scoreResourceLocation
     if (squad.type == BASE_AI_STATE_SIEGE) then
         scoreFunction = scoreSiegeLocation
+        if squad.kamikaze then
+            scoreFunction = scoreSiegeKamikazeLocation
+        end
     end
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
@@ -549,6 +594,9 @@ local function attackMove(squad)
     end
 
     local attackScorer = scoreAttackLocation
+    if squad.kamikaze then
+        attackScorer = scoreAttackKamikazeLocation
+    end
 
     squad.frenzy = (squad.frenzy and (euclideanDistanceNamed(groupPosition, squad.frenzyPosition) < 100))
     local searchPath = scoreNeighbors(

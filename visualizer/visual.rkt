@@ -279,7 +279,7 @@
 
     (new radio-box%
          [label "Show Layer"]
-         [choices (list "movement" "base" "player" "resource" "enemy" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "scoreResourceKamikaze" "scoreResource" "scoreSiegeKamikaze" "scoreSiege" "scoreAttackKamikaze" "scoreAttack" "pollution" "aNe" "aRNe" "squads" "baseAlign" "hives" "traps" "utility" "vg")]
+         [choices (list "movement" "base" "player" "resource" "enemy" "passable" "tick" "rating" "nests" "worms" "rally" "retreat" "resourceGen" "playerGen" "deathGen" "scoreResourceKamikaze" "scoreResource" "scoreSiegeKamikaze" "scoreSiege" "scoreAttackKamikaze" "scoreAttack" "pollution" "aNe" "aRNe" "squads" "baseAlign" "hives" "traps" "utility" "vg" "kamikaze")]
          [selection 0]
          [parent botPanel]
          (callback (lambda (radioButton event)

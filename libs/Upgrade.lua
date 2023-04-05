@@ -26,6 +26,13 @@ local Universe
 
 -- Constants
 
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
+local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
+local CHUNK_TICK = Constants.CHUNK_TICK
+
 local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
 local DEFINES_COMMAND_GROUP = defines.command.group
 local DEFINES_COMMAND_WANDER = defines.command.wander
@@ -551,6 +558,20 @@ function Upgrade.attempt()
         Universe.expansionDistanceDeviation = Universe.expansionMediumTargetDistance * 0.33
 
         Universe.modAddedTick = game.tick
+    end
+    if global.gameVersion < 2 then
+        global.gameVersion = 2
+
+        for _, map in pairs(Universe.maps) do
+            for _, chunk in pairs(map.processQueue) do
+                chunk[CHUNK_TICK] = 0
+                chunk[BASE_PHEROMONE] = 0
+                chunk[PLAYER_PHEROMONE] = 0
+                chunk[RESOURCE_PHEROMONE] = 0
+                chunk[ENEMY_PHEROMONE] = 0
+                chunk[KAMIKAZE_PHEROMONE] = 0
+            end
+        end
     end
 end
 

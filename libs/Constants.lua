@@ -189,11 +189,12 @@ constants.PLAYER_GENERATOR_PERSISTANCE = 0.92
 
 -- chunk attributes
 
-constants.BASE_PHEROMONE = 1
-constants.PLAYER_PHEROMONE = 2
-constants.RESOURCE_PHEROMONE = 3
-constants.ENEMY_PHEROMONE = 4
-constants.CHUNK_TICK = 5
+constants.CHUNK_TICK = 1
+constants.BASE_PHEROMONE = 2
+constants.PLAYER_PHEROMONE = 3
+constants.RESOURCE_PHEROMONE = 4
+constants.ENEMY_PHEROMONE = 5
+constants.KAMIKAZE_PHEROMONE = 6
 
 -- constants.PATH_RATING = 7
 

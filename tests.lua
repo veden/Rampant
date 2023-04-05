@@ -215,7 +215,8 @@ function tests.exportAiState()
                                    chunk.hiveCount or 0,
                                    chunk.trapCount or 0,
                                    chunk.utilityCount or 0,
-                                   global.universe.chunkToVictory[chunk.id] or 0
+                                   global.universe.chunkToVictory[chunk.id] or 0,
+                                   chunk[constants.KAMIKAZE_PHEROMONE]
                                   }, ",") .. "\n"
         end
         game.write_file("rampantState.txt", s, false)
