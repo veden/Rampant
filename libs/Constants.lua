@@ -223,7 +223,8 @@ constants.GROUP_MERGE_DISTANCE = 28
 
 constants.MAX_PENALTY_BEFORE_PURGE = 36000
 
-constants.COMMAND_TIMEOUT = 30 * 60
+constants.COMMAND_TIMEOUT = 1 * constants.TICKS_A_MINUTE
+constants.BUILD_COMMAND_TIMEOUT = 7 * constants.TICKS_A_MINUTE
 
 -- player building pheromones
 

@@ -1,9 +1,14 @@
+Version: 3.2.3
+  Bugfixes:
+    - Fixed occasionally compression number wouldn't appear on unit group
+    - Fixed squad compression could take place when attacking
+    - Fixed squad command timeout duration to account for 4 chunk pathing finding
+
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.2
   Bugfixes:
     - Fixed invalid unit group in gathering when the AI hasn't awakened
     - Fixed invalid reference to chunkToTurrets on removing map chunk
-    - Fixed occasionally compression number wouldn't appear on unit group
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.1
