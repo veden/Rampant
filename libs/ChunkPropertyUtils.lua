@@ -368,8 +368,8 @@ function ChunkPropertyUtils.getCombinedDeathGeneratorRating(chunk)
     local amount = 1 + ((chunk.deathGenerator or 0) + (chunk.permanentDeathGenerator or 0))
     if (amount > 1) then
         return 1
-    elseif (amount < 0) then
-        return 0
+    elseif (amount <= 0) then
+        return 0.001
     else
         return amount
     end

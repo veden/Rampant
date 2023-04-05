@@ -5,6 +5,7 @@ Version: 3.2.3
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking
     - Fixed squad command timeout duration to account for 4 chunk pathing finding
+    - Fixed death pheromone could zero out a chunk for squad movement planning
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.2
