@@ -1,4 +1,4 @@
-Version: 3.2.3
+Version: 3.3.0
   Improvements:
     - Re-added kamikaze squad state to prevent unit group dancing and then disbanding
   Bugfixes:
