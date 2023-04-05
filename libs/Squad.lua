@@ -42,6 +42,7 @@ local BASE_AI_STATE_RAIDING = Constants.BASE_AI_STATE_RAIDING
 local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
 local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
+local BUILD_COMMAND_TIMEOUT = Constants.BUILD_COMMAND_TIMEOUT
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
@@ -493,6 +494,7 @@ local function settleMove(squad)
         setPositionInCommand(cmd, position)
 
         squad.status = SQUAD_BUILDING
+        squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
 
         group.set_command(cmd)
         return
@@ -554,7 +556,7 @@ local function settleMove(squad)
     if lastChunk ~= 4 then
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING
-        Squad.decompressSquad(squad)
+        squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
@@ -665,16 +667,16 @@ local function attackMove(squad)
     group.set_command(cmd)
 end
 
-local function buildMove(map, squad)
+local function buildMove(squad, tick)
     local group = squad.group
     local groupPosition = group.position
-    local position = findMovementPosition(map.surface, groupPosition) or groupPosition
+    local position = findMovementPosition(squad.map.surface, groupPosition) or groupPosition
 
     setPositionInCommand(Queries.settleCommand, position)
 
     Squad.decompressSquad(squad)
 
-    group.set_command(Queries.compoundSettleCommand)
+    group.set_command(Queries.settleCommand)
 end
 
 function Squad.cleanSquads(tick)
@@ -721,53 +723,57 @@ function Squad.cleanSquads(tick)
             squads[groupId] = nil
         elseif (group.state == 4) then
             squad.wanders = 0
-            Squad.squadDispatch(squad.map, squad, tick)
+            Squad.squadDispatch(squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             if squad.wanders > 5 then
                 squad.group.destroy()
             else
                 squad.wanders = squad.wanders + 1
-                local cmd = Queries.wander2Command
-                squad.commandTick = tick + COMMAND_TIMEOUT
-                group.set_command(cmd)
-                group.start_moving()
+                if squad.status == SQUAD_BUILDING then
+                    squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
+                else
+                    squad.commandTick = tick + COMMAND_TIMEOUT
+                end
             end
         end
     end
 end
 
-function Squad.squadDispatch(map, squad, tick)
+function Squad.squadDispatch(squad, tick)
     local group = squad.group
-    if group and group.valid then
-        local status = squad.status
-        if (status == SQUAD_RAIDING) then
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            attackMove(squad)
-        elseif (status == SQUAD_SETTLING) then
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            settleMove(squad)
-        elseif (status == SQUAD_RETREATING) then
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            if squad.settlers then
-                squad.status = SQUAD_SETTLING
-                settleMove(squad)
-            else
-                squad.status = SQUAD_RAIDING
-                attackMove(squad)
-            end
-        elseif (status == SQUAD_BUILDING) then
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            removeSquadFromChunk(squad)
-            buildMove(map, squad)
-        elseif (status == SQUAD_GUARDING) then
-            squad.commandTick = tick + COMMAND_TIMEOUT
-            if squad.settlers then
-                squad.status = SQUAD_SETTLING
-                settleMove(squad)
-            else
-                squad.status = SQUAD_RAIDING
-                attackMove(squad)
-            end
+    if not (group and group.valid) then
+        return
+    end
+
+    compressSquad(squad)
+    local status = squad.status
+    if (status == SQUAD_RAIDING) then
+        squad.commandTick = tick + COMMAND_TIMEOUT
+        attackMove(squad, tick)
+    elseif (status == SQUAD_SETTLING) then
+        squad.commandTick = tick + COMMAND_TIMEOUT
+        settleMove(squad, tick)
+    elseif (status == SQUAD_RETREATING) then
+        squad.commandTick = tick + COMMAND_TIMEOUT
+        if squad.settlers then
+            squad.status = SQUAD_SETTLING
+            settleMove(squad, tick)
+        else
+            squad.status = SQUAD_RAIDING
+            attackMove(squad, tick)
+        end
+    elseif (status == SQUAD_BUILDING) then
+        squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
+        removeSquadFromChunk(squad)
+        buildMove(squad, tick)
+    elseif (status == SQUAD_GUARDING) then
+        squad.commandTick = tick + COMMAND_TIMEOUT
+        if squad.settlers then
+            squad.status = SQUAD_SETTLING
+            settleMove(squad, tick)
+        else
+            squad.status = SQUAD_RAIDING
+            attackMove(squad, tick)
         end
     end
 end
@@ -1227,8 +1233,6 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     end
 
     squad.rabid = Universe.random() < 0.03
-
-    Squad.compressSquad(squad)
 
     Universe.groupNumberToSquad[squad.groupNumber] = squad
     modifyBaseUnitPoints(base, -cost, name, squadPosition.x, squadPosition.y)
