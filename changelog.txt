@@ -1,6 +1,9 @@
 Version: 3.3.0
   Improvements:
     - Re-added kamikaze squad state to prevent unit group dancing and then disbanding
+    - Squad compression can be triggered multiple times on a single group
+  Tweaks:
+    - On group destruction all members are destroyed to prevent orphaned biters
   Bugfixes:
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking

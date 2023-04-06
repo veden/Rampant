@@ -277,7 +277,7 @@ local function addMovementPenalty(squad, chunk)
                     squad.kamikaze = true
                     squad.penalties = {}
                 else
-                    for entity in pairs(squad.group.members) do
+                    for _, entity in pairs(squad.group.members) do
                         if entity.valid then
                             entity.destroy()
                         end
@@ -726,6 +726,11 @@ function Squad.cleanSquads(tick)
             Squad.squadDispatch(squad, tick)
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             if squad.wanders > 5 then
+                for _, entity in pairs(squad.group.members) do
+                    if entity.valid then
+                        entity.destroy()
+                    end
+                end
                 squad.group.destroy()
             else
                 squad.wanders = squad.wanders + 1
