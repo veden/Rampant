@@ -1080,8 +1080,7 @@ local function scoreUnitGroupLocation(neighborChunk)
 end
 
 local function validUnitGroupLocation(neighborChunk)
-    return (getPassable(neighborChunk) == CHUNK_ALL_DIRECTIONS) and
-        (not neighborChunk.nestCount)
+    return (not neighborChunk.nestCount)
 end
 
 local function visitPattern(o, cX, cY, distance)
@@ -1133,7 +1132,10 @@ local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction)
     local neighborChunks = getNeighborChunks(chunk.map, chunk.x, chunk.y)
     for x=1,8 do
         local neighborChunk = neighborChunks[x]
-        if (neighborChunk ~= -1) and validFunction(neighborChunk) then
+        if (neighborChunk ~= -1)
+            and canMoveChunkDirection(x, chunk, neighborChunk)
+            and validFunction(neighborChunk)
+        then
             local score = scoreFunction(neighborChunk)
             if (score > highestScore) then
                 highestScore = score
