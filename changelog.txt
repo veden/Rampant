@@ -5,6 +5,8 @@ Version: 3.3.0
     - Squad should not compress when close to player structures
   Tweaks:
     - On group destruction all members are destroyed to prevent orphaned biters
+    - Increased radius of what pathing requires to complete a move path request
+    - Switched use_group_distraction to true on forming group
   Bugfixes:
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking

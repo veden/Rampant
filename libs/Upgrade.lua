@@ -316,8 +316,9 @@ local function addCommandSet()
     Universe.squadQueries.moveCommand = {
         type = DEFINES_COMMAND_GO_TO_LOCATION,
         destination = {0,0},
-        pathfind_flags = { cache = true },
-        distraction = DEFINES_DISTRACTION_BY_ENEMY
+        pathfind_flags = { cache = true, prefer_straight_paths = true },
+        distraction = DEFINES_DISTRACTION_BY_ENEMY,
+        radius = 5
     }
     Universe.squadQueries.settleCommand = {
         type = DEFINES_COMMAND_BUILD_BASE,
@@ -372,7 +373,7 @@ local function addCommandSet()
         type = DEFINES_COMMAND_GROUP,
         group = nil,
         distraction = DEFINES_DISTRACTION_BY_ANYTHING,
-        use_group_distraction = false
+        use_group_distraction = true
     }
     Universe.squadQueries.formCommand = {
         command = Universe.squadQueries.formGroupCommand,
