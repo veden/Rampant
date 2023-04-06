@@ -2,6 +2,7 @@ Version: 3.3.0
   Improvements:
     - Re-added kamikaze squad state to prevent unit group dancing and then disbanding
     - Squad compression can be triggered multiple times on a single group
+    - Squad should not compress when close to player structures
   Tweaks:
     - On group destruction all members are destroyed to prevent orphaned biters
   Bugfixes:
@@ -11,6 +12,7 @@ Version: 3.3.0
     - Fixed death pheromone could zero out a chunk for squad movement planning
     - Fixed squad creation didn't take into account chunk pathing from nest to squad
     - Fixed chunk being invalid on unit group finished gathering
+    - Fixed squad being able to teleport short distance when first assembling
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.2

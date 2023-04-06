@@ -80,7 +80,6 @@ local AI_SQUAD_COST = Constants.AI_SQUAD_COST
 local AI_SETTLER_COST = Constants.AI_SETTLER_COST
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 local AI_VENGENCE_SETTLER_COST = Constants.AI_VENGENCE_SETTLER_COST
-local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
 local ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 local ATTACKING_TARGET = defines.group_state.attacking_target
@@ -90,7 +89,6 @@ local GATHERING = defines.group_state.gathering
 
 local setPositionInQuery = Utils.setPositionInQuery
 
-local getPassable = ChunkPropertyUtils.getPassable
 local getRallyTick = ChunkPropertyUtils.getRallyTick
 local setRallyTick = ChunkPropertyUtils.setRallyTick
 local modifyBaseUnitPoints = BaseUtils.modifyBaseUnitPoints
@@ -324,7 +322,6 @@ local function compressSquad(squad, tick)
     if (#members <= Universe.squadCompressionThreshold) then
         return
     end
-    local cmd = group.command
     local compressionSet = {}
     local compressedTotal = 0
     local totalTypes = 0
@@ -356,9 +353,6 @@ local function compressSquad(squad, tick)
     squad.compressionSet = compressionSet
     squad.compressedTotal = compressedTotal
     squad.canBeCompressed = false
-    if cmd then
-	group.set_command(cmd)
-    end
 end
 
 function Squad.decompressSquad(squad, tick)
@@ -369,7 +363,6 @@ function Squad.decompressSquad(squad, tick)
     local group = squad.group
     local query = Queries.createEntityQuery
     local add_member = group.add_member
-    local cmd = group.command
     local create_entity = squad.map.surface.create_entity
     setPositionInQuery(
         query,
@@ -382,9 +375,6 @@ function Squad.decompressSquad(squad, tick)
         end
     end
     rendering.destroy(squad.compressionText)
-    if cmd then
-        group.set_command(cmd)
-    end
     squad.compressionSet = nil
     squad.canBeCompressed = tick + COMPRESSION_COOLDOWN
 end
@@ -749,6 +739,9 @@ function Squad.cleanSquads(tick)
         elseif (group.state == 4) then
             squad.wanders = 0
             Squad.squadDispatch(squad, tick)
+            if group.valid then
+                compressSquad(squad, tick)
+            end
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             if squad.wanders > 5 then
                 for _, entity in pairs(squad.group.members) do
@@ -775,7 +768,6 @@ function Squad.squadDispatch(squad, tick)
         return
     end
 
-    compressSquad(squad, tick)
     local status = squad.status
     if (status == SQUAD_RAIDING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
