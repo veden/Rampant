@@ -131,7 +131,6 @@ local getDrainPylonPair = ChunkPropertyUtils.getDrainPylonPair
 
 local createDrainPylon = UnitUtils.createDrainPylon
 
-local compressSquad = Squad.compressSquad
 local decompressSquad = Squad.decompressSquad
 
 local isDrained = ChunkPropertyUtils.isDrained
@@ -459,7 +458,7 @@ local function onDeath(event)
             if group then
                 local squad = Universe.groupNumberToSquad[group.group_number]
                 if squad then
-                    decompressSquad(squad)
+                    decompressSquad(squad, tick)
                     if damageTypeName then
                         base = squad.base
                     end

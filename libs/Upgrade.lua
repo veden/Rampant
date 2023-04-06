@@ -391,12 +391,15 @@ local function addCommandSet()
         {chunk=-1, direction=-1}
     }
     Universe.squadQueries.renderText = {
-            target = nil,
-            text = "",
-            target_offset = {0, -10},
-            color = {r=1,g=1,b=1,a=0.5},
-            surface = nil,
-            scale = 5
+        target = nil,
+        text = "",
+        target_offset = {0, -10},
+        color = {r=1,g=1,b=1,a=0.5},
+        surface = nil,
+        scale = 5
+    }
+    Universe.squadQueries.createUnitGroup = {
+        position = {0,0}
     }
 end
 
@@ -518,8 +521,6 @@ function Upgrade.addUniverseProperties()
         Universe.maxPoints = 0
         Universe.maxOverflowPoints = 0
 
-        addCommandSet()
-
         Universe.bases = {}
 
         Universe.processBaseAIIterator = nil
@@ -529,6 +530,10 @@ function Upgrade.addUniverseProperties()
         Universe.pendingUpgrades = {}
         Universe.pendingUpgradesLength = 0
         Universe.settlePurpleCloud = {}
+    end
+    if global.universePropertyVersion < 2 then
+        global.universePropertyVersion = 2
+        addCommandSet()
     end
 end
 
@@ -561,6 +566,10 @@ function Upgrade.attempt()
     end
     if global.gameVersion < 2 then
         global.gameVersion = 2
+        game.map_settings.max_failed_behavior_count = 999
+        for _, squad in pairs(Universe.groupNumberToSquad) do
+            squad.canBeCompressed = 0
+        end
 
         for _, map in pairs(Universe.maps) do
             for _, chunk in pairs(map.processQueue) do

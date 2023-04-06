@@ -49,6 +49,8 @@ local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 
+local COMPRESSION_COOLDOWN = Constants.COMPRESSION_COOLDOWN
+
 local HALF_CHUNK_SIZE = Constants.HALF_CHUNK_SIZE
 
 local FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT = Constants.FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT
@@ -79,6 +81,10 @@ local AI_SETTLER_COST = Constants.AI_SETTLER_COST
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 local AI_VENGENCE_SETTLER_COST = Constants.AI_VENGENCE_SETTLER_COST
 local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
+
+local ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
+local ATTACKING_TARGET = defines.group_state.attacking_target
+local GATHERING = defines.group_state.gathering
 
 -- imported functions
 
@@ -297,20 +303,29 @@ local function addMovementPenalty(squad, chunk)
                   c = chunk })
 end
 
-function Squad.compressSquad(squad)
-    if not squad.canBeCompressed then
+local function compressSquad(squad, tick)
+    if squad.compressionSet
+        or (Universe.squadCompressionThreshold == -1)
+        or (squad.canBeCompressed >= tick)
+    then
         return
     end
 
-    local compressionSet = {}
     local group = squad.group
-    local members = group.members
-    if (Universe.squadCompressionThreshold == -1)
-        or (#members <= Universe.squadCompressionThreshold)
+    local groupState = group.state
+    if (groupState == ATTACKING_DISTRACTION)
+        or (groupState == ATTACKING_TARGET)
+        or (groupState == GATHERING)
+        or (squad.status == SQUAD_BUILDING)
     then
-        squad.canBeCompressed = false
         return
     end
+    local members = group.members
+    if (#members <= Universe.squadCompressionThreshold) then
+        return
+    end
+    local cmd = group.command
+    local compressionSet = {}
     local compressedTotal = 0
     local totalTypes = 0
     local entityToTag
@@ -339,10 +354,14 @@ function Squad.compressSquad(squad)
     query.target = entityToTag
     squad.compressionText = rendering.draw_text(query)
     squad.compressionSet = compressionSet
+    squad.compressedTotal = compressedTotal
     squad.canBeCompressed = false
+    if cmd then
+	group.set_command(cmd)
+    end
 end
 
-function Squad.decompressSquad(squad)
+function Squad.decompressSquad(squad, tick)
     if not squad.compressionSet then
         return
     end
@@ -350,6 +369,7 @@ function Squad.decompressSquad(squad)
     local group = squad.group
     local query = Queries.createEntityQuery
     local add_member = group.add_member
+    local cmd = group.command
     local create_entity = squad.map.surface.create_entity
     setPositionInQuery(
         query,
@@ -362,7 +382,11 @@ function Squad.decompressSquad(squad)
         end
     end
     rendering.destroy(squad.compressionText)
+    if cmd then
+        group.set_command(cmd)
+    end
     squad.compressionSet = nil
+    squad.canBeCompressed = tick + COMPRESSION_COOLDOWN
 end
 
 --[[
@@ -438,7 +462,7 @@ local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction
     return SearchPath
 end
 
-local function settleMove(squad)
+local function settleMove(squad, tick)
     local group = squad.group
     local map = squad.map
 
@@ -480,7 +504,7 @@ local function settleMove(squad)
             )
         )
     then
-        Squad.decompressSquad(squad)
+        Squad.decompressSquad(squad, tick)
 
         position = findMovementPosition(surface, groupPosition) or groupPosition
 
@@ -557,6 +581,7 @@ local function settleMove(squad)
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING
         squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
+        Squad.decompressSquad(squad, tick)
         if squad.kamikaze then
             cmd.distraction = DEFINES_DISTRACTION_NONE
         else
@@ -576,7 +601,7 @@ local function settleMove(squad)
     group.set_command(cmd)
 end
 
-local function attackMove(squad)
+local function attackMove(squad, tick)
     local group = squad.group
 
     local groupPosition = group.position
@@ -643,7 +668,7 @@ local function attackMove(squad)
     end
 
     if attack then
-        Squad.decompressSquad(squad)
+        Squad.decompressSquad(squad, tick)
         cmd = Queries.attackCommand
 
         if not squad.rabid then
@@ -674,7 +699,7 @@ local function buildMove(squad, tick)
 
     setPositionInCommand(Queries.settleCommand, position)
 
-    Squad.decompressSquad(squad)
+    Squad.decompressSquad(squad, tick)
 
     group.set_command(Queries.settleCommand)
 end
@@ -750,7 +775,7 @@ function Squad.squadDispatch(squad, tick)
         return
     end
 
-    compressSquad(squad)
+    compressSquad(squad, tick)
     local status = squad.status
     if (status == SQUAD_RAIDING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
@@ -954,11 +979,16 @@ function Squad.retreatUnits(chunk, cause, map, tick, radius)
 end
 
 function Squad.createSquad(position, map, group, settlers, base)
-    local unitGroup = group or map.surface.create_unit_group({position=position})
+    local unitGroup = group
+    if not unitGroup then
+        local query = Queries.createUnitGroup
+        setPositionInQuery(query, position)
+        unitGroup = map.surface.create_unit_group(query)
+    end
 
     local squad = {
         group = unitGroup,
-        canBeCompressed = true,
+        canBeCompressed = 0,
         compressionSet = nil,
         compressionText = nil,
         status = SQUAD_GUARDING,

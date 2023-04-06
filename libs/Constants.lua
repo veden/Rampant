@@ -209,6 +209,8 @@ constants.SQUAD_BUILDING = 6
 
 -- Squad Related
 
+constants.COMPRESSION_COOLDOWN = 600
+
 constants.MINIMUM_EXPANSION_DISTANCE = 10
 
 constants.RETREAT_GRAB_RADIUS = 24
