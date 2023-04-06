@@ -750,14 +750,15 @@ local function onUnitGroupCreated(event)
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 
-        if not settler and ( (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT) or (chunk == -1) ) then
-            group.destroy()
-            return
-        end
 
-        if not settler and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
-            group.destroy()
-            return
+        if not settler then
+            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
+                or (chunk == -1)
+                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
+            then
+                group.destroy()
+                return
+            end
         end
 
         squad = createSquad(nil, map, group, settler, base)
@@ -778,14 +779,14 @@ local function onUnitGroupCreated(event)
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 
-        if not settler and ( (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT) or (chunk == -1) ) then
-            group.destroy()
-            return
-        end
-
-        if not settler and chunk[BASE_PHEROMONE] < 0.0001 and chunk[PLAYER_PHEROMONE] < 0.0001 then
-            group.destroy()
-            return
+        if not settler then
+            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
+                or (chunk == -1)
+                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
+            then
+                group.destroy()
+                return
+            end
         end
 
         squad = createSquad(nil, map, group, settler, base)
@@ -851,14 +852,14 @@ local function onGroupFinishedGathering(event)
             (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
             (Universe.random() < 0.25)
 
-        if not settler and (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT) then
-            group.destroy()
-            return
-        end
-
-        if not settler and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
-            group.destroy()
-            return
+        if not settler then
+            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
+                or (chunk == -1)
+                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
+            then
+                group.destroy()
+                return
+            end
         end
 
         squad = createSquad(nil, map, group, settler, base)

@@ -10,6 +10,7 @@ Version: 3.3.0
     - Fixed squad command timeout duration to account for 4 chunk pathing finding
     - Fixed death pheromone could zero out a chunk for squad movement planning
     - Fixed squad creation didn't take into account chunk pathing from nest to squad
+    - Fixed chunk being invalid on unit group finished gathering
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.2
