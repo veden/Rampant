@@ -29,7 +29,7 @@
                                0 0 0 0 0
                                0 0 0 0 0
                                0 0 0 0 0
-                               0 0))
+                               0 0 0))
 
   (define windowX 500)
   (define windowY 0)

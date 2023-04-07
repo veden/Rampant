@@ -146,7 +146,7 @@
                    "T:" (~v (Chunk-traps chunk)) "\n"
                    "U:" (~v (Chunk-utility chunk)) "\n"
                    "vg:" (~v (Chunk-vg chunk)) "\n"
-                   "kam:" (~v (Chunk-kamikaze chunk)) "\n")))
+                   "kam:" (~v (Chunk-kamikaze chunk)) "\n"))
 
   (define (normalizeRange xs)
     (let* ((sDev (stddev xs))
@@ -226,7 +226,7 @@
                   (MinMax (apply min U) (apply max U))
                   (MinMax (apply min vg) (apply max vg))
                   (normalizeRange kamikaze)
-      ))
+                  )))
 
   (define (readState filePath)
     (let* ((replayChunks (getFile filePath))
