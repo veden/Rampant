@@ -268,8 +268,10 @@ local function addMovementPenalty(squad, chunk)
         if (penalty.c.id == chunk.id) then
             penalty.v = penalty.v + 1
             if penalty.v >= 7 then
-                if Universe.enabledMigration and
-                    (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT) then
+                if Universe.enabledMigration
+                    and (Universe.random() < 0.05)
+                    and (Universe.builderCount < Universe.AI_MAX_BUILDER_COUNT)
+                then
                     squad.settler = true
                     squad.originPosition.x = squad.group.position.x
                     squad.originPosition.y = squad.group.position.y

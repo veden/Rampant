@@ -10,6 +10,7 @@ Version: 3.3.0
     - Halved movement penalty violations before building, kamikaze, or dispanding unit groups
     - Squads can retreat 3 times before switching to kamikaze
     - Kamikaze squads will not retreat
+    - Reduced chance of squad becoming settler at 5% when hitting movement penalty violations
   Bugfixes:
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking
