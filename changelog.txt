@@ -7,6 +7,7 @@ Version: 3.3.0
     - On group destruction all members are destroyed to prevent orphaned biters
     - Increased radius of what pathing requires to complete a move path request
     - Switched use_group_distraction to true on forming group
+    - Halved movement penalty violations before building, kamikaze, or dispanding unit groups
   Bugfixes:
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking
