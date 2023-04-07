@@ -541,6 +541,25 @@ function Processor.processHives(tick)
     end
 end
 
+function Processor.cleanHivesData()
+    local entityId = Universe.hiveDataIterator
+    local hiveData
+    if not entityId then
+        entityId, hiveData = next(Universe.hiveData, nil)
+    else
+        hiveData = Universe.hiveData[entityId]
+    end
+    if not entityId then
+        Universe.hiveDataIterator = nil
+        return
+    end
+
+    Universe.hiveDataIterator = next(Universe.hiveData, entityId)
+    if not Universe.hives[hiveData.id] then
+        Universe.hiveData[entityId] = nil
+    end
+end
+
 function Processor.processPendingChunks(tick, flush)
     local pendingChunks = Universe.pendingChunks
     local eventId, event = next(pendingChunks, nil)

@@ -535,14 +535,14 @@ function Upgrade.addUniverseProperties()
     if global.universePropertyVersion < 2 then
         global.universePropertyVersion = 2
         addCommandSet()
+
+        Universe.hiveDataIterator = nil
     end
 end
 
 function Upgrade.attempt()
     if not global.gameVersion then
         global.gameVersion = 1
-
-        game.forces.enemy.kill_all_units()
 
         Universe.evolutionLevel = game.forces.enemy.evolution_factor
 
@@ -572,7 +572,17 @@ function Upgrade.attempt()
             squad.canBeCompressed = 0
         end
 
+        game.forces.enemy.kill_all_units()
+
+        local lookup = {}
         for _, map in pairs(Universe.maps) do
+            local entities = map.surface.find_entities_filtered({
+                    type = "unit-spawner",
+                    force = "enemy"
+            })
+            for i = 1, #entities do
+                lookup[entities[i].unit_number] = true
+            end
             for _, chunk in pairs(map.processQueue) do
                 chunk[CHUNK_TICK] = 0
                 chunk[BASE_PHEROMONE] = 0
@@ -582,6 +592,21 @@ function Upgrade.attempt()
                 chunk[KAMIKAZE_PHEROMONE] = 0
             end
         end
+
+        for entityId in pairs(Universe.activeHives) do
+            if not lookup[entityId] then
+                Universe.activeHives[entityId] = nil
+                Universe.hives[entityId] = nil
+            end
+        end
+        for entityId in pairs(Universe.hives) do
+            if not lookup[entityId] then
+                Universe.activeHives[entityId] = nil
+                Universe.hives[entityId] = nil
+            end
+        end
+
+	Universe.hiveIterator = nil
     end
 end
 

@@ -112,6 +112,7 @@ local scanResourceMap = Processor.scanResourceMap
 
 local processNests = Processor.processNests
 local processHives = Processor.processHives
+local cleanHivesData = Processor.cleanHivesData
 
 local rallyUnits = Squad.rallyUnits
 
@@ -983,6 +984,7 @@ script.on_event(defines.events.on_tick,
                         cleanUpMapTables(tick)
                         planning(gameRef.forces.enemy.evolution_factor)
                         processHives(tick)
+                        cleanHivesData()
                     elseif (pick == 1) then
                         processPlayers(gameRef.connected_players, tick)
                     elseif (pick == 2) then

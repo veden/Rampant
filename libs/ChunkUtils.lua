@@ -520,6 +520,14 @@ local function unregisterHive(entityUnitNumber, hiveType)
     else
         local hiveData = Universe.hiveData[entityUnitNumber]
         if hiveData then
+            if Universe.hiveDataIterator == entityUnitNumber then
+                Universe.hiveDataIterator = nil
+            end
+            if not Universe.hives[hiveData.hiveId] then
+                Universe.hiveData[entityUnitNumber] = nil
+                return
+            end
+
             Universe.activeHives[hiveData.hiveId] = hiveData
             local adjustedHiveType = (
                 (
@@ -528,7 +536,7 @@ local function unregisterHive(entityUnitNumber, hiveType)
                 )
                 and "nest"
             ) or hiveType
-            hiveData[adjustedHiveType] = hiveData.nest - 1
+            hiveData[adjustedHiveType] = hiveData[adjustedHiveType] - 1
             if hiveData[adjustedHiveType] < 0 then
                 hiveData[adjustedHiveType] = 0
             end
