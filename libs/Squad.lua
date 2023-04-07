@@ -851,37 +851,19 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 
-local function findNearbyRetreatingSquad(map, chunk)
-    if chunk.squads then
-        for _,squad in pairs(chunk.squads) do
-            local unitGroup = squad.group
-            if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
-                return squad
-            end
-        end
-    end
-
-    local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
-
-    for i=1,#neighbors do
-        local neighbor = neighbors[i]
-        if (neighbor ~= -1) and neighbor.squads then
-            for _,squad in pairs(neighbor.squads) do
-                local unitGroup = squad.group
-                if (squad.status == SQUAD_RETREATING) and unitGroup and unitGroup.valid then
-                    return squad
-                end
-            end
-        end
-    end
-    return nil
-end
-
 function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
     if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT)
         and (getEnemyStructureCount(chunk) == 0)
-        and ((not existingSquad) or (existingSquad and not existingSquad.kamikaze))
     then
+
+        if existingSquad and
+            (
+                (not existingSquad.group.valid)
+                or existingSquad.kamikaze
+            )
+        then
+            return
+        end
 
         local map = chunk.map
 
@@ -977,9 +959,8 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
         addSquadToChunk(chunk, existingSquad)
 
         existingSquad.frenzy = true
-        local squadPosition = existingSquad.group.position
-        existingSquad.frenzyPosition.x = squadPosition.x
-        existingSquad.frenzyPosition.y = squadPosition.y
+        existingSquad.frenzyPosition.x = position.x
+        existingSquad.frenzyPosition.y = position.y
     end
 end
 
