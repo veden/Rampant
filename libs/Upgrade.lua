@@ -364,7 +364,6 @@ local function addCommandSet()
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
-            Universe.squadQueries.stopCommand,
             Universe.squadQueries.fleeCommand,
             Universe.squadQueries.retreatCommand
         }
@@ -570,6 +569,7 @@ function Upgrade.attempt()
         game.map_settings.max_failed_behavior_count = 999
         for _, squad in pairs(Universe.groupNumberToSquad) do
             squad.canBeCompressed = 0
+            squad.retreats = 0
         end
 
         game.forces.enemy.kill_all_units()

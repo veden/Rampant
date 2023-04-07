@@ -127,8 +127,7 @@ local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
 
 -- module code
 local function scoreRetreatLocation(neighborChunk)
-    return (-neighborChunk[BASE_PHEROMONE] +
-            -(neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER) +
+    return (-neighborChunk[KAMIKAZE_PHEROMONE] +
             -((neighborChunk.playerBaseGenerator or 0) * 1000))
 end
 
@@ -876,8 +875,13 @@ local function findNearbyRetreatingSquad(map, chunk)
     return nil
 end
 
-function Squad.retreatUnits(chunk, cause, map, tick, radius)
-    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT) and (getEnemyStructureCount(chunk) == 0) then
+function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
+    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT)
+        and (getEnemyStructureCount(chunk) == 0)
+        and ((not existingSquad) or (existingSquad and not existingSquad.kamikaze))
+    then
+
+        local map = chunk.map
 
         setRetreatTick(chunk, tick)
         local exitPath,exitDirection,
@@ -924,49 +928,56 @@ function Squad.retreatUnits(chunk, cause, map, tick, radius)
             return
         end
 
-        local newSquad = findNearbyRetreatingSquad(map, exitPath)
         local created = false
-
-        if not newSquad then
-            if (Universe.squadCount < Universe.AI_MAX_SQUAD_COUNT) then
-                created = true
-                local base = findNearbyBase(chunk)
-                if not base then
-                    return
-                end
-                newSquad = Squad.createSquad(position, map, nil, false, base)
-            else
+        if not existingSquad then
+            created = true
+            if (Universe.squadCount >= Universe.AI_MAX_SQUAD_COUNT) then
                 return
             end
-        end
 
-        Queries.fleeCommand.from = cause
-        Queries.retreatCommand.group = newSquad.group
-
-        Queries.formRetreatCommand.unit_search_distance = radius
-
-        local foundUnits = surface.set_multi_command(Queries.formRetreatCommand)
-
-        if (foundUnits == 0) then
-            if created then
-                newSquad.group.destroy()
+            local base = findNearbyBase(chunk)
+            if not base then
+                return
             end
-            return
+            existingSquad = Squad.createSquad(position, map, nil, false, base)
+
+            Queries.fleeCommand.from = cause
+            Queries.retreatCommand.group = existingSquad.group
+
+            Queries.formRetreatCommand.unit_search_distance = radius
+
+            local foundUnits = surface.set_multi_command(Queries.formRetreatCommand)
+
+            if (foundUnits == 0) then
+                if created then
+                    existingSquad.group.destroy()
+                end
+                return
+            end
+
+            if created then
+                Universe.groupNumberToSquad[existingSquad.groupNumber] = existingSquad
+                Universe.squadCount = Universe.squadCount + 1
+            end
+        else
+            Queries.moveCommand.distraction = DEFINES_DISTRACTION_NONE
+            setPositionInCommand(Queries.moveCommand, position)
+            existingSquad.group.set_command(Queries.moveCommand)
         end
 
-        if created then
-            Universe.groupNumberToSquad[newSquad.groupNumber] = newSquad
-            Universe.squadCount = Universe.squadCount + 1
+        existingSquad.retreats = existingSquad.retreats + 1
+        if (existingSquad.retreats >= 3) then
+            existingSquad.kamikaze = true
         end
 
-        newSquad.status = SQUAD_RETREATING
+        existingSquad.status = SQUAD_RETREATING
 
-        addSquadToChunk(chunk, newSquad)
+        addSquadToChunk(chunk, existingSquad)
 
-        newSquad.frenzy = true
-        local squadPosition = newSquad.group.position
-        newSquad.frenzyPosition.x = squadPosition.x
-        newSquad.frenzyPosition.y = squadPosition.y
+        existingSquad.frenzy = true
+        local squadPosition = existingSquad.group.position
+        existingSquad.frenzyPosition.x = squadPosition.x
+        existingSquad.frenzyPosition.y = squadPosition.y
     end
 end
 
@@ -988,6 +999,7 @@ function Squad.createSquad(position, map, group, settlers, base)
         penalties = {},
         base = base,
         type = base.stateAI,
+        retreats = 0,
         frenzy = false,
         map = map,
         wanders = 0,

@@ -8,6 +8,8 @@ Version: 3.3.0
     - Increased radius of what pathing requires to complete a move path request
     - Switched use_group_distraction to true on forming group
     - Halved movement penalty violations before building, kamikaze, or dispanding unit groups
+    - Squads can retreat 3 times before switching to kamikaze
+    - Kamikaze squads will not retreat
   Bugfixes:
     - Fixed occasionally compression number wouldn't appear on unit group
     - Fixed squad compression could take place when attacking
@@ -18,6 +20,7 @@ Version: 3.3.0
     - Fixed squad being able to teleport short distance when first assembling
     - Fixed hives didn't properly decrement counts of entities spawned when spawned entites were destroyed
     - Fixed hives didn't get unregistered properly
+    - Fixed squad retreating not working for existing unit groups
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.2.2

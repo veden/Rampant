@@ -446,6 +446,7 @@ local function onDeath(event)
     local damageTypeName = event.damage_type and event.damage_type.name
     local chunk = getChunkByPosition(map, entityPosition)
     local base
+    local squad
 
     if entityForceName == "enemy" then
         if entityType ~= "unit" then
@@ -457,7 +458,7 @@ local function onDeath(event)
         else
             local group = entity.unit_group
             if group then
-                local squad = Universe.groupNumberToSquad[group.group_number]
+                squad = Universe.groupNumberToSquad[group.group_number]
                 if squad then
                     decompressSquad(squad, tick)
                     if damageTypeName then
@@ -495,8 +496,8 @@ local function onDeath(event)
                 if (getCombinedDeathGeneratorRating(chunk) < Universe.retreatThreshold) and cause and cause.valid then
                     retreatUnits(chunk,
                                  cause,
-                                 map,
                                  tick,
+                                 squad,
                                  (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
                 end
             elseif BUILDING_HIVE_TYPE_LOOKUP[entity.name] or
@@ -519,8 +520,8 @@ local function onDeath(event)
                 if cause and cause.valid then
                     retreatUnits(chunk,
                                  cause,
-                                 map,
                                  tick,
+                                 nil,
                                  RETREAT_SPAWNER_GRAB_RADIUS)
                 end
             end
