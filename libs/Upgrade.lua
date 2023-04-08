@@ -339,14 +339,10 @@ local function addCommandSet()
         radius = TRIPLE_CHUNK_SIZE*2,
         ticks_to_wait = 2 * 60
     }
-    Universe.squadQueries.stopCommand = {
-        type = DEFINES_COMMAND_STOP
-    }
     Universe.squadQueries.compoundSettleCommand = {
         type = DEFINES_COMMMAD_COMPOUND,
         structure_type = DEFINES_COMPOUND_COMMAND_RETURN_LAST,
         commands = {
-            Universe.squadQueries.wonder2Command,
             Universe.squadQueries.settleCommand
         }
     }
@@ -443,6 +439,7 @@ function Upgrade.addUniverseProperties()
         for key in pairs(Universe) do
             Universe[key] = nil
         end
+
         global.universePropertyVersion = 0
     end
 
@@ -466,7 +463,6 @@ function Upgrade.addUniverseProperties()
         Universe.attackWaveDeviation = 0
         Universe.attackWaveUpperBound = 0
         Universe.unitRefundAmount = 0
-        Universe.regroupIndex = 1
 
         Universe.kamikazeThreshold = 0
         Universe.attackWaveLowerBound = 1

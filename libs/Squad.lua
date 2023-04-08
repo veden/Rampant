@@ -893,7 +893,6 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
                     nextExitDirection
                 )
             )
-            exitPath = nextExitPath
         else
             retreatPosition = findMovementPosition(
                 surface,
@@ -912,9 +911,7 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
             return
         end
 
-        local created = false
         if not existingSquad then
-            created = true
             if (Universe.squadCount >= Universe.AI_MAX_SQUAD_COUNT) then
                 return
             end
@@ -933,16 +930,12 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
             local foundUnits = surface.set_multi_command(Queries.formRetreatCommand)
 
             if (foundUnits == 0) then
-                if created then
-                    existingSquad.group.destroy()
-                end
+                existingSquad.group.destroy()
                 return
             end
 
-            if created then
-                Universe.groupNumberToSquad[existingSquad.groupNumber] = existingSquad
-                Universe.squadCount = Universe.squadCount + 1
-            end
+            Universe.groupNumberToSquad[existingSquad.groupNumber] = existingSquad
+            Universe.squadCount = Universe.squadCount + 1
         else
             Queries.moveCommand.distraction = DEFINES_DISTRACTION_NONE
             setPositionInCommand(Queries.moveCommand, position)

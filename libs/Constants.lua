@@ -1624,6 +1624,10 @@ function constants.gpsDebug(x, y, msg)
     game.print("[gps=".. x .. "," .. y .. "]" .. msg)
 end
 
+function constants.gpsSurfaceDebug(surface, x, y, msg)
+    surface.print("[gps=".. x .. "," .. y .. "]" .. msg)
+end
+
 constants.MAX_HIVE_TTL = 12400
 constants.MIN_HIVE_TTL = 4800
 constants.DEV_HIVE_TTL = 450

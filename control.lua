@@ -535,7 +535,7 @@ local function onDeath(event)
                 if cause and cause.type == "unit" then
                     local group = cause.unit_group
                     if group and group.valid then
-                        local squad = Universe.groupNumberToSquad[group.group_number]
+                        squad = Universe.groupNumberToSquad[group.group_number]
                         if squad then
                             base = squad.base
                         end
