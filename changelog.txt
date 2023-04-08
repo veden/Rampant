@@ -1,3 +1,9 @@
+---------------------------------------------------------------------------------------------------
+Version: 3.3.1
+  Bugfixes:
+    - Fixed hive owned structure cleanup routine from not checking hive id correctly
+
+---------------------------------------------------------------------------------------------------
 Version: 3.3.0
   Improvements:
     - Re-added kamikaze squad state to prevent unit group dancing and then disbanding

@@ -555,7 +555,7 @@ function Processor.cleanHivesData()
     end
 
     Universe.hiveDataIterator = next(Universe.hiveData, entityId)
-    if not Universe.hives[hiveData.id] then
+    if not Universe.hives[hiveData.hiveId] then
         Universe.hiveData[entityId] = nil
     end
 end
