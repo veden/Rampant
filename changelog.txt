@@ -4,6 +4,7 @@ Version: 3.3.1
     - Fixed hive owned structure cleanup routine from not checking hive id correctly
     - Fixed hive building cursor drifting
     - Fixed hive not updating build stats when upgraded
+    - Fixed other modded enemy structures not be registered with Rampant
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.0

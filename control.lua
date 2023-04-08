@@ -390,9 +390,7 @@ local function onBuild(event)
     if entity.valid then
         local entityForceName = entity.force.name
         if entityForceName == "enemy" then
-            if BUILDING_HIVE_TYPE_LOOKUP[entity.name] then
-                onEnemyBaseBuild(entity, event.tick)
-            end
+            onEnemyBaseBuild(entity, event.tick)
         else
             local map = Universe.maps[entity.surface.index]
             if not map then
