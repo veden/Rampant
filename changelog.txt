@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.1
+  Tweaks:
+    - Increased number of active and raid nests per allowed settler group per regional base to 700
   Bugfixes:
     - Fixed hive owned structure cleanup routine from not checking hive id correctly
     - Fixed hive building cursor drifting
