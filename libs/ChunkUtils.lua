@@ -441,22 +441,24 @@ function ChunkUtils.colorXY(x, y, surface, color)
     })
 end
 
-local function registerHive(base, entityUnitNumber, hiveType, name, position, tick)
+local function registerHive(base, entity, hiveType, tick)
     if hiveType == "hive" then
-        if not Universe.hives[entityUnitNumber] then
-            local tier = BUILDING_HIVE_TIER_LOOKUP[name]
-            local maxNests = HIVE_MAX_NESTS[tier]
-            local maxTurrets = HIVE_MAX_TURRETS[tier]
-            local maxHives
-            local rollHives = Universe.random()
-            if rollHives < 0.05 then
-                maxHives = HIVE_MAX_HIVES[tier]
-            else
-                maxHives = 0
-            end
-            local hiveData = {
+        local entityUnitNumber = entity.unit_number
+        local hiveData = Universe.hives[entityUnitNumber]
+        local tier = BUILDING_HIVE_TIER_LOOKUP[entity.name]
+        local maxNests = HIVE_MAX_NESTS[tier]
+        local maxTurrets = HIVE_MAX_TURRETS[tier]
+        local maxHives = 0
+        local rollHives = Universe.random()
+        if rollHives < 0.05 then
+            maxHives = HIVE_MAX_HIVES[tier]
+        end
+
+        if not hiveData then
+            hiveData = {
                 hiveId = entityUnitNumber,
-                position = position,
+                e = entity,
+                position = entity.position,
                 base = base,
                 hive = 0,
                 nest = 0,
@@ -474,6 +476,15 @@ local function registerHive(base, entityUnitNumber, hiveType, name, position, ti
                                                    )
             }
             Universe.hives[entityUnitNumber] = hiveData
+            Universe.activeHives[entityUnitNumber] = hiveData
+        else
+            hiveData.hiveId = entityUnitNumber
+            hiveData.e = entity
+            hiveData.position = entity.position
+            hiveData.maxNests = ((maxNests > 0) and (Universe.random(maxNests) - 1)) or 0
+            hiveData.maxTurrets = ((maxTurrets > 0) and (Universe.random(maxTurrets) - 1)) or 0
+            hiveData.maxHives = ((maxHives > 0) and (Universe.random(maxHives) - 1)) or 0
+            hiveData.tier = tier
             Universe.activeHives[entityUnitNumber] = hiveData
         end
     end
@@ -504,7 +515,7 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
             end
         end
     end
-    registerHive(base, entityUnitNumber, hiveType, name, entity.position, tick)
+    registerHive(base, entity, hiveType, tick)
     if added and (not skipCount) then
         base.builtEnemyBuilding = base.builtEnemyBuilding + 1
     end

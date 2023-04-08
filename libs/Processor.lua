@@ -21,6 +21,7 @@ local Processor = {}
 
 --
 
+local TargetPosition
 local Universe
 local Queries
 
@@ -508,6 +509,11 @@ function Processor.processHives(tick)
         Universe.activeHives[entityId] = nil
         return
     end
+    if not hiveData.e.valid then
+        Universe.activeHives[entityId] = nil
+        Universe.hives[entityId] = nil
+        return
+    end
     hiveData.tick = tick +
         gaussianRandomRangeRG(
             linearInterpolation(Universe.evolutionLevel, MAX_HIVE_TTL, MIN_HIVE_TTL),
@@ -519,9 +525,12 @@ function Processor.processHives(tick)
 
     local timeDelay = 0
 
-    local position = distortPositionConcentricCircles(
+    TargetPosition.x = hiveData.position.x
+    TargetPosition.y = hiveData.position.y
+
+    distortPositionConcentricCircles(
         Universe.random,
-        hiveData.position,
+        TargetPosition,
         EIGHTH_CHUNK_SIZE * hiveData.tier,
         EIGHTH_CHUNK_SIZE
     )
@@ -531,11 +540,11 @@ function Processor.processHives(tick)
         if Universe.random() < 0.5 then
             entityType = "spitter-spawner"
         end
-        queueCreation(base, position, entityType, timeDelay, hiveData)
+        queueCreation(base, TargetPosition, entityType, timeDelay, hiveData)
     elseif hiveData.turret < hiveData.maxTurrets then
-        queueCreation(base, position, "turret", timeDelay, hiveData)
+        queueCreation(base, TargetPosition, "turret", timeDelay, hiveData)
     elseif hiveData.hive < hiveData.maxHives then
-        queueCreation(base, position, "hive", timeDelay, hiveData)
+        queueCreation(base, TargetPosition, "hive", timeDelay, hiveData)
     else
         Universe.activeHives[entityId] = nil
     end
@@ -722,7 +731,10 @@ end
 
 function Processor.init(universe)
     Universe = universe
-    Queries = universe.baseUtilsQueries
+    Queries = universe.processorQueries
+    if Queries then
+        TargetPosition = Queries.targetPosition
+    end
 end
 
 ProcessorG = Processor

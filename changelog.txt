@@ -2,6 +2,8 @@
 Version: 3.3.1
   Bugfixes:
     - Fixed hive owned structure cleanup routine from not checking hive id correctly
+    - Fixed hive building cursor drifting
+    - Fixed hive not updating build stats when upgraded
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.0
