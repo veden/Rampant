@@ -7,6 +7,7 @@ Version: 3.3.1
     - Fixed hive building cursor drifting
     - Fixed hive not updating build stats when upgraded
     - Fixed other modded enemy structures not be registered with Rampant
+    - Added check for downgraded mod versions on the same save with pre-3.2.0
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.0

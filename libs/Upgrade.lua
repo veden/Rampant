@@ -433,7 +433,7 @@ function Upgrade.setCommandForces(npcForces, enemyForces)
 end
 
 function Upgrade.addUniverseProperties()
-    if not global.universePropertyVersion then
+    if not global.universePropertyVersion or global.version then
         for key in pairs(global) do
             if key ~= "universe" then
                 global[key] = nil
