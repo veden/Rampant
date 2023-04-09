@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.3.2
+  Bugfixes:
+    - Fixed on_entity_died group could be invalid
+
+---------------------------------------------------------------------------------------------------
 Version: 3.3.1
   Tweaks:
     - Increased number of active and raid nests per allowed settler group per regional base to 700

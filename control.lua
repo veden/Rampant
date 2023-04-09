@@ -455,7 +455,7 @@ local function onDeath(event)
             end
         else
             local group = entity.unit_group
-            if group then
+            if group and group.valid then
                 squad = Universe.groupNumberToSquad[group.group_number]
                 if squad then
                     decompressSquad(squad, tick)
