@@ -4,6 +4,7 @@ Version: 3.3.3
     - Added check for invalid entity upgrade
     - Added wander command to squads if they timeout for executing a command to fix enemy units getting stuck
     - Changed tile algorithm to use player-layer instead of water-layer for determining if a chunk is passable
+    - Changed > to >= for comparing number of settlers per time period which was causing extra settler squads
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.2

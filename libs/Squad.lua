@@ -1172,7 +1172,7 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     else
         if lackingPoints
             or (Universe.builderCount > Universe.AI_MAX_BUILDER_COUNT)
-            or (not vengence and (base.sentExpansionGroups > base.maxExpansionGroups))
+            or (not vengence and (base.sentExpansionGroups >= base.maxExpansionGroups))
             or (Universe.random() > Universe.formSquadThreshold)
         then
             return
