@@ -456,7 +456,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
                                    evolve)
 
     local entityName = entity.name
-    if name == entityName then
+    if not name or (name == entityName) then
         return
     end
 
