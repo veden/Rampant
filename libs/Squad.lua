@@ -758,6 +758,7 @@ function Squad.cleanSquads(tick)
                 else
                     squad.commandTick = tick + COMMAND_TIMEOUT
                 end
+                squad.group.set_command(Queries.wander2Command)
             end
         end
     end

@@ -307,7 +307,7 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    game.print("Rampant - Version 3.3.2")
+    game.print("Rampant - Version 3.3.3")
     initializeLibraries(true)
     Upgrade.attempt()
 
