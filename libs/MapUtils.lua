@@ -188,6 +188,27 @@ function MapUtils.isExcludedSurface(surfaceName)
         sFind(surfaceName, "bpsb%-lab%-")
 end
 
+function MapUtils.queueChunks(surface, chunks, flush, tick)
+    for chunk in chunks do
+        if surface.is_chunk_generated(chunk) then
+            MapUtils.queueGeneratedChunk(
+                {
+                    surface = surface,
+                    tick = tick,
+                    area = {
+                        left_top = {
+                            x = chunk.x * 32,
+                            y = chunk.y * 32
+                        }
+                    }
+                }
+            )
+        end
+    end
+
+    Universe.flushPendingChunks = flush
+end
+
 function MapUtils.prepMap(surface)
     if Universe.maps[surface.index] then
         return Universe.maps[surface.index]
@@ -219,27 +240,10 @@ function MapUtils.prepMap(surface)
     }
 
     Universe.maps[map.id] = map
+    local tick = game.tick
 
     -- queue all current chunks that wont be generated during play
-    local tick = game.tick
-    for chunk in surface.get_chunks() do
-        if surface.is_chunk_generated(chunk) then
-            MapUtils.queueGeneratedChunk(
-                {
-                    surface = surface,
-                    tick = tick,
-                    area = {
-                        left_top = {
-                            x = chunk.x * 32,
-                            y = chunk.y * 32
-                        }
-                    }
-                }
-            )
-        end
-    end
-
-    Universe.flushPendingChunks = true
+    MapUtils.queueChunks(surface, surface.get_chunks(), true, tick)
 
     return map
 end

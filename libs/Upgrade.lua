@@ -19,6 +19,7 @@ local Upgrade = {}
 -- imports
 
 local Constants = require("libs/Constants")
+local MapUtils = require("libs/MapUtils")
 
 --
 
@@ -190,7 +191,7 @@ local function addCommandSet()
         {0,0}
     }
     Universe.isFilteredTilesQuery = {
-        collision_mask="water-tile",
+        collision_mask="player-layer",
         area=isSharedChunkArea
     }
     Universe.isFilteredEntitiesChunkNeutral = {
@@ -225,7 +226,7 @@ local function addCommandSet()
         {0,0}
     }
     Universe.cpsFilteredTilesQuery = {
-        collision_mask="water-tile",
+        collision_mask="player-layer",
         area=cpsSharedChunkArea
     }
     Universe.cpsFilteredEntitiesChunkNeutral = {
@@ -252,7 +253,7 @@ local function addCommandSet()
         {0,0}
     }
     Universe.msrcFilteredTilesQuery = {
-        collision_mask="water-tile",
+        collision_mask="player-layer",
         area=msrcSharedChunkArea
     }
     Universe.msrcFilteredEntitiesChunkNeutral = {
@@ -280,7 +281,7 @@ local function addCommandSet()
     }
     Universe.spFilteredTilesPathQuery = {
         area=spSharedAreaChunk,
-        collision_mask="water-tile",
+        collision_mask="player-layer",
         limit = 1
     }
 
@@ -532,8 +533,8 @@ function Upgrade.addUniverseProperties()
         global.universePropertyVersion = 2
         Universe.hiveDataIterator = nil
     end
-    if global.universePropertyVersion < 3 then
-        global.universePropertyVersion = 3
+    if global.universePropertyVersion < 4 then
+        global.universePropertyVersion = 4
         addCommandSet()
     end
 end
@@ -627,6 +628,18 @@ function Upgrade.attempt()
 
 	Universe.hiveIterator = nil
 	Universe.hiveDataIterator = nil
+    end
+    if global.gameVersion < 4 then
+        global.gameVersion = 4
+
+        local tick = game.tick
+
+        for _, map in pairs(Universe.maps) do
+            local surface = map.surface
+            if surface.valid then
+                MapUtils.queueChunks(surface, surface.get_chunks(), true, tick)
+            end
+        end
     end
 end
 
