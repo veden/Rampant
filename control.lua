@@ -491,7 +491,7 @@ local function onDeath(event)
                     end
                 end
 
-                if (getCombinedDeathGeneratorRating(chunk) < Universe.retreatThreshold) and cause and cause.valid then
+                if (getCombinedDeathGeneratorRating(chunk) < Universe.retreatThreshold) and cause and cause.valid and cause.get_health_ratio() ~= nil then
                     retreatUnits(chunk,
                                  cause,
                                  tick,
@@ -515,7 +515,7 @@ local function onDeath(event)
                     end
                 end
 
-                if cause and cause.valid then
+                if cause and cause.valid and cause.get_health_ratio() ~= nil then
                     retreatUnits(chunk,
                                  cause,
                                  tick,
