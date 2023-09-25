@@ -1,7 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.4
-  Bugfixes:
-    - Fixed Rampant::on_entity_died
+  Contributions:
+    - TomaszJH - Polish translations
+    - millerscount - Fixed Rampant::on_entity_died when target has no health
 
 ---------------------------------------------------------------------------------------------------
 Version: 3.3.3
