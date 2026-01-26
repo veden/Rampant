@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git checkout aider -- libs/GameState.lua tests/)",
-      "Bash(git commit -m \"chore: Add simulation layer from aider\")"
+      "Bash(git commit -m \"chore: Add simulation layer from aider\")",
+      "Bash(lua tests/runRampantLoadTests.lua)",
+      "Bash(git commit -m \"fix: Add missing simulation adapters \\(settings, bit32, util, table_size\\)\")"
     ]
   }
 }

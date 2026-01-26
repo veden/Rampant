@@ -117,6 +117,19 @@ defines.circuit_connector_id = {
     red_wire = 2
 }
 
+-- Wire type enum
+defines.wire_type = {
+    red = 1,
+    green = 2
+}
+
+-- Compound command enum
+defines.compound_command = {
+    return_last = 1,
+    return_first = 2,
+    sequence = 3
+}
+
 -- Inventory enum (common ones)
 defines.inventory = {
     character_guns = 1,

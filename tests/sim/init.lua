@@ -5,6 +5,9 @@
     Rampant AI code in tests without requiring a Factorio instance.
 ]]
 
+-- Add project root to package.path for module loading
+package.path = "./?.lua;./libs/?.lua;./tests/?.lua;" .. package.path
+
 -- Load adapters (sets up _G globals)
 require("tests/sim.adapters.game")
 require("tests/sim.adapters.script")

@@ -145,4 +145,139 @@ end
 -- Register as global
 _G.game = game
 
+-- Utility functions (commonly used in Factorio scripts)
+local function table_size(t)
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
+_G.table_size = table_size
+
+local function deep_copy(t)
+    if type(t) ~= "table" then return t end
+    local copy = {}
+    for k, v in pairs(t) do
+        copy[k] = deep_copy(v)
+    end
+    return copy
+end
+_G.util = {
+    deepcopy = deep_copy,
+    table_size = table_size,
+    inspect = function() end,  -- No-op for simulation
+}
+
+-- bit32 library mock (used by MathUtils.lua for bit operations)
+local function to32bits(x)
+    return x % 0x100000000
+end
+
+local function getBit(x, n)
+    return math.floor(x / (2 ^ n)) % 2
+end
+
+local bit32 = {
+    band = function(a, b)
+        a = to32bits(a)
+        b = to32bits(b)
+        local result = 0
+        for n = 0, 31 do
+            if getBit(a, n) == 1 and getBit(b, n) == 1 then
+                result = result + (2 ^ n)
+            end
+        end
+        return result
+    end,
+    bor = function(a, b)
+        a = to32bits(a)
+        b = to32bits(b)
+        local result = 0
+        for n = 0, 31 do
+            if getBit(a, n) == 1 or getBit(b, n) == 1 then
+                result = result + (2 ^ n)
+            end
+        end
+        return result
+    end,
+    bxor = function(a, b)
+        a = to32bits(a)
+        b = to32bits(b)
+        local result = 0
+        for n = 0, 31 do
+            if getBit(a, n) ~= getBit(b, n) then
+                result = result + (2 ^ n)
+            end
+        end
+        return result
+    end,
+    bnot = function(a)
+        return to32bits(bit32.bxor(a, 0xFFFFFFFF))
+    end,
+    rshift = function(a, n) return math.floor(to32bits(a) / (2 ^ n)) end,
+    lshift = function(a, n) return to32bits(a * (2 ^ n)) end,
+    arshift = function(a, n)
+        a = to32bits(a)
+        if a >= 0x80000000 then
+            a = a - 0x100000000
+        end
+        return math.floor(a / (2 ^ n))
+    end,
+}
+if package.config:sub(1,1) == "/" then
+    -- On Linux, try to load real bit32 (Lua 5.2)
+    pcall(function() bit32 = require("bit32") end)
+end
+_G.bit32 = bit32
+
+-- Settings mock (for Constants.lua startup settings access)
+_G.settings = {
+    startup = {
+        ["rampant--enemySeed"] = { value = 12345 },
+        ["rampant--newEnemyVariations"] = { value = 1 },
+        ["rampant--enemyTurretDPS"] = { value = 1.0 },
+        ["rampant--overwriteDifficulty"] = { value = false },
+        ["rampant--enemyBuildSpeedMultiplier"] = { value = 1.0 },
+        ["rampant--enemyRangeMultiplier"] = { value = 1.0 },
+        ["rampant--enemyHealthMultiplier"] = { value = 1.0 },
+        ["rampant--enemySpeedMultiplier"] = { value = 1.0 },
+        ["rampant--max-evo-dist"] = { value = 1.0 },
+        ["rampant--tierStart"] = { value = 0 },
+        ["rampant--tierEnd"] = { value = 5 },
+        ["rampant--neutralTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--acidEnemy"] = { value = false },
+        ["rampant--acidTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--laserEnemy"] = { value = false },
+        ["rampant--laserTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--fireEnemy"] = { value = false },
+        ["rampant--fireTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--infernoEnemy"] = { value = false },
+        ["rampant--infernoTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--waspEnemy"] = { value = false },
+        ["rampant--waspTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--spawnerEnemy"] = { value = true },
+        ["rampant--spawnerTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--electricEnemy"] = { value = false },
+        ["rampant--electricTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--physicalEnemy"] = { value = false },
+        ["rampant--physicalTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--trollEnemy"] = { value = false },
+        ["rampant--trollTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--poisonEnemy"] = { value = false },
+        ["rampant--poisonTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--suicideEnemy"] = { value = false },
+        ["rampant--suicideTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--nuclearEnemy"] = { value = false },
+        ["rampant--nuclearTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--energyThiefEnemy"] = { value = false },
+        ["rampant--energyThiefTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+        ["rampant--fastEnemy"] = { value = false },
+        ["rampant--fastTints"] = { value = "00ff00ff 00ff00ff 00ff00ff" },
+    },
+    global = {
+        ["rampant--debug"] = { value = false },
+    }
+}
+
 return game
