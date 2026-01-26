@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout aider -- libs/GameState.lua tests/)",
+      "Bash(git commit -m \"chore: Add simulation layer from aider\")"
+    ]
+  }
+}
