@@ -33,18 +33,19 @@ function stickerUtils.makeSticker(attributes)
 
         animation = attributes.stickerAnimation or
             {
-                filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
-                line_length = 8,
-                width = 60,
-                height = 118,
-                frame_count = 25,
+                -- TODO: fire-flame-13.png removed in Factorio 2.0. Use generic burn texture.
+                filename = "__base__/graphics/entity/fire-flame/burnt-patch.png",
+                line_length = 4,
+                width = 84,
+                height = 68,
+                frame_count = 1,
                 axially_symmetrical = false,
                 direction_count = 1,
                 blend_mode = "normal",
-                animation_speed = 2,
-                scale = 0.175,
-                tint = attributes.tint2 or { r = 1, g = 1, b = 1, a = 0.35 },
-                shift = math3d.vector2.mul({-0.078125, -1.8125}, 0.1),
+                animation_speed = 1,
+                scale = 0.5,
+                tint = attributes.tint2 or { r = 1, g = 0.5, b = 0.2, a = 0.5 },
+                shift = {0, 0},
             },
 
         duration_in_ticks = attributes.stickerDuration or (30 * 60),
