@@ -1213,6 +1213,16 @@ data:extend({
         order = "z[test]-a[testMode]",
         per_user = false
     },
+
+    {
+        type = "bool-setting",
+        name = "rampant--eventDrivenPheromones",
+        description = "Enable event-driven pheromone processing (dirty chunk queues, decay-on-read). Runs alongside wave-based processing when enabled.",
+        setting_type = "startup",
+        default_value = false,
+        order = "a[ai]-z[eventDriven]",
+        per_user = false
+    },
 })
 
 for i = 1, #FACTIONS do

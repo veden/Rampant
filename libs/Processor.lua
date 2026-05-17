@@ -101,6 +101,7 @@ local formSettlers = Squad.formSettlers
 
 local getChunkByPosition = MapUtils.getChunkByPosition
 local getChunkByXY = MapUtils.getChunkByXY
+local markChunkDirty = MapUtils.markChunkDirty
 
 local validPlayer = Utils.validPlayer
 
@@ -189,6 +190,7 @@ function Processor.processPlayers(players, tick)
 
                 if (playerChunk ~= -1) then
                     addPlayerGenerator(playerChunk, playerMaxGenerator)
+                    markChunkDirty(playerChunk.id, 1, tick)  -- Priority 1: player-adjacent
                 end
             end
         end

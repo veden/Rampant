@@ -79,6 +79,7 @@ local processBaseAIs = BaseUtils.processBaseAIs
 local registerEnemyBaseStructure = ChunkUtils.registerEnemyBaseStructure
 
 local queueGeneratedChunk = MapUtils.queueGeneratedChunk
+local markChunkDirty = MapUtils.markChunkDirty
 local isRampantSetting = Utils.isRampantSetting
 
 local processPendingUpgrades = Processor.processPendingUpgrades
@@ -107,6 +108,7 @@ local processScanChunks = Processor.processScanChunks
 
 local processMap = Processor.processMap
 local processPlayers = Processor.processPlayers
+local processDirtyChunks = Processor.processDirtyChunks
 local scanEnemyMap = Processor.scanEnemyMap
 local scanPlayerMap = Processor.scanPlayerMap
 local scanResourceMap = Processor.scanResourceMap
@@ -287,6 +289,9 @@ local function onModSettingsChange(event)
     Universe["legacyChunkScanning"] = settings.global["rampant--legacyChunkScanning"].value
 
     Universe["enabledPurpleSettlerCloud"] = settings.global["rampant--enabledPurpleSettlerCloud"].value
+
+    Universe["eventDrivenPheromones"] = settings.startup["rampant--eventDrivenPheromones"] and
+        settings.startup["rampant--eventDrivenPheromones"].value or false
     Universe["squadCompressionThreshold"] = settings.global["rampant--squadCompressionThreshold"].value
 
     Universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
@@ -1039,6 +1044,11 @@ script.on_event(defines.events.on_tick,
 
                     if map then
                         processMap(map, tick)
+                    end
+
+                    -- Event-driven pheromone processing (runs alongside wave-based)
+                    if Universe.eventDrivenPheromones then
+                        processDirtyChunks(tick, Universe)
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
