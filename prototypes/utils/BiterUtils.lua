@@ -207,7 +207,14 @@ function biterUtils.makeBiter(attributes)
     if attributes.scale and attributes.scale > 1.0 then
         vanillaName = "medium-biter"
     end
-    local entity = util.table.deepcopy(data.raw.unit[vanillaName])
+    local vanillaPrototype = data.raw.unit[vanillaName]
+    local entity = util.table.deepcopy(vanillaPrototype)
+
+    -- Save vanilla attack animation (works) before we override attack_parameters
+    local vanillaAttackAnimation = nil
+    if vanillaPrototype.attack_parameters and vanillaPrototype.attack_parameters.animation then
+        vanillaAttackAnimation = util.table.deepcopy(vanillaPrototype.attack_parameters.animation)
+    end
 
     -- Override fields that differ from vanilla
     entity.name = attributes.name .. "-rampant"
@@ -230,6 +237,10 @@ function biterUtils.makeBiter(attributes)
         {0.6 * attributes.scale, 0}
     }
     entity.attack_parameters = attributes.attack
+    -- Restore working vanilla attack animation (custom one uses broken sprite defs)
+    if vanillaAttackAnimation then
+        entity.attack_parameters.animation = vanillaAttackAnimation
+    end
     entity.vision_distance = attributes.vision or 30
     entity.movement_speed = attributes.movement
     entity.loot = attributes.loot
@@ -271,7 +282,14 @@ function biterUtils.makeSpitter(attributes)
     if attributes.scale and attributes.scale > 1.0 then
         vanillaName = "medium-spitter"
     end
-    local entity = util.table.deepcopy(data.raw.unit[vanillaName])
+    local vanillaPrototype = data.raw.unit[vanillaName]
+    local entity = util.table.deepcopy(vanillaPrototype)
+
+    -- Save vanilla attack animation (works) before we override attack_parameters
+    local vanillaAttackAnimation = nil
+    if vanillaPrototype.attack_parameters and vanillaPrototype.attack_parameters.animation then
+        vanillaAttackAnimation = util.table.deepcopy(vanillaPrototype.attack_parameters.animation)
+    end
 
     -- Override fields that differ from vanilla
     entity.name = attributes.name .. "-rampant"
@@ -286,6 +304,10 @@ function biterUtils.makeSpitter(attributes)
     entity.sticker_box = {{-0.6 * attributes.scale, -0.8 * attributes.scale},
         {0.6 * attributes.scale, 0}}
     entity.attack_parameters = attributes.attack
+    -- Restore working vanilla attack animation (custom one uses broken sprite defs)
+    if vanillaAttackAnimation then
+        entity.attack_parameters.animation = vanillaAttackAnimation
+    end
     entity.loot = attributes.loot
     entity.vision_distance = attributes.vision or 30
     entity.movement_speed = attributes.movement
