@@ -430,10 +430,10 @@ function Upgrade.setCommandForces(npcForces, enemyForces)
 end
 
 function Upgrade.addUniverseProperties()
-    if not global.universePropertyVersion or global.version then
-        for key in pairs(global) do
+    if not storage.universePropertyVersion or storage.version then
+        for key in pairs(storage or {}) do
             if key ~= "universe" then
-                global[key] = nil
+                storage[key] = nil
             end
         end
 
@@ -441,11 +441,11 @@ function Upgrade.addUniverseProperties()
             Universe[key] = nil
         end
 
-        global.universePropertyVersion = 0
+        storage.universePropertyVersion = 0
     end
 
-    if global.universePropertyVersion < 1 then
-        global.universePropertyVersion = 1
+    if storage.universePropertyVersion < 1 then
+        storage.universePropertyVersion = 1
 
         Universe.safeEntities = {}
         Universe.flushPendingChunks = false
@@ -529,21 +529,28 @@ function Upgrade.addUniverseProperties()
         Universe.pendingUpgradesLength = 0
         Universe.settlePurpleCloud = {}
     end
-    if global.universePropertyVersion < 2 then
-        global.universePropertyVersion = 2
+    if storage.universePropertyVersion < 2 then
+        storage.universePropertyVersion = 2
         Universe.hiveDataIterator = nil
     end
-    if global.universePropertyVersion < 4 then
-        global.universePropertyVersion = 4
+    if storage.universePropertyVersion < 4 then
+        storage.universePropertyVersion = 4
         addCommandSet()
     end
 end
 
 function Upgrade.attempt()
-    if not global.gameVersion then
-        global.gameVersion = 1
+    -- Check if forces are available using pcall
+    local ok, evolution = pcall(function() return game.forces.enemy.evolution_factor end)
+    if not ok or not evolution then
+        log("Upgrade: Skipping - forces not ready")
+        return
+    end
 
-        Universe.evolutionLevel = game.forces.enemy.evolution_factor
+    if not storage.gameVersion then
+        storage.gameVersion = 1
+
+        Universe.evolutionLevel = evolution
 
         Universe.random = game.create_random_generator(Constants.ENEMY_SEED)
 
@@ -564,8 +571,8 @@ function Upgrade.attempt()
 
         Universe.modAddedTick = game.tick
     end
-    if global.gameVersion < 2 then
-        global.gameVersion = 2
+    if storage.gameVersion < 2 then
+        storage.gameVersion = 2
         game.map_settings.max_failed_behavior_count = 999
         for _, squad in pairs(Universe.groupNumberToSquad) do
             squad.canBeCompressed = 0
@@ -585,8 +592,8 @@ function Upgrade.attempt()
             end
         end
     end
-    if global.gameVersion < 3 then
-        global.gameVersion = 3
+    if storage.gameVersion < 3 then
+        storage.gameVersion = 3
 
         local lookup = {}
         for _, map in pairs(Universe.maps) do
@@ -629,8 +636,8 @@ function Upgrade.attempt()
 	Universe.hiveIterator = nil
 	Universe.hiveDataIterator = nil
     end
-    if global.gameVersion < 4 then
-        global.gameVersion = 4
+    if storage.gameVersion < 4 then
+        storage.gameVersion = 4
 
         local tick = game.tick
 

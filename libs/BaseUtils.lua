@@ -380,48 +380,81 @@ function BaseUtils.recycleBases()
     end
 end
 
-function BaseUtils.canAttack(base)
-    local isAggressive = ((base.stateAI == BASE_AI_STATE_AGGRESSIVE)
-        and (base.sentAggressiveGroups < base.maxAggressiveGroups))
-    local isRaiding = (base.stateAI == BASE_AI_STATE_RAIDING)
-    local isOnslaught = (base.stateAI == BASE_AI_STATE_ONSLAUGHT)
-    local isRaidSieging = Universe.raidAIToggle
-        and (base.stateAI == BASE_AI_STATE_SIEGE)
-        and (base.sentExpansionGroups >= base.maxExpansionGroups)
+-- PURE: Check if base can attack (testable)
+function BaseUtils.canAttackBase(stateAI, sentAggressiveGroups, maxAggressiveGroups, peacefulMode, aiNocturnalMode, darkness, raidAIToggle, sentExpansionGroups, maxExpansionGroups)
+    local isAggressive = (stateAI == BASE_AI_STATE_AGGRESSIVE) and (sentAggressiveGroups < maxAggressiveGroups)
+    local isRaiding = (stateAI == BASE_AI_STATE_RAIDING)
+    local isOnslaught = (stateAI == BASE_AI_STATE_ONSLAUGHT)
+    local isRaidSieging = raidAIToggle and (stateAI == BASE_AI_STATE_SIEGE) and (sentExpansionGroups >= maxExpansionGroups)
     local goodAI = isAggressive or isRaiding or isOnslaught or isRaidSieging
+    
     if not goodAI then
         return false
     end
-    local surface = base.map.surface
-    if surface.peaceful_mode then
+    
+    if peacefulMode then
         return false
     end
-    local nocturalMode = Universe.aiNocturnalMode
-    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
+    
+    local noctural = (not aiNocturnalMode) or (aiNocturnalMode and darkness > 0.65)
     if not noctural then
         return false
     end
+    
     return true
 end
 
-function BaseUtils.canMigrate(base)
-    local badAIState = (base.stateAI ~= BASE_AI_STATE_MIGRATING) and (base.stateAI ~= BASE_AI_STATE_SIEGE)
+-- PUBLIC: Wrapper that reads global.universe
+function BaseUtils.canAttack(base)
+    local universe = global.universe
+    local surface = base.map.surface
+    return BaseUtils.canAttackBase(
+        base.stateAI,
+        base.sentAggressiveGroups,
+        base.maxAggressiveGroups,
+        surface.peaceful_mode,
+        universe.aiNocturnalMode,
+        surface.darkness,
+        universe.raidAIToggle,
+        base.sentExpansionGroups,
+        base.maxExpansionGroups
+    )
+end
+
+-- PURE: Check if base can migrate (testable)
+function BaseUtils.canMigrateBase(stateAI, expansion, peacefulMode, aiNocturnalMode, darkness)
+    local badAIState = (stateAI ~= BASE_AI_STATE_MIGRATING) and (stateAI ~= BASE_AI_STATE_SIEGE)
     if badAIState then
         return false
     end
-    if not Universe.expansion then
+    
+    if not expansion then
         return false
     end
-    local surface = base.map.surface
-    if surface.peaceful_mode then
+    
+    if peacefulMode then
         return false
     end
-    local nocturalMode = Universe.aiNocturnalMode
-    local noctural = (not nocturalMode) or (nocturalMode and surface.darkness > 0.65)
+    
+    local noctural = (not aiNocturnalMode) or (aiNocturnalMode and darkness > 0.65)
     if not noctural then
         return false
     end
+    
     return true
+end
+
+-- PUBLIC: Wrapper that reads global.universe
+function BaseUtils.canMigrate(base)
+    local universe = global.universe
+    local surface = base.map.surface
+    return BaseUtils.canMigrateBase(
+        base.stateAI,
+        universe.expansion,
+        surface.peaceful_mode,
+        universe.aiNocturnalMode,
+        surface.darkness
+    )
 end
 
 function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)

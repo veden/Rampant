@@ -35,14 +35,17 @@ function droneUtils.makeDrone(attributes)
         localised_name = biterUtils.getLocalisedName(attributes),
         icon = "__base__/graphics/icons/defender.png",
         icon_size = 32,
-        flags = attributes.flags or {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air", "hidden"},
+        flags = attributes.flags or {"placeable-off-grid", "not-on-map", "not-repairable", "breaths-air"},
         subgroup="capsule",
         order="e-a-a",
         max_health = attributes.health or 60,
         healing_per_tick = attributes.healing,
         alert_when_damaged = false,
         collision_box = {{0, 0}, {0, 0}},
-        collision_mask = {RampantGlobalVariables.projectileCollisionLayer},
+        -- Factorio 2.0 compatibility for collision mask
+        collision_mask = RampantGlobalVariables.projectileCollisionLayer
+            and {RampantGlobalVariables.projectileCollisionLayer}
+            or {layers={player=true, object=true}},
         selection_box = {{-0.5, -1.5}, {0.5, -0.5}},
         distance_per_frame = attributes.distancePerFrame or 0,
         time_to_live = attributes.ttl or (60 * 45),

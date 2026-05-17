@@ -35,13 +35,26 @@ end
 
 for _, projectile in pairs(data.raw["projectile"]) do
     if not projectile.hit_collision_mask then
-        projectile.hit_collision_mask = {
-            "player-layer",
-            "train-layer",
-            RampantGlobalVariables.projectileCollisionLayer
-        }
+        if RampantGlobalVariables.projectileCollisionLayer then
+            -- Factorio 1.1 style: numeric layers
+            projectile.hit_collision_mask = {
+                "player-layer",
+                "train-layer",
+                RampantGlobalVariables.projectileCollisionLayer
+            }
+        else
+            -- Factorio 2.0 style: layers table
+            projectile.hit_collision_mask = {layers={player=true, train=true, object=true}}
+        end
     else
-        projectile.hit_collision_mask[#projectile.hit_collision_mask+1] = RampantGlobalVariables.projectileCollisionLayer
+        if RampantGlobalVariables.projectileCollisionLayer then
+            -- Factorio 1.1 style: add numeric layer
+            projectile.hit_collision_mask[#projectile.hit_collision_mask+1] = RampantGlobalVariables.projectileCollisionLayer
+        else
+            -- Factorio 2.0 style: add to layers table
+            projectile.hit_collision_mask.layers = projectile.hit_collision_mask.layers or {}
+            projectile.hit_collision_mask.layers.object = true
+        end
     end
 end
 

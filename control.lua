@@ -26,6 +26,7 @@ local tests = require("tests")
 local ChunkUtils = require("libs/ChunkUtils")
 local Upgrade = require("libs/Upgrade")
 local Utils = require("libs/Utils")
+local Observability = require("libs/Observability")
 
 -- Constants
 
@@ -307,10 +308,20 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
+    -- onConfigChanged handles migrations/Upgrades after mod updates
+    -- Full initialization is handled in onInit()
+    
+    if not Universe or not Universe.awake then
+        log("Rampant: onConfigChanged - Universe not initialized, skipping")
+        return
+    end
+
+    -- Upgrade must run first to set Universe.modAddedTick before onModSettingsChange
+    Upgrade.attempt()
+    
     game.print("Rampant - Version 3.3.3")
     initializeLibraries(true)
-    Upgrade.attempt()
-
+    
     onModSettingsChange({setting="rampant--"})
 
     Universe["NEW_ENEMIES"] = settings.startup["rampant--newEnemies"].value
@@ -670,6 +681,9 @@ local function onRocketLaunch(event)
 end
 
 local function onTriggerEntityCreated(event)
+    if not Universe or not Universe.awake then
+        return
+    end
     if (event.effect_id == "rampant-drain-trigger") then
         local entity = event.target_entity
         if (entity and entity.valid) then
@@ -706,12 +720,31 @@ local function onTriggerEntityCreated(event)
 end
 
 local function onInit()
-    global.universe = {}
+    -- Ensure storage exists
+    if not storage then
+        storage = {}
+    end
 
-    Universe = global.universe
+    -- Always initialize universe in storage
+    storage.universe = storage.universe or {}
+    Universe = storage.universe
+
+    -- Initialize minimal Universe structure
+    Universe.modAddedTick = game.tick
+    Universe.safeEntities = {}
+
+    -- Set awake flag before calling handlers that check it
+    Universe.awake = true
+
+    log("Rampant: Full initialization starting")
 
     hookEvents()
     onConfigChanged()
+
+    -- Signal that initialization is complete and AI is ready
+    storage._rampantReady = true
+    print("READY_FOR_COMMANDS")
+    print("Rampant Initialized: " .. tostring(Universe and Universe.awake))
 end
 
 local function onUnitGroupCreated(event)
@@ -724,7 +757,7 @@ local function onUnitGroupCreated(event)
     if group.is_script_driven then
         return
     end
-    if not Universe.awake then
+    if not Universe or not Universe.awake then
         group.destroy()
         return
     end
@@ -967,6 +1000,9 @@ end
 
 script.on_event(defines.events.on_tick,
                 function ()
+                    if not Universe or not Universe.awake then
+                        return
+                    end
                     local gameRef = game
                     local tick = gameRef.tick
                     local range = (Universe.legacyChunkScanning and 4) or 3
@@ -989,7 +1025,7 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 2) then
                         processPendingUpgrades(tick)
                         processVengence()
-                        disperseVictoryScent()
+                        disperseVictoryScent(global.universe)
                         processAttackWaves()
                         processClouds(tick)
                         processScanChunks()
@@ -1022,7 +1058,11 @@ script.on_event(defines.events.on_surface_created, onSurfaceCreated)
 script.on_init(onInit)
 script.on_load(onLoad)
 script.on_event(defines.events.on_runtime_mod_setting_changed, onModSettingsChange)
-script.on_configuration_changed(onConfigChanged)
+script.on_configuration_changed(function(event)
+    -- Full initialization happens in onInit()
+    -- This handler just calls onConfigChanged if Universe is ready
+    onConfigChanged(event)
+end)
 
 script.on_event(defines.events.on_resource_depleted, onResourceDepleted)
 script.on_event({defines.events.on_player_built_tile,
@@ -1234,9 +1274,68 @@ local function removeFaction(cmd)
 end
 
 remote.add_interface("Rampant", {
-                         addExcludeSurface = addExcludeSurface,
-                         removeExcludeSurface = removeExcludeSurface
+    addExcludeSurface = addExcludeSurface,
+    removeExcludeSurface = removeExcludeSurface,
+    queryPheromones = function(pos, surface)
+        return Observability.queryPheromones(pos, surface)
+    end,
+    queryBaseAt = function(pos, surface)
+        return Observability.queryBaseAt(pos, surface)
+    end,
+    getEnemyGroups = function(surface)
+        return Observability.getEnemyGroups(surface)
+    end,
+    getBaseCount = function(surface)
+        return Observability.getBaseCount(surface)
+    end,
+    getActiveStructures = function(surface)
+        return Observability.getActiveStructures(surface)
+    end,
+    isInitialized = function()
+        return Universe and Universe.awake
+    end,
+    getGameState = function()
+        return Observability.getGameState()
+    end,
+    advanceTicks = function(n)
+        return Observability.advanceTicks(n)
+    end,
+    setGameSpeed = function(speed)
+        return Observability.setGameSpeed(speed)
+    end,
+    spawnEntity = function(name, position, forceName)
+        return Observability.spawnEntity(name, position, forceName)
+    end,
+    countEntitiesByForce = function(forceName)
+        return Observability.countEntitiesByForce(forceName)
+    end,
 })
+
+-- Remote interface for integration testing (no Lua globals)
+local _rampantTestMode = false
+local _rampantTestResults = {}
+
+if not remote.interfaces["rampantTests"] then
+    remote.add_interface("rampantTests", {
+        enableTestMode = function()
+            _rampantTestMode = true
+            log("Rampant: Test mode enabled via remote interface")
+        end,
+        isTestMode = function()
+            return _rampantTestMode == true
+        end,
+        getTestResults = function()
+            return _rampantTestResults
+        end,
+        setTestResult = function(name, passed, errorMsg)
+            if not _rampantTestResults then _rampantTestResults = {} end
+            _rampantTestResults[name] = {passed = passed, error = errorMsg}
+        end,
+        clearTestResults = function()
+            _rampantTestResults = {}
+        end
+    })
+end
 
 commands.add_command('rampantRemoveNewEnemies', "", removeNewEnemies)
 commands.add_command('rampantRemoveFaction', "", removeFaction)

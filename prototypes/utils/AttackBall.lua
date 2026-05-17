@@ -73,7 +73,7 @@ function AttackBall.createAttackBall(attributes)
             {
                 type = "create-entity",
                 entity_name = "water-splash",
-                tile_collision_mask = { "ground-tile" }
+                tile_collision_mask = {layers={ground_tile=true}}
             },
             {
                 type = "play-sound",
@@ -181,7 +181,7 @@ function AttackBall.createSpitFire(attributes)
                                                   {
                                                       type = "create-entity",
                                                       entity_name = "water-splash",
-                                                      tile_collision_mask = { "ground-tile" }
+                                                      tile_collision_mask = {layers={ground_tile=true}}
                                                   },
                                                   {
                                                       type = "damage",

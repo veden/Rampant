@@ -36,6 +36,7 @@ constants.TEMPERAMENT_RANGE_MIN = -constants.TEMPERAMENT_RANGE_MAX
 constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
 constants.PROCESS_QUEUE_SIZE = 40
+constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 constants.SCAN_QUEUE_SIZE = 2
 constants.RESOURCE_QUEUE_SIZE = 2
 constants.ENEMY_QUEUE_SIZE = 1
@@ -45,6 +46,33 @@ constants.ATTACK_QUEUE_SIZE = 18
 constants.BASE_QUEUE_SIZE = 1
 constants.PROCESS_PLAYER_BOUND = 128
 constants.VICTORY_SCENT_BOUND = 128
+
+-- ACO: Decay table configuration
+constants.DECAY_TABLE_DEPTH = 10000  -- 10,000 ticks (~2.8 hours)
+
+-- ACO: Decay rates
+constants.DECAY_BASE = 0.90        -- Base, Resource, Enemy pheromones
+constants.DECAY_GENERATOR = 0.92   -- Generators (player, death, etc.)
+constants.DECAY_KAMIKAZE = 0.95    -- Kamikaze pheromone
+constants.DECAY_PLAYER = 0.98      -- Player pheromone
+constants.DECAY_TRAIL = 0.97       -- Scout trails
+
+-- ACO: Trail system
+constants.TRAIL_BASE_AMOUNT = 10
+constants.TRAIL_SCOUT_MULTIPLIER = 2.5
+constants.TRAIL_WEIGHT = 0.3
+constants.PHEROMONE_WEIGHT = 0.7
+constants.TRAIL_SPREAD_FACTOR = 0.95
+
+-- ACO: Scout selection
+constants.SCOUT_SELECTION_RATE = 0.07
+constants.SCOUT_REFRESH_TICKS = 600  -- Every 10 seconds
+
+-- ACO: Source refresh intervals
+constants.REFRESH_PLAYER_TICKS = 5
+constants.REFRESH_STRUCTURES_TICKS = 30
+constants.REFRESH_SPAWNERS_TICKS = 60
+constants.REFRESH_HIVES_TICKS = 120
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
@@ -1817,6 +1845,25 @@ constants.EVO_TO_TIER_MAPPING = evoToTierMapping
 for i=1,constants.TIERS do
     evoToTierMapping[#evoToTierMapping+1] = (((i - 1) * 0.1) ^ 0.5) - 0.05
 end
+
+-- ============================================
+-- ACO: Pre-computed Decay Tables
+-- ============================================
+
+local function createDecayTable(rate)
+    local decayTable = {}
+    for i = 0, constants.DECAY_TABLE_DEPTH do
+        decayTable[i] = rate ^ i
+    end
+    return decayTable
+end
+
+-- Create decay tables for each rate
+constants.DECAY_090 = createDecayTable(constants.DECAY_BASE)        -- Base, Resource, Enemy
+constants.DECAY_092 = createDecayTable(constants.DECAY_GENERATOR)   -- Generators
+constants.DECAY_095 = createDecayTable(constants.DECAY_KAMIKAZE)    -- Kamikaze
+constants.DECAY_098 = createDecayTable(constants.DECAY_PLAYER)      -- Player
+constants.DECAY_TRAIL = createDecayTable(constants.DECAY_TRAIL)     -- Scout trails
 
 constantsG =  constants
 return constants

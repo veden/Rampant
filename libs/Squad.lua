@@ -1007,14 +1007,28 @@ function Squad.createSquad(position, map, group, settlers, base)
     return squad
 end
 
-function Squad.calculateKamikazeSquadThreshold(memberCount)
-    local threshold = (memberCount / Universe.attackWaveMaxSize) * 0.2 + (Universe.evolutionLevel * 0.2)
+-- PURE: Calculate kamikaze squad threshold
+function Squad.calculateKamikazeSquadThreshold(memberCount, attackWaveMaxSize, evolutionLevel)
+    local threshold = (memberCount / attackWaveMaxSize) * 0.2 + (evolutionLevel * 0.2)
     return threshold
 end
 
-function Squad.calculateKamikazeSettlerThreshold(memberCount)
-    local threshold = (memberCount / Universe.expansionMaxSize) * 0.2 + (Universe.evolutionLevel * 0.2)
+-- PUBLIC: Wrapper that reads global.universe
+function Squad.calculateKamikazeSquadThresholdWrapper(squad, tick)
+    local universe = global.universe
+    return Squad.calculateKamikazeSquadThreshold(squad.memberCount, universe.attackWaveMaxSize, universe.evolutionLevel)
+end
+
+-- PURE: Calculate kamikaze settler threshold
+function Squad.calculateKamikazeSettlerThreshold(memberCount, expansionMaxSize, evolutionLevel)
+    local threshold = (memberCount / expansionMaxSize) * 0.2 + (evolutionLevel * 0.2)
     return threshold
+end
+
+-- PUBLIC: Wrapper that reads global.universe
+function Squad.calculateKamikazeSettlerThresholdWrapper(squad, tick)
+    local universe = global.universe
+    return Squad.calculateKamikazeSettlerThreshold(squad.memberCount, universe.expansionMaxSize, universe.evolutionLevel)
 end
 
 
@@ -1048,19 +1062,23 @@ local function attackWaveValidCandidate(chunk)
     return false
 end
 
-local function scoreSettlerLocation(neighborChunk)
+-- PURE: Score settler location (testable)
+function Squad.scoreSettlerLocation(neighborChunk)
     return neighborChunk[RESOURCE_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreSiegeSettlerLocation(neighborChunk)
+-- PURE: Score siege settler location (testable)
+function Squad.scoreSiegeSettlerLocation(neighborChunk)
     return (neighborChunk[RESOURCE_PHEROMONE] + neighborChunk[BASE_PHEROMONE]) + -neighborChunk[PLAYER_PHEROMONE]
 end
 
-local function scoreUnitGroupLocation(neighborChunk)
+-- PURE: Score unit group location (testable)
+function Squad.scoreUnitGroupLocation(neighborChunk)
     return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
 end
 
-local function validUnitGroupLocation(neighborChunk)
+-- PURE: Check valid unit group location (testable)
+function Squad.validUnitGroupLocation(neighborChunk)
     return (not neighborChunk.nestCount)
 end
 
@@ -1234,14 +1252,14 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
         return
     end
 
-    if attacker then
-        squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThreshold(foundUnits)
+if attacker then
+        squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThresholdWrapper(squad, tick)
         Universe.squadCount = Universe.squadCount + 1
         if not vengence and (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
             base.sentAggressiveGroups = base.sentAggressiveGroups + 1
         end
     else
-        local kamikazeThreshold = Squad.calculateKamikazeSettlerThreshold(foundUnits)
+        local kamikazeThreshold = Squad.calculateKamikazeSettlerThresholdWrapper(squad, tick)
         if base.stateAI == BASE_AI_STATE_SIEGE then
             kamikazeThreshold = kamikazeThreshold * 2.5
         end

@@ -62,7 +62,7 @@ function imageUtils.create_small_tree_flame_animations(opts)
     local fire_animation_speed = opts.animation_speed or 0.5
     local fire_scale =  opts.scale or 1
     local fire_tint = opts.tint2
-    local fire_flags = { "compressed" }
+    local fire_flags = nil
     local retval = {
         {
             filename = "__base__/graphics/entity/fire-flame/tree-fire-flame-01-a.png",
@@ -166,7 +166,7 @@ function imageUtils.create_fire_pictures(opts)
     local fire_animation_speed = opts.animation_speed or 0.5
     local fire_scale =  opts.scale or 1
     local fire_tint = opts.tint2
-    local fire_flags = { "compressed" }
+    local fire_flags = nil
     local retval = {
         {
             filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",

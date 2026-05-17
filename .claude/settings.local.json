@@ -4,7 +4,26 @@
       "Bash(git checkout aider -- libs/GameState.lua tests/)",
       "Bash(git commit -m \"chore: Add simulation layer from aider\")",
       "Bash(lua tests/runRampantLoadTests.lua)",
-      "Bash(git commit -m \"fix: Add missing simulation adapters \\(settings, bit32, util, table_size\\)\")"
+      "Bash(git commit -m \"fix: Add missing simulation adapters \\(settings, bit32, util, table_size\\)\")",
+      "Bash(git add .claude/CLAUDE.md)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: Add CLAUDE.md with project guidance\n\nAdds Claude Code configuration for the Rampant mod with\nproject overview, build commands, architecture details, and\nworking directories.\n\nCo-Authored-By: Claude \\(minimax-m2\\) <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebSearch",
+      "WebFetch(domain:wiki.factorio.com)",
+      "WebFetch(domain:lua-api.factorio.com)",
+      "Bash(git ls-tree --name-only aider)",
+      "Bash(/mnt/gallery/gameFiles/factorio/bin/x64/factorio --create /mnt/gallery/gameFiles/factorio/saves/rampant_test.zip --map-gen-settings '{\"\"terrain_segmentation\"\":1,\"\"water\"\":0.1,\"\"starting_area\"\":5,\"\"peaceful_mode\"\":false}')",
+      "Bash(find /mnt/backpack/code/games/factorio/Rampant -name \"*.lua\" -exec grep -l \"get_first_unused_layer\\\\|collision_mask\" {} ;)",
+      "Bash(grep -rn \"collision-mask-util\\\\|require.*collision\" /mnt/backpack/code/games/factorio/Rampant/*.lua)",
+      "Bash(just copy)",
+      "Bash(grep -rn \"type.*turret\\\\|small-worm\\\\|medium-worm\" /mnt/gallery/gameFiles/factorio/data/base/prototypes/entity/*.lua)",
+      "Bash(/mnt/gallery/gameFiles/factorio/bin/x64/factorio --create /mnt/gallery/gameFiles/factorio/saves/test_rampant.zip --map-gen-settings '{\"\"terrain_segmentation\"\":1,\"\"water\"\":0.1,\"\"starting_area\"\":5,\"\"peaceful_mode\"\":false}')",
+      "Bash(timeout 10 ./bin/x64/factorio --create ./saves/test_rampant.zip --map-gen-settings '{\"\"terrain_segmentation\"\":1,\"\"water\"\":0.1,\"\"starting_area\"\":5}')",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(timeout 5 ./bin/x64/factorio)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(identify /mnt/gallery/gameFiles/factorio/data/base/graphics/particle/blood-particle.png)",
+      "Bash(grep -rn \"blood-particle\\\\|acid-particle\" /mnt/gallery/gameFiles/factorio/data/base/prototypes/entity/*.lua)",
+      "Bash(timeout 8 ./bin/x64/factorio)"
     ]
   }
 }

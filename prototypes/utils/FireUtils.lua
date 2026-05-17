@@ -51,7 +51,7 @@ function fireUtils.makeSpreadEffect(attributes)
                 flame_alpha_deviation = 0.05,
 
                 tree_dying_factor = 0.8,
-                emissions_per_second = 0.005,
+                emissions_per_second = { pollution = 0.005 },
 
                 fade_in_duration = 120,
                 fade_out_duration = 100,
@@ -144,7 +144,7 @@ function fireUtils.makeFire(attributes)
                 flame_alpha = 0.35,
                 flame_alpha_deviation = 0.05,
 
-                emissions_per_second = 0.005,
+                emissions_per_second = { pollution = 0.005 },
 
                 add_fuel_cooldown = 10,
                 fade_in_duration = 30,
@@ -286,7 +286,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
         damage_multiplier_increase_per_added_fuel = 1,
         damage_multiplier_decrease_per_tick = 0.005,
 
-        collision_mask = { "water-tile" },
+        collision_mask = {layers={water_tile=true}},
 
         --spawn_entity = "fire-flame-on-tree",
         uses_alternative_behavior = true,
@@ -306,7 +306,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
         --flame_alpha = 0.35,
         --flame_alpha_deviation = 0.05,
 
-        emissions_per_second = 0,
+        emissions_per_second = { pollution = 0 },
 
         add_fuel_cooldown = 10,
         fade_in_duration = 1,

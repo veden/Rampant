@@ -120,16 +120,16 @@ local explosionTiers = {
 }
 
 local bloodFountains = {
-    "blood-explosion-small-rampant",
-    "blood-explosion-small-rampant",
-    "blood-explosion-small-rampant",
-    "blood-explosion-small-rampant",
-    "blood-explosion-big-rampant",
-    "blood-explosion-big-rampant",
-    "blood-explosion-big-rampant",
-    "blood-explosion-huge-rampant",
-    "blood-explosion-huge-rampant",
-    "blood-explosion-huge-rampant",
+    "blood-explosion-small",
+    "blood-explosion-small",
+    "blood-explosion-small",
+    "blood-explosion-small",
+    "blood-explosion-big",
+    "blood-explosion-big",
+    "blood-explosion-big",
+    "blood-explosion-huge",
+    "blood-explosion-huge",
+    "blood-explosion-huge",
 }
 
 local biterDyingSounds = {
@@ -723,8 +723,8 @@ local function fillEntityTemplate(entity)
             if (entity.type == "drone") then
                 ti = 1
             end
-            entity["hitSprayName"] = entity.faction .. "-" .. "damaged-fountain-rampant"
-            entity["explosion"] = entity.faction .. "-" .. bloodFountains[ti]
+            entity["hitSprayName"] = "particle-" .. ti .. "-" .. entity.faction .. "-damaged-particle-rampant"
+            entity["explosion"] = bloodFountains[ti]
         elseif (key == "evolutionFunction") then
             entity["evolutionRequirement"] = distort(xorRandom, value(tier))
         elseif (key == "majorResistances") then
@@ -792,7 +792,7 @@ local function fillEntityTemplate(entity)
                 entity["scale"] = entity["scale"] * 0.5
             elseif (attribute == "fragile") then
                 entity["health"] = entity["health"] * 0.35
-                entity["explosion"] = entity.faction .. "-" .. "damaged-fountain-rampant"
+                entity["explosion"] = "particle-" .. entity.effectiveLevel .. "-" .. entity.faction .. "-damaged-particle-rampant"
             elseif (attribute == "selfDamaging") then
                 local divider
                 if entity.health < 100 then

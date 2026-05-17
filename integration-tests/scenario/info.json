@@ -1,0 +1,11 @@
+{
+    "name": "rampant-integration-tests",
+    "version": 1,
+    "title": "Rampant Integration Tests",
+    "author": "Veden",
+    "description": "Integration tests for the Rampant mod running within Factorio game engine",
+    "factorio_version": "2.0",
+    "dependencies": [
+        "base >= 1.1.81"
+    ]
+}

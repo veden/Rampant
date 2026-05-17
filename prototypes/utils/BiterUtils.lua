@@ -331,7 +331,7 @@ function biterUtils.makeBiter(attributes)
         loot = attributes.loot,
         spawning_time_modifier = attributes.spawningTimeModifer or nil,
         distance_per_frame = attributes.distancePerFrame or 0.1,
-        pollution_to_join_attack = attributes.pollutionToAttack or 200,
+        absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 },
         distraction_cooldown = attributes.distractionCooldown or 300,
         corpse = makeBiterCorpse(attributes),
         dying_explosion = attributes.explosion,
@@ -385,7 +385,7 @@ function biterUtils.makeSpitter(attributes)
         movement_speed = attributes.movement,
         spawning_time_modifier = attributes.spawningTimeModifer or nil,
         distance_per_frame = attributes.distancePerFrame or 0.1,
-        pollution_to_join_attack = attributes.pollutionToAttack or 200,
+        absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 },
         distraction_cooldown = attributes.distractionCooldown or 300,
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = makeSpitterCorpse(attributes),
@@ -458,10 +458,10 @@ function biterUtils.makeUnitSpawner(attributes)
         collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}},
         selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}},
         -- in ticks per 1 pu
-        pollution_absorption_absolute = attributes.pollutionAbsorptionAbs or 20,
-        pollution_absorption_proportional = attributes.pollutionAbsorptionPro or 0.01,
+        absorptions_per_second = { pollution = { absolute = attributes.pollutionAbsorptionAbs or 20, proportional = attributes.pollutionAbsorptionPro or 0.01 } },
         map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}},
         corpse = makeUnitSpawnerCorpse(attributes),
+        graphics_set = {},
         dying_explosion = attributes.explosion or "blood-explosion-huge",
         min_darkness_to_spawn = attributes.minSpawnDarkness or 0,
         max_darkness_to_spawn = attributes.maxSpawnDarkness or 1,
@@ -586,6 +586,7 @@ function biterUtils.makeWorm(attributes)
         shooting_cursor_size = attributes.cursorSize or 3,
         rotation_speed = attributes.rotationSpeed or 1,
         corpse = makeWormCorpse(attributes),
+        graphics_set = {},
         dying_explosion = attributes.explosion or "blood-explosion-big",
         dying_trigger_effect = attributes.dyingEffect,
         inventory_size = attributes.inventorySize,
@@ -701,7 +702,7 @@ function biterUtils.createSuicideAttack(attributes, blastWave, animation)
                                 tile_name = "nuclear-ground",
                                 radius = attributes.radius * 0.25,
                                 apply_projection = true,
-                                tile_collision_mask = { "water-tile" },
+                                tile_collision_mask = {layers={water_tile=true}},
                             },
                             {
                                 type = "destroy-cliffs",
@@ -902,7 +903,7 @@ function biterUtils.createSuicideAttack(attributes, blastWave, animation)
                                                         {
                                                             type = "create-entity",
                                                             entity_name = "nuclear-smouldering-smoke-source",
-                                                            tile_collision_mask = { "water-tile" }
+                                                            tile_collision_mask = {layers={water_tile=true}}
                                                         }
                                                     }
                                             }

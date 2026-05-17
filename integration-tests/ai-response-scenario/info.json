@@ -1,0 +1,6 @@
+{
+    "name": "Rampant AI Response Tests",
+    "description": "Tests AI response to player construction near enemy bases",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

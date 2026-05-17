@@ -737,5 +737,82 @@ function Processor.init(universe)
     end
 end
 
+-- ============================================
+-- ACO: Process Dirty Chunks
+-- ============================================
+
+-- PURE: Process a single dirty chunk (no side effects on Universe)
+function Processor.processDirtyChunk(chunk, tick, priority)
+    if not chunk or not chunk.valid then
+        return false, 0
+    end
+    
+    -- Process pheromones
+    MapUtils.processPheromone(chunk, tick)
+    
+    -- Mark neighbors dirty (returns list of neighbor IDs to mark)
+    local neighborsToMark = {}
+    local success, neighbors = pcall(MapUtils.getNeighborChunks, chunk.map, chunk.x, chunk.y)
+    if success and neighbors then
+        for i = 1, 8 do
+            if neighbors[i] and neighbors[i] ~= -1 then
+                table.insert(neighborsToMark, { id = neighbors[i].id, priority = priority + 1 })
+            end
+        end
+    end
+    
+    return true, neighborsToMark
+end
+
+-- PUBLIC: Process dirty chunks (reads global.universe)
+function Processor.processDirtyChunks(tick, universe)
+    universe = universe or global.universe
+    local processed = 0
+    local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
+    
+    -- Process by priority (1 = highest, 5 = lowest)
+    for priority = 1, 5 do
+        local priorityKey = "priority" .. priority
+        local chunkList = universe.dirtyChunks[priorityKey]
+        while processed < maxPerTick and #chunkList > 0 do
+            local chunkId = table.remove(chunkList, 1)
+            universe.dirtyChunkSet[chunkId] = nil
+            
+            -- Get chunk from map
+            local chunk = MapUtils.getChunkById(chunkId, universe)
+            local success, neighborsToMark = Processor.processDirtyChunk(chunk, tick, priority)
+            
+            if success then
+                processed = processed + 1
+                -- Mark neighbors dirty
+                for _, neighbor in ipairs(neighborsToMark) do
+                    local neighborPriority = math.min(neighbor.priority, 5)  -- Clamp to max priority 5
+                    MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick, universe)
+                end
+            end
+        end
+        
+        if processed >= maxPerTick then break end
+    end
+end
+
+-- Helper to get chunk by ID (from any map)
+function MapUtils.getChunkById(chunkId, universe)
+    universe = universe or global.universe
+    if not universe or not universe.maps then return nil end
+    for surfaceIndex, map in pairs(universe.maps) do
+        if map then
+            for x, xChunks in pairs(map) do
+                for y, chunk in pairs(xChunks) do
+                    if chunk.id == chunkId then
+                        return chunk
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
 ProcessorG = Processor
 return Processor

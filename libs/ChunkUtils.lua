@@ -403,6 +403,20 @@ function ChunkUtils.createChunk(map, topX, topY)
     chunk[RESOURCE_PHEROMONE] = 0
     chunk[ENEMY_PHEROMONE] = 0
     chunk[KAMIKAZE_PHEROMONE] = 0
+    
+    -- ACO: Timestamp fields for decay-on-read
+    chunk.playerLastRefresh = 0
+    chunk.playerBaseLastRefresh = 0
+    chunk.deathLastRefresh = 0
+    chunk.resourceLastRefresh = 0
+    chunk.trailLastRefresh = 0
+    
+    -- ACO: Trail fields
+    chunk.positiveTrail = 0
+    chunk.negativeTrail = 0
+    
+    -- ACO: Exploration state
+    chunk.explorationState = "unexplored"  -- "unexplored", "partially-explored", "explored"
 
     return chunk
 end

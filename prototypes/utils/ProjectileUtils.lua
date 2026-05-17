@@ -19,12 +19,22 @@ local projectileUtils = {}
 function projectileUtils.makeProjectile(attributes, attack)
     local n = attributes.name .. "-projectile-rampant"
 
+    -- Determine collision mask based on Factorio version
+    local defaultCollisionMask
+    if RampantGlobalVariables.projectileCollisionLayer then
+        -- Factorio 1.1 style: numeric layer
+        defaultCollisionMask = {"player-layer", "train-layer", RampantGlobalVariables.projectileCollisionLayer}
+    else
+        -- Factorio 2.0 style: layer names table
+        defaultCollisionMask = {layers={player=true, train=true, object=true}}
+    end
+
     data:extend({{
                 type = "projectile",
                 name = n,
                 flags = {"not-on-map"},
                 collision_box = attributes.attackCollisionBox or {{-0.025, -0.025}, {0.025, 0.025}},
-                hit_collision_mask = attributes.attackCollisionMask or {"player-layer", "train-layer", RampantGlobalVariables.projectileCollisionLayer},
+                hit_collision_mask = attributes.attackCollisionMask or defaultCollisionMask,
                 direction_only = attributes.attackDirectionOnly,
                 hit_at_collision_position = true,
                 piercing_damage = attributes.attackPiercingDamage or 0,

@@ -1069,10 +1069,10 @@ data:extend({
 -- Converts the RGBA struct to Hexadecimal discarding the alpha value.
 -- Since the RGBA struct stores values as percent (0-1) and not actual RGB (0-255) there might be precision errors when converting.
 local function rgbaToHex(rgba)
-    local r = string.format("%x", rgba.r * 255)
-    local g = string.format("%x", rgba.g * 255)
-    local b = string.format("%x", rgba.b * 255)
-    local a = string.format("%x", rgba.a * 255)
+    local r = string.format("%x", math.floor(rgba.r * 255 + 0.5))
+    local g = string.format("%x", math.floor(rgba.g * 255 + 0.5))
+    local b = string.format("%x", math.floor(rgba.b * 255 + 0.5))
+    local a = string.format("%x", math.floor(rgba.a * 255 + 0.5))
     if #r == 1 then
         r = "0"..r
     end
@@ -1201,6 +1201,19 @@ local FACTIONS = {
         tint3 = {r = 0.50, g = 0.50, b = 0.00, a = 0.20}
     }
 }
+
+-- Integration test mode setting (startup so it works in scenarios and mod init)
+data:extend({
+    {
+        type = "bool-setting",
+        name = "rampant--testMode",
+        description = "Enable test mode for integration testing (skips full initialization)",
+        setting_type = "startup",
+        default_value = false,
+        order = "z[test]-a[testMode]",
+        per_user = false
+    },
+})
 
 for i = 1, #FACTIONS do
     local entry = FACTIONS[i]

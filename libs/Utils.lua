@@ -70,6 +70,7 @@ function Utils.intersection(set1, set2)
 end
 
 function Utils.setPositionInQuery(query, position)
+    if not query or not query.position or not position then return end
     local point = query.position
     point[1] = position.x
     point[2] = position.y

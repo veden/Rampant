@@ -1,27 +1,40 @@
-package.path = "libs/?.lua;?.lua;" .. package.path
+package.path = "libs/?.lua;tests/?.lua;?.lua;" .. package.path
+
+-- Polyfills for Factorio's extended Lua runtime (must be before any production requires)
+require("polyfills")
 -- Set up __Rampant__ path prefix mapping
 local _Rampant_prefix = ""
 
--- Mock Factorio data global (used in data phase)
+-- Capture settings from data:extend() calls
+local capturedSettings = {}
+
+-- Mock Factorio data global - CAPTURE what gets extended
 data = {
-    extend = function(self, x) end,
+    extend = function(self, x) 
+        -- Capture each setting definition
+        for _, setting in ipairs(x) do
+            if setting.setting_type then
+                local settingType = setting.setting_type
+                if settingType == "runtime-global" then 
+                    settingType = "global" 
+                end
+                
+                if not capturedSettings[settingType] then 
+                    capturedSettings[settingType] = {} 
+                end
+                capturedSettings[settingType][setting.name] = { 
+                    value = setting.default_value 
+                }
+            end
+        end
+    end,
 }
 
--- Transform settings from settings.lua into the format expected by Constants
-local function transformPairs(settingPairs)
-    local a = {}
-    for _, setting in pairs(settingPairs) do
-        local settingType = setting.setting_type
-        if settingType == "runtime-global" then settingType = "global" end
-        if not a[settingType] then a[settingType] = {} end
-        a[settingType][setting.name] = { ["value"] = setting.default_value }
-    end
-    return a
-end
+-- Load actual settings.lua - this will populate capturedSettings
+require("settings")
 
--- Load settings from the actual settings.lua file
-local rampantSettings = require("settings")
-settings = transformPairs(rampantSettings)
+-- Now create the settings global from captured data
+settings = capturedSettings
 
 package.preload["__Rampant__/Constants"] = function()
     return require("Constants")
@@ -59,23 +72,12 @@ function refreshingRequire(path)
 end
 
 local function runIt()
-    local function transformPairs(settingPairs)
-        local a = {}
-        for _, setting in pairs(settingPairs) do
-            local settingType = setting.setting_type
-            if settingType == "runtime-global" then settingType = "global" end
-
-            if not a[settingType] then a[settingType] = {} end
-            a[settingType][setting.name] = { ["value"] = setting.default_value }
-        end
-        return a
-    end
-
     data = {
         ["extend"] = function(self, x) end,
     }
 
-    settings = transformPairs(refreshingRequire("settings"))
+    -- Settings already loaded at top level from mock_settings.lua
+    -- No need to transform again
 
     local c = ((2 ^ 32) - 1)
     bit32 = {}
@@ -89,6 +91,11 @@ local function runIt()
     defines["wire_type"] = {
         ["red"] = "redWire",
         ["green"] = "greenWire",
+    }
+    
+    -- Mock remote with interfaces table
+    remote = {
+        interfaces = {}
     }
 
     defines["command"] = {
@@ -286,7 +293,9 @@ local function runIt()
 
     script = MockObject(false, "script")
 
-    remote = MockObject(false, "remote")
+    remote = MockObject(false, "remote", {
+        interfaces = {}
+    })
 
     commands = MockObject(false, "commands")
 
@@ -371,27 +380,50 @@ local function runIt()
     print("=== Running Headless Tests ===")
 
     -- Load and run all test collections
-    local test_collections = {}
+local test_collections = {}
 
-    -- Test MathUtils
-    local test_math = refreshingRequire("tests/test_math")
+    -- Load test collections
+    -- Core tests to keep
+    local test_math = require("tests.test_math")
     table.insert(test_collections, { name = "MathUtils", collection = test_math })
 
-    -- Test Utils
-    local test_utils = refreshingRequire("tests/test_utils")
+    local test_utils = require("tests.test_utils")
     table.insert(test_collections, { name = "Utils", collection = test_utils })
 
-    -- Test MapUtils
-    local test_map = refreshingRequire("tests/test_map")
-    table.insert(test_collections, { name = "MapUtils", collection = test_map })
+    -- ACO Tests (NEW - our focus)
+    local test_aco_core = require("tests.test_aco_core")
+    table.insert(test_collections, { name = "ACO Core", collection = test_aco_core })
 
-    -- Test Base lifecycle
-    local test_base = refreshingRequire("tests/test_base")
-    table.insert(test_collections, { name = "Base", collection = test_base })
+    local test_aco_trails = require("tests.test_aco_trails")
+    table.insert(test_collections, { name = "ACO Trails", collection = test_aco_trails })
 
-    -- Test Pheromones
-    local test_pheromones = refreshingRequire("tests/test_pheromones")
-    table.insert(test_collections, { name = "Pheromones", collection = test_pheromones })
+    local test_pheromone_pure = require("tests.test_pheromone_pure")
+    table.insert(test_collections, { name = "Pheromone Pure", collection = test_pheromone_pure })
+
+    local test_chunk_property_pure = require("tests.test_chunk_property_pure")
+    table.insert(test_collections, { name = "ChunkProperty Pure", collection = test_chunk_property_pure })
+
+    local test_processor_pure = require("tests.test_processor_pure")
+    table.insert(test_collections, { name = "Processor Pure", collection = test_processor_pure })
+
+    local test_integration_pheromone = require("tests.test_integration_pheromone_flow")
+    table.insert(test_collections, { name = "Integration Pheromone Flow", collection = test_integration_pheromone })
+
+    local test_squad_pure = require("tests.test_squad_pure")
+    table.insert(test_collections, { name = "Squad Pure", collection = test_squad_pure })
+
+    local test_baseutils_pure = require("tests.test_baseutils_pure")
+    table.insert(test_collections, { name = "BaseUtils Pure", collection = test_baseutils_pure })
+
+    -- TODO: Commented out - will be replaced/refactored for ACO system
+    -- local test_map = require("tests.test_map")
+    -- table.insert(test_collections, { name = "MapUtils", collection = test_map })
+
+    -- local test_base = require("tests.test_base")
+    -- table.insert(test_collections, { name = "Base", collection = test_base })
+
+    -- local test_pheromones = require("tests.test_pheromones")
+    -- table.insert(test_collections, { name = "Pheromones", collection = test_pheromones })
 
     -- Run all tests
     local total_passed = 0

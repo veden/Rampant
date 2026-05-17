@@ -169,7 +169,7 @@ function smokeUtils.makeCloud(attributes, attack)
                 animation =
                     {
                         filename = "__base__/graphics/entity/cloud/cloud-45-frames.png",
-                        flags = { "compressed" },
+                        flags = { "smoke" },
                         priority = "low",
                         width = 256,
                         height = 256,
@@ -236,7 +236,7 @@ function smokeUtils.makeSmokeWithGlow(attributes)
                 animation =
                     {
                         filename = "__base__/graphics/entity/fire-smoke/fire-smoke.png",
-                        flags = { "compressed" },
+                        flags = { "smoke" },
                         line_length = 8,
                         width = 253,
                         height = 210,
@@ -250,7 +250,7 @@ function smokeUtils.makeSmokeWithGlow(attributes)
                 glow_animation =
                     {
                         filename = "__base__/graphics/entity/fire-smoke/fire-smoke-glow.png",
-                        flags = { "compressed" },
+                        flags = { "smoke" },
                         blend_mode = "additive",
                         line_length = 8,
                         width = 253,
@@ -283,7 +283,7 @@ function smokeUtils.makeSmokeWithoutGlow(attributes)
                 animation =
                     {
                         filename = "__base__/graphics/entity/fire-smoke/fire-smoke.png",
-                        flags = { "compressed" },
+                        flags = { "smoke" },
                         line_length = 8,
                         width = 253,
                         height = 210,
@@ -329,7 +329,7 @@ function smokeUtils.makeSmokeAddingFuel(attributes)
                     animation =
                         {
                             filename = "__base__/graphics/entity/fire-smoke/fire-smoke.png",
-                            flags = { "compressed" },
+                            flags = { "smoke" },
                             line_length = 8,
                             width = 253,
                             height = 210,
@@ -369,7 +369,7 @@ function smokeUtils.makeSmokeBasic(attributes)
                 direction_count = 1,
                 shift = {-0.53125, -0.4375},
                 priority = "high",
-                flags = { "compressed" },
+                flags = { "smoke" },
                 animation_speed = 0.25,
                 filename = "__base__/graphics/entity/smoke/smoke.png"
             },

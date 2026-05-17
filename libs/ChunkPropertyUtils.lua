@@ -426,9 +426,30 @@ function ChunkPropertyUtils.setDeathGenerator(chunk, value)
     end
 end
 
+-- PURE: Calculate victory generator update
+function ChunkPropertyUtils.calculateVictoryGeneratorUpdate(chunkId, currentVictory, value)
+    local newVictory = (currentVictory or 0) + value
+    return {
+        chunkId = chunkId,
+        victory = newVictory
+    }
+end
+
+-- IMPURE: Apply victory generator update (writes to chunk/universe)
+function ChunkPropertyUtils.applyVictoryGenerator(chunk, update)
+    local chunkId = update.chunkId
+    if not chunk.victoryGenerators then
+        chunk.victoryGenerators = {}
+    end
+    chunk.victoryGenerators[chunkId] = update.victory
+end
+
+-- PUBLIC: Add victory generator (reads global.universe)
 function ChunkPropertyUtils.addVictoryGenerator(chunk, value)
-    local cToV = Universe.chunkToVictory
+    local universe = global.universe
+    local cToV = universe.chunkToVictory
     local chunkId = chunk.id
+    
     if not cToV[chunkId] then
         cToV[chunkId] = {
             chunk = chunk,
@@ -438,28 +459,56 @@ function ChunkPropertyUtils.addVictoryGenerator(chunk, value)
     cToV[chunkId].v = cToV[chunkId].v + value
 end
 
-function ChunkPropertyUtils.decayDeathGenerator(chunk)
-    local gen = chunk.deathGenerator
-    if gen then
-        local v = gen * MOVEMENT_GENERATOR_PERSISTANCE
-        if (v < 0.0001) and (v > -0.0001) then
-            chunk.deathGenerator = nil
-        else
-            chunk.deathGenerator = v
-        end
+-- PURE: Calculate decayed death generator value
+function ChunkPropertyUtils.calculateDeathGeneratorDecay(currentValue, persistence)
+    if not currentValue then
+        return nil
+    end
+    
+    local v = currentValue * persistence
+    if (v < 0.0001) and (v > -0.0001) then
+        return nil
+    else
+        return v
     end
 end
 
+-- IMPURE: Apply decayed death generator to chunk
+function ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
+    chunk.deathGenerator = newValue
+end
+
+-- PUBLIC: Decay death generator (wrapper)
+function ChunkPropertyUtils.decayDeathGenerator(chunk)
+    local gen = chunk.deathGenerator
+    local newValue = ChunkPropertyUtils.calculateDeathGeneratorDecay(gen, MOVEMENT_GENERATOR_PERSISTANCE)
+    ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
+end
+
+-- PURE: Calculate decayed player generator value
+function ChunkPropertyUtils.calculatePlayerGeneratorDecay(currentValue, persistence)
+    if not currentValue then
+        return nil
+    end
+    
+    local v = currentValue * persistence
+    if (v < 0.0001) and (v > -0.0001) then
+        return nil
+    else
+        return v
+    end
+end
+
+-- IMPURE: Apply decayed player generator to chunk
+function ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
+    chunk.playerGenerator = newValue
+end
+
+-- PUBLIC: Decay player generator (wrapper)
 function ChunkPropertyUtils.decayPlayerGenerator(chunk)
     local gen = chunk.playerGenerator
-    if gen then
-        local v = gen * PLAYER_GENERATOR_PERSISTANCE
-        if (v < 0.0001) and (v > -0.0001) then
-            chunk.playerGenerator = nil
-        else
-            chunk.playerGenerator = v
-        end
-    end
+    local newValue = ChunkPropertyUtils.calculatePlayerGeneratorDecay(gen, PLAYER_GENERATOR_PERSISTANCE)
+    ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
 end
 
 function ChunkPropertyUtils.addPlayerGenerator(chunk, playerMaxGenerator)
@@ -620,10 +669,18 @@ end
 
 function ChunkPropertyUtils.init(universe, mapUtils)
     Universe = universe
-    activateMap = mapUtils.activateMap
+    if mapUtils then
+        activateMap = mapUtils.activateMap
+    end
     if universe.chunkPropertyUtilsQueries then
         Position = universe.chunkPropertyUtilsQueries.position
     end
+end
+
+-- ACO: Get effective pheromone value with decay-on-read (wrapper for MapUtils.getEffectivePheromone)
+function ChunkPropertyUtils.getEffectivePheromone(chunk, type, tick)
+    local MapUtils = require("libs/MapUtils")
+    return MapUtils.getEffectivePheromone(chunk, type, tick)
 end
 
 ChunkPropertyUtilsG = ChunkPropertyUtils

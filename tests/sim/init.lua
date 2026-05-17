@@ -8,6 +8,9 @@
 -- Add project root to package.path for module loading
 package.path = "./?.lua;./libs/?.lua;./tests/?.lua;" .. package.path
 
+-- Polyfills for Factorio's extended Lua runtime (must be first)
+require("tests/polyfills")
+
 -- Load adapters (sets up _G globals)
 require("tests/sim.adapters.game")
 require("tests/sim.adapters.script")

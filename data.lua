@@ -19,7 +19,6 @@
 local colorUtils = require("prototypes/utils/ColorUtils")
 local smokeUtils = require("prototypes/utils/SmokeUtils")
 local swarmUtils = require("prototypes/SwarmUtils")
-local collision_mask_util = require("collision-mask-util")
 
 -- imported functions
 
@@ -40,7 +39,16 @@ makeSmokeAddingFuel({name="the"})
 require("prototypes/buildings/ChunkScanner")
 
 RampantGlobalVariables = {}
-RampantGlobalVariables.projectileCollisionLayer = collision_mask_util.get_first_unused_layer()
+
+-- Factorio 2.0 compatibility - collision mask system changed from numeric layers to layers tables
+if _ENV["collision-mask-util"] and _ENV["collision-mask-util"].get_first_unused_layer then
+    -- Factorio 1.1: use collision-mask-util
+    local collision_mask_util = _ENV["collision-mask-util"]
+    RampantGlobalVariables.projectileCollisionLayer = collision_mask_util.get_first_unused_layer()
+else
+    -- Factorio 2.0: no custom collision layer needed (using layers table instead)
+    RampantGlobalVariables.projectileCollisionLayer = nil
+end
 
 if not data.raw["corpse"]["acid-splash-purple"] then
     local attributes = {}

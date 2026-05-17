@@ -94,6 +94,7 @@ function beamUtils.makeBeam(attributes)
         {
             type = "beam",
             flags = {"not-on-map"},
+            graphics_set = {},
             width = attributes.width or 0.5,
             collision_box = attributes.collisionBox or {{-0.3, -1.1}, {0.3, 1.1}},
             damage_interval = attributes.damageInterval or 20,

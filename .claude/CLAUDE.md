@@ -14,6 +14,18 @@ Rampant is a Factorio mod that implements advanced enemy AI using pheromone-base
 ./action.fish zip                                      # Create mod zip for distribution
 ```
 
+### Running Unit Tests
+```bash
+lua tests/runTests.lua  # Headless tests using Factorio API mocks
+```
+
+### Running Integration Tests
+```bash
+FACTORIO_PATH=/mnt/gallery/gameFiles/factorio ./integration-tests/run-tests.sh
+```
+
+**Note**: Integration tests require Factorio 2.0 installed. Tests validate mod behavior in actual Factorio game engine.
+
 ### Linting
 ```bash
 luacheck .  # Uses config from .luacheckrc (24 globals defined)
@@ -45,9 +57,37 @@ Enemy faction definitions and entity creation utilities (`prototypes/utils/` con
 3. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
 4. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
 
+## Testing
+
+### Integration Tests (`integration-tests/`)
+
+The integration testing framework runs tests within the actual Factorio game engine to validate mod behavior with real Factorio APIs.
+
+**Test Categories:**
+- **Data Stage Tests (10)**: Validate prototype creation
+- **Settings Tests (15)**: Verify settings accessibility
+- **Entity Tests (10)**: Test entity spawning and manipulation
+
+**Running Tests:**
+```bash
+FACTORIO_PATH=/mnt/gallery/gameFiles/factorio ./integration-tests/run-tests.sh
+```
+
+**Known Issues:**
+- Runtime tests limited by scenario context (global not available until game loaded)
+- Data stage tests fully functional
+- Requires Factorio 2.0 headless server
+
+### Unit Tests (`tests/`)
+
+Headless tests using mocked Factorio APIs. Run with:
+```bash
+lua tests/runTests.lua
+```
+
 ## Configuration
 
-- Mod version: 3.3.4, requires Factorio >= 1.1.81
+- Mod version: 3.4.0, requires Factorio >= 2.0
 - License: GPLv3
 - 24 globals defined for luacheck (game, data, script, ProcessorG, ConstantsG, SquadG, etc.)
 
@@ -58,3 +98,10 @@ LSP directory containing comprehensive Factorio APIs, data models, and game elem
 
 ### `/mnt/gallery/gameFiles/factorio/data/`
 Contains the actual Lua representation of Factorio's game code. Use to understand actual game implementation details.
+
+### `/mnt/gallery/gameFiles/factorio/`
+Factorio installation directory. Contains:
+- `bin/x64/factorio` - Factorio binary
+- `mods/` - Mod directory for testing
+- `scenarios/` - Scenario directory
+- `data/` - Game data and settings examples

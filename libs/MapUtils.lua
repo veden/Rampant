@@ -361,6 +361,7 @@ end
     6 7 8
 ]]--
 function MapUtils.getNeighborChunks(map, x, y)
+    if not NeighborChunks then return {} end
     local chunkYRow1 = y - CHUNK_SIZE
     local chunkYRow3 = y + CHUNK_SIZE
     local xChunks = map[x-CHUNK_SIZE]
@@ -531,8 +532,21 @@ function MapUtils.victoryScent(chunk, entityType)
     end
 end
 
-function MapUtils.disperseVictoryScent()
-    local chunkToVictory = Universe.chunkToVictory
+-- PURE: Calculate victory scent amount for distance
+function MapUtils.calculateVictoryScentAmount(baseAmount, distanceIndex)
+    return baseAmount * VICTORY_SCENT_MULTIPLER[distanceIndex]
+end
+
+-- IMPURE: Apply victory scent to chunks (side effects)
+function MapUtils.applyVictoryScent(chunk, amount)
+    addDeathGenerator(chunk, amount)
+    addPermanentDeathGenerator(chunk, amount)
+end
+
+-- PUBLIC: Disperse victory scent (reads global.universe)
+function MapUtils.disperseVictoryScent(universe)
+    universe = universe or Universe
+    local chunkToVictory = universe.chunkToVictory
     local chunkId, pheromonePack = next(chunkToVictory, nil)
     if not chunkId then
         return
@@ -547,13 +561,12 @@ function MapUtils.disperseVictoryScent()
     local chunkX = chunk.x
     local chunkY = chunk.y
     local i = 1
-    for x=chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND,32 do
-        for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND,32 do
+    for x = chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND, 32 do
+        for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND, 32 do
             local c = MapUtils.getChunkByXY(map, x, y)
-            if (c ~= -1) then
-                local amount = pheromonePack.v * VICTORY_SCENT_MULTIPLER[i]
-                addDeathGenerator(c, amount)
-                addPermanentDeathGenerator(c, amount)
+            if c ~= -1 then
+                local amount = MapUtils.calculateVictoryScentAmount(pheromonePack.v, i)
+                MapUtils.applyVictoryScent(c, amount)
             end
             i = i + 1
         end
@@ -569,12 +582,10 @@ function MapUtils.deathScent(chunk, structure)
     addPermanentDeathGenerator(chunk, amount)
 end
 
-function MapUtils.processPheromone(chunk, tick, player)
-    if chunk[CHUNK_TICK] > tick then
-        return
-    end
-    chunk[CHUNK_TICK] = tick
-
+-- PURE: Calculate pheromone updates without side effects
+-- All inputs explicit, uses Constants directly (immutable)
+-- Returns table with new pheromone values
+function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(chunk)
@@ -583,20 +594,18 @@ function MapUtils.processPheromone(chunk, tick, player)
     local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE]
 
     local chunkCount = 1
-
     local enemyStructureCount = getEnemyStructureCount(chunk)
 
-    local tempNeighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
-    for i=1,8 do
-        local tempPheromone
-        local neighbor = tempNeighbors[i]
-        if (neighbor ~= -1) then
+    for i = 1, 8 do
+        local neighbor = neighbors[i]
+        if neighbor and neighbor ~= -1 then
             if MapUtils.canMoveChunkDirection(i, chunk, neighbor) then
                 chunkCount = chunkCount + 1
                 chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
                 chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
                 chunkDeath = chunkDeath + getCombinedDeathGenerator(neighbor)
-                tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
+                
+                local tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
                 if chunkKamikaze < tempPheromone then
                     chunkKamikaze = tempPheromone
                 end
@@ -612,47 +621,80 @@ function MapUtils.processPheromone(chunk, tick, player)
         end
     end
 
-    setDeathGenerator(chunk, (chunkDeath / chunkCount) * 0.75)
+    local newDeathGenerator = (chunkDeath / chunkCount) * 0.75
+    local chunkDeathRating = getCombinedDeathGeneratorRating(chunk) * getPathRating(chunk)
+
+    local newPlayer = mMax(
+        chunk.playerGenerator or 0,
+        (chunkPlayer / chunkCount) * 0.98
+    ) * chunkDeathRating
+
+    local newBase = mMax(
+        chunk.playerBaseGenerator or 0,
+        chunkBase * 0.9
+    ) * chunkDeathRating
+
+    local newEnemy = chunkDeathRating * mMax(
+        enemyStructureCount * ENEMY_PHEROMONE_MULTIPLER,
+        (chunkEnemy / chunkCount) * 0.9
+    )
+
+    local newKamikaze = mMax(
+        chunkKamikaze,
+        newPlayer + newBase
+    ) * 0.95
+
+    local newResource = 0
+    local resourcePheromoneGenerator = chunk.resourceGenerator or 0
+    if resourcePheromoneGenerator > 0 then
+        newResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
+    end
+    if enemyStructureCount ~= 0 then
+        newResource = newResource * 0.0001
+    end
+    newResource = chunkDeathRating * newResource * 0.9
+
+    return {
+        deathGenerator = newDeathGenerator,
+        player = newPlayer,
+        base = newBase,
+        enemy = newEnemy,
+        kamikaze = newKamikaze,
+        resource = newResource,
+        enemyStructureCount = enemyStructureCount,
+    }
+end
+
+-- IMPURE: Apply pheromone updates to chunk (side effects)
+function MapUtils.applyPheromoneUpdates(chunk, updates)
+    setDeathGenerator(chunk, updates.deathGenerator)
+    decayPlayerGenerator(chunk)
+
+    chunk[PLAYER_PHEROMONE] = updates.player
+    chunk[BASE_PHEROMONE] = updates.base
+    chunk[ENEMY_PHEROMONE] = updates.enemy
+    chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
+    chunk[RESOURCE_PHEROMONE] = updates.resource
+end
+
+-- PUBLIC: Orchestrate pheromone processing (reads global.universe)
+function MapUtils.processPheromone(chunk, tick, player)
+    if chunk[CHUNK_TICK] > tick then
+        return
+    end
+    chunk[CHUNK_TICK] = tick
+
+    local neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+    
+    -- Pure calculation
+    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
+    
+    -- Apply updates (side effects)
+    MapUtils.applyPheromoneUpdates(chunk, updates)
 
     if not player then
         decayDeathGenerator(chunk)
     end
-
-    decayPlayerGenerator(chunk)
-
-    local chunkDeathRating = getCombinedDeathGeneratorRating(chunk) * getPathRating(chunk)
-
-    chunk[PLAYER_PHEROMONE] = mMax(
-        chunk.playerGenerator or 0,
-        (chunkPlayer / chunkCount) * 0.98
-                                                     )
-
-    chunk[BASE_PHEROMONE] = mMax(
-        chunk.playerBaseGenerator or 0,
-        chunkBase * 0.9
-                                                   )
-
-    chunk[ENEMY_PHEROMONE] = chunkDeathRating * mMax(
-        enemyStructureCount * ENEMY_PHEROMONE_MULTIPLER,
-        (chunkEnemy / chunkCount) * 0.9
-                                                    )
-
-    chunk[KAMIKAZE_PHEROMONE] = mMax(
-        chunkKamikaze,
-        chunk[PLAYER_PHEROMONE] + chunk[BASE_PHEROMONE]
-    ) * 0.95
-
-    chunk[PLAYER_PHEROMONE] = chunk[PLAYER_PHEROMONE] * chunkDeathRating
-    chunk[BASE_PHEROMONE] = chunk[BASE_PHEROMONE] * chunkDeathRating
-
-    local resourcePheromoneGenerator = chunk.resourceGenerator or 0
-    if (resourcePheromoneGenerator > 0) then
-        chunkResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
-    end
-    if enemyStructureCount ~= 0 then
-        chunkResource = chunkResource * 0.0001
-    end
-    chunk[RESOURCE_PHEROMONE] = chunkDeathRating * chunkResource * 0.9
 end
 
 function MapUtils.init(universe)
@@ -661,6 +703,81 @@ function MapUtils.init(universe)
         NeighborChunks = universe.mapUtilsQueries.neighbors
         MapPosition = universe.mapUtilsQueries.position
     end
+    
+    -- Initialize dirty chunk tracking
+    Universe.dirtyChunks = {
+        priority1 = {},  -- Player-adjacent (within 5 chunks)
+        priority2 = {},  -- Squad-active chunks
+        priority3 = {},  -- Recent events (last 10 ticks)
+        priority4 = {},  -- Background propagation
+        priority5 = {}   -- Stale chunks
+    }
+    Universe.dirtyChunkSet = {}  -- Quick lookup to prevent duplicates
+end
+
+-- ============================================
+-- ACO: Dirty Chunk Management
+-- ============================================
+
+function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
+    universe = universe or Universe
+    if not chunkId or chunkId == -1 then return end
+    
+    -- Clamp priority to valid range (1-5)
+    priority = math.min(math.max(priority, 1), 5)
+    
+    -- Convert priority to string key
+    local priorityKey = "priority" .. priority
+    
+    -- Prevent duplicates
+    if universe.dirtyChunkSet[chunkId] then
+        -- Update priority if higher (lower number = higher priority)
+        local existingPriority = universe.dirtyChunkSet[chunkId]
+        if priority < existingPriority then
+            -- Remove from old priority list
+            local oldList = universe.dirtyChunks["priority" .. existingPriority]
+            for i, id in ipairs(oldList) do
+                if id == chunkId then
+                    table.remove(oldList, i)
+                    break
+                end
+            end
+            -- Add to new priority list
+            table.insert(universe.dirtyChunks[priorityKey], chunkId)
+            universe.dirtyChunkSet[chunkId] = priority
+        end
+        return
+    end
+    
+    -- Add to priority list
+    table.insert(universe.dirtyChunks[priorityKey], chunkId)
+    universe.dirtyChunkSet[chunkId] = priority
+end
+
+-- ACO: Get effective pheromone value with decay-on-read
+function MapUtils.getEffectivePheromone(chunk, type, tick)
+    local value = chunk[type] or 0
+    if value == 0 then return 0 end
+    
+    local timestampField = type .. "LastRefresh"
+    local lastRefresh = chunk[timestampField] or 0
+    local ticksElapsed = tick - lastRefresh
+    
+    -- Select appropriate decay table
+    local decayTable
+    if type == "PLAYER_PHEROMONE" then
+        decayTable = Constants.DECAY_098
+    elseif type == "BASE_PHEROMONE" or type == "RESOURCE_PHEROMONE" or type == "ENEMY_PHEROMONE" then
+        decayTable = Constants.DECAY_090
+    elseif type == "KAMIKAZE_PHEROMONE" then
+        decayTable = Constants.DECAY_095
+    else
+        return value  -- No decay
+    end
+    
+    -- Apply decay
+    local decayFactor = decayTable[ticksElapsed] or decayTable[Constants.DECAY_TABLE_DEPTH]
+    return value * decayFactor
 end
 
 MapUtilsG = MapUtils
