@@ -144,7 +144,7 @@ local function evoToTier(evolutionFactor, maxSkips)
 end
 
 local function findBaseMutation(targetEvolution, excludeFactions)
-    local tier = evoToTier(targetEvolution or Universe.evolutionLevel, 2)
+    local tier = evoToTier(targetEvolution or Universe.evolutionLevel or 0, 2)
     local availableAlignments
     local alignments = EVOLUTION_TABLE_ALIGNMENT[tier]
 
@@ -404,9 +404,9 @@ function BaseUtils.canAttackBase(stateAI, sentAggressiveGroups, maxAggressiveGro
     return true
 end
 
--- PUBLIC: Wrapper that reads global.universe
+-- PUBLIC: Wrapper that reads storage.universe
 function BaseUtils.canAttack(base)
-    local universe = global.universe
+    local universe = storage.universe
     local surface = base.map.surface
     return BaseUtils.canAttackBase(
         base.stateAI,
@@ -444,9 +444,9 @@ function BaseUtils.canMigrateBase(stateAI, expansion, peacefulMode, aiNocturnalM
     return true
 end
 
--- PUBLIC: Wrapper that reads global.universe
+-- PUBLIC: Wrapper that reads storage.universe
 function BaseUtils.canMigrate(base)
-    local universe = global.universe
+    local universe = storage.universe
     local surface = base.map.surface
     return BaseUtils.canMigrateBase(
         base.stateAI,
@@ -479,7 +479,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         1,
         euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
     )
-    local evoIndex = mMax(distance, Universe.evolutionLevel)
+    local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
 
     local name = findEntityUpgrade(pickedBaseAlignment,
                                    currentEvo,
@@ -548,7 +548,7 @@ function BaseUtils.queueCreation(base, position, entityType, timeDelay, hiveData
         1,
         euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
     )
-    local evoIndex = mMax(distance, Universe.evolutionLevel)
+    local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
 
     local name = findEntityCreation(
         pickedBaseAlignment,
@@ -744,7 +744,7 @@ function BaseUtils.createBase(map, chunk, tick)
     local meanLevel = mFloor(distance * 0.005)
 
     local distanceIndex = mMin(1, distance * BASE_DISTANCE_TO_EVO_INDEX)
-    local evoIndex = mMax(distanceIndex, Universe.evolutionLevel)
+    local evoIndex = mMax(distanceIndex, Universe.evolutionLevel or 0)
 
     local alignment =
         (Universe.NEW_ENEMIES and BaseUtils.findBaseInitialAlignment(evoIndex))

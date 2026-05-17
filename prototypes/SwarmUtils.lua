@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local swarmUtils = {}
 -- imports
 
@@ -129,7 +128,7 @@ local bloodFountains = {
     "blood-explosion-big",
     "blood-explosion-huge",
     "blood-explosion-huge",
-    "blood-explosion-huge",
+    "blood-explosion-huge"
 }
 
 local biterDyingSounds = {
@@ -416,7 +415,7 @@ local droneAttributeNumeric = {
     ["range"] = { 10, 10, 11, 11, 12, 12, 13, 13, 14, 14 },
     ["radius"] = { 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5 },
     ["health"] = { 20, 150, 300, 450, 600, 800, 1000, 2000, 4000, 8000 },
-    ["healing"] = { 0.01, 0.01, 0.015, 0.02, 0.05, 0.075, 0.1, 0.12, 0.14, 0.16 },
+    ["healing"] = { 0.01, 0.01, 0.015, 0.02, 0.05, 0.075, 0.1, 0.12, 0.14, 0.16 }
 }
 
 local unitSpawnerAttributeNumeric = {
@@ -583,7 +582,6 @@ local function addMinorWeakness(entity, name, tier)
         percent = roundToNearest(gaussianRandomRangeRG(percents[tier], percents[tier] * 0.1, percents[tier] * 0.85, percents[tier] * 1.30, xorRandom), 0.1)
     }
 end
-
 
 local function scaleAttributes (entity)
     if (entity.type == "biter") then
@@ -1325,19 +1323,7 @@ local function buildAttack(faction, template)
                 frame_count = 50,
                 animation_speed = 0.5,
                 tint = {r = 0.3500, g = 0.663, b = 0.000, a = 0.694}, -- #4a900b1
-                shift = util.by_pixel (2,-1),
-                hr_version =
-                    {
-                        filename = "__base__/graphics/entity/slowdown-sticker/hr-slowdown-sticker.png",
-                        line_length = 5,
-                        width = 42,
-                        height = 48,
-                        frame_count = 50,
-                        animation_speed = 0.5,
-                        tint = {r = 0.3500, g = 0.663, b = 0.000, a = 0.694}, -- #ffa900b1
-                        shift = util.by_pixel(2, -0.5),
-                        scale = 0.5
-                    }
+                shift = util.by_pixel (2,-1)
             }
             template.areaEffects = function (attributes)
                 return {
@@ -1595,7 +1581,6 @@ local function buildHiveTemplate(faction, incomingTemplate, unitSets)
         end
     end
 
-
     template.unitSet = unitSet
 
     if template.drops then
@@ -1659,7 +1644,6 @@ function swarmUtils.processFactions()
             elseif (building.type == "utility") then
 
             end
-
 
         end
     end

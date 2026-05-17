@@ -222,10 +222,11 @@ local function initializeLibraries(addProperties)
     MapUtils.init(Universe)
     ChunkPropertyUtils.init(Universe, MapUtils)
     ChunkUtils.init(Universe)
+    Observability.init(Universe)
 end
 
 local function onLoad()
-    Universe = global.universe
+    Universe = storage.universe
 
     initializeLibraries()
 
@@ -303,7 +304,7 @@ local function onModSettingsChange(event)
     Universe["MAX_BASE_ALIGNMENT_HISTORY"] = settings.global["rampant--maxBaseAlignmentHistory"].value
 
     Universe["initialPeaceTime"] =
-        (settings.global["rampant--initialPeaceTime"].value * TICKS_A_MINUTE) + Universe.modAddedTick
+        (settings.global["rampant--initialPeaceTime"].value * Constants.TICKS_A_SECOND) + (Universe.modAddedTick or game.tick)
 
     Universe["printAwakenMessage"] = settings.global["rampant--printAwakenMessage"].value
 
@@ -321,11 +322,14 @@ local function onConfigChanged()
         return
     end
 
-    -- Upgrade must run first to set Universe.modAddedTick before onModSettingsChange
-    Upgrade.attempt()
-    
-    game.print("Rampant - Version 3.3.3")
+    -- initializeLibraries must run before Upgrade.attempt() so Upgrade's
+    -- local Universe reference is set via Upgrade.init()
     initializeLibraries(true)
+
+    -- Upgrade runs after for migrations
+    Upgrade.attempt()
+
+    game.print("Rampant - Version 3.3.3")
     
     onModSettingsChange({setting="rampant--"})
 
@@ -341,7 +345,7 @@ local function onConfigChanged()
         ["neutral"]=true
     }
 
-    if game.active_mods["AbandonedRuins"] then
+    if script.active_mods["AbandonedRuins"] then
         npcForces["AbandonedRuins:enemy"] = true
     end
 
@@ -354,7 +358,7 @@ local function onConfigChanged()
     end
 
     if not Universe.ranIncompatibleMessage and Universe.newEnemies and
-        (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
+        (script.active_mods["bobenemies"] or script.active_mods["Natural_Evolution_Enemies"]) then
         Universe.ranIncompatibleMessage = true
         game.print({"description.rampant-bobs-nee-newEnemies"})
     end
@@ -1005,11 +1009,19 @@ end
 
 script.on_event(defines.events.on_tick,
                 function ()
-                    if not Universe or not Universe.awake then
+                    if not Universe or not Universe.awake or not Universe.random then
                         return
                     end
+                    -- Poll for incoming UDP packets (triggers on_udp_packet_received)
+                    -- Poll all available sockets: server + connected players
+                    helpers.recv_udp()
+                    if game.connected_players[1] then
+                        helpers.recv_udp(1)
+                    end
+
                     local gameRef = game
                     local tick = gameRef.tick
+
                     local range = (Universe.legacyChunkScanning and 4) or 3
                     local pick = tick % range
                     -- local profiler = game.create_profiler()
@@ -1022,7 +1034,7 @@ script.on_event(defines.events.on_tick,
                             recycleBases()
                         end
                         cleanUpMapTables(tick)
-                        planning(gameRef.forces.enemy.evolution_factor)
+                        planning(gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
                         processHives(tick)
                         cleanHivesData()
                     elseif (pick == 1) then
@@ -1030,7 +1042,7 @@ script.on_event(defines.events.on_tick,
                     elseif (pick == 2) then
                         processPendingUpgrades(tick)
                         processVengence()
-                        disperseVictoryScent(global.universe)
+                        disperseVictoryScent(Universe)
                         processAttackWaves()
                         processClouds(tick)
                         processScanChunks()
@@ -1064,6 +1076,9 @@ script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
 script.on_event(defines.events.on_surface_created, onSurfaceCreated)
+
+-- UDP server for external tooling (requires --enable-lua-udp PORT)
+script.on_event(defines.events.on_udp_packet_received, Observability.onUdpPacket)
 
 script.on_init(onInit)
 script.on_load(onLoad)

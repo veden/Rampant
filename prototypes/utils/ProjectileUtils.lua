@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local projectileUtils = {}
 
 function projectileUtils.makeProjectile(attributes, attack)
@@ -53,20 +52,7 @@ function projectileUtils.makeProjectile(attributes, attack)
                         tint = attributes.tint2,
                         priority = "high",
                         scale = (attributes.scale*1.2 or 1),
-                        animation_speed = 1,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/acid-projectile/hr-acid-projectile-head.png",
-                                line_length = 5,
-                                width = 42,
-                                height = 164,
-                                frame_count = 15,
-                                shift = util.mul_shift(util.by_pixel(-2, 31), attributes.scale*1.2 or 1),
-                                tint = attributes.tint2,
-                                priority = "high",
-                                scale = 0.5 * (attributes.scale*1.2 or 1),
-                                animation_speed = 1,
-                            }
+                        animation_speed = 1
                     },
                 shadow =
                     {
@@ -79,25 +65,11 @@ function projectileUtils.makeProjectile(attributes, attack)
                         shift = util.mul_shift(util.by_pixel(-2, 30), attributes.scale*1.2 or 1),
                         draw_as_shadow = true,
                         scale = (attributes.scale*1.2 or 1),
-                        animation_speed = 1,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/acid-projectile/hr-acid-projectile-shadow.png",
-                                line_length = 15,
-                                width = 42,
-                                height = 164,
-                                frame_count = 15,
-                                shift = util.mul_shift(util.by_pixel(-2, 31), attributes.scale*1.2 or 1),
-                                draw_as_shadow = true,
-                                priority = "high",
-                                scale = 0.5 * (attributes.scale*1.2 or 1),
-                                animation_speed = 1,
-                            }
+                        animation_speed = 1
                     },
                 -- rotatable = false,
                 oriented_particle = true,
-                shadow_scale_enabled = true,
-
+                shadow_scale_enabled = true
     }})
 
     return n

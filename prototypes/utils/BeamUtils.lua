@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local beamUtils = {}
 
 local DISALLOW_FRIENDLY_FIRE = settings.startup["rampant--disallowFriendlyFire"].value
@@ -123,18 +122,7 @@ function beamUtils.makeBeam(attributes)
                     frame_count = 16,
                     axially_symmetrical = false,
                     direction_count = 1,
-                    shift = {-0.03125, 0},
-                    hr_version = {
-                        filename = "__base__/graphics/entity/beam/hr-tileable-beam-START.png",
-                        line_length = 4,
-                        width = 94,
-                        height = 66,
-                        frame_count = 16,
-                        axially_symmetrical = false,
-                        direction_count = 1,
-                        shift = {0.53125, 0},
-                        scale = 0.5,
-                    }
+                    shift = {-0.03125, 0}
                 },
             ending =
                 {
@@ -145,18 +133,7 @@ function beamUtils.makeBeam(attributes)
                     frame_count = 16,
                     axially_symmetrical = false,
                     direction_count = 1,
-                    shift = {-0.046875, 0},
-                    hr_version = {
-                        filename = "__base__/graphics/entity/beam/hr-tileable-beam-END.png",
-                        line_length = 4,
-                        width = 91,
-                        height = 93,
-                        frame_count = 16,
-                        axially_symmetrical = false,
-                        direction_count = 1,
-                        shift = {-0.078125, -0.046875},
-                        scale = 0.5,
-                    }
+                    shift = {-0.046875, 0}
                 },
             head =
                 {
@@ -166,7 +143,7 @@ function beamUtils.makeBeam(attributes)
                     height = 39,
                     frame_count = 16,
                     animation_speed = 0.5,
-                    blend_mode = "additive-soft",
+                    blend_mode = "additive-soft"
                 },
             tail =
                 {
@@ -175,7 +152,7 @@ function beamUtils.makeBeam(attributes)
                     width = 45,
                     height = 39,
                     frame_count = 16,
-                    blend_mode = "additive-soft",
+                    blend_mode = "additive-soft"
                 },
             body =
                 {
@@ -185,7 +162,7 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
+                        blend_mode = "additive-soft"
                     },
                     {
                         filename = "__base__/graphics/entity/beam/beam-body-2.png",
@@ -193,7 +170,7 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
+                        blend_mode = "additive-soft"
                     },
                     {
                         filename = "__base__/graphics/entity/beam/beam-body-3.png",
@@ -201,7 +178,7 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
+                        blend_mode = "additive-soft"
                     },
                     {
                         filename = "__base__/graphics/entity/beam/beam-body-4.png",
@@ -209,7 +186,7 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
+                        blend_mode = "additive-soft"
                     },
                     {
                         filename = "__base__/graphics/entity/beam/beam-body-5.png",
@@ -217,7 +194,7 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
+                        blend_mode = "additive-soft"
                     },
                     {
                         filename = "__base__/graphics/entity/beam/beam-body-6.png",
@@ -225,8 +202,8 @@ function beamUtils.makeBeam(attributes)
                         width = 45,
                         height = 39,
                         frame_count = 16,
-                        blend_mode = "additive-soft",
-                    },
+                        blend_mode = "additive-soft"
+                    }
                 }
         }
 

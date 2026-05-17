@@ -444,9 +444,9 @@ function ChunkPropertyUtils.applyVictoryGenerator(chunk, update)
     chunk.victoryGenerators[chunkId] = update.victory
 end
 
--- PUBLIC: Add victory generator (reads global.universe)
+-- PUBLIC: Add victory generator (reads storage.universe)
 function ChunkPropertyUtils.addVictoryGenerator(chunk, value)
-    local universe = global.universe
+    local universe = storage.universe
     local cToV = universe.chunkToVictory
     local chunkId = chunk.id
     

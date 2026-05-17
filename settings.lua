@@ -265,7 +265,7 @@ data:extend({
             name = "rampant--initialPeaceTime",
             setting_type = "runtime-global",
             minimum_value = 0,
-            default_value = 20,
+            default_value = 1200,
             maximum_value = 9999999999,
             order = "d[modifier]-a[ai]",
             per_user = false

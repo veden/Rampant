@@ -134,7 +134,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryLowest = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "wall",
             "transport-belt"
@@ -143,7 +143,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryLow = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "splitter",
             "pump",
@@ -160,7 +160,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryHigh = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "furnace",
             "lab",
@@ -177,7 +177,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryHighest = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "artillery-turret",
             "reactor",
@@ -191,12 +191,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.isFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=isSharedChunkArea
     }
     Universe.isFilteredEntitiesChunkNeutral = {
         area=isSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -226,12 +226,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.cpsFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=cpsSharedChunkArea
     }
     Universe.cpsFilteredEntitiesChunkNeutral = {
         area=cpsSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -253,12 +253,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.msrcFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=msrcSharedChunkArea
     }
     Universe.msrcFilteredEntitiesChunkNeutral = {
         area=msrcSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -281,7 +281,7 @@ local function addCommandSet()
     }
     Universe.spFilteredTilesPathQuery = {
         area=spSharedAreaChunk,
-        collision_mask="player-layer",
+        collision_mask="player",
         limit = 1
     }
 
@@ -438,7 +438,9 @@ function Upgrade.addUniverseProperties()
         end
 
         for key in pairs(Universe) do
-            Universe[key] = nil
+            if key ~= "awake" and key ~= "modAddedTick" and key ~= "safeEntities" then
+                Universe[key] = nil
+            end
         end
 
         storage.universePropertyVersion = 0
@@ -449,6 +451,8 @@ function Upgrade.addUniverseProperties()
 
         Universe.safeEntities = {}
         Universe.flushPendingChunks = false
+        Universe.random = game.create_random_generator(Constants.ENEMY_SEED)
+        Universe.evolutionLevel = 0
 
         Universe.aiPointsScaler = settings.global["rampant--aiPointsScaler"].value
 
@@ -512,7 +516,7 @@ function Upgrade.addUniverseProperties()
         Universe.hiveIterator = nil
 
         Universe.baseId = 0
-        Universe.awake = false
+        -- awake is managed by onInit/onLoad, not property migration
 
         Universe.recycleBaseIterator = nil
 
@@ -541,7 +545,7 @@ end
 
 function Upgrade.attempt()
     -- Check if forces are available using pcall
-    local ok, evolution = pcall(function() return game.forces.enemy.evolution_factor end)
+    local ok, evolution = pcall(function() return game.forces.enemy.get_evolution_factor(game.surfaces[1]) end)
     if not ok or not evolution then
         log("Upgrade: Skipping - forces not ready")
         return

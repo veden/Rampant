@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local streamUtils = {}
 
 -- module code
@@ -65,7 +64,7 @@ function streamUtils.makeStream(attributes)
                         axially_symmetrical = false,
                         direction_count = 1,
                         animation_speed = 2,
-                        shift = {0, 0},
+                        shift = {0, 0}
                     },
 
                 shadow =
@@ -138,20 +137,7 @@ function streamUtils.makeAcidStream(info)
             tint = attributes.tint2,
             priority = "high",
             scale = attributes.scale,
-            animation_speed = 1,
-            hr_version =
-                {
-                    filename = "__base__/graphics/entity/acid-projectile/hr-acid-projectile-head.png",
-                    line_length = 5,
-                    width = 42,
-                    height = 164,
-                    frame_count = 15,
-                    shift = util.mul_shift(util.by_pixel(-2, 31), attributes.scale),
-                    tint = attributes.tint2,
-                    priority = "high",
-                    scale = 0.5 * attributes.scale,
-                    animation_speed = 1,
-                }
+            animation_speed = 1
         },
         spine_animation = {
             filename = "__base__/graphics/entity/acid-projectile/acid-projectile-tail.png",
@@ -163,20 +149,7 @@ function streamUtils.makeAcidStream(info)
             tint = attributes.tint2,
             priority = "high",
             scale = attributes.scale,
-            animation_speed = 1,
-            hr_version =
-                {
-                    filename = "__base__/graphics/entity/acid-projectile/hr-acid-projectile-tail.png",
-                    line_length = 5,
-                    width = 132,
-                    height = 20,
-                    frame_count = 15,
-                    shift = util.mul_shift(util.by_pixel(0, -1), attributes.scale),
-                    tint = attributes.tint2,
-                    priority = "high",
-                    scale = 0.5 * attributes.scale,
-                    animation_speed = 1,
-                }
+            animation_speed = 1
         },
         shadow = {
             filename = "__base__/graphics/entity/acid-projectile/acid-projectile-shadow.png",
@@ -188,24 +161,11 @@ function streamUtils.makeAcidStream(info)
             shift = util.mul_shift(util.by_pixel(-2, 30), attributes.scale),
             draw_as_shadow = true,
             scale = attributes.scale,
-            animation_speed = 1,
-            hr_version =
-                {
-                    filename = "__base__/graphics/entity/acid-projectile/hr-acid-projectile-shadow.png",
-                    line_length = 15,
-                    width = 42,
-                    height = 164,
-                    frame_count = 15,
-                    shift = util.mul_shift(util.by_pixel(-2, 31), attributes.scale),
-                    draw_as_shadow = true,
-                    priority = "high",
-                    scale = 0.5 * attributes.scale,
-                    animation_speed = 1,
-                }
+            animation_speed = 1
         },
 
         oriented_particle = true,
-        shadow_scale_enabled = true,
+        shadow_scale_enabled = true
     }
 
     data:extend({

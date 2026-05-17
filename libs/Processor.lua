@@ -766,9 +766,9 @@ function Processor.processDirtyChunk(chunk, tick, priority)
     return true, neighborsToMark
 end
 
--- PUBLIC: Process dirty chunks (reads global.universe)
+-- PUBLIC: Process dirty chunks (reads storage.universe)
 function Processor.processDirtyChunks(tick, universe)
-    universe = universe or global.universe
+    universe = universe or storage.universe
     local processed = 0
     local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
     
@@ -800,14 +800,16 @@ end
 
 -- Helper to get chunk by ID (from any map)
 function MapUtils.getChunkById(chunkId, universe)
-    universe = universe or global.universe
+    universe = universe or storage.universe
     if not universe or not universe.maps then return nil end
     for surfaceIndex, map in pairs(universe.maps) do
         if map then
             for x, xChunks in pairs(map) do
-                for y, chunk in pairs(xChunks) do
-                    if chunk.id == chunkId then
-                        return chunk
+                if type(xChunks) == "table" then
+                    for y, chunk in pairs(xChunks) do
+                        if chunk.id == chunkId then
+                            return chunk
+                        end
                     end
                 end
             end

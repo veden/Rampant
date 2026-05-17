@@ -13,7 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 local fireUtils = {}
 
 -- imported
@@ -76,7 +75,7 @@ function fireUtils.makeSpreadEffect(attributes)
                             scale = 0.6,
                             shift = {-0.109375 * 0.6, -1.1875 * 0.6},
                             animation_speed = 0.5,
-                            tint = makeColor(0,1,0, 0.75),
+                            tint = makeColor(0,1,0, 0.75)
                         },
                         {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-2.png",
@@ -89,8 +88,8 @@ function fireUtils.makeSpreadEffect(attributes)
                             scale = 0.6,
                             shift = {-0.203125 * 0.6, -1.21875 * 0.6},
                             animation_speed = 0.5,
-                            tint = makeColor(0,1,0, 0.75),
-                        },
+                            tint = makeColor(0,1,0, 0.75)
+                        }
                     },
 
                 trivial_smoke =
@@ -103,7 +102,7 @@ function fireUtils.makeSpreadEffect(attributes)
                             starting_vertical_speed = 0.008,
                             starting_vertical_speed_deviation = 0.05,
                             starting_frame_deviation = 60,
-                            height = -0.5,
+                            height = -0.5
                         }
                     },
 
@@ -113,7 +112,7 @@ function fireUtils.makeSpreadEffect(attributes)
                     {
                         sound = { filename = "__base__/sound/furnace.ogg" },
                         max_sounds_per_type = 3
-                    },
+                    }
     }})
     return name
 end
@@ -214,7 +213,7 @@ function fireUtils.makeFire(attributes)
                             axially_symmetrical = false,
                             direction_count = 1,
                             shift = {-0.109375, -1.1875},
-                            animation_speed = 0.5,
+                            animation_speed = 0.5
                         },
                         {
                             filename = "__base__/graphics/entity/fire-flame/fire-smoke-source-2.png",
@@ -225,8 +224,8 @@ function fireUtils.makeFire(attributes)
                             axially_symmetrical = false,
                             direction_count = 1,
                             shift = {-0.203125, -1.21875},
-                            animation_speed = 0.5,
-                        },
+                            animation_speed = 0.5
+                        }
                     },
 
                 burnt_patch_pictures = create_burnt_patch_pictures(attributes),
@@ -240,7 +239,7 @@ function fireUtils.makeFire(attributes)
                     -- { tile = "sand", alpha = 0.24 },
                     -- { tile = "sand-dark", alpha = 0.28 },
                     { tile = "stone-path", alpha = 0.26 },
-                    { tile = "concrete", alpha = 0.24 },
+                    { tile = "concrete", alpha = 0.24 }
                 },
 
                 smoke =
@@ -254,7 +253,7 @@ function fireUtils.makeFire(attributes)
                             starting_vertical_speed_deviation = 0.005,
                             vertical_speed_slowdown = 0.99,
                             starting_frame_deviation = 60,
-                            height = -0.5,
+                            height = -0.5
                         }
                     },
 
@@ -264,8 +263,7 @@ function fireUtils.makeFire(attributes)
                     {
                         sound = { filename = "__base__/sound/furnace.ogg" },
                         max_sounds_per_type = 3
-                    },
-
+                    }
                  }
                 }
     )
@@ -364,18 +362,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 26,
                                 shift = util.mul_shift(util.by_pixel(-12, -10), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-1.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 210,
-                                    height = 224,
-                                    frame_count = 26,
-                                    shift = util.mul_shift(util.by_pixel(-12, -8), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-1-shadow.png",
@@ -386,20 +373,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 26,
                                 shift = util.mul_shift(util.by_pixel(2, 0), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-1-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 266,
-                                    height = 188,
-                                    frame_count = 26,
-                                    shift = util.mul_shift(util.by_pixel(2, 2), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -413,18 +389,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(-10, -18), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-2.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 174,
-                                    height = 150,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(-9, -17), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-2-shadow.png",
@@ -435,20 +400,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(6, 28), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-2-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 238,
-                                    height = 266,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(6, 29), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -462,18 +416,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(22, -16), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-3.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 236,
-                                    height = 208,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(22, -16), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-3-shadow.png",
@@ -484,20 +427,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(16, 2), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-3-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 214,
-                                    height = 140,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(17, 2), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -511,18 +443,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 24,
                                 shift = util.mul_shift(util.by_pixel(16, -20), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-4.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 252,
-                                    height = 154,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(17, -19), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-4-shadow.png",
@@ -533,21 +454,10 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 24,
                                 shift = util.mul_shift(util.by_pixel(18, -16), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = attributes.scale,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-4-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 248,
-                                    height = 160,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(18, -16), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * attributes.scale,
-                                }
+                                scale = attributes.scale
                             }
                         }
-                },
+                }
             },
 
         secondary_pictures =
@@ -564,18 +474,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 26,
                                 shift = util.mul_shift(util.by_pixel(-12, -10), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = attributes.ground_patch_scale ,
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-1.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 210,
-                                    height = 224,
-                                    frame_count = 26,
-                                    shift = util.mul_shift(util.by_pixel(-12, -8), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = attributes.ground_patch_scale 
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-1-shadow.png",
@@ -586,20 +485,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 26,
                                 shift = util.mul_shift(util.by_pixel(2, 0), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-1-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 266,
-                                    height = 188,
-                                    frame_count = 26,
-                                    shift = util.mul_shift(util.by_pixel(2, 2), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -613,18 +501,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(-10, -18), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-2.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 174,
-                                    height = 150,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(-9, -17), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-2-shadow.png",
@@ -635,20 +512,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(6, 28), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-2-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 238,
-                                    height = 266,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(6, 29), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -662,18 +528,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(22, -16), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-3.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 236,
-                                    height = 208,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(22, -16), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-3-shadow.png",
@@ -684,20 +539,9 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 29,
                                 shift = util.mul_shift(util.by_pixel(16, 2), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-3-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 214,
-                                    height = 140,
-                                    frame_count = 29,
-                                    shift = util.mul_shift(util.by_pixel(17, 2), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             }
-                        },
+                        }
                 },
                 {
                     layers =
@@ -711,18 +555,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 24,
                                 shift = util.mul_shift(util.by_pixel(16, -20), (attributes.scale or 1)),
                                 tint = attributes.tint2,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-4.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 252,
-                                    height = 154,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(17, -19), (attributes.scale or 1)),
-                                    tint = attributes.tint2,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             },
                             {
                                 filename = "__base__/graphics/entity/acid-splash/acid-splash-4-shadow.png",
@@ -733,18 +566,7 @@ function fireUtils.makeAcidSplashFire(attributes, stickerName)
                                 frame_count = 24,
                                 shift = util.mul_shift(util.by_pixel(18, -16), (attributes.scale or 1)),
                                 draw_as_shadow = true,
-                                scale = (attributes.scale or 1),
-                                hr_version = {
-                                    filename = "__base__/graphics/entity/acid-splash/hr-acid-splash-4-shadow.png",
-                                    line_length = 8,
-                                    direction_count = 1,
-                                    width = 248,
-                                    height = 160,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(18, -16), (attributes.scale or 1)),
-                                    draw_as_shadow = true,
-                                    scale = 0.5 * (attributes.scale or 1),
-                                }
+                                scale = (attributes.scale or 1)
                             }
                         }
                 }

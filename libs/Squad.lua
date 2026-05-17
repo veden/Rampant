@@ -1019,9 +1019,9 @@ function Squad.calculateKamikazeSquadThreshold(memberCount, attackWaveMaxSize, e
     return threshold
 end
 
--- PUBLIC: Wrapper that reads global.universe
+-- PUBLIC: Wrapper that reads storage.universe
 function Squad.calculateKamikazeSquadThresholdWrapper(squad, tick)
-    local universe = global.universe
+    local universe = storage.universe
     return Squad.calculateKamikazeSquadThreshold(squad.memberCount, universe.attackWaveMaxSize, universe.evolutionLevel)
 end
 
@@ -1031,9 +1031,9 @@ function Squad.calculateKamikazeSettlerThreshold(memberCount, expansionMaxSize, 
     return threshold
 end
 
--- PUBLIC: Wrapper that reads global.universe
+-- PUBLIC: Wrapper that reads storage.universe
 function Squad.calculateKamikazeSettlerThresholdWrapper(squad, tick)
-    local universe = global.universe
+    local universe = storage.universe
     return Squad.calculateKamikazeSettlerThreshold(squad.memberCount, universe.expansionMaxSize, universe.evolutionLevel)
 end
 

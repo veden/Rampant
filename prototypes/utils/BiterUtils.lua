@@ -18,18 +18,14 @@ local biterUtils = {}
 
 local sounds = require("__base__.prototypes.entity.sounds")
 local particleUtils = require("ParticleUtils")
-local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
 local wormUtils = require("WormUtils")
 
--- Animation functions still needed for worms/spawners
+-- Animation functions still needed for worms
 local biterdieanimation = unitUtils.biterdieanimation
 local biterattackanimation = unitUtils.biterattackanimation
 local biterrunanimation = unitUtils.biterrunanimation
 local spitter_alternative_attacking_animation_sequence = unitUtils.spitter_alternative_attacking_animation_sequence
-local spawner_integration = unitSpawnerUtils.spawner_integration
-local spawner_idle_animation = unitSpawnerUtils.spawner_idle_animation
-local spawner_die_animation = unitSpawnerUtils.spawner_die_animation
 local wormFoldedAnimation = wormUtils.wormFoldedAnimation
 local wormPreparingAnimation = wormUtils.wormPreparingAnimation
 local wormPreparedAnimation = wormUtils.wormPreparedAnimation
@@ -98,41 +94,59 @@ local function makeBiterCorpse(attributes)
     return name
 end
 
+-- Apply custom tints and scale to spawner animation layers (inherited from vanilla)
+local function applySpawnerTints(animations, tint, scale, tint2)
+    if not animations then return end
+    for _, anim in pairs(animations) do
+        if anim.layers then
+            for _, layer in pairs(anim.layers) do
+                layer.scale = scale
+                -- Skip shadow layers
+                if layer.draw_as_shadow then
+                    goto continue_layer
+                end
+                -- Check for mask flag
+                local isMask = false
+                if layer.flags then
+                    for _, f in pairs(layer.flags) do
+                        if f == "mask" then isMask = true break end
+                    end
+                end
+                -- Apply tint2 to mask layers, primary tint to main layers
+                layer.tint = isMask and tint2 or tint
+                ::continue_layer::
+            end
+        end
+    end
+end
+
 local function makeUnitSpawnerCorpse(attributes)
     local name = "spawner-" .. attributes.faction .. "-" .. attributes.type .. "-" .. attributes.effectiveLevel .. "-corpse-rampant"
     if not corpseSet[name] then
         corpseSet[name] = true
-        -- corpseCount = corpseCount + 1
-        -- print(corpseCount)
     else
         return name
     end
 
-    data:extend({
-            {
-                type = "corpse",
-                name = name,
-                flags = {"placeable-neutral", "placeable-off-grid", "not-on-map"},
-                icon = "__base__/graphics/icons/biter-spawner-corpse.png",
-                icon_size = 64,
-                icon_mipmaps = 4,
-                collision_box = {{-2, -2}, {2, 2}},
-                selection_box = {{-2, -2}, {2, 2}},
-                selectable_in_game = false,
-                dying_speed = 0.04,
-                time_before_removed = 15 * 60 * 60,
-                subgroup="corpses",
-                order = "c[corpse]-c[spitter-spawner]",
-                final_render_layer = "remnants",
-                animation =
-                    {
-                        spawner_die_animation(0, attributes.tint, attributes.scale, attributes.tint2),
-                        spawner_die_animation(1, attributes.tint, attributes.scale, attributes.tint2),
-                        spawner_die_animation(2, attributes.tint, attributes.scale, attributes.tint2),
-                        spawner_die_animation(3, attributes.tint, attributes.scale, attributes.tint2)
-                    }
-            }
-    })
+    -- Deep copy from vanilla spawner corpse
+    local vanillaName = (attributes.type == "spitter-spawner") and "spitter-spawner-corpse" or "biter-spawner-corpse"
+    local vanillaPrototype = data.raw.corpse[vanillaName]
+    local corpse = util.table.deepcopy(vanillaPrototype)
+
+    corpse.name = name
+    corpse.icon = "__base__/graphics/icons/biter-spawner-corpse.png"
+    corpse.icon_size = 64
+    corpse.icon_mipmaps = 4
+    corpse.dying_speed = 0.04
+    corpse.time_before_removed = 15 * 60 * 60
+    corpse.order = "c[corpse]-c[spitter-spawner]"
+    corpse.final_render_layer = "remnants"
+
+    -- Apply custom tints to death and decay animations
+    applySpawnerTints(corpse.animation, attributes.tint, attributes.scale, attributes.tint2)
+    applySpawnerTints(corpse.decay_animation, attributes.tint, attributes.scale, attributes.tint2)
+
+    data:extend({corpse})
     return name
 end
 
@@ -346,149 +360,82 @@ function biterUtils.makeUnitSpawner(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    local o = {
-        type = "unit-spawner",
-        name = attributes.name .. "-rampant",
-        localised_name = biterUtils.getLocalisedName(attributes),
-        localised_description = biterUtils.getLocalisedDescription(attributes),
-        icon = "__base__/graphics/icons/biter-spawner.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        flags = {"placeable-player", "placeable-enemy", "not-repairable"},
-        max_health = attributes.health,
-        order="b-b-g",
-        subgroup="enemies",
-        loot = attributes.loot,
-        resistances = resistances,
-        working_sound =
-            {
-                sound =
+
+    -- Deep copy from vanilla spawner prototype
+    local vanillaName = (attributes.type == "spitter-spawner") and "spitter-spawner" or "biter-spawner"
+    local vanillaPrototype = data.raw["unit-spawner"][vanillaName]
+    local entity = util.table.deepcopy(vanillaPrototype)
+
+    -- Override fields that differ from vanilla
+    entity.name = attributes.name .. "-rampant"
+    entity.localised_name = biterUtils.getLocalisedName(attributes)
+    entity.localised_description = biterUtils.getLocalisedDescription(attributes)
+    entity.icon = "__base__/graphics/icons/biter-spawner.png"
+    entity.icon_size = 64
+    entity.icon_mipmaps = 4
+    entity.flags = {"placeable-player", "placeable-enemy", "not-repairable"}
+    entity.max_health = attributes.health
+    entity.order = "b-b-g"
+    entity.loot = attributes.loot
+    entity.resistances = resistances
+    entity.working_sound =
+        {
+            sound =
+                {
                     {
-                        {
-                            filename = "__base__/sound/creatures/spawner.ogg",
-                            volume = 0.2 + (0.05 * attributes.effectiveLevel)
-                        }
-                    },
-                apparent_volume = 0.4 + (0.1 * attributes.effectiveLevel)
-            },
-        dying_sound =
+                        filename = "__base__/sound/creatures/spawner.ogg",
+                        volume = 0.2 + (0.05 * attributes.effectiveLevel)
+                    }
+                },
+            apparent_volume = 0.4 + (0.1 * attributes.effectiveLevel)
+        }
+    entity.dying_sound =
+        {
             {
-                {
-                    filename = "__base__/sound/creatures/spawner-death-1.ogg",
-                    volume = 0.4 + (0.05 * attributes.effectiveLevel)
-                },
-                {
-                    filename = "__base__/sound/creatures/spawner-death-2.ogg",
-                    volume = 0.4 + (0.05 * attributes.effectiveLevel)
-                }
+                filename = "__base__/sound/creatures/spawner-death-1.ogg",
+                volume = 0.4 + (0.05 * attributes.effectiveLevel)
             },
-        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        healing_per_tick = attributes.healing or 0.02,
-        collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}},
-        selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}},
-        -- in ticks per 1 pu
-        absorptions_per_second = { pollution = { absolute = attributes.pollutionAbsorptionAbs or 20, proportional = attributes.pollutionAbsorptionPro or 0.01 } },
-        map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}},
-        corpse = makeUnitSpawnerCorpse(attributes),
-        graphics_set = {},
-        dying_explosion = attributes.explosion or "blood-explosion-huge",
-        min_darkness_to_spawn = attributes.minSpawnDarkness or 0,
-        max_darkness_to_spawn = attributes.maxSpawnDarkness or 1,
-        dying_trigger_effect = attributes.dyingEffect,
-        max_count_of_owned_units = attributes.unitsOwned or 7,
-        max_friends_around_to_spawn = attributes.unitsToSpawn or 5,
-        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        animations =
             {
-                spawner_idle_animation(0, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
-                spawner_idle_animation(1, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
-                spawner_idle_animation(2, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint),
-                spawner_idle_animation(3, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint)
-            },
-        integration =
-            {
-                sheet = spawner_integration(attributes.scale)
-            },
-        result_units = attributes.unitSet,
-        -- With zero evolution the spawn rate is 6 seconds, with max evolution it is 2.5 seconds
-        spawning_cooldown = attributes.spawningCooldown or ((attributes.spawningCooldownStart and attributes.spawningCooldownEnd) and {attributes.spawningCooldownStart, attributes.spawningCooldownEnd}) or {360, 150},
-        spawning_radius = attributes.spawningRadius or 10,
-        spawning_spacing = attributes.spawningSpacing or 3,
-        max_spawn_shift = 0,
-        max_richness_for_spawn_shift = 100,
-        build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
-        call_for_help_radius = attributes.helpRadius or 50,
-        spawn_decorations_on_expansion = true,
-        spawn_decoration =
-            {
-                {
-                    decorative = "light-mud-decal",
-                    spawn_min = 0,
-                    spawn_max = 2,
-                    spawn_min_radius = 2,
-                    spawn_max_radius = 5,
-                },
-                {
-                    decorative = "dark-mud-decal",
-                    spawn_min = 0,
-                    spawn_max = 3,
-                    spawn_min_radius = 2,
-                    spawn_max_radius = 6,
-                },
-                {
-                    decorative = "enemy-decal",
-                    spawn_min = 3,
-                    spawn_max = 5,
-                    spawn_min_radius = 2,
-                    spawn_max_radius = 7,
-                },
-                {
-                    decorative = "enemy-decal-transparent",
-                    spawn_min = 4,
-                    spawn_max = 20,
-                    spawn_min_radius = 2,
-                    spawn_max_radius = 14,
-                    radius_curve = 0.9
-                },
-                {
-                    decorative = "muddy-stump",
-                    spawn_min = 2,
-                    spawn_max = 5,
-                    spawn_min_radius = 3,
-                    spawn_max_radius = 6,
-                },
-                {
-                    decorative = "red-croton",
-                    spawn_min = 2,
-                    spawn_max = 8,
-                    spawn_min_radius = 3,
-                    spawn_max_radius = 6,
-                },
-                {
-                    decorative = "red-pita",
-                    spawn_min = 1,
-                    spawn_max = 5,
-                    spawn_min_radius = 3,
-                    spawn_max_radius = 6,
-                },
-                {
-                    decorative = "lichen-decal",
-                    spawn_min = 1,
-                    spawn_max = 2,
-                    spawn_min_radius = 2,
-                    spawn_max_radius = 7
-                }
+                filename = "__base__/sound/creatures/spawner-death-2.ogg",
+                volume = 0.4 + (0.05 * attributes.effectiveLevel)
             }
-    }
+        }
+    entity.damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil
+    entity.healing_per_tick = attributes.healing or 0.02
+    entity.collision_box = {{-3.0 * attributes.scale, -2.0 * attributes.scale}, {2.0 * attributes.scale, 2.0 * attributes.scale}}
+    entity.selection_box = {{-3.5 * attributes.scale, -2.5 * attributes.scale}, {2.5 * attributes.scale, 2.5 * attributes.scale}}
+    entity.absorptions_per_second = { pollution = { absolute = attributes.pollutionAbsorptionAbs or 20, proportional = attributes.pollutionAbsorptionPro or 0.01 } }
+    entity.map_generator_bounding_box = {{-4.2 * attributes.scale, -3.2 * attributes.scale}, {3.2 * attributes.scale, 3.2 * attributes.scale}}
+    entity.corpse = makeUnitSpawnerCorpse(attributes)
+    entity.dying_explosion = attributes.explosion or "blood-explosion-huge"
+    entity.min_darkness_to_spawn = attributes.minSpawnDarkness or 0
+    entity.max_darkness_to_spawn = attributes.maxSpawnDarkness or 1
+    entity.dying_trigger_effect = attributes.dyingEffect
+    entity.max_count_of_owned_units = attributes.unitsOwned or 7
+    entity.max_friends_around_to_spawn = attributes.unitsToSpawn or 5
+    entity.enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil
+    entity.result_units = attributes.unitSet
+    entity.spawning_cooldown = attributes.spawningCooldown or ((attributes.spawningCooldownStart and attributes.spawningCooldownEnd) and {attributes.spawningCooldownStart, attributes.spawningCooldownEnd}) or {360, 150}
+    entity.spawning_radius = attributes.spawningRadius or 10
+    entity.spawning_spacing = attributes.spawningSpacing or 3
+    entity.build_base_evolution_requirement = attributes.evolutionRequirement or 0.0
+    entity.call_for_help_radius = attributes.helpRadius or 50
+
+    -- Apply custom tints to inherited animations
+    applySpawnerTints(entity.graphics_set.animations, attributes.tint, attributes.scale, attributes.tint2 or attributes.tint)
+
+    -- Remove integration (uses broken sprite refs)
+    entity.integration = nil
+
     if attributes.autoplace then
-        o["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
+        entity["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
     end
     if attributes.appendFlags then
         for flag in pairs(attributes.appendFlags) do
-            o.flags[#o.flags+1] = flag
+            entity.flags[#entity.flags+1] = flag
         end
     end
-    return o
+    return entity
 end
 
 function biterUtils.makeWorm(attributes)

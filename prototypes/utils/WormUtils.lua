@@ -30,20 +30,7 @@ function wormUtils.wormFoldedAnimation(scale, tint, tint2)
                         shift = util.mul_shift(util.by_pixel(0, 4), scale),
                         direction_count = 1,
                         tint = tint,
-                        scale = scale,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-folded.png",
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 130,
-                                height = 120,
-                                frame_count = 9,
-                                shift = util.mul_shift(util.by_pixel(0, 4), scale),
-                                direction_count = 1,
-                                tint = tint,
-                                scale = scale * 0.5,
-                            }
+                        scale = scale
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-folded-mask.png",
@@ -56,21 +43,7 @@ function wormUtils.wormFoldedAnimation(scale, tint, tint2)
                         shift = util.mul_shift(util.by_pixel(0, 6), scale),
                         scale = scale,
                         direction_count = 1,
-                        tint = tint2,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-folded-mask.png",
-                                flags = { "mask" },
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 130,
-                                height = 108,
-                                frame_count = 9,
-                                shift = util.mul_shift(util.by_pixel(0, 7), scale),
-                                scale = scale * 0.5,
-                                direction_count = 1,
-                                tint = tint2
-                            }
+                        tint = tint2
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-folded-shadow.png",
@@ -82,21 +55,8 @@ function wormUtils.wormFoldedAnimation(scale, tint, tint2)
                         shift = util.mul_shift(util.by_pixel(4, -4), scale),
                         direction_count = 1,
                         scale = scale,
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-folded-shadow.png",
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 116,
-                                height = 68,
-                                frame_count = 9,
-                                shift = util.mul_shift(util.by_pixel(5, -4), scale),
-                                direction_count = 1,
-                                scale = scale * 0.5,
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -116,20 +76,7 @@ function wormUtils.wormPreparingAnimation(scale, tint, run_mode, tint2)
                         run_mode = run_mode,
                         scale = scale,
                         tint = tint,
-                        direction_count = 1,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-preparing.png",
-                                width = 188,
-                                height = 304,
-                                line_length = 6,
-                                frame_count = 18,
-                                shift = util.mul_shift(util.by_pixel(0, -42), scale),
-                                run_mode = run_mode,
-                                scale = 0.5 * scale,
-                                tint = tint,
-                                direction_count = 1,
-                            }
+                        direction_count = 1
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-preparing-mask.png",
@@ -142,21 +89,7 @@ function wormUtils.wormPreparingAnimation(scale, tint, run_mode, tint2)
                         run_mode = run_mode,
                         scale = scale,
                         direction_count = 1,
-                        tint = tint2,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-preparing-mask.png",
-                                flags = { "mask" },
-                                line_length = 6,
-                                width = 188,
-                                height = 248,
-                                frame_count = 18,
-                                shift = util.mul_shift(util.by_pixel(0, -28), scale),
-                                run_mode = run_mode,
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                tint = tint2,
-                            }
+                        tint = tint2
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-preparing-shadow.png",
@@ -168,21 +101,8 @@ function wormUtils.wormPreparingAnimation(scale, tint, run_mode, tint2)
                         run_mode = run_mode,
                         scale = scale,
                         direction_count = 1,
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-preparing-shadow.png",
-                                width = 410,
-                                height = 124,
-                                line_length = 6,
-                                frame_count = 18,
-                                shift = util.mul_shift(util.by_pixel(55, -4), scale),
-                                run_mode = run_mode,
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -202,20 +122,7 @@ function wormUtils.wormPreparedAnimation(scale, tint, tint2)
                         scale = scale,
                         direction_count = 1,
                         shift = util.mul_shift(util.by_pixel(-4, -42), scale),
-                        tint = tint,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared.png",
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 190,
-                                height = 300,
-                                frame_count = 9,
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                tint = tint,
-                                shift = util.mul_shift(util.by_pixel(-3, -41), scale),
-                            }
+                        tint = tint
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-prepared-mask.png",
@@ -228,21 +135,7 @@ function wormUtils.wormPreparedAnimation(scale, tint, tint2)
                         shift = util.mul_shift(util.by_pixel(-4, -32), scale),
                         scale = scale,
                         direction_count = 1,
-                        tint = tint2,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared-mask.png",
-                                flags = { "mask" },
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 190,
-                                height = 268,
-                                frame_count = 9,
-                                shift = util.mul_shift(util.by_pixel(-3, -33), scale),
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                tint = tint2,
-                            }
+                        tint = tint2
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-prepared-shadow.png",
@@ -254,21 +147,8 @@ function wormUtils.wormPreparedAnimation(scale, tint, tint2)
                         scale = scale,
                         direction_count = 1,
                         shift = util.mul_shift(util.by_pixel(52, -6), scale),
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared-shadow.png",
-                                run_mode = "forward-then-backward",
-                                line_length = 9,
-                                width = 408,
-                                height = 122,
-                                frame_count = 9,
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                shift = util.mul_shift(util.by_pixel(52, -6), scale),
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -288,20 +168,7 @@ function wormUtils.wormPreparedAlternativeAnimation(scale, tint, tint2)
                         scale = scale,
                         direction_count = 1,
                         tint = tint,
-                        shift = util.mul_shift(util.by_pixel(-2, -48), scale),
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared-alternative.png",
-                                line_length = 6,
-                                width = 182,
-                                height = 324,
-                                frame_count = 17,
-                                frame_sequence = alternate_frame_sequence,
-                                scale = 0.5 * scale,
-                                tint = tint,
-                                direction_count = 1,
-                                shift = util.mul_shift(util.by_pixel(-2, -47), scale),
-                            }
+                        shift = util.mul_shift(util.by_pixel(-2, -48), scale)
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-prepared-alternative-mask.png",
@@ -314,21 +181,7 @@ function wormUtils.wormPreparedAlternativeAnimation(scale, tint, tint2)
                         shift = util.mul_shift(util.by_pixel(-2, -38), scale),
                         scale = scale,
                         direction_count = 1,
-                        tint = tint2,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared-alternative-mask.png",
-                                flags = { "mask" },
-                                line_length = 6,
-                                width = 182,
-                                height = 288,
-                                frame_count = 17,
-                                frame_sequence = alternate_frame_sequence,
-                                shift = util.mul_shift(util.by_pixel(-2, -38), scale),
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                tint = tint2,
-                            }
+                        tint = tint2
                     },
                     {
                         filename = "__base__/graphics/entity/worm/worm-prepared-alternative-shadow.png",
@@ -340,21 +193,8 @@ function wormUtils.wormPreparedAlternativeAnimation(scale, tint, tint2)
                         scale = scale,
                         direction_count = 1,
                         shift = util.mul_shift(util.by_pixel(56, -6), scale),
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filename = "__base__/graphics/entity/worm/hr-worm-prepared-alternative-shadow.png",
-                                line_length = 6,
-                                width = 424,
-                                height = 120,
-                                frame_count = 17,
-                                frame_sequence = alternate_frame_sequence,
-                                scale = 0.5 * scale,
-                                direction_count = 1,
-                                shift = util.mul_shift(util.by_pixel(57, -6), scale),
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -367,15 +207,15 @@ function wormUtils.wormStartAttackAnimation(scale, tint, tint2)
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-10.png"
                             },
                         slice = 4,
@@ -388,47 +228,20 @@ function wormUtils.wormStartAttackAnimation(scale, tint, tint2)
                         direction_count = 16,
                         tint = tint,
                         shift = util.mul_shift(util.by_pixel(-8, -30), scale),
-                        scale = scale,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 480,
-                                height = 440,
-                                tint = tint,
-                                frame_count = 10,
-                                frame_sequence = start_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(-8, -29), scale),
-                                scale = 0.5 * scale,
-                            }
+                        scale = scale
                     },
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-mask-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-mask-10.png"
                             },
                         slice = 4,
@@ -441,47 +254,20 @@ function wormUtils.wormStartAttackAnimation(scale, tint, tint2)
                         direction_count = 16,
                         shift = util.mul_shift(util.by_pixel(-8, -28), scale),
                         tint = tint2,
-                        scale = scale,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 388,
-                                height = 366,
-                                frame_count = 10,
-                                frame_sequence = start_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(-7, -27), scale),
-                                tint = tint2,
-                                scale = 0.5 * scale,
-                            }
+                        scale = scale
                     },
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-shadow-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-shadow-10.png"
                             },
                         slice = 4,
@@ -494,35 +280,8 @@ function wormUtils.wormStartAttackAnimation(scale, tint, tint2)
                         direction_count = 16,
                         shift = util.mul_shift(util.by_pixel(38, -2), scale),
                         scale = scale,
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 618,
-                                height = 350,
-                                frame_count = 10,
-                                frame_sequence = start_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(38, -2), scale),
-                                scale = 0.5 * scale,
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -535,15 +294,15 @@ function wormUtils.wormEndAttackAnimation(scale, tint, tint2)
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-10.png"
                             },
                         slice = 4,
@@ -556,47 +315,20 @@ function wormUtils.wormEndAttackAnimation(scale, tint, tint2)
                         frame_sequence = end_attack_frame_sequence,
                         direction_count = 16,
                         shift = util.mul_shift(util.by_pixel(-8, -30), scale),
-                        scale = scale,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 480,
-                                height = 440,
-                                tint = tint,
-                                frame_count = 10,
-                                frame_sequence = end_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(-8, -29), scale),
-                                scale = 0.5 * scale,
-                            }
+                        scale = scale
                     },
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-mask-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-mask-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-mask-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-mask-10.png"
                             },
                         slice = 4,
@@ -609,47 +341,20 @@ function wormUtils.wormEndAttackAnimation(scale, tint, tint2)
                         direction_count = 16,
                         shift = util.mul_shift(util.by_pixel(-8, -28), scale),
                         tint = tint2,
-                        scale = scale,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-mask-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 388,
-                                height = 366,
-                                frame_count = 10,
-                                frame_sequence = end_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(-7, -27), scale),
-                                tint = tint2,
-                                scale = 0.5 * scale,
-                            }
+                        scale = scale
                     },
                     {
                         filenames =
                             {
-                                "__base__/graphics/entity/worm/worm-attack-shadow-01.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-02.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-03.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-04.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-05.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-06.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-07.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-08.png",
-                                "__base__/graphics/entity/worm/worm-attack-shadow-09.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-1.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-2.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-3.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-4.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-5.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-6.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-7.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-8.png",
+                                "__base__/graphics/entity/worm/worm-attack-shadow-9.png",
                                 "__base__/graphics/entity/worm/worm-attack-shadow-10.png"
                             },
                         slice = 4,
@@ -662,35 +367,8 @@ function wormUtils.wormEndAttackAnimation(scale, tint, tint2)
                         direction_count = 16,
                         shift = util.mul_shift(util.by_pixel(38, -2), scale),
                         scale = scale,
-                        draw_as_shadow = true,
-                        hr_version =
-                            {
-                                filenames =
-                                    {
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-01.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-02.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-03.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-04.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-05.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-06.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-07.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-08.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-09.png",
-                                        "__base__/graphics/entity/worm/hr-worm-attack-shadow-10.png"
-                                    },
-                                slice = 4,
-                                lines_per_file = 4,
-                                line_length = 4,
-                                width = 618,
-                                height = 350,
-                                frame_count = 10,
-                                frame_sequence = end_attack_frame_sequence,
-                                direction_count = 16,
-                                shift = util.mul_shift(util.by_pixel(38, -2), scale),
-                                scale = 0.5 * scale,
-                                draw_as_shadow = true,
-                            }
-                    },
+                        draw_as_shadow = true
+                    }
                 }
         }
 end
@@ -710,19 +388,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(18, -26), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-01.png",
-                                    line_length = 6,
-                                    width = 262,
-                                    height = 372,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(19, -26), scale),
-                                    direction_count = 1,
-                                    tint = tint,
-                                    scale = 0.5 * scale,
-                                }
+                            tint = tint
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-01-mask.png",
@@ -734,20 +400,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(15, -19), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint2,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-01-mask.png",
-                                    flags = { "mask" },
-                                    line_length = 6,
-                                    width = 250,
-                                    height = 318,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(15, -19), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    tint = tint2,
-                                }
+                            tint = tint2
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-01-shadow.png",
@@ -758,21 +411,9 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(54, 16), scale),
                             direction_count = 1,
                             scale = scale,
-                            draw_as_shadow = true,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-01-shadow.png",
-                                    line_length = 6,
-                                    width = 404,
-                                    height = 210,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(54, 16), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    draw_as_shadow = true,
-                                }
-                        },
-                    },
+                            draw_as_shadow = true
+                        }
+                    }
             },
             {
                 layers=
@@ -786,19 +427,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(-48, -42), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-02.png",
-                                    line_length = 6,
-                                    width = 362,
-                                    height = 322,
-                                    frame_count = 24,
-                                    tint = tint,
-                                    shift = util.mul_shift(util.by_pixel(-47, -41), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                }
+                            tint = tint
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-02-mask.png",
@@ -810,20 +439,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(-33, -31), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint2,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-02-mask.png",
-                                    flags = { "mask" },
-                                    line_length = 6,
-                                    width = 306,
-                                    height = 282,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(-33, -31), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    tint = tint2,
-                                }
+                            tint = tint2
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-02-shadow.png",
@@ -834,21 +450,9 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(16, 4), scale),
                             direction_count = 1,
                             scale = scale,
-                            draw_as_shadow = true,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-02-shadow.png",
-                                    line_length = 6,
-                                    width = 588,
-                                    height = 160,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(17, 5), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    draw_as_shadow = true,
-                                }
-                        },
-                    },
+                            draw_as_shadow = true
+                        }
+                    }
             },
             {
                 layers=
@@ -862,19 +466,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(16, -48), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-03.png",
-                                    line_length = 6,
-                                    width = 260,
-                                    height = 328,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(16, -48), scale),
-                                    direction_count = 1,
-                                    tint = tint,
-                                    scale = 0.5 * scale,
-                                }
+                            tint = tint
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-03-mask.png",
@@ -886,20 +478,7 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(14, -34), scale),
                             direction_count = 1,
                             scale = scale,
-                            tint = tint2,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-03-mask.png",
-                                    flags = { "mask" },
-                                    line_length = 6,
-                                    width = 246,
-                                    height = 272,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(14, -34), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    tint = tint2,
-                                }
+                            tint = tint2
                         },
                         {
                             filename = "__base__/graphics/entity/worm/worm-die-03-shadow.png",
@@ -910,24 +489,11 @@ function wormUtils.wormDieAnimation(scale, tint, tint2)
                             shift = util.mul_shift(util.by_pixel(52, -34), scale),
                             direction_count = 1,
                             scale = scale,
-                            draw_as_shadow = true,
-                            hr_version =
-                                {
-                                    filename = "__base__/graphics/entity/worm/hr-worm-die-03-shadow.png",
-                                    line_length = 6,
-                                    width = 404,
-                                    height = 224,
-                                    frame_count = 24,
-                                    shift = util.mul_shift(util.by_pixel(53, -32), scale),
-                                    direction_count = 1,
-                                    scale = 0.5 * scale,
-                                    draw_as_shadow = true,
-                                }
-                        },
+                            draw_as_shadow = true
+                        }
                     }
             }
         }
 end
-
 
 return wormUtils

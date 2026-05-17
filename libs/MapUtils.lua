@@ -543,7 +543,7 @@ function MapUtils.applyVictoryScent(chunk, amount)
     addPermanentDeathGenerator(chunk, amount)
 end
 
--- PUBLIC: Disperse victory scent (reads global.universe)
+-- PUBLIC: Disperse victory scent (reads storage.universe)
 function MapUtils.disperseVictoryScent(universe)
     universe = universe or Universe
     local chunkToVictory = universe.chunkToVictory
@@ -645,14 +645,16 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     ) * 0.95
 
     local newResource = 0
-    local resourcePheromoneGenerator = chunk.resourceGenerator or 0
-    if resourcePheromoneGenerator > 0 then
-        newResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
-    end
-    if enemyStructureCount ~= 0 then
-        newResource = newResource * 0.0001
-    end
-    newResource = chunkDeathRating * newResource * 0.9
+        local resourcePheromoneGenerator = chunk.resourceGenerator or 0
+        if resourcePheromoneGenerator > 0 then
+            newResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
+        end
+        if enemyStructureCount ~= 0 then
+            newResource = newResource * 0.0001
+        end
+        -- Diffuse to neighbors like base/enemy so squads can discover from distance
+        newResource = mMax(newResource, chunkResource * 0.9)
+        newResource = chunkDeathRating * newResource * 0.9
 
     return {
         deathGenerator = newDeathGenerator,
@@ -677,7 +679,7 @@ function MapUtils.applyPheromoneUpdates(chunk, updates)
     chunk[RESOURCE_PHEROMONE] = updates.resource
 end
 
--- PUBLIC: Orchestrate pheromone processing (reads global.universe)
+-- PUBLIC: Orchestrate pheromone processing (reads storage.universe)
 function MapUtils.processPheromone(chunk, tick, player)
     if chunk[CHUNK_TICK] > tick then
         return

@@ -84,7 +84,7 @@ function unitUtils.createDrainPylon(map, cause, entity, entityType)
         if conversion then
             local newEntity = map.surface.create_entity({
                     position=entity.position,
-                    name=convertTypeToDrainCrystal(entity.force.evolution_factor, conversion),
+                    name=convertTypeToDrainCrystal(entity.force.get_evolution_factor(entity.surface), conversion),
                     direction=entity.direction
             })
             if (conversion == "pole") then
