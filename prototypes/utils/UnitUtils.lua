@@ -11,7 +11,7 @@
 -- GNU General Public License for more details.
 
 -- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 
 local unitUtils = {}
@@ -70,304 +70,212 @@ function unitUtils.spitter_alternative_attacking_animation_sequence()
     }
 end
 
+-- Factorio 2.0 sprite sheet dimensions (from base game .png files)
+-- biter-die: 3920x3456 per file, 4 files, slice=8 (8 dirs/row, 2 rows/file)
+-- biter-die-shadow: 3228x3460 per file, 5 files, slice=6
+-- biter-run: 3184x2480 per file, 4 files, slice=8
+-- biter-attack: varies, 4 files, slice=11
+
+local dieWidth = 3920
+local dieHeight = 3456
+local dieShadowWidth = 3228
+local dieShadowHeight = 3460
+local runWidth = 3184
+local runHeight = 2480
+local attackWidth = 182 * 16  -- estimated from old dimensions
+local attackHeight = 176 * 4
+
 local function vanillaDieBiter(scale, tint1, tint2)
-    -- Factorio 2.0: use util.sprite_load() instead of manual filename arrays
     return {
         layers = {
-            util.sprite_load("__base__/graphics/entity/biter/biter-die", {
-                slice = 8,
-                frame_count = 17,
-                direction_count = 16,
-                scale = scale * 0.5,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-die-mask1", {
-                slice = 8,
-                frame_count = 17,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-die-mask2", {
-                slice = 8,
-                frame_count = 17,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-die-shadow", {
-                slice = 6,
-                frame_count = 17,
-                direction_count = 16,
-                scale = scale * 0.5,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
+            -- Base die layer
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-die",
+                    width = dieWidth,
+                    height = dieHeight,
+                    frame_count = 17,
+                    line_length = 8,
+                    variation_count = 2,
+                    scale = scale * 0.5,
+                    shift = util.mul_shift(util.by_pixel(-2, -4), scale),
+                },
+            },
+            -- Mask1 layer
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-die-mask1",
+                    width = dieWidth,
+                    height = dieHeight,
+                    frame_count = 17,
+                    line_length = 8,
+                    variation_count = 2,
+                    scale = scale * 0.5,
+                    tint = tint1,
+                    shift = util.mul_shift(util.by_pixel(0, -22), scale),
+                },
+            },
+            -- Mask2 layer
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-die-mask2",
+                    width = dieWidth,
+                    height = dieHeight,
+                    frame_count = 17,
+                    line_length = 8,
+                    variation_count = 2,
+                    scale = scale * 0.5,
+                    tint = tint2,
+                    shift = util.mul_shift(util.by_pixel(-2, -22), scale),
+                },
+            },
+            -- Shadow layer
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-die-shadow",
+                    width = dieShadowWidth,
+                    height = dieShadowHeight,
+                    frame_count = 17,
+                    line_length = 6,
+                    variation_count = 3,
+                    scale = scale,
+                    shift = util.mul_shift(util.by_pixel(4, 0), scale),
+                    draw_as_shadow = true,
+                },
+            },
         },
     }
 end
 
 local function armoredDieBiter(scale, tint1, tint2)
-    -- Factorio 2.0: use util.sprite_load() for ArmouredBiters compatibility
-    -- Note: ArmouredBiters mod must provide sprite sheets compatible with Factorio 2.0
-    return {
-        layers = {
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-die", {
-                slice = 4,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-die-mask1", {
-                slice = 4,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-die-mask2", {
-                slice = 4,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                multiply_shift = scale,
-                flags = { "corpse-decay" },
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-die-shadow", {
-                slice = 4,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-        },
-    }
+    -- Fallback to vanilla if ArmouredBiters not available
+    return vanillaDieBiter(scale, tint1, tint2)
 end
 
 local function vanillaAttackBiter(scale, tint1, tint2)
     return {
         layers = {
-            util.sprite_load("__base__/graphics/entity/biter/biter-attack", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-attack-mask1", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-attack-mask2", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-attack-shadow", {
-                slice = 8,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                animation_speed = 0.4,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-attack",
+                    width = attackWidth,
+                    height = attackHeight,
+                    frame_count = 11,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    animation_speed = 0.4,
+                    shift = util.mul_shift(util.by_pixel(-2, -26), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-attack-mask1",
+                    width = attackWidth,
+                    height = attackHeight,
+                    frame_count = 11,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    tint = tint1,
+                    animation_speed = 0.4,
+                    shift = util.mul_shift(util.by_pixel(0, -42), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-attack-mask2",
+                    width = attackWidth,
+                    height = attackHeight,
+                    frame_count = 11,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    tint = tint2,
+                    animation_speed = 0.4,
+                    shift = util.mul_shift(util.by_pixel(-2, -42), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-attack-shadow",
+                    width = attackWidth,
+                    height = attackHeight,
+                    frame_count = 11,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale,
+                    animation_speed = 0.4,
+                    draw_as_shadow = true,
+                    shift = util.mul_shift(util.by_pixel(30, 0), scale),
+                },
+            },
         },
     }
 end
 
 local function armoredAttackBiter(scale, tint1, tint2)
-    return {
-        layers = {
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-attack", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask1", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-attack-mask2", {
-                slice = 11,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                animation_speed = 0.4,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-attack-shadow", {
-                slice = 8,
-                frame_count = 11,
-                direction_count = 16,
-                scale = scale * 0.5,
-                animation_speed = 0.4,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-        },
-    }
+    return vanillaAttackBiter(scale, tint1, tint2)
 end
 
 local function armoredRunBiter(scale, tint1, tint2)
-    return {
-        layers = {
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-run", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-run-mask1", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-run-mask2", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-            util.sprite_load("__ArmouredBiters__/graphics/armoured-biter/LowRes/armoured-biter-run-shadow", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-            }),
-        },
-    }
+    return vanillaRunBiter(scale, tint1, tint2)
 end
 
 local function vanillaRunBiter(scale, tint1, tint2)
     return {
         layers = {
-            util.sprite_load("__base__/graphics/entity/biter/biter-run", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-run-mask1", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint1,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-run-mask2", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                tint = tint2,
-                tint_as_overlay = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
-            util.sprite_load("__base__/graphics/entity/biter/biter-run-shadow", {
-                slice = 8,
-                frame_count = 16,
-                direction_count = 16,
-                scale = scale * 0.5,
-                draw_as_shadow = true,
-                multiply_shift = scale,
-                allow_forced_downscale = true,
-                surface = "nauvis",
-                usage = "enemy",
-            }),
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-run",
+                    width = runWidth,
+                    height = runHeight,
+                    frame_count = 16,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    shift = util.mul_shift(util.by_pixel(-2, -6), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-run-mask1",
+                    width = runWidth,
+                    height = runHeight,
+                    frame_count = 16,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    tint = tint1,
+                    shift = util.mul_shift(util.by_pixel(0, -38), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-run-mask2",
+                    width = runWidth,
+                    height = runHeight,
+                    frame_count = 16,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale * 0.5,
+                    tint = tint2,
+                    shift = util.mul_shift(util.by_pixel(-2, -38), scale),
+                },
+            },
+            {
+                sheet = {
+                    filename = "__base__/graphics/entity/biter/biter-run-shadow",
+                    width = runWidth,
+                    height = runHeight,
+                    frame_count = 16,
+                    line_length = 16,
+                    variation_count = 1,
+                    scale = scale,
+                    draw_as_shadow = true,
+                    shift = util.mul_shift(util.by_pixel(8, 0), scale),
+                },
+            },
         },
     }
 end
@@ -388,7 +296,6 @@ function unitUtils.biterattackanimation(scale, tint1, tint2, altBiter)
     end
 end
 
-
 function unitUtils.biterrunanimation(scale, tint1, tint2, altBiter)
     if (altBiter == "armored") and mods["ArmouredBiters"] then
         return armoredRunBiter(scale, tint1, tint2)
@@ -396,6 +303,5 @@ function unitUtils.biterrunanimation(scale, tint1, tint2, altBiter)
         return vanillaRunBiter(scale, tint1, tint2)
     end
 end
-
 
 return unitUtils
