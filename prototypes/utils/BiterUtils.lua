@@ -22,6 +22,7 @@ local unitSpawnerUtils = require("UnitSpawnerUtils")
 local unitUtils = require("UnitUtils")
 local wormUtils = require("WormUtils")
 
+-- Animation functions still needed for worms/spawners
 local biterdieanimation = unitUtils.biterdieanimation
 local biterattackanimation = unitUtils.biterattackanimation
 local biterrunanimation = unitUtils.biterrunanimation
@@ -50,73 +51,24 @@ local function makeSpitterCorpse(attributes)
 
     if not corpseSet[name] then
         corpseSet[name] = true
-        -- corpseCount = corpseCount + 1
-        -- print(corpseCount)
     else
         return name
     end
 
-    local corpse = {
-        type = "corpse",
-        name = name,
-        icon = "__base__/graphics/icons/big-biter-corpse.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        selectable_in_game = false,
-        selection_box = {{-1, -1}, {1, 1}},
-        subgroup="corpses",
-        order = "c[corpse]-b[spitter]-a[small]",
-        flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-on-map"},
-    }
+    -- Deep copy from vanilla spitter corpse
+    local vanillaCorpseName = "small-spitter-corpse"
+    if attributes.scale and attributes.scale > 1.0 then
+        vanillaCorpseName = "medium-spitter-corpse"
+    end
+    local corpse = util.table.deepcopy(data.raw.corpse[vanillaCorpseName])
 
-    corpse.animation = spitterdyinganimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
-    corpse.dying_speed = 0.04
-    corpse.time_before_removed = 15 * 60 * 60
-    corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
-    corpse.shuffle_directions_at_frame = 4
-    corpse.final_render_layer = "lower-object-above-shadow"
+    corpse.name = name
+    if corpse.ground_patch and corpse.ground_patch.sheet then
+        corpse.ground_patch.sheet.tint = attributes.tint2 or attributes.tint or {r=0.54, g=0.09, b=0.54, a=1}
+        corpse.ground_patch.sheet.scale = (corpse.ground_patch.sheet.scale or 0.5) * (attributes.scale / 0.5)
+    end
 
-    corpse.ground_patch_render_layer = "decals" -- "transport-belt-integration"
-    corpse.ground_patch_fade_in_delay = 1 / 0.02 --  in ticks; 1/dying_speed to delay the animation until dying animation finishes
-    corpse.ground_patch_fade_in_speed = 0.002
-    corpse.ground_patch_fade_out_start = 50 * 60
-    corpse.ground_patch_fade_out_duration = 20 * 60
-
-    local a = 1
-    local d = 0.9
-    corpse.ground_patch =
-        {
-            sheet =
-                {
-                    filename = "__base__/graphics/entity/biter/blood-puddle-var-main.png",
-                    flags = { "low-object" },
-                    line_length = 4,
-                    variation_count = 4,
-                    frame_count = 1,
-                    width = 84,
-                    height = 68,
-                    shift = util.by_pixel(1, 0),
-                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
-                    scale = attributes.scale * 2,
-                    hr_version =
-                        {
-                            filename = "__base__/graphics/entity/biter/hr-blood-puddle-var-main.png",
-                            flags = { "low-object" },
-                            line_length = 4,
-                            variation_count = 4,
-                            frame_count = 1,
-                            width = 164,
-                            height = 134,
-                            shift = util.by_pixel(-0.5,-0.5),
-                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
-                            scale = attributes.scale
-                        }
-                }
-        }
-
-    data:extend({
-            corpse
-    })
+    data:extend({corpse})
     return name
 end
 
@@ -125,73 +77,24 @@ local function makeBiterCorpse(attributes)
 
     if not corpseSet[name] then
         corpseSet[name] = true
-        -- corpseCount = corpseCount + 1
-        -- print(corpseCount)
     else
         return name
     end
 
-    local corpse = {
-        type = "corpse",
-        name = name,
-        icon = "__base__/graphics/icons/small-biter-corpse.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        selection_box = {{-0.8, -0.8}, {0.8, 0.8}},
-        selectable_in_game = false,
-        subgroup="corpses",
-        order = "c[corpse]-a[biter]-a[small]",
-        flags = {"placeable-neutral", "placeable-off-grid", "building-direction-8-way", "not-repairable", "not-on-map"}
-    }
+    -- Deep copy from vanilla biter corpse
+    local vanillaCorpseName = "small-biter-corpse"
+    if attributes.scale and attributes.scale > 1.0 then
+        vanillaCorpseName = "medium-biter-corpse"
+    end
+    local corpse = util.table.deepcopy(data.raw.corpse[vanillaCorpseName])
 
-    corpse.animation = biterdieanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
-    corpse.dying_speed = 0.04
-    corpse.time_before_removed = 15 * 60 * 60
-    corpse.direction_shuffle = { { 1, 2, 3, 16 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 } }
-    corpse.shuffle_directions_at_frame = 7
-    corpse.final_render_layer = "lower-object-above-shadow"
+    corpse.name = name
+    if corpse.ground_patch and corpse.ground_patch.sheet then
+        corpse.ground_patch.sheet.tint = attributes.tint2 or attributes.tint or {r=0.54, g=0.09, b=0.54, a=1}
+        corpse.ground_patch.sheet.scale = (corpse.ground_patch.sheet.scale or 0.5) * (attributes.scale / 0.5)
+    end
 
-    corpse.ground_patch_render_layer = "decals" -- "transport-belt-integration"
-    corpse.ground_patch_fade_in_delay = 1 / 0.02 --  in ticks; 1/dying_speed to delay the animation until dying animation finishes
-    corpse.ground_patch_fade_in_speed = 0.002
-    corpse.ground_patch_fade_out_start = 50 * 60
-    corpse.ground_patch_fade_out_duration = 20 * 60
-
-    local a = 1
-    local d = 0.9
-    corpse.ground_patch =
-        {
-            sheet =
-                {
-                    filename = "__base__/graphics/entity/biter/blood-puddle-var-main.png",
-                    flags = { "low-object" },
-                    line_length = 4,
-                    variation_count = 4,
-                    frame_count = 1,
-                    width = 84,
-                    height = 68,
-                    shift = util.by_pixel(1, 0),
-                    tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
-                    scale = attributes.scale * 2,
-                    hr_version =
-                        {
-                            filename = "__base__/graphics/entity/biter/hr-blood-puddle-var-main.png",
-                            flags = { "low-object" },
-                            line_length = 4,
-                            variation_count = 4,
-                            frame_count = 1,
-                            width = 164,
-                            height = 134,
-                            shift = util.by_pixel(-0.5,-0.5),
-                            tint = attributes.tint2 or attributes.tint or {r = 0.6 * d * a, g = 0.1 * d * a, b = 0.6 * d * a, a = a},
-                            scale = attributes.scale
-                        }
-                }
-        }
-
-    data:extend({
-            corpse
-    })
+    data:extend({corpse})
     return name
 end
 
@@ -298,51 +201,53 @@ function biterUtils.makeBiter(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    local entity = {
-        type = "unit",
-        name = attributes.name .. "-rampant",
-        localised_name = biterUtils.getLocalisedName(attributes),
-        icon = "__base__/graphics/icons/small-biter.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "not-repairable", "breaths-air"},
-        max_health = attributes.health,
-        order = "b-b-a",
-        subgroup="enemies",
-        healing_per_tick = attributes.healing,
-        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        water_reflection = biter_water_reflection(attributes.scale),
-        resistances = resistances,
-        collision_box = {
-            {-0.4 * attributes.scale, -0.4 * attributes.scale},
-            {0.4 * attributes.scale, 0.4 * attributes.scale}
-        },
-        selection_box = {
-            {-0.7 * attributes.scale, -1.5 * attributes.scale},
-            {0.7 * attributes.scale, 0.3 * attributes.scale}
-        },
-        sticker_box = {
-            {-0.6 * attributes.scale, -0.8 * attributes.scale},
-            {0.6 * attributes.scale, 0}
-        },
-        attack_parameters = attributes.attack,
-        vision_distance = attributes.vision or 30,
-        movement_speed = attributes.movement,
-        loot = attributes.loot,
-        spawning_time_modifier = attributes.spawningTimeModifer or nil,
-        distance_per_frame = attributes.distancePerFrame or 0.1,
-        absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 },
-        distraction_cooldown = attributes.distractionCooldown or 300,
-        corpse = makeBiterCorpse(attributes),
-        dying_explosion = attributes.explosion,
-        dying_trigger_effect = attributes.dyingEffect,
-        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
-        dying_sound = attributes.dyingSounds,
-        walking_sound = attributes.walkingSounds,
-        running_sound_animation_positions = {2,},
-        run_animation = biterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint, attributes.altBiter)
+
+    -- Deep copy from vanilla biter based on scale tier
+    local vanillaName = "small-biter"
+    if attributes.scale and attributes.scale > 1.0 then
+        vanillaName = "medium-biter"
+    end
+    local entity = util.table.deepcopy(data.raw.unit[vanillaName])
+
+    -- Override fields that differ from vanilla
+    entity.name = attributes.name .. "-rampant"
+    entity.localised_name = biterUtils.getLocalisedName(attributes)
+    entity.max_health = attributes.health
+    entity.healing_per_tick = attributes.healing
+    entity.damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil
+    entity.water_reflection = biter_water_reflection(attributes.scale)
+    entity.resistances = resistances
+    entity.collision_box = {
+        {-0.4 * attributes.scale, -0.4 * attributes.scale},
+        {0.4 * attributes.scale, 0.4 * attributes.scale}
     }
+    entity.selection_box = {
+        {-0.7 * attributes.scale, -1.5 * attributes.scale},
+        {0.7 * attributes.scale, 0.3 * attributes.scale}
+    }
+    entity.sticker_box = {
+        {-0.6 * attributes.scale, -0.8 * attributes.scale},
+        {0.6 * attributes.scale, 0}
+    }
+    entity.attack_parameters = attributes.attack
+    entity.vision_distance = attributes.vision or 30
+    entity.movement_speed = attributes.movement
+    entity.loot = attributes.loot
+    entity.spawning_time_modifier = attributes.spawningTimeModifer or nil
+    entity.distance_per_frame = attributes.distancePerFrame or 0.1
+    entity.absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 }
+    entity.distraction_cooldown = attributes.distractionCooldown or 300
+    entity.corpse = makeBiterCorpse(attributes)
+    entity.dying_explosion = attributes.explosion
+    entity.dying_trigger_effect = attributes.dyingEffect
+    entity.enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil
+    entity.affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value
+    entity.dying_sound = attributes.dyingSounds
+    entity.walking_sound = attributes.walkingSounds
+
+    if attributes.flags then
+        entity.flags = attributes.flags
+    end
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
     end
@@ -360,46 +265,48 @@ function biterUtils.makeSpitter(attributes)
         v.type = k
         resistances[#resistances+1] = v
     end
-    local entity = {
-        type = "unit",
-        name = attributes.name .. "-rampant",
-        localised_name = biterUtils.getLocalisedName(attributes),
-        icon = "__base__/graphics/icons/small-spitter.png",
-        icon_size = 64,
-        icon_mipmaps = 4,
-        flags = attributes.flags or {"placeable-player", "placeable-enemy", "placeable-off-grid", "not-repairable", "breaths-air"},
-        max_health = attributes.health,
-        order = "b-b-a",
-        subgroup="enemies",
-        healing_per_tick = attributes.healing,
-        resistances = resistances,
-        collision_box = {{-0.4 * attributes.scale, -0.4 * attributes.scale},
-            {0.4 * attributes.scale, 0.4 * attributes.scale}},
-        selection_box = {{-0.7 * attributes.scale, -1.5 * attributes.scale},
-            {0.7 * attributes.scale, 0.3 * attributes.scale}},
-        sticker_box = {{-0.6 * attributes.scale, -0.8 * attributes.scale},
-            {0.6 * attributes.scale, 0}},
-        attack_parameters = attributes.attack,
-        loot = attributes.loot,
-        vision_distance = attributes.vision or 30,
-        movement_speed = attributes.movement,
-        spawning_time_modifier = attributes.spawningTimeModifer or nil,
-        distance_per_frame = attributes.distancePerFrame or 0.1,
-        absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 },
-        distraction_cooldown = attributes.distractionCooldown or 300,
-        alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
-        corpse = makeSpitterCorpse(attributes),
-        dying_explosion = attributes.explosion,
-        enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil,
-        dying_trigger_effect = attributes.dyingEffect,
-        dying_sound = attributes.dyingSounds,
-        walking_sound = attributes.walkingSounds,
-        running_sound_animation_positions = {2,},
-        water_reflection = spitter_water_reflection(attributes.scale),
-        damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil,
-        affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value,
-        run_animation = spitterrunanimation(attributes.scale, attributes.tint, attributes.tint2 or attributes.tint)
-    }
+
+    -- Deep copy from vanilla spitter based on scale tier
+    local vanillaName = "small-spitter"
+    if attributes.scale and attributes.scale > 1.0 then
+        vanillaName = "medium-spitter"
+    end
+    local entity = util.table.deepcopy(data.raw.unit[vanillaName])
+
+    -- Override fields that differ from vanilla
+    entity.name = attributes.name .. "-rampant"
+    entity.localised_name = biterUtils.getLocalisedName(attributes)
+    entity.max_health = attributes.health
+    entity.healing_per_tick = attributes.healing
+    entity.resistances = resistances
+    entity.collision_box = {{-0.4 * attributes.scale, -0.4 * attributes.scale},
+        {0.4 * attributes.scale, 0.4 * attributes.scale}}
+    entity.selection_box = {{-0.7 * attributes.scale, -1.5 * attributes.scale},
+        {0.7 * attributes.scale, 0.3 * attributes.scale}}
+    entity.sticker_box = {{-0.6 * attributes.scale, -0.8 * attributes.scale},
+        {0.6 * attributes.scale, 0}}
+    entity.attack_parameters = attributes.attack
+    entity.loot = attributes.loot
+    entity.vision_distance = attributes.vision or 30
+    entity.movement_speed = attributes.movement
+    entity.spawning_time_modifier = attributes.spawningTimeModifer or nil
+    entity.distance_per_frame = attributes.distancePerFrame or 0.1
+    entity.absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 }
+    entity.distraction_cooldown = attributes.distractionCooldown or 300
+    entity.alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence()
+    entity.corpse = makeSpitterCorpse(attributes)
+    entity.dying_explosion = attributes.explosion
+    entity.enemy_map_color = ((not settings.startup["rampant--oldRedEnemyMapColor"].value) and attributes.tint2) or nil
+    entity.dying_trigger_effect = attributes.dyingEffect
+    entity.dying_sound = attributes.dyingSounds
+    entity.walking_sound = attributes.walkingSounds
+    entity.water_reflection = spitter_water_reflection(attributes.scale)
+    entity.damaged_trigger_effect = ((not settings.startup["rampant--removeBloodParticles"].value) and makeDamagedParticle(attributes)) or nil
+    entity.affected_by_tiles = settings.startup["rampant--unitsAffectedByTiles"].value
+
+    if attributes.flags then
+        entity.flags = attributes.flags
+    end
     if attributes.collisionMask then
         entity.collision_mask = attributes.collisionMask
     end
