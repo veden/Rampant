@@ -330,9 +330,9 @@ function Observability.onUdpPacket(event)
         end
 
         -- Multi-packet streaming: split into batches for large maps
-        -- Each chunk ~213 bytes. helpers.send_udp ceiling ~60KB, target 56KB for margin.
+        -- Each chunk ~213 bytes. helpers.send_udp ceiling ~60KB, target 32KB for safety.
         local total = #all_chunks
-        local max_batch_size = 263  -- ~56KB per packet
+        local max_batch_size = 150  -- ~32KB per packet
         local total_packets = math.ceil(total / max_batch_size)
         -- streaming: ~56KB/packet, 263 chunks each
 
