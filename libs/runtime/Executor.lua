@@ -51,6 +51,9 @@ Handlers.CREATE_SQUAD = function(cmd)
 end
 
 Handlers.DESTROY_GROUP = function(cmd)
+    if MetricsG then
+        MetricsG.inc("group.reject." .. (cmd.reason or "unknown"))
+    end
     if cmd.groupRef and cmd.groupRef.valid then
         cmd.groupRef.destroy()
     end

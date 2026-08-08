@@ -782,6 +782,8 @@ end
 local function onUnitGroupCreated(event)
     Metrics.inc("event.onUnitGroupCreated")
     local group = event.group
+    Metrics.inc("group.created." .. group.force.name ..
+        (group.is_script_driven and ".script" or ".vanilla"))
     dbgEntity("onUnitGroupCreated: force=" .. group.force.name .. " is_script=" .. tostring(group.is_script_driven) .. " @(" .. group.position.x .. "," .. group.position.y .. ")")
 
     local surface = group.surface
@@ -1298,6 +1300,10 @@ remote.add_interface("Rampant", {
         local base = Universe.bases[baseId]
         if not base then return false end
         base.stateAI = state
+        -- Freeze the state machine: push the next roll far out so the
+        -- constructed state persists (otherwise the 10-25 min re-roll
+        -- overrides the construction mid-test)
+        base.stateAITick = game.tick + 24 * 60 * 60 * 60
         return true
     end,
     grantUnitPoints = function(baseId, amount)

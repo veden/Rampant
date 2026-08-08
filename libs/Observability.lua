@@ -93,6 +93,7 @@ function Observability.queryBaseAt(position, surface)
         x = base.x,
         y = base.y,
         state = base.stateAI,
+        stateAITick = base.stateAITick,
         points = base.points,
         unitPoints = base.unitPoints,
         nestCount = base.nestCount or 0,

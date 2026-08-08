@@ -82,6 +82,7 @@ local function getResourcePheromone(chunk)
 end
 
 local COMPRESSION_COOLDOWN = Constants.COMPRESSION_COOLDOWN
+local EMPTY_RECRUIT_COOLDOWN = 600  -- 10 game-seconds
 
 local HALF_CHUNK_SIZE = Constants.HALF_CHUNK_SIZE
 
@@ -1205,23 +1206,56 @@ end
 
 local function deploySquad(name, chunk, cost, vengence, attacker)
     local base = chunk.base
+    -- Back-off after an empty recruitment: when no units were found, retrying
+    -- every 3 ticks creates a create/destroy group storm (hundreds of empty
+    -- groups per minute) that collapses UPS. Wait for units to accumulate.
+    if base.nextFormAttemptTick and game.tick < base.nextFormAttemptTick then
+        if MetricsG then
+            MetricsG.inc("squad.formSkip.cooldown")
+        end
+        return
+    end
+    if MetricsG then
+        MetricsG.inc("squad.formAttempt")
+    end
 
     local lackingPoints = ((base.unitPoints - cost) < 0)
     if attacker then
-        if lackingPoints
-            or ((getBasePheromone(chunk) < 0.0001) and (getPlayerPheromone(chunk) < 0.0001))
-            or (Universe.squadCount > Universe.AI_MAX_SQUAD_COUNT)
-            or (not vengence and not attackWaveValidCandidate(chunk))
-            or (Universe.random() > Universe.formSquadThreshold)
-        then
+        if lackingPoints then
+            if MetricsG then MetricsG.inc("squad.formReject.attacker.points") end
+            return
+        end
+        if (getBasePheromone(chunk) < 0.0001) and (getPlayerPheromone(chunk) < 0.0001) then
+            if MetricsG then MetricsG.inc("squad.formReject.attacker.pheromone") end
+            return
+        end
+        if Universe.squadCount > Universe.AI_MAX_SQUAD_COUNT then
+            if MetricsG then MetricsG.inc("squad.formReject.attacker.squadLimit") end
+            return
+        end
+        if (not vengence) and not attackWaveValidCandidate(chunk) then
+            if MetricsG then MetricsG.inc("squad.formReject.attacker.candidate") end
+            return
+        end
+        if Universe.random() > Universe.formSquadThreshold then
+            if MetricsG then MetricsG.inc("squad.formReject.attacker.threshold") end
             return
         end
     else
-        if lackingPoints
-            or (Universe.builderCount > Universe.AI_MAX_BUILDER_COUNT)
-            or (not vengence and (base.sentExpansionGroups >= base.maxExpansionGroups))
-            or (Universe.random() > Universe.formSquadThreshold)
-        then
+        if lackingPoints then
+            if MetricsG then MetricsG.inc("squad.formReject.settler.points") end
+            return
+        end
+        if Universe.builderCount > Universe.AI_MAX_BUILDER_COUNT then
+            if MetricsG then MetricsG.inc("squad.formReject.settler.builder") end
+            return
+        end
+        if (not vengence) and (base.sentExpansionGroups >= base.maxExpansionGroups) then
+            if MetricsG then MetricsG.inc("squad.formReject.settler.groups") end
+            return
+        end
+        if Universe.random() > Universe.formSquadThreshold then
+            if MetricsG then MetricsG.inc("squad.formReject.settler.threshold") end
             return
         end
     end
@@ -1277,6 +1311,12 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     if (foundUnits == 0) then
         if squad.group.valid then
             squad.group.destroy()
+        end
+        -- Empty recruitment: back off so units can accumulate (nest spawns
+        -- ~1 unit per 4 game-seconds); prevents the empty-group retry storm
+        base.nextFormAttemptTick = game.tick + EMPTY_RECRUIT_COOLDOWN
+        if MetricsG then
+            MetricsG.inc("squad.formEmpty")
         end
         return
     end
