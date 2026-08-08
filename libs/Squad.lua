@@ -772,6 +772,9 @@ function Squad.cleanSquads(tick)
                 end
             end
             squads[groupId] = nil
+            if MetricsG then
+                MetricsG.inc("squad.destroyed")
+            end
         elseif (group.state == 4) then
             squad.wanders = 0
             Squad.squadDispatch(squad, tick)
@@ -966,7 +969,7 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
                 return
             end
 
-            Universe.groupNumberToSquad[existingSquad.groupNumber] = existingSquad
+            Universe.groupNumberToSquad[existingSquad.id] = existingSquad
             Universe.squadCount = Universe.squadCount + 1
         else
             Queries.moveCommand.distraction = DEFINES_DISTRACTION_NONE
@@ -980,6 +983,9 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
         end
 
         existingSquad.status = SQUAD_RETREATING
+        if MetricsG then
+            MetricsG.inc("squad.retreated")
+        end
 
         addSquadToChunk(chunk, existingSquad)
 
@@ -1000,7 +1006,6 @@ function Squad.createSquad(position, map, group, settlers, base)
     local squad = {
         group = unitGroup,
         id = unitGroup.unique_id,
-        groupNumber = unitGroup.unique_id,
         canBeCompressed = 0,
         compressionSet = nil,
         compressionText = nil,
@@ -1023,6 +1028,10 @@ function Squad.createSquad(position, map, group, settlers, base)
         commandTick = nil,
         chunk = -1
     }
+
+    if MetricsG then
+        MetricsG.inc("squad.created")
+    end
 
     if settlers then
         squad.maxDistance = calculateSettlerMaxDistance()
@@ -1293,7 +1302,7 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
 
     squad.rabid = Universe.random() < 0.03
 
-    Universe.groupNumberToSquad[squad.groupNumber] = squad
+    Universe.groupNumberToSquad[squad.id] = squad
     modifyBaseUnitPoints(base, -cost, name, squadPosition.x, squadPosition.y)
 end
 

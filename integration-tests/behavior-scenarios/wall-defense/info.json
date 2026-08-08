@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Wall Defense",
+    "description": "Staged behavior test: player wall vs enemy squad attack",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

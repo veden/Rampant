@@ -90,9 +90,11 @@ function Observability.queryBaseAt(position, surface)
 
     return {
         id = base.id,
-        position = base.position,
+        x = base.x,
+        y = base.y,
         state = base.stateAI,
         points = base.points,
+        unitPoints = base.unitPoints,
         nestCount = base.nestCount or 0,
         activeStructures = base.activeStructureCount or 0,
         attackThreshold = base.attackThreshold or 0,
@@ -117,7 +119,7 @@ function Observability.getEnemyGroups(surface)
     end
 
     local groups = {}
-    local squadTable = Universe.tables.groupNumberToSquad
+    local squadTable = Universe.groupNumberToSquad
 
     if squadTable then
         for _, squad in pairs(squadTable) do
@@ -127,17 +129,28 @@ function Observability.getEnemyGroups(surface)
                     memberCount = memberCount + 1
                 end
                 table.insert(groups, {
-                    id = squad.group.group_number,
+                    id = squad.group.unique_id,
                     position = squad.group.position,
                     state = squad.group.state,
                     memberCount = memberCount,
-                    isBuilder = squad.builder or false,
+                    isBuilder = squad.settlers or false,
                 })
             end
         end
     end
 
     return groups
+end
+
+function Observability.getBasePoints(baseId)
+    if not Universe or not Universe.awake then
+        return nil
+    end
+    local base = Universe.bases[baseId]
+    if not base then
+        return nil
+    end
+    return base.unitPoints
 end
 
 function Observability.getBaseCount(surface)
@@ -152,7 +165,7 @@ function Observability.getBaseCount(surface)
 
     local count = 0
     for _, base in pairs(map.bases or {}) do
-        if base.activeStructureCount and base.activeStructureCount > 0 then
+        if (base.activeNests or 0) > 0 then
             count = count + 1
         end
     end

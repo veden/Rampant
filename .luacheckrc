@@ -16,6 +16,7 @@ globals = {
         "ChunkPropertyUtilsG",
         "ChunkUtilsG",
         "MapUtilsG",
+        "MetricsG",
         "MathUtilsG",
         "SquadG",
         "unitUtilsG",

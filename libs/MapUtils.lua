@@ -86,24 +86,19 @@ function MapUtils.getChunkByXY(map, x, y)
     return -1
 end
 
---- Find a chunk by its unique id across all maps.
+--- Find a chunk by its unique id. O(1) via the chunkById reverse index
+--- (maintained by ChunkUtils.createChunk / MapUtils.removeChunkFromMap).
 function MapUtils.getChunkById(chunkId, universe)
     universe = universe or storage.universe
-    if not universe or not universe.maps then return nil end
-    for _, map in pairs(universe.maps) do
-        if map then
-            for _, xChunks in pairs(map) do
-                if type(xChunks) == "table" then
-                    for _, chunk in pairs(xChunks) do
-                        if chunk.id == chunkId then
-                            return chunk
-                        end
-                    end
-                end
-            end
+    if not universe or not universe.chunkById then return nil end
+    local chunk = universe.chunkById[chunkId]
+    if MetricsG then
+        MetricsG.inc("index.lookups")
+        if not chunk then
+            MetricsG.inc("index.misses")
         end
     end
-    return nil
+    return chunk
 end
 
 function MapUtils.getChunkByPosition(map, position)
@@ -251,6 +246,9 @@ function MapUtils.removeChunkFromMap(map, chunk)
 
     map[x][y] = nil
     local chunkId = chunk.id
+    if Universe.chunkById then
+        Universe.chunkById[chunkId] = nil
+    end
 
     Universe.chunkToActiveNest[chunkId] = nil
     Universe.chunkToActiveRaidNest[chunkId] = nil
@@ -646,6 +644,14 @@ function MapUtils.init(universe)
         MapPosition = universe.mapUtilsQueries.position
     end
     
+    -- Initialize chunk id -> chunk reverse index (O(1) lookups).
+    -- Persisted in storage: create only if absent, NEVER reset on load.
+    -- The chunk grid survives loads; wiping the index would silently kill
+    -- dirty processing for every existing chunk.
+    if not Universe.chunkById then
+        Universe.chunkById = {}
+    end
+
     -- Initialize dirty chunk tracking
     Universe.dirtyChunks = {
         priority1 = {},  -- Player-adjacent (within 5 chunks)

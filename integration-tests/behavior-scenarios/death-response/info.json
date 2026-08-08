@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Death Response",
+    "description": "Staged behavior test: retreat on losses, structure death, point costs",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

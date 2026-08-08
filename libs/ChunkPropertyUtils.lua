@@ -541,7 +541,7 @@ function ChunkPropertyUtils.addSquadToChunk(chunk, squad)
             squads = {}
             chunk.squads = squads
         end
-        squads[squad.groupNumber] = squad
+        squads[squad.id] = squad
         squad.chunk = chunk
     end
 end
@@ -551,7 +551,7 @@ function ChunkPropertyUtils.removeSquadFromChunk(squad)
     if (chunk ~= -1) then
         local squads = chunk.squads
         if squads then
-            squads[squad.groupNumber] = nil
+            squads[squad.id] = nil
             if (tableSize(squads) == 0) then
                 chunk.squads = nil
             end

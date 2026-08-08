@@ -373,6 +373,9 @@ function BaseUtils.recycleBases()
         local map = base.map
         if (base.chunkCount == 0) or not map.surface.valid then
             bases[id] = nil
+            if MetricsG then
+                MetricsG.inc("base.recycled")
+            end
             if Universe.processBaseAIIterator == id then
                 Universe.processBaseAIIterator = nil
             end
@@ -443,7 +446,6 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local map = base.map
     local baseAlignment = base.alignment
     local position = disPos or entity.position
-    print("[DEBUG queueUpgrade] entity=" .. entity.name .. " pos=(" .. tostring(position and position.x or "nil") .. "," .. tostring(position and position.y or "nil") .. ")")
 
     local pickedBaseAlignment
     if baseAlignment[2] then
@@ -799,6 +801,9 @@ function BaseUtils.createBase(map, chunk, tick)
 
     map.bases[base.id] = base
     Universe.bases[base.id] = base
+    if MetricsG then
+        MetricsG.inc("base.created")
+    end
 
     return base
 end

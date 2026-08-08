@@ -449,6 +449,7 @@ function Upgrade.addUniverseProperties()
         Universe.eventId = 0
         Universe.chunkId = 0
         Universe.maps = {}
+        Universe.chunkById = {}
         Universe.groupNumberToSquad = {}
         Universe.pendingChunks = {}
         Universe.squadIterator = nil

@@ -28,6 +28,7 @@ local Upgrade = require("libs/Upgrade")
 local Utils = require("libs/Utils")
 local Observability = require("libs/Observability")
 local Executor = require("libs/runtime/Executor")
+local Metrics = require("libs/Metrics")
 local DeathLogic = require("libs/death_logic")
 local SquadCreation = require("libs/squad_creation")
 local BuildingLogic = require("libs/building")
@@ -204,6 +205,7 @@ local function initializeLibraries(addProperties)
     ChunkUtils.init(Universe)
     Observability.init(Universe)
     Executor.init(Universe)
+    Metrics.init(Universe)
 end
 
 local function rescanAllChunks(map, tick)
@@ -223,7 +225,7 @@ end
 local function onLoad()
     Universe = storage.universe
 
-    Universe.DEBUG_ENTITY_EVENTS = true
+    Universe.DEBUG_ENTITY_EVENTS = false
 
     initializeLibraries()
 
@@ -236,6 +238,7 @@ local function onLoad()
 end
 
 local function onChunkGenerated(event)
+    Metrics.inc("event.onChunkGenerated")
     -- queue generated chunk for delayed processing, queuing is required because
     -- some mods (RSO) mess with chunk as they are generated, which messes up the
     -- scoring.
@@ -391,14 +394,16 @@ local function onEnemyBaseBuild(entity, tick)
     end
 
     -- Gather data for pure evaluation
+    -- NOTE: chunk is the -1 sentinel when outside the grid; -1 is truthy in
+    -- Lua, so guard with `chunk ~= -1` (not `chunk and ...`)
     local buildingData = {
         entityName = entity.name,
         entityType = entity.type,
         hasMap = true,
         hasChunk = chunk ~= -1,
-        chunkId = chunk and chunk.id or nil,
-        chunkX = chunk and chunk.x or (function() local x,y = positionToChunkXY(entity.position) return x end)(),
-        chunkY = chunk and chunk.y or (function() local x,y = positionToChunkXY(entity.position) return y end)(),
+        chunkId = (chunk ~= -1) and chunk.id or nil,
+        chunkX = (chunk ~= -1) and chunk.x or (function() local x,y = positionToChunkXY(entity.position) return x end)(),
+        chunkY = (chunk ~= -1) and chunk.y or (function() local x,y = positionToChunkXY(entity.position) return y end)(),
         baseId = base and base.id or nil,
         isNewBase = isNewBase,
         newEnemies = Universe.NEW_ENEMIES,
@@ -418,6 +423,7 @@ local function onEnemyBaseBuild(entity, tick)
 end
 
 local function onBuild(event)
+    Metrics.inc("event.onBuild")
     local entity = event.created_entity or event.entity
     if entity.valid then
         dbgEntity("onBuild: event=" .. tostring(event.event) .. " entity=" .. entity.name .. " force=" .. entity.force.name .. " type=" .. entity.type .. " created_entity=" .. tostring(event.created_entity ~= nil) .. " has_entity=" .. tostring(event.entity ~= nil))
@@ -446,6 +452,7 @@ local function onBuild(event)
 end
 
 local function onMine(event)
+    Metrics.inc("event.onMine")
     local entity = event.entity
     if entity.valid then
         local map = Universe.maps[entity.surface.index]
@@ -459,6 +466,7 @@ local function onMine(event)
 end
 
 local function onDeath(event)
+    Metrics.inc("event.onDeath")
     local entity = event.entity
     if not entity.valid then
         return
@@ -641,6 +649,7 @@ local function onSurfaceTileChange(event)
 end
 
 local function onResourceDepleted(event)
+    Metrics.inc("event.onResourceDepleted")
     local entity = event.entity
     if entity.valid then
         local map = Universe.maps[entity.surface.index]
@@ -682,6 +691,7 @@ local function onUsedCapsule(event)
 end
 
 local function onRocketLaunch(event)
+    Metrics.inc("event.onRocketLaunch")
     local entity = event.rocket_silo or event.rocket
     if entity.valid then
         local map = Universe.maps[entity.surface.index]
@@ -756,7 +766,7 @@ local function onInit()
     Universe.awake = true
 
     -- Entity event debug logging (always on)
-    Universe.DEBUG_ENTITY_EVENTS = true
+    Universe.DEBUG_ENTITY_EVENTS = false
 
     log("Rampant: Full initialization starting")
 
@@ -770,6 +780,7 @@ local function onInit()
 end
 
 local function onUnitGroupCreated(event)
+    Metrics.inc("event.onUnitGroupCreated")
     local group = event.group
     dbgEntity("onUnitGroupCreated: force=" .. group.force.name .. " is_script=" .. tostring(group.is_script_driven) .. " @(" .. group.position.x .. "," .. group.position.y .. ")")
 
@@ -804,8 +815,8 @@ local function onUnitGroupCreated(event)
         squadCount = Universe.squadCount or 0,
         maxSquadCount = Universe.AI_MAX_VANILLA_SQUAD_COUNT,
         hasChunk = chunk ~= -1,
-        basePheromone = chunk and chunk[BASE_PHEROMONE] or 0,
-        playerPheromone = chunk and chunk[PLAYER_PHEROMONE] or 0,
+        basePheromone = (chunk ~= -1) and chunk[BASE_PHEROMONE] or 0,
+        playerPheromone = (chunk ~= -1) and chunk[PLAYER_PHEROMONE] or 0,
         aiNocturnalMode = Universe.aiNocturnalMode,
         darkness = surface.darkness,
         randomRoll = Universe.random(),
@@ -823,6 +834,7 @@ local function onUnitGroupCreated(event)
 end
 
 local function onGroupFinishedGathering(event)
+    Metrics.inc("event.onGroupFinishedGathering")
     local group = event.group
     if not group.valid or (group.force.name ~= "enemy") then
         return
@@ -884,6 +896,23 @@ end
 
 local function onSurfaceDeleted(event)
     local surfaceIndex = event.surface_index
+    -- Purge the chunkById reverse index for chunks of the deleted surface.
+    -- IMPORTANT: the map table holds BOTH the chunk grid AND registries
+    -- (map.bases, map.drainPylons). Base objects have .id too, and base ids
+    -- collide with chunk ids (both counters start at 0), so guard on
+    -- chunk.valid to only touch real chunks.
+    local map = Universe.maps[surfaceIndex]
+    if map and Universe.chunkById then
+        for _, xChunks in pairs(map) do
+            if type(xChunks) == "table" then
+                for _, chunk in pairs(xChunks) do
+                    if chunk.valid and chunk.id then
+                        Universe.chunkById[chunk.id] = nil
+                    end
+                end
+            end
+        end
+    end
     Universe.maps[surfaceIndex] = nil
 end
 
@@ -922,7 +951,14 @@ local function onBuilderArrived(event)
     elseif (builder.force.name ~= "enemy") then
         return
     end
-    dbgEntity("  -> builder=" .. (builder.name or "group") .. " @(" .. builder.position.x .. "," .. builder.position.y .. ") usingUnit=" .. tostring(usingUnit))
+    -- builder is either a unit group (LuaCommandable) or a unit (LuaEntity);
+    -- LuaCommandable has no `name` key and the strict metatable ERRORS on
+    -- access (it does not return nil), so only read it for units
+    local builderName = "group"
+    if usingUnit then
+        builderName = builder.name
+    end
+    dbgEntity("  -> builder=" .. builderName .. " @(" .. builder.position.x .. "," .. builder.position.y .. ") usingUnit=" .. tostring(usingUnit))
 
     local map = Universe.maps[builder.surface.index]
     if not map then
@@ -962,6 +998,8 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
 
+                    Metrics.sampleDirtyQueue(Universe.dirtyChunks)
+
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- local profiler = game.create_profiler()
 
@@ -1000,8 +1038,6 @@ script.on_event(defines.events.on_tick,
                     processBaseAIs(tick)
                     processNests(tick)
                     cleanSquads(tick)
-
-                    -- game.print({"", "--dispatch4 ", profiler, " , ", pick," , ",math.random()})
 end)
 
 script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
@@ -1238,6 +1274,43 @@ remote.add_interface("Rampant", {
     end,
     queryBaseAt = function(pos, surface)
         return Observability.queryBaseAt(pos, surface)
+    end,
+    getBasePoints = function(baseId)
+        return Observability.getBasePoints(baseId)
+    end,
+    getMetrics = function()
+        return Metrics.get()
+    end,
+    resetMetrics = function()
+        Metrics.reset()
+        return true
+    end,
+    setTelemetry = function(enabled)
+        Metrics.setEnabled(enabled)
+        return Metrics.isEnabled()
+    end,
+    -- Test hooks (gated on the dev telemetry flag): CONSTRUCT state for
+    -- deterministic behavioral verification. These bypass the state machine
+    -- and economy so scenarios test a specific behavior instead of waiting
+    -- for random rolls.
+    setBaseState = function(baseId, state)
+        if not Universe.metricsEnabled then return false end
+        local base = Universe.bases[baseId]
+        if not base then return false end
+        base.stateAI = state
+        return true
+    end,
+    grantUnitPoints = function(baseId, amount)
+        if not Universe.metricsEnabled then return false end
+        local base = Universe.bases[baseId]
+        if not base then return false end
+        BaseUtils.modifyBaseUnitPoints(base, amount, "test-hook")
+        return true
+    end,
+    setEvolution = function(value)
+        if not Universe.metricsEnabled then return false end
+        game.forces.enemy.evolution_factor = value
+        return true
     end,
     getEnemyGroups = function(surface)
         return Observability.getEnemyGroups(surface)

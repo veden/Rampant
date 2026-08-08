@@ -67,14 +67,17 @@ my_collection:add('processDirtyChunk_skips_nil_chunk', function()
     assert(neighborsToMark == 0, "Should return 0 neighbors")
 end)
 
--- Test: processDirtyChunk collects neighbor IDs
+-- Test: processDirtyChunk collects neighbor IDs when pheromones changed
 my_collection:add('processDirtyChunk_collects_neighbors', function()
     local Processor = require("libs/Processor")
     local MapUtils = require("libs/MapUtils")
     
-    -- Mock processPheromone
+    -- Mock processPheromone to produce a material change (the epsilon gate
+    -- only propagates when values actually change)
     local original = MapUtils.processPheromone
-    MapUtils.processPheromone = function() end
+    MapUtils.processPheromone = function(chunk)
+        chunk[Constants.PLAYER_PHEROMONE] = 100
+    end
     
     local chunk = createChunk(123, 0, 0, true)
     
@@ -100,14 +103,78 @@ my_collection:add('processDirtyChunk_collects_neighbors', function()
     assert(neighborsToMark[1].priority == 2, "Neighbor priority should be 2")
 end)
 
+-- Test: no material change -> no propagation (epsilon gate contract)
+my_collection:add('processDirtyChunk_no_change_no_propagation', function()
+    local Processor = require("libs/Processor")
+    local MapUtils = require("libs/MapUtils")
+    
+    -- Mock processPheromone as a no-op: values do not change, so the
+    -- cascade must NOT propagate (prevents perpetual re-processing)
+    local original = MapUtils.processPheromone
+    MapUtils.processPheromone = function() end
+    
+    local chunk = createChunk(123, 0, 0, true)
+    
+    local mockNeighbors = {
+        [1] = { id = 1001, x = -1, y = -1 },
+        [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
+    }
+    local originalNeighbors = MapUtils.getNeighborChunks
+    MapUtils.getNeighborChunks = function() return mockNeighbors end
+    
+    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
+    
+    -- Restore
+    MapUtils.processPheromone = original
+    MapUtils.getNeighborChunks = originalNeighbors
+    
+    assert(success == true, "Should process chunk")
+    assert(#neighborsToMark == 0, "No change should not propagate")
+end)
+
+-- Test: deathGenerator decay alone must propagate (prevents death clouds
+-- from freezing when the 5 pheromones have converged)
+my_collection:add('processDirtyChunk_death_change_propagates', function()
+    local Processor = require("libs/Processor")
+    local MapUtils = require("libs/MapUtils")
+
+    -- Mock processPheromone to only change the death generator (pheromones
+    -- stay converged at 0)
+    local original = MapUtils.processPheromone
+    MapUtils.processPheromone = function(chunk)
+        chunk.deathGenerator = (chunk.deathGenerator or 0) * 0.92
+    end
+
+    local chunk = createChunk(123, 0, 0, true)
+    chunk.deathGenerator = -0.5
+
+    local mockNeighbors = {
+        [1] = { id = 1001, x = -1, y = -1 },
+        [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
+    }
+    local originalNeighbors = MapUtils.getNeighborChunks
+    MapUtils.getNeighborChunks = function() return mockNeighbors end
+
+    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
+
+    -- Restore
+    MapUtils.processPheromone = original
+    MapUtils.getNeighborChunks = originalNeighbors
+
+    assert(success == true, "Should process chunk")
+    assert(#neighborsToMark == 1, "Death generator decay should propagate")
+end)
+
 -- Test: processDirtyChunk increments priority for neighbors
 my_collection:add('processDirtyChunk_increments_priority', function()
     local Processor = require("libs/Processor")
     local MapUtils = require("libs/MapUtils")
     
-    -- Mock processPheromone
+    -- Mock processPheromone to produce a material change
     local original = MapUtils.processPheromone
-    MapUtils.processPheromone = function() end
+    MapUtils.processPheromone = function(chunk)
+        chunk[Constants.PLAYER_PHEROMONE] = 100
+    end
     
     local chunk = createChunk(123, 0, 0, true)
     

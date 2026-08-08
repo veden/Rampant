@@ -37,6 +37,13 @@ constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
 constants.PROCESS_QUEUE_SIZE = 40
 constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 200
+
+-- Dirty-queue propagation stops when a chunk's pheromone change is below
+-- this bound (relative to its previous value). Without this, the neighbor-
+-- marking cascade never terminates and the whole map is re-processed every
+-- tick. Decay-on-read keeps time-correctness while raw values are frozen.
+constants.PROPAGATION_RELATIVE_EPSILON = 0.001
+constants.PROPAGATION_ABSOLUTE_EPSILON = 0.0001
 constants.SCAN_QUEUE_SIZE = 2
 constants.RESOURCE_QUEUE_SIZE = 2
 constants.ENEMY_QUEUE_SIZE = 1

@@ -383,8 +383,15 @@ function ChunkUtils.createChunk(map, topX, topY)
         y = topY,
         dOrigin = euclideanDistancePoints(topX, topY, 0, 0),
         id = newChunkId(),
-        map = map
+        map = map,
+        -- Chunks in the grid are always valid; removal is done by
+        -- removeChunkFromMap (which nils the grid slot). processDirtyChunk
+        -- and friends guard on this field.
+        valid = true,
     }
+    -- Reverse index: id -> chunk (O(1) lookup for the dirty queue and
+    -- Executor handlers; getChunkById must never scan the grid)
+    Universe.chunkById[chunk.id] = chunk
     chunk[CHUNK_TICK] = 0
     chunk[BASE_PHEROMONE] = 0
     chunk[PLAYER_PHEROMONE] = 0

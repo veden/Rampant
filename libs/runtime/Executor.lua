@@ -41,7 +41,7 @@ Handlers.CREATE_SQUAD = function(cmd)
     local base = _Universe.bases[cmd.baseId]
     if group and group.valid and base then
         local squad = SquadG.createSquad(nil, nil, group, cmd.settler, base)
-        _Universe.groupNumberToSquad[group.unique_id] = squad
+        _Universe.groupNumberToSquad[squad.id] = squad
         if cmd.settler then
             _Universe.builderCount = (_Universe.builderCount or 0) + 1
         else
@@ -177,6 +177,9 @@ function Executor.run(commands)
 
     -- Single command
     if commands.type then
+        if MetricsG then
+            MetricsG.inc("cmd." .. commands.type)
+        end
         local handler = Handlers[commands.type]
         if handler then
             handler(commands)
@@ -189,6 +192,9 @@ function Executor.run(commands)
         -- Propagate newly created baseId to commands that need it
         if not cmd.baseId and _lastCreatedBaseId then
             cmd.baseId = _lastCreatedBaseId
+        end
+        if MetricsG then
+            MetricsG.inc("cmd." .. cmd.type)
         end
         local handler = Handlers[cmd.type]
         if handler then

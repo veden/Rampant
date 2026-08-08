@@ -19,6 +19,7 @@ Example:
   python3 tools/rcon_client.py ups 27018 test 20 2
 """
 
+import json as jsonlib
 import socket
 import struct
 import sys
@@ -83,6 +84,33 @@ def cmd_query(port, password, command):
         print(body)
 
 
+def cmd_metrics(port, password):
+    """Pull Rampant telemetry (counters, latest, high-water, sample stats)."""
+    cmd = '/silent-command rcon.print(helpers.table_to_json(remote.call("Rampant","getMetrics")))'
+    for body in rcon(port, cmd, password):
+        body = body.strip()
+        if not body:
+            continue
+        try:
+            data = jsonlib.loads(body)
+        except Exception:
+            print(body)
+            continue
+        print("enabled:", data.get("enabled"))
+        if not data.get("enabled"):
+            return
+        for section in ("counters", "latest", "highWater"):
+            print(f"-- {section} --")
+            for k in sorted(data.get(section, {})):
+                print(f"  {k}: {data[section][k]}")
+        print("-- sample stats (count/mean/max) --")
+        for k in sorted(data.get("samples", {})):
+            s = data["samples"][k]
+            if isinstance(s, list) and len(s) > 0:
+                mean = sum(s) / len(s)
+                print(f"  {k}: n={len(s)} mean={mean:.3f} max={max(s):.3f}")
+
+
 def cmd_ups(port, password, duration, interval):
     t0 = time.time()
     last = None
@@ -114,6 +142,8 @@ def main():
         duration = float(args[3]) if len(args) > 3 else 60
         interval = float(args[4]) if len(args) > 4 else 2.0
         cmd_ups(port, password, duration, interval)
+    elif cmd == "metrics":
+        cmd_metrics(port, password)
     else:
         print(__doc__)
         sys.exit(1)

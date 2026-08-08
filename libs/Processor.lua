@@ -47,6 +47,15 @@ local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
+local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
+local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
+
+local PROPAGATION_RELATIVE_EPSILON = Constants.PROPAGATION_RELATIVE_EPSILON
+local PROPAGATION_ABSOLUTE_EPSILON = Constants.PROPAGATION_ABSOLUTE_EPSILON
+
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 
 local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
@@ -549,14 +558,8 @@ function Processor.processPendingUpgrades(tick)
         query.name = name
         local position = entityData.position
         local surface = entityData.map.surface
-        print("[DEBUG CREATE] name=" .. name .. " pos=(" .. tostring(position.x) .. "," .. tostring(position.y) .. ") surface=" .. tostring(surface.name))
         query.position = {position.x, position.y}
         local newEntity = surface.create_entity(query)
-        if newEntity then
-            print("[DEBUG CREATED] actual=(" .. tostring(newEntity.position.x) .. "," .. tostring(newEntity.position.y) .. ")")
-        else
-            print("[DEBUG FAILED] could not create " .. name)
-        end
         if newEntity and newEntity.valid then
             local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
             if hiveType == "hive" then
@@ -628,21 +631,67 @@ function Processor.processDirtyChunk(chunk, tick, priority)
     if not chunk or not chunk.valid then
         return false, 0
     end
-    
+
+    -- Snapshot pheromone values to detect material change. The dirty queue
+    -- propagates by marking neighbors; without an epsilon gate the cascade
+    -- never terminates (every processed chunk re-marks its neighbors, which
+    -- re-mark it, forever) and the whole map is re-processed every tick.
+    -- deathGenerator is included: it decays ONLY while the chunk is
+    -- processed, so excluding it would freeze death clouds forever.
+    local before = {
+        chunk[PLAYER_PHEROMONE] or 0,
+        chunk[BASE_PHEROMONE] or 0,
+        chunk[ENEMY_PHEROMONE] or 0,
+        chunk[RESOURCE_PHEROMONE] or 0,
+        chunk[KAMIKAZE_PHEROMONE] or 0,
+        chunk.deathGenerator or 0,
+    }
+
     -- Process pheromones
     MapUtils.processPheromone(chunk, tick)
-    
+
+    -- Only propagate when something materially changed
+    local changed = false
+    local after = {
+        chunk[PLAYER_PHEROMONE] or 0,
+        chunk[BASE_PHEROMONE] or 0,
+        chunk[ENEMY_PHEROMONE] or 0,
+        chunk[RESOURCE_PHEROMONE] or 0,
+        chunk[KAMIKAZE_PHEROMONE] or 0,
+        chunk.deathGenerator or 0,
+    }
+    for i = 1, 6 do
+        local delta = math.abs(after[i] - before[i])
+        if delta > PROPAGATION_ABSOLUTE_EPSILON
+            and delta > math.abs(before[i]) * PROPAGATION_RELATIVE_EPSILON
+        then
+            changed = true
+            break
+        end
+    end
+
     -- Mark neighbors dirty (returns list of neighbor IDs to mark)
     local neighborsToMark = {}
-    local success, neighbors = pcall(MapUtils.getNeighborChunks, chunk.map, chunk.x, chunk.y)
-    if success and neighbors then
-        for i = 1, 8 do
-            if neighbors[i] and neighbors[i] ~= -1 then
-                table.insert(neighborsToMark, { id = neighbors[i].id, priority = priority + 1 })
+    if changed then
+        if MetricsG then
+            MetricsG.inc("dirty.propagationMarks")
+        end
+    else
+        if MetricsG then
+            MetricsG.inc("dirty.epsilonSkips")
+        end
+    end
+    if changed then
+        local success, neighbors = pcall(MapUtils.getNeighborChunks, chunk.map, chunk.x, chunk.y)
+        if success and neighbors then
+            for i = 1, 8 do
+                if neighbors[i] and neighbors[i] ~= -1 then
+                    table.insert(neighborsToMark, { id = neighbors[i].id, priority = priority + 1 })
+                end
             end
         end
     end
-    
+
     return true, neighborsToMark
 end
 
@@ -666,6 +715,9 @@ function Processor.processDirtyChunks(tick, universe)
             
             if success then
                 processed = processed + 1
+                if MetricsG then
+                    MetricsG.inc("dirty.chunksProcessed")
+                end
                 -- Mark neighbors dirty
                 for _, neighbor in ipairs(neighborsToMark) do
                     local neighborPriority = math.min(neighbor.priority, 5)  -- Clamp to max priority 5

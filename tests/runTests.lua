@@ -424,6 +424,9 @@ local test_collections = {}
     local test_death_command = require("tests.test_death_command")
     table.insert(test_collections, { name = "Death Command", collection = test_death_command })
 
+    local test_metrics = require("tests.test_metrics")
+    table.insert(test_collections, { name = "Metrics", collection = test_metrics })
+
     -- TODO: Commented out - will be replaced/refactored for ACO system
     -- local test_map = require("tests.test_map")
     -- table.insert(test_collections, { name = "MapUtils", collection = test_map })

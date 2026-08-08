@@ -66,6 +66,11 @@ use it.
    test scenarios) instead of creating the scenario fresh (fires `on_init` —
    where the tests live). Symptom: scenario loads, checksum prints, but tests
    never run and no test output appears. Fix: `rm -f saves/<name>*` before launch.
+   This is also the FEATURE behind the small-map behavior saves: a prepared
+   save (small map + control) wins over the scenario dir — but ONLY when the
+   scenario dir has no `map-gen-settings.json` (that file makes the dir win,
+   and its size settings are ignored). Behavior scenarios ship both the dir
+   (fallback) and the save (small map); keep the dir free of map-gen-settings.
 
 3. **Scenario `on_init` runs BEFORE mod `on_init` on 2.1.x.** Do not expect mod
    initialization to be complete in the scenario's `on_init`. Poll readiness from

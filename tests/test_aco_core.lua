@@ -220,6 +220,10 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     package.loaded["libs/Processor"] = nil
     local Processor = require("libs/Processor")
     Processor.init(Universe)
+
+    -- Register chunks in the reverse index (mirrors createChunk in production)
+    Universe.chunkById[1] = chunk1
+    Universe.chunkById[2] = chunk2
     
     -- Add chunks to different priorities
     Universe.dirtyChunks.priority1 = {1, 2}
@@ -271,6 +275,11 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     package.loaded["libs/Processor"] = nil
     local Processor = require("libs/Processor")
     Processor.init(Universe)
+
+    -- Register chunks in the reverse index (mirrors createChunk in production)
+    for i = 1, totalChunks do
+        Universe.chunkById[i] = chunksTable[i][0]
+    end
 
     -- Add chunks to priority 1
     for i = 1, totalChunks do

@@ -97,7 +97,7 @@ test:
     rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-integration-tests*
 
     # Create private server settings
-    echo '{"name":"Rampant Integration Tests","description":"Automated integration tests","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false}' > /tmp/rampant-test-server-settings.json
+    echo '{"name":"Rampant Integration Tests","description":"Automated integration tests","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-test-server-settings.json
 
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-integration-tests
     cp -r integration-tests/scenario /mnt/gallery/gameFiles/factorio/scenarios/rampant-integration-tests
@@ -187,7 +187,7 @@ test-active:
     rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-active-ai-tests*
 
     # Create private server settings
-    echo '{"name":"Rampant Active AI Tests","description":"Tests active AI behavior with event capture","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false}' > /tmp/rampant-active-test-server-settings.json
+    echo '{"name":"Rampant Active AI Tests","description":"Tests active AI behavior with event capture","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-active-test-server-settings.json
 
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-active-ai-tests
     cp -r integration-tests/active-ai-scenario /mnt/gallery/gameFiles/factorio/scenarios/rampant-active-ai-tests
@@ -259,3 +259,70 @@ test-rcon:
 
     # Run test script
     integration-tests/run-rcon-tests.sh
+
+# Run a staged behavior scenario (default: wall-defense)
+# Usage: just test-behavior name=wall-defense
+test-behavior name="wall-defense":
+    #!/usr/bin/env -S bash
+    set -e
+    echo "Running Rampant behavior scenario: {{name}}..."
+    pkill -9 factorio 2>/dev/null || true
+    sleep 1
+
+    # Remove stale saves (prevents save-load instead of fresh scenario init)
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}*
+
+    # Create private server settings (auto_pause: false is required — the
+    # server pauses with no players otherwise; see docs/09-Engine-Testing.md)
+    echo '{"name":"Rampant Behavior Tests","description":"Staged behavior scenarios","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-behavior-server-settings.json
+
+    rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
+    cp -r integration-tests/behavior-scenarios/{{name}} /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
+
+    # Install the prepared small-map save (256x256 tiles) — a save with the
+    # scenario name takes precedence over the scenario dir, giving a tiny
+    # grid (instant startup scan, bounded dirty queue). The scenario dir
+    # copy above remains as a fallback.
+    cp integration-tests/behavior-saves/rampant-behavior-{{name}}.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}.zip
+
+    # Start Factorio in background; capture stdout (see `test` recipe)
+    rm -f /tmp/rampant-behavior.out
+    /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
+        --start-server-load-scenario rampant-behavior-{{name}} \
+        --server-settings /tmp/rampant-behavior-server-settings.json \
+        --port 34201 \
+        --rcon-port 27019 \
+        --rcon-password "rampant-test" \
+        > /tmp/rampant-behavior.out 2>&1 &
+    PID=$!
+
+    # Monitor output for test completion (budget: 600s real ~ 90 game-min at ~150 UPS)
+    echo "Waiting for behavior scenario to complete..."
+    for i in {1..600}; do
+        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-behavior.out 2>/dev/null; then
+            sleep 2
+            break
+        fi
+        sleep 1
+    done
+
+    # Show results
+    echo ""
+    echo "=== Behavior Test Results ==="
+    grep -E "\[PASS\]|\[FAIL\]|\[INFO\]|PHASE|Passed|Failed|Detail|TESTS|STAGED" /tmp/rampant-behavior.out 2>/dev/null | tail -30
+    echo ""
+
+    # Check pass/fail status
+    if grep -q "TESTS_COMPLETE" /tmp/rampant-behavior.out 2>/dev/null; then
+        echo "Behavior scenario passed!"
+    else
+        echo "Behavior scenario failed or timed out!"
+        kill -9 $PID 2>/dev/null || true
+        exit 1
+    fi
+
+    # Force kill (RCON quit via nc is not reliable; the binary protocol needs
+    # tools/rcon_client.py)
+    kill -9 $PID 2>/dev/null || true
+
+    echo ""

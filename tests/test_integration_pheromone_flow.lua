@@ -62,6 +62,13 @@ my_collection:add('complete_flow_marks_and_processes_chunk', function()
     local chunk2 = createChunk(124, 1, 0, { player = 0, enemy = 0 })
     
     universe.maps = { [1] = { [0] = { [0] = chunk1 }, [1] = { [0] = chunk2 } } }
+
+        -- Register chunks in the reverse index (mirrors createChunk)
+        for _, xChunks in pairs(universe.maps[1]) do
+            for _, chunk in pairs(xChunks) do
+                universe.chunkById[chunk.id] = chunk
+            end
+        end
     
     -- Mock getNeighborChunks to establish relationship
     local originalNeighbors = MapUtils.getNeighborChunks
@@ -107,6 +114,13 @@ my_collection:add('priority_queue_processes_high_priority_first', function()
     local chunk3 = createChunk(3, 2, 0, { player = 100 })
     
     universe.maps = { [1] = { [0] = { [0] = chunk1 }, [1] = { [0] = chunk2 }, [2] = { [0] = chunk3 } } }
+
+        -- Register chunks in the reverse index (mirrors createChunk)
+        for _, xChunks in pairs(universe.maps[1]) do
+            for _, chunk in pairs(xChunks) do
+                universe.chunkById[chunk.id] = chunk
+            end
+        end
     
     local processedOrder = {}
     local originalProcess = MapUtils.processPheromone
@@ -176,6 +190,13 @@ my_collection:add('pheromone_accumulates_over_multiple_ticks', function()
     
     local chunk = createChunk(123, 0, 0, { player = 10 })
     universe.maps = { [1] = { [0] = { [0] = chunk } } }
+
+        -- Register chunks in the reverse index (mirrors createChunk)
+        for _, xChunks in pairs(universe.maps[1]) do
+            for _, chunk in pairs(xChunks) do
+                universe.chunkById[chunk.id] = chunk
+            end
+        end
     
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return {} end
@@ -213,6 +234,13 @@ my_collection:add('chunk_tick_updated_after_processing', function()
     local chunk = createChunk(123, 0, 0, { player = 100 })
     chunk[Constants.CHUNK_TICK] = 50  -- Already processed at tick 50
     universe.maps = { [1] = { [0] = { [0] = chunk } } }
+
+        -- Register chunks in the reverse index (mirrors createChunk)
+        for _, xChunks in pairs(universe.maps[1]) do
+            for _, chunk in pairs(xChunks) do
+                universe.chunkById[chunk.id] = chunk
+            end
+        end
     
     local processCount = 0
     local originalProcess = MapUtils.processPheromone

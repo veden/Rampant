@@ -36,6 +36,16 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant--telemetryEnabled",
+            description = "rampant--telemetryEnabled",
+            setting_type = "startup",
+            default_value = true,
+            order = "z[dev]-a[telemetry]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant--unitsAffectedByTiles",
             setting_type = "startup",
             default_value = true,
