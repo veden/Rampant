@@ -43,11 +43,6 @@ local EIGHTH_CHUNK_SIZE = Constants.EIGHTH_CHUNK_SIZE
 
 local PLAYER_PHEROMONE_GENERATOR_AMOUNT = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT
 
-local PROCESS_QUEUE_SIZE = Constants.PROCESS_QUEUE_SIZE
-local RESOURCE_QUEUE_SIZE = Constants.RESOURCE_QUEUE_SIZE
-local ENEMY_QUEUE_SIZE = Constants.ENEMY_QUEUE_SIZE
-local PLAYER_QUEUE_SIZE = Constants.PLAYER_QUEUE_SIZE
-
 local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
@@ -69,7 +64,6 @@ local MIN_HIVE_TTL = Constants.MIN_HIVE_TTL
 local distortPositionConcentricCircles = MathUtils.distortPositionConcentricCircles
 local linearInterpolation = MathUtils.linearInterpolation
 local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
-local findInsertionPoint = MapUtils.findInsertionPoint
 
 local createChunk = ChunkUtils.createChunk
 local initialScan = ChunkUtils.initialScan
@@ -87,8 +81,6 @@ local removeChunkToNest = MapUtils.removeChunkToNest
 
 local queueCreation = BaseUtils.queueCreation
 
-local processPheromone = MapUtils.processPheromone
-
 local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 local processBaseMutation = BaseUtils.processBaseMutation
 
@@ -105,10 +97,6 @@ local markChunkDirty = MapUtils.markChunkDirty
 
 local validPlayer = Utils.validPlayer
 
-local mapScanEnemyChunk = ChunkUtils.mapScanEnemyChunk
-local mapScanPlayerChunk = ChunkUtils.mapScanPlayerChunk
-local mapScanResourceChunk = ChunkUtils.mapScanResourceChunk
-
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 
 local canAttack = BaseUtils.canAttack
@@ -116,63 +104,19 @@ local canMigrate = BaseUtils.canMigrate
 
 local tableSize = table_size
 
-local mMin = math.min
-local mMax = math.max
-local tableInsert = table.insert
-
 local next = next
 
 -- module code
 
 --[[
-    processing is not consistant as it depends on the number of chunks that have been generated
-    so if we process 400 chunks an iteration and 200 chunks have been generated than these are
-    processed 3 times a second and 1200 generated chunks would be processed once a second
-    In theory, this might be fine as smaller bases have less surface to attack and need to have
-    pheromone dissipate at a faster rate.
+    Event-driven pheromone processing replaces the old wave-based processMap:
+    generators mark chunks dirty and processDirtyChunks propagates outward
+    with a bounded per-tick budget.
 --]]
-function Processor.processMap(map, tick)
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    local startIndex = mMin(map.processIndex, processQueueLength)
-    local step
-    local endIndex
-    if map.outgoingScanWave then
-        step = 1
-        endIndex = mMin(startIndex + PROCESS_QUEUE_SIZE, processQueueLength)
-        if (endIndex == processQueueLength) then
-            map.outgoingScanWave = false
-            map.processIndex = processQueueLength
-        else
-            map.processIndex = endIndex + 1
-        end
-    else
-        step = -1
-        endIndex = mMax(startIndex - PROCESS_QUEUE_SIZE, 1)
-        if (endIndex == 1) then
-            map.outgoingScanWave = true
-            map.processIndex = 1
-        else
-            map.processIndex = endIndex - 1
-        end
-    end
-    Universe.processedChunks = Universe.processedChunks + ((startIndex - endIndex) * step)
-
-    for x=startIndex,endIndex,step do
-        processPheromone(processQueue[x], tick)
-    end
-end
 
 --[[
-    Localized player radius were processing takes place in realtime, doesn't store state
+    Localized player radius where processing takes place in realtime, doesn't store state
     between calls.
-    vs
-    the slower passive version processing the entire map in multiple passes.
 --]]
 function Processor.processPlayers(players, tick)
     -- put down player pheromone for player hunters
@@ -259,8 +203,6 @@ function Processor.processPlayers(players, tick)
             local chunk = getChunkByXY(map, x, y)
 
             if (chunk ~= -1) then
-                processPheromone(chunk, tick, true)
-
                 if chunk.nestCount then
                     processNestActiveness(chunk, tick)
 
@@ -298,76 +240,10 @@ function Processor.cleanUpMapTables(tick)
 end
 
 --[[
-    Passive scan to find entities that have been generated outside the factorio event system
+    Chunk generation is handled by events (on_chunk_generated) and the
+    initial scan registers structures/generators. Pheromone processing for
+    new chunks is driven by the dirty-chunk queue.
 --]]
-function Processor.scanPlayerMap(map)
-    local index = map.scanPlayerIndex
-
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
-
-    local endIndex = mMin(index + PLAYER_QUEUE_SIZE, processQueueLength)
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    for x=index,endIndex do
-        mapScanPlayerChunk(processQueue[x], map)
-    end
-
-    if (endIndex == processQueueLength) then
-        map.scanPlayerIndex = 1
-    else
-        map.scanPlayerIndex = endIndex + 1
-    end
-end
-
-function Processor.scanEnemyMap(map, tick)
-    local index = map.scanEnemyIndex
-
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
-
-    local endIndex = mMin(index + ENEMY_QUEUE_SIZE, #processQueue)
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    for x=index,endIndex do
-        mapScanEnemyChunk(processQueue[x], map, tick)
-    end
-
-    if (endIndex == processQueueLength) then
-        map.scanEnemyIndex = 1
-    else
-        map.scanEnemyIndex = endIndex + 1
-    end
-end
-
-function Processor.scanResourceMap(map)
-    local index = map.scanResourceIndex
-
-    local processQueue = map.processQueue
-    local processQueueLength = #processQueue
-
-    local endIndex = mMin(index + RESOURCE_QUEUE_SIZE, processQueueLength)
-
-    if (processQueueLength == 0) then
-        return
-    end
-
-    for x=index,endIndex do
-        mapScanResourceChunk(processQueue[x], map)
-    end
-
-    if (endIndex == processQueueLength) then
-        map.scanResourceIndex = 1
-    else
-        map.scanResourceIndex = endIndex + 1
-    end
-end
 
 function Processor.processVengence()
     local vengenceQueue = Universe.vengenceQueue
@@ -613,17 +489,15 @@ function Processor.processPendingChunks(tick, flush)
             local chunk = initialScan(oldChunk, map, tick)
             if (chunk == -1) then
                 removeChunkFromMap(map, oldChunk)
+            else
+                markChunkDirty(chunk.id, 4, tick)
             end
         else
             local initialChunk = createChunk(map, x, y)
             map[x][y] = initialChunk
             local chunk = initialScan(initialChunk, map, tick)
             if (chunk ~= -1) then
-                tableInsert(
-                    map.processQueue,
-                    findInsertionPoint(map.processQueue, chunk),
-                    chunk
-                )
+                markChunkDirty(chunk.id, 4, tick)
             else
                 map[x][y] = nil
             end
@@ -674,9 +548,15 @@ function Processor.processPendingUpgrades(tick)
         local name = entityData.name
         query.name = name
         local position = entityData.position
-        setPositionInQuery(query, position)
         local surface = entityData.map.surface
+        print("[DEBUG CREATE] name=" .. name .. " pos=(" .. tostring(position.x) .. "," .. tostring(position.y) .. ") surface=" .. tostring(surface.name))
+        query.position = {position.x, position.y}
         local newEntity = surface.create_entity(query)
+        if newEntity then
+            print("[DEBUG CREATED] actual=(" .. tostring(newEntity.position.x) .. "," .. tostring(newEntity.position.y) .. ")")
+        else
+            print("[DEBUG FAILED] could not create " .. name)
+        end
         if newEntity and newEntity.valid then
             local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
             if hiveType == "hive" then
@@ -793,29 +673,9 @@ function Processor.processDirtyChunks(tick, universe)
                 end
             end
         end
-        
+
         if processed >= maxPerTick then break end
     end
-end
-
--- Helper to get chunk by ID (from any map)
-function MapUtils.getChunkById(chunkId, universe)
-    universe = universe or storage.universe
-    if not universe or not universe.maps then return nil end
-    for surfaceIndex, map in pairs(universe.maps) do
-        if map then
-            for x, xChunks in pairs(map) do
-                if type(xChunks) == "table" then
-                    for y, chunk in pairs(xChunks) do
-                        if chunk.id == chunkId then
-                            return chunk
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return nil
 end
 
 ProcessorG = Processor

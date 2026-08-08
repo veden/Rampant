@@ -9,6 +9,10 @@ Usage:
     python3 udp-client.py squads
     python3 udp-client.py bases
     python3 udp-client.py state
+    python3 udp-client.py debug:on       # Enable entity event logging
+    python3 udp-client.py debug:off      # Disable entity event logging
+    python3 udp-client.py debug          # Check debug status
+    python3 udp-client.py exec:LUA_CODE  # Execute arbitrary Lua
 """
 
 import socket

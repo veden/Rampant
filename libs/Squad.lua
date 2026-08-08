@@ -34,6 +34,8 @@ local BaseUtils = require("BaseUtils")
 local MathUtils = require("MathUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local Utils = require("Utils")
+local SquadLogic = require("squad_logic")
+local Executor = require("runtime/Executor")
 
 -- Constants
 
@@ -48,6 +50,36 @@ local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
+
+-- Decay-on-read for pheromone values (replaces periodic processMap decay)
+local DECAY_098 = Constants.DECAY_098
+local DECAY_090 = Constants.DECAY_090
+local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
+
+local function getDecayed(chunk, index, timestampKey, decayTable)
+    local value = chunk[index] or 0
+    if value == 0 then return 0 end
+    local lastRefresh = chunk[timestampKey] or 0
+    local elapsed = game.tick - lastRefresh
+    local factor = decayTable[elapsed] or decayTable[DECAY_TABLE_DEPTH]
+    return value * factor
+end
+
+local function getPlayerPheromone(chunk)
+    return getDecayed(chunk, PLAYER_PHEROMONE, "playerLastRefresh", DECAY_098)
+end
+
+local function getBasePheromone(chunk)
+    return getDecayed(chunk, BASE_PHEROMONE, "baseLastRefresh", DECAY_090)
+end
+
+local function getEnemyPheromone(chunk)
+    return getDecayed(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", DECAY_090)
+end
+
+local function getResourcePheromone(chunk)
+    return getDecayed(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", DECAY_090)
+end
 
 local COMPRESSION_COOLDOWN = Constants.COMPRESSION_COOLDOWN
 
@@ -143,9 +175,9 @@ local function scoreResourceLocation(neighborChunk)
     then
         preferred = true
     end
-    local score = neighborChunk[RESOURCE_PHEROMONE]
-        - (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
-        - neighborChunk[ENEMY_PHEROMONE]
+    local score = getResourcePheromone(neighborChunk)
+        - (getPlayerPheromone(neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
+        - getEnemyPheromone(neighborChunk)
     return score, preferred
 end
 
@@ -158,11 +190,11 @@ local function scoreSiegeLocation(neighborChunk)
     then
         preferred = true
     end
-    local settle = neighborChunk[BASE_PHEROMONE]
-        + neighborChunk[RESOURCE_PHEROMONE] * 0.5
-        + (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local settle = getBasePheromone(neighborChunk)
+        + getResourcePheromone(neighborChunk) * 0.5
+        + (getPlayerPheromone(neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
 
-    local score = settle - neighborChunk[ENEMY_PHEROMONE]
+    local score = settle - getEnemyPheromone(neighborChunk)
 
     return score, preferred
 end
@@ -179,7 +211,7 @@ local function scoreSiegeKamikazeLocation(neighborChunk)
     local settle = neighborChunk[KAMIKAZE_PHEROMONE]
         + neighborChunk[RESOURCE_PHEROMONE] * 0.5
 
-    local score = settle - neighborChunk[ENEMY_PHEROMONE]
+    local score = settle - getEnemyPheromone(neighborChunk)
 
     return score, preferred
 end
@@ -193,8 +225,8 @@ local function scoreAttackLocation(neighborChunk)
     then
         preferred = true
     end
-    local damage = neighborChunk[BASE_PHEROMONE] +
-        (neighborChunk[PLAYER_PHEROMONE] * PLAYER_PHEROMONE_MULTIPLER)
+    local damage = getBasePheromone(neighborChunk) +
+        (getPlayerPheromone(neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
     if preferred then
         damage = damage * 2
     end
@@ -366,10 +398,7 @@ function Squad.decompressSquad(squad, tick)
     local query = Queries.createEntityQuery
     local add_member = group.add_member
     local create_entity = squad.map.surface.create_entity
-    setPositionInQuery(
-        query,
-        group.position
-    )
+    query.position = {group.position.x, group.position.y}  -- fresh table each time
     for name,count in pairs(squad.compressionSet) do
         query.name = name
         for _ = 1, count do
@@ -656,7 +685,7 @@ local function attackMove(squad, tick)
             addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
             markChunkDirty(attackChunk.id, 3, tick)  -- Priority 3: recent event
             if attackChunk.playerBaseGenerator or
-                (attackChunk[PLAYER_PHEROMONE] >= Universe.attackPlayerThreshold)
+                (getPlayerPheromone(attackChunk) >= Universe.attackPlayerThreshold)
             then
                 attack = true
             end
@@ -776,6 +805,20 @@ function Squad.squadDispatch(squad, tick)
         return
     end
 
+    -- Pure evaluation: what should this squad do?
+    local squadData = {
+        id = squad.id,
+        status = squad.status,
+        settlers = squad.settlers,
+    }
+    local commands = SquadLogic.evaluate(squadData)
+    if #commands > 0 then
+        Executor.run(commands)
+    end
+
+    -- Execute the movement command for current status.
+    -- Status transitions (RETREATING/GUARDING) are applied by the Executor
+    -- via DISPATCH_SQUAD above; only movement remains here.
     local status = squad.status
     if (status == SQUAD_RAIDING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
@@ -783,28 +826,10 @@ function Squad.squadDispatch(squad, tick)
     elseif (status == SQUAD_SETTLING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
         settleMove(squad, tick)
-    elseif (status == SQUAD_RETREATING) then
-        squad.commandTick = tick + COMMAND_TIMEOUT
-        if squad.settlers then
-            squad.status = SQUAD_SETTLING
-            settleMove(squad, tick)
-        else
-            squad.status = SQUAD_RAIDING
-            attackMove(squad, tick)
-        end
     elseif (status == SQUAD_BUILDING) then
         squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
         removeSquadFromChunk(squad)
         buildMove(squad, tick)
-    elseif (status == SQUAD_GUARDING) then
-        squad.commandTick = tick + COMMAND_TIMEOUT
-        if squad.settlers then
-            squad.status = SQUAD_SETTLING
-            settleMove(squad, tick)
-        else
-            squad.status = SQUAD_RAIDING
-            attackMove(squad, tick)
-        end
     end
 end
 
@@ -974,6 +999,8 @@ function Squad.createSquad(position, map, group, settlers, base)
 
     local squad = {
         group = unitGroup,
+        id = unitGroup.unique_id,
+        groupNumber = unitGroup.unique_id,
         canBeCompressed = 0,
         compressionSet = nil,
         compressionText = nil,
@@ -991,7 +1018,6 @@ function Squad.createSquad(position, map, group, settlers, base)
         frenzyPosition = {x = 0,
                           y = 0},
         maxDistance = 0,
-        groupNumber = unitGroup.group_number,
         originPosition = {x = 0,
                           y = 0},
         commandTick = nil,
@@ -1019,22 +1045,10 @@ function Squad.calculateKamikazeSquadThreshold(memberCount, attackWaveMaxSize, e
     return threshold
 end
 
--- PUBLIC: Wrapper that reads storage.universe
-function Squad.calculateKamikazeSquadThresholdWrapper(squad, tick)
-    local universe = storage.universe
-    return Squad.calculateKamikazeSquadThreshold(squad.memberCount, universe.attackWaveMaxSize, universe.evolutionLevel)
-end
-
 -- PURE: Calculate kamikaze settler threshold
 function Squad.calculateKamikazeSettlerThreshold(memberCount, expansionMaxSize, evolutionLevel)
     local threshold = (memberCount / expansionMaxSize) * 0.2 + (evolutionLevel * 0.2)
     return threshold
-end
-
--- PUBLIC: Wrapper that reads storage.universe
-function Squad.calculateKamikazeSettlerThresholdWrapper(squad, tick)
-    local universe = storage.universe
-    return Squad.calculateKamikazeSettlerThreshold(squad.memberCount, universe.expansionMaxSize, universe.evolutionLevel)
 end
 
 
@@ -1070,17 +1084,17 @@ end
 
 -- PURE: Score settler location (testable)
 function Squad.scoreSettlerLocation(neighborChunk)
-    return neighborChunk[RESOURCE_PHEROMONE] + -neighborChunk[PLAYER_PHEROMONE]
+    return getResourcePheromone(neighborChunk) + -getPlayerPheromone(neighborChunk)
 end
 
 -- PURE: Score siege settler location (testable)
 function Squad.scoreSiegeSettlerLocation(neighborChunk)
-    return (neighborChunk[RESOURCE_PHEROMONE] + neighborChunk[BASE_PHEROMONE]) + -neighborChunk[PLAYER_PHEROMONE]
+    return (getResourcePheromone(neighborChunk) + getBasePheromone(neighborChunk)) + -getPlayerPheromone(neighborChunk)
 end
 
 -- PURE: Score unit group location (testable)
 function Squad.scoreUnitGroupLocation(neighborChunk)
-    return neighborChunk[PLAYER_PHEROMONE] + neighborChunk[BASE_PHEROMONE]
+    return getPlayerPheromone(neighborChunk) + getBasePheromone(neighborChunk)
 end
 
 -- PURE: Check valid unit group location (testable)
@@ -1186,7 +1200,7 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     local lackingPoints = ((base.unitPoints - cost) < 0)
     if attacker then
         if lackingPoints
-            or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
+            or ((getBasePheromone(chunk) < 0.0001) and (getPlayerPheromone(chunk) < 0.0001))
             or (Universe.squadCount > Universe.AI_MAX_SQUAD_COUNT)
             or (not vengence and not attackWaveValidCandidate(chunk))
             or (Universe.random() > Universe.formSquadThreshold)
@@ -1205,17 +1219,17 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
 
     local scoringFunction
     if attacker then
-        scoringFunction = scoreUnitGroupLocation
+        scoringFunction = Squad.scoreUnitGroupLocation
     else
-        scoringFunction = scoreSettlerLocation
+        scoringFunction = Squad.scoreSettlerLocation
         if base.stateAI == BASE_AI_STATE_SIEGE then
-            scoringFunction = scoreSiegeSettlerLocation
+            scoringFunction = Squad.scoreSiegeSettlerLocation
         end
     end
 
     local squadPath, squadDirection = scoreNeighborsForFormation(
         chunk,
-        validUnitGroupLocation,
+        Squad.validUnitGroupLocation,
         scoringFunction
     )
     if (squadPath == -1) then
@@ -1258,14 +1272,17 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
         return
     end
 
-if attacker then
-        squad.kamikaze = Universe.random() < Squad.calculateKamikazeSquadThresholdWrapper(squad, tick)
+    if attacker then
+        squad.kamikaze = Universe.random() <
+            Squad.calculateKamikazeSquadThreshold(
+                foundUnits, Universe.attackWaveMaxSize, Universe.evolutionLevel)
         Universe.squadCount = Universe.squadCount + 1
         if not vengence and (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
             base.sentAggressiveGroups = base.sentAggressiveGroups + 1
         end
     else
-        local kamikazeThreshold = Squad.calculateKamikazeSettlerThresholdWrapper(squad, tick)
+        local kamikazeThreshold = Squad.calculateKamikazeSettlerThreshold(
+            foundUnits, Universe.expansionMaxSize, Universe.evolutionLevel)
         if base.stateAI == BASE_AI_STATE_SIEGE then
             kamikazeThreshold = kamikazeThreshold * 2.5
         end

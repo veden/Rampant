@@ -2,6 +2,38 @@
 
 Integration tests for the Rampant mod that run within the actual Factorio game engine.
 
+> **IMPORTANT — read `docs/09-Engine-Testing.md` before launching any headless
+> test.** It documents the engine 2.1.x behaviors that silently break test runs:
+> `auto_pause` (server pauses with no players), `--console-log` not capturing
+> Lua prints, stale saves hijacking scenario loading, per-mod `storage` scoping,
+> and the scenario authoring contract.
+
+## Current Canonical Flow (2.1.x)
+
+- **`just test`** — entity lifecycle suite (48 tests, self-contained scenario,
+  runs in `on_init`; does not require Rampant to be enabled)
+- **`just test-active`** — full Rampant initialization + tick loop at 60 UPS
+  (requires Rampant enabled in `mods/mod-list.json`)
+- **`just test-rcon`** — RCON-driven AI behavior tests (`tools/rcon_client.py`
+  is the working RCON client)
+
+All recipes: purge stale saves, launch with `"auto_pause": false` in server
+settings, capture **stdout** (not `--console-log`) and poll it for
+`TESTS_COMPLETE` / `TESTS_FAILED`, kill factorio on failure.
+
+### Scenario Authoring Contract
+
+Any test scenario must:
+- Print `TESTS_COMPLETE` (pass) or `TESTS_FAILED` (fail) to **stdout** within the
+  runner's budget
+- Poll mod readiness via `remote.call("Rampant", "isInitialized")` from
+  `on_tick` with a tick budget — never busy-wait, never read mod `storage`
+- Keep `on_load` safe (stale saves fire it instead of `on_init`)
+
+See `active-ai-scenario/control.lua` for the working pattern.
+
+---
+
 ## Overview
 
 This test suite validates that the Rampant mod functions correctly when loaded into a real Factorio game instance. Unlike the headless unit tests (`tests/runTests.lua`), these integration tests use Factorio's actual APIs to:

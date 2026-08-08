@@ -18,7 +18,7 @@ require("tests/sim.adapters.remote")
 require("tests/sim.adapters.defines")
 
 -- Load GameState for dependency injection
-local GameState = require("libs.GameState")
+local GameState = require("tests.GameState")
 _G.GameState = GameState
 
 -- Module exports

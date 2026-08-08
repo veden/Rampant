@@ -27,6 +27,10 @@ local ChunkUtils = require("libs/ChunkUtils")
 local Upgrade = require("libs/Upgrade")
 local Utils = require("libs/Utils")
 local Observability = require("libs/Observability")
+local Executor = require("libs/runtime/Executor")
+local DeathLogic = require("libs/death_logic")
+local SquadCreation = require("libs/squad_creation")
+local BuildingLogic = require("libs/building")
 
 -- Constants
 
@@ -37,19 +41,10 @@ local VANILLA_ENTITY_TYPE_LOOKUP = Constants.VANILLA_ENTITY_TYPE_LOOKUP
 local ENTITY_SKIP_COUNT_LOOKUP = Constants.ENTITY_SKIP_COUNT_LOOKUP
 local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
 
-local TICKS_A_MINUTE = Constants.TICKS_A_MINUTE
 local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 
-local RECOVER_NEST_COST = Constants.RECOVER_NEST_COST
-local RECOVER_WORM_COST = Constants.RECOVER_WORM_COST
-
-local RETREAT_GRAB_RADIUS = Constants.RETREAT_GRAB_RADIUS
-
-local RETREAT_SPAWNER_GRAB_RADIUS = Constants.RETREAT_SPAWNER_GRAB_RADIUS
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-
-local UNIT_DEATH_POINT_COST = Constants.UNIT_DEATH_POINT_COST
 
 local SETTLE_CLOUD_WARMUP = Constants.SETTLE_CLOUD_WARMUP
 
@@ -65,12 +60,9 @@ local removeExcludeSurface = MapUtils.removeExcludedSurface
 
 local setPointAreaInQuery = Utils.setPointAreaInQuery
 
-local nextMap = MapUtils.nextMap
-
 local processClouds = Processor.processClouds
 
 local prepMap = MapUtils.prepMap
-local activateMap = MapUtils.activateMap
 
 local findBaseInitialAlignment = BaseUtils.findBaseInitialAlignment
 
@@ -83,7 +75,6 @@ local markChunkDirty = MapUtils.markChunkDirty
 local isRampantSetting = Utils.isRampantSetting
 
 local processPendingUpgrades = Processor.processPendingUpgrades
-local canMigrate = BaseUtils.canMigrate
 
 local squadDispatch = Squad.squadDispatch
 
@@ -106,12 +97,8 @@ local entityForPassScan = ChunkUtils.entityForPassScan
 local processPendingChunks = Processor.processPendingChunks
 local processScanChunks = Processor.processScanChunks
 
-local processMap = Processor.processMap
 local processPlayers = Processor.processPlayers
 local processDirtyChunks = Processor.processDirtyChunks
-local scanEnemyMap = Processor.scanEnemyMap
-local scanPlayerMap = Processor.scanPlayerMap
-local scanResourceMap = Processor.scanResourceMap
 
 local processNests = Processor.processNests
 local processHives = Processor.processHives
@@ -124,8 +111,6 @@ local recycleBases = BaseUtils.recycleBases
 local deathScent = MapUtils.deathScent
 local victoryScent = MapUtils.victoryScent
 
-local createSquad = Squad.createSquad
-
 local createBase = BaseUtils.createBase
 local findNearbyBaseByPosition = ChunkPropertyUtils.findNearbyBaseByPosition
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
@@ -135,13 +120,10 @@ local getDrainPylonPair = ChunkPropertyUtils.getDrainPylonPair
 
 local createDrainPylon = UnitUtils.createDrainPylon
 
-local decompressSquad = Squad.decompressSquad
-
+local initialScan = ChunkUtils.initialScan
 local isDrained = ChunkPropertyUtils.isDrained
 local setDrainedTick = ChunkPropertyUtils.setDrainedTick
 local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
-
-local retreatUnits = Squad.retreatUnits
 
 local accountPlayerEntity = ChunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
@@ -151,8 +133,6 @@ local registerResource = ChunkUtils.registerResource
 local unregisterResource = ChunkUtils.unregisterResource
 
 local cleanSquads = Squad.cleanSquads
-
-local queueUpgrade = BaseUtils.queueUpgrade
 
 local modifyBaseUnitPoints = BaseUtils.modifyBaseUnitPoints
 
@@ -223,12 +203,34 @@ local function initializeLibraries(addProperties)
     ChunkPropertyUtils.init(Universe, MapUtils)
     ChunkUtils.init(Universe)
     Observability.init(Universe)
+    Executor.init(Universe)
+end
+
+local function rescanAllChunks(map, tick)
+    if not map or not map.surface or not map.surface.valid then return end
+    for x, xChunks in pairs(map) do
+        if type(xChunks) == "table" and xChunks[1] then
+            for y, chunk in pairs(xChunks) do
+                if type(chunk) == "table" and chunk.id then
+                    initialScan(chunk, map, tick)
+                    markChunkDirty(chunk.id, 4, tick)
+                end
+            end
+        end
+    end
 end
 
 local function onLoad()
     Universe = storage.universe
 
+    Universe.DEBUG_ENTITY_EVENTS = true
+
     initializeLibraries()
+
+    -- Event-driven: re-scan existing chunks to register structures (was done by periodic scans)
+    for surfaceIndex, map in pairs(Universe.maps) do
+        rescanAllChunks(map, game.tick)
+    end
 
     hookEvents()
 end
@@ -364,50 +366,61 @@ local function onConfigChanged()
     end
 end
 
+local function dbgEntity(msg)
+    if Universe and Universe.DEBUG_ENTITY_EVENTS then
+        game.print("[RAMPANT] " .. msg)
+    end
+end
+
 local function onEnemyBaseBuild(entity, tick)
+    dbgEntity("onEnemyBaseBuild: " .. entity.name .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") tick=" .. tick)
     local map = Universe.maps[entity.surface.index]
     if not map then
+        dbgEntity("  -> NO MAP for surface=" .. entity.surface.index)
         return
     end
     local chunk = getChunkByPosition(map, entity.position)
-    if (chunk ~= -1) then
-        local base = findNearbyBase(chunk)
+    local base
+    local isNewBase = false
+    if chunk ~= -1 then
+        base = findNearbyBase(chunk)
         if not base then
-            base = createBase(map,
-                              chunk,
-                              tick)
+            dbgEntity("  -> creating new base at chunk(" .. chunk.x .. "," .. chunk.y .. ")")
+            isNewBase = true
         end
-
-        if Universe.NEW_ENEMIES then
-            if VANILLA_ENTITY_TYPE_LOOKUP[entity.name] then
-                queueUpgrade(entity,
-                             base,
-                             nil,
-                             true)
-            else
-                registerEnemyBaseStructure(entity, base, tick, true)
-            end
-        else
-            registerEnemyBaseStructure(entity, base, tick)
-        end
-    else
-        local x,y = positionToChunkXY(entity.position)
-        onChunkGenerated({
-                surface = entity.surface,
-                tick = tick,
-                area = {
-                    left_top = {
-                        x = x,
-                        y = y
-                    }
-                }
-        })
     end
+
+    -- Gather data for pure evaluation
+    local buildingData = {
+        entityName = entity.name,
+        entityType = entity.type,
+        hasMap = true,
+        hasChunk = chunk ~= -1,
+        chunkId = chunk and chunk.id or nil,
+        chunkX = chunk and chunk.x or (function() local x,y = positionToChunkXY(entity.position) return x end)(),
+        chunkY = chunk and chunk.y or (function() local x,y = positionToChunkXY(entity.position) return y end)(),
+        baseId = base and base.id or nil,
+        isNewBase = isNewBase,
+        newEnemies = Universe.NEW_ENEMIES,
+        isVanillaEntity = VANILLA_ENTITY_TYPE_LOOKUP[entity.name],
+    }
+
+    local commands = BuildingLogic.evaluateEnemy(buildingData)
+
+    -- Attach Factorio references for executor to use
+    for _, cmd in ipairs(commands) do
+        cmd.entityRef = entity
+        cmd.mapRef = map
+        cmd.tick = tick
+    end
+
+    Executor.run(commands)
 end
 
 local function onBuild(event)
     local entity = event.created_entity or event.entity
     if entity.valid then
+        dbgEntity("onBuild: event=" .. tostring(event.event) .. " entity=" .. entity.name .. " force=" .. entity.force.name .. " type=" .. entity.type .. " created_entity=" .. tostring(event.created_entity ~= nil) .. " has_entity=" .. tostring(event.entity ~= nil))
         local entityForceName = entity.force.name
         if entityForceName == "enemy" then
             onEnemyBaseBuild(entity, event.tick)
@@ -418,8 +431,12 @@ local function onBuild(event)
             end
             if entity.type == "resource" then
                 registerResource(entity, map)
+                local c = getChunkByPosition(map, entity.position)
+                if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
             else
                 accountPlayerEntity(entity, map, true)
+                local c = getChunkByPosition(map, entity.position)
+                if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
                 if Universe.safeEntities[entity.type] or Universe.safeEntities[entity.name] then
                     entity.destructible = false
                 end
@@ -436,6 +453,8 @@ local function onMine(event)
             return
         end
         accountPlayerEntity(entity, map, false)
+        local c = getChunkByPosition(map, entity.position)
+        if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
     end
 end
 
@@ -444,6 +463,7 @@ local function onDeath(event)
     if not entity.valid then
         return
     end
+    dbgEntity("onDeath: " .. entity.name .. " type=" .. entity.type .. " force=" .. (entity.force and entity.force.name or "nil") .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") cause=" .. (event.cause and event.cause.name or "nil"))
     local surface = entity.surface
     local map = Universe.maps[surface.index]
     if not map then
@@ -467,80 +487,68 @@ local function onDeath(event)
     local squad
 
     if entityForceName == "enemy" then
+        local isDrainPylon = false
         if entityType ~= "unit" then
             if getDrainPylonPair(map, entity.unit_number) then
                 removeDrainPylons(map, entity.unit_number)
-            else
-                unregisterEnemyBaseStructure(map, entity, damageTypeName)
+                isDrainPylon = true
             end
-        else
-            local group = entity.unit_group
-            if group and group.valid then
-                squad = Universe.groupNumberToSquad[group.group_number]
-                if squad then
-                    decompressSquad(squad, tick)
-                    if damageTypeName then
+        end
+
+        if not isDrainPylon then
+            -- Gather data from Factorio entities for pure evaluation
+            local group
+            if entityType == "unit" then
+                group = entity.commandable and entity.commandable.parent_group
+                if group and group.valid then
+                    squad = Universe.groupNumberToSquad[group.unique_id]
+                    if squad and damageTypeName then
                         base = squad.base
                     end
                 end
             end
-        end
 
-        if (chunk ~= -1) then
             if not base then
                 base = findNearbyBase(chunk)
             end
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
-            if (entityType == "unit") and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
-                deathScent(chunk)
-                if base then
-                    base.lostEnemyUnits = base.lostEnemyUnits + 1
-                    if damageTypeName then
-                        base.damagedBy[damageTypeName] = (base.damagedBy[damageTypeName] or 0) + 0.01
-                        base.deathEvents = base.deathEvents + 1
-                    end
-                    if base.lostEnemyUnits % 20 == 0 then
-                        modifyBaseUnitPoints(base, -(20*UNIT_DEATH_POINT_COST), "20 Units Lost")
-                    end
-                    if (Universe.random() < Universe.rallyThreshold) and not surface.peaceful_mode then
-                        rallyUnits(chunk, tick)
-                    end
-                    if artilleryBlast then
-                        base.artilleryBlasts = base.artilleryBlasts + 1
-                    end
-                end
 
-                if (getCombinedDeathGeneratorRating(chunk) < Universe.retreatThreshold) and cause and cause.valid and cause.get_health_ratio() ~= nil then
-                    retreatUnits(chunk,
-                                 cause,
-                                 tick,
-                                 squad,
-                                 (artilleryBlast and RETREAT_SPAWNER_GRAB_RADIUS) or RETREAT_GRAB_RADIUS)
-                end
-            elseif BUILDING_HIVE_TYPE_LOOKUP[entity.name] or
-                (entityType == "unit-spawner") or
-                (entityType == "turret")
-            then
-                deathScent(chunk, true)
-                if base then
-                    if (entityType == "unit-spawner") then
-                        modifyBaseUnitPoints(base, RECOVER_NEST_COST, "Nest Lost")
-                    elseif (entityType == "turret") then
-                        modifyBaseUnitPoints(base, RECOVER_WORM_COST, "Worm Lost")
-                    end
-                    rallyUnits(chunk, tick)
-                    if artilleryBlast then
-                        base.artilleryBlasts = base.artilleryBlasts + 1
-                    end
-                end
+            local deathData = {
+                entityType = entityType,
+                entityName = entity.name,
+                chunkId = chunk ~= -1 and chunk.id or -1,
+                baseId = base and base.id or nil,
+                base = base,
+                squadId = squad and squad.id or nil,
+                damageType = damageTypeName,
+                isArtilleryCause = artilleryBlast,
+                deathGeneratorRating = chunk ~= -1 and getCombinedDeathGeneratorRating(chunk) or 0,
+                retreatThreshold = Universe.retreatThreshold or 0,
+                causeValid = cause and cause.valid and (cause.get_health_ratio() ~= nil),
+                rallyThreshold = Universe.rallyThreshold or 0,
+                randomRoll = Universe.random(),
+                lostEnemyUnits = base and base.lostEnemyUnits or 0,
+                isDrainPylon = false,
+            }
 
-                if cause and cause.valid and cause.get_health_ratio() ~= nil then
-                    retreatUnits(chunk,
-                                 cause,
-                                 tick,
-                                 nil,
-                                 RETREAT_SPAWNER_GRAB_RADIUS)
+            local commands = DeathLogic.evaluateEnemy(deathData)
+            if #commands > 0 then
+                for _, cmd in ipairs(commands) do
+                    cmd.entityRef = entity
+                    cmd.mapRef = map
+                    cmd.tick = tick
+                end
+                Executor.run(commands)
+            end
+
+            -- Scent application stays here (impure: modifies chunk pheromones directly)
+            if chunk ~= -1 then
+                if entityType == "unit" and not ENTITY_SKIP_COUNT_LOOKUP[entity.name] then
+                    deathScent(chunk)
+                elseif BUILDING_HIVE_TYPE_LOOKUP[entity.name] or
+                       entityType == "unit-spawner" or entityType == "turret" then
+                    deathScent(chunk, true)
                 end
             end
         end
@@ -552,10 +560,10 @@ local function onDeath(event)
             if chunk ~= -1 then
                 victoryScent(chunk, entityType)
                 drained = (entityType == "electric-turret") and isDrained(chunk, tick)
-                if cause and cause.type == "unit" then
-                    local group = cause.unit_group
+                if cause and cause.valid and cause.type == "unit" then
+                    local group = cause.commandable and cause.commandable.parent_group
                     if group and group.valid then
-                        squad = Universe.groupNumberToSquad[group.group_number]
+                        squad = Universe.groupNumberToSquad[group.unique_id]
                         if squad then
                             base = squad.base
                         end
@@ -640,6 +648,8 @@ local function onResourceDepleted(event)
             return
         end
         unregisterResource(entity, map)
+        local c = getChunkByPosition(map, entity.position)
+        if c ~= -1 then markChunkDirty(c.id, 4, event.tick) end
     end
 end
 
@@ -745,6 +755,9 @@ local function onInit()
     -- Set awake flag before calling handlers that check it
     Universe.awake = true
 
+    -- Entity event debug logging (always on)
+    Universe.DEBUG_ENTITY_EVENTS = true
+
     log("Rampant: Full initialization starting")
 
     hookEvents()
@@ -758,88 +771,55 @@ end
 
 local function onUnitGroupCreated(event)
     local group = event.group
-    if (group.force.name ~= "enemy") then
-        return
-    end
+    dbgEntity("onUnitGroupCreated: force=" .. group.force.name .. " is_script=" .. tostring(group.is_script_driven) .. " @(" .. group.position.x .. "," .. group.position.y .. ")")
+
     local surface = group.surface
-    local squad
-    if group.is_script_driven then
-        return
-    end
-    if not Universe or not Universe.awake then
-        group.destroy()
-        return
-    end
     local map = Universe.maps[surface.index]
-    if not map then
-        return
-    end
-    activateMap(map)
+
     local position = group.position
     local chunk = getChunkByPosition(map, position)
     local base
-    if (chunk == -1) then
+    if chunk == -1 then
         base = findNearbyBaseByPosition(map, position.x, position.y)
     else
         base = findNearbyBase(chunk)
     end
-    if not base then
-        group.destroy()
-        return
+
+    -- Gather data for pure evaluation
+    local creationData = {
+        forceName = group.force.name,
+        isScriptDriven = group.is_script_driven,
+        universeAwake = Universe and Universe.awake,
+        hasMap = map ~= nil,
+        baseId = base and base.id or nil,
+        migrateParams = base and {
+            stateAI = base.stateAI,
+            expansion = Universe.expansion,
+            peacefulMode = surface.peaceful_mode,
+            aiNocturnalMode = Universe.aiNocturnalMode,
+            darkness = surface.darkness,
+        } or {},
+        builderCount = Universe.builderCount or 0,
+        maxBuilderCount = Universe.AI_MAX_VANILLA_BUILDER_COUNT,
+        squadCount = Universe.squadCount or 0,
+        maxSquadCount = Universe.AI_MAX_VANILLA_SQUAD_COUNT,
+        hasChunk = chunk ~= -1,
+        basePheromone = chunk and chunk[BASE_PHEROMONE] or 0,
+        playerPheromone = chunk and chunk[PLAYER_PHEROMONE] or 0,
+        aiNocturnalMode = Universe.aiNocturnalMode,
+        darkness = surface.darkness,
+        randomRoll = Universe.random(),
+    }
+
+    local commands = SquadCreation.evaluate(creationData)
+    if #commands == 0 then return end
+
+    -- Attach Factorio reference for executor to use
+    for _, cmd in ipairs(commands) do
+        cmd.groupRef = group
     end
-    if not Universe.aiNocturnalMode then
-        local settler = canMigrate(base) and
-            (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
-            (Universe.random() < 0.25)
 
-
-        if not settler then
-            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
-                or (chunk == -1)
-                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
-            then
-                group.destroy()
-                return
-            end
-        end
-
-        squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
-
-        if settler then
-            Universe.builderCount = Universe.builderCount + 1
-        else
-            Universe.squadCount = Universe.squadCount + 1
-        end
-    else
-        if not (surface.darkness > 0.65) then
-            group.destroy()
-            return
-        end
-
-        local settler = canMigrate(base) and
-            (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
-            (Universe.random() < 0.25)
-
-        if not settler then
-            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
-                or (chunk == -1)
-                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
-            then
-                group.destroy()
-                return
-            end
-        end
-
-        squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
-
-        if settler then
-            Universe.builderCount = Universe.builderCount + 1
-        else
-            Universe.squadCount = Universe.squadCount + 1
-        end
-    end
+    Executor.run(commands)
 end
 
 local function onGroupFinishedGathering(event)
@@ -855,8 +835,7 @@ local function onGroupFinishedGathering(event)
     if not map then
         return
     end
-    activateMap(map)
-    local squad = Universe.groupNumberToSquad[group.group_number]
+    local squad = Universe.groupNumberToSquad[group.unique_id]
     if squad then
         if squad.settler then
             if (Universe.builderCount <= Universe.AI_MAX_BUILDER_COUNT) then
@@ -878,40 +857,9 @@ local function onGroupFinishedGathering(event)
             end
         end
     else
-        local position = group.position
-        local chunk = getChunkByPosition(map, position)
-        local base
-        if chunk == -1 then
-            base = findNearbyBaseByPosition(map, position.x, position.y)
-        else
-            base = findNearbyBase(chunk)
-        end
-        if not base then
-            group.destroy()
-            return
-        end
-        local settler = canMigrate(base) and
-            (Universe.builderCount < Universe.AI_MAX_VANILLA_BUILDER_COUNT) and
-            (Universe.random() < 0.25)
-
-        if not settler then
-            if (Universe.squadCount >= Universe.AI_MAX_VANILLA_SQUAD_COUNT)
-                or (chunk == -1)
-                or ((chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001))
-            then
-                group.destroy()
-                return
-            end
-        end
-
-        squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
-        if settler then
-            Universe.builderCount = Universe.builderCount + 1
-        else
-            Universe.squadCount = Universe.squadCount + 1
-        end
-        squadDispatch(squad, event.tick)
+        -- Group was not adopted at creation (script-driven, non-enemy, or rejected).
+        -- Adoption decisions live in SquadCreation.evaluate; leave unadopted groups alone.
+        return
     end
 end
 
@@ -936,15 +884,6 @@ end
 
 local function onSurfaceDeleted(event)
     local surfaceIndex = event.surface_index
-    if (Universe.mapIterator == surfaceIndex) then
-        Universe.mapIterator, Universe.currentMap = next(
-            Universe.activeMaps,
-            Universe.mapIterator
-        )
-    end
-    if (Universe.processMapAIIterator == surfaceIndex) then
-        Universe.processMapAIIterator = nil
-    end
     Universe.maps[surfaceIndex] = nil
 end
 
@@ -971,6 +910,7 @@ local function onChunkDeleted(event)
 end
 
 local function onBuilderArrived(event)
+    dbgEntity("onBuilderArrived: has_group=" .. tostring(event.group ~= nil and event.group.valid) .. " has_unit=" .. tostring(event.unit ~= nil and event.unit.valid))
     local builder = event.group
     local usingUnit = false
     if not (builder and builder.valid) then
@@ -982,14 +922,14 @@ local function onBuilderArrived(event)
     elseif (builder.force.name ~= "enemy") then
         return
     end
+    dbgEntity("  -> builder=" .. (builder.name or "group") .. " @(" .. builder.position.x .. "," .. builder.position.y .. ") usingUnit=" .. tostring(usingUnit))
 
     local map = Universe.maps[builder.surface.index]
     if not map then
         return
     end
-    activateMap(map)
     if not usingUnit then
-        local squad = Universe.groupNumberToSquad[builder.group_number]
+        local squad = Universe.groupNumberToSquad[builder.unique_id]
         squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     end
     if Universe.PRINT_BASE_SETTLING then
@@ -1022,19 +962,23 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
 
-                    local range = (Universe.legacyChunkScanning and 4) or 3
-                    local pick = tick % range
+                    local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- local profiler = game.create_profiler()
-
-                    local map = nextMap()
 
                     if (pick == 0) then
                         processPendingChunks(tick)
-                        if map then
+                        if next(Universe.maps) ~= nil then
                             recycleBases()
                         end
                         cleanUpMapTables(tick)
                         planning(gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
+                        -- One-time rescan when evolution rises: registers enemy structures that spawned after chunk creation
+                        if not Universe.rescannedForEvolution and Universe.evolutionLevel > 0.3 then
+                            for _, map in pairs(Universe.maps) do
+                                rescanAllChunks(map, tick)
+                            end
+                            Universe.rescannedForEvolution = true
+                        end
                         processHives(tick)
                         cleanHivesData()
                     elseif (pick == 1) then
@@ -1046,22 +990,10 @@ script.on_event(defines.events.on_tick,
                         processAttackWaves()
                         processClouds(tick)
                         processScanChunks()
-                    elseif (pick == 3) then
-                        if map then
-                            scanPlayerMap(map)
-                            scanResourceMap(map)
-                            scanEnemyMap(map, tick)
-                        end
                     end
 
-                    if map then
-                        processMap(map, tick)
-                    end
-
-                    -- Event-driven pheromone processing (runs alongside wave-based)
-                    if Universe.eventDrivenPheromones then
-                        processDirtyChunks(tick, Universe)
-                    end
+                    -- Event-driven pheromone processing (replaces wave-based processMap)
+                    processDirtyChunks(tick, Universe)
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
 

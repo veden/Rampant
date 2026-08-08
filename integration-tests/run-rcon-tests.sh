@@ -17,11 +17,14 @@ cat > "$SETTINGS_FILE" << EOF
     "description": "RCON-controlled AI tests",
     "visibility": {"public": false, "lan": false},
     "require_user_verification": false,
-    "max_players": 1
+    "max_players": 1,
+    "auto_pause": false
 }
 EOF
 
 echo "Starting Factorio server..."
+# Remove stale saves (prevents loading an old save instead of fresh scenario init)
+rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-active-ai-tests*
 # Start Factorio in background
 /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
     --start-server-load-scenario "$SCENARIO" \

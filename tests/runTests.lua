@@ -415,6 +415,15 @@ local test_collections = {}
     local test_baseutils_pure = require("tests.test_baseutils_pure")
     table.insert(test_collections, { name = "BaseUtils Pure", collection = test_baseutils_pure })
 
+    local test_squad_command = require("tests.test_squad_command")
+    table.insert(test_collections, { name = "Squad Command", collection = test_squad_command })
+
+    local test_base_command = require("tests.test_base_command")
+    table.insert(test_collections, { name = "Base Command", collection = test_base_command })
+
+    local test_death_command = require("tests.test_death_command")
+    table.insert(test_collections, { name = "Death Command", collection = test_death_command })
+
     -- TODO: Commented out - will be replaced/refactored for ACO system
     -- local test_map = require("tests.test_map")
     -- table.insert(test_collections, { name = "MapUtils", collection = test_map })

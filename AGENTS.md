@@ -106,13 +106,32 @@ The integration testing framework consists of:
 
 ### Test Execution Flow
 
-1. `just test` creates private server settings
-2. Copies scenario to Factorio scenarios directory
-3. Starts Factorio headless with scenario
-4. Scenario runs entity lifecycle tests against vanilla Factorio APIs
-5. Tests complete and print results to console log
-6. Test runner detects completion and sends RCON quit command
-7. Factorio gracefully shuts down
+1. `just test` creates private server settings (must include `"auto_pause": false` — see below)
+2. Purges stale saves (a save with the scenario name hijacks loading, firing `on_load` instead of `on_init`)
+3. Copies scenario to Factorio scenarios directory
+4. Starts Factorio headless with scenario, capturing **stdout** (NOT `--console-log` — on 2.1.x it captures only the header; Lua prints go to stdout)
+5. Scenario runs entity lifecycle tests against vanilla Factorio APIs
+6. Runner polls captured stdout for `TESTS_COMPLETE`/`TESTS_FAILED` and sends RCON quit
+7. Factorio shuts down (force-killed on failure — never exit without killing, the backgrounded server holds the shell pipe open)
+
+### Engine Testing on Factorio 2.1.x — READ THIS FIRST
+
+**Read `docs/09-Engine-Testing.md` before launching any headless test.** It
+contains the hard-won engine knowledge that cost hours to discover:
+
+- **`auto_pause` is the #1 test-killer**: default `true` — with no players
+  connected the server advances ~1 tick per 3.6s (0.276 UPS). `pause_when_no_players`
+  is NOT a valid key (silently ignored). Server settings must use `"auto_pause": false`.
+- `storage` is per-mod: scenarios can't read the mod's storage; poll readiness
+  via `remote.call("Rampant", "isInitialized")` from `on_tick` (never busy-wait,
+  never read `storage._rampantReady` from a scenario).
+- Scenario `on_init` runs BEFORE mod `on_init` on 2.1.x.
+- `LuaEntityPrototype` is strict: removed fields (`build_base_evolution_requirement`)
+  **error on access** instead of returning nil; an error in `on_tick` is a
+  non-recoverable server shutdown.
+- RCON is a binary protocol: use `tools/rcon_client.py`, not `nc` text.
+- `factorio_version` in `info.json` must match the engine major version (2.1).
+- Rampant must be enabled in `mods/mod-list.json` for `just test-active`/`test-rcon`.
 
 ### Future Enhancements
 

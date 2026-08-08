@@ -249,43 +249,51 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     local surface = Fixtures.makeSurface("test")
     local map = Fixtures.makeMap(surface)
     map.universe = Universe
-    
+
     -- Set up Universe.maps for getChunkById (maps indexed by surface index)
     local chunksTable = {}
     Universe.maps = { [1] = chunksTable }
-    
+
+    -- Budget comes from the constant (retuned 40 -> 200 in recent work)
+    local budget = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
+    local totalChunks = budget + 100  -- exceed budget so remaining is measurable
+
     -- Create minimal mock chunks
-    for i = 1, 100 do
+    for i = 1, totalChunks do
         local chunk = { id = i, valid = true, map = map, x = i, y = 0 }
         chunksTable[i] = { [0] = chunk }
     end
-    
+
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
     package.loaded["libs/Processor"] = nil
     local Processor = require("libs/Processor")
     Processor.init(Universe)
-    
-    -- Add 100 chunks to priority 1
-    for i = 1, 100 do
+
+    -- Add chunks to priority 1
+    for i = 1, totalChunks do
         Universe.dirtyChunks.priority1[i] = i
         Universe.dirtyChunkSet[i] = 1
     end
-    
-    -- Mock processPheromone to avoid complex chunk requirements
+
+    -- Mock processPheromone and getNeighborChunks to avoid complex chunk requirements
     local originalProcessPheromone = MapUtils.processPheromone
+    local originalGetNeighborChunks = MapUtils.getNeighborChunks
     MapUtils.processPheromone = function() end
-    
+    MapUtils.getNeighborChunks = function() return {} end
+
     -- Process
     Processor.processDirtyChunks(1000, Universe)
-    
+
     -- Restore
     MapUtils.processPheromone = originalProcessPheromone
-    
-    -- Should have processed only 40 (budget limit)
-    assert(#Universe.dirtyChunks.priority1 == 60, "Should have processed 40 chunks")
+    MapUtils.getNeighborChunks = originalGetNeighborChunks
+
+    -- Should have processed exactly `budget` chunks (budget limit)
+    assert(#Universe.dirtyChunks.priority1 == totalChunks - budget,
+        "Should have processed " .. budget .. " chunks, remaining=" .. #Universe.dirtyChunks.priority1)
 end)
 
 return my_collection

@@ -356,3 +356,52 @@ end
 **Last Updated**: 2026-03-01  
 **Status**: Ready for Implementation  
 **Next Step**: Begin Phase 1 implementation (Core Systems)
+
+---
+
+## 9. Engine Testing on Factorio 2.1.x (2026-08-08)
+
+Hard-won learnings from establishing the engine test baseline. Full detail in
+**`docs/09-Engine-Testing.md`**.
+
+### Root Causes Found
+
+1. **`auto_pause` (server settings)**: default `true` pauses the server when no
+   players are connected — it advances ~1 tick per 3.6s (0.276 UPS), silently
+   stalling any test that needs ticks. `pause_when_no_players` is an unknown
+   key, silently ignored. Fix: `"auto_pause": false`.
+   *Lesson: server settings are documented in `data/server-settings.example.json`,
+   not the Lua API docs; unknown keys are ignored without warning.*
+
+2. **`--console-log` is a stub on 2.1.x**: captures only the header line; Lua
+   `print()` goes to stdout. Test runners must capture and poll stdout.
+
+3. **Stale saves hijack scenario loading**: `saves/<name>.zip` makes
+   `--start-server-load-scenario` load the save (`on_load`) instead of creating
+   the scenario fresh (`on_init`). Tests in `on_init` never run. Purge saves
+   before launching.
+
+4. **`storage` is per-mod**: scenarios and `/silent-command` see the scenario's
+   storage, never the mod's. Cross-mod readiness must use
+   `remote.call("Rampant", "isInitialized")`.
+
+5. **`LuaEntityPrototype` strict metatable**: removed fields
+   (`build_base_evolution_requirement`, a 1.1-era field) error on access instead
+   of returning nil. An error in `on_tick` is non-recoverable (server shutdown).
+   Guard version-sensitive prototype access with `pcall`.
+
+6. **Scenario `on_init` runs before mod `on_init`** on 2.1.x, and busy-wait
+   loops cannot work (the mod cannot run while the scenario spins). Poll
+   readiness from `on_tick` with a tick budget.
+
+### Process Lessons
+
+- **Measure UPS before theorizing**: the invariant flatline (0.276 UPS,
+  unchanged by any mod edit) was the signal that the cause was environmental.
+  When a symptom is invariant under every code change, check the environment
+  configuration against reference docs before touching more code.
+- **Phase-gated test structure** with budgets per phase (process up, mods
+  loaded, in-game, Rampant ready, ticks advancing at ≥ floor UPS, test signal)
+  turns "it timed out" into a precise diagnostic.
+- **`tools/rcon_client.py`** is the working RCON instrument (`rcon.print()` for
+  responses; plain `nc` does not speak the protocol).

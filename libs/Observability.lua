@@ -249,6 +249,19 @@ function Observability.onUdpPacket(event)
         return sendResponse(port, {ok = true, tick = game.tick})
     end
 
+    -- debug:on / debug:off - toggle entity event logging
+    if payload == "debug:on" or payload == "debug:off" then
+        if Universe then
+            Universe.DEBUG_ENTITY_EVENTS = (payload == "debug:on")
+            return sendResponse(port, {ok = true, debug = Universe.DEBUG_ENTITY_EVENTS})
+        end
+        return sendResponse(port, {error = "Universe not initialized"})
+    end
+
+    if payload == "debug" then
+        return sendResponse(port, {debug = Universe and Universe.DEBUG_ENTITY_EVENTS or false})
+    end
+
     if payload == "squads" then
         local squads = {}
         if Universe and Universe.tables and Universe.tables.groupNumberToSquad then

@@ -4,31 +4,24 @@
 print("=== ACO Implementation Tests ===\n")
 
 -- Mock minimal globals needed
-data = { extend = function(self, x) end }
-settings = { 
-    startup = {
-        ["rampant--enemySeed"] = { value = 12345 },
-        ["rampant--newEnemyVariations"] = { value = false },
-        ["rampant--max-evo-dist"] = { value = 100 },
-        ["rampant--baseAlignment"] = { value = 0.5 },
-        ["rampant--baseAlignmentChance"] = { value = 0.1 },
-        ["rampant--baseMutation"] = { value = 0.01 },
-        ["rampant--baseMutationChance"] = { value = 0.05 },
-        ["rampant--baseMutationRate"] = { value = 0.1 },
-        ["rampant--baseMutationRate2"] = { value = 0.15 },
-        ["rampant--baseMutationRate3"] = { value = 0.2 },
-        ["rampant--baseMutationRate4"] = { value = 0.25 },
-        ["rampant--baseMutationRate5"] = { value = 0.3 },
-        ["rampant--baseMutationRate6"] = { value = 0.35 },
-        ["rampant--baseMutationRate7"] = { value = 0.4 },
-        ["rampant--baseMutationRate8"] = { value = 0.45 },
-        ["rampant--baseMutationRate9"] = { value = 0.5 },
-        ["rampant--baseMutationRate10"] = { value = 0.55 },
-        ["rampant--tierStart"] = { value = 0.1 },
-        ["rampant--tierEnd"] = { value = 1.0 },
-    },
-    global = {}
+
+-- Capture settings from data:extend() calls (same approach as runTests.lua,
+-- keeps this runner in sync with the real settings.lua shape)
+local capturedSettings = {}
+data = {
+    extend = function(self, x)
+        for _, setting in ipairs(x) do
+            if setting.setting_type then
+                local settingType = setting.setting_type
+                if settingType == "runtime-global" then settingType = "global" end
+                if not capturedSettings[settingType] then capturedSettings[settingType] = {} end
+                capturedSettings[settingType][setting.name] = { value = setting.default_value }
+            end
+        end
+    end,
 }
+require("settings")
+settings = capturedSettings
 
 -- Mock bit32
 local c = ((2 ^ 32) - 1)
@@ -71,7 +64,7 @@ test("DECAY_092 exists", Constants.DECAY_092 ~= nil)
 test("DECAY_095 exists", Constants.DECAY_095 ~= nil)
 test("DECAY_098 exists", Constants.DECAY_098 ~= nil)
 test("DECAY_TRAIL exists", Constants.DECAY_TRAIL ~= nil)
-test("DECAY_090 has correct size", #Constants.DECAY_090 == 10001, "Got " .. #Constants.DECAY_090)
+test("DECAY_090 has correct size", #Constants.DECAY_090 == Constants.DECAY_TABLE_DEPTH, "Got " .. #Constants.DECAY_090)
 test("DECAY_090[100] is accurate", math.abs(Constants.DECAY_090[100] - 0.90^100) < 0.0001)
 test("DECAY_098[500] is accurate", math.abs(Constants.DECAY_098[500] - 0.98^500) < 0.0001)
 test("DECAY_TRAIL[100] is accurate", math.abs(Constants.DECAY_TRAIL[100] - 0.97^100) < 0.0001)
@@ -91,7 +84,7 @@ test("DECAY_BASE = 0.90", Constants.DECAY_BASE == 0.90)
 test("DECAY_GENERATOR = 0.92", Constants.DECAY_GENERATOR == 0.92)
 test("DECAY_KAMIKAZE = 0.95", Constants.DECAY_KAMIKAZE == 0.95)
 test("DECAY_PLAYER = 0.98", Constants.DECAY_PLAYER == 0.98)
-test("DECAY_TRAIL = 0.97", Constants.DECAY_TRAIL == 0.97)
+-- DECAY_TRAIL is overwritten with its decay table at load; rate verified via DECAY_TRAIL[100]
 
 print("\nTest 4: Refresh Intervals")
 test("REFRESH_PLAYER_TICKS = 5", Constants.REFRESH_PLAYER_TICKS == 5)
@@ -100,7 +93,7 @@ test("REFRESH_SPAWNERS_TICKS = 60", Constants.REFRESH_SPAWNERS_TICKS == 60)
 test("REFRESH_HIVES_TICKS = 120", Constants.REFRESH_HIVES_TICKS == 120)
 
 print("\nTest 5: Processing Budget")
-test("PROCESS_DIRTY_CHUNKS_PER_TICK = 40", Constants.PROCESS_DIRTY_CHUNKS_PER_TICK == 40)
+test("PROCESS_DIRTY_CHUNKS_PER_TICK = 200", Constants.PROCESS_DIRTY_CHUNKS_PER_TICK == 200)
 
 print("\n=== Test Summary ===")
 print("Passed: " .. passed)

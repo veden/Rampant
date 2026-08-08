@@ -248,6 +248,9 @@ local unregisterTypeToRemoveFn = {
 function ChunkUtils.initialScan(chunk, map, tick)
     local surface = map.surface
     setAreaInQueryChunkSize(Universe.isFilteredTilesQuery, chunk)
+    setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
+    setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
+    setAreaInQueryChunkSize(Universe.isFilteredEntitiesChunkNeutral, chunk)
     local pass = scanPaths(chunk, map)
     local enemyBuildings = surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
     local playerObjects = scorePlayerBuildings(map, chunk)
@@ -279,29 +282,47 @@ function ChunkUtils.initialScan(chunk, map, tick)
 
                 if Universe.NEW_ENEMIES then
                     local unitList = surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
-                    for i=1,#unitList do
-                        local unit = unitList[i]
-                        if (unit.valid) then
-                            unit.destroy()
+                    if #unitList > 0 then
+                        local killed = 0
+                        local dbgMsg = "initialScan: checking " .. #unitList .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
+                        for i=1,#unitList do
+                            local u = unitList[i]
+                            if u.valid and u.type == "unit" then
+                                dbgMsg = dbgMsg .. " KILL " .. u.name .. "(" .. u.position.x .. "," .. u.position.y .. ")"
+                                u.destroy()
+                                killed = killed + 1
+                            else
+                                dbgMsg = dbgMsg .. " SKIP " .. u.name .. "(type=" .. u.type .. ")"
+                            end
                         end
+                        dbgMsg = dbgMsg .. " total_killed=" .. killed
+                        if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] " .. dbgMsg) end
                     end
 
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
-                        ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
-                        local entityName = enemyBuilding.name
-                        local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
-                        if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
-                            queueUpgrade(enemyBuilding,
-                                         base,
-                                         nil,
-                                         true)
+                        if enemyBuilding.valid then
+                            local entityName = enemyBuilding.name
+                            if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: registerEnemyBaseStructure(" .. entityName .. ") base=" .. (base.id or "?")) end
+                            ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
+                            local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
+                            if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
+                                if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: queueUpgrade(" .. entityName .. ")") end
+                                queueUpgrade(enemyBuilding,
+                                             base,
+                                             nil,
+                                             true)
+                            else
+                                if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: SKIPPED upgrade(" .. entityName .. ") - is hive") end
+                            end
                         end
                     end
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
-                        ChunkUtils.registerEnemyBaseStructure(building, base, tick)
+                        if building.valid then
+                            ChunkUtils.registerEnemyBaseStructure(building, base, tick)
+                        end
                     end
                 end
             end
@@ -337,39 +358,6 @@ function ChunkUtils.chunkPassScan(chunk, map)
     end
 
     return -1
-end
-
-function ChunkUtils.mapScanPlayerChunk(chunk, map)
-    local playerObjects = scorePlayerBuildings(map, chunk)
-    setPlayerBaseGenerator(chunk, playerObjects)
-end
-
-function ChunkUtils.mapScanResourceChunk(chunk, map)
-    setAreaInQueryChunkSize(Universe.msrcCountResourcesQuery, chunk)
-    local surface = map.surface
-    local resources = surface.count_entities_filtered(Universe.msrcCountResourcesQuery) * RESOURCE_NORMALIZER
-    setResourceGenerator(chunk, resources)
-    local waterTiles = (1 - (surface.count_tiles_filtered(Universe.msrcFilteredTilesQuery) * 0.0009765625)) * 0.80
-    local neutralObjects = mMax(0,
-                                mMin(1 - (surface.count_entities_filtered(Universe.msrcFilteredEntitiesChunkNeutral) * 0.005),
-                                     1) * 0.20)
-    setPathRating(chunk, waterTiles + neutralObjects)
-end
-
-function ChunkUtils.mapScanEnemyChunk(chunk, map, tick)
-    setAreaInQueryChunkSize(Universe.msecFilteredEntitiesEnemyStructureQuery, chunk)
-    local buildings = map.surface.find_entities_filtered(Universe.msecFilteredEntitiesEnemyStructureQuery)
-    if (#buildings > 0) then
-        local base = findNearbyBase(chunk)
-        if not base then
-            base = createBase(map, chunk, tick)
-        end
-        for i=1,#buildings do
-            local building = buildings[i]
-
-            ChunkUtils.registerEnemyBaseStructure(building, base, tick)
-        end
-    end
 end
 
 function ChunkUtils.entityForPassScan(map, entity)
@@ -505,8 +493,10 @@ local function registerHive(base, entity, hiveType, tick)
 end
 
 function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
+    if not entity or not entity.valid then return end
     local name = entity.name
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
+    if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] registerEnemyBaseStructure: " .. name .. " hiveType=" .. tostring(hiveType) .. " base=" .. (base.id or "?") .. " skipCount=" .. tostring(skipCount)) end
 
     local addFunc =
         registerTypeToAddFn[hiveType]
@@ -515,6 +505,10 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
 
     local added = false
     local entityUnitNumber = entity.unit_number
+    if not entityUnitNumber then
+        if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT]   -> SKIP: entity " .. name .. " has no unit_number") end
+        return
+    end
     local chunks = getEntityOverlapChunks(base.map, entity)
     for i=1,#chunks do
         local chunk = chunks[i]
@@ -533,6 +527,7 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
     if added and (not skipCount) then
         base.builtEnemyBuilding = base.builtEnemyBuilding + 1
     end
+    if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT]   -> registered added=" .. tostring(added) .. " base.activeStructureCount=" .. (base.activeStructureCount or 0)) end
 end
 
 local function unregisterHive(entityUnitNumber, hiveType)
@@ -572,6 +567,7 @@ end
 
 function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, skipCount)
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[entity.name]
+    if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] unregisterEnemyBaseStructure: " .. (entity.name or "invalid") .. " hiveType=" .. tostring(hiveType) .. " damage=" .. tostring(damageTypeName) .. " skipCount=" .. tostring(skipCount)) end
 
     local removeFunc =
         unregisterTypeToRemoveFn[hiveType]

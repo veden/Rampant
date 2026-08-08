@@ -101,19 +101,6 @@ local function addCommandSet()
         }
     }
 
-    -- msec
-    Universe.msecFilteredEntitiesEnemyStructureQuery = {
-        area={
-            {0,0},
-            {0,0}
-        },
-        force=Universe.enemyForces,
-        type={
-            "turret",
-            "unit-spawner"
-        }
-    }
-
     -- oba
     Universe.obaCreateBuildCloudQuery = {
         name = "build-clear-cloud-rampant",
@@ -135,7 +122,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        type={
+        types={
             "wall",
             "transport-belt"
         }
@@ -144,7 +131,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        type={
+        types={
             "splitter",
             "pump",
             "offshore-pump",
@@ -161,7 +148,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        type={
+        types={
             "furnace",
             "lab",
             "roboport",
@@ -178,7 +165,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        type={
+        types={
             "artillery-turret",
             "reactor",
             "rocket-silo"
@@ -197,7 +184,7 @@ local function addCommandSet()
     Universe.isFilteredEntitiesChunkNeutral = {
         area=isSharedChunkArea,
         collision_mask = "player",
-        type={
+        types={
             "tree",
             "simple-entity"
         }
@@ -205,19 +192,19 @@ local function addCommandSet()
     Universe.isFilteredEntitiesEnemyStructureQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
-        type={
+        types={
             "turret",
             "unit-spawner"
         }
     }
     Universe.isCountResourcesQuery = {
         area=isSharedChunkArea,
-        type="resource"
+        types="resource"
     }
     Universe.isFilteredEntitiesUnitQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
-        type="unit"
+        types="unit"
     }
 
     -- cps
@@ -232,7 +219,7 @@ local function addCommandSet()
     Universe.cpsFilteredEntitiesChunkNeutral = {
         area=cpsSharedChunkArea,
         collision_mask = "player",
-        type={
+        types={
             "tree",
             "simple-entity"
         }
@@ -240,33 +227,11 @@ local function addCommandSet()
     Universe.cpsFilteredEnemyAnyFound = {
         area=cpsSharedChunkArea,
         force=Universe.enemyForces,
-        type={
+        types={
             "turret",
             "unit-spawner"
         },
         limit = 1
-    }
-
-    -- msrc
-    local msrcSharedChunkArea = {
-        {0,0},
-        {0,0}
-    }
-    Universe.msrcFilteredTilesQuery = {
-        collision_mask="player",
-        area=msrcSharedChunkArea
-    }
-    Universe.msrcFilteredEntitiesChunkNeutral = {
-        area=msrcSharedChunkArea,
-        collision_mask = "player",
-        type={
-            "tree",
-            "simple-entity"
-        }
-    }
-    Universe.msrcCountResourcesQuery = {
-        area=msrcSharedChunkArea,
-        type="resource"
     }
 
     -- sp
@@ -276,7 +241,7 @@ local function addCommandSet()
     }
     Universe.spFilteredEntitiesCliffQuery = {
         area=spSharedAreaChunk,
-        type="cliff",
+        types="cliff",
         limit = 1
     }
     Universe.spFilteredTilesPathQuery = {
@@ -291,7 +256,7 @@ local function addCommandSet()
             {0,0},
             {0,0}
         },
-        type="cliff"
+        types="cliff"
     }
 
     -- ppu
@@ -484,15 +449,11 @@ function Upgrade.addUniverseProperties()
         Universe.eventId = 0
         Universe.chunkId = 0
         Universe.maps = {}
-        Universe.activeMaps = {}
         Universe.groupNumberToSquad = {}
         Universe.pendingChunks = {}
         Universe.squadIterator = nil
-        Universe.processMapAIIterator = nil
         Universe.processNestIterator = nil
         Universe.vengenceQueue = {}
-        Universe.currentMap = nil
-        Universe.mapIterator = nil
         Universe.builderCount = 0
         Universe.squadCount = 0
         Universe.processActiveSpawnerIterator = nil
@@ -585,14 +546,21 @@ function Upgrade.attempt()
 
         game.forces.enemy.kill_all_units()
 
+        -- Reset pheromones for the event-driven system (was: iterate map.processQueue)
         for _, map in pairs(Universe.maps) do
-            for _, chunk in pairs(map.processQueue) do
-                chunk[CHUNK_TICK] = 0
-                chunk[BASE_PHEROMONE] = 0
-                chunk[PLAYER_PHEROMONE] = 0
-                chunk[RESOURCE_PHEROMONE] = 0
-                chunk[ENEMY_PHEROMONE] = 0
-                chunk[KAMIKAZE_PHEROMONE] = 0
+            for _, xChunks in pairs(map) do
+                if type(xChunks) == "table" then
+                    for _, chunk in pairs(xChunks) do
+                        if type(chunk) == "table" and chunk.id then
+                            chunk[CHUNK_TICK] = 0
+                            chunk[BASE_PHEROMONE] = 0
+                            chunk[PLAYER_PHEROMONE] = 0
+                            chunk[RESOURCE_PHEROMONE] = 0
+                            chunk[ENEMY_PHEROMONE] = 0
+                            chunk[KAMIKAZE_PHEROMONE] = 0
+                        end
+                    end
+                end
             end
         end
     end

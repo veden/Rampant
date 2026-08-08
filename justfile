@@ -90,26 +90,37 @@ test:
     pkill -9 factorio 2>/dev/null || true
     sleep 1
 
+    # Remove stale saves: a save with the scenario name makes
+    # --start-server-load-scenario load the save (fires on_load, which is
+    # empty in the scenario) instead of creating the scenario fresh
+    # (fires on_init, which runs the tests).
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-integration-tests*
+
     # Create private server settings
-    echo '{"name":"Rampant Integration Tests","description":"Automated integration tests","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5}' > /tmp/rampant-test-server-settings.json
+    echo '{"name":"Rampant Integration Tests","description":"Automated integration tests","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false}' > /tmp/rampant-test-server-settings.json
 
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-integration-tests
     cp -r integration-tests/scenario /mnt/gallery/gameFiles/factorio/scenarios/rampant-integration-tests
 
-    # Start Factorio in background
+    # Start Factorio in background.
+    # NOTE: on Factorio 2.1.x --console-log does not capture Lua print()
+    # output (only the "Log opened" header); console prints stream to
+    # stdout, so capture stdout and poll that.
+    rm -f /tmp/rampant-test.out
     /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
         --start-server-load-scenario rampant-integration-tests \
         --server-settings /tmp/rampant-test-server-settings.json \
         --port 34197 \
         --rcon-port 27015 \
         --rcon-password "rampant-test" \
-        --console-log /tmp/rampant-test.log &
+        --console-log /tmp/rampant-test.log \
+        > /tmp/rampant-test.out 2>&1 &
     PID=$!
 
-    # Monitor log file for test completion
+    # Monitor output for test completion
     echo "Waiting for tests to complete..."
     for i in {1..60}; do
-        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-test.log 2>/dev/null; then
+        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-test.out 2>/dev/null; then
             sleep 2
             break
         fi
@@ -119,14 +130,15 @@ test:
     # Show results
     echo ""
     echo "=== Test Results ==="
-    grep -E "^\s*\[|^---|Test Summary|passed|failed|TESTS" /tmp/rampant-test.log 2>/dev/null | tail -30
+    grep -E "^\s*\[|^---|Test Summary|passed|failed|TESTS" /tmp/rampant-test.out 2>/dev/null | tail -30
     echo ""
 
     # Check pass/fail status
-    if grep -q "TESTS_COMPLETE" /tmp/rampant-test.log 2>/dev/null; then
+    if grep -q "TESTS_COMPLETE" /tmp/rampant-test.out 2>/dev/null; then
         echo "All integration tests passed!"
     else
         echo "Integration tests failed!"
+        kill -9 $PID 2>/dev/null || true
         exit 1
     fi
 
@@ -171,26 +183,32 @@ test-active:
     pkill -9 factorio 2>/dev/null || true
     sleep 1
 
+    # Remove stale saves (see `test` recipe: prevents save-load instead of fresh init)
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-active-ai-tests*
+
     # Create private server settings
-    echo '{"name":"Rampant Active AI Tests","description":"Tests active AI behavior with event capture","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5}' > /tmp/rampant-active-test-server-settings.json
+    echo '{"name":"Rampant Active AI Tests","description":"Tests active AI behavior with event capture","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false}' > /tmp/rampant-active-test-server-settings.json
 
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-active-ai-tests
     cp -r integration-tests/active-ai-scenario /mnt/gallery/gameFiles/factorio/scenarios/rampant-active-ai-tests
 
-    # Start Factorio in background
+    # Start Factorio in background; capture stdout (see `test` recipe:
+    # --console-log does not capture Lua prints on 2.1.x)
+    rm -f /tmp/rampant-active-test.out
     /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
         --start-server-load-scenario rampant-active-ai-tests \
         --server-settings /tmp/rampant-active-test-server-settings.json \
         --port 34199 \
         --rcon-port 27017 \
         --rcon-password "rampant-active-test" \
-        --console-log /tmp/rampant-active-test.log &
+        --console-log /tmp/rampant-active-test.log \
+        > /tmp/rampant-active-test.out 2>&1 &
     PID=$!
 
-    # Monitor log file for test completion
+    # Monitor output for test completion
     echo "Waiting for tests to complete..."
     for i in {1..120}; do
-        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-active-test.log 2>/dev/null; then
+        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-active-test.out 2>/dev/null; then
             sleep 2
             break
         fi
@@ -200,55 +218,21 @@ test-active:
     # Show results
     echo ""
     echo "=== Active AI Test Results ==="
-    grep -E "^\s*\[|^---|Test Summary|passed|failed|TES" /tmp/rampant-active-test.log 2>/dev/null | tail -40
+    grep -E "^\s*\[|^---|Test Summary|passed|failed|TES" /tmp/rampant-active-test.out 2>/dev/null | tail -40
     echo ""
 
     # Check pass/fail status
-    if grep -q "TESTS_COMPLETE" /tmp/rampant-active-test.log 2>/dev/null; then
+    if grep -q "TESTS_COMPLETE" /tmp/rampant-active-test.out 2>/dev/null; then
         echo "Active AI integration tests completed!"
     else
         echo "Active AI integration tests failed or timed out!"
+        kill -9 $PID 2>/dev/null || true
         exit 1
     fi
 
     # Send quit command via RCON
     echo "Sending quit command via RCON..."
     (echo "quit"; sleep 1) | nc -w 2 localhost 27017 2>/dev/null || true
-
-    # Give it a moment to shut down gracefully
-    sleep 2
-
-    # Force kill if still running
-    if kill -0 $PID 2>/dev/null; then
-        echo "Force-killing Factorio..."
-        kill -9 $PID 2>/dev/null || true
-    fi
-
-    echo ""
-        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-ai-test.log 2>/dev/null; then
-            sleep 2
-            break
-        fi
-        sleep 1
-    done
-
-    # Show results
-    echo ""
-    echo "=== AI Response Test Results ==="
-    grep -E "^\s*\[|^---|Test Summary|passed|failed|TESTS" /tmp/rampant-ai-test.log 2>/dev/null | tail -30
-    echo ""
-
-    # Check pass/fail status
-    if grep -q "TESTS_COMPLETE" /tmp/rampant-ai-test.log 2>/dev/null; then
-        echo "AI Response integration tests passed!"
-    else
-        echo "AI Response integration tests failed!"
-        exit 1
-    fi
-
-    # Send quit command via RCON
-    echo "Sending quit command via RCON..."
-    (echo "quit"; sleep 1) | nc -w 2 localhost 27016 2>/dev/null || true
 
     # Give it a moment to shut down gracefully
     sleep 2

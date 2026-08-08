@@ -50,8 +50,6 @@ local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 
 -- imported functions
 
-local activateMap
-
 local euclideanDistancePoints = MathUtils.euclideanDistancePoints
 local tableSize = table_size
 
@@ -119,7 +117,6 @@ local function unregisterActiveRaidNest(chunk)
 end
 
 local function addEnemyStructure(chunk, unitNumber, ids, counts, register)
-    activateMap(chunk.map)
     local chunkId = chunk.id
     local entityIds = chunk[ids]
     if not entityIds then
@@ -669,9 +666,6 @@ end
 
 function ChunkPropertyUtils.init(universe, mapUtils)
     Universe = universe
-    if mapUtils then
-        activateMap = mapUtils.activateMap
-    end
     if universe.chunkPropertyUtilsQueries then
         Position = universe.chunkPropertyUtilsQueries.position
     end

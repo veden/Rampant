@@ -29,6 +29,9 @@ local Utils = require("Utils")
 local MathUtils = require("MathUtils")
 local Constants = require("Constants")
 local MapUtils = require("MapUtils")
+local BaseLogic = require("base_logic")
+local Executor = require("runtime/Executor")
+local Command = require("command")
 
 -- Constants
 
@@ -382,26 +385,17 @@ end
 
 -- PURE: Check if base can attack (testable)
 function BaseUtils.canAttackBase(stateAI, sentAggressiveGroups, maxAggressiveGroups, peacefulMode, aiNocturnalMode, darkness, raidAIToggle, sentExpansionGroups, maxExpansionGroups)
-    local isAggressive = (stateAI == BASE_AI_STATE_AGGRESSIVE) and (sentAggressiveGroups < maxAggressiveGroups)
-    local isRaiding = (stateAI == BASE_AI_STATE_RAIDING)
-    local isOnslaught = (stateAI == BASE_AI_STATE_ONSLAUGHT)
-    local isRaidSieging = raidAIToggle and (stateAI == BASE_AI_STATE_SIEGE) and (sentExpansionGroups >= maxExpansionGroups)
-    local goodAI = isAggressive or isRaiding or isOnslaught or isRaidSieging
-    
-    if not goodAI then
-        return false
-    end
-    
-    if peacefulMode then
-        return false
-    end
-    
-    local noctural = (not aiNocturnalMode) or (aiNocturnalMode and darkness > 0.65)
-    if not noctural then
-        return false
-    end
-    
-    return true
+    return BaseLogic.canAttack({
+        stateAI = stateAI,
+        sentAggressiveGroups = sentAggressiveGroups,
+        maxAggressiveGroups = maxAggressiveGroups,
+        peacefulMode = peacefulMode,
+        aiNocturnalMode = aiNocturnalMode,
+        darkness = darkness,
+        raidAIToggle = raidAIToggle,
+        sentExpansionGroups = sentExpansionGroups,
+        maxExpansionGroups = maxExpansionGroups,
+    })
 end
 
 -- PUBLIC: Wrapper that reads storage.universe
@@ -423,25 +417,13 @@ end
 
 -- PURE: Check if base can migrate (testable)
 function BaseUtils.canMigrateBase(stateAI, expansion, peacefulMode, aiNocturnalMode, darkness)
-    local badAIState = (stateAI ~= BASE_AI_STATE_MIGRATING) and (stateAI ~= BASE_AI_STATE_SIEGE)
-    if badAIState then
-        return false
-    end
-    
-    if not expansion then
-        return false
-    end
-    
-    if peacefulMode then
-        return false
-    end
-    
-    local noctural = (not aiNocturnalMode) or (aiNocturnalMode and darkness > 0.65)
-    if not noctural then
-        return false
-    end
-    
-    return true
+    return BaseLogic.canMigrate({
+        stateAI = stateAI,
+        expansion = expansion,
+        peacefulMode = peacefulMode,
+        aiNocturnalMode = aiNocturnalMode,
+        darkness = darkness,
+    })
 end
 
 -- PUBLIC: Wrapper that reads storage.universe
@@ -461,6 +443,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local map = base.map
     local baseAlignment = base.alignment
     local position = disPos or entity.position
+    print("[DEBUG queueUpgrade] entity=" .. entity.name .. " pos=(" .. tostring(position and position.x or "nil") .. "," .. tostring(position and position.y or "nil") .. ")")
 
     local pickedBaseAlignment
     if baseAlignment[2] then
@@ -473,7 +456,16 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         pickedBaseAlignment = baseAlignment[1]
     end
 
-    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
+    -- build_base_evolution_requirement existed on 1.1 spawner prototypes but
+    -- was removed in 2.x; any access errors (strict prototype metatable).
+    -- Fall back to 0 (tier 1 baseline) when absent.
+    local currentEvo = 0
+    local ok, prototypeEvo = pcall(function()
+        return entity.prototype.build_base_evolution_requirement
+    end)
+    if ok and prototypeEvo then
+        currentEvo = prototypeEvo
+    end
 
     local distance = mMin(
         1,
@@ -1159,161 +1151,21 @@ local function processState(base, tick)
         end
     end
     local roll = Universe.random()
-    if (base.temperament < 0.05) then -- 0 - 0.05
-        if Universe.enabledMigration then
-            if (roll < 0.30) then
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            elseif (roll < 0.50) and Universe.raidAIToggle then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            elseif Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            else
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            end
-        else
-            if Universe.raidAIToggle then
-                if (roll < 0.70) then
-                    base.stateAI = BASE_AI_STATE_RAIDING
-                else
-                    base.stateAI = BASE_AI_STATE_AGGRESSIVE
-                end
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        end
-    elseif (base.temperament < 0.20) then -- 0.05 - 0.2
-        if (Universe.enabledMigration) then
-            if (roll < 0.4) then
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            elseif (roll < 0.55) and Universe.raidAIToggle then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            elseif Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            else
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            end
-        else
-            if Universe.raidAIToggle then
-                if (roll < 0.40) then
-                    base.stateAI = BASE_AI_STATE_AGGRESSIVE
-                else
-                    base.stateAI = BASE_AI_STATE_RAIDING
-                end
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        end
-    elseif (base.temperament < 0.4) then -- 0.2 - 0.4
-        if (Universe.enabledMigration) then
-            if (roll < 0.2) and Universe.raidAIToggle then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            elseif (roll < 0.2) then
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            elseif (roll < 0.8) then
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            elseif Universe.peacefulAIToggle then
-                base.stateAI = BASE_AI_STATE_PEACEFUL
-            else
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            end
-        else
-            if (roll < 0.3) then
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            elseif (roll < 0.6) and Universe.raidAIToggle then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            elseif (roll < 0.6) then
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            elseif Universe.peacefulAIToggle then
-                base.stateAI = BASE_AI_STATE_PEACEFUL
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        end
-    elseif (base.temperament < 0.6) then -- 0.4 - 0.6
-        if (roll < 0.4) then
-            base.stateAI = BASE_AI_STATE_AGGRESSIVE
-        elseif (roll < 0.5) and Universe.raidAIToggle then
-            base.stateAI = BASE_AI_STATE_RAIDING
-        elseif (roll < 0.75) and Universe.peacefulAIToggle then
-            base.stateAI = BASE_AI_STATE_PEACEFUL
-        else
-            if Universe.enabledMigration then
-                base.stateAI = BASE_AI_STATE_MIGRATING
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        end
-    elseif (base.temperament < 0.8) then -- 0.6 - 0.8
-        if (roll < 0.4) then
-            base.stateAI = BASE_AI_STATE_AGGRESSIVE
-        elseif (roll < 0.6) then
-            base.stateAI = BASE_AI_STATE_ONSLAUGHT
-        elseif (roll < 0.8) then
-            base.stateAI = BASE_AI_STATE_RAIDING
-        elseif Universe.peacefulAIToggle then
-            base.stateAI = BASE_AI_STATE_PEACEFUL
-        else
-            base.stateAI = BASE_AI_STATE_AGGRESSIVE
-        end
-    elseif (base.temperament < 0.95) then -- 0.8 - 0.95
-        if (Universe.enabledMigration and Universe.raidAIToggle) then
-            if (roll < 0.20) and Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            elseif (roll < 0.45) then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            elseif (roll < 0.85) then
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        elseif (Universe.enabledMigration) then
-            if (roll < 0.20) and Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            elseif (roll < 0.75) then
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        elseif (Universe.raidAIToggle) then
-            if (roll < 0.45) then
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            elseif (roll < 0.75) then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        else
-            if (roll < 0.65) then
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            else
-                base.stateAI = BASE_AI_STATE_AGGRESSIVE
-            end
-        end
-    else
-        if (Universe.enabledMigration and Universe.raidAIToggle) then
-            if (roll < 0.30) and Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            elseif (roll < 0.65) then
-                base.stateAI = BASE_AI_STATE_RAIDING
-            else
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            end
-        elseif (Universe.enabledMigration) then
-            if (roll < 0.30) and Universe.siegeAIToggle then
-                base.stateAI = BASE_AI_STATE_SIEGE
-            else
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            end
-        elseif (Universe.raidAIToggle) then
-            if (roll < 0.45) then
-                base.stateAI = BASE_AI_STATE_ONSLAUGHT
-            else
-                base.stateAI = BASE_AI_STATE_RAIDING
-            end
-        else
-            base.stateAI = BASE_AI_STATE_ONSLAUGHT
-        end
-    end
+
+    -- Pure state selection
+    local newState = BaseLogic.selectState({
+        temperament = base.temperament,
+        roll = roll,
+        enabledMigration = Universe.enabledMigration,
+        raidAIToggle = Universe.raidAIToggle,
+        siegeAIToggle = Universe.siegeAIToggle,
+        peacefulAIToggle = Universe.peacefulAIToggle,
+    })
+
+    local commands = {}
+    table.insert(commands, Command.changeBaseState(base.id, newState, "temperament_cycle"))
+
+    Executor.run(commands)
 
     local remainingUnits = base.lostEnemyUnits % 20
     if remainingUnits ~= 0 then

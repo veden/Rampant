@@ -74,8 +74,6 @@ local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 local mMax = math.max
 local mFloor = math.floor
 local getPassable = ChunkPropertyUtils.getPassable
-local tRemove = table.remove
-local mCeil = math.ceil
 local sFind = string.find
 
 -- module code
@@ -86,6 +84,26 @@ function MapUtils.getChunkByXY(map, x, y)
         return chunkX[y] or -1
     end
     return -1
+end
+
+--- Find a chunk by its unique id across all maps.
+function MapUtils.getChunkById(chunkId, universe)
+    universe = universe or storage.universe
+    if not universe or not universe.maps then return nil end
+    for _, map in pairs(universe.maps) do
+        if map then
+            for _, xChunks in pairs(map) do
+                if type(xChunks) == "table" then
+                    for _, chunk in pairs(xChunks) do
+                        if chunk.id == chunkId then
+                            return chunk
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return nil
 end
 
 function MapUtils.getChunkByPosition(map, position)
@@ -115,24 +133,6 @@ function MapUtils.queueGeneratedChunk(event)
     Universe.pendingChunks[event.id] = event
 end
 
-function MapUtils.activateMap(map)
-    local mapId = map.id
-    if Universe.activeMaps[mapId] then
-	return
-    end
-
-    Universe.activeMaps[mapId] = map
-end
-
-function MapUtils.deactivateMap(map)
-    local mapId = map.id
-    if not Universe.activeMaps[mapId] then
-	return
-    end
-
-    Universe.activeMaps[mapId] = nil
-end
-
 function MapUtils.excludeSurface()
     for mapId,map in pairs(Universe.maps) do
         local toBeRemoved = not map.surface.valid
@@ -140,15 +140,6 @@ function MapUtils.excludeSurface()
             or Universe.excludedSurfaces[map.surface.name]
 
         if toBeRemoved then
-            if Universe.mapIterator == mapId then
-                Universe.mapIterator, Universe.currentMap = next(
-                    Universe.activeMaps,
-                    Universe.mapIterator
-                )
-            end
-            if Universe.processMapAIIterator == mapId then
-                Universe.processMapAIIterator = nil
-            end
             Universe.maps[mapId] = nil
         end
     end
@@ -223,14 +214,6 @@ function MapUtils.prepMap(surface)
 
     local map = {
         id = surface.index,
-        processedChunks = 0,
-        processQueue = {},
-        processIndex = 1,
-        scanPlayerIndex = 1,
-        scanResourceIndex = 1,
-        scanEnemyIndex = 1,
-        outgoingScanWave = true,
-        outgoingStaticScanWave = true,
 
         drainPylons = {},
 
@@ -248,25 +231,6 @@ function MapUtils.prepMap(surface)
     return map
 end
 
-function MapUtils.nextMap()
-    local map = Universe.currentMap
-    if map and (Universe.processedChunks < (#map.processQueue * 0.05)) then
-        return map
-    end
-
-    local mapIterator = Universe.mapIterator
-    repeat
-        Universe.mapIterator, map = next(Universe.activeMaps, Universe.mapIterator)
-        if map then
-            Universe.processedChunks = 0
-            Universe.currentMap = map
-            return map
-        end
-    until mapIterator == Universe.mapIterator
-
-    return nil
-end
-
 function MapUtils.removeChunkToNest(chunkId)
     Universe.chunkToNests[chunkId] = nil
     if (chunkId == Universe.processNestIterator) then
@@ -274,38 +238,6 @@ function MapUtils.removeChunkToNest(chunkId)
     end
     if (chunkId == Universe.processMigrationIterator) then
         Universe.processMigrationIterator = nil
-    end
-end
-
-function MapUtils.findInsertionPoint(processQueue, chunk)
-    local low = 1
-    local high = #processQueue
-    local pivot
-    while (low <= high) do
-        pivot = mCeil((low + high) * 0.5)
-        local pivotChunk = processQueue[pivot]
-        if (pivotChunk.dOrigin > chunk.dOrigin) then
-            high = pivot - 1
-        elseif (pivotChunk.dOrigin <= chunk.dOrigin) then
-            low = pivot + 1
-        end
-    end
-    return low
-end
-
-function MapUtils.removeProcessQueueChunk(processQueue, chunk)
-    local insertionPoint = MapUtils.findInsertionPoint(processQueue, chunk)
-    if insertionPoint > #processQueue then
-        insertionPoint = insertionPoint - 1
-    end
-    for i=insertionPoint,1,-1 do
-        local pqChunk = processQueue[i]
-        if pqChunk.id == chunk.id then
-            tRemove(processQueue, i)
-            return
-        elseif pqChunk.dOrigin < chunk.dOrigin then
-            return
-        end
     end
 end
 
@@ -319,7 +251,6 @@ function MapUtils.removeChunkFromMap(map, chunk)
 
     map[x][y] = nil
     local chunkId = chunk.id
-    MapUtils.removeProcessQueueChunk(map.processQueue, chunk)
 
     Universe.chunkToActiveNest[chunkId] = nil
     Universe.chunkToActiveRaidNest[chunkId] = nil
@@ -668,15 +599,24 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
 end
 
 -- IMPURE: Apply pheromone updates to chunk (side effects)
-function MapUtils.applyPheromoneUpdates(chunk, updates)
+function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     setDeathGenerator(chunk, updates.deathGenerator)
     decayPlayerGenerator(chunk)
 
     chunk[PLAYER_PHEROMONE] = updates.player
+    chunk.playerLastRefresh = tick or 0
+
     chunk[BASE_PHEROMONE] = updates.base
+    chunk.baseLastRefresh = tick or 0
+
     chunk[ENEMY_PHEROMONE] = updates.enemy
+    chunk.enemyLastRefresh = tick or 0
+
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
+    chunk.kamikazeLastRefresh = tick or 0
+
     chunk[RESOURCE_PHEROMONE] = updates.resource
+    chunk.resourceLastRefresh = tick or 0
 end
 
 -- PUBLIC: Orchestrate pheromone processing (reads storage.universe)
@@ -692,7 +632,7 @@ function MapUtils.processPheromone(chunk, tick, player)
     local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     
     -- Apply updates (side effects)
-    MapUtils.applyPheromoneUpdates(chunk, updates)
+    MapUtils.applyPheromoneUpdates(chunk, updates, tick)
 
     if not player then
         decayDeathGenerator(chunk)
