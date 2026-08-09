@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Movement Test",
+    "description": "Controlled crossing experiment: N=1 vs N=12 squad movement",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

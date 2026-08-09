@@ -336,10 +336,11 @@ make-saves:
             echo "generated map-$size"
         fi
     done
-    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle multi-surface; do
+    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle multi-surface movement-diag movement-test; do
         case $name in
             wall-defense|death-response|save-load|player-death) SIZE=256 ;;
             migration-settler|base-ai-states|base-expansion|pheromone-dynamics|squad-cycle|multi-surface) SIZE=512 ;;
+            movement-diag|movement-test) SIZE=256 ;;
             long-run) SIZE=1024 ;;
         esac
         DIR=/tmp/rampant-saves/$name

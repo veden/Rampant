@@ -263,6 +263,10 @@ constants.MAX_PENALTY_BEFORE_PURGE = 36000
 
 constants.COMMAND_TIMEOUT = 1 * constants.TICKS_A_MINUTE
 constants.BUILD_COMMAND_TIMEOUT = 7 * constants.TICKS_A_MINUTE
+-- Mod-owned squad dispatch cadence: the squad refreshes its path on this
+-- interval regardless of the vanilla group state (the group may be stuck
+-- gathering — the old state-4-only dispatch froze such squads forever).
+constants.SQUAD_DISPATCH_INTERVAL = constants.TICKS_A_SECOND * 10
 
 -- player building pheromones
 

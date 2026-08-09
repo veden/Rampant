@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Movement Diagnostic",
+    "description": "Squad movement telemetry — group states, positions, gate counters",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

@@ -45,6 +45,7 @@ local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
 local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
 local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 local BUILD_COMMAND_TIMEOUT = Constants.BUILD_COMMAND_TIMEOUT
+local SQUAD_DISPATCH_INTERVAL = Constants.SQUAD_DISPATCH_INTERVAL
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
@@ -270,8 +271,12 @@ local function findMovementPosition(surface, position)
 end
 
 local function findDeploymentPosition(surface, position)
+    -- Ground-unit prototype (the units must be able to stand there): the
+    -- old "biter-spawner" prototype only checked building fit, which
+    -- allowed land pockets behind deep-water barriers the units can't
+    -- reach — the formation froze there.
     return surface.find_non_colliding_position(
-        "biter-spawner",
+        "small-biter",
         position,
         CHUNK_SIZE,
         4,
@@ -668,6 +673,20 @@ local function attackMove(squad, tick)
     )
     local cmd
     if (searchPath[1].chunk == -1) then
+        -- Anti-stuck guard (was in cleanSquads' wander fallback): a squad
+        -- that repeatedly finds no path wanders and eventually cleans up.
+        squad.wanders = squad.wanders + 1
+        if squad.wanders > 5 then
+            if MetricsG then MetricsG.inc("squad.wanderDestroy") end
+            for _, entity in pairs(squad.group.members) do
+                if entity.valid then
+                    entity.destroy()
+                end
+            end
+            squad.group.destroy()
+            return
+        end
+        if MetricsG then MetricsG.inc("squad.wander") end
         cmd = Queries.wanderCommand
         group.set_command(cmd)
         return
@@ -787,27 +806,19 @@ function Squad.cleanSquads(tick)
             end
         elseif (group.state == 4) then
             squad.wanders = 0
+            if MetricsG then MetricsG.inc("squad.reachedState4") end
             Squad.squadDispatch(squad, tick)
             if group.valid then
                 compressSquad(squad, tick)
             end
         elseif (squad.commandTick and (squad.commandTick < tick)) then
-            if squad.wanders > 5 then
-                for _, entity in pairs(squad.group.members) do
-                    if entity.valid then
-                        entity.destroy()
-                    end
-                end
-                squad.group.destroy()
-            else
-                squad.wanders = squad.wanders + 1
-                if squad.status == SQUAD_BUILDING then
-                    squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
-                else
-                    squad.commandTick = tick + COMMAND_TIMEOUT
-                end
-                squad.group.set_command(Queries.wander2Command)
-            end
+            -- Mod-owned dispatch cadence: refresh the path regardless of
+            -- the vanilla group state (the group may be stuck gathering —
+            -- the old fallback wandered blindly and never re-dispatched).
+            -- The dispatch's no-path branch handles the wander + the
+            -- anti-stuck guard.
+            squad.commandTick = tick + SQUAD_DISPATCH_INTERVAL
+            Squad.squadDispatch(squad, tick)
         end
     end
 end
@@ -1087,7 +1098,7 @@ function Squad.createSquad(position, map, group, settlers, base)
         maxDistance = 0,
         originPosition = {x = 0,
                           y = 0},
-        commandTick = nil,
+        commandTick = 0,
         chunk = -1
     }
 
@@ -1345,14 +1356,79 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     TargetPosition.x = chunk.x + HALF_CHUNK_SIZE
     TargetPosition.y = chunk.y + HALF_CHUNK_SIZE
 
-    local squadPosition = findDeploymentPosition(
-        surface,
-        positionFromScaledDirections(
-            TargetPosition,
-            1.25,
-            squadDirection
+    -- Deploy NEAR THE UNITS the formation will gather: the ungrouped units
+    -- in the chunk + neighbor area, the group forms at their centroid. The
+    -- old fixed 1.25-chunk offset (scored direction, spawner-fit check)
+    -- could land the group in a unit-unreachable pocket (the gather would
+    -- stall forever — the squad froze with no dispatch). Centroid
+    -- deployment makes the gathering distance ~0.
+    local squadPosition
+    local unitArea = {
+        { chunk.x - CHUNK_SIZE, chunk.y - CHUNK_SIZE },
+        { chunk.x + 2 * CHUNK_SIZE, chunk.y + 2 * CHUNK_SIZE },
+    }
+    local units = surface.find_entities_filtered{
+        force = "enemy",
+        type = "unit",
+        area = unitArea,
+    }
+    local cx, cy, unitCount = 0, 0, 0
+    for _, u in ipairs(units) do
+        if u.valid then
+            cx = cx + u.position.x
+            cy = cy + u.position.y
+            unitCount = unitCount + 1
+        end
+    end
+    if unitCount > 0 then
+        -- The centroid fit must use the SQUAD's unit size (small-biter):
+        -- findMovementPosition uses the behemoth-biter prototype, and the
+        -- gathered units themselves block a behemoth-sized spot at the
+        -- centroid — the find failed and the fallback deployed into
+        -- unreachable water pockets.
+        squadPosition = surface.find_non_colliding_position(
+            "small-biter",
+            { x = cx / unitCount, y = cy / unitCount },
+            10,
+            2,
+            false
         )
-    )
+        if not squadPosition then
+            -- Wider search (the chunk area) before the scored-direction
+            -- fallback: the tight find can fail when the centroid sits on
+            -- a unit's collision box (the single-unit case).
+            squadPosition = surface.find_non_colliding_position(
+                "small-biter",
+                { x = cx / unitCount, y = cy / unitCount },
+                CHUNK_SIZE,
+                4,
+                true
+            )
+        end
+    end
+
+    -- Fallback: the scored-direction deployment, validated with the ground
+    -- unit prototype (the units can stand there — the spawner prototype
+    -- only checked building fit and allowed deep-water pockets).
+    if not squadPosition then
+        if MetricsG then MetricsG.inc("squad.deploy.centroidFailed") end
+        print("[DEPLOY] centroid failed: centroid=(" ..
+            string.format("%.1f", cx / unitCount) .. "," .. string.format("%.1f", cy / unitCount) ..
+            ") units=" .. unitCount .. " chunk=(" .. chunk.x .. "," .. chunk.y .. ")")
+        squadPosition = findDeploymentPosition(
+            surface,
+            positionFromScaledDirections(
+                TargetPosition,
+                1.25,
+                squadDirection
+            )
+        )
+        if squadPosition and MetricsG then
+            MetricsG.inc("squad.deploy.fallback")
+        end
+    elseif MetricsG then
+        MetricsG.inc("squad.deploy.centroid")
+    end
 
     if not squadPosition then
         return

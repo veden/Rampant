@@ -1296,6 +1296,9 @@ remote.add_interface("Rampant", {
     queryPheromones = function(pos, surface)
         return Observability.queryPheromones(pos, surface)
     end,
+    queryChunk = function(pos, surface)
+        return Observability.queryChunk(pos, surface)
+    end,
     queryBaseAt = function(pos, surface)
         return Observability.queryBaseAt(pos, surface)
     end,

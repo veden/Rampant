@@ -41,6 +41,7 @@ local MapUtils = require("libs/MapUtils")
 
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 local getChunkByPosition = MapUtils.getChunkByPosition
+local getPassable = ChunkPropertyUtils.getPassable
 
 function Observability.queryPheromones(position, surface)
     if not Universe or not Universe.awake then
@@ -66,6 +67,42 @@ function Observability.queryPheromones(position, surface)
         permanentDeathGenerator = chunk.permanentDeathGenerator or 0,
         kamikaze = chunk[KAMIKAZE_PHEROMONE] or 0,
         resource = chunk[RESOURCE_PHEROMONE] or 0,
+    }
+end
+
+--- Query the mod's chunk state at a position: the scan-computed
+--- passability (the pathing gate), the terrain water tile count, and the
+--- structure counts. Diagnostic telemetry for movement analysis.
+function Observability.queryChunk(position, surface)
+    if not Universe or not Universe.awake then
+        return nil
+    end
+
+    local map = Universe.maps[surface.index]
+    if not map then
+        return nil
+    end
+
+    local chunk = getChunkByPosition(map, position)
+    if chunk == -1 then
+        return nil
+    end
+
+    local waterTiles = 0
+    -- No pcall: a bug here is a real bug; fail loudly.
+    local count = surface.count_tiles_filtered{
+        area = { { chunk.x, chunk.y }, { chunk.x + 31, chunk.y + 31 } },
+        name = { "water", "deepwater" },
+    }
+    waterTiles = count
+
+    return {
+        x = chunk.x,
+        y = chunk.y,
+        passable = getPassable(chunk),
+        waterTiles = waterTiles,
+        nestCount = chunk.nestCount or 0,
+        turretCount = chunk.turretCount or 0,
     }
 end
 

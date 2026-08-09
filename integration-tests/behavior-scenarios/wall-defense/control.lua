@@ -193,6 +193,13 @@ local function finish(passed, reason)
         " unitsAtWall=" .. tostring(r.unitsAtWall) ..
         " wallDamaged=" .. tostring(r.wallDamaged) ..
         " ticks=" .. game.tick)
+    -- Movement gate counters (the crossing-speed analysis)
+    local m = remote.call("Rampant", "getMetricsSummary")
+    local c = m and m.counters or {}
+    print("Detail: reachedState4=" .. tostring(c["squad.reachedState4"]) ..
+        " wander=" .. tostring(c["squad.wander"]) ..
+        " wanderDestroy=" .. tostring(c["squad.wanderDestroy"]) ..
+        " dispatch=" .. tostring(c["cmd.DISPATCH_SQUAD"]))
     print("Execution time: " .. game.tick .. " ticks")
     if passed then
         print("TESTS_COMPLETE")
@@ -220,6 +227,79 @@ script.on_event(defines.events.on_tick, function()
 
     if game.tick % POLLUTE_INTERVAL == 0 then
         game.surfaces[1].pollute(SPAWNER_POS, 20)
+    end
+
+    local r = state.results
+
+    -- Movement telemetry: track the LARGEST non-builder squad (multi-member
+    -- groups are the slow ones — the group-state-4 gate waits for the
+    -- slowest unit). Re-target when the tracked squad vanishes.
+    if r.squadFormed then
+        local groups = remote.call("Rampant", "getEnemyGroups", game.surfaces[1])
+        if groups then
+            local trackedStillAlive = false
+            if r.movementTracked then
+                for _, g in ipairs(groups) do
+                    if g.id == r.trackedId then
+                        trackedStillAlive = true
+                        break
+                    end
+                end
+            end
+            if not trackedStillAlive then
+                -- (Re-)target the largest non-builder squad.
+                local best = nil
+                local bestMembers = 0
+                for _, g in ipairs(groups) do
+                    if not g.isBuilder and g.memberCount and g.memberCount > bestMembers then
+                        best = g
+                        bestMembers = g.memberCount
+                    end
+                end
+                if best then
+                    if r.trackedId and r.trackedId ~= best.id then
+                        print("[MOV] re-targeting: squad " .. r.trackedId ..
+                            " gone -> tracking id=" .. best.id .. " members=" .. best.memberCount)
+                    end
+                    r.movementTracked = true
+                    r.trackedId = best.id
+                    r.trackedMembers = best.memberCount
+                    if not r.movSamples then
+                        r.movSamples = {}
+                        r.movLastSample = 0
+                    end
+                end
+            end
+        end
+    end
+    if r.movementTracked and (game.tick - (r.movLastSample or 0)) >= 30 * 60 then
+        r.movLastSample = game.tick
+        local groups = remote.call("Rampant", "getEnemyGroups", game.surfaces[1])
+        local found = false
+        if groups then
+            for _, g in ipairs(groups) do
+                if g.id == r.trackedId then
+                    found = true
+                    r.movSamples[#r.movSamples + 1] = {
+                        t = gameMinutes(game.tick),
+                        x = g.position.x,
+                        y = g.position.y,
+                        gs = g.state,
+                        st = g.status,
+                    }
+                    local last = r.movSamples[#r.movSamples]
+                    print("[MOV] t=" .. string.format("%.1f", last.t) ..
+                        " pos=(" .. string.format("%.0f", last.x) .. "," ..
+                        string.format("%.0f", last.y) .. ")" ..
+                        " gs=" .. last.gs .. " st=" .. last.st)
+                    break
+                end
+            end
+        end
+        if not found then
+            r.movSamples[#r.movSamples + 1] = { t = gameMinutes(game.tick), gone = true }
+            print("[MOV] t=" .. string.format("%.1f", r.movSamples[#r.movSamples].t) .. " squad gone")
+        end
     end
 
     local elapsed = game.tick - state.stagedAt
