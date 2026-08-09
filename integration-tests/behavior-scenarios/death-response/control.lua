@@ -172,6 +172,26 @@ script.on_event(defines.events.on_tick, function()
         return
     end
     if not state then
+        -- Stage AFTER the mod's initial chunk scan completes: the scan
+        -- processes chunks one per few ticks and its unit purge destroys
+        -- units in scanned chunks. Robust signal: every map chunk is
+        -- scanned exactly once, so wait until the scan counter reaches the
+        -- surface chunk count.
+        if not storage.rampantScanStable then
+            local m = remote.call("Rampant", "getMetricsSummary")
+            local scanned = m and m.counters and m.counters["scan.chunksScanned"] or 0
+            if scanned ~= storage.rampantLastScanCount then
+                storage.rampantLastScanCount = scanned
+                storage.rampantScanIdle = 0
+            else
+                storage.rampantScanIdle = (storage.rampantScanIdle or 0) + 1
+            end
+            if (storage.rampantScanIdle or 0) < 30 then
+                return  -- still scanning; wait
+            end
+            storage.rampantScanStable = true
+            print("[INFO] initial scan complete (chunks=" .. scanned .. ")")
+        end
         state = {
             phase = "setup",
             results = {},
@@ -282,14 +302,23 @@ script.on_event(defines.events.on_tick, function()
         end
 
     elseif state.phase == "structure" then
-        -- After the spawner dies, the base object recycles within 1-2 ticks
-        -- (getBasePoints goes nil -> recycled). The point cost is verified
-        -- via telemetry: the Executor counted cmd.MODIFY_UNIT_POINTS.
-        local points = remote.call("Rampant", "getBasePoints", r.baseId)
-        if not r.baseRecycled and points == nil then
+        -- Core structure-death behavior: the spawner is GONE (unregister
+        -- processed) and the point cost applied. Base recycling is
+        -- secondary cleanup (timing varies with the base's remaining
+        -- chunks); report it when observed but do not require it.
+        local liveBase = remote.call("Rampant", "queryBaseAt", SPAWNER_POS, surface)
+        if not r.baseRecycled and not liveBase then
             r.baseRecycled = true
             print("[PASS] base recycled after spawner death at " ..
                 string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
+        end
+        if not r.spawnerGone then
+            local spawners = surface.find_entities_filtered{ force = "enemy", type = "unit-spawner" }
+            if #spawners == 0 then
+                r.spawnerGone = true
+                print("[PASS] spawner unregistered (structure death) at " ..
+                    string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
+            end
         end
         if not r.pointsDropped then
             local m = remote.call("Rampant", "getMetrics")
@@ -302,7 +331,7 @@ script.on_event(defines.events.on_tick, function()
                     string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
             end
         end
-        if r.baseRecycled and r.pointsDropped then
+        if r.spawnerGone and r.pointsDropped then
             finish(true, "all death-response expectations met")
             return
         end

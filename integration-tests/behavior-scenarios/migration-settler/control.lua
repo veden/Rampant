@@ -98,6 +98,26 @@ script.on_event(defines.events.on_tick, function()
         return
     end
     if not state then
+        -- Stage AFTER the mod's initial chunk scan completes: the scan
+        -- processes chunks one per few ticks and its unit purge destroys
+        -- units in scanned chunks. Robust signal: every map chunk is
+        -- scanned exactly once, so wait until the scan counter reaches the
+        -- surface chunk count.
+        if not storage.rampantScanStable then
+            local m = remote.call("Rampant", "getMetricsSummary")
+            local scanned = m and m.counters and m.counters["scan.chunksScanned"] or 0
+            if scanned ~= storage.rampantLastScanCount then
+                storage.rampantLastScanCount = scanned
+                storage.rampantScanIdle = 0
+            else
+                storage.rampantScanIdle = (storage.rampantScanIdle or 0) + 1
+            end
+            if (storage.rampantScanIdle or 0) < 30 then
+                return  -- still scanning; wait
+            end
+            storage.rampantScanStable = true
+            print("[INFO] initial scan complete (chunks=" .. scanned .. ")")
+        end
         state = {
             phase = "setup",
             results = {},

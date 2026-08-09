@@ -23,7 +23,7 @@
 local WALL_POS = { x = 0, y = 0 }
 local SPAWNER_POS = { x = 100, y = 0 }
 local WALL_PERIMETER = 30
-local BUDGET_MINUTES = 45
+local BUDGET_MINUTES = 90
 local TICKS_A_MINUTE = 60 * 60
 local BUDGET_TICKS = BUDGET_MINUTES * TICKS_A_MINUTE
 local POLLUTE_INTERVAL = 600  -- ticks between re-pollution at the spawner

@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Player Death Side",
+    "description": "Victory scent + kill credit when the enemy destroys player structures",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

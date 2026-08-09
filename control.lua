@@ -578,9 +578,11 @@ local function onDeath(event)
         local creditNatives = false
         if causedByEnemyForce then
             creditNatives = true
+            Metrics.inc("death.enemyCaused")
             local drained = false
             if chunk ~= -1 then
                 victoryScent(chunk, entityType)
+                Metrics.inc("death.victoryScentApplied")
                 drained = (entityType == "electric-turret") and isDrained(chunk, tick)
                 if cause and cause.valid and cause.type == "unit" then
                     local group = cause.commandable and cause.commandable.parent_group

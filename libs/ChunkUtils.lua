@@ -246,6 +246,9 @@ local unregisterTypeToRemoveFn = {
 }
 
 function ChunkUtils.initialScan(chunk, map, tick)
+    if MetricsG then
+        MetricsG.inc("scan.chunksScanned")
+    end
     local surface = map.surface
     setAreaInQueryChunkSize(Universe.isFilteredTilesQuery, chunk)
     setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
@@ -291,6 +294,7 @@ function ChunkUtils.initialScan(chunk, map, tick)
                                 dbgMsg = dbgMsg .. " KILL " .. u.name .. "(" .. u.position.x .. "," .. u.position.y .. ")"
                                 u.destroy()
                                 killed = killed + 1
+                                if MetricsG then MetricsG.inc("scan.unitsKilled") end
                             else
                                 dbgMsg = dbgMsg .. " SKIP " .. u.name .. "(type=" .. u.type .. ")"
                             end

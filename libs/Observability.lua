@@ -61,8 +61,9 @@ function Observability.queryPheromones(position, surface)
         player = chunk[PLAYER_PHEROMONE] or 0,
         enemy = chunk[ENEMY_PHEROMONE] or 0,
         base = chunk[BASE_PHEROMONE] or 0,
-        death = chunk[DEATH_PHEROMONE] or 0,
-        victory = chunk[VICTORY_PHEROMONE] or 0,
+        -- real death state (named fields, not numeric chunk indices)
+        deathGenerator = chunk.deathGenerator or 0,
+        permanentDeathGenerator = chunk.permanentDeathGenerator or 0,
         kamikaze = chunk[KAMIKAZE_PHEROMONE] or 0,
         resource = chunk[RESOURCE_PHEROMONE] or 0,
     }
@@ -96,6 +97,7 @@ function Observability.queryBaseAt(position, surface)
         stateAITick = base.stateAITick,
         points = base.points,
         unitPoints = base.unitPoints,
+        destroyPlayerBuildings = base.destroyPlayerBuildings or 0,
         nestCount = base.nestCount or 0,
         activeStructures = base.activeStructureCount or 0,
         attackThreshold = base.attackThreshold or 0,
