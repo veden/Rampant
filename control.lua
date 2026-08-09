@@ -1340,7 +1340,9 @@ remote.add_interface("Rampant", {
     end,
     setEvolution = function(value)
         if not Universe.metricsEnabled then return false end
-        game.forces.enemy.evolution_factor = value
+        -- 2.x: evolution is per-surface (the evolution_factor field was
+        -- removed; writing it errors "LuaForce doesn't contain key").
+        game.forces.enemy.set_evolution_factor(value, game.surfaces[1])
         return true
     end,
     -- Nudge: set the state WITHOUT freezing the state machine (the next
@@ -1351,6 +1353,13 @@ remote.add_interface("Rampant", {
         local base = Universe.bases[baseId]
         if not base then return false end
         base.stateAI = state
+        -- Release any freeze (setBaseState pins stateAITick far out):
+        -- schedule the next natural roll on the normal cadence
+        -- (BASE_AI_MIN/MAX_STATE_DURATION, in game-minutes).
+        local minDur = Constants.BASE_AI_MIN_STATE_DURATION
+        local maxDur = Constants.BASE_AI_MAX_STATE_DURATION
+        local duration = minDur + Universe.random() * (maxDur - minDur)
+        base.stateAITick = game.tick + math.floor(duration * 60 * 60)
         return true
     end,
     getEnemyGroups = function(surface)

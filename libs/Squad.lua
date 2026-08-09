@@ -70,6 +70,15 @@ local function getPlayerPheromone(chunk)
 end
 
 local function getBasePheromone(chunk)
+    -- ACO decay-on-read: diffused base pheromone decays by time since the
+    -- chunk last re-processed. But in a chunk WITH nests, the base
+    -- pheromone IS the nests' presence — constant while they exist. Without
+    -- this exemption the value decays to ~0 within ~90 ticks of the last
+    -- dirty pass and the attack-formation gate (basePheromone < 0.0001)
+    -- locks the base out of forming attack squads on quiet maps.
+    if (chunk.nestCount or 0) > 0 then
+        return chunk[BASE_PHEROMONE] or 0
+    end
     return getDecayed(chunk, BASE_PHEROMONE, "baseLastRefresh", DECAY_090)
 end
 

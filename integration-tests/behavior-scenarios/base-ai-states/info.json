@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Base AI States",
+    "description": "RAIDING attack, ONSLAUGHT economy, MIGRATION expansion, state transitions",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

@@ -336,10 +336,10 @@ make-saves:
             echo "generated map-$size"
         fi
     done
-    for name in wall-defense death-response migration-settler save-load player-death long-run; do
+    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states; do
         case $name in
             wall-defense|death-response|save-load|player-death) SIZE=256 ;;
-            migration-settler) SIZE=512 ;;
+            migration-settler|base-ai-states) SIZE=512 ;;
             long-run) SIZE=1024 ;;
         esac
         DIR=/tmp/rampant-saves/$name
