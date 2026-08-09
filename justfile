@@ -260,6 +260,41 @@ test-rcon:
     # Run test script
     integration-tests/run-rcon-tests.sh
 
+# Run the E2E long-run session (4 game-hours, virtual player, telemetry interrogation)
+test-longrun:
+    #!/usr/bin/env -S bash
+    set -e
+    echo "Running Rampant E2E long-run session..."
+    pkill -9 factorio 2>/dev/null || true
+    sleep 1
+
+    # Remove stale saves (see `test` recipe)
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run*
+
+    # Create private server settings (auto_pause: false is required)
+    echo '{"name":"Rampant Long Run","description":"E2E session interrogation","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-longrun-server-settings.json
+
+    rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
+    cp -r integration-tests/behavior-scenarios/long-run /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
+    cp integration-tests/behavior-saves/rampant-behavior-long-run.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run.zip
+
+    rm -f /tmp/rampant-longrun.out /tmp/rampant-longrun.jsonl
+    /mnt/gallery/gameFiles/factorio/bin/x64/factorio         --start-server-load-scenario rampant-behavior-long-run         --server-settings /tmp/rampant-longrun-server-settings.json         --port 34202 --rcon-port 27020         --rcon-password "rampant-test"         > /tmp/rampant-longrun.out 2>&1 &
+    PID=$!
+
+    # Interrogate the session
+    python3 tools/long_run.py --port 27020 --password rampant-test         --interval 15 --max-wait 1500 --artifact /tmp/rampant-longrun.jsonl
+    RESULT=$?
+
+    # Show the scenario's own status lines
+    echo ""
+    echo "=== Scenario Status ==="
+    grep -E "LONGRUN|VP:" /tmp/rampant-longrun.out | tail -40
+    echo ""
+
+    kill -9 $PID 2>/dev/null || true
+    exit $RESULT
+
 # Run a staged behavior scenario (default: wall-defense)
 # Usage: just test-behavior name=wall-defense
 test-behavior name="wall-defense":

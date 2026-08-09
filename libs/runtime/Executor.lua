@@ -40,7 +40,9 @@ Handlers.CREATE_SQUAD = function(cmd)
     local group = cmd.groupRef
     local base = _Universe.bases[cmd.baseId]
     if group and group.valid and base then
-        local squad = SquadG.createSquad(nil, nil, group, cmd.settler, base)
+        -- map must be provided: adopted squads dispatch immediately on
+        -- gathering completion and attackMove needs squad.map
+        local squad = SquadG.createSquad(nil, base.map, group, cmd.settler, base)
         _Universe.groupNumberToSquad[squad.id] = squad
         if cmd.settler then
             _Universe.builderCount = (_Universe.builderCount or 0) + 1

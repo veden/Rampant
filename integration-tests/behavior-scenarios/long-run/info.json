@@ -1,0 +1,6 @@
+{
+    "name": "Rampant E2E Long Run",
+    "description": "4 game-hour session with virtual player; telemetry interrogation by tools/long_run.py",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

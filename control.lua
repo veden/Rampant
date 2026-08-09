@@ -1283,6 +1283,9 @@ remote.add_interface("Rampant", {
     getMetrics = function()
         return Metrics.get()
     end,
+    getMetricsSummary = function()
+        return Metrics.getSummary()
+    end,
     resetMetrics = function()
         Metrics.reset()
         return true
@@ -1316,6 +1319,16 @@ remote.add_interface("Rampant", {
     setEvolution = function(value)
         if not Universe.metricsEnabled then return false end
         game.forces.enemy.evolution_factor = value
+        return true
+    end,
+    -- Nudge: set the state WITHOUT freezing the state machine (the next
+    -- roll proceeds normally). For long-run sessions that need periodic
+    -- expansion windows while staying otherwise natural.
+    nudgeBaseState = function(baseId, state)
+        if not Universe.metricsEnabled then return false end
+        local base = Universe.bases[baseId]
+        if not base then return false end
+        base.stateAI = state
         return true
     end,
     getEnemyGroups = function(surface)

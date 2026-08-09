@@ -153,5 +153,32 @@ function Metrics.get()
     return diagnostics
 end
 
+--- Summary snapshot for external pull (no raw ring buffers).
+function Metrics.getSummary()
+    if not active() then
+        return { enabled = false }
+    end
+    local m = Universe.metrics
+    local sampleStats = {}
+    for name, list in pairs(m.samples) do
+        if #list > 0 then
+            local sum = 0
+            local max = list[1]
+            for i = 1, #list do
+                sum = sum + list[i]
+                if list[i] > max then max = list[i] end
+            end
+            sampleStats[name] = { n = #list, mean = sum / #list, max = max }
+        end
+    end
+    return {
+        enabled = true,
+        counters = m.counters,
+        latest = m.latest,
+        highWater = m.highWater,
+        sampleStats = sampleStats,
+    }
+end
+
 MetricsG = Metrics
 return Metrics

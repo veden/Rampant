@@ -34,7 +34,7 @@ def rcon(port, command, password, timeout=4):
         s.sendall(struct.pack("<i", len(payload)) + payload)
 
     def drain():
-        s.settimeout(0.8)
+        s.settimeout(5.0)
         out = b""
         while True:
             try:
