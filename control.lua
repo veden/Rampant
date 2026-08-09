@@ -560,6 +560,12 @@ local function onDeath(event)
                     cmd.entityRef = entity
                     cmd.mapRef = map
                     cmd.tick = tick
+                    -- Retreat commands need the aggressor ENTITY for the flee
+                    -- command (defines.command.flee.from is a LuaEntity).
+                    -- The pure death logic only carries a reason label.
+                    if cmd.type == "RETREAT_UNITS" then
+                        cmd.causeRef = cause
+                    end
                 end
                 Executor.run(commands)
             end

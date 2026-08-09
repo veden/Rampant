@@ -344,19 +344,20 @@ function Observability.onUdpPacket(event)
         local function collect_chunks()
             if not Universe or not Universe.maps then return end
             for _, mapObj in pairs(Universe.maps) do
-                if type(mapObj) ~= "table" then end
-                for _, xChunks in pairs(mapObj) do
-                    if type(xChunks) == "table" then
-                        pcall(collect_one, xChunks)
+                if type(mapObj) == "table" then
+                    for _, xChunks in pairs(mapObj) do
+                        if type(xChunks) == "table" then
+                            collect_one(xChunks)
+                        end
                     end
                 end
             end
         end
 
-        local ok, err = pcall(collect_chunks)
-        if not ok then
-            return sendResponse(port, {error = tostring(err), chunks = {}, count = 0})
-        end
+        -- No pcall: a bug while collecting chunk state is a real bug and must
+        -- fail loudly (the UDP handler is event-driven; the error surfaces in
+        -- the log and the caller sees a dropped response).
+        collect_chunks()
 
         -- Multi-packet streaming: split into batches for large maps
         -- Each chunk ~213 bytes. helpers.send_udp ceiling ~60KB, target 32KB for safety.

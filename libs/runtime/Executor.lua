@@ -86,7 +86,11 @@ end
 Handlers.RETREAT_UNITS = function(cmd)
     local chunk = MapUtilsG.getChunkById(cmd.chunkId, _Universe)
     if chunk then
-        SquadG.retreatUnits(chunk, cmd.cause or "outnumbered",
+        -- causeRef is the LuaEntity to flee FROM (threaded by the death
+        -- handler); the command's reason is only a label. Squad.retreatUnits
+        -- guards on cause validity — no string fallback (a string would
+        -- crash set_multi_command's flee command).
+        SquadG.retreatUnits(chunk, cmd.causeRef,
                             cmd.tick or game.tick, nil, cmd.radius or 40)
     end
 end

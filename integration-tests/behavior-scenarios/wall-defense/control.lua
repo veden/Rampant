@@ -31,8 +31,10 @@ local POLLUTE_INTERVAL = 600  -- ticks between re-pollution at the spawner
 local state  -- nil until staged
 
 local function rampReady()
-    local ok, ready = pcall(remote.call, "Rampant", "isInitialized")
-    return ok and ready == true
+    -- No pcall: the interface is registered at mod load; a missing
+    -- interface means the mod is not enabled and the run must fail loudly.
+    local ready = remote.call("Rampant", "isInitialized")
+    return ready == true
 end
 
 local function gameMinutes(tick)

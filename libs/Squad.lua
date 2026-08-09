@@ -888,112 +888,127 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
 end
 
 function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
-    if (tick - getRetreatTick(chunk) > COOLDOWN_RETREAT)
-        and (getEnemyStructureCount(chunk) == 0)
-    then
-
-        if existingSquad and
-            (
-                (not existingSquad.group.valid)
-                or existingSquad.kamikaze
-            )
-        then
-            return
-        end
-
-        local map = chunk.map
-
-        setRetreatTick(chunk, tick)
-        local exitPath,exitDirection,
-            nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
-                                                                       getNeighborChunks(map,
-                                                                                         chunk.x,
-                                                                                         chunk.y),
-                                                                       scoreRetreatLocation,
-                                                                       map)
-        local position = {
-            x = chunk.x + 16,
-            y = chunk.y + 16
-        }
-        local retreatPosition
-        local surface = map.surface
-        if (exitPath == -1) then
-            return
-        elseif (nextExitPath ~= -1) then
-            retreatPosition = findMovementPosition(
-                surface,
-                positionFromScaledDirections(
-                    position,
-                    1,
-                    exitDirection,
-                    nextExitDirection
-                )
-            )
-        else
-            retreatPosition = findMovementPosition(
-                surface,
-                positionFromScaledDirections(
-                    position,
-                    1,
-                    exitDirection
-                )
-            )
-        end
-
-        if retreatPosition then
-            position.x = retreatPosition.x
-            position.y = retreatPosition.y
-        else
-            return
-        end
-
-        if not existingSquad then
-            if (Universe.squadCount >= Universe.AI_MAX_SQUAD_COUNT) then
-                return
-            end
-
-            local base = findNearbyBase(chunk)
-            if not base then
-                return
-            end
-            existingSquad = Squad.createSquad(position, map, nil, false, base)
-
-            Queries.fleeCommand.from = cause
-            Queries.retreatCommand.group = existingSquad.group
-
-            Queries.formRetreatCommand.unit_search_distance = radius
-
-            local foundUnits = surface.set_multi_command(Queries.formRetreatCommand)
-
-            if (foundUnits == 0) then
-                existingSquad.group.destroy()
-                return
-            end
-
-            Universe.groupNumberToSquad[existingSquad.id] = existingSquad
-            Universe.squadCount = Universe.squadCount + 1
-        else
-            Queries.moveCommand.distraction = DEFINES_DISTRACTION_NONE
-            setPositionInCommand(Queries.moveCommand, position)
-            existingSquad.group.set_command(Queries.moveCommand)
-        end
-
-        existingSquad.retreats = existingSquad.retreats + 1
-        if (existingSquad.retreats >= 3) then
-            existingSquad.kamikaze = true
-        end
-
-        existingSquad.status = SQUAD_RETREATING
-        if MetricsG then
-            MetricsG.inc("squad.retreated")
-        end
-
-        addSquadToChunk(chunk, existingSquad)
-
-        existingSquad.frenzy = true
-        existingSquad.frenzyPosition.x = position.x
-        existingSquad.frenzyPosition.y = position.y
+    -- The flee command requires the aggressor LuaEntity (defines.command.flee
+    -- from). A missing/invalid cause means the retreat cannot execute — the
+    -- emitter must have threaded causeRef. Count it; never crash the engine.
+    if not cause or not cause.valid then
+        MetricsG.inc("squad.retreatBail.noCause")
+        return
     end
+    if not ((tick - getRetreatTick(chunk) > COOLDOWN_RETREAT)
+        and (getEnemyStructureCount(chunk) == 0))
+    then
+        MetricsG.inc("squad.retreatBail.gate")
+        return
+    end
+
+    if existingSquad and
+        (
+            (not existingSquad.group.valid)
+            or existingSquad.kamikaze
+        )
+    then
+        MetricsG.inc("squad.retreatBail.invalidSquad")
+        return
+    end
+
+    local map = chunk.map
+
+    setRetreatTick(chunk, tick)
+    local exitPath,exitDirection,
+        nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
+                                                                   getNeighborChunks(map,
+                                                                                     chunk.x,
+                                                                                     chunk.y),
+                                                                   scoreRetreatLocation,
+                                                                   map)
+    local position = {
+        x = chunk.x + 16,
+        y = chunk.y + 16
+    }
+    local retreatPosition
+    local surface = map.surface
+    if (exitPath == -1) then
+        MetricsG.inc("squad.retreatBail.noExit")
+        return
+    elseif (nextExitPath ~= -1) then
+        retreatPosition = findMovementPosition(
+            surface,
+            positionFromScaledDirections(
+                position,
+                1,
+                exitDirection,
+                nextExitDirection
+            )
+        )
+    else
+        retreatPosition = findMovementPosition(
+            surface,
+            positionFromScaledDirections(
+                position,
+                1,
+                exitDirection
+            )
+        )
+    end
+
+    if retreatPosition then
+        position.x = retreatPosition.x
+        position.y = retreatPosition.y
+    else
+        MetricsG.inc("squad.retreatBail.noPosition")
+        return
+    end
+
+    if not existingSquad then
+        if (Universe.squadCount >= Universe.AI_MAX_SQUAD_COUNT) then
+            MetricsG.inc("squad.retreatBail.squadLimit")
+            return
+        end
+
+        local base = findNearbyBase(chunk)
+        if not base then
+            MetricsG.inc("squad.retreatBail.noBase")
+            return
+        end
+        existingSquad = Squad.createSquad(position, map, nil, false, base)
+
+        Queries.fleeCommand.from = cause
+        Queries.retreatCommand.group = existingSquad.group
+
+        Queries.formRetreatCommand.unit_search_distance = radius
+
+        local foundUnits = surface.set_multi_command(Queries.formRetreatCommand)
+
+        if (foundUnits == 0) then
+            existingSquad.group.destroy()
+            MetricsG.inc("squad.retreatBail.noUnits")
+            return
+        end
+
+        Universe.groupNumberToSquad[existingSquad.id] = existingSquad
+        Universe.squadCount = Universe.squadCount + 1
+    else
+        Queries.moveCommand.distraction = DEFINES_DISTRACTION_NONE
+        setPositionInCommand(Queries.moveCommand, position)
+        existingSquad.group.set_command(Queries.moveCommand)
+    end
+
+    existingSquad.retreats = existingSquad.retreats + 1
+    if (existingSquad.retreats >= 3) then
+        existingSquad.kamikaze = true
+    end
+
+    existingSquad.status = SQUAD_RETREATING
+    if MetricsG then
+        MetricsG.inc("squad.retreated")
+    end
+
+    addSquadToChunk(chunk, existingSquad)
+
+    existingSquad.frenzy = true
+    existingSquad.frenzyPosition.x = position.x
+    existingSquad.frenzyPosition.y = position.y
 end
 
 function Squad.createSquad(position, map, group, settlers, base)

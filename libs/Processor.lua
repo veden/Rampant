@@ -682,8 +682,14 @@ function Processor.processDirtyChunk(chunk, tick, priority)
         end
     end
     if changed then
-        local success, neighbors = pcall(MapUtils.getNeighborChunks, chunk.map, chunk.x, chunk.y)
-        if success and neighbors then
+        -- Explicit guard: chunks always carry a map reference; if a chunk ever
+        -- lacks one the old pcall silently skipped its neighbors. Errors
+        -- beyond this guard are real bugs and must propagate.
+        local neighbors
+        if chunk and chunk.map then
+            neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+        end
+        if neighbors then
             for i = 1, 8 do
                 if neighbors[i] and neighbors[i] ~= -1 then
                     table.insert(neighborsToMark, { id = neighbors[i].id, priority = priority + 1 })

@@ -35,8 +35,10 @@ local BASE_AI_STATE_RAIDING = 4
 local justLoaded = false
 
 local function rampReady()
-    local ok, ready = pcall(remote.call, "Rampant", "isInitialized")
-    return ok and ready == true
+    -- No pcall: the interface is registered at mod load; a missing
+    -- interface means the mod is not enabled and the run must fail loudly.
+    local ready = remote.call("Rampant", "isInitialized")
+    return ready == true
 end
 
 local function gameMinutes(tick)
@@ -118,12 +120,12 @@ local function killUnits(surface, count)
     local units = unitsNearWall(surface)
     for _, u in ipairs(units) do
         if killed >= count then break end
-        local ok = pcall(function()
-            if u.valid and turret and turret.valid then
-                u.die("player", turret)
-            end
-        end)
-        if ok then killed = killed + 1 end
+        -- No pcall: die() errors (or errors inside Rampant's synchronous
+        -- death handler) are real bugs and must fail the run loudly.
+        if u.valid and turret and turret.valid then
+            u.die("player", turret)
+            killed = killed + 1
+        end
     end
     return killed
 end

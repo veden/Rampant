@@ -481,10 +481,9 @@ function IntegrationTests:testSaveLoad()
     print("--- Save/Load Tests ---")
 
     self:setCurrentTest("universe serializable")
-    local state, err = pcall(function()
-        return textutils.serialize(global.universe)
-    end)
-    self.assert(state, "Universe not serializable: " .. tostring(err))
+    -- No pcall: serialize errors are real bugs; fail loudly.
+    local state = textutils.serialize(global.universe)
+    self.assert(state, "Universe not serializable")
 
     self:setCurrentTest("universe state is string")
     local serialized = textutils.serialize(global.universe)
@@ -492,10 +491,9 @@ function IntegrationTests:testSaveLoad()
     self.assert(#serialized > 0, "Serialized state is empty")
 
     self:setCurrentTest("universe deserializable")
-    local restored, err = pcall(function()
-        return textutils.deserialize(serialized)
-    end)
-    self.assert(restored, "Universe not deserializable: " .. tostring(err))
+    -- No pcall: deserialize errors are real bugs; fail loudly.
+    local restored = textutils.deserialize(serialized)
+    self.assert(restored, "Universe not deserializable")
 
     self:setCurrentTest("restored has maps")
     local restored = textutils.deserialize(serialized)

@@ -70,11 +70,15 @@ function Command.rallySquads(chunkId, cause, radius)
     }
 end
 
-function Command.retreatUnits(chunkId, cause, radius)
+function Command.retreatUnits(chunkId, reason, radius)
     return {
         type = "RETREAT_UNITS",
         chunkId = chunkId,
-        cause = cause or "outnumbered",
+        -- reason is a LABEL ("player_damage", "structure_destroyed").
+        -- The entity to flee FROM is threaded separately by the death
+        -- handler (cmd.causeRef) — the flee command requires a real
+        -- LuaEntity, never a string.
+        reason = reason or "outnumbered",
         radius = radius or 0,
     }
 end

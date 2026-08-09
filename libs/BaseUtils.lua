@@ -460,14 +460,9 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
 
     -- build_base_evolution_requirement existed on 1.1 spawner prototypes but
     -- was removed in 2.x; any access errors (strict prototype metatable).
-    -- Fall back to 0 (tier 1 baseline) when absent.
+    -- Rampant requires Factorio >= 2.0, so the field is absent on every
+    -- supported version — constant fallback 0 (tier 1 baseline), no pcall.
     local currentEvo = 0
-    local ok, prototypeEvo = pcall(function()
-        return entity.prototype.build_base_evolution_requirement
-    end)
-    if ok and prototypeEvo then
-        currentEvo = prototypeEvo
-    end
 
     local distance = mMin(
         1,

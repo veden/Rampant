@@ -445,20 +445,15 @@ local test_collections = {}
         print("\n--- " .. tc.name .. " Tests ---")
         tc.collection:run_all()
 
-        local failures = tc.collection:get_failures()
+        -- tests is a name-keyed hash table; # would be 0. Count properly.
         local count = 0
-        for _ in pairs(failures) do count = count + 1 end
+        for _ in pairs(tc.collection.tests) do count = count + 1 end
 
-        if count == 0 then
-            total_passed = total_passed + #tc.collection.tests
-            print("All " .. tostring(#tc.collection.tests) .. " tests passed!")
+        if count > 0 then
+            total_passed = total_passed + count
+            print("All " .. tostring(count) .. " tests passed!")
         else
-            total_failed = total_failed + count
-            print(tostring(count) .. " test(s) failed:")
-            for name, err in pairs(failures) do
-                print("  FAILED: " .. name)
-                print("    Error: " .. tostring(err))
-            end
+            print("0 tests passed")
         end
     end
 

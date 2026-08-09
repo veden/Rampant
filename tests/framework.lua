@@ -29,13 +29,11 @@ function TestCollection:run_all()
     for name, test in pairs(self.tests) do
         if self.setup_fn then self.setup_fn() end
 
-        local success, err = pcall(test)
-        if not success then
-            self.failed_tests[name] = err
-            print("Failed! Error message: " .. err)
-        else
-            print("Passed.")
-        end
+        -- No pcall: a failing assertion raises and aborts the suite loudly.
+        -- pcall here used to swallow failures into a summary; an error in a
+        -- test must surface with its stack immediately.
+        test()
+        print("Passed.")
 
         if self.teardown_fn then self.teardown_fn() end
     end

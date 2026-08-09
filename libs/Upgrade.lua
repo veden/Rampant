@@ -506,12 +506,16 @@ function Upgrade.addUniverseProperties()
 end
 
 function Upgrade.attempt()
-    -- Check if forces are available using pcall
-    local ok, evolution = pcall(function() return game.forces.enemy.get_evolution_factor(game.surfaces[1]) end)
-    if not ok or not evolution then
+    -- Forces/surfaces may not exist yet in fresh scenarios (the game creates
+    -- the enemy force later). Guard explicitly — no pcall; once the guard
+    -- passes, any further error here is a real bug and must fail loudly.
+    local enemyForce = game.forces.enemy
+    local surface = game.surfaces[1]
+    if not enemyForce or not surface then
         log("Upgrade: Skipping - forces not ready")
         return
     end
+    local evolution = enemyForce.get_evolution_factor(surface)
 
     if not storage.gameVersion then
         storage.gameVersion = 1

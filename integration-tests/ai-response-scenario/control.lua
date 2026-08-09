@@ -151,20 +151,14 @@ script.on_init(function()
     -- Force full initialization BEFORE Rampant checks test mode
     remote.call("Rampant", "forceInitialize")
 
-    local ok, err = pcall(runTests)
-    if not ok then
-        print("ERROR: " .. tostring(err))
-        print("TESTS_FAILED")
-    end
+    -- No pcall: an error in runTests is a real bug; let it surface loudly.
+    runTests()
 end)
 
 script.on_configuration_changed(function(event)
     -- Force full initialization
     remote.call("Rampant", "forceInitialize")
 
-    local ok, err = pcall(runTests)
-    if not ok then
-        print("ERROR: " .. tostring(err))
-        print("TESTS_FAILED")
-    end
+    -- No pcall: an error in runTests is a real bug; let it surface loudly.
+    runTests()
 end)

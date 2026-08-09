@@ -63,7 +63,11 @@ my_collection:add('unit_death_triggers_retreat_when_below_threshold', function()
     for _, c in ipairs(commands) do
         if c.type == "RETREAT_UNITS" then
             hasRetreat = true
-            assert(c.cause == "player_damage", "retreat cause should be player_damage")
+            -- The command carries the REASON label; the aggressor ENTITY is
+            -- threaded separately by the death handler (cmd.causeRef) — the
+            -- pure death logic never sees game objects.
+            assert(c.reason == "player_damage", "retreat reason should be player_damage")
+            assert(c.causeRef == nil, "pure logic must not carry the cause entity")
         end
     end
     assert(hasRetreat, "should retreat when below threshold")

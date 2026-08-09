@@ -210,13 +210,12 @@ local function runIntegrationTests()
     section("Unit Group Creation Tests")
 
     local groupPos = nextPos()
-    local okUnitGroup, unitGroup = pcall(function()
-        return surface.create_unit_group({
-            position = groupPos,
-            force = forceEnemy
-        })
-    end)
-    record("create unit group", okUnitGroup and unitGroup ~= nil)
+    -- No pcall: create_unit_group errors are real bugs; fail loudly.
+    local unitGroup = surface.create_unit_group({
+        position = groupPos,
+        force = forceEnemy
+    })
+    record("create unit group", unitGroup ~= nil)
     record("unit group is valid", okUnitGroup and unitGroup and unitGroup.valid)
 
     if unitGroup then
@@ -251,11 +250,9 @@ local function runIntegrationTests()
             destination = {x = 0, y = 0},
             distraction = defines.distraction.by_anything
         }
-        local ok, err = pcall(function() wanderGroup.set_command(wanderCmd) end)
-        record("set wander command", ok)
-        if not ok then
-            print("      Error: " .. tostring(err))
-        end
+        -- No pcall: set_command errors are real bugs; fail loudly.
+        wanderGroup.set_command(wanderCmd)
+        record("set wander command", true)
         wanderGroup.destroy()
     end
 
@@ -289,11 +286,9 @@ local function runIntegrationTests()
             destination = {x = 0, y = 0},
             distraction = defines.distraction.by_anything
         }
-        local ok, err = pcall(function() stateGroup.set_command(wanderCmd) end)
-        record("set wander command", ok)
-        if not ok then
-            print("      Error: " .. tostring(err))
-        end
+        -- No pcall: set_command errors are real bugs; fail loudly.
+        stateGroup.set_command(wanderCmd)
+        record("set wander command", true)
 
         stateGroup.destroy()
     end
@@ -366,20 +361,15 @@ local function runIntegrationTests()
 end
 
 script.on_init(function()
-    local ok, err = pcall(runIntegrationTests)
-    if not ok then
-        print("FATAL ERROR: " .. tostring(err))
-        print("TESTS_FAILED")
-    end
+    -- No pcall: an error in runIntegrationTests is a real bug; the runner
+    -- detects the crash (no TESTS_COMPLETE) and reports failure loudly.
+    runIntegrationTests()
 end)
 
 script.on_load(function()
 end)
 
 script.on_configuration_changed(function(event)
-    local ok, err = pcall(runIntegrationTests)
-    if not ok then
-        print("ERROR: " .. tostring(err))
-        print("TESTS_FAILED")
-    end
+    -- No pcall: see on_init.
+    runIntegrationTests()
 end)
