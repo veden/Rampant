@@ -230,13 +230,17 @@ end
 
 ### Error Handling
 
-Use `pcall()` for protected calls in tests:
-```lua
-local success, err = pcall(test)
-if not success then
-    self.failed_tests[name] = err
-end
-```
+**No pcall anywhere. Ever.** pcall silently swallows errors — including
+mod crashes inside `entity.die()` handlers — and turned a real engine
+crash into hours of false "regression" debugging (the death-response
+retreat crash: `set_multi_command` receiving a string instead of a
+LuaEntity). Errors must fail loudly:
+
+- Guard explicitly instead of catching: nil-checks (`game.forces.enemy`),
+  `if chunk.map` guards, constant fallbacks for removed prototype fields.
+- Tests: assertion failures raise and abort the suite immediately
+  (`tests/framework.lua` run_all calls tests directly).
+- If an error is genuinely possible, structure the code so it surfaces.
 
 For Factorio API calls, handle nil gracefully since tables may be empty.
 

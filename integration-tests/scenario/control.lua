@@ -216,7 +216,7 @@ local function runIntegrationTests()
         force = forceEnemy
     })
     record("create unit group", unitGroup ~= nil)
-    record("unit group is valid", okUnitGroup and unitGroup and unitGroup.valid)
+    record("unit group is valid", unitGroup and unitGroup.valid)
 
     if unitGroup then
         record("unit group state is gathering", unitGroup.state == defines.group_state.gathering)

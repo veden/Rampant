@@ -6,7 +6,6 @@ function TestCollection:new()
         tests = {}, -- array of functions representing tests
         setup_fn = nil,
         teardown_fn = nil,
-        failed_tests = {}, -- table to store failed tests
     }
     setmetatable(instance, TestCollection)
     return instance
@@ -20,9 +19,6 @@ function TestCollection:set_setup(setup_fn) self.setup_fn = setup_fn end
 
 -- add a teardown function to the collection
 function TestCollection:set_teardown(teardown_fn) self.teardown_fn = teardown_fn end
-
--- get the list of failed tests
-function TestCollection:get_failures() return self.failed_tests end
 
 -- run all tests in the collection
 function TestCollection:run_all()

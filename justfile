@@ -83,7 +83,7 @@ ci: (_zipFiles ciZipPath)
     rm -f ciZipPath
 
 # Run integration tests
-test:
+test: copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant integration tests..."
@@ -176,7 +176,7 @@ copy-all: copy
     echo "  factorio --start-server-load-scenario rampant-integration-tests"
 
 # Run active AI integration tests (full initialization, speed=100)
-test-active:
+test-active: copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant Active AI tests..."
@@ -246,7 +246,7 @@ test-active:
     echo ""
 
 # Run RCON-based AI tests
-test-rcon:
+test-rcon: copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant RCON AI tests..."
@@ -261,7 +261,7 @@ test-rcon:
     integration-tests/run-rcon-tests.sh
 
 # Run the save/load continuity test (fresh -> save -> reload -> verify)
-test-save-load:
+test-save-load: copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant save/load continuity test..."
@@ -281,7 +281,7 @@ test-save-load:
     exit $RESULT
 
 # Run the E2E long-run session (4 game-hours, virtual player, telemetry interrogation)
-test-longrun:
+test-longrun: copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant E2E long-run session..."
@@ -357,7 +357,9 @@ make-saves:
 
 # Run a staged behavior scenario (default: wall-defense)
 # Usage: just test-behavior name=wall-defense
-test-behavior name="wall-defense":
+# Depends on `copy`: a stale installed mod silently tests old code (the
+# mod dir is a copy, not a link — libs/ edits are invisible until synced).
+test-behavior name="wall-defense": copy
     #!/usr/bin/env -S bash
     set -e
     echo "Running Rampant behavior scenario: {{name}}..."
@@ -397,6 +399,16 @@ test-behavior name="wall-defense":
     for i in {1..600}; do
         if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-behavior.out 2>/dev/null; then
             sleep 2
+            break
+        fi
+        # A crashed server (non-recoverable mod error) never emits a test
+        # signal — detect the dead process and fail fast instead of polling
+        # the full budget.
+        if ! kill -0 $PID 2>/dev/null; then
+            echo ""
+            echo "SERVER DIED (no test signal) — log tail:"
+            tail -15 /tmp/rampant-behavior.out
+            echo ""
             break
         fi
         sleep 1
