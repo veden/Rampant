@@ -139,6 +139,10 @@ function Observability.getEnemyGroups(surface)
                     state = squad.group.state,
                     memberCount = memberCount,
                     isBuilder = squad.settlers or false,
+                    isKamikaze = squad.kamikaze or false,
+                    retreats = squad.retreats or 0,
+                    -- Rampant squad status (1=RETREATING, 4=RAIDING, 5=SETTLING)
+                    status = squad.status or 0,
                 })
             end
         end

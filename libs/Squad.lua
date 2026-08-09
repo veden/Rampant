@@ -896,6 +896,39 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
     return highestChunk, highestDirection, nextHighestChunk, nextHighestDirection
 end
 
+-- Reuse a squad already retreating in this chunk or its neighbors instead
+-- of creating a new squad per retreat. Without the reuse, every retreat
+-- spawns a fresh squad and the kamikaze escalation (existingSquad.retreats
+-- >= 3) is unreachable — the refactor dropped the legacy findNearby-
+-- RetreatingSquad, leaving the existingSquad param permanently nil.
+local function findNearbyRetreatingSquad(map, chunk)
+    local function check(c)
+        if c and c.squads then
+            for _, squad in pairs(c.squads) do
+                if (squad.status == SQUAD_RETREATING) and squad.group and squad.group.valid then
+                    return squad
+                end
+            end
+        end
+        return nil
+    end
+    local found = check(chunk)
+    if found then
+        return found
+    end
+    local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
+    for i = 1, 8 do
+        local neighbor = neighbors[i]
+        if neighbor ~= -1 then
+            found = check(neighbor)
+            if found then
+                return found
+            end
+        end
+    end
+    return nil
+end
+
 function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
     -- The flee command requires the aggressor LuaEntity (defines.command.flee
     -- from). A missing/invalid cause means the retreat cannot execute — the
@@ -967,6 +1000,10 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
     else
         MetricsG.inc("squad.retreatBail.noPosition")
         return
+    end
+
+    if not existingSquad then
+        existingSquad = findNearbyRetreatingSquad(map, chunk)
     end
 
     if not existingSquad then
