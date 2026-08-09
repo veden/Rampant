@@ -82,17 +82,36 @@ local function stage(surface)
     for dx = -1, 1 do
         for dy = -1, 1 do
             if math.abs(dx) + math.abs(dy) == 1 then
-                surface.create_entity{
+                local wall = surface.create_entity{
                     name = "stone-wall",
                     position = { x = WALL_POS.x + dx * 2, y = WALL_POS.y + dy * 2 },
                     force = "player",
                     raise_built = true,
                 }
+                if wall then
+                    -- Indestructible: a wall death fires VICTORY SCENT
+                    -- (positive death generator) that overwhelms the
+                    -- unit-death scents and keeps the rating above the
+                    -- retreat threshold — the retreat would never fire.
+                    wall.destructible = false
+                end
             end
         end
     end
-    surface.create_entity{ name = "gun-turret", position = TURRET_POS, force = "player", raise_built = true }
-    surface.create_entity{ name = "biter-spawner", position = SPAWNER_POS, force = "enemy", raise_built = true }
+    local turret = surface.create_entity{ name = "gun-turret", position = TURRET_POS, force = "player", raise_built = true }
+    if turret then
+        -- The turret is the scripted death CAUSE (die("player", turret));
+        -- it must survive the attack so the post-load kills work. It has
+        -- no ammo (script-created), so it never kills on its own.
+        turret.destructible = false
+        local ammo = turret.get_inventory(defines.inventory.turret_ammo)
+        if ammo then
+            ammo.clear()
+        end
+    end
+    -- Rampant spawner -> base creation (registered directly; the vanilla
+    -- biter-spawner would be upgrade-destroyed and recreated mid-run).
+    surface.create_entity{ name = "neutral-biter-spawner-v1-t1-rampant", position = SPAWNER_POS, force = "enemy", raise_built = true }
     surface.pollute(SPAWNER_POS, 50)
     -- Army (grouped, attacking) — persists across the reload
     local spawned = 0
@@ -298,9 +317,19 @@ script.on_event(defines.events.on_tick, function()
                 end
             end
             if r.killed and phaseElapsed > PHASE_LIMIT_MINUTES * TICKS_A_MINUTE then
-                local m = remote.call("Rampant", "getMetricsSummary")
+                local m = remote.call("Rampant", "getMetrics")
                 local counters = m and m.counters or {}
-                local sampleStats = m and m.sampleStats or {}
+                local samples = m and m.samples or {}
+                local pheromones = remote.call("Rampant", "queryPheromones", WALL_POS, surface)
+                local function list(name)
+                    local t = samples[name]
+                    if not t then return "none" end
+                    local parts = {}
+                    for i = 1, #t do
+                        parts[i] = string.format("%.5f", t[i])
+                    end
+                    return table.concat(parts, ",")
+                end
                 finish(false, "retreat did not fire post-load: " ..
                     #unitsNearWall(surface) .. " unit(s) still at wall | " ..
                     "onDeath=" .. tostring(counters["event.onDeath"]) ..
@@ -310,8 +339,9 @@ script.on_event(defines.events.on_tick, function()
                     " deathEnemy=" .. tostring(counters["death.force.enemy"]) ..
                     " deathPlayer=" .. tostring(counters["death.force.player"]) ..
                     " causeValid=" .. tostring(counters["death.causeValid"]) ..
-                    " rating=" .. tostring(sampleStats["death.rating"] and sampleStats["death.rating"].mean) ..
-                    " threshold=" .. tostring(sampleStats["death.threshold"] and sampleStats["death.threshold"].mean) ..
+                    " rating=[" .. list("death.rating") .. "]" ..
+                    " threshold=[" .. list("death.threshold") .. "]" ..
+                    " wallDeathGen=" .. tostring(pheromones and pheromones.deathGenerator) ..
                     " retreatCmd=" .. tostring(counters["cmd.RETREAT_UNITS"]))
                 return
             end
