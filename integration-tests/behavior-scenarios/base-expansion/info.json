@@ -1,0 +1,6 @@
+{
+    "name": "Rampant Behavior Base Expansion",
+    "description": "Settler builds a new base; upgrade pipeline + registration",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

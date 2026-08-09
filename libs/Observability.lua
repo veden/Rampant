@@ -98,7 +98,9 @@ function Observability.queryBaseAt(position, surface)
         points = base.points,
         unitPoints = base.unitPoints,
         destroyPlayerBuildings = base.destroyPlayerBuildings or 0,
-        nestCount = base.nestCount or 0,
+        -- The structure counts live on the CHUNK (chunk.nestCount), not the
+        -- base object — report the chunk at the query position.
+        nestCount = chunk.nestCount or 0,
         activeStructures = base.activeStructureCount or 0,
         attackThreshold = base.attackThreshold or 0,
         retreatThreshold = base.retreatThreshold or 0,
@@ -185,14 +187,30 @@ function Observability.getActiveStructures(surface)
         return {}
     end
 
+    -- The structure registries live on the chunks (nestIds/nestCount,
+    -- turretIds/turretCount, ...) with the chunk id -> chunk maps in the
+    -- Universe (chunkToNests, chunkToUtilities, ...). The entities are not
+    -- stored (only unit_number -> true), so report the registered chunks.
     local structures = {}
-    for _, entity in pairs(map.structures or {}) do
-        if entity.valid then
-            table.insert(structures, {
-                name = entity.name,
-                position = entity.position,
-                type = entity.type,
-            })
+    local registries = {
+        { map = Universe.chunkToNests, type = "nest" },
+        { map = Universe.chunkToUtilities, type = "turret" },
+        { map = Universe.chunkToHives, type = "hive" },
+    }
+    for _, reg in ipairs(registries) do
+        for _, chunk in pairs(reg.map or {}) do
+            if chunk and chunk.map == map then
+                local count = (reg.type == "nest" and chunk.nestCount)
+                    or (reg.type == "turret" and chunk.turretCount)
+                    or (reg.type == "hive" and chunk.hiveCount)
+                    or 0
+                table.insert(structures, {
+                    type = reg.type,
+                    count = count,
+                    x = chunk.x,
+                    y = chunk.y,
+                })
+            end
         end
     end
     return structures
