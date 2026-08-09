@@ -274,6 +274,12 @@ test-longrun:
     # Create private server settings (auto_pause: false is required)
     echo '{"name":"Rampant Long Run","description":"E2E session interrogation","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-longrun-server-settings.json
 
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run.zip ]; then
+        just make-saves
+    fi
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run.zip ]; then
+        just make-saves
+    fi
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
     cp -r integration-tests/behavior-scenarios/long-run /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
     cp integration-tests/behavior-saves/rampant-behavior-long-run.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run.zip
@@ -295,6 +301,42 @@ test-longrun:
     kill -9 $PID 2>/dev/null || true
     exit $RESULT
 
+# Build the prepared behavior-save zips (small maps + scenario control).
+# The zips are gitignored (generated artifacts); run this after a fresh
+# clone or when scenario control.lua changes.
+make-saves:
+    #!/usr/bin/env -S bash
+    set -e
+    SRC="$(pwd)"
+    mkdir -p /tmp/rampant-saves
+    for size in 256 512 1024; do
+        if [ ! -f /tmp/rampant-saves/map-$size.zip ]; then
+            /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
+                --create /tmp/rampant-saves/map-$size.zip \
+                --map-gen-settings $SRC/integration-tests/behavior-saves/mapgen/$size.json \
+                > /dev/null 2>&1
+            echo "generated map-$size"
+        fi
+    done
+    for name in wall-defense death-response migration-settler long-run; do
+        case $name in
+            wall-defense|death-response) SIZE=256 ;;
+            migration-settler) SIZE=512 ;;
+            long-run) SIZE=1024 ;;
+        esac
+        DIR=/tmp/rampant-saves/$name
+        rm -rf $DIR && mkdir -p $DIR/rampant-behavior-$name
+        cd /tmp/rampant-saves && rm -rf x && mkdir x && unzip -o -q map-$SIZE.zip "map-$SIZE/level-init.dat" -d x
+        cp x/map-$SIZE/level-init.dat $DIR/rampant-behavior-$name/level-init.dat
+        cp $SRC/integration-tests/behavior-scenarios/$name/control.lua $DIR/rampant-behavior-$name/control.lua
+        cp $SRC/integration-tests/behavior-scenarios/$name/info.json $DIR/rampant-behavior-$name/info.json
+        cd $DIR/rampant-behavior-$name
+        rm -f $SRC/integration-tests/behavior-saves/rampant-behavior-$name.zip
+        zip -q -r $SRC/integration-tests/behavior-saves/rampant-behavior-$name.zip level-init.dat control.lua info.json
+        cd /
+        echo "built save: $name"
+    done
+
 # Run a staged behavior scenario (default: wall-defense)
 # Usage: just test-behavior name=wall-defense
 test-behavior name="wall-defense":
@@ -311,6 +353,9 @@ test-behavior name="wall-defense":
     # server pauses with no players otherwise; see docs/09-Engine-Testing.md)
     echo '{"name":"Rampant Behavior Tests","description":"Staged behavior scenarios","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-behavior-server-settings.json
 
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-{{name}}.zip ]; then
+        just make-saves
+    fi
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
     cp -r integration-tests/behavior-scenarios/{{name}} /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
 

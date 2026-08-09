@@ -1,0 +1,7 @@
+{
+  "width": 1024,
+  "height": 1024,
+  "starting_area": 2,
+  "water": 0.1,
+  "cliff_settings": { "cliff_elevation_interval": 0, "cliff_elevation_0": 0 }
+}
