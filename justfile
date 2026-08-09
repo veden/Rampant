@@ -260,6 +260,26 @@ test-rcon:
     # Run test script
     integration-tests/run-rcon-tests.sh
 
+# Run the save/load continuity test (fresh -> save -> reload -> verify)
+test-save-load:
+    #!/usr/bin/env -S bash
+    set -e
+    echo "Running Rampant save/load continuity test..."
+    pkill -9 factorio 2>/dev/null || true
+    sleep 1
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-save-load.zip ]; then
+        just make-saves
+    fi
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-save-load-test*
+    rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-save-load
+    cp -r integration-tests/behavior-scenarios/save-load /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-save-load
+    cp integration-tests/behavior-saves/rampant-behavior-save-load.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-save-load.zip
+    python3 tools/save_load.py
+    RESULT=$?
+    kill -9 $(pgrep -f "factorio.*34203" | head -1) 2>/dev/null || true
+    pkill -9 factorio 2>/dev/null || true
+    exit $RESULT
+
 # Run the E2E long-run session (4 game-hours, virtual player, telemetry interrogation)
 test-longrun:
     #!/usr/bin/env -S bash
@@ -277,9 +297,7 @@ test-longrun:
     if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run.zip ]; then
         just make-saves
     fi
-    if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run.zip ]; then
-        just make-saves
-    fi
+    just make-saves
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
     cp -r integration-tests/behavior-scenarios/long-run /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
     cp integration-tests/behavior-saves/rampant-behavior-long-run.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run.zip
@@ -318,9 +336,9 @@ make-saves:
             echo "generated map-$size"
         fi
     done
-    for name in wall-defense death-response migration-settler long-run; do
+    for name in wall-defense death-response migration-settler save-load long-run; do
         case $name in
-            wall-defense|death-response) SIZE=256 ;;
+            wall-defense|death-response|save-load) SIZE=256 ;;
             migration-settler) SIZE=512 ;;
             long-run) SIZE=1024 ;;
         esac
@@ -353,9 +371,7 @@ test-behavior name="wall-defense":
     # server pauses with no players otherwise; see docs/09-Engine-Testing.md)
     echo '{"name":"Rampant Behavior Tests","description":"Staged behavior scenarios","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-behavior-server-settings.json
 
-    if [ ! -f integration-tests/behavior-saves/rampant-behavior-{{name}}.zip ]; then
-        just make-saves
-    fi
+    just make-saves
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
     cp -r integration-tests/behavior-scenarios/{{name}} /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
 

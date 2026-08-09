@@ -225,14 +225,14 @@ end
 local function onLoad()
     Universe = storage.universe
 
-    Universe.DEBUG_ENTITY_EVENTS = false
+    -- NOTE: no storage writes allowed here (CRC check fails the load).
+    -- DEBUG_ENTITY_EVENTS persists from the save.
 
     initializeLibraries()
 
-    -- Event-driven: re-scan existing chunks to register structures (was done by periodic scans)
-    for surfaceIndex, map in pairs(Universe.maps) do
-        rescanAllChunks(map, game.tick)
-    end
+    -- NOTE: `game` is nil during on_load (Factorio restriction); no game
+    -- object access is allowed here. Structure registration persists in
+    -- storage (event-driven), so no re-scan is needed on load.
 
     hookEvents()
 end
@@ -475,9 +475,11 @@ local function onDeath(event)
     local surface = entity.surface
     local map = Universe.maps[surface.index]
     if not map then
+        Metrics.inc("death.mapMissing")
         return
     end
     local entityForceName = entity.force.name
+    Metrics.inc("death.force." .. entityForceName)
     if (entityForceName == "neutral") then
         if (entity.name == "cliff") then
             entityForPassScan(map, entity)
@@ -522,6 +524,14 @@ local function onDeath(event)
 
             local artilleryBlast = (cause and ((cause.type == "artillery-wagon") or (cause.type == "artillery-turret")))
 
+            if chunk ~= -1 then
+                Metrics.sample("death.rating",
+                    getCombinedDeathGeneratorRating(chunk))
+                Metrics.sample("death.threshold",
+                    Universe.retreatThreshold or 0)
+                Metrics.inc("death.causeValid",
+                    (cause and cause.valid and (cause.get_health_ratio() ~= nil)) and 1 or 0)
+            end
             local deathData = {
                 entityType = entityType,
                 entityName = entity.name,
@@ -540,7 +550,11 @@ local function onDeath(event)
                 isDrainPylon = false,
             }
 
+            if chunk == -1 then
+                Metrics.inc("death.chunkMissing")
+            end
             local commands = DeathLogic.evaluateEnemy(deathData)
+            Metrics.inc("death.commandsEmitted", #commands)
             if #commands > 0 then
                 for _, cmd in ipairs(commands) do
                     cmd.entityRef = entity

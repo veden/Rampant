@@ -6,6 +6,15 @@ local Fixtures = require("tests/fixtures")
 
 local my_collection = TestCollection:new()
 
+local function resetDirty(universe)
+    universe.dirtyChunks = {
+        priority1 = {}, priority2 = {}, priority3 = {},
+        priority4 = {}, priority5 = {},
+    }
+    universe.dirtyChunkSet = {}
+end
+
+
 -- Create mock universe and initialize modules
 local Universe = Fixtures.makeUniverse()
 package.loaded["libs/Constants"] = nil
@@ -64,7 +73,8 @@ my_collection:add('markChunkDirty_adds_to_priority_queue', function()
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
+    resetDirty(Universe)    
     -- Mark chunk dirty
     MapUtils.markChunkDirty(123, 1, 1000)
     
@@ -81,7 +91,8 @@ my_collection:add('markChunkDirty_prevents_duplicates', function()
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
+    resetDirty(Universe)    
     -- Mark same chunk dirty twice
     MapUtils.markChunkDirty(123, 1, 1000)
     MapUtils.markChunkDirty(123, 1, 1001)
@@ -98,7 +109,8 @@ my_collection:add('markChunkDirty_upgrades_priority', function()
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
+    resetDirty(Universe)    
     -- Mark chunk with low priority, then high priority
     MapUtils.markChunkDirty(123, 3, 1000)
     MapUtils.markChunkDirty(123, 1, 1001)
@@ -116,7 +128,8 @@ my_collection:add('markChunkDirty_ignores_invalid_chunks', function()
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
+    resetDirty(Universe)    
     -- Mark invalid chunk
     MapUtils.markChunkDirty(-1, 1, 1000)
     MapUtils.markChunkDirty(nil, 1, 1000)
@@ -216,7 +229,8 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     package.loaded["libs/MapUtils"] = nil
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
-    
+
+    resetDirty(Universe)    
     package.loaded["libs/Processor"] = nil
     local Processor = require("libs/Processor")
     Processor.init(Universe)
@@ -272,6 +286,7 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     local MapUtils = require("libs/MapUtils")
     MapUtils.init(Universe)
 
+    resetDirty(Universe)
     package.loaded["libs/Processor"] = nil
     local Processor = require("libs/Processor")
     Processor.init(Universe)

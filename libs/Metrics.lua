@@ -64,8 +64,11 @@ function Metrics.init(universe)
     -- load path via initializeLibraries). Default true for development;
     -- flip the setting default for release. Note: settings.startup is NOT
     -- accessible in scenario context, so fall back to enabled.
-    local telemetrySetting = settings.startup and settings.startup["rampant--telemetryEnabled"]
-    Universe.metricsEnabled = (telemetrySetting and telemetrySetting.value ~= false) or true
+    -- Create-if-absent: on_load must never mutate storage (CRC check)
+    if Universe.metricsEnabled == nil then
+        local telemetrySetting = settings.startup and settings.startup["rampant--telemetryEnabled"]
+        Universe.metricsEnabled = (telemetrySetting and telemetrySetting.value ~= false) or true
+    end
     if not Universe.metrics then
         Universe.metrics = fresh()
     end

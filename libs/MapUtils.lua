@@ -652,15 +652,21 @@ function MapUtils.init(universe)
         Universe.chunkById = {}
     end
 
-    -- Initialize dirty chunk tracking
-    Universe.dirtyChunks = {
-        priority1 = {},  -- Player-adjacent (within 5 chunks)
-        priority2 = {},  -- Squad-active chunks
-        priority3 = {},  -- Recent events (last 10 ticks)
-        priority4 = {},  -- Background propagation
-        priority5 = {}   -- Stale chunks
-    }
-    Universe.dirtyChunkSet = {}  -- Quick lookup to prevent duplicates
+    -- Initialize dirty chunk tracking. Create-if-absent: on_load must never
+    -- mutate storage (CRC check fails the load); the persisted queue is
+    -- transient and drains on the next tick anyway.
+    if not Universe.dirtyChunks then
+        Universe.dirtyChunks = {
+            priority1 = {},  -- Player-adjacent (within 5 chunks)
+            priority2 = {},  -- Squad-active chunks
+            priority3 = {},  -- Recent events (last 10 ticks)
+            priority4 = {},  -- Background propagation
+            priority5 = {}   -- Stale chunks
+        }
+    end
+    if not Universe.dirtyChunkSet then
+        Universe.dirtyChunkSet = {}  -- Quick lookup to prevent duplicates
+    end
 end
 
 -- ============================================
