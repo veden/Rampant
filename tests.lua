@@ -22,7 +22,7 @@ local chunkPropertyUtils = require("libs/ChunkPropertyUtils")
 
 function tests.chunkCount()
     local count = 0
-    for _,map in pairs(global.universe.maps) do
+    for _,map in pairs(storage.universe.maps) do
         count = count + #map.processQueue
     end
     print(count)
@@ -32,7 +32,7 @@ function tests.fillableDirtTest()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.get_surface(global.natives.activeSurface).set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
+    game.get_surface(game.surfaces[1]).set_tiles({{name="fillableDirt", position={chunkX-1, chunkY-1}},
             {name="fillableDirt", position={chunkX, chunkY-1}},
             {name="fillableDirt", position={chunkX-1, chunkY}},
             {name="fillableDirt", position={chunkX, chunkY}}},
@@ -43,7 +43,7 @@ function tests.tunnelTest()
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    game.get_surface(global.natives.activeSurface).create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
+    game.get_surface(game.surfaces[1]).create_entity({name="tunnel-entrance-rampant", position={chunkX, chunkY}})
 end
 
 function tests.reveal (size)
@@ -53,7 +53,7 @@ function tests.reveal (size)
 end
 
 function tests.showBaseGrid(time)
-    local map = global.universe.maps[game.player.surface.index]
+    local map = storage.universe.maps[game.player.surface.index]
     local chunks = map.chunkToBase
     for chunk in pairs(chunks) do
         local count = chunkPropertyUtils.getEnemyStructureCount(map, chunk)
@@ -80,7 +80,7 @@ end
 --         elseif (chunkPropertyUtils.getPassable(global.map, chunk) == constants.CHUNK_EAST_WEST) then
 --             color = "stone-path"
 --         end
---         chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
+--         chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(game.surfaces[1]))
 --     end
 -- end
 
@@ -96,7 +96,7 @@ end
 --         elseif (chunk[constants.NEST_COUNT] ~= 0) then
 --             color = "stone-path"
 --         end
---         chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(global.natives.activeSurface))
+--         chunkUtils.colorChunk(chunk.x, chunk.y, color, game.get_surface(game.surfaces[1]))
 --     end
 -- end
 
@@ -104,7 +104,7 @@ function tests.entityStats(name, d)
     local playerPosition = game.players[1].position
     local chunkX = math.floor(playerPosition.x * 0.03125) * 32
     local chunkY = math.floor(playerPosition.y * 0.03125) * 32
-    local a = game.get_surface(global.natives.activeSurface).create_entity({name=name, position={chunkX, chunkY}})
+    local a = game.get_surface(game.surfaces[1]).create_entity({name=name, position={chunkX, chunkY}})
     if d then
         a['direction'] = d
     end
@@ -167,7 +167,7 @@ end
 function tests.exportAiState()
 
     local printState = function ()
-        local map = global.universe.maps[game.players[1].surface.index]
+        local map = storage.universe.maps[game.players[1].surface.index]
         local chunks = map.processQueue
         local s = ""
         for i=1,#chunks do
@@ -215,7 +215,7 @@ function tests.exportAiState()
                                    chunk.hiveCount or 0,
                                    chunk.trapCount or 0,
                                    chunk.utilityCount or 0,
-                                   global.universe.chunkToVictory[chunk.id] or 0,
+                                   storage.universe.chunkToVictory[chunk.id] or 0,
                                    chunk[constants.KAMIKAZE_PHEROMONE]
                                   }, ",") .. "\n"
         end
@@ -238,7 +238,7 @@ function tests.exportAiState()
 end
 
 function tests.dumpEnvironment(x)
-    print (serpent.dump(global[x]))
+    print (serpent.dump(storage[x]))
 end
 
 return tests

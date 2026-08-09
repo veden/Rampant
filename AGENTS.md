@@ -273,8 +273,14 @@ script.on_event(defines.events.on_built_entity, onBuilt)
 
 Factorio globals are defined in `.luacheckrc`:
 - `game`, `data`, `script`, `remote`, `settings`, `defines`
-- `global` (mod state storage)
 - Module globals: `ProcessorG`, `ConstantsG`, `SquadG`, etc.
+
+**Globals rule: allowed only if CONSTANT.** A global must be set exactly
+once at module load and never mutated afterwards — the module-cache pattern
+(`if XG then return XG end ... XG = X; return X`) is the sanctioned form.
+All mutable mod state lives in `storage` (`storage.universe`). The legacy
+`global` table is the 1.x name — nil in 2.x (accessing it errors); never
+use it.
 
 ### Formatting
 
