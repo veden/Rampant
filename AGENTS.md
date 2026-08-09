@@ -230,7 +230,7 @@ end
 
 ### Error Handling
 
-**No pcall anywhere. Ever.** pcall silently swallows errors — including
+**No pcall in mod logic. Ever.** pcall silently swallows errors — including
 mod crashes inside `entity.die()` handlers — and turned a real engine
 crash into hours of false "regression" debugging (the death-response
 retreat crash: `set_multi_command` receiving a string instead of a
@@ -241,6 +241,10 @@ LuaEntity). Errors must fail loudly:
 - Tests: assertion failures raise and abort the suite immediately
   (`tests/framework.lua` run_all calls tests directly).
 - If an error is genuinely possible, structure the code so it surfaces.
+
+**The one exception: the RCON/debug interface** (`Observability.lua` exec:).
+Its contract is returning the executed code's error to the caller over UDP —
+reporting, not swallowing. Marked with a DELIBERATE pcall comment.
 
 For Factorio API calls, handle nil gracefully since tables may be empty.
 

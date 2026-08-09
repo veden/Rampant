@@ -397,6 +397,9 @@ function Observability.onUdpPacket(event)
     end
 
     -- exec:LUA_CODE — execute arbitrary Lua and return JSON-serializable result
+    -- DELIBERATE pcall (policy-sanctioned): this is the RCON/debug interface.
+    -- Its contract is reporting the executed code's error back to the caller
+    -- over UDP — not swallowing it. Mod simulation logic never uses pcall.
     if payload:match("^exec:") then
         local code = payload:sub(6)  -- strip "exec:" prefix
         local ok, result = pcall(function()
