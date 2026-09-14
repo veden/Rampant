@@ -344,7 +344,14 @@ function Squad.decompressSquad(squad, tick)
             add_member(create_entity(query))
         end
     end
-    rendering.destroy(squad.compressionText)
+    -- 2.x API: rendering.destroy(id) no longer exists on LuaRendering —
+    -- destruction moved onto the LuaRenderObject (its destroy() does not
+    -- error on invalid). Found at session scale: the long-run's natural
+    -- idle->compressed->re-engaged squad cycle hit this at tick ~290k
+    -- (80 game-minutes) and took the server down (non-recoverable).
+    if squad.compressionText then
+        squad.compressionText.destroy()
+    end
     squad.compressionSet = nil
     squad.canBeCompressed = tick + COMPRESSION_COOLDOWN
 end
