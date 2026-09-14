@@ -67,6 +67,11 @@ function Observability.queryPheromones(position, surface)
         permanentDeathGenerator = chunk.permanentDeathGenerator or 0,
         kamikaze = chunk[KAMIKAZE_PHEROMONE] or 0,
         resource = chunk[RESOURCE_PHEROMONE] or 0,
+        -- persistent source generators (diagnostics: a computed pheromone
+        -- of 0 with a live generator means the chunk is not being
+        -- re-processed; a dead generator means the source never registered)
+        playerGenerator = chunk.playerGenerator or 0,
+        playerBaseGenerator = chunk.playerBaseGenerator or 0,
     }
 end
 
@@ -141,6 +146,17 @@ function Observability.queryBaseAt(position, surface)
         activeStructures = base.activeStructureCount or 0,
         attackThreshold = base.attackThreshold or 0,
         retreatThreshold = base.retreatThreshold or 0,
+        -- Expansion-quota state (settler formation diagnostics): the
+        -- settler gate rejects while sentExpansionGroups >= maxExpansion-
+        -- Groups; the quota clears when resetExpensionGroupsTick expires.
+        sentExpansionGroups = base.sentExpansionGroups or 0,
+        maxExpansionGroups = base.maxExpansionGroups or 0,
+        resetExpensionGroupsTick = base.resetExpensionGroupsTick or 0,
+        -- Nest activeness state (formation-cadence diagnostics): the
+        -- active-registry membership and the re-check deadline that gates
+        -- processNestActiveness.
+        isActiveNest = Universe.chunkToActiveNest and (Universe.chunkToActiveNest[chunk.id] ~= nil) or false,
+        nestActiveTick = chunk.activeTick or 0,
     }
 end
 
@@ -180,6 +196,14 @@ function Observability.getEnemyGroups(surface)
                     retreats = squad.retreats or 0,
                     -- Rampant squad status (1=RETREATING, 4=RAIDING, 5=SETTLING)
                     status = squad.status or 0,
+                    -- Base AI state snapshot at squad creation
+                    -- (1=PEACEFUL..5=MIGRATING, 6=SIEGE, 7=ONSLAUGHT)
+                    type = squad.type or 0,
+                    -- Settle-decision geometry (scenario diagnostics):
+                    -- which settle rule should fire at the squad's chunk
+                    maxDistance = squad.maxDistance or 0,
+                    originX = squad.originPosition and squad.originPosition.x or 0,
+                    originY = squad.originPosition and squad.originPosition.y or 0,
                 })
             end
         end
@@ -265,14 +289,6 @@ function Observability.getGameState()
         universeAwake = Universe and Universe.awake or false,
         mapCount = Universe and Universe.maps and #Universe.maps or 0,
     }
-end
-
-function Observability.advanceTicks(n)
-    n = n or 1
-    for i = 1, n do
-        game.tick = game.tick + 1
-    end
-    return n .. " ticks advanced"
 end
 
 function Observability.setGameSpeed(speed)
@@ -363,8 +379,8 @@ function Observability.onUdpPacket(event)
             for _, base in pairs(Universe.bases) do
                 table.insert(bases, {
                     id = base.id,
-                    x = base.cx,
-                    y = base.cy,
+                    x = base.x,
+                    y = base.y,
                     tier = base.tier,
                     alignment = base.alignment,
                 })

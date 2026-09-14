@@ -37,6 +37,16 @@ constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
 constants.PROCESS_QUEUE_SIZE = 40
 constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 200
+-- Background sweep rate: chunks re-marked dirty at priority 5 per tick so
+-- persistent sources (player buildings, ore, nests) re-broadcast their
+-- fields. Decay-on-read evaporates diffused fields within seconds of their
+-- last write; without the sweep, gradients survive only inside active event
+-- cascades and squad steering is blind in combat-quiet territory (observed:
+-- base pheromone 0 at 3 chunks, 24 game-minutes after the last event).
+-- The original wave system re-processed every chunk continuously at this
+-- same rate; the sweep restores that cadence through the priority-5
+-- "stale chunks" queue. Event marks keep their higher priority.
+constants.PROCESS_SWEEP_CHUNKS_PER_TICK = 40
 
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-
@@ -267,6 +277,18 @@ constants.BUILD_COMMAND_TIMEOUT = 7 * constants.TICKS_A_MINUTE
 -- interval regardless of the vanilla group state (the group may be stuck
 -- gathering — the old state-4-only dispatch froze such squads forever).
 constants.SQUAD_DISPATCH_INTERVAL = constants.TICKS_A_SECOND * 10
+-- How long a squad holds the RETREATING posture before the dispatch cadence
+-- may re-engage it. The retreat site must refresh commandTick by this amount;
+-- without it the cadence dispatches immediately (commandTick is 0 at
+-- creation) and evaluate() collapses the retreat to raiding within the
+-- same tick — the retreat posture vanishes.
+constants.SQUAD_RETREAT_DWELL = constants.TICKS_A_SECOND * 10
+-- Kamikaze escalation for SIEGE settlers: the siege wavefront is meant to
+-- press toward the player even when the squad is small, so the settler
+-- kamikaze threshold is multiplied by this factor when the base is in
+-- SIEGE state (deploySquad applied the 2.5 inline before the SquadLogic
+-- extraction; the constant names the rationale).
+constants.KAMIKAZE_SIEGE_MULTIPLIER = 2.5
 
 -- player building pheromones
 

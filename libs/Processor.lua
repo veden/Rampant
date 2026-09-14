@@ -706,7 +706,51 @@ function Processor.processDirtyChunks(tick, universe)
     universe = universe or storage.universe
     local processed = 0
     local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
-    
+
+    -- Background sweep: re-mark a slice of the chunk grid at priority 5 so
+    -- persistent sources (player buildings, ore, nests) re-broadcast their
+    -- fields. See Constants.PROCESS_SWEEP_CHUNKS_PER_TICK. The sweep list
+    -- rebuilds at cycle rollover (picking up created/deleted chunks); the
+    -- cursor is derived from tick (no persistent cursor state). The cycle
+    -- length is FROZEN at rebuild time (chunkSweepCycleTicks) and reused
+    -- until the next rollover — recomputing ceil(#list/rate) every tick
+    -- made the cycle index oscillate when the chunk count flapped across a
+    -- ceil boundary, rebuilding the O(N) list nearly every tick.
+    -- Event marks (priorities 1-4) drain before the sweep's priority-5
+    -- marks.
+    local sweepRate = Constants.PROCESS_SWEEP_CHUNKS_PER_TICK
+    if sweepRate > 0 and universe.chunkById and next(universe.chunkById) then
+        local sweepList = universe.chunkSweepList
+        local cycleTicks = universe.chunkSweepCycleTicks
+        local cycleIndex = cycleTicks and math.floor(tick / cycleTicks)
+        if not sweepList or not cycleIndex or (cycleIndex ~= universe.chunkSweepCycle) then
+            sweepList = {}
+            for chunkId in pairs(universe.chunkById) do
+                sweepList[#sweepList + 1] = chunkId
+            end
+            cycleTicks = math.max(1, math.ceil(#sweepList / sweepRate))
+            universe.chunkSweepList = sweepList
+            universe.chunkSweepCycleTicks = cycleTicks
+            universe.chunkSweepCycle = cycleIndex or 0
+        end
+        local total = #sweepList
+        if total > 0 then
+            local offset = (tick % cycleTicks) * sweepRate
+            local sweepEnd = math.min(offset + sweepRate, total)
+            for i = offset + 1, sweepEnd do
+                local chunkId = sweepList[i]
+                -- Skip stale ids (chunks deleted since the rebuild; pruned
+                -- at the next cycle rebuild)
+                if MapUtils.getChunkById(chunkId, universe) then
+                    if MetricsG then
+                        MetricsG.inc("dirty.sweepMarks")
+                    end
+                    markChunkDirty(chunkId, 5, tick, universe)
+                end
+            end
+        end
+    end
+
     -- Process by priority (1 = highest, 5 = lowest)
     for priority = 1, 5 do
         local priorityKey = "priority" .. priority

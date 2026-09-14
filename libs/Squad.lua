@@ -46,49 +46,18 @@ local MINIMUM_EXPANSION_DISTANCE = Constants.MINIMUM_EXPANSION_DISTANCE
 local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 local BUILD_COMMAND_TIMEOUT = Constants.BUILD_COMMAND_TIMEOUT
 local SQUAD_DISPATCH_INTERVAL = Constants.SQUAD_DISPATCH_INTERVAL
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-local BASE_PHEROMONE = Constants.BASE_PHEROMONE
-local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local SQUAD_RETREAT_DWELL = Constants.SQUAD_RETREAT_DWELL
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
-local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 
--- Decay-on-read for pheromone values (replaces periodic processMap decay)
-local DECAY_098 = Constants.DECAY_098
-local DECAY_090 = Constants.DECAY_090
-local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
-
-local function getDecayed(chunk, index, timestampKey, decayTable)
-    local value = chunk[index] or 0
-    if value == 0 then return 0 end
-    local lastRefresh = chunk[timestampKey] or 0
-    local elapsed = game.tick - lastRefresh
-    local factor = decayTable[elapsed] or decayTable[DECAY_TABLE_DEPTH]
-    return value * factor
-end
-
+-- Decay-on-read getters: the pure math lives in SquadLogic; the game.tick
+-- read here is the impure boundary threaded into it (squad_logic never
+-- reads the clock itself).
 local function getPlayerPheromone(chunk)
-    return getDecayed(chunk, PLAYER_PHEROMONE, "playerLastRefresh", DECAY_098)
+    return SquadLogic.playerPheromone(chunk, game.tick)
 end
 
 local function getBasePheromone(chunk)
-    -- ACO decay-on-read: diffused base pheromone decays by time since the
-    -- chunk last re-processed. But in a chunk WITH nests, the base
-    -- pheromone IS the nests' presence — constant while they exist. Without
-    -- this exemption the value decays to ~0 within ~90 ticks of the last
-    -- dirty pass and the attack-formation gate (basePheromone < 0.0001)
-    -- locks the base out of forming attack squads on quiet maps.
-    if (chunk.nestCount or 0) > 0 then
-        return chunk[BASE_PHEROMONE] or 0
-    end
-    return getDecayed(chunk, BASE_PHEROMONE, "baseLastRefresh", DECAY_090)
-end
-
-local function getEnemyPheromone(chunk)
-    return getDecayed(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", DECAY_090)
-end
-
-local function getResourcePheromone(chunk)
-    return getDecayed(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", DECAY_090)
+    return SquadLogic.basePheromone(chunk, game.tick)
 end
 
 local COMPRESSION_COOLDOWN = Constants.COMPRESSION_COOLDOWN
@@ -175,57 +144,12 @@ local function scoreRetreatLocation(neighborChunk)
             -((neighborChunk.playerBaseGenerator or 0) * 1000))
 end
 
-local function scoreResourceLocation(neighborChunk)
-    local preferred = false
-    if (
-        not neighborChunk.playerBaseGenerator
-        and not neighborChunk.playerGenerator
-        and neighborChunk.resourceGenerator
-        and getEnemyStructureCount(neighborChunk) == 0
-    )
-    then
-        preferred = true
-    end
-    local score = getResourcePheromone(neighborChunk)
-        - (getPlayerPheromone(neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
-        - getEnemyPheromone(neighborChunk)
-    return score, preferred
-end
-
-local function scoreSiegeLocation(neighborChunk)
-    local preferred = false
-    if (
-        not neighborChunk.playerBaseGenerator
-        and not neighborChunk.playerGenerator
-    )
-    then
-        preferred = true
-    end
-    local settle = getBasePheromone(neighborChunk)
-        + getResourcePheromone(neighborChunk) * 0.5
-        + (getPlayerPheromone(neighborChunk) * PLAYER_PHEROMONE_MULTIPLER)
-
-    local score = settle - getEnemyPheromone(neighborChunk)
-
-    return score, preferred
-end
-
-local function scoreSiegeKamikazeLocation(neighborChunk)
-    local preferred = false
-    if (
-        not neighborChunk.playerBaseGenerator
-        and not neighborChunk.playerGenerator
-    )
-    then
-        preferred = true
-    end
-    local settle = neighborChunk[KAMIKAZE_PHEROMONE]
-        + neighborChunk[RESOURCE_PHEROMONE] * 0.5
-
-    local score = settle - getEnemyPheromone(neighborChunk)
-
-    return score, preferred
-end
+-- Distraction decision keys (pure) mapped to the engine's defines values.
+-- The keys are owned by SquadLogic; this map is the single impure bridge.
+local DISTRACTION_BY_KEY = {
+    [SquadLogic.DISTRACTION_NONE] = DEFINES_DISTRACTION_NONE,
+    [SquadLogic.DISTRACTION_BY_ENEMY] = DEFINES_DISTRACTION_BY_ENEMY,
+}
 
 local function scoreAttackLocation(neighborChunk)
     local preferred = false
@@ -428,7 +352,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction)
+local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction, tick)
     local highest = SearchPath[1]
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestPreferred = false
@@ -439,7 +363,7 @@ local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction
         local neighborChunk = neighborDirectionChunks[x]
         if (neighborChunk ~= -1) then
             if (chunk == -1) or canMoveChunkDirection(x, chunk, neighborChunk) then
-                local score, preferred = scoreFunction(neighborChunk)
+                local score, preferred = scoreFunction(neighborChunk, tick)
                 if (highestPreferred and preferred and (score > highestScore))
                     or (not highestPreferred and (score > highestScore))
                     or (not highestPreferred and preferred)
@@ -474,7 +398,7 @@ local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction
             if ((neighborChunk ~= -1) and (neighborChunk.id ~= lastChunk.id) and
                 canMoveChunkDirection(x, lastChunk, neighborChunk))
             then
-                local score, preferred = scoreFunction(neighborChunk)
+                local score, preferred = scoreFunction(neighborChunk, tick)
                 if (highestPreferred and preferred and (score > highestScore))
                     or (not highestPreferred and (score > highestScore))
                     or (not highestPreferred and preferred)
@@ -505,13 +429,9 @@ local function settleMove(squad, tick)
     local groupPosition = group.position
     local x, y = positionToChunkXY(groupPosition)
     local chunk = getChunkByXY(map, x, y)
-    local scoreFunction = scoreResourceLocation
-    if (squad.type == BASE_AI_STATE_SIEGE) then
-        scoreFunction = scoreSiegeLocation
-        if squad.kamikaze then
-            scoreFunction = scoreSiegeKamikazeLocation
-        end
-    end
+    -- squad.type is the creation-time snapshot of the base's stateAI;
+    -- nil (legacy squads) is non-siege.
+    local scoreFunction = SquadLogic.selectSettleScorer(squad.type or 0, squad.kamikaze)
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
         addDeathGenerator(squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
@@ -533,39 +453,44 @@ local function settleMove(squad, tick)
     local position
     local surface = map.surface
 
-    if (chunk ~= -1) and
-        (
-            (distance >= squad.maxDistance) or
-            (
-                chunk.resourceGenerator and (not chunk.nestCount) and (not chunk.hiveCount)
-            )
-        )
-    then
-        Squad.decompressSquad(squad, tick)
+    -- In-place settle: the march decision (T_SettleInPlace). pathEndIndex
+    -- is nil here — the lookahead path has not been evaluated yet, so the
+    -- path rule is inert and the in-place rules decide.
+    if chunk ~= -1 then
+        local settleDecision = SquadLogic.evaluateSettleTrigger({
+            distanceToOrigin = distance,
+            maxDistance = squad.maxDistance,
+            nestCount = chunk.nestCount,
+            hiveCount = chunk.hiveCount,
+            resourceGenerator = chunk.resourceGenerator,
+        })
+        if settleDecision.settle then
+            if MetricsG then
+                MetricsG.inc("squad.settle." .. settleDecision.reason)
+            end
+            Squad.decompressSquad(squad, tick)
 
-        position = findMovementPosition(surface, groupPosition) or groupPosition
+            position = findMovementPosition(surface, groupPosition) or groupPosition
 
-        cmd = Queries.settleCommand
-        if squad.kamikaze then
-            cmd.distraction = DEFINES_DISTRACTION_NONE
-        else
-            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
+            cmd = Queries.settleCommand
+            cmd.distraction = DISTRACTION_BY_KEY[SquadLogic.selectSettleDistraction(squad.kamikaze)]
+
+            setPositionInCommand(cmd, position)
+
+            squad.status = SQUAD_BUILDING
+            squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
+
+            group.set_command(cmd)
+            return
         end
-
-        setPositionInCommand(cmd, position)
-
-        squad.status = SQUAD_BUILDING
-        squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
-
-        group.set_command(cmd)
-        return
     end
 
     local searchPath = scoreNeighbors(
         map,
         chunk,
         getNeighborChunks(map, x, y),
-        scoreFunction
+        scoreFunction,
+        tick
     )
 
     if (searchPath[1].chunk == -1) then
@@ -615,23 +540,29 @@ local function settleMove(squad, tick)
     TargetPosition.x = position.x
     TargetPosition.y = position.y
 
-    if lastChunk ~= 4 then
+    -- Path-end decision (T_SettlePathEnd / T_ContinueMarch): the lookahead
+    -- ended early -> build at the reached position; otherwise keep moving.
+    -- The in-place rules are inert here (they were checked above); only
+    -- the path rule can fire. nest/hive/resource are not passed: the chunk
+    -- may be -1 (unregistered) and the path rule decides before they
+    -- would be read.
+    local settleDecision = SquadLogic.evaluateSettleTrigger({
+        distanceToOrigin = distance,
+        maxDistance = squad.maxDistance,
+        pathEndIndex = lastChunk,
+    })
+    if settleDecision.settle then
+        if MetricsG then
+            MetricsG.inc("squad.settle." .. settleDecision.reason)
+        end
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING
         squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
         Squad.decompressSquad(squad, tick)
-        if squad.kamikaze then
-            cmd.distraction = DEFINES_DISTRACTION_NONE
-        else
-            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-        end
+        cmd.distraction = DISTRACTION_BY_KEY[SquadLogic.selectSettleDistraction(squad.kamikaze)]
     else
         cmd = Queries.moveCommand
-        if squad.rabid or squad.kamikaze then
-            cmd.distraction = DEFINES_DISTRACTION_NONE
-        else
-            cmd.distraction = DEFINES_DISTRACTION_BY_ENEMY
-        end
+        cmd.distraction = DISTRACTION_BY_KEY[SquadLogic.selectMoveDistraction(squad.rabid, squad.kamikaze)]
     end
 
     setPositionInCommand(cmd, TargetPosition)
@@ -669,7 +600,8 @@ local function attackMove(squad, tick)
         map,
         chunk,
         getNeighborChunks(map, x, y),
-        attackScorer
+        attackScorer,
+        tick
     )
     local cmd
     if (searchPath[1].chunk == -1) then
@@ -1057,6 +989,13 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
     end
 
     existingSquad.status = SQUAD_RETREATING
+    -- Hold the retreat posture: commandTick is the next-dispatch deadline.
+    -- The retreat site is the only status transition that never refreshed
+    -- it, so the dispatch cadence (commandTick 0 at creation, expired) hit
+    -- on the same tick and evaluate() collapsed RETREATING -> RAIDING
+    -- before any observer (or the flee walk itself) could act — retreats
+    -- became instant re-engages (scenario squad-cycle regression).
+    existingSquad.commandTick = tick + SQUAD_RETREAT_DWELL
     if MetricsG then
         MetricsG.inc("squad.retreated")
     end
@@ -1121,19 +1060,6 @@ function Squad.createSquad(position, map, group, settlers, base)
     return squad
 end
 
--- PURE: Calculate kamikaze squad threshold
-function Squad.calculateKamikazeSquadThreshold(memberCount, attackWaveMaxSize, evolutionLevel)
-    local threshold = (memberCount / attackWaveMaxSize) * 0.2 + (evolutionLevel * 0.2)
-    return threshold
-end
-
--- PURE: Calculate kamikaze settler threshold
-function Squad.calculateKamikazeSettlerThreshold(memberCount, expansionMaxSize, evolutionLevel)
-    local threshold = (memberCount / expansionMaxSize) * 0.2 + (evolutionLevel * 0.2)
-    return threshold
-end
-
-
 local function settlerWaveScaling()
     return mCeil(gaussianRandomRangeRG(Universe.settlerWaveSize,
                                        Universe.settlerWaveDeviation,
@@ -1162,26 +1088,6 @@ local function attackWaveValidCandidate(chunk)
         return isActiveRaidNest(chunk)
     end
     return false
-end
-
--- PURE: Score settler location (testable)
-function Squad.scoreSettlerLocation(neighborChunk)
-    return getResourcePheromone(neighborChunk) + -getPlayerPheromone(neighborChunk)
-end
-
--- PURE: Score siege settler location (testable)
-function Squad.scoreSiegeSettlerLocation(neighborChunk)
-    return (getResourcePheromone(neighborChunk) + getBasePheromone(neighborChunk)) + -getPlayerPheromone(neighborChunk)
-end
-
--- PURE: Score unit group location (testable)
-function Squad.scoreUnitGroupLocation(neighborChunk)
-    return getPlayerPheromone(neighborChunk) + getBasePheromone(neighborChunk)
-end
-
--- PURE: Check valid unit group location (testable)
-function Squad.validUnitGroupLocation(neighborChunk)
-    return (not neighborChunk.nestCount)
 end
 
 local function visitPattern(o, cX, cY, distance)
@@ -1226,7 +1132,7 @@ end
 --[[
     Expects all neighbors adjacent to a chunk
 --]]
-local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction)
+local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction, tick)
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
@@ -1237,7 +1143,7 @@ local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction)
             and canMoveChunkDirection(x, chunk, neighborChunk)
             and validFunction(neighborChunk)
         then
-            local score = scoreFunction(neighborChunk)
+            local score = scoreFunction(neighborChunk, tick)
             if (score > highestScore) then
                 highestScore = score
                 highestChunk = neighborChunk
@@ -1291,61 +1197,38 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
         MetricsG.inc("squad.formAttempt")
     end
 
-    local lackingPoints = ((base.unitPoints - cost) < 0)
-    if attacker then
-        if lackingPoints then
-            if MetricsG then MetricsG.inc("squad.formReject.attacker.points") end
-            return
-        end
-        if (getBasePheromone(chunk) < 0.0001) and (getPlayerPheromone(chunk) < 0.0001) then
-            if MetricsG then MetricsG.inc("squad.formReject.attacker.pheromone") end
-            return
-        end
-        if Universe.squadCount > Universe.AI_MAX_SQUAD_COUNT then
-            if MetricsG then MetricsG.inc("squad.formReject.attacker.squadLimit") end
-            return
-        end
-        if (not vengence) and not attackWaveValidCandidate(chunk) then
-            if MetricsG then MetricsG.inc("squad.formReject.attacker.candidate") end
-            return
-        end
-        if Universe.random() > Universe.formSquadThreshold then
-            if MetricsG then MetricsG.inc("squad.formReject.attacker.threshold") end
-            return
-        end
-    else
-        if lackingPoints then
-            if MetricsG then MetricsG.inc("squad.formReject.settler.points") end
-            return
-        end
-        if Universe.builderCount > Universe.AI_MAX_BUILDER_COUNT then
-            if MetricsG then MetricsG.inc("squad.formReject.settler.builder") end
-            return
-        end
-        if (not vengence) and (base.sentExpansionGroups >= base.maxExpansionGroups) then
-            if MetricsG then MetricsG.inc("squad.formReject.settler.groups") end
-            return
-        end
-        if Universe.random() > Universe.formSquadThreshold then
-            if MetricsG then MetricsG.inc("squad.formReject.settler.threshold") end
-            return
-        end
+    -- Formation gate (pure): the full rejection chain with its Metrics
+    -- counter names. The roll is drawn per form attempt; the gate decides
+    -- with it (roll == threshold passes).
+    local gate = SquadLogic.evaluateFormationGate({
+        attacker = attacker,
+        vengence = vengence,
+        unitPoints = base.unitPoints,
+        cost = cost,
+        basePheromone = getBasePheromone(chunk),
+        playerPheromone = getPlayerPheromone(chunk),
+        squadCount = Universe.squadCount,
+        squadLimit = Universe.AI_MAX_SQUAD_COUNT,
+        builderCount = Universe.builderCount,
+        builderLimit = Universe.AI_MAX_BUILDER_COUNT,
+        sentExpansionGroups = base.sentExpansionGroups,
+        maxExpansionGroups = base.maxExpansionGroups,
+        hasActiveCandidate = attackWaveValidCandidate(chunk),
+        formThreshold = Universe.formSquadThreshold,
+        roll = Universe.random(),
+    })
+    if not gate.accepted then
+        if MetricsG then MetricsG.inc(gate.metric) end
+        return
     end
 
-    local scoringFunction
-    if attacker then
-        scoringFunction = Squad.scoreUnitGroupLocation
-    else
-        scoringFunction = Squad.scoreSettlerLocation
-        if base.stateAI == BASE_AI_STATE_SIEGE then
-            scoringFunction = Squad.scoreSiegeSettlerLocation
-        end
-    end
+    local scoringFunction = SquadLogic.selectFormationScorer(attacker, base.stateAI)
 
     local squadPath, squadDirection = scoreNeighborsForFormation(
         chunk,
-        Squad.validUnitGroupLocation,
-        scoringFunction
+        SquadLogic.validUnitGroupLocation,
+        scoringFunction,
+        game.tick
     )
     if (squadPath == -1) then
         return
@@ -1458,21 +1341,32 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
         return
     end
 
+    -- Kamikaze roll (pure decision): threshold scales with squad fill and
+    -- evolution; SIEGE settlers get the ×KAMIKAZE_SIEGE_MULTIPLIER.
     if attacker then
-        squad.kamikaze = Universe.random() <
-            Squad.calculateKamikazeSquadThreshold(
-                foundUnits, Universe.attackWaveMaxSize, Universe.evolutionLevel)
+        local kamikazeDecision = SquadLogic.evaluateKamikazeRoll({
+            attacker = true,
+            siege = (base.stateAI == BASE_AI_STATE_SIEGE),
+            memberCount = foundUnits,
+            maxSize = Universe.attackWaveMaxSize,
+            evolutionLevel = Universe.evolutionLevel,
+            roll = Universe.random(),
+        })
+        squad.kamikaze = kamikazeDecision.kamikaze
         Universe.squadCount = Universe.squadCount + 1
         if not vengence and (base.stateAI == BASE_AI_STATE_AGGRESSIVE) then
             base.sentAggressiveGroups = base.sentAggressiveGroups + 1
         end
     else
-        local kamikazeThreshold = Squad.calculateKamikazeSettlerThreshold(
-            foundUnits, Universe.expansionMaxSize, Universe.evolutionLevel)
-        if base.stateAI == BASE_AI_STATE_SIEGE then
-            kamikazeThreshold = kamikazeThreshold * 2.5
-        end
-        squad.kamikaze = Universe.random() < kamikazeThreshold
+        local kamikazeDecision = SquadLogic.evaluateKamikazeRoll({
+            attacker = false,
+            siege = (base.stateAI == BASE_AI_STATE_SIEGE),
+            memberCount = foundUnits,
+            maxSize = Universe.expansionMaxSize,
+            evolutionLevel = Universe.evolutionLevel,
+            roll = Universe.random(),
+        })
+        squad.kamikaze = kamikazeDecision.kamikaze
         base.sentExpansionGroups = base.sentExpansionGroups + 1
         Universe.builderCount = Universe.builderCount + 1
     end

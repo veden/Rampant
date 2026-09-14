@@ -176,6 +176,25 @@ end
 --- Sample the economy: append the base's unitPoints every
 --- ECON_SAMPLE_INTERVAL; when ECON_WINDOW_SAMPLES samples are collected
 --- return the net growth (last - first), else nil.
+-- Suppress the formation confounder during economy windows: with the
+-- pheromone sweep restoring live fields, formation gates now pass and
+-- squads form during measurement windows (each costs 300+ points), so
+-- the net point delta mixes generation with formation spending. Purge
+-- free units on a cadence — no recruits, no formations, the net is pure
+-- generation. The behavioral assertions (attack reaching the wall,
+-- migration leaving) complete BEFORE their phases' economy windows.
+local function purgeRecruits(surface)
+    local purged = 0
+    for _, e in ipairs(surface.find_entities_filtered{
+        position = SPAWNER_POS, radius = 64, force = "enemy", type = "unit" }) do
+        if e.valid then
+            e.destroy()
+            purged = purged + 1
+        end
+    end
+    return purged
+end
+
 local function econSample(base, r, tick)
     if not r.econStartTick then
         r.econStartTick = tick
@@ -246,12 +265,14 @@ script.on_event(defines.events.on_tick, function()
 
     -- Keep the nest active: the constructed scenario has no player factory
     -- generating pollution; the staged pollution decays within ~15
-    -- game-minutes and the nest goes inactive (no spawner processing -> no
-    -- units -> no squads). Periodic re-pollution simulates the player
-    -- factory (the natural stimulus).
-    if tick - (storage.rampantLastPollute or 0) > 60 * 60 then
-        storage.rampantLastPollute = tick
-        surface.pollute(SPAWNER_POS, 10)
+    -- Nest-activity sustenance: the activeness check requires pollution > 0
+    -- at the nest chunk, and enemy spawners ABSORB pollution at ~4/tick —
+    -- a 10/min pulse leaves the nest inactive ~97% of the time (the
+    -- formation pipeline starves; see siege-settle's diagnostics). A small
+    -- continuous stream outlasts absorption — the sustained-pollution
+    -- regime of a real player factory.
+    if tick % 10 == 0 then
+        surface.pollute(SPAWNER_POS, 5)
     end
 
     if elapsed > BUDGET_TICKS then
@@ -288,6 +309,11 @@ script.on_event(defines.events.on_tick, function()
                 " (aggressive squads=" .. r.attackSquads .. ")")
         end
         if base and r.attack then
+            -- Economy-window recruit suppression (see purgeRecruits).
+            if tick - (storage.rampantLastPurge or 0) > 60 * 60 then
+                storage.rampantLastPurge = tick
+                purgeRecruits(surface)
+            end
             local delta = econSample(base, r, tick)
             if delta then
                 r.raidDelta = delta
@@ -323,6 +349,11 @@ script.on_event(defines.events.on_tick, function()
         -- RAIDING baseline by ECON_MIN_RATIO.
         local base = queryBase(surface)
         if base then
+            -- Economy-window recruit suppression (see purgeRecruits).
+            if tick - (storage.rampantLastPurge or 0) > 60 * 60 then
+                storage.rampantLastPurge = tick
+                purgeRecruits(surface)
+            end
             local delta = econSample(base, r, tick)
             if delta then
                 r.onslaughtDelta = delta
@@ -350,28 +381,24 @@ script.on_event(defines.events.on_tick, function()
         end
 
     elseif state.phase == "migration" then
-        -- MIGRATING: a BUILDER (settler) squad forms and leaves the nest
-        -- region (the expansion behavior).
+        -- MIGRATING: the expansion behavior = a builder settles and BUILDS
+        -- a site away from the origin. Assertion: a second enemy unit-
+        -- spawner exists (site-based — squad positions are transient: the
+        -- ungrouped-unit recycle race kills squads ~1 game-minute after
+        -- formation, and under live pheromone fields settlers settle AT
+        -- their formation chunk per prod behavior, so the old >40-tile
+        -- squad-position check was a coin flip). Squad displacement is
+        -- recorded as diagnostic evidence.
         local base = queryBase(surface)
         local builders = countByType(surface, true)
-        if builders > 0 then
-            local left = false
-            for _, s in ipairs(squads(surface)) do
-                if s.isBuilder and s.position then
-                    local dx = s.position.x - SPAWNER_POS.x
-                    local dy = s.position.y - SPAWNER_POS.y
-                    if (dx * dx + dy * dy) > NEST_REGION * NEST_REGION then
-                        left = true
-                        r.settlerDist = math.floor(math.sqrt(dx * dx + dy * dy))
-                        break
-                    end
-                end
-            end
-            if left then
-                r.migration = true
-                print("[PASS] settler left the nest region (dist=" .. r.settlerDist ..
-                    " tiles, builders=" .. builders .. ") at " ..
-                    string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
+        local sites = surface.count_entities_filtered{
+            force = "enemy", type = "unit-spawner" }
+        if sites >= 2 then
+            r.migration = true
+            r.settlerDist = r.settlerDist or 0
+            print("[PASS] migration settled a site (enemy spawners=" ..
+                sites .. ", builders=" .. builders .. ") at " ..
+                string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
                 -- Release the frozen state machine: the next natural roll
                 -- proceeds on the normal schedule.
                 remote.call("Rampant", "nudgeBaseState", r.baseId, BASE_AI_STATE_MIGRATING)
@@ -381,8 +408,8 @@ script.on_event(defines.events.on_tick, function()
                 print("[INFO] state machine released; waiting for the natural roll")
                 setPhase("transition")
             end
-        elseif phaseElapsed > PHASE_LIMIT_MINUTES * TICKS_A_MINUTE then
-            finish(false, "migration: no builder squad within " ..
+        if phaseElapsed > PHASE_LIMIT_MINUTES * TICKS_A_MINUTE then
+            finish(false, "migration: no settled site within " ..
                 PHASE_LIMIT_MINUTES .. " game-minutes (builders=" .. builders .. ")")
             return
         end

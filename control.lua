@@ -1380,9 +1380,6 @@ remote.add_interface("Rampant", {
     getGameState = function()
         return Observability.getGameState()
     end,
-    advanceTicks = function(n)
-        return Observability.advanceTicks(n)
-    end,
     setGameSpeed = function(speed)
         return Observability.setGameSpeed(speed)
     end,
