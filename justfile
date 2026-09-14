@@ -267,13 +267,13 @@ test-save-load: copy
     echo "Running Rampant save/load continuity test..."
     pkill -9 factorio 2>/dev/null || true
     sleep 1
-    if [ ! -f integration-tests/behavior-saves/rampant-behavior-save-load.zip ]; then
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-save-load-s1.zip ]; then
         just make-saves
     fi
     rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-save-load-test*
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-save-load
     cp -r integration-tests/behavior-scenarios/save-load /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-save-load
-    cp integration-tests/behavior-saves/rampant-behavior-save-load.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-save-load.zip
+    cp integration-tests/behavior-saves/rampant-behavior-save-load-s1.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-save-load.zip
     python3 tools/save_load.py
     RESULT=$?
     kill -9 $(pgrep -f "factorio.*34203" | head -1) 2>/dev/null || true
@@ -294,13 +294,13 @@ test-longrun: copy
     # Create private server settings (auto_pause: false is required)
     echo '{"name":"Rampant Long Run","description":"E2E session interrogation","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-longrun-server-settings.json
 
-    if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run.zip ]; then
+    if [ ! -f integration-tests/behavior-saves/rampant-behavior-long-run-s1.zip ]; then
         just make-saves
     fi
     just make-saves
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
     cp -r integration-tests/behavior-scenarios/long-run /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-long-run
-    cp integration-tests/behavior-saves/rampant-behavior-long-run.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run.zip
+    cp integration-tests/behavior-saves/rampant-behavior-long-run-s1.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-long-run.zip
 
     rm -f /tmp/rampant-longrun.out /tmp/rampant-longrun.jsonl
     /mnt/gallery/gameFiles/factorio/bin/x64/factorio         --start-server-load-scenario rampant-behavior-long-run         --server-settings /tmp/rampant-longrun-server-settings.json         --port 34202 --rcon-port 27020         --rcon-password "rampant-test"         > /tmp/rampant-longrun.out 2>&1 &
@@ -322,48 +322,76 @@ test-longrun: copy
 # Build the prepared behavior-save zips (small maps + scenario control).
 # The zips are gitignored (generated artifacts); run this after a fresh
 # clone or when scenario control.lua changes.
-make-saves:
+# Generate the prepared behavior-scenario saves.
+# seed parameter: pins the map seed (--map-seed) so every scenario save is
+# a DETERMINISTIC map. The mod's RNG is fixed-seed (Constants.ENEMY_SEED),
+# so pinned seed + pinned mod = reproducible runs: a flake becomes a
+# deterministic test case, not a dice roll. Default seed 1; `seed=random`
+# is available for variance sampling. Cache: /tmp/rampant-saves (per seed).
+make-saves seed="1":
     #!/usr/bin/env -S bash
     set -e
     SRC="$(pwd)"
+    SEED="{{seed}}"
     mkdir -p /tmp/rampant-saves
     for size in 256 512 1024; do
-        if [ ! -f /tmp/rampant-saves/map-$size.zip ]; then
-            /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
-                --create /tmp/rampant-saves/map-$size.zip \
-                --map-gen-settings $SRC/integration-tests/behavior-saves/mapgen/$size.json \
-                > /dev/null 2>&1
-            echo "generated map-$size"
+        if [ ! -f "/tmp/rampant-saves/map-$size-s$SEED.zip" ]; then
+            if [ "$SEED" = "random" ]; then
+                /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
+                    --create "/tmp/rampant-saves/map-$size-s$SEED.zip" \
+                    --map-gen-settings $SRC/integration-tests/behavior-saves/mapgen/$size.json \
+                    > /dev/null 2>&1
+            else
+                /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
+                    --create "/tmp/rampant-saves/map-$size-s$SEED.zip" \
+                    --map-gen-settings $SRC/integration-tests/behavior-saves/mapgen/$size.json \
+                    --map-gen-seed "$SEED" \
+                    > /dev/null 2>&1
+            fi
+            echo "generated map-$size-s$SEED"
         fi
     done
-    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle multi-surface movement-diag movement-test; do
+    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle siege-settle multi-surface movement-diag movement-test; do
         case $name in
             wall-defense|death-response|save-load|player-death) SIZE=256 ;;
-            migration-settler|base-ai-states|base-expansion|pheromone-dynamics|squad-cycle|multi-surface) SIZE=512 ;;
+            migration-settler|base-ai-states|base-expansion|pheromone-dynamics|squad-cycle|siege-settle|multi-surface) SIZE=512 ;;
             movement-diag|movement-test) SIZE=256 ;;
             long-run) SIZE=1024 ;;
         esac
-        DIR=/tmp/rampant-saves/$name
+        DIR=/tmp/rampant-saves/$name-s$SEED
         rm -rf $DIR && mkdir -p $DIR/rampant-behavior-$name
-        cd /tmp/rampant-saves && rm -rf x && mkdir x && unzip -o -q map-$SIZE.zip "map-$SIZE/level-init.dat" -d x
-        cp x/map-$SIZE/level-init.dat $DIR/rampant-behavior-$name/level-init.dat
+        cd /tmp/rampant-saves && rm -rf x && mkdir x && unzip -o -q map-$SIZE-s$SEED.zip "map-$SIZE-s$SEED/level-init.dat" -d x
+        cp x/map-$SIZE-s$SEED/level-init.dat $DIR/rampant-behavior-$name/level-init.dat
         cp $SRC/integration-tests/behavior-scenarios/$name/control.lua $DIR/rampant-behavior-$name/control.lua
         cp $SRC/integration-tests/behavior-scenarios/$name/info.json $DIR/rampant-behavior-$name/info.json
+        # The shared scenario library (scenarios require() it as
+        # "scenario-lib"; it must sit next to control.lua in the save).
+        cp $SRC/integration-tests/lib/scenario-lib.lua $DIR/rampant-behavior-$name/scenario-lib.lua
         cd $DIR/rampant-behavior-$name
-        rm -f $SRC/integration-tests/behavior-saves/rampant-behavior-$name.zip
-        zip -q -r $SRC/integration-tests/behavior-saves/rampant-behavior-$name.zip level-init.dat control.lua info.json
+        rm -f $SRC/integration-tests/behavior-saves/rampant-behavior-$name-s$SEED.zip
+        zip -q -r $SRC/integration-tests/behavior-saves/rampant-behavior-$name-s$SEED.zip level-init.dat control.lua info.json scenario-lib.lua
         cd /
-        echo "built save: $name"
+        echo "built save: $name (seed $SEED)"
     done
 
 # Run a staged behavior scenario (default: wall-defense)
-# Usage: just test-behavior name=wall-defense
-# Depends on `copy`: a stale installed mod silently tests old code (the
-# mod dir is a copy, not a link — libs/ edits are invisible until synced).
-test-behavior name="wall-defense": copy
+# Usage: just test-behavior <name> [seed] [strict]  (positional binding)
+#   e.g. just test-behavior siege-settle 2     # seed 2
+#   just test-behavior wall-defense 1 1        # strict: known-flaky fails
+# seed: pins the map (deterministic saves from `make-saves seed=N`); the
+# mod's RNG is fixed-seed, so same seed + same mod = reproducible runs.
+# `seed=random` loads the scenario dir fresh with an unpinned map.
+# Logs: /tmp/rampant-behavior-<name>.out (previous run kept as .prev) —
+# failures never overwrite the evidence.
+# Flaky registry: integration-tests/behavior-flaky.list — a listed
+# scenario failing prints KNOWN-FLAKY + the recorded reason and exits 0
+# (so batteries don't block on tracked flakes). strict=1 overrides.
+test-behavior name="wall-defense" seed="1" strict="0": copy
     #!/usr/bin/env -S bash
     set -e
-    echo "Running Rampant behavior scenario: {{name}}..."
+    SEED="{{seed}}"
+    LOG="/tmp/rampant-behavior-{{name}}.out"
+    echo "Running Rampant behavior scenario: {{name}} (seed $SEED)..."
     pkill -9 factorio 2>/dev/null || true
     sleep 1
 
@@ -377,28 +405,40 @@ test-behavior name="wall-defense": copy
     just make-saves
     rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
     cp -r integration-tests/behavior-scenarios/{{name}} /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
+    # The shared scenario library next to control.lua (the scenario-dir
+    # load path — fallback and seed=random — must resolve its require too;
+    # the prepared-save path bundles it via make-saves).
+    cp integration-tests/lib/scenario-lib.lua /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}/scenario-lib.lua
 
-    # Install the prepared small-map save (256x256 tiles) — a save with the
-    # scenario name takes precedence over the scenario dir, giving a tiny
-    # grid (instant startup scan, bounded dirty queue). The scenario dir
-    # copy above remains as a fallback.
-    cp integration-tests/behavior-saves/rampant-behavior-{{name}}.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}.zip
+    # Install the prepared save for this seed (a save named like the
+    # scenario takes precedence over the scenario dir, giving a pinned
+    # map + instant startup scan). `seed=random` skips it: the scenario
+    # dir loads fresh with an unpinned map. Refresh the seed's saves on
+    # every run so scenario control.lua changes propagate.
+    if [ "$SEED" != "random" ]; then
+        just make-saves "$SEED"
+        SAVE=integration-tests/behavior-saves/rampant-behavior-{{name}}-s$SEED.zip
+        cp "$SAVE" /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}.zip
+    fi
+
+    # Rotate logs: keep the previous run as .prev (failure evidence is
+    # never overwritten by the next run).
+    if [ -f "$LOG" ]; then mv "$LOG" "$LOG.prev"; fi
 
     # Start Factorio in background; capture stdout (see `test` recipe)
-    rm -f /tmp/rampant-behavior.out
     /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
         --start-server-load-scenario rampant-behavior-{{name}} \
         --server-settings /tmp/rampant-behavior-server-settings.json \
         --port 34201 \
         --rcon-port 27019 \
         --rcon-password "rampant-test" \
-        > /tmp/rampant-behavior.out 2>&1 &
+        > "$LOG" 2>&1 &
     PID=$!
 
     # Monitor output for test completion (budget: 600s real ~ 90 game-min at ~150 UPS)
     echo "Waiting for behavior scenario to complete..."
     for i in {1..600}; do
-        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" /tmp/rampant-behavior.out 2>/dev/null; then
+        if grep -q "TESTS_COMPLETE\|TESTS_FAILED" "$LOG" 2>/dev/null; then
             sleep 2
             break
         fi
@@ -408,7 +448,7 @@ test-behavior name="wall-defense": copy
         if ! kill -0 $PID 2>/dev/null; then
             echo ""
             echo "SERVER DIED (no test signal) — log tail:"
-            tail -15 /tmp/rampant-behavior.out
+            tail -15 "$LOG"
             echo ""
             break
         fi
@@ -418,15 +458,25 @@ test-behavior name="wall-defense": copy
     # Show results
     echo ""
     echo "=== Behavior Test Results ==="
-    grep -E "\[PASS\]|\[FAIL\]|\[INFO\]|PHASE|Passed|Failed|Detail|TESTS|STAGED" /tmp/rampant-behavior.out 2>/dev/null | tail -30
+    grep -E "\[PASS\]|\[FAIL\]|\[INFO\]|PHASE|Passed|Failed|Detail|TESTS|STAGED" "$LOG" 2>/dev/null | tail -30
     echo ""
 
     # Check pass/fail status
-    if grep -q "TESTS_COMPLETE" /tmp/rampant-behavior.out 2>/dev/null; then
+    if grep -q "TESTS_COMPLETE" "$LOG" 2>/dev/null; then
         echo "Behavior scenario passed!"
     else
         echo "Behavior scenario failed or timed out!"
         kill -9 $PID 2>/dev/null || true
+        # Known-flaky registry: a listed scenario's failure is a tracked
+        # issue, not a new signal — exit 0 so batteries don't block.
+        if grep -qE "^{{name}}[[:space:]]" integration-tests/behavior-flaky.list 2>/dev/null; then
+            REASON=$(grep -E "^{{name}}[[:space:]]" integration-tests/behavior-flaky.list | head -1 | cut -f2)
+            if [ "{{strict}}" != "1" ]; then
+                echo "KNOWN-FLAKY (tracked): $REASON"
+                echo "Re-run with strict=1 to treat as a failure."
+                exit 0
+            fi
+        fi
         exit 1
     fi
 

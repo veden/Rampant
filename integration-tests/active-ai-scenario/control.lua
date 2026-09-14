@@ -6,7 +6,7 @@
 
     Usage:
     /silent-command remote.call("Rampant", "spawnEntity", "stone-wall", {0,0}, "player")
-    /silent-command remote.call("Rampant", "advanceTicks", 300)
+    /silent-command remote.call("Rampant", "setGameSpeed", 100)
     /silent-command print(remote.call("Rampant", "getGameState").tick)
 ]]
 

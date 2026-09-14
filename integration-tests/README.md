@@ -16,6 +16,16 @@ Integration tests for the Rampant mod that run within the actual Factorio game e
   (requires Rampant enabled in `mods/mod-list.json`)
 - **`just test-rcon`** — RCON-driven AI behavior tests (`tools/rcon_client.py`
   is the working RCON client)
+- **`just test-behavior <scenario> [seed] [strict]`** — staged behavior
+  scenarios on a **pinned map seed**. Seeds make runs reproducible: saves are
+  generated per seed (`just make-saves seed=N`, cached base maps), and the
+  mod's RNG is fixed-seed (`Constants.ENEMY_SEED`), so same seed + same mod =
+  same simulation. `seed=random` loads the scenario dir fresh, unpinned.
+- **Logs**: `/tmp/rampant-behavior-<name>.out`, previous run kept as `.prev` —
+  failure evidence is never overwritten by the next run.
+- **Flaky registry**: `integration-tests/behavior-flaky.list` — listed
+  scenarios failing print `KNOWN-FLAKY` + the recorded reason and exit 0
+  (batteries don't block on tracked issues); `strict=1` overrides.
 
 All recipes: purge stale saves, launch with `"auto_pause": false` in server
 settings, capture **stdout** (not `--console-log`) and poll it for

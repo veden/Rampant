@@ -102,9 +102,10 @@ RESULT=$(send_cmd '/silent-command print(remote.call("Rampant","setGameSpeed",10
 echo "$RESULT"
 wait_tick
 
-# Test 5: Advance ticks
-echo "Test 5: Advance 100 ticks..."
-RESULT=$(send_cmd '/silent-command print(remote.call("Rampant","advanceTicks",100))')
+# Test 5: Telemetry counters (advanceTicks was removed: game.tick is
+# read-only in Factorio — the old member errored on every call)
+echo "Test 5: Telemetry counters..."
+RESULT=$(send_cmd '/silent-command print(remote.call("Rampant","getMetricsSummary").enabled)')
 echo "$RESULT"
 wait_tick
 
