@@ -214,7 +214,11 @@ local function rescanAllChunks(map, tick)
         if type(xChunks) == "table" and xChunks[1] then
             for y, chunk in pairs(xChunks) do
                 if type(chunk) == "table" and chunk.id then
-                    initialScan(chunk, map, tick)
+                    -- purgeUnits=false: the rescan re-scans LIVING
+                    -- territory (evolution crossed 0.3); the initial
+                    -- scan's unit purge would destroy every unit near
+                    -- every nest.
+                    initialScan(chunk, map, tick, false)
                     markChunkDirty(chunk.id, 4, tick)
                 end
             end

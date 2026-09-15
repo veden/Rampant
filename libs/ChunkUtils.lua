@@ -245,7 +245,7 @@ local unregisterTypeToRemoveFn = {
     ["unit-spawner"] = removeNestCount
 }
 
-function ChunkUtils.initialScan(chunk, map, tick)
+function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
     if MetricsG then
         MetricsG.inc("scan.chunksScanned")
     end
@@ -283,7 +283,13 @@ function ChunkUtils.initialScan(chunk, map, tick)
                     base = createBase(map, chunk, tick)
                 end
 
-                if Universe.NEW_ENEMIES then
+                -- Unit purge: clears PRE-MOD units at map load (the initial
+                -- scan). The one-time evolution RESCAN must NOT purge — it
+                -- re-runs this over LIVING territory and would destroy
+                -- every unit near every nest (the "recycle race": staged
+                -- units vanished instantly, formations starved, zero death
+                -- events because script destroy() is silent).
+                if purgeUnits ~= false and Universe.NEW_ENEMIES then
                     local unitList = surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
                     if #unitList > 0 then
                         local killed = 0

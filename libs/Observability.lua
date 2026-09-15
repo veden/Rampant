@@ -183,14 +183,17 @@ function Observability.getEnemyGroups(surface)
         for _, squad in pairs(squadTable) do
             if squad.group and squad.group.valid then
                 local memberCount = 0
-                for _ in pairs(squad.group.members) do
+                local members = {}
+                for unitNumber, _ in pairs(squad.group.members) do
                     memberCount = memberCount + 1
+                    members[#members + 1] = unitNumber
                 end
                 table.insert(groups, {
                     id = squad.group.unique_id,
                     position = squad.group.position,
                     state = squad.group.state,
                     memberCount = memberCount,
+                    members = members,
                     isBuilder = squad.settlers or false,
                     isKamikaze = squad.kamikaze or false,
                     retreats = squad.retreats or 0,
