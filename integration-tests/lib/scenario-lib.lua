@@ -353,6 +353,7 @@ local CHURN_KEYS = {
     "squad.settle.empty_resource_chunk",
     "squad.settle.path_terminated",
     "squad.formEmpty",
+    "squad.formCooldownArmed",
     "squad.formSkip.cooldown",
     "squad.formReject.settler.points",
     "squad.formReject.settler.groups",

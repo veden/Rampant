@@ -1344,6 +1344,11 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
         base.nextFormAttemptTick = game.tick + EMPTY_RECRUIT_COOLDOWN
         if MetricsG then
             MetricsG.inc("squad.formEmpty")
+            -- Armings counter: the skip counter aggregates across every
+            -- active-nest chunk of the base (per-base cooldown, per-chunk
+            -- attempts), so skips/armings ~= 200 * activeNests — the
+            -- ratio that reconciles the two counters.
+            MetricsG.inc("squad.formCooldownArmed")
         end
         return
     end

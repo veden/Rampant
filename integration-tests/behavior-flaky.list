@@ -3,12 +3,19 @@
 # Format: <scenario> <TAB> <reason>
 # Lines starting with # are comments. When a listed scenario FAILS, the
 # test-behavior recipe prints KNOWN-FLAKY + the reason and exits 0 (so
-# batteries don't block on tracked issues). Re-run with strict=1 to treat
-# a listed scenario's failure as a hard failure.
+# batteries don't block on tracked issues). Re-run with strict=1 to treat a
+# listed scenario's failure as a hard failure.
 #
 # Entries must carry a tracked issue reference and the observed failure
 # signature — a flake without a reason is an unfiled bug, not a registry
 # entry.
-
-siege-settle	residual risk only (passes 3/3 pinned seeds after the expansion-cache fix): the ungrouped-unit recycle race still kills squads ~1 game-minute after formation (HIGH-priority mod bug, cec1b7a "Known remaining") — the retry machinery absorbs it, but seeds with pathological geography may exhaust the march budget. Keep listed until the recycle race is fixed. (logs: /tmp/rampant-behavior-siege-settle.out)
-migration-settler	seed-sensitive (2 failures observed in ~6 random-seed runs, passes on re-run): the same formation-cadence dynamics as siege-settle (expansion quota epochs + the recycle race); the "settler leaves" assertion is position-based. Migrate to site-based assertion + scenario-lib, then re-evaluate. (logs: /tmp/rampant-behavior-migration-settler.out)
+#
+# Resolved entries are removed, not kept: the seed pinning + the fixes make
+# flakes reproducible, so a re-added entry should cite what regressed.
+#
+# Resolved (removed) entries, for the record:
+#   siege-settle   - was ~50-60% seed-sensitive. Fixed by the evolution-
+#                    rescan purge fix (f18c225) + the on_init expansion
+#                    cooldown override. Now 3/3 pinned seeds.
+#   migration-settler - was 2/6 seed-sensitive. Same purge-fix cause.
+#                    Now 3/3 pinned seeds.
