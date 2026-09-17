@@ -70,6 +70,36 @@ Two traps worth repeating (both cost an engine run each):
   proximity (within ~16 tiles), not by nearest — otherwise the second leg
   matches the first leg's replacement.
 
+### Change verification loop
+
+When you change the mod, this is the loop that answers "what did it affect":
+
+1. **Which scenario?** — the change-impact index below.
+2. **Did behavior move?** — run it, then `just traj-review` (the committed
+   per-(scenario, seed) trajectories diff: per phase, per assertion, with the
+   numbers). Unintended change -> investigate; intended -> commit the diff.
+3. **How much, and in which direction?** — `just traj-dist <scenario> <seeds>`
+   runs the scenario across seeds and prints the distribution (PASS/FAIL, the
+   Detail numbers, the churn totals). Emergent behavior has an intrinsic noise
+   floor — same-seed runs diverge (tick-timing: the sweep's cycle list is built
+   via `pairs()`, whose hash order varies per process), so point values are NOT
+   comparable across changes; distributions are. A signal that disappears
+   entirely, or a spread that shifts, is the effect picture.
+
+| If you change... | Run |
+|---|---|
+| pheromone generation/decay/diffusion | pheromone-dynamics |
+| the dirty-chunk sweep / field maintenance | pheromone-dynamics + long-run |
+| squad formation gates / economy / quota | attack-wave + base-ai-states |
+| squad dispatch cadence / movement scoring | squad-cycle + movement-test |
+| retreat / death handling | death-response + player-death |
+| settle triggers / build | siege-settle + base-expansion + migration-settler |
+| the upgrade pipeline | upgrade-threshold |
+| base state machine | base-ai-states |
+| surface/map handling | multi-surface |
+| save/load paths | save-load |
+| anything broad (or before a release) | the full battery + long-run |
+
 ### Behavioral parity coverage
 
 | Behavior | Verified by |

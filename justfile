@@ -374,6 +374,54 @@ make-saves seed="1":
         echo "built save: $name (seed $SEED)"
     done
 
+# Distributional telemetry: run a scenario across N seeds and aggregate the
+# numeric signals. Emergent behavior has an intrinsic noise floor (tick-timing:
+# same seed diverges run-to-run), so point values are not comparable across
+# changes — distributions are. The picture: does the median move, does the
+# spread change, did a signal disappear entirely.
+# Usage: just traj-dist siege-settle 5
+traj-dist name="siege-settle" seeds="5":
+    #!/usr/bin/env -S bash
+    set -e
+    echo "=== Distributional telemetry: {{name}} over $seeds seeds ==="
+    for s in $(seq 1 {{seeds}}); do
+        just test-behavior {{name}} $s > /dev/null 2>&1 || true
+        # The signals: pass/fail, the key Detail numbers, the churn totals.
+        result="FAIL"
+        if grep -q TESTS_COMPLETE /tmp/rampant-behavior-{{name}}.out 2>/dev/null; then
+            result=PASS
+        else
+            result=FAIL
+        fi
+        detail=""
+        detail=$(grep -E "^Detail:" /tmp/rampant-behavior-{{name}}.out 2>/dev/null | tail -1 | cut -c1-100)
+        churn=""
+        churn=$(grep -E "^\[CHURN\]" /tmp/rampant-behavior-{{name}}.out 2>/dev/null | tail -1 | cut -c1-110)
+        printf "seed %s: %s | %s\n" "$s" "$result" "$detail"
+        printf "        %s\n" "$churn"
+        cp /tmp/rampant-behavior-{{name}}.out "/tmp/opencode/traj-dist-{{name}}-s$s.out" 2>/dev/null || true
+    done
+    echo ""
+    echo "Compare this table before/after a change: a signal that disappears"
+    echo "entirely, or a spread that shifts, is the effect picture."
+
+# Review behavioral changes: the committed per-(scenario, seed) trajectories
+# are the change-detection record. After any mod change, run the scenarios and
+# diff this — per phase, per assertion, with the numbers.
+traj-review:
+    #!/usr/bin/env -S bash
+    set -e
+    if ! git status --short integration-tests/trajectories/ | grep -q .; then
+        echo "Trajectories: no changes (behavior identical to the committed baselines)"
+        exit 0
+    fi
+    echo "=== Trajectory changes ==="
+    git diff --stat integration-tests/trajectories/
+    echo ""
+    git diff integration-tests/trajectories/ | head -120
+    echo ""
+    echo "Review the diff: intended change -> commit it; unintended -> investigate."
+
 # Run a staged behavior scenario (default: wall-defense)
 # Usage: just test-behavior <name> [seed] [strict]  (positional binding)
 #   e.g. just test-behavior siege-settle 2     # seed 2
@@ -460,6 +508,19 @@ test-behavior name="wall-defense" seed="1" strict="0": copy
     echo "=== Behavior Test Results ==="
     grep -E "\[PASS\]|\[FAIL\]|\[INFO\]|PHASE|Passed|Failed|Detail|TESTS|STAGED" "$LOG" 2>/dev/null | tail -30
     echo ""
+
+    # Trajectory: the normalized behavioral signature, committed per
+    # (scenario, seed). A mod change that alters behavior shows up as
+    # `git diff integration-tests/trajectories/` — per phase, per assertion,
+    # with the numbers. Volatile clock/tick text is normalized out.
+    mkdir -p integration-tests/trajectories
+    TRAJ=integration-tests/trajectories/{{name}}-s$SEED.txt
+    grep -E "^PHASE:|^\[PASS\]|^\[FAIL\]|^\[CHURN\]|^Detail:|^\[INFO\]" "$LOG" 2>/dev/null \
+        | sed -E 's/at [0-9]+\.[0-9]+min/at Tmin/g; s/atTick=[0-9]+/atTick=N/g; s/ticks=[0-9]+/ticks=N/g; s/\([0-9]+,[0-9]+\)/(X,Y)/g' \
+        > "$TRAJ"
+    if [ -s "$TRAJ" ]; then
+        echo "Trajectory: $TRAJ ($(wc -l < "$TRAJ") lines) — git diff to see behavioral changes"
+    fi
 
     # Check pass/fail status
     if grep -q "TESTS_COMPLETE" "$LOG" 2>/dev/null; then

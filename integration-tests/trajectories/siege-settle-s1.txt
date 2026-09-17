@@ -1,0 +1,32 @@
+[INFO] initial scan complete (chunks=392)
+[INFO] spawner placed at (X,Y) (dry-corridor scan)
+[INFO] beacon built at (X,Y): 4 walls + 1 turret + 112 assemblers
+[PASS] base formed (id=0) at Tmin
+[INFO] constructed: evo=0.5 SIEGE=true points=true freeUnits=30
+[INFO] march snapshot spawners=1
+[CHURN] setup->form dirty.sweepMarks=+40 dirty.chunksProcessed=+200
+PHASE: form at Tmin
+[PASS] siege builder squad formed (id=162 members=1 kamikaze=false pos=96,-16) at Tmin
+[CHURN] form->march squad.created=+8 squad.destroyed=+1 squad.formEmpty=+4 squad.formCooldownArmed=+4 squad.formSkip.cooldown=+1777 squad.formReject.settler.groups=+20 dirty.sweepMarks=+87003 dirty.chunksProcessed=+105931
+PHASE: march at Tmin
+[INFO] phero@96,-16 base=13405.500 player=0.000 enemy=196.859 resource=12216.445
+[INFO] siege site too far (attempt 1): dist=304.3 not < originDist-20=92.0 (site=304,-22 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=162 kamikaze=false pos=96,-16
+[INFO] dropping stalled builder id=162 (BUILDING >3min, no site; settled too close to build)
+[INFO] kamikaze siege builder present (id=198); ignoring (no player-seeking march)
+[INFO] siege site too far (attempt 2): dist=312.0 not < originDist-20=92.0 (site=312,-4 displacement=0.0); retrying with next builder cycle
+[INFO] siege site too far (attempt 3): dist=307.9 not < originDist-20=92.0 (site=306,-38 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=303 kamikaze=false pos=100,-13
+[INFO] siege site too far (attempt 4): dist=286.2 not < originDist-20=92.0 (site=285,-27 displacement=-25.8); retrying with next builder cycle
+[INFO] adopted builder id=303 kamikaze=false pos=100,2
+[INFO] phero@78,9 base=13405.500 player=0.000 enemy=203.197 resource=15082.031
+[PASS] siege builder built player-ward (siteDist=69.9 originDist=112.0 marchDisplacement=2477.6) at Tmin
+[INFO] control snapshot spawners=17
+[INFO] constructed: MIGRATING, points granted, freeUnits=30
+[CHURN] march->control squad.created=+50 squad.destroyed=+12 squad.settle.path_terminated=+12 squad.formEmpty=+32 squad.formCooldownArmed=+32 squad.formSkip.cooldown=+17375 squad.formReject.settler.groups=+106 dirty.sweepMarks=+724102 dirty.chunksProcessed=+843035
+PHASE: control at Tmin
+[PASS] migration builder squad formed (id=376 members=7 pos=105,4) at Tmin
+[INFO] migration site (diagnostic, C demoted): controlDist=318.8 siegeDist=69.9 displacement=0.0 at Tmin
+[CHURN] finish squad.created=+4 squad.destroyed=+5 squad.settle.path_terminated=+5 squad.formSkip.cooldown=+116 squad.formReject.settler.groups=+2749 dirty.sweepMarks=+163019 dirty.chunksProcessed=+237899
+Detail: siege-settle expectations met (A hard, C diagnostic)
+Detail: base=true formBuilder=true marchSite=table siegeDist=69.851628470638 failedSites=4 kamikazeSeen=true controlBuilder=true controlSite=table controlDist=318.79342841408 failedControlSites=nil ticks=N
