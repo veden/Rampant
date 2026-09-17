@@ -204,6 +204,13 @@ script.on_event(defines.events.on_tick, function()
             return
         end
         r.lowStaged = Lib.stageFreeUnits(surface, SPAWNER_POS, FREE_UNIT_COUNT)
+        -- Ignore any squad that formed BEFORE the staging (the nest's
+        -- trickle can form a 1-member wave between the arm delay and the
+        -- staging — the observed low=1 high=1 failure). Only post-staging
+        -- formations recruited the staged pool.
+        for _, s in ipairs(attackSquads(surface)) do
+            r.seen[s.id] = true
+        end
         print("[INFO] LOW free units staged=" .. r.lowStaged)
         setPhase("low-wave")
 
@@ -232,6 +239,11 @@ script.on_event(defines.events.on_tick, function()
             return
         end
         r.highStaged = Lib.stageFreeUnits(surface, SPAWNER_POS, FREE_UNIT_COUNT)
+        -- Same pre-staging snapshot as the low leg: a trickle squad formed
+        -- between the arm delay and the staging must not be measured.
+        for _, s in ipairs(attackSquads(surface)) do
+            r.seen[s.id] = true
+        end
         print("[INFO] HIGH free units staged=" .. r.highStaged)
         setPhase("high-wave")
 
