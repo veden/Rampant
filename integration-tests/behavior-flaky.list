@@ -18,7 +18,7 @@
 # so same-seed runs can still diverge slightly in timing. Assertions must carry
 # margins/retries, and position-based thresholds are timing-fragile.
 
-upgrade-threshold	intermittent low-leg timeout (observed ~1 in 4 runs): the LOW-evolution upgrade replacement occasionally does not appear within the phase budget. The upgrade is queued deterministically on the vanilla spawner's onBuild (BuildingLogic.evaluateEnemy -> QUEUE_UPGRADE) and the rescan queues a duplicate for the same entity; the duplicate's state-1 pass drops the entry when the entity is already invalid — usually harmless, but the replacement timing is variable (observed: instant in most runs, absent in some). Phase budget raised 10->20 game-minutes. Investigate the double-queue (rescan + onBuild) next. (logs: /tmp/rampant-behavior-upgrade-threshold.out)
+upgrade-threshold	intermittent low-leg timeout (observed ~1 in 3 runs): the LOW-evolution upgrade replacement occasionally does not appear within the phase budget. Partially addressed: processPendingUpgrades' state-2 create now retries at the nearest free position when create_entity returns nil (the original was already destroyed in state 1, so a blocked position silently LOST the structure) and counts upgrade.createBlocked — check that counter in a failing run to confirm the trigger. Remaining suspects: the double-queue (rescan + onBuild both queue the same entity; the duplicate's state-1 pass drops when the entity is already invalid — believed harmless), the base-formation timing (the upgrade is queued on base formation), and pendingUpgradesLength accounting (queueCreation's >100 guard would block creations if the length leaks). (logs: /tmp/rampant-behavior-upgrade-threshold.out)
 
 #
 # Resolved (removed) entries, for the record:

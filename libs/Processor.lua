@@ -560,6 +560,26 @@ function Processor.processPendingUpgrades(tick)
         local surface = entityData.map.surface
         query.position = {position.x, position.y}
         local newEntity = surface.create_entity(query)
+        if not (newEntity and newEntity.valid) then
+            -- The original was destroyed in state 1: a blocked create position
+            -- would LOSE the structure silently (observed: the upgrade-
+            -- threshold scenario's intermittent no-replacement). Retry at the
+            -- nearest free position; count if even that fails.
+            if MetricsG then
+                MetricsG.inc("upgrade.createBlocked")
+            end
+            local retryPosition = surface.find_non_colliding_position(
+                name,
+                position,
+                16,
+                1,
+                true
+            )
+            if retryPosition then
+                query.position = {retryPosition.x, retryPosition.y}
+                newEntity = surface.create_entity(query)
+            end
+        end
         if newEntity and newEntity.valid then
             local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
             if hiveType == "hive" then
