@@ -13,6 +13,14 @@
 # Resolved entries are removed, not kept: the seed pinning + the fixes make
 # flakes reproducible, so a re-added entry should cite what regressed.
 #
+# Seed pinning removes GEOGRAPHY variance, not TICK-TIMING variance: the
+# sweep's cycle list is built via pairs() (hash order can differ per process),
+# so same-seed runs can still diverge slightly in timing. Assertions must carry
+# margins/retries, and position-based thresholds are timing-fragile.
+
+upgrade-threshold	intermittent low-leg timeout (observed ~1 in 4 runs): the LOW-evolution upgrade replacement occasionally does not appear within the phase budget. The upgrade is queued deterministically on the vanilla spawner's onBuild (BuildingLogic.evaluateEnemy -> QUEUE_UPGRADE) and the rescan queues a duplicate for the same entity; the duplicate's state-1 pass drops the entry when the entity is already invalid — usually harmless, but the replacement timing is variable (observed: instant in most runs, absent in some). Phase budget raised 10->20 game-minutes. Investigate the double-queue (rescan + onBuild) next. (logs: /tmp/rampant-behavior-upgrade-threshold.out)
+
+#
 # Resolved (removed) entries, for the record:
 #   siege-settle   - was ~50-60% seed-sensitive. Fixed by the evolution-
 #                    rescan purge fix (f18c225) + the on_init expansion

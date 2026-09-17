@@ -1,0 +1,6 @@
+{
+    "name": "Rampant attack-wave",
+    "description": "Attack wave size scales super-linearly with evolution (low vs high evolution, same staging)",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

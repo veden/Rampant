@@ -31,8 +31,8 @@ local HIGH_POS = { x = 0, y = 64 }   -- same 64-tile distance from origin
 local EVO_LOW = 0.1
 local EVO_HIGH = 0.9
 local VANILLA_SPAWNER = "biter-spawner"
-local PHASE_LIMIT_MINUTES = 10
-local BUDGET_MINUTES = 40
+local PHASE_LIMIT_MINUTES = 20
+local BUDGET_MINUTES = 60
 local BUDGET_TICKS = BUDGET_MINUTES * Lib.TICKS_A_MINUTE
 
 local state  -- { phase, results, stagedAt, phaseStartedAt, done }

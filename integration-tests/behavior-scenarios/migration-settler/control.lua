@@ -222,6 +222,12 @@ script.on_event(defines.events.on_tick, function()
                     if g.isBuilder then
                         r.settlerFormed = true
                         r.settlerId = g.id
+                        -- Baseline for the site-based migration evidence: the
+                        -- staged/upgraded spawners present when the settler
+                        -- formed; a NEW spawner beyond this is the settler's
+                        -- own build.
+                        r.spawnerBaseline = surface.count_entities_filtered{
+                            force = "enemy", type = "unit-spawner" }
                         print("[PASS] settler squad formed (id=" .. g.id .. ") at " ..
                             string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
                         break
@@ -240,7 +246,22 @@ script.on_event(defines.events.on_tick, function()
             end
         end
         if r.settlerFormed and r.dispatched and not r.moved then
-            -- The settler must LEAVE the nest region (movement start)
+            -- Migration evidence: the settler leaves the nest region OR
+            -- settles a NEW site (site-based — under the purge fix's larger
+            -- recruits, settlers commonly settle in place at their formation
+            -- chunk ~14-48 tiles out, never crossing a 20-tile threshold;
+            -- the built spawner is the migration outcome that matters).
+            local siteCount = surface.count_entities_filtered{
+                force = "enemy", type = "unit-spawner" }
+            if siteCount > (r.spawnerBaseline or 0) then
+                r.moved = true
+                r.settlerPos = "site:" .. siteCount
+                print("[PASS] settler built a new site (spawners " ..
+                    (r.spawnerBaseline or 0) .. " -> " .. siteCount .. ") at " ..
+                    string.format("%.1f", gameMinutes(tick - state.stagedAt)) .. "min")
+            end
+        end
+        if r.settlerFormed and r.dispatched and not r.moved then
             local groups = remote.call("Rampant", "getEnemyGroups", surface)
             if groups then
                 for _, g in ipairs(groups) do
