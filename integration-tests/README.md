@@ -42,6 +42,63 @@ Any test scenario must:
 
 See `active-ai-scenario/control.lua` for the working pattern.
 
+### Shared scenario library
+
+`integration-tests/lib/scenario-lib.lua` carries the staging physics and
+diagnostics as code (bundled into every scenario save by `make-saves`, and copied
+next to `control.lua` for the scenario-dir load path). Scenarios `require()`
+it as `scenario-lib`. Key helpers and the failure signature each encodes:
+
+- `waitForScanStability` — the initial scan's unit purge destroys units in
+  scanned chunks; staging must wait for the scan to go idle.
+- `pickDryPosition` — water pockets freeze formations (path-end settle).
+- `buildBeacon` — player-structure beacons need `destructible=false` (squad
+  units chew them down in ~1 game-minute, wiping `playerBaseGenerator`); the
+  `factoryProxy` option reproduces a real factory's B-gradient regime so it
+  dominates ore-density noise.
+- `sustainNest` — the activeness check reads `getPollution(chunk)` = the chunk's
+  **top-left corner** (not the spawner point), and spawners absorb pollution:
+  a continuous stream at the corner is required (pulses leave the nest inactive
+  ~97% of the time and formation starves).
+- `churnSnapshot` / `churnLine` — per-phase squad-lifecycle counter deltas.
+
+Two traps worth repeating (both cost an engine run each):
+- **Evolution is cached.** The mod reads `Universe.evolutionLevel` refreshed on the
+  `planning()` pass (every 3rd tick). After `setEvolution`, wait ~60 ticks
+  (arm delay) before staging — same-tick staging queues the stale evolution.
+- **The upgrade replacement lands at the original's position.** Match it by
+  proximity (within ~16 tiles), not by nearest — otherwise the second leg
+  matches the first leg's replacement.
+
+### Behavioral parity coverage
+
+| Behavior | Verified by |
+|---|---|
+| Pheromone generation/diffusion/gradient | pheromone-dynamics |
+| Squad attack / retreat / re-engage | squad-cycle |
+| Squad formation + wave-size scaling (`evo^1.4`) | attack-wave |
+| Base states (RAIDING/ONSLAUGHT economy/MIGRATING) | base-ai-states |
+| Expansion (settler builds a new base) | base-expansion |
+| Siege builds toward the player | siege-settle |
+| Evolution-gated upgrade tiers (t1 → t10) | upgrade-threshold |
+| Death responses (points, retreat) | death-response, player-death |
+| Save/load continuity | save-load |
+| Multi-surface | multi-surface |
+| Session-scale development + UPS | long-run |
+
+Not covered headless (structurally unreachable — both triggers need a connected
+player or another mod):
+- **Rallying death cry** (`Squad.rallyUnits`) is called only from the
+  ion-cannon blast handler (`control.lua`, a Space-Age mod event).
+- **Counterattacks** (`Processor.processVengence`) are queued by the rally cry or
+  by the player-quadrant scan (`vengence=true`, which iterates
+  `game.connected_players`).
+- **Player hunting** is covered indirectly: attack squads target player pheromone
+  (wall-defense verifies units reaching the player's wall).
+
+A scenario for these needs a connected virtual player and/or the ion-cannon mod
+(the long-run harness's virtual player is the closest existing machinery).
+
 ---
 
 ## Overview
