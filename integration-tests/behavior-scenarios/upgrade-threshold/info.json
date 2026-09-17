@@ -1,0 +1,6 @@
+{
+    "name": "Rampant upgrade-threshold",
+    "description": "Structure upgrades to a higher-tier rampant variant as evolution rises (same distance, low vs high evolution)",
+    "version": "1.0.0",
+    "category": "integration-tests"
+}

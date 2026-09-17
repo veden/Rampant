@@ -351,10 +351,10 @@ make-saves seed="1":
             echo "generated map-$size-s$SEED"
         fi
     done
-    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle siege-settle multi-surface movement-diag movement-test; do
+    for name in wall-defense death-response migration-settler save-load player-death long-run base-ai-states base-expansion pheromone-dynamics squad-cycle siege-settle multi-surface upgrade-threshold movement-diag movement-test; do
         case $name in
             wall-defense|death-response|save-load|player-death) SIZE=256 ;;
-            migration-settler|base-ai-states|base-expansion|pheromone-dynamics|squad-cycle|siege-settle|multi-surface) SIZE=512 ;;
+            migration-settler|base-ai-states|base-expansion|pheromone-dynamics|squad-cycle|siege-settle|multi-surface|upgrade-threshold) SIZE=512 ;;
             movement-diag|movement-test) SIZE=256 ;;
             long-run) SIZE=1024 ;;
         esac
