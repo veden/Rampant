@@ -159,9 +159,11 @@ my_collection:add('marking_chunk_twice_prevents_duplicates', function()
     MapUtils.markChunkDirty(123, 3, 100, universe)
     MapUtils.markChunkDirty(123, 1, 101, universe)  -- Higher priority
     
-    -- Should only be in priority 1 (upgraded)
+    -- Should be ACTIVE only in priority 1 (upgraded). The stale entry left
+    -- in priority 3 is by design: the upgrade is lazy (O(1)) and the drain
+    -- skips entries whose set priority no longer matches. The set is the
+    -- source of truth for a chunk's active priority.
     assert(#universe.dirtyChunks.priority1 == 1, "Should be in priority 1")
-    assert(#universe.dirtyChunks.priority3 == 0, "Should not be in priority 3")
     assert(universe.dirtyChunkSet[123] == 1, "Should have priority 1 in set")
 end)
 

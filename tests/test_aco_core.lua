@@ -316,8 +316,8 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     MapUtils.getNeighborChunks = originalGetNeighborChunks
 
     -- Should have processed exactly `budget` chunks (budget limit)
-    assert(#Universe.dirtyChunks.priority1 == totalChunks - budget,
-        "Should have processed " .. budget .. " chunks, remaining=" .. #Universe.dirtyChunks.priority1)
+    assert(Universe.dirtyPending.priority1 == totalChunks - budget,
+        "Should have processed " .. budget .. " chunks, remaining=" .. Universe.dirtyPending.priority1)
 end)
 
 return my_collection

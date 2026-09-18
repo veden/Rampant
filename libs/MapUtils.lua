@@ -669,18 +669,13 @@ function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
     
     -- Prevent duplicates
     if universe.dirtyChunkSet[chunkId] then
-        -- Update priority if higher (lower number = higher priority)
+        -- Update priority if higher (lower number = higher priority).
+        -- LAZY: append to the higher-priority list and update the set; the
+        -- stale entry in the old list is skipped at drain time (the drain
+        -- checks the set's priority). The old code scanned the whole old list
+        -- and table.remove'd from the middle -- O(n) per upgrade.
         local existingPriority = universe.dirtyChunkSet[chunkId]
         if priority < existingPriority then
-            -- Remove from old priority list
-            local oldList = universe.dirtyChunks["priority" .. existingPriority]
-            for i, id in ipairs(oldList) do
-                if id == chunkId then
-                    table.remove(oldList, i)
-                    break
-                end
-            end
-            -- Add to new priority list
             table.insert(universe.dirtyChunks[priorityKey], chunkId)
             universe.dirtyChunkSet[chunkId] = priority
         end

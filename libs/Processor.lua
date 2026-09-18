@@ -652,43 +652,62 @@ function Processor.processDirtyChunk(chunk, tick, priority)
         return false, 0
     end
 
-    -- Snapshot pheromone values to detect material change. The dirty queue
-    -- propagates by marking neighbors; without an epsilon gate the cascade
-    -- never terminates (every processed chunk re-marks its neighbors, which
-    -- re-mark it, forever) and the whole map is re-processed every tick.
-    -- deathGenerator is included: it decays ONLY while the chunk is
-    -- processed, so excluding it would freeze death clouds forever.
-    local before = {
-        chunk[PLAYER_PHEROMONE] or 0,
-        chunk[BASE_PHEROMONE] or 0,
-        chunk[ENEMY_PHEROMONE] or 0,
-        chunk[RESOURCE_PHEROMONE] or 0,
-        chunk[KAMIKAZE_PHEROMONE] or 0,
-        chunk.deathGenerator or 0,
-    }
+    -- Snapshot the six fields as LOCALS — the previous two 6-element
+    -- snapshot tables allocated twice per chunk (the single biggest per-chunk
+    -- allocation). The predicate is identical: changed iff any field moved
+    -- beyond both epsilons. The original short-circuited at the first changed
+    -- field; this evaluates all six (same boolean, no loop, no abs call).
+    -- deathGenerator is included: it decays ONLY while the chunk is processed,
+    -- so excluding it would freeze death clouds forever.
+    local bPlayer = chunk[PLAYER_PHEROMONE] or 0
+    local bBase = chunk[BASE_PHEROMONE] or 0
+    local bEnemy = chunk[ENEMY_PHEROMONE] or 0
+    local bResource = chunk[RESOURCE_PHEROMONE] or 0
+    local bKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
+    local bDeath = chunk.deathGenerator or 0
 
     -- Process pheromones
     MapUtils.processPheromone(chunk, tick)
 
     -- Only propagate when something materially changed
-    local changed = false
-    local after = {
-        chunk[PLAYER_PHEROMONE] or 0,
-        chunk[BASE_PHEROMONE] or 0,
-        chunk[ENEMY_PHEROMONE] or 0,
-        chunk[RESOURCE_PHEROMONE] or 0,
-        chunk[KAMIKAZE_PHEROMONE] or 0,
-        chunk.deathGenerator or 0,
-    }
-    for i = 1, 6 do
-        local delta = math.abs(after[i] - before[i])
-        if delta > PROPAGATION_ABSOLUTE_EPSILON
-            and delta > math.abs(before[i]) * PROPAGATION_RELATIVE_EPSILON
-        then
-            changed = true
-            break
-        end
-    end
+    local aPlayer = chunk[PLAYER_PHEROMONE] or 0
+    local aBase = chunk[BASE_PHEROMONE] or 0
+    local aEnemy = chunk[ENEMY_PHEROMONE] or 0
+    local aResource = chunk[RESOURCE_PHEROMONE] or 0
+    local aKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
+    local aDeath = chunk.deathGenerator or 0
+
+    local d1 = aPlayer - bPlayer
+    if d1 < 0 then d1 = -d1 end
+    local d2 = aBase - bBase
+    if d2 < 0 then d2 = -d2 end
+    local d3 = aEnemy - bEnemy
+    if d3 < 0 then d3 = -d3 end
+    local d4 = aResource - bResource
+    if d4 < 0 then d4 = -d4 end
+    local d5 = aKamikaze - bKamikaze
+    if d5 < 0 then d5 = -d5 end
+    local d6 = aDeath - bDeath
+    if d6 < 0 then d6 = -d6 end
+    local a1 = bPlayer
+    if a1 < 0 then a1 = -a1 end
+    local a2 = bBase
+    if a2 < 0 then a2 = -a2 end
+    local a3 = bEnemy
+    if a3 < 0 then a3 = -a3 end
+    local a4 = bResource
+    if a4 < 0 then a4 = -a4 end
+    local a5 = bKamikaze
+    if a5 < 0 then a5 = -a5 end
+    local a6 = bDeath
+    if a6 < 0 then a6 = -a6 end
+
+    local changed = (d1 > PROPAGATION_ABSOLUTE_EPSILON and d1 > a1 * PROPAGATION_RELATIVE_EPSILON)
+        or (d2 > PROPAGATION_ABSOLUTE_EPSILON and d2 > a2 * PROPAGATION_RELATIVE_EPSILON)
+        or (d3 > PROPAGATION_ABSOLUTE_EPSILON and d3 > a3 * PROPAGATION_RELATIVE_EPSILON)
+        or (d4 > PROPAGATION_ABSOLUTE_EPSILON and d4 > a4 * PROPAGATION_RELATIVE_EPSILON)
+        or (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
+        or (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
 
     -- Mark neighbors dirty (returns list of neighbor IDs to mark)
     local neighborsToMark = {}
@@ -775,26 +794,59 @@ function Processor.processDirtyChunks(tick, universe)
     for priority = 1, 5 do
         local priorityKey = "priority" .. priority
         local chunkList = universe.dirtyChunks[priorityKey]
-        while processed < maxPerTick and #chunkList > 0 do
-            local chunkId = table.remove(chunkList, 1)
-            universe.dirtyChunkSet[chunkId] = nil
-            
-            -- Get chunk from map
-            local chunk = MapUtils.getChunkById(chunkId, universe)
-            local success, neighborsToMark = Processor.processDirtyChunk(chunk, tick, priority)
-            
-            if success then
-                processed = processed + 1
-                if MetricsG then
-                    MetricsG.inc("dirty.chunksProcessed")
-                end
-                -- Mark neighbors dirty
-                for _, neighbor in ipairs(neighborsToMark) do
-                    local neighborPriority = math.min(neighbor.priority, 5)  -- Clamp to max priority 5
-                    MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick, universe)
+        -- Head-index drain: table.remove(list, 1) shifts every remaining
+        -- element -- O(n) per pop (~20k shifts/tick at the 200 budget).
+        -- The head cursor is O(1) and preserves the FIFO order exactly.
+        -- Entries behind the head are skipped below when their set priority
+        -- no longer matches (a lazy priority upgrade); the list resets when
+        -- the head reaches the end.
+        local heads = universe.dirtyHeads
+        if not heads then
+            heads = {}
+            universe.dirtyHeads = heads
+        end
+        if not universe.dirtyPending then
+            universe.dirtyPending = {}
+        end
+        local head = heads[priorityKey] or 1
+        while processed < maxPerTick and head <= #chunkList do
+            local chunkId = chunkList[head]
+            head = head + 1
+            -- Skip stale entries: re-marked at a different priority, or
+            -- already processed (its set entry is gone).
+            if universe.dirtyChunkSet[chunkId] == priority then
+                universe.dirtyChunkSet[chunkId] = nil
+
+                -- Get chunk from map
+                local chunk = MapUtils.getChunkById(chunkId, universe)
+                local success, neighborsToMark = Processor.processDirtyChunk(chunk, tick, priority)
+
+                if success then
+                    processed = processed + 1
+                    if MetricsG then
+                        MetricsG.inc("dirty.chunksProcessed")
+                    end
+                    -- Mark neighbors dirty
+                    for _, neighbor in ipairs(neighborsToMark) do
+                        local neighborPriority = math.min(neighbor.priority, 5)  -- Clamp to max priority 5
+                        MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick, universe)
+                    end
                 end
             end
         end
+
+        -- Reset an exhausted list (all entries consumed or skipped), and
+        -- maintain the pending count: the list length now includes entries
+        -- behind the head, so the pending count is the honest queue size
+        -- (Metrics.sampleDirtyQueue and the long-run invariant read it).
+        if head > #chunkList then
+            universe.dirtyChunks[priorityKey] = {}
+            head = 1
+            universe.dirtyPending[priorityKey] = 0
+        else
+            universe.dirtyPending[priorityKey] = #chunkList - head + 1
+        end
+        heads[priorityKey] = head
 
         if processed >= maxPerTick then break end
     end

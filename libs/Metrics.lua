@@ -129,9 +129,19 @@ end
 --- Sample the dirty-queue size (sum of the 5 priority lists).
 function Metrics.sampleDirtyQueue(dirtyChunks)
     if not active() then return end
+    -- The lists keep drained entries behind the head cursor (O(1) drain), so
+    -- the pending count is maintained by the drain itself. Fall back to the
+    -- raw lengths only before the first drain has run.
+    local pending = Universe and Universe.dirtyPending
     local size = 0
-    for i = 1, 5 do
-        size = size + #dirtyChunks["priority" .. i]
+    if pending then
+        for i = 1, 5 do
+            size = size + (pending["priority" .. i] or 0)
+        end
+    else
+        for i = 1, 5 do
+            size = size + #dirtyChunks["priority" .. i]
+        end
     end
     Metrics.sample("dirtyQueueSize", size)
 end
