@@ -444,7 +444,7 @@ profile name="siege-settle" seconds="20": copy
     sleep "$SECONDS_WIN"
     echo "-- printing report --"
     python3 tools/rcon_client.py query 27019 rampant-test \
-        '/silent-command game.print(storage.prof); rcon.print("report printed to log")'
+        '/silent-command storage.prof:stop(); rcon.print(storage.prof)'
     sleep 3
     kill -9 $PID 2>/dev/null || true
     echo ""
