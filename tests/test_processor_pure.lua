@@ -35,14 +35,13 @@ my_collection:add('processDirtyChunk_processes_valid_chunk', function()
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return {} end
     
-    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
-    
+    local success = Processor.processDirtyChunk(chunk, 100, 1)
+
     -- Restore
     MapUtils.processPheromone = original
     MapUtils.getNeighborChunks = originalNeighbors
-    
+
     assert(success == true, "Should process valid chunk")
-    assert(type(neighborsToMark) == "table", "Should return neighbors list")
 end)
 
 -- Test: processDirtyChunk skips invalid chunk
@@ -91,16 +90,23 @@ my_collection:add('processDirtyChunk_collects_neighbors', function()
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return mockNeighbors end
     
-    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
-    
+    local marked = {}
+    local originalMark = MapUtils.markChunkDirty
+    MapUtils.markChunkDirty = function(id, priority, tick, universe)
+        marked[#marked + 1] = { id = id, priority = priority }
+    end
+
+    local success = Processor.processDirtyChunk(chunk, 100, 1)
+
     -- Restore
     MapUtils.processPheromone = original
     MapUtils.getNeighborChunks = originalNeighbors
-    
+    MapUtils.markChunkDirty = originalMark
+
     assert(success == true, "Should process chunk")
-    assert(#neighborsToMark == 2, "Should collect 2 neighbors")
-    assert(neighborsToMark[1].id == 1001, "First neighbor should be 1001")
-    assert(neighborsToMark[1].priority == 2, "Neighbor priority should be 2")
+    assert(#marked == 2, "Should mark 2 neighbors")
+    assert(marked[1].id == 1001, "First neighbor should be 1001")
+    assert(marked[1].priority == 2, "Neighbor priority should be 2")
 end)
 
 -- Test: no material change -> no propagation (epsilon gate contract)
@@ -122,14 +128,21 @@ my_collection:add('processDirtyChunk_no_change_no_propagation', function()
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return mockNeighbors end
     
-    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
-    
+    local marked = {}
+    local originalMark = MapUtils.markChunkDirty
+    MapUtils.markChunkDirty = function(id, priority, tick, universe)
+        marked[#marked + 1] = { id = id, priority = priority }
+    end
+
+    local success = Processor.processDirtyChunk(chunk, 100, 1)
+
     -- Restore
     MapUtils.processPheromone = original
     MapUtils.getNeighborChunks = originalNeighbors
-    
+    MapUtils.markChunkDirty = originalMark
+
     assert(success == true, "Should process chunk")
-    assert(#neighborsToMark == 0, "No change should not propagate")
+    assert(#marked == 0, "No change should not propagate (no neighbor marked)")
 end)
 
 -- Test: deathGenerator decay alone must propagate (prevents death clouds
@@ -155,14 +168,22 @@ my_collection:add('processDirtyChunk_death_change_propagates', function()
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return mockNeighbors end
 
-    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 1)
+    local marked = {}
+    local originalMark = MapUtils.markChunkDirty
+    MapUtils.markChunkDirty = function(id, priority, tick, universe)
+        marked[#marked + 1] = { id = id, priority = priority }
+    end
+
+    local success = Processor.processDirtyChunk(chunk, 100, 1)
 
     -- Restore
     MapUtils.processPheromone = original
     MapUtils.getNeighborChunks = originalNeighbors
+    MapUtils.markChunkDirty = originalMark
 
     assert(success == true, "Should process chunk")
-    assert(#neighborsToMark == 1, "Death generator decay should propagate")
+    assert(#marked == 1, "Death generator decay should propagate (one neighbor marked)")
+    assert(marked[1].id == 1001, "The movable neighbor is marked")
 end)
 
 -- Test: processDirtyChunk increments priority for neighbors
@@ -186,13 +207,21 @@ my_collection:add('processDirtyChunk_increments_priority', function()
     local originalNeighbors = MapUtils.getNeighborChunks
     MapUtils.getNeighborChunks = function() return mockNeighbors end
     
-    local success, neighborsToMark = Processor.processDirtyChunk(chunk, 100, 3)
-    
+    local marked = {}
+    local originalMark = MapUtils.markChunkDirty
+    MapUtils.markChunkDirty = function(id, priority, tick, universe)
+        marked[#marked + 1] = { id = id, priority = priority }
+    end
+
+    local success = Processor.processDirtyChunk(chunk, 100, 3)
+
     -- Restore
     MapUtils.processPheromone = original
     MapUtils.getNeighborChunks = originalNeighbors
-    
-    assert(neighborsToMark[1].priority == 4, "Neighbor priority should be 4 (3 + 1)")
+    MapUtils.markChunkDirty = originalMark
+
+    assert(marked[1] and marked[1].priority == 4, "Neighbor priority should be 4 (3 + 1)")
+    assert(marked[1] and marked[1].id == 1001, "The movable neighbor is marked")
 end)
 
 return my_collection

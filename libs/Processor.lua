@@ -709,18 +709,14 @@ function Processor.processDirtyChunk(chunk, tick, priority)
         or (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
         or (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
 
-    -- Mark neighbors dirty (returns list of neighbor IDs to mark)
-    local neighborsToMark = {}
+    -- Mark neighbors dirty DIRECTLY (no per-mark tables, no list handed to the
+    -- drain). The previous version built a {id=, priority=} table per neighbor
+    -- (up to 8 per chunk) for the drain to read back. markChunkDirty dedupes,
+    -- so marking here is equivalent.
     if changed then
         if MetricsG then
             MetricsG.inc("dirty.propagationMarks")
         end
-    else
-        if MetricsG then
-            MetricsG.inc("dirty.epsilonSkips")
-        end
-    end
-    if changed then
         -- Explicit guard: chunks always carry a map reference; if a chunk ever
         -- lacks one the old pcall silently skipped its neighbors. Errors
         -- beyond this guard are real bugs and must propagate.
@@ -729,15 +725,20 @@ function Processor.processDirtyChunk(chunk, tick, priority)
             neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
         end
         if neighbors then
+            local neighborPriority = priority + 1
+            if neighborPriority > 5 then neighborPriority = 5 end
             for i = 1, 8 do
-                if neighbors[i] and neighbors[i] ~= -1 then
-                    table.insert(neighborsToMark, { id = neighbors[i].id, priority = priority + 1 })
+                local neighbor = neighbors[i]
+                if neighbor and neighbor ~= -1 then
+                    MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick)
                 end
             end
         end
+    elseif MetricsG then
+        MetricsG.inc("dirty.epsilonSkips")
     end
 
-    return true, neighborsToMark
+    return true
 end
 
 -- PUBLIC: Process dirty chunks (reads storage.universe)
@@ -826,17 +827,12 @@ function Processor.processDirtyChunks(tick, universe)
 
                 -- Get chunk from map
                 local chunk = MapUtils.getChunkById(chunkId, universe)
-                local success, neighborsToMark = Processor.processDirtyChunk(chunk, tick, priority)
+                local success = Processor.processDirtyChunk(chunk, tick, priority)
 
                 if success then
                     processed = processed + 1
                     if MetricsG then
                         MetricsG.inc("dirty.chunksProcessed")
-                    end
-                    -- Mark neighbors dirty
-                    for _, neighbor in ipairs(neighborsToMark) do
-                        local neighborPriority = math.min(neighbor.priority, 5)  -- Clamp to max priority 5
-                        MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick, universe)
                     end
                 end
             end
