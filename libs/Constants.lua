@@ -36,7 +36,16 @@ constants.TEMPERAMENT_RANGE_MIN = -constants.TEMPERAMENT_RANGE_MAX
 constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
 constants.PROCESS_QUEUE_SIZE = 40
-constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 200
+-- Drain budget: the MAX chunks processed per tick. The v4 core raised this
+-- 40 -> 200 (5x the pre-2.0 rate), which quintupled the end-game pheromone
+-- cost: on a real late-game save (12.9M ticks) the engine benchmark measured
+-- avg 23.0 ms/tick at 200 vs 3.7 ms/tick at 40 (6.2x, max 1144 -> 9.4 ms).
+-- At 60 UPS (16.7 ms budget) 40 leaves the frame at ~22%, 200 overruns it.
+-- The budget is the cost-vs-lag trade-off: a smaller budget drains slower, so
+-- the dirty queue can back up under heavy event activity (fields refresh later).
+-- The long-run's dirty-queue invariant (peak bounded, steady state 0) is the gate
+-- for the smallest budget that keeps up.
+constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 -- Background sweep rate: chunks re-marked dirty at priority 5 per tick so
 -- persistent sources (player buildings, ore, nests) re-broadcast their
 -- fields. Decay-on-read evaporates diffused fields within seconds of their
