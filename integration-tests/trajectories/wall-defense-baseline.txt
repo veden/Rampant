@@ -1,0 +1,6 @@
+# wall-defense noise-floor baseline (3 seeds, 2026-09-17T20:24:54-07:00)
+# Format: seed<TAB>result<TAB>final Detail<TAB>final CHURN
+# A change's effect is meaningful only beyond this run-to-run spread.
+seed1	PASS	reachedState4=1 wander=nil wanderDestroy=nil dispatch=3	
+seed2	PASS	reachedState4=nil wander=nil wanderDestroy=nil dispatch=3	
+seed3	PASS	reachedState4=1 wander=nil wanderDestroy=nil dispatch=3	

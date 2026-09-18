@@ -1,0 +1,13 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed (id=0) at Tmin
+[INFO] constructed: RAIDING=true points=2000 -> true
+[INFO] spawned 5 enemy units at the wall (grouped, attacking)
+PHASE: attack at Tmin
+[PASS] attack present: 5 unit(s) at wall at Tmin
+[INFO] killed 3; group destroyed; 2 ungrouped survivor(s) remain
+PHASE: retreat at Tmin
+[PASS] retreat executed (1); squad id=20 status=RETREATING at Tmin
+PHASE: reengage at Tmin
+[PASS] squad re-engaged: status RETREATING -> RAIDING at Tmin (cmd.DISPATCH_SQUAD=2)
+Detail: all squad-cycle expectations met
+Detail: base=true attack=true retreated=true squadId=20 retreatStatus=1 reEngaged=true statusAfter=4 ticks=N

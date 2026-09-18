@@ -1,0 +1,6 @@
+# attack-wave noise-floor baseline (3 seeds, 2026-09-17T21:25:59-07:00)
+# Format: seed<TAB>result<TAB>final Detail<TAB>final CHURN
+# A change's effect is meaningful only beyond this run-to-run spread.
+seed1	PASS	lowCount=4 highCount=73 lowId=130 highId=254 ticks=1890	
+seed2	PASS	lowCount=1 highCount=37 lowId=150 highId=271 ticks=1254	
+seed3	PASS	lowCount=1 highCount=66 lowId=140 highId=261 ticks=1248	

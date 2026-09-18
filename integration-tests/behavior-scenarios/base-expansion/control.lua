@@ -19,6 +19,8 @@
     Expected total: ~20-60 game-minutes.
 ]]
 
+local Lib = require("scenario-lib")
+
 local WALL_POS = { x = 0, y = 0 }
 local SPAWNER_POS = { x = 100, y = 0 }
 local TURRET_POS = { x = 6, y = 0 }
@@ -187,11 +189,13 @@ script.on_event(defines.events.on_tick, function()
     local elapsed = tick - state.stagedAt
     local phaseElapsed = tick - state.phaseStartedAt
 
-    -- Keep the nest active (no player factory in the constructed map).
-    if tick - (storage.rampantLastPollute or 0) > 60 * 60 then
-        storage.rampantLastPollute = tick
-        surface.pollute(SPAWNER_POS, 10)
-    end
+    -- Keep the nest CONTINUOUSLY active (the shared-lib lesson: the activeness
+    -- check reads the chunk CORNER and spawners absorb pollution, so a 10/min
+    -- pulse leaves the nest inactive ~97% of the time and settler formation
+    -- starves — observed: dispatched=nil over the whole budget). The lib
+    -- streams at the corner + spawner; a small extra pulse keeps the spawner's
+    -- own processing fed.
+    Lib.sustainNest(surface, SPAWNER_POS, tick, storage)
 
     if elapsed > BUDGET_TICKS then
         finish(false, "budget " .. BUDGET_MINUTES .. " game-minutes elapsed")

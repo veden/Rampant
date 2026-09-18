@@ -1,0 +1,12 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed on surface 1 (id=0) at Tmin
+[PASS] surface 2 created + chunks generated at Tmin
+[INFO] spawner constructed on surface 2
+PHASE: construct2 at Tmin
+[PASS] base formed on surface 2 (id=1) at Tmin
+[INFO] addExcludeSurface(rampant-surface-2)
+PHASE: exclude at Tmin
+[PASS] surface 2 map removed by exclusion at Tmin
+[INFO] surface 1 still tracked: true
+Detail: all multi-surface expectations met
+Detail: base1=true surface2=true base2=true excluded=true ticks=N

@@ -405,6 +405,51 @@ traj-dist name="siege-settle" seeds="5":
     echo "Compare this table before/after a change: a signal that disappears"
     echo "entirely, or a spread that shifts, is the effect picture."
 
+# Noise-floor baselines: run every scenario across N seeds and record the
+# per-signal spread. Emergent behavior has an intrinsic run-to-run spread (see
+# the README), so a change's effect is only meaningful against this baseline:
+# a shift inside the baseline spread is noise; a shift beyond it is signal.
+# Usage: just traj-baseline 3
+# Writes integration-tests/trajectories/<scenario>-baseline.txt (committed).
+traj-baseline seeds="3":
+    #!/usr/bin/env -S bash
+    set -e
+    SEEDS="{{seeds}}"
+    # save-load + long-run are driven by their own recipes (test-save-load / test-longrun).
+    SCENARIOS="wall-defense squad-cycle death-response base-ai-states base-expansion migration-settler pheromone-dynamics multi-surface player-death siege-settle upgrade-threshold attack-wave"
+    echo "=== Noise-floor baselines: $SEEDS seeds per scenario ==="
+    for name in $SCENARIOS; do
+        BASE=integration-tests/trajectories/$name-baseline.txt
+        TMP=/tmp/opencode/baseline-$name.txt
+        rm -f "$TMP"
+        echo "--- $name ---"
+        for s in $(seq 1 $SEEDS); do
+            just test-behavior "$name" "$s" > /dev/null 2>&1 || true
+            LOG=/tmp/rampant-behavior-$name.out
+            if grep -q TESTS_COMPLETE "$LOG" 2>/dev/null; then
+                result=PASS
+            elif grep -qE "^$name[[:space:]]" integration-tests/behavior-flaky.list 2>/dev/null; then
+                result=FLAKY-FAIL
+            else
+                result=FAIL
+            fi
+            detail=$(grep -E "^Detail:" "$LOG" 2>/dev/null | tail -1 | sed 's/^Detail: //')
+            churn=$(grep -E "^\[CHURN\]" "$LOG" 2>/dev/null | tail -1 | sed 's/^\[CHURN\] //')
+            printf "seed%s\t%s\t%s\t%s\n" "$s" "$result" "$detail" "$churn" >> "$TMP"
+            printf "  seed %s: %s\n" "$s" "$result"
+        done
+        {
+            echo "# $name noise-floor baseline ($SEEDS seeds, $(date -Iseconds))"
+            echo "# Format: seed<TAB>result<TAB>final Detail<TAB>final CHURN"
+            echo "# A change's effect is meaningful only beyond this run-to-run spread."
+            cat "$TMP"
+        } > "$BASE"
+        echo "  -> $BASE"
+    done
+    echo ""
+    echo "Baselines written. Review + commit; then a change's effect is"
+    echo "measurable: 'just traj-dist <scenario> N' vs this baseline."
+
 # Review behavioral changes: the committed per-(scenario, seed) trajectories
 # are the change-detection record. After any mod change, run the scenarios and
 # diff this — per phase, per assertion, with the numbers.

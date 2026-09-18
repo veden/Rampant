@@ -6,25 +6,21 @@
 [INFO] march snapshot spawners=1
 [CHURN] setup->form dirty.sweepMarks=+40 dirty.chunksProcessed=+200
 PHASE: form at Tmin
-[PASS] siege builder squad formed (id=177 members=1 kamikaze=false pos=169,-112) at Tmin
-[CHURN] form->march squad.created=+11 squad.destroyed=+1 squad.formEmpty=+8 squad.formCooldownArmed=+8 squad.formSkip.cooldown=+5340 squad.formReject.settler.groups=+4 dirty.sweepMarks=+163393 dirty.chunksProcessed=+183971
+[PASS] siege builder squad formed (id=171 members=8 kamikaze=true pos=137,105) at Tmin
+[CHURN] form->march squad.created=+4 squad.formEmpty=+2 squad.formCooldownArmed=+2 squad.formSkip.cooldown=+1755 squad.formReject.settler.groups=+4 dirty.sweepMarks=+40321 dirty.chunksProcessed=+43461
 PHASE: march at Tmin
-[INFO] phero@169,-112 base=9056.759 player=0.000 enemy=568.860 resource=13147.646
-[INFO] siege site too far (attempt 1): dist=321.2 not < originDist-20=92.0 (site=310,-86 displacement=0.0); retrying with next builder cycle
-[INFO] kamikaze siege builder present (id=215); ignoring (no player-seeking march)
-[INFO] adopted builder id=219 kamikaze=false pos=311,-89
-[INFO] phero@311,-89 base=6240.306 player=0.000 enemy=3458.000 resource=10796.490
-[INFO] siege site too far (attempt 2): dist=101.9 not < originDist-20=92.0 (site=101,-17 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=219 kamikaze=false pos=311,-89
-[INFO] siege site too far (attempt 3): dist=329.0 not < originDist-20=92.0 (site=313,-103 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=219 kamikaze=false pos=311,-89
-[PASS] siege builder built player-ward (siteDist=73.0 originDist=112.0 marchDisplacement=0.0) at Tmin
-[INFO] control snapshot spawners=10
+[INFO] kamikaze siege builder present (id=171); ignoring (no player-seeking march)
+[INFO] adopted builder id=194 kamikaze=false pos=135,101
+[INFO] siege site too far (attempt 1): dist=161.1 not < originDist-20=92.0 (site=126,101 displacement=169.3); retrying with next builder cycle
+[INFO] adopted builder id=194 kamikaze=false pos=135,101
+[INFO] siege site too far (attempt 2): dist=304.9 not < originDist-20=92.0 (site=296,75 displacement=0.0); retrying with next builder cycle
+[PASS] siege builder built player-ward (siteDist=86.9 originDist=112.0 marchDisplacement=0.0) at Tmin
+[INFO] control snapshot spawners=7
 [INFO] constructed: MIGRATING, points granted, freeUnits=30
-[CHURN] march->control squad.created=+35 squad.destroyed=+5 squad.settle.empty_resource_chunk=+2 squad.settle.path_terminated=+5 squad.formEmpty=+23 squad.formCooldownArmed=+23 squad.formSkip.cooldown=+19326 squad.formReject.settler.groups=+74 dirty.sweepMarks=+508990 dirty.chunksProcessed=+567051
+[CHURN] march->control squad.created=+24 squad.destroyed=+6 squad.settle.empty_resource_chunk=+3 squad.settle.path_terminated=+2 squad.formEmpty=+16 squad.formCooldownArmed=+16 squad.formSkip.cooldown=+12473 squad.formReject.settler.groups=+25 dirty.sweepMarks=+334942 dirty.chunksProcessed=+381607
 PHASE: control at Tmin
-[PASS] migration builder squad formed (id=317 members=1 pos=308,-92) at Tmin
-[INFO] migration site (diagnostic, C demoted): controlDist=70.0 siegeDist=73.0 displacement=0.0 at Tmin
-[CHURN] finish squad.created=+2 squad.destroyed=+4 squad.settle.empty_resource_chunk=+1 squad.settle.path_terminated=+1 squad.formSkip.cooldown=+165 squad.formReject.settler.groups=+1631 dirty.sweepMarks=+66898 dirty.chunksProcessed=+96667
+[PASS] migration builder squad formed (id=272 members=7 pos=135,105) at Tmin
+[INFO] migration site (diagnostic, C demoted): controlDist=168.2 siegeDist=86.9 displacement=0.0 at Tmin
+[CHURN] finish squad.created=+2 squad.settle.path_terminated=+1 squad.formEmpty=+1 squad.formCooldownArmed=+1 squad.formSkip.cooldown=+826 squad.formReject.settler.groups=+604 dirty.sweepMarks=+55544 dirty.chunksProcessed=+65481
 Detail: siege-settle expectations met (A hard, C diagnostic)
-Detail: base=true formBuilder=true marchSite=table siegeDist=73.042795674864 failedSites=3 kamikazeSeen=true controlBuilder=true controlSite=table controlDist=70.044628630609 failedControlSites=nil ticks=N
+Detail: base=true formBuilder=true marchSite=table siegeDist=86.86339850593 failedSites=2 kamikazeSeen=true controlBuilder=true controlSite=table controlDist=168.23569775764 failedControlSites=nil ticks=N

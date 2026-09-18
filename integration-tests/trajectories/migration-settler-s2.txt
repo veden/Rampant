@@ -1,0 +1,10 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed at spawner (id=0) at Tmin
+[INFO] constructed: MIGRATING=true points=1000 -> true
+[INFO] spawned 30 free units at the nest
+PHASE: migrate at Tmin
+[PASS] settler squad formed (id=44) at Tmin
+[PASS] settler dispatched (cmd.DISPATCH_SQUAD) at Tmin
+[PASS] settler left the nest region (dist=31 tiles, pos=(X,Y)) at Tmin
+Detail: migration-settler expectations met
+Detail: base=true settlerFormed=true dispatched=true moved=true settlerPos=72,14 ticks=N

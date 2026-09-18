@@ -1,0 +1,12 @@
+[INFO] initial scan complete (chunks=392)
+[INFO] natural enemies cleared; vanilla spawners=0
+PHASE: low at Tmin
+[INFO] LOW evolution armed=0.1 setEvolution=true engineEvo=0.100
+[INFO] vanilla spawner staged at (X,Y)
+[PASS] low-evolution upgrade: neutral-biter-spawner-v1-t1-rampant (tier=1) at Tmin
+PHASE: high at Tmin
+[INFO] HIGH evolution armed=0.9 setEvolution=true engineEvo=0.900
+[INFO] vanilla spawner staged at (X,Y)
+[PASS] high-evolution upgrade: neutral-biter-spawner-v1-t8-rampant (tier=8) at Tmin
+Detail: upgrade tier scales with evolution (low=1 -> high=8)
+Detail: lowTier=1 highTier=8 lowName=neutral-biter-spawner-v1-t1-rampant highName=neutral-biter-spawner-v1-t8-rampant ticks=N

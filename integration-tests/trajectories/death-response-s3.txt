@@ -1,0 +1,14 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed at spawner (id=0) at Tmin
+[INFO] constructed: RAIDING=true points=2000 -> true
+[INFO] spawned 5 enemy units at the wall (grouped, attacking)
+PHASE: retreat at Tmin
+[INFO] killed 3; group destroyed; 2 ungrouped survivor(s) remain (2 within 10 of the wall)
+[INFO] post-kill: causeValid=3 cmd.RETREAT_UNITS=2 retreated=1 bail.noCause=nil bail.noUnits=nil bail.gate=1
+[PASS] retreat executed (1); survivors left wall perimeter at Tmin
+[INFO] killed 1 spawner(s)
+PHASE: structure at Tmin
+[PASS] spawner unregistered (structure death) at Tmin
+[PASS] unit point cost applied (cmd.MODIFY_UNIT_POINTS -> 1) at Tmin
+Detail: all death-response expectations met
+Detail: base=true retreat=true baseRecycled=nil pointsDropped=true preKillPoints=2000 postKillModifyCount=1 ticks=N

@@ -1,0 +1,13 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed (id=0) at Tmin
+[INFO] constructed: MIGRATING=true
+PHASE: dispatch at Tmin
+[PASS] settler left the nest region (dist=270 tiles) at Tmin
+PHASE: build at Tmin
+[PASS] new enemy spawner built (count=5) at Tmin
+[INFO] cmd.QUEUE_UPGRADE=0
+[PASS] new spawner settled as acid-biter-spawner-v1-t1-rampant at (73.5,248) at Tmin
+PHASE: register at Tmin
+[PASS] new spawner registered (base id=0 chunkNestCount=4) at Tmin
+Detail: all base-expansion expectations met
+Detail: base=true dispatched=true built=true upgraded=true registered=true ticks=N

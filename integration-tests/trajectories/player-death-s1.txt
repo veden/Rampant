@@ -1,0 +1,12 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed (id=0) at Tmin
+[INFO] constructed RAIDING=true points=true
+[INFO] post-construct: structures=4 unitsAtOrigin=12 playerEntities=2 [radar@(-4,-4) radar@(X,Y)]
+PHASE: attack at Tmin
+[PASS] enemy destroyed a player structure (3 of 4 remain) at Tmin
+[INFO] at destruction: onDeath=1 mapMissing=nil forcePlayer=1 forceEnemy=nil enemyCaused=1
+PHASE: victory at Tmin
+[PASS] kill credit tracked (destroyPlayerBuildings=1)
+[PASS] victory scent applied (deathGenerator=0.0116)
+Detail: player-death-side expectations met
+Detail: base=true destroyed=true victoryScent=true credit=true destroyedBuildings=1 deathGen=0.011574365052107 ticks=N

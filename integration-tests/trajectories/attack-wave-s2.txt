@@ -1,0 +1,16 @@
+[INFO] initial scan complete (chunks=392)
+[INFO] spawner placed at (X,Y)
+[INFO] beacon built at (X,Y): 4 walls + 1 turret
+PHASE: low-arm at Tmin
+[INFO] LOW evolution armed=0.1 base=0 RAIDING
+PHASE: low-stage at Tmin
+[INFO] LOW free units staged=120
+PHASE: low-wave at Tmin
+[PASS] low-evolution attack wave formed (id=150 members=1) at Tmin
+[INFO] HIGH evolution armed=0.9
+PHASE: high-stage at Tmin
+[INFO] HIGH free units staged=120
+PHASE: high-wave at Tmin
+[PASS] high-evolution attack wave formed (id=271 members=37) at Tmin
+Detail: attack wave scales with evolution (low=1 -> high=37)
+Detail: lowCount=1 highCount=37 lowId=150 highId=271 ticks=N

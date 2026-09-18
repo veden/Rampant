@@ -1,0 +1,6 @@
+# base-expansion noise-floor baseline (3 seeds, 2026-09-17T21:30:03-07:00)
+# Format: seed<TAB>result<TAB>final Detail<TAB>final CHURN
+# A change's effect is meaningful only beyond this run-to-run spread.
+seed1	PASS	base=true dispatched=true built=true upgraded=true registered=true ticks=13594	
+seed2	PASS	base=true dispatched=true built=true upgraded=true registered=true ticks=14208	
+seed3	PASS	base=true dispatched=true built=true upgraded=true registered=true ticks=21791	

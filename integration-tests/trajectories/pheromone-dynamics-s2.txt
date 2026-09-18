@@ -1,0 +1,8 @@
+[INFO] initial scan complete (chunks=392)
+[PASS] base formed (id=0) at Tmin
+PHASE: observe at Tmin
+[PASS] generation: wall base=550.00
+[PASS] diffusion gradient: wall 550.00 > mid 444.62 > nest 320.82
+[PASS] nest enemy presence=439.59
+Detail: all pheromone-dynamics expectations met
+Detail: wallBase=550 midBase=444.61828125 nestBase=320.82202618816 nestEnemy=439.59375 ticks=N
