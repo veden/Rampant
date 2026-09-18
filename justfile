@@ -405,27 +405,52 @@ traj-dist name="siege-settle" seeds="5":
     echo "Compare this table before/after a change: a signal that disappears"
     echo "entirely, or a spread that shifts, is the effect picture."
 
-# Profile a scenario save with the engine's CLI benchmark. NOTE: the Lua
-# profiler API (game.create_profiler) was REMOVED in 2.1 — the CLI benchmark
-# is the available instrument. It loads the prepared scenario save and runs N
-# ticks, printing the per-subsystem timing breakdown (with --benchmark-verbose:
-# script update, entity update, ...). Usage: just profile siege-settle 2000
-profile name="siege-settle" ticks="2000": copy
+# Profile a scenario with the 2.1 Lua profiler (helpers.create_profiler — the
+# 2.0.73 defs are stale and say game.create_profiler; in 2.1 it moved to helpers).
+# Starts the scenario, runs a profiler window over RCON, prints the per-function
+# report, kills the server. Usage: just profile siege-settle 20
+profile name="siege-settle" seconds="20": copy
     #!/usr/bin/env -S bash
     set -e
     NAME="{{name}}"
-    TICKS="{{ticks}}"
-    echo "Benchmarking $NAME for $TICKS ticks (engine CLI benchmark)..."
+    SECONDS_WIN="{{seconds}}"
+    LOG=/tmp/rampant-profile-$NAME.out
+    echo "Profiling $NAME for ${SECONDS_WIN}s (helpers.create_profiler)..."
     pkill -9 factorio 2>/dev/null || true
     sleep 1
+    rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-$NAME*
+    echo '{"name":"Rampant Profile","description":"profiler window","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-profile-server-settings.json
     just make-saves > /dev/null 2>&1
-    cp integration-tests/behavior-saves/rampant-behavior-$NAME-s1.zip /tmp/opencode/bench-$NAME.zip
+    rm -rf /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-$NAME
+    cp -r integration-tests/behavior-scenarios/$NAME /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-$NAME
+    cp integration-tests/lib/scenario-lib.lua /mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-$NAME/scenario-lib.lua
+    cp integration-tests/behavior-saves/rampant-behavior-$NAME-s1.zip /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-$NAME.zip
     /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
-        --benchmark /tmp/opencode/bench-$NAME.zip \
-        --benchmark-ticks "$TICKS" \
-        2>&1 | tail -45
+        --start-server-load-scenario rampant-behavior-$NAME \
+        --server-settings /tmp/rampant-profile-server-settings.json \
+        --port 34201 --rcon-port 27019 --rcon-password "rampant-test" \
+        > "$LOG" 2>&1 &
+    PID=$!
+    for i in {1..60}; do
+        if python3 tools/rcon_client.py query 27019 rampant-test '/silent-command rcon.print(remote.call("Rampant","isInitialized"))' 2>/dev/null | grep -q true; then
+            break
+        fi
+        sleep 1
+    done
+    echo "-- starting profiler --"
+    python3 tools/rcon_client.py query 27019 rampant-test \
+        '/silent-command storage.prof = helpers.create_profiler(); rcon.print("profiler started")'
+    echo "Profiler window: ${SECONDS_WIN}s..."
+    sleep "$SECONDS_WIN"
+    echo "-- printing report --"
+    python3 tools/rcon_client.py query 27019 rampant-test \
+        '/silent-command game.print(storage.prof); rcon.print("report printed to log")'
+    sleep 3
+    kill -9 $PID 2>/dev/null || true
     echo ""
-    echo "Timing breakdown above: script update is the mod's Lua cost."
+    echo "=== Profile report (from $LOG) ==="
+    grep -A60 -iE "profiler|script update|Average|per tick" "$LOG" | tail -60
+    echo "Full log: $LOG"
 
 # Noise-floor baselines: run every scenario across N seeds and record the
 # per-signal spread. Emergent behavior has an intrinsic run-to-run spread (see

@@ -322,13 +322,25 @@ test:run_all()
 
 ## Factorio API Reference
 
-See `/mnt/backpack/code/games/factorio/luaDefinitions/` for comprehensive API documentation.
+**Version matters — the engine is 2.1.x.** The authoritative runtime API docs
+ship WITH the install: `/mnt/gallery/gameFiles/factorio/doc-html/` (Version 2.1.14;
+`classes/<ClassName>.html` per class). Use it for any version-sensitive API
+question.
+
+`/mnt/backpack/code/games/factorio/luaDefinitions/` is generated from
+**2.0.73** and is STALE relative to the engine — it is fine for general shapes
+and types, but APIs MOVED between 2.0 and 2.1 (e.g. `game.create_profiler` moved
+to `helpers.create_profiler`; the defs claim the profiler class exists but not the
+`game`-level creation method). When a static conclusion from the defs conflicts
+with a runtime error, **the runtime error is authoritative** — and re-check the defs
+against the 2.1 doc-html before concluding an API was removed.
+
 See `/mnt/gallery/gameFiles/factorio/data/` for game implementation details.
 
 ## Working Directories
 
 ### `/mnt/backpack/code/games/factorio/luaDefinitions`
-LSP directory containing comprehensive Factorio APIs, data models, and game element definitions. Use as the primary reference for Lua API documentation and type information.
+**Generated from Factorio 2.0.73 — STALE relative to the 2.1.x engine.** Use the install's `doc-html` (2.1.14) for version-sensitive API questions; the runtime error wins over these defs when they conflict.
 
 ### `/mnt/gallery/gameFiles/factorio/data/`
 Contains the actual Lua representation of Factorio's game code. Use to understand actual game implementation details.
