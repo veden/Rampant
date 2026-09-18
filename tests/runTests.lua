@@ -409,6 +409,9 @@ local test_collections = {}
     local test_integration_pheromone = require("tests.test_integration_pheromone_flow")
     table.insert(test_collections, { name = "Integration Pheromone Flow", collection = test_integration_pheromone })
 
+    local test_chunk_logic = require("tests.test_chunk_logic")
+    table.insert(test_collections, { name = "Chunk Logic", collection = test_chunk_logic })
+
     local test_squad_pure = require("tests.test_squad_pure")
     table.insert(test_collections, { name = "Squad Pure", collection = test_squad_pure })
 

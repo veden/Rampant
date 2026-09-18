@@ -28,6 +28,7 @@ local MapPosition
 -- imports
 
 local Constants = require("Constants")
+local ChunkLogic = require("chunk_logic")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local MathUtils = require("MathUtils")
 
@@ -335,33 +336,10 @@ end
     6 7 8
 ]]--
 function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
-    local canMove = false
-    local startPassable = getPassable(startChunk)
-    local endPassable = getPassable(endChunk)
-    if (startPassable == CHUNK_ALL_DIRECTIONS) then
-        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-        elseif (direction == 2) or (direction == 7) then
-            canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
-        elseif (direction == 4) or (direction == 5) then
-            canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
-        end
-    elseif (startPassable == CHUNK_NORTH_SOUTH) then
-        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-        elseif (direction == 2) or (direction == 7) then
-            canMove = ((endPassable == CHUNK_NORTH_SOUTH) or (endPassable == CHUNK_ALL_DIRECTIONS))
-        end
-    elseif (startPassable == CHUNK_EAST_WEST) then
-        if ((direction == 1) or (direction == 3) or (direction == 6) or (direction == 8)) then
-            canMove = (endPassable == CHUNK_ALL_DIRECTIONS)
-        elseif (direction == 4) or (direction == 5) then
-            canMove = ((endPassable == CHUNK_EAST_WEST) or (endPassable == CHUNK_ALL_DIRECTIONS))
-        end
-    else
-        canMove = (endPassable ~= CHUNK_IMPASSABLE)
-    end
-    return canMove
+    -- Pure decision delegated to ChunkLogic (lookup table). The table is proven
+    -- equivalent to the original branch chain over the whole input domain by
+    -- tests/test_chunk_logic.lua (exhaustive, 128 cases).
+    return ChunkLogic.canMove(getPassable(startChunk), direction, getPassable(endChunk))
 end
 
 function MapUtils.positionFromScaledDirections(startPosition, multipler, direction, nextDirection)
