@@ -54,6 +54,32 @@ and ~1500 UPS without**. The complaint is reproduced and quantified.
   call-heavy per chunk (8 neighbors × `getCombinedDeathGenerator`,
   `canMoveChunkDirection`, `getEnemyStructureCount`, plus the query-table writes).
 
+## Deep bisect: inside the pheromone processing
+
+Second cumulative bisect, same save, same 3000 ticks (baseline avg 23.005 ms):
+
+| Configuration | avg | attribution |
+|---|---|---|
+| Baseline | 23.005 ms | — |
+| **8-neighbor accumulation loop off** | **2.539 ms** | **the loop = 20.5 ms (89% of total)** |
+| + write path (applyPheromoneUpdates) off | 2.089 ms | the write path = 0.45 ms (2%) |
+
+**The 8-iteration neighbor loop in `calculatePheromoneUpdates` is the cost** —
+~91% of the end-game total. The write path is 2%.
+
+Inside the loop, per neighbor: `canMoveChunkDirection` (call), 
+`getCombinedDeathGenerator` (call), ~5 pheromone field reads, 3 max-comparisons.
+The lookup-table change proved the ~24 comparisons/chunk are not the cost, which
+leaves the **16 function calls + ~40 field reads per chunk** (8 neighbors each).
+
+Per-chunk price: 20.5 ms / chunks-per-tick. With the sweep's constant 40/tick
+that is ~0.5 ms/chunk; if the event-driven marks saturate the 200/tick budget,
+~0.1 ms/chunk. The throughput measurement (server + RCON counters) still needs a
+clean run — the achievements confirmation prompt intercepts the first console command
+and the server window was missed twice.
+
+Script: tools/bisect-pheromone-loop.sh.
+
 ## Next steps
 
 1. **Throughput**: read `dirty.chunksProcessed` and `dirty.sweepMarks` per tick on
