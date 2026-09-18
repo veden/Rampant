@@ -758,6 +758,13 @@ function Processor.processDirtyChunks(tick, universe)
     -- Event marks (priorities 1-4) drain before the sweep's priority-5
     -- marks.
     local sweepRate = Constants.PROCESS_SWEEP_CHUNKS_PER_TICK
+    -- Map-wide sweep. A source-driven variant (pinging only chunks with a
+    -- nonzero generator) was measured WORSE on the real late-game save
+    -- (1.412 ms vs 1.143): the resource generator is nonzero on most
+    -- chunks (ore is dense), so the source set is not sparse here and the
+    -- index maintenance costs more than the sweep it replaces. A source-driven
+    -- sweep needs the STATIC sources (ore) excluded and their field computed
+    -- once (or lazily) -- see docs/10.
     if sweepRate > 0 and universe.chunkById and next(universe.chunkById) then
         local sweepList = universe.chunkSweepList
         local cycleTicks = universe.chunkSweepCycleTicks
