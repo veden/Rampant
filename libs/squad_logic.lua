@@ -31,6 +31,7 @@
 local Command = require("command")
 local Constants = require("Constants")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
+local MathUtils = require("MathUtils")
 
 local SQUAD_RAIDING    = Constants.SQUAD_RAIDING
 local SQUAD_SETTLING   = Constants.SQUAD_SETTLING
@@ -41,6 +42,7 @@ local SQUAD_RETREATING = Constants.SQUAD_RETREATING
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
+local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
@@ -133,8 +135,21 @@ function Squad.decayedValue(chunk, index, timestampKey, tick, decayTable, depth)
     return value * factor
 end
 
+--- The source rating the write path multiplies a generator by
+-- (newBase = max(gen, neighborMax*0.9) * chunkDeathRating). A source
+-- chunk's field must never read below its own generator x rating: the
+-- generator is a floor, exactly as the write path applies it. This is what
+-- lets the sweep be eliminated for source chunks.
+local function sourceRating(chunk)
+    return ChunkPropertyUtils.getCombinedDeathGeneratorRating(chunk)
+        * ChunkPropertyUtils.getPathRating(chunk)
+end
+
 function Squad.playerPheromone(chunk, tick)
-    return Squad.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", tick, DECAY_098, DECAY_TABLE_DEPTH)
+    local decayed = Squad.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", tick, DECAY_098, DECAY_TABLE_DEPTH)
+    local floor = (chunk.playerGenerator or 0) * sourceRating(chunk)
+    if floor > decayed then return floor end
+    return decayed
 end
 
 function Squad.basePheromone(chunk, tick)
@@ -147,15 +162,30 @@ function Squad.basePheromone(chunk, tick)
     if (chunk.nestCount or 0) > 0 then
         return chunk[BASE_PHEROMONE] or 0
     end
-    return Squad.decayedValue(chunk, BASE_PHEROMONE, "baseLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local decayed = Squad.decayedValue(chunk, BASE_PHEROMONE, "baseLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local floor = (chunk.playerBaseGenerator or 0) * sourceRating(chunk)
+    if floor > decayed then return floor end
+    return decayed
 end
 
 function Squad.enemyPheromone(chunk, tick)
-    return Squad.decayedValue(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local decayed = Squad.decayedValue(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local structures = (chunk.nestCount or 0) + (chunk.turretCount or 0)
+        + (chunk.utilityCount or 0) + (chunk.hiveCount or 0)
+    local floor = structures * ENEMY_PHEROMONE_MULTIPLER * sourceRating(chunk)
+    if floor > decayed then return floor end
+    return decayed
 end
 
 function Squad.resourcePheromone(chunk, tick)
-    return Squad.decayedValue(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local decayed = Squad.decayedValue(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
+    local generator = chunk.resourceGenerator or 0
+    if generator > 0 then
+        -- the write path stores linearInterpolation(gen, 15000, 20000) * rating * 0.9
+        local floor = MathUtils.linearInterpolation(generator, 15000, 20000) * sourceRating(chunk) * 0.9
+        if floor > decayed then return floor end
+    end
+    return decayed
 end
 
 -- Raw scorers (numbers in → number out; canonical prod formulas)
