@@ -258,7 +258,7 @@ function Processor.processVengence()
     local vengenceQueue = Universe.vengenceQueue
     local chunkId, chunk = next(vengenceQueue, nil)
     if not chunkId then
-        if (tableSize(vengenceQueue) == 0) then
+        if (next(vengenceQueue) == nil) then
             Universe.vengenceQueue = {}
         end
         return
@@ -461,7 +461,7 @@ function Processor.processPendingChunks(tick, flush)
     local eventId, event = next(pendingChunks, nil)
 
     if not eventId then
-        if (tableSize(pendingChunks) == 0) then
+        if (next(pendingChunks) == nil) then
             -- this is needed as the next command remembers the max length a table has been
             Universe.pendingChunks = {}
         end
@@ -616,7 +616,7 @@ end
 function Processor.processScanChunks()
     local chunkId, chunk = next(Universe.chunkToPassScan, nil)
     if not chunkId then
-        if (tableSize(Universe.chunkToPassScan) == 0) then
+        if (next(Universe.chunkToPassScan) == nil) then
             -- this is needed as the next command remembers the max length a table has been
             Universe.chunkToPassScan = {}
         end

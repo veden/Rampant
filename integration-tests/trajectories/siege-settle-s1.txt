@@ -4,46 +4,69 @@
 [PASS] base formed (id=0) at Tmin
 [INFO] constructed: evo=0.5 SIEGE=true points=true freeUnits=30
 [INFO] march snapshot spawners=1
-[CHURN] setup->form dirty.sweepMarks=+40 dirty.chunksProcessed=+200
+[CHURN] setup->form dirty.sweepMarks=+20 dirty.chunksProcessed=+40
 PHASE: form at Tmin
-[PASS] siege builder squad formed (id=197 members=7 kamikaze=false pos=106,-6) at Tmin
-[CHURN] form->march squad.created=+26 squad.destroyed=+2 squad.settle.path_terminated=+1 squad.formEmpty=+23 squad.formCooldownArmed=+23 squad.formSkip.cooldown=+14316 squad.formReject.settler.groups=+5 dirty.sweepMarks=+505214 dirty.chunksProcessed=+536411
+[PASS] siege builder squad formed (id=174 members=1 kamikaze=false pos=126,-2) at Tmin
+[CHURN] form->march squad.created=+6 squad.formEmpty=+4 squad.formCooldownArmed=+4 squad.formSkip.cooldown=+2622 squad.formReject.settler.groups=+30 dirty.sweepMarks=+40824 dirty.chunksProcessed=+51004
 PHASE: march at Tmin
-[INFO] siege site too far (attempt 1): dist=332.2 not < originDist-20=92.0 (site=307,-128 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=197 kamikaze=false pos=106,-6
-[INFO] siege site too far (attempt 2): dist=106.7 not < originDist-20=92.0 (site=106,-16 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=197 kamikaze=false pos=106,-6
-[INFO] siege site too far (attempt 3): dist=303.7 not < originDist-20=92.0 (site=204,-226 displacement=0.0); retrying with next builder cycle
-[INFO] kamikaze siege builder present (id=210); ignoring (no player-seeking march)
-[INFO] adopted builder id=197 kamikaze=false pos=106,-6
-[INFO] siege site too far (attempt 4): dist=320.8 not < originDist-20=92.0 (site=220,-234 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=197 kamikaze=false pos=106,-6
-[INFO] siege site too far (attempt 5): dist=169.0 not < originDist-20=92.0 (site=101,-136 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=197 kamikaze=false pos=106,-6
-[INFO] phero@106,-6 base=12064.950 player=0.000 enemy=2000.000 resource=10927.621
-[INFO] dropping stalled builder id=197 (BUILDING >3min, no site; settled too close to build)
-[INFO] siege site too far (attempt 6): dist=327.8 not < originDist-20=92.0 (site=296,-142 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=258 kamikaze=false pos=307,-135
-[INFO] siege site too far (attempt 7): dist=141.1 not < originDist-20=92.0 (site=75,-120 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=258 kamikaze=false pos=307,-135
-[INFO] siege site too far (attempt 8): dist=289.6 not < originDist-20=92.0 (site=206,-204 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=258 kamikaze=false pos=307,-135
-[INFO] phero@307,-135 base=5740.084 player=0.000 enemy=3440.500 resource=11643.265
-[INFO] adopted builder id=292 kamikaze=false pos=200,-217
-[INFO] siege site too far (attempt 9): dist=269.8 not < originDist-20=92.0 (site=176,-205 displacement=12011.1); retrying with next builder cycle
-[INFO] adopted builder id=292 kamikaze=false pos=200,-217
-[INFO] adopted builder id=483 kamikaze=false pos=188,-203
-[INFO] siege site too far (attempt 10): dist=284.9 not < originDist-20=92.0 (site=178,-223 displacement=1320.8); retrying with next builder cycle
-[INFO] adopted builder id=396 kamikaze=false pos=76,-116
-[INFO] siege site too far (attempt 11): dist=257.8 not < originDist-20=92.0 (site=179,-186 displacement=0.0); retrying with next builder cycle
-[INFO] adopted builder id=396 kamikaze=false pos=76,-116
-[PASS] siege builder built player-ward (siteDist=37.9 originDist=112.0 marchDisplacement=0.0) at Tmin
-[INFO] control snapshot spawners=36
+[INFO] phero@126,-2 base=7475.959 player=0.000 enemy=455.500 resource=9958.607
+[INFO] dropping stalled builder id=174 (BUILDING >3min, no site; settled too close to build)
+[INFO] siege site too far (attempt 1): dist=346.6 not < originDist-20=92.0 (site=337,-83 displacement=0.0); retrying with next builder cycle
+[INFO] siege site too far (attempt 2): dist=349.2 not < originDist-20=92.0 (site=343,-68 displacement=0.0); retrying with next builder cycle
+[INFO] kamikaze siege builder present (id=268); ignoring (no player-seeking march)
+[INFO] siege site too far (attempt 3): dist=385.0 not < originDist-20=92.0 (site=365,-124 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] siege site too far (attempt 4): dist=321.7 not < originDist-20=92.0 (site=319,-45 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] siege site too far (attempt 5): dist=367.3 not < originDist-20=92.0 (site=361,-68 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] phero@336,-85 base=4310.204 player=0.000 enemy=9534.000 resource=9888.682
+[INFO] siege site too far (attempt 6): dist=354.5 not < originDist-20=92.0 (site=351,-53 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] siege site too far (attempt 7): dist=369.1 not < originDist-20=92.0 (site=358,-92 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] siege site too far (attempt 8): dist=409.2 not < originDist-20=92.0 (site=258,318 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=343 kamikaze=false pos=336,-85
+[INFO] dropping stalled builder id=343 (BUILDING >3min, no site; settled too close to build)
+[INFO] siege site too far (attempt 9): dist=330.9 not < originDist-20=92.0 (site=318,-92 displacement=0.0); retrying with next builder cycle
+[INFO] siege site too far (attempt 10): dist=301.1 not < originDist-20=92.0 (site=289,-85 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] phero@288,-71 base=5083.717 player=0.000 enemy=1440.000 resource=10303.938
+[INFO] siege site too far (attempt 11): dist=286.6 not < originDist-20=92.0 (site=154,242 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] siege site too far (attempt 12): dist=286.8 not < originDist-20=92.0 (site=278,-71 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] siege site too far (attempt 13): dist=273.6 not < originDist-20=92.0 (site=139,236 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] siege site too far (attempt 14): dist=316.6 not < originDist-20=92.0 (site=308,-74 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] siege site too far (attempt 15): dist=297.6 not < originDist-20=92.0 (site=292,-60 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=476 kamikaze=false pos=288,-71
+[INFO] phero@288,-71 base=5082.778 player=0.000 enemy=2880.000 resource=10303.938
+[INFO] adopted builder id=780 kamikaze=false pos=335,-76
+[INFO] dropping stalled builder id=780 (BUILDING >3min, no site; settled too close to build)
+[INFO] adopted builder id=763 kamikaze=false pos=339,-84
+[INFO] phero@339,-84 base=4310.204 player=0.000 enemy=16798.000 resource=7950.917
+[INFO] siege site too far (attempt 16): dist=387.4 not < originDist-20=92.0 (site=238,306 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=763 kamikaze=false pos=339,-84
+[INFO] siege site too far (attempt 17): dist=332.3 not < originDist-20=92.0 (site=313,-113 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=763 kamikaze=false pos=339,-84
+[INFO] adopted builder id=1070 kamikaze=false pos=278,-113
+[INFO] siege site too far (attempt 18): dist=258.1 not < originDist-20=92.0 (site=127,225 displacement=6776.0); retrying with next builder cycle
+[INFO] adopted builder id=930 kamikaze=false pos=148,238
+[INFO] dropping stalled builder id=930 (BUILDING >3min, no site; settled too close to build)
+[INFO] adopted builder id=1277 kamikaze=false pos=309,-81
+[INFO] siege site too far (attempt 19): dist=252.5 not < originDist-20=92.0 (site=168,189 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=1277 kamikaze=false pos=309,-81
+[INFO] siege site too far (attempt 20): dist=252.6 not < originDist-20=92.0 (site=155,200 displacement=0.0); retrying with next builder cycle
+[INFO] adopted builder id=1277 kamikaze=false pos=309,-81
+[PASS] siege builder built player-ward (siteDist=54.5 originDist=112.0 marchDisplacement=0.0) at Tmin
+[INFO] control snapshot spawners=78
 [INFO] constructed: MIGRATING, points granted, freeUnits=30
-[CHURN] march->control squad.created=+85 squad.destroyed=+36 squad.settle.max_distance=+3 squad.settle.empty_resource_chunk=+7 squad.settle.path_terminated=+10 squad.formEmpty=+33 squad.formCooldownArmed=+33 squad.formSkip.cooldown=+34358 squad.formReject.settler.points=+757 squad.formReject.settler.groups=+378 squad.formReject.attacker.points=+754 dirty.sweepMarks=+789794 dirty.chunksProcessed=+1045187
+[CHURN] march->control squad.created=+230 squad.destroyed=+88 squad.settle.empty_resource_chunk=+8 squad.settle.path_terminated=+31 squad.formEmpty=+125 squad.formCooldownArmed=+125 squad.formSkip.cooldown=+97774 squad.formReject.settler.points=+131 squad.formReject.settler.groups=+685 squad.formReject.attacker.points=+126 dirty.sweepMarks=+1479602 dirty.chunksProcessed=+2098884
 PHASE: control at Tmin
-[PASS] migration builder squad formed (id=593 members=8 pos=90,-125) at Tmin
-[INFO] migration site (diagnostic, C demoted): controlDist=149.0 siegeDist=37.9 displacement=0.0 at Tmin
-[CHURN] finish squad.created=+8 squad.destroyed=+15 squad.settle.max_distance=+1 squad.settle.empty_resource_chunk=+1 squad.settle.path_terminated=+6 squad.formSkip.cooldown=+150 squad.formReject.settler.groups=+9344 dirty.sweepMarks=+381015 dirty.chunksProcessed=+523659
+[PASS] migration builder squad formed (id=1605 members=8 pos=342,-83) at Tmin
+[INFO] migration site (diagnostic, C demoted): controlDist=485.0 siegeDist=54.5 displacement=0.0 at Tmin
+[CHURN] finish squad.created=+2 squad.destroyed=+4 squad.settle.empty_resource_chunk=+1 squad.settle.path_terminated=+1 squad.formSkip.cooldown=+324 squad.formReject.settler.groups=+2132 dirty.sweepMarks=+48560 dirty.chunksProcessed=+89209
 Detail: siege-settle expectations met (A hard, C diagnostic)
-Detail: base=true formBuilder=true marchSite=table siegeDist=37.858288392372 failedSites=11 kamikazeSeen=true controlBuilder=true controlSite=table controlDist=148.99077152629 failedControlSites=nil ticks=N
+Detail: base=true formBuilder=true marchSite=table siegeDist=54.454109119515 failedSites=20 kamikazeSeen=true controlBuilder=true controlSite=table controlDist=484.96004990102 failedControlSites=nil ticks=N

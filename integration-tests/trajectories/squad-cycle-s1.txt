@@ -6,8 +6,8 @@ PHASE: attack at Tmin
 [PASS] attack present: 5 unit(s) at wall at Tmin
 [INFO] killed 3; group destroyed; 2 ungrouped survivor(s) remain
 PHASE: retreat at Tmin
-[PASS] retreat executed (1); squad id=24 status=RETREATING at Tmin
+[PASS] retreat executed (1); squad id=14 status=RETREATING at Tmin
 PHASE: reengage at Tmin
 [PASS] squad re-engaged: status RETREATING -> RAIDING at Tmin (cmd.DISPATCH_SQUAD=2)
 Detail: all squad-cycle expectations met
-Detail: base=true attack=true retreated=true squadId=24 retreatStatus=1 reEngaged=true statusAfter=4 ticks=N
+Detail: base=true attack=true retreated=true squadId=14 retreatStatus=1 reEngaged=true statusAfter=4 ticks=N

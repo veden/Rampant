@@ -1,8 +1,8 @@
 [PASS] base formed at spawner (id=0) at Tmin
-[PASS] 1 enemy squad(s) formed at Tmin: id=21 builder=false members=1
+[PASS] 1 enemy squad(s) formed at Tmin: id=10 builder=false members=1
 [PASS] 1 enemy unit(s) reached wall perimeter at Tmin
 [PASS] wall damaged/destroyed (4 alive, 1 damaged) at Tmin
 Detail: all expectations met
-Detail: wall pheromone: player=0.00 base=16516.90 | spawner pheromone: player=0.00 base=11399.72 enemy=498.50 | squad[1] id=59 builder=false members=2 pos=(-2,8)
+Detail: wall pheromone: player=0.00 base=16516.90 | spawner pheromone: player=0.00 base=8717.73 enemy=1248.00 | squad[1] id=128 builder=true members=44 pos=(140,-35) | squad[2] id=149 builder=false members=2 pos=(X,Y) | squad[3] id=150 builder=false members=2 pos=(X,Y)
 Detail: base=true squad=true unitsAtWall=true wallDamaged=true ticks=N
-Detail: reachedState4=1 wander=nil wanderDestroy=nil dispatch=3
+Detail: reachedState4=nil wander=nil wanderDestroy=nil dispatch=8

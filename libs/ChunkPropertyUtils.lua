@@ -552,7 +552,7 @@ function ChunkPropertyUtils.removeSquadFromChunk(squad)
         local squads = chunk.squads
         if squads then
             squads[squad.id] = nil
-            if (tableSize(squads) == 0) then
+            if (next(squads) == nil) then
                 chunk.squads = nil
             end
         end

@@ -2,16 +2,16 @@
 [PASS] base formed (id=0) at Tmin
 [INFO] constructed: evo=0.5 RAIDING=true
 PHASE: raid at Tmin
-[PASS] enemy unit(s) reached wall perimeter at Tmin (aggressive squads=1)
-[INFO] econ window done: 16 samples, net=267.4 (first=27.7 last=295.2)
-[INFO] RAIDING baseline done, net=267.4
+[PASS] enemy unit(s) reached wall perimeter at Tmin (aggressive squads=3)
+[INFO] econ window done: 16 samples, net=110.1 (first=3.5 last=113.6)
+[INFO] RAIDING baseline done, net=110.1
 PHASE: onslaught at Tmin
-[INFO] econ window done: 16 samples, net=502.9 (first=295.2 last=798.0)
-[PASS] ONSLAUGHT economy: net=502.9 vs RAIDING 267.4 (ratio=1.88) at Tmin
+[INFO] econ window done: 16 samples, net=446.3 (first=113.6 last=559.9)
+[PASS] ONSLAUGHT economy: net=446.3 vs RAIDING 110.1 (ratio=4.05) at Tmin
 PHASE: migration at Tmin
-[PASS] migration settled a site (enemy spawners=7, builders=0) at Tmin
+[PASS] migration settled a site (enemy spawners=12, builders=0) at Tmin
 [INFO] state machine released; waiting for the natural roll
 PHASE: transition at Tmin
-[PASS] state machine rolled: cmd.CHANGE_BASE_STATE -> 1, state=2, next roll @ 0.0min at Tmin
+[PASS] state machine rolled: cmd.CHANGE_BASE_STATE -> 1, state=4, next roll @ 0.0min at Tmin
 Detail: all base-AI state expectations met
-Detail: base=true attack=true raidDelta=267.44293056707 onslaughtDelta=502.86707405382 migration=true rolled=true ticks=N
+Detail: base=true attack=true raidDelta=110.06304262836 onslaughtDelta=446.28038625848 migration=true rolled=true ticks=N

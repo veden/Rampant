@@ -55,7 +55,7 @@ constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 -- The original wave system re-processed every chunk continuously at this
 -- same rate; the sweep restores that cadence through the priority-5
 -- "stale chunks" queue. Event marks keep their higher priority.
-constants.PROCESS_SWEEP_CHUNKS_PER_TICK = 40
+constants.PROCESS_SWEEP_CHUNKS_PER_TICK = 20
 
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-

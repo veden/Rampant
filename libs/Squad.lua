@@ -708,7 +708,7 @@ function Squad.cleanSquads(tick)
     end
     if not groupId then
         Universe.squadIterator = nil
-        if (tableSize(squads) == 0) then
+        if (next(squads) == nil) then
             -- this is needed as the next command remembers the max length a table has been
             Universe.groupNumberToSquad = {}
         end

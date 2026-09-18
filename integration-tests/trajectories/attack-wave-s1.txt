@@ -6,11 +6,11 @@ PHASE: low-arm at Tmin
 PHASE: low-stage at Tmin
 [INFO] LOW free units staged=120
 PHASE: low-wave at Tmin
-[PASS] low-evolution attack wave formed (id=130 members=4) at Tmin
+[PASS] low-evolution attack wave formed (id=146 members=1) at Tmin
 [INFO] HIGH evolution armed=0.9
 PHASE: high-stage at Tmin
 [INFO] HIGH free units staged=120
 PHASE: high-wave at Tmin
-[PASS] high-evolution attack wave formed (id=254 members=73) at Tmin
-Detail: attack wave scales with evolution (low=4 -> high=73)
-Detail: lowCount=4 highCount=73 lowId=130 highId=254 ticks=N
+[PASS] high-evolution attack wave formed (id=267 members=37) at Tmin
+Detail: attack wave scales with evolution (low=1 -> high=37)
+Detail: lowCount=1 highCount=37 lowId=146 highId=267 ticks=N
