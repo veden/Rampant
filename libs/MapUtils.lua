@@ -338,8 +338,11 @@ end
 function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     -- Pure decision delegated to ChunkLogic (lookup table). The table is proven
     -- equivalent to the original branch chain over the whole input domain by
-    -- tests/test_chunk_logic.lua (exhaustive, 128 cases).
-    return ChunkLogic.canMove(getPassable(startChunk), direction, getPassable(endChunk))
+    -- tests/test_chunk_logic.lua (exhaustive, 128 cases). getPassable is
+    -- inlined here (2 calls x 8 directions per chunk in the hot loop).
+    local startPassable = startChunk.passable or CHUNK_ALL_DIRECTIONS
+    local endPassable = endChunk.passable or CHUNK_ALL_DIRECTIONS
+    return ChunkLogic.canMove(startPassable, direction, endPassable)
 end
 
 function MapUtils.positionFromScaledDirections(startPosition, multipler, direction, nextDirection)
@@ -510,7 +513,10 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
                 chunkCount = chunkCount + 1
                 chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
                 chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
-                chunkDeath = chunkDeath + getCombinedDeathGenerator(neighbor)
+                -- getCombinedDeathGenerator inlined (8 calls/chunk in the
+                -- hot loop; clamped sum, verbatim semantics).
+                local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
+                chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
                 
                 local tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
                 if chunkKamikaze < tempPheromone then
