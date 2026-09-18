@@ -405,6 +405,28 @@ traj-dist name="siege-settle" seeds="5":
     echo "Compare this table before/after a change: a signal that disappears"
     echo "entirely, or a spread that shifts, is the effect picture."
 
+# Profile a scenario save with the engine's CLI benchmark. NOTE: the Lua
+# profiler API (game.create_profiler) was REMOVED in 2.1 — the CLI benchmark
+# is the available instrument. It loads the prepared scenario save and runs N
+# ticks, printing the per-subsystem timing breakdown (with --benchmark-verbose:
+# script update, entity update, ...). Usage: just profile siege-settle 2000
+profile name="siege-settle" ticks="2000": copy
+    #!/usr/bin/env -S bash
+    set -e
+    NAME="{{name}}"
+    TICKS="{{ticks}}"
+    echo "Benchmarking $NAME for $TICKS ticks (engine CLI benchmark)..."
+    pkill -9 factorio 2>/dev/null || true
+    sleep 1
+    just make-saves > /dev/null 2>&1
+    cp integration-tests/behavior-saves/rampant-behavior-$NAME-s1.zip /tmp/opencode/bench-$NAME.zip
+    /mnt/gallery/gameFiles/factorio/bin/x64/factorio \
+        --benchmark /tmp/opencode/bench-$NAME.zip \
+        --benchmark-ticks "$TICKS" \
+        2>&1 | tail -45
+    echo ""
+    echo "Timing breakdown above: script update is the mod's Lua cost."
+
 # Noise-floor baselines: run every scenario across N seeds and record the
 # per-signal spread. Emergent behavior has an intrinsic run-to-run spread (see
 # the README), so a change's effect is only meaningful against this baseline:
