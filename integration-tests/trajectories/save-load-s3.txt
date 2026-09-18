@@ -1,2 +1,0 @@
-[PASS] base formed (id=0) at Tmin
-[INFO] constructed RAIDING=true points=true
