@@ -8,8 +8,8 @@ local my_collection = TestCollection:new()
 
 local function resetDirty(universe)
     universe.dirtyChunks = {
-        priority1 = {}, priority2 = {}, priority3 = {},
-        priority4 = {}, priority5 = {},
+        [1] = {}, [2] = {}, [3] = {},
+        [4] = {}, [5] = {},
     }
     universe.dirtyChunkSet = {}
 end
@@ -79,7 +79,7 @@ my_collection:add('markChunkDirty_adds_to_priority_queue', function()
     MapUtils.markChunkDirty(123, 1, 1000)
     
     -- Verify added to priority queue
-    assert(#Universe.dirtyChunks.priority1 == 1, "Should have 1 chunk in priority 1")
+    assert(#Universe.dirtyChunks[1] == 1, "Should have 1 chunk in priority 1")
     assert(Universe.dirtyChunkSet[123] == 1, "Should be in chunk set with priority 1")
 end)
 
@@ -98,7 +98,7 @@ my_collection:add('markChunkDirty_prevents_duplicates', function()
     MapUtils.markChunkDirty(123, 1, 1001)
     
     -- Should still be only one entry
-    assert(#Universe.dirtyChunks.priority1 == 1, "Should still have only 1 chunk")
+    assert(#Universe.dirtyChunks[1] == 1, "Should still have only 1 chunk")
 end)
 
 my_collection:add('markChunkDirty_upgrades_priority', function()
@@ -117,7 +117,7 @@ my_collection:add('markChunkDirty_upgrades_priority', function()
     
     -- Should be upgraded to priority 1
     assert(Universe.dirtyChunkSet[123] == 1, "Should be upgraded to priority 1")
-    assert(#Universe.dirtyChunks.priority1 == 1, "Should be in priority 1 list")
+    assert(#Universe.dirtyChunks[1] == 1, "Should be in priority 1 list")
 end)
 
 my_collection:add('markChunkDirty_ignores_invalid_chunks', function()
@@ -135,7 +135,7 @@ my_collection:add('markChunkDirty_ignores_invalid_chunks', function()
     MapUtils.markChunkDirty(nil, 1, 1000)
     
     -- Should not add to queue
-    assert(#Universe.dirtyChunks.priority1 == 0, "Should not add invalid chunks")
+    assert(#Universe.dirtyChunks[1] == 0, "Should not add invalid chunks")
 end)
 
 -- ============================================
@@ -240,9 +240,9 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     Universe.chunkById[2] = chunk2
     
     -- Add chunks to different priorities
-    Universe.dirtyChunks.priority1 = {1, 2}
-    Universe.dirtyChunks.priority2 = {3, 4, 5}
-    Universe.dirtyChunks.priority3 = {6}
+    Universe.dirtyChunks[1] = {1, 2}
+    Universe.dirtyChunks[2] = {3, 4, 5}
+    Universe.dirtyChunks[3] = {6}
     Universe.dirtyChunkSet = {[1]=1, [2]=1, [3]=2, [4]=2, [5]=2, [6]=3}
     
     -- Mock processPheromone and getNeighborChunks to avoid side effects
@@ -259,8 +259,8 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     MapUtils.getNeighborChunks = originalGetNeighborChunks
     
     -- Priority 1 should be empty (processed), priority 2 should have chunks left
-    assert(#Universe.dirtyChunks.priority1 == 0, "Priority 1 should be empty")
-    assert(#Universe.dirtyChunks.priority2 < 3, "Priority 2 should have some chunks processed")
+    assert(#Universe.dirtyChunks[1] == 0, "Priority 1 should be empty")
+    assert(#Universe.dirtyChunks[2] < 3, "Priority 2 should have some chunks processed")
 end)
 
 my_collection:add('processDirtyChunks_respects_budget', function()
@@ -298,7 +298,7 @@ my_collection:add('processDirtyChunks_respects_budget', function()
 
     -- Add chunks to priority 1
     for i = 1, totalChunks do
-        Universe.dirtyChunks.priority1[i] = i
+        Universe.dirtyChunks[1][i] = i
         Universe.dirtyChunkSet[i] = 1
     end
 
@@ -316,8 +316,8 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     MapUtils.getNeighborChunks = originalGetNeighborChunks
 
     -- Should have processed exactly `budget` chunks (budget limit)
-    assert(Universe.dirtyPending.priority1 == totalChunks - budget,
-        "Should have processed " .. budget .. " chunks, remaining=" .. Universe.dirtyPending.priority1)
+    assert(Universe.dirtyPending[1] == totalChunks - budget,
+        "Should have processed " .. budget .. " chunks, remaining=" .. Universe.dirtyPending[1])
 end)
 
 return my_collection

@@ -799,7 +799,7 @@ function Processor.processDirtyChunks(tick, universe)
 
     -- Process by priority (1 = highest, 5 = lowest)
     for priority = 1, 5 do
-        local priorityKey = "priority" .. priority
+        local priorityKey = priority
         local chunkList = universe.dirtyChunks[priorityKey]
         -- Head-index drain: table.remove(list, 1) shifts every remaining
         -- element -- O(n) per pop (~20k shifts/tick at the 200 budget).

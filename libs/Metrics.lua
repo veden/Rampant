@@ -136,11 +136,12 @@ function Metrics.sampleDirtyQueue(dirtyChunks)
     local size = 0
     if pending then
         for i = 1, 5 do
-            size = size + (pending["priority" .. i] or 0)
+            size = size + (pending[i] or 0)
         end
     else
         for i = 1, 5 do
-            size = size + #dirtyChunks["priority" .. i]
+            local list = dirtyChunks[i]
+            if list then size = size + #list end
         end
     end
     Metrics.sample("dirtyQueueSize", size)

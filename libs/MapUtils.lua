@@ -636,18 +636,10 @@ function MapUtils.init(universe)
         Universe.chunkById = {}
     end
 
-    -- Initialize dirty chunk tracking. Create-if-absent: on_load must never
-    -- mutate storage (CRC check fails the load); the persisted queue is
-    -- transient and drains on the next tick anyway.
-    if not Universe.dirtyChunks then
-        Universe.dirtyChunks = {
-            priority1 = {},  -- Player-adjacent (within 5 chunks)
-            priority2 = {},  -- Squad-active chunks
-            priority3 = {},  -- Recent events (last 10 ticks)
-            priority4 = {},  -- Background propagation
-            priority5 = {}   -- Stale chunks
-        }
-    end
+    -- dirtyChunks is created (and a legacy string-keyed form converted) LAZILY
+    -- by markChunkDirty, which only runs on gameplay events. Nothing is created
+    -- or migrated here: on_load must never write storage (the CRC check fails the
+    -- load). The queue is transient, so a save's stale marks are harmless.
     if not Universe.dirtyChunkSet then
         Universe.dirtyChunkSet = {}  -- Quick lookup to prevent duplicates
     end
@@ -663,9 +655,20 @@ function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
     
     -- Clamp priority to valid range (1-5)
     priority = math.min(math.max(priority, 1), 5)
-    
-    -- Convert priority to string key
-    local priorityKey = "priority" .. priority
+
+    -- Create the queue lazily, and convert a legacy string-keyed form
+    -- ("priorityN") here rather than in init -- this path only runs on gameplay
+    -- events, never during on_load (which must not write storage).
+    if not universe.dirtyChunks then
+        universe.dirtyChunks = { {}, {}, {}, {}, {} }
+    elseif universe.dirtyChunks.priority1 then
+        local legacy = universe.dirtyChunks
+        universe.dirtyChunks = {
+            legacy.priority1 or {}, legacy.priority2 or {}, legacy.priority3 or {},
+            legacy.priority4 or {}, legacy.priority5 or {},
+        }
+    end
+    local priorityKey = priority
     
     -- Prevent duplicates
     if universe.dirtyChunkSet[chunkId] then

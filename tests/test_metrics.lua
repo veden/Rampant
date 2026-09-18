@@ -74,7 +74,7 @@ end)
 
 my_collection:add('dirty_queue_size_sampled', function()
     local universe, Metrics = makeUniverse(true)
-    Metrics.sampleDirtyQueue({ priority1 = {1, 2}, priority2 = {3}, priority3 = {}, priority4 = {}, priority5 = {} })
+    Metrics.sampleDirtyQueue({ {1, 2}, {3}, {}, {}, {} })
     local m = Metrics.get()
     assert(m.latest["dirtyQueueSize"] == 3, "queue size should sum priority lists")
 end)

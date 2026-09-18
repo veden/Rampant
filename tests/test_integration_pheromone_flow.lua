@@ -32,13 +32,7 @@ end
 -- Helper to setup universe with chunks
 local function setupUniverse()
     local universe = {
-        dirtyChunks = {
-            priority1 = {},
-            priority2 = {},
-            priority3 = {},
-            priority4 = {},
-            priority5 = {}
-        },
+        dirtyChunks = { {}, {}, {}, {}, {} },
         dirtyChunkSet = {},
         maps = {},
         chunkToVictory = {},
@@ -82,8 +76,8 @@ my_collection:add('complete_flow_marks_and_processes_chunk', function()
     end
     
     -- Debug
-    -- print("BEFORE markChunkDirty: universe.dirtyChunks.priority1 =", universe.dirtyChunks.priority1)
-    -- print("BEFORE markChunkDirty: type =", type(universe.dirtyChunks.priority1))
+    -- print("BEFORE markChunkDirty: universe.dirtyChunks[1] =", universe.dirtyChunks[1])
+    -- print("BEFORE markChunkDirty: type =", type(universe.dirtyChunks[1]))
     -- print("BEFORE markChunkDirty: universe.dirtyChunkSet[123] =", universe.dirtyChunkSet[123])
     
     -- Execute: Mark chunk1 dirty and process
@@ -163,7 +157,7 @@ my_collection:add('marking_chunk_twice_prevents_duplicates', function()
     -- in priority 3 is by design: the upgrade is lazy (O(1)) and the drain
     -- skips entries whose set priority no longer matches. The set is the
     -- source of truth for a chunk's active priority.
-    assert(#universe.dirtyChunks.priority1 == 1, "Should be in priority 1")
+    assert(#universe.dirtyChunks[1] == 1, "Should be in priority 1")
     assert(universe.dirtyChunkSet[123] == 1, "Should have priority 1 in set")
 end)
 
@@ -179,7 +173,7 @@ my_collection:add('invalid_chunks_not_added_to_queue', function()
     MapUtils.markChunkDirty(-1, 1, 100, universe)
     
     -- Queue should be empty
-    assert(#universe.dirtyChunks.priority1 == 0, "Invalid chunks should not be added")
+    assert(#universe.dirtyChunks[1] == 0, "Invalid chunks should not be added")
 end)
 
 -- Test: Multi-tick pheromone accumulation
@@ -209,7 +203,7 @@ my_collection:add('pheromone_accumulates_over_multiple_ticks', function()
     local afterTick1 = chunk[Constants.PLAYER_PHEROMONE]
     
     -- Reset dirty queue
-    universe.dirtyChunks.priority1 = {}
+    universe.dirtyChunks[1] = {}
     universe.dirtyChunkSet = {}
     
     -- Tick 2: Process again
