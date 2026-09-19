@@ -129,6 +129,9 @@ end
 --- Sample the dirty-queue size (sum of the 5 priority lists).
 function Metrics.sampleDirtyQueue(dirtyChunks)
     if not active() then return end
+    -- dirtyChunks is created lazily on the first markChunkDirty (MapUtils), so it
+    -- is nil on the first ticks after a fresh migration.
+    if not dirtyChunks then return end
     -- The lists keep drained entries behind the head cursor (O(1) drain), so
     -- the pending count is maintained by the drain itself. Fall back to the
     -- raw lengths only before the first drain has run.

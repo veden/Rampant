@@ -826,10 +826,15 @@ function Processor.processDirtyChunks(tick, universe)
         end
     end
 
+    -- dirtyChunks is created lazily on the first markChunkDirty (MapUtils), so
+    -- it is nil on the first ticks after a fresh migration.
+    local dirtyChunks = universe.dirtyChunks
+    if not dirtyChunks then return end
+
     -- Process by priority (1 = highest, 5 = lowest)
     for priority = 1, 5 do
         local priorityKey = priority
-        local chunkList = universe.dirtyChunks[priorityKey]
+        local chunkList = dirtyChunks[priorityKey]
         -- Head-index drain: table.remove(list, 1) shifts every remaining
         -- element -- O(n) per pop (~20k shifts/tick at the 200 budget).
         -- The head cursor is O(1) and preserves the FIFO order exactly.
