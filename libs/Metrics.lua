@@ -127,27 +127,9 @@ function Metrics.highWater(name, value)
 end
 
 --- Sample the dirty-queue size (sum of the 5 priority lists).
-function Metrics.sampleDirtyQueue(dirtyChunks)
+function Metrics.sampleDirtyQueue(dirtyCount)
     if not active() then return end
-    -- dirtyChunks is created lazily on the first markChunkDirty (MapUtils), so it
-    -- is nil on the first ticks after a fresh migration.
-    if not dirtyChunks then return end
-    -- The lists keep drained entries behind the head cursor (O(1) drain), so
-    -- the pending count is maintained by the drain itself. Fall back to the
-    -- raw lengths only before the first drain has run.
-    local pending = Universe and Universe.dirtyPending
-    local size = 0
-    if pending then
-        for i = 1, 5 do
-            size = size + (pending[i] or 0)
-        end
-    else
-        for i = 1, 5 do
-            local list = dirtyChunks[i]
-            if list then size = size + #list end
-        end
-    end
-    Metrics.sample("dirtyQueueSize", size)
+    Metrics.sample("dirtyQueueSize", dirtyCount or 0)
 end
 
 --- Pull snapshot: counters, samples, highWater, latest + diagnostics.

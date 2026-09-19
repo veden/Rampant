@@ -652,54 +652,50 @@ end
 function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
     universe = universe or Universe
     if not chunkId or chunkId == -1 then return end
-    
-    -- Clamp priority to valid range (1-5)
     priority = math.min(math.max(priority, 1), 5)
 
-    -- Create the queue lazily, and convert a legacy string-keyed form
-    -- ("priorityN") here rather than in init -- this path only runs on gameplay
-    -- events, never during on_load (which must not write storage).
-    if not universe.dirtyChunks then
-        universe.dirtyChunks = { {}, {}, {}, {}, {} }
+    -- Intrusive doubly-linked bucket queue. dirtyNodes[chunkId] is the node
+    -- {p=priority, prev=chunkId|0, next=chunkId|0}; dirtyHeads[p] and
+    -- dirtyTails[p] are head/tail chunkId cursors (0 = empty). prev/next are
+    -- chunkId INDICES (not table references) so the whole thing serializes.
+    -- An upgrade unlinks the node and relinks it in O(1), so a chunk occupies
+    -- exactly one slot -- no stale duplicates to skip at drain time.
+    local heads = universe.dirtyHeads
+    if not heads then
+        heads = { 0, 0, 0, 0, 0 }
+        universe.dirtyHeads = heads
         universe.dirtyTails = { 0, 0, 0, 0, 0 }
-    elseif universe.dirtyChunks.priority1 then
-        local legacy = universe.dirtyChunks
-        local l1, l2 = legacy.priority1 or {}, legacy.priority2 or {}
-        local l3, l4, l5 = legacy.priority3 or {}, legacy.priority4 or {}, legacy.priority5 or {}
-        universe.dirtyChunks = { l1, l2, l3, l4, l5 }
-        universe.dirtyTails = { #l1, #l2, #l3, #l4, #l5 }
+        universe.dirtyNodes = {}
+        universe.dirtyCount = 0
     end
-    -- Explicit write cursor (tail): the drain nulls entries behind its head,
-    -- so the array must not rely on # (undefined with holes).
-    if not universe.dirtyTails then
-        universe.dirtyTails = { 0, 0, 0, 0, 0 }
-    end
-    local priorityKey = priority
-    
-    -- Prevent duplicates
-    if universe.dirtyChunkSet[chunkId] then
-        -- Update priority if higher (lower number = higher priority).
-        -- LAZY: append to the higher-priority list and update the set; the
-        -- stale entry in the old list is skipped at drain time (the drain
-        -- checks the set's priority). The old code scanned the whole old list
-        -- and table.remove'd from the middle -- O(n) per upgrade.
-        local existingPriority = universe.dirtyChunkSet[chunkId]
-        if priority < existingPriority then
-            local list = universe.dirtyChunks[priorityKey]
-            local tail = universe.dirtyTails[priorityKey] + 1
-            list[tail] = chunkId
-            universe.dirtyTails[priorityKey] = tail
-            universe.dirtyChunkSet[chunkId] = priority
+    local nodes = universe.dirtyNodes
+    local tails = universe.dirtyTails
+
+    local node = nodes[chunkId]
+    if node then
+        local oldP = node.p
+        if priority < oldP then
+            -- Unlink from the old bucket list (O(1)).
+            local prev, nxt = node.prev, node.next
+            if prev ~= 0 then nodes[prev].next = nxt else heads[oldP] = nxt end
+            if nxt ~= 0 then nodes[nxt].prev = prev else tails[oldP] = prev end
+            -- Relink at the tail of the new bucket list (O(1)).
+            local tail = tails[priority]
+            node.p = priority
+            node.prev = tail
+            node.next = 0
+            if tail ~= 0 then nodes[tail].next = chunkId else heads[priority] = chunkId end
+            tails[priority] = chunkId
         end
         return
     end
 
-    -- Add to priority list at the explicit tail
-    local list = universe.dirtyChunks[priorityKey]
-    local tail = universe.dirtyTails[priorityKey] + 1
-    list[tail] = chunkId
-    universe.dirtyTails[priorityKey] = tail
-    universe.dirtyChunkSet[chunkId] = priority
+    -- New node, append at the tail of its bucket list (O(1)).
+    local tail = tails[priority]
+    nodes[chunkId] = { p = priority, prev = tail, next = 0 }
+    if tail ~= 0 then nodes[tail].next = chunkId else heads[priority] = chunkId end
+    tails[priority] = chunkId
+    universe.dirtyCount = universe.dirtyCount + 1
 end
 
 -- ACO: Get effective pheromone value with decay-on-read

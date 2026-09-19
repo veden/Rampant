@@ -32,8 +32,10 @@ end
 -- Helper to setup universe with chunks
 local function setupUniverse()
     local universe = {
-        dirtyChunks = { {}, {}, {}, {}, {} },
-        dirtyChunkSet = {},
+        dirtyHeads = { 0, 0, 0, 0, 0 },
+        dirtyTails = { 0, 0, 0, 0, 0 },
+        dirtyNodes = {},
+        dirtyCount = 0,
         maps = {},
         chunkToVictory = {},
         mapUtilsQueries = {
@@ -157,8 +159,8 @@ my_collection:add('marking_chunk_twice_prevents_duplicates', function()
     -- in priority 3 is by design: the upgrade is lazy (O(1)) and the drain
     -- skips entries whose set priority no longer matches. The set is the
     -- source of truth for a chunk's active priority.
-    assert(#universe.dirtyChunks[1] == 1, "Should be in priority 1")
-    assert(universe.dirtyChunkSet[123] == 1, "Should have priority 1 in set")
+    assert(universe.dirtyCount == 1, "Should be queued once")
+    assert(universe.dirtyNodes[123] and universe.dirtyNodes[123].p == 1, "Should have priority 1")
 end)
 
 -- Test: Invalid chunks are not added to queue
@@ -173,7 +175,7 @@ my_collection:add('invalid_chunks_not_added_to_queue', function()
     MapUtils.markChunkDirty(-1, 1, 100, universe)
     
     -- Queue should be empty
-    assert(#universe.dirtyChunks[1] == 0, "Invalid chunks should not be added")
+    assert(universe.dirtyCount == 0, "Invalid chunks should not be added")
 end)
 
 -- Test: Multi-tick pheromone accumulation
@@ -203,8 +205,10 @@ my_collection:add('pheromone_accumulates_over_multiple_ticks', function()
     local afterTick1 = chunk[Constants.PLAYER_PHEROMONE]
     
     -- Reset dirty queue
-    universe.dirtyChunks[1] = {}
-    universe.dirtyChunkSet = {}
+    universe.dirtyHeads = { 0, 0, 0, 0, 0 }
+    universe.dirtyTails = { 0, 0, 0, 0, 0 }
+    universe.dirtyNodes = {}
+    universe.dirtyCount = 0
     
     -- Tick 2: Process again
     MapUtils.markChunkDirty(123, 1, 101, universe)

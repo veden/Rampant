@@ -826,70 +826,42 @@ function Processor.processDirtyChunks(tick, universe)
         end
     end
 
-    -- dirtyChunks is created lazily on the first markChunkDirty (MapUtils), so
-    -- it is nil on the first ticks after a fresh migration.
-    local dirtyChunks = universe.dirtyChunks
-    if not dirtyChunks then return end
+    -- Intrusive bucket lists: dirtyHeads[p] is the head chunkId (0 = empty),
+    -- dirtyNodes[chunkId] is the node {p, prev, next}. Unlink is O(1), so an
+    -- upgrade moves the node instead of leaving a stale duplicate, and a chunk
+    -- occupies exactly one slot.
+    local heads = universe.dirtyHeads
+    if not heads then return end
+    local nodes = universe.dirtyNodes
+    if not nodes then return end
+    local tails = universe.dirtyTails
 
     -- Process by priority (1 = highest, 5 = lowest)
     for priority = 1, 5 do
-        local priorityKey = priority
-        local chunkList = dirtyChunks[priorityKey]
-        -- Head-index drain: table.remove(list, 1) shifts every remaining
-        -- element -- O(n) per pop (~20k shifts/tick at the 200 budget).
-        -- The head cursor is O(1) and preserves the FIFO order exactly.
-        -- Entries behind the head are skipped below when their set priority
-        -- no longer matches (a lazy priority upgrade); the list resets when
-        -- the head reaches the end.
-        local heads = universe.dirtyHeads
-        if not heads then
-            heads = {}
-            universe.dirtyHeads = heads
-        end
-        if not universe.dirtyPending then
-            universe.dirtyPending = {}
-        end
-        local head = heads[priorityKey] or 1
-        local tail = universe.dirtyTails[priorityKey] or 0
-        while processed < maxPerTick and head <= tail do
-            local chunkId = chunkList[head]
-            -- Null the consumed slot: the write cursor is the explicit tail,
-            -- so the array releases the entry now instead of holding every
-            -- processed id until the list happens to exhaust.
-            chunkList[head] = nil
-            head = head + 1
-            -- Skip stale entries: re-marked at a different priority, or
-            -- already processed (its set entry is gone).
-            if universe.dirtyChunkSet[chunkId] == priority then
-                universe.dirtyChunkSet[chunkId] = nil
+        local chunkId = heads[priority]
+        while processed < maxPerTick and chunkId ~= 0 do
+            local node = nodes[chunkId]
+            local nxt = node.next
+            -- Unlink the head (O(1)).
+            nodes[chunkId] = nil
+            if nxt ~= 0 then nodes[nxt].prev = 0 else tails[priority] = 0 end
+            heads[priority] = nxt
+            universe.dirtyCount = universe.dirtyCount - 1
 
-                -- Get chunk from map
-                local chunk = MapUtils.getChunkById(chunkId, universe)
-                local success = Processor.processDirtyChunk(chunk, tick, priority, counters)
+            -- Get chunk from map
+            local chunk = MapUtils.getChunkById(chunkId, universe)
+            local success = Processor.processDirtyChunk(chunk, tick, priority, counters)
 
-                if success then
-                    processed = processed + 1
-                    counters.chunksProcessed = counters.chunksProcessed + 1
-                end
+            if success then
+                processed = processed + 1
+                counters.chunksProcessed = counters.chunksProcessed + 1
             end
+            chunkId = nxt
         end
-
-        -- Reset an exhausted list (all entries consumed or skipped), and
-        -- maintain the pending count: the list length now includes entries
-        -- behind the head, so the pending count is the honest queue size
-        -- (Metrics.sampleDirtyQueue and the long-run invariant read it).
-        if head > tail then
-            universe.dirtyChunks[priorityKey] = {}
-            universe.dirtyTails[priorityKey] = 0
-            head = 1
-            universe.dirtyPending[priorityKey] = 0
-        else
-            universe.dirtyPending[priorityKey] = tail - head + 1
-        end
-        heads[priorityKey] = head
 
         if processed >= maxPerTick then break end
     end
+
 
     -- Flush the per-tick counters once (public metric names preserved).
     if MetricsG then

@@ -1028,7 +1028,7 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
 
-                    Metrics.sampleDirtyQueue(Universe.dirtyChunks)
+                    Metrics.sampleDirtyQueue(Universe.dirtyCount)
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
@@ -1077,23 +1077,14 @@ script.on_event(defines.events.on_tick,
                     if rangeSample then
                         local m = Metrics.get()
                         local c = m.counters or {}
-                        local p = Universe.dirtyPending or {}
-                        local t = Universe.dirtyTails or {}
-                        local h = Universe.dirtyHeads or {}
-                        local pending = (p[1] or 0) + (p[2] or 0) + (p[3] or 0) + (p[4] or 0) + (p[5] or 0)
-                        local arrTail = 0
-                        for i = 1, 5 do if (t[i] or 0) > arrTail then arrTail = t[i] end end
-                        local arrHead = 0
-                        for i = 1, 5 do local hv = h[i] or 1; if hv > arrHead then arrHead = hv end end
+                        local pending = Universe.dirtyCount or 0
                         log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
                              " sweep=" .. (c['dirty.sweepMarks'] or 0) ..
                              " prop=" .. (c['dirty.propagationMarks'] or 0) ..
                              " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
                              " skip=" .. (c['dirty.epsilonSkips'] or 0) ..
                              " lookups=" .. (c['index.lookups'] or 0) ..
-                             " pending=" .. pending ..
-                             " arrTail=" .. arrTail ..
-                             " arrHead=" .. arrHead})
+                             " pending=" .. pending})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})

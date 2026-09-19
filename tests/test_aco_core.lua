@@ -7,12 +7,10 @@ local Fixtures = require("tests/fixtures")
 local my_collection = TestCollection:new()
 
 local function resetDirty(universe)
-    universe.dirtyChunks = {
-        [1] = {}, [2] = {}, [3] = {},
-        [4] = {}, [5] = {},
-    }
-    universe.dirtyChunkSet = {}
+    universe.dirtyHeads = { 0, 0, 0, 0, 0 }
     universe.dirtyTails = { 0, 0, 0, 0, 0 }
+    universe.dirtyNodes = {}
+    universe.dirtyCount = 0
 end
 
 
@@ -80,8 +78,8 @@ my_collection:add('markChunkDirty_adds_to_priority_queue', function()
     MapUtils.markChunkDirty(123, 1, 1000)
     
     -- Verify added to priority queue
-    assert(#Universe.dirtyChunks[1] == 1, "Should have 1 chunk in priority 1")
-    assert(Universe.dirtyChunkSet[123] == 1, "Should be in chunk set with priority 1")
+    assert(Universe.dirtyCount == 1, "Should have 1 chunk queued")
+    assert(Universe.dirtyNodes[123] and Universe.dirtyNodes[123].p == 1, "Should be queued at priority 1")
 end)
 
 my_collection:add('markChunkDirty_prevents_duplicates', function()
@@ -99,7 +97,7 @@ my_collection:add('markChunkDirty_prevents_duplicates', function()
     MapUtils.markChunkDirty(123, 1, 1001)
     
     -- Should still be only one entry
-    assert(#Universe.dirtyChunks[1] == 1, "Should still have only 1 chunk")
+    assert(Universe.dirtyCount == 1, "Should still have only 1 chunk")
 end)
 
 my_collection:add('markChunkDirty_upgrades_priority', function()
@@ -117,8 +115,8 @@ my_collection:add('markChunkDirty_upgrades_priority', function()
     MapUtils.markChunkDirty(123, 1, 1001)
     
     -- Should be upgraded to priority 1
-    assert(Universe.dirtyChunkSet[123] == 1, "Should be upgraded to priority 1")
-    assert(#Universe.dirtyChunks[1] == 1, "Should be in priority 1 list")
+    assert(Universe.dirtyNodes[123] and Universe.dirtyNodes[123].p == 1, "Should be upgraded to priority 1")
+    assert(Universe.dirtyCount == 1, "Should be in priority 1 list")
 end)
 
 my_collection:add('markChunkDirty_ignores_invalid_chunks', function()
@@ -136,7 +134,7 @@ my_collection:add('markChunkDirty_ignores_invalid_chunks', function()
     MapUtils.markChunkDirty(nil, 1, 1000)
     
     -- Should not add to queue
-    assert(#Universe.dirtyChunks[1] == 0, "Should not add invalid chunks")
+    assert(Universe.dirtyCount == 0, "Should not add invalid chunks")
 end)
 
 -- ============================================
@@ -241,10 +239,12 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     Universe.chunkById[2] = chunk2
     
     -- Add chunks to different priorities
-    Universe.dirtyChunks[1] = {1, 2}
-    Universe.dirtyChunks[2] = {3, 4, 5}
-    Universe.dirtyChunks[3] = {6}
-    Universe.dirtyChunkSet = {[1]=1, [2]=1, [3]=2, [4]=2, [5]=2, [6]=3}
+    MapUtils.markChunkDirty(1, 1, 1000)
+    MapUtils.markChunkDirty(2, 1, 1000)
+    MapUtils.markChunkDirty(3, 2, 1000)
+    MapUtils.markChunkDirty(4, 2, 1000)
+    MapUtils.markChunkDirty(5, 2, 1000)
+    MapUtils.markChunkDirty(6, 3, 1000)
     
     -- Mock processPheromone and getNeighborChunks to avoid side effects
     local originalProcessPheromone = MapUtils.processPheromone
@@ -260,8 +260,8 @@ my_collection:add('processDirtyChunks_processes_by_priority', function()
     MapUtils.getNeighborChunks = originalGetNeighborChunks
     
     -- Priority 1 should be empty (processed), priority 2 should have chunks left
-    assert(#Universe.dirtyChunks[1] == 0, "Priority 1 should be empty")
-    assert(#Universe.dirtyChunks[2] < 3, "Priority 2 should have some chunks processed")
+    assert(Universe.dirtyNodes[1] == nil, "Priority 1 should be empty")
+    assert(Universe.dirtyCount < 3, "Priority 2 should have some chunks processed")
 end)
 
 my_collection:add('processDirtyChunks_respects_budget', function()
@@ -299,12 +299,8 @@ my_collection:add('processDirtyChunks_respects_budget', function()
 
     -- Add chunks to priority 1
     for i = 1, totalChunks do
-        Universe.dirtyChunks[1][i] = i
-        Universe.dirtyChunkSet[i] = 1
+        MapUtils.markChunkDirty(i, 1, 1000)
     end
-    -- Direct array population bypasses markChunkDirty, so maintain the
-    -- explicit write cursor the drain reads.
-    Universe.dirtyTails[1] = totalChunks
 
     -- Mock processPheromone and getNeighborChunks to avoid complex chunk requirements
     local originalProcessPheromone = MapUtils.processPheromone
@@ -320,8 +316,8 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     MapUtils.getNeighborChunks = originalGetNeighborChunks
 
     -- Should have processed exactly `budget` chunks (budget limit)
-    assert(Universe.dirtyPending[1] == totalChunks - budget,
-        "Should have processed " .. budget .. " chunks, remaining=" .. Universe.dirtyPending[1])
+    assert(Universe.dirtyCount == totalChunks - budget,
+        "Should have processed " .. budget .. " chunks, remaining=" .. Universe.dirtyCount)
 end)
 
 return my_collection
