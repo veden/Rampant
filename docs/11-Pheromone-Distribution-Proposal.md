@@ -298,3 +298,33 @@ repro at the ~25,400-tick mark.**
 Note: `--benchmark` on the /tmp copy shows map version 2.1.14-1 and a larger file than
 the original (25.7 MB vs 24.2 MB) — the earlier UDP server runs saved the /tmp COPY. The
 original save is untouched (it was copied out first).
+
+## 13. Upper-end ROOT CAUSE: the upgrade pipeline's create path (recorded)
+
+Bisect on the 50,000-tick benchmark (the SIGSEGV at ~25,400 ticks), disabling
+entity-creating handlers one at a time:
+
+| Disabled | Result |
+|---|---|
+| `DECOMPRESS_SQUAD` (creates N units) | still SIGSEGV (139) |
+| **`processPendingUpgrades` (the upgrade create)** | **exit 0 — NO CRASH** |
+
+**The crash is in the upgrade pipeline's entity creation.** `processPendingUpgrades`
+state 2 calls `surface.create_entity(query)` to build the `-rampant` replacement; that
+creation re-enters the engine's entity-setup path (`addEntityToSurfaceIfAllowed` →
+`runSetup` → `apply` → `create` → `createInternal` → `operator new`, with the `apply`
+frames repeating in the core dump), recursing until the stack overflows at ~25,400 ticks.
+
+The `isVanillaEntity` predicate (`VANILLA_ENTITY_TYPE_LOOKUP[entity.name]`) IS name-keyed
+by vanilla names, so a `-rampant` name is not vanilla and the re-queue is not via that
+check — the recursion is the engine's own nested creation triggered from within the
+creation event (the same class as `DECOMPRESS_SQUAD`'s synchronous creation, but reached
+through the upgrade path).
+
+With the pipeline off the run completes: `avg 1.891 ms` (higher — the pending-upgrade queue
+backs up when nothing drains it), `max 1113.8 ms` (the load burst).
+
+**Fix direction**: break the synchronous re-entrancy — defer the upgrade's `create_entity`
+to the next tick (a pending-creation queue drained in `on_tick`), or guard the pipeline
+against re-entering during a creation. The engine's creation event must not run another
+creation synchronously inside itself.
