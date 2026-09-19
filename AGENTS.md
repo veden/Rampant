@@ -52,6 +52,25 @@ just test                        # Run integration tests via Factorio headless s
 
 **Note**: Integration tests require Factorio 2.0 installed.
 
+### Benchmark Reporting — RANGES ONLY (mandatory)
+
+**Never report a single lump-sum or average tick figure for a run.** A run's
+`avg`/`min`/`max` hides where the time actually goes, and a non-stationary cost
+(the dirty-queue ramp was 0.42 -> 4.47 ms within one run) makes the average
+meaningless. Always report **per-tick-range** numbers, broken down by subsystem.
+
+- Per-range, per-phase: the mod logs `[RANGE] ... phase=...` every
+  `RANGE_TICKS` (see `control.lua`), gated by `rampant--telemetryEnabled`.
+- Per-range, per-subsystem: `[SUB] tick=N name=<subsystem> Elapsed: Nms`, 17
+  subsystems timed independently (`dirty`, `pendingUpgrades`, `players`, ...).
+- Parse with `tools/range-telemetry.py` (bucket by tick range).
+- `--benchmark-verbose` also emits per-tick CSV but SIGSEGVs at teardown for long
+  runs; prefer the in-mod telemetry.
+- A/B comparisons: run the same tick count N times on each side, on the same machine
+  state, and report the **ranges** (they must not overlap for the result to be real).
+  Check `uptime` load average first — a loaded machine shifts the floor (observed
+  1.27 ms quiet vs 1.74 ms at load 5.8).
+
 ### Integration Test Architecture
 
 The integration testing framework consists of:
