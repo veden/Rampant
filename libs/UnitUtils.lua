@@ -94,27 +94,22 @@ function unitUtils.createDrainPylon(map, cause, entity, entityType)
                         direction=entity.direction
                 })
                 targetEntity.backer_name = ""
-                local wires = entity.neighbours
-                if wires then
-                    for _,v in pairs(wires.copper) do
-                        if (v.valid) then
-                            newEntity.connect_neighbour(v);
-                        end
-                    end
-                    for _,v in pairs(wires.red) do
-                        if (v.valid) then
-                            newEntity.connect_neighbour({
-                                    wire = DEFINES_WIRE_TYPE_RED,
-                                    target_entity = v
-                            });
-                        end
-                    end
-                    for _,v in pairs(wires.green) do
-                        if (v.valid) then
-                            newEntity.connect_neighbour({
-                                    wire = DEFINES_WIRE_TYPE_GREEN,
-                                    target_entity = v
-                            });
+                -- 2.1: LuaEntity.neighbours was removed. Reconnect via the
+                -- wire connector API: for every connection on the old entity's
+                -- connectors, connect the new entity's connector with the same
+                -- wire_connector_id to the same target connector.
+                local oldConnectors = entity.get_wire_connectors(false)
+                if oldConnectors then
+                    local newConnectors = newEntity.get_wire_connectors(true)
+                    for id, oldConnector in pairs(oldConnectors) do
+                        local newConnector = newConnectors[id]
+                        if newConnector then
+                            for _, connection in pairs(oldConnector.connections) do
+                                local targetConnector = connection.target_connector
+                                if targetConnector and targetConnector.valid then
+                                    newConnector.connect_to(targetConnector)
+                                end
+                            end
                         end
                     end
                 end

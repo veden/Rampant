@@ -721,7 +721,7 @@ local function fillEntityTemplate(entity)
             if (entity.type == "drone") then
                 ti = 1
             end
-            entity["hitSprayName"] = "particle-" .. ti .. "-" .. entity.faction .. "-damaged-particle-rampant"
+            entity["hitSprayName"] = "particle-" .. ti .. "-" .. entity.faction .. "-hit-spray-rampant"
             entity["explosion"] = bloodFountains[ti]
         elseif (key == "evolutionFunction") then
             entity["evolutionRequirement"] = distort(xorRandom, value(tier))

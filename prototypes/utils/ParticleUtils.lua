@@ -45,6 +45,42 @@ function particleUtils.makeDamagedParticle(attributes)
         return o
     end
 
+    -- The damaged particle is a hidden trigger carrier (empty sprite). Its
+    -- created_effect must spawn a DISTINCT visible entity, exactly as the base
+    -- game's enemy-damaged-explosion spawns blood-fountain-hit-spray (a
+    -- particle-source). Pointing it at this same particle makes the engine
+    -- re-enter created_effect during entity setup
+    -- (CreateEntityTriggerEffectItem -> addEntityToSurfaceIfAllowed ->
+    -- postSetup -> created_effect -> ...) and recurse until the C++ stack
+    -- overflows. hitSprayName is therefore a separate particle-source.
+    local sprayName = attributes.hitSprayName
+    if (not sprayName) or (sprayName == name) then
+        sprayName = name .. "-spray"
+    end
+
+    if not particleSet[sprayName] then
+        particleSet[sprayName] = true
+        data:extend({
+                {
+                    type = "particle-source",
+                    name = sprayName,
+                    flags = {"not-on-map"},
+                    hidden = true,
+                    particle = "blood-particle",
+                    time_to_live = 10,
+                    time_to_live_deviation = 5,
+                    time_before_start = 0,
+                    time_before_start_deviation = 0,
+                    height = 0.3,
+                    height_deviation = 0.1,
+                    vertical_speed = 0.02,
+                    vertical_speed_deviation = 0.08,
+                    horizontal_speed = 0.07,
+                    horizontal_speed_deviation = 0.04
+                }
+        })
+    end
+
     data:extend({
             {
                 type = "explosion",
@@ -68,7 +104,7 @@ function particleUtils.makeDamagedParticle(attributes)
                                     {
                                         {
                                             type = "create-entity",
-                                            entity_name = attributes.hitSprayName,
+                                            entity_name = sprayName,
                                             repeat_count = 1,
                                         }
                                     }
