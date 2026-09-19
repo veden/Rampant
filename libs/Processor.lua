@@ -850,8 +850,13 @@ function Processor.processDirtyChunks(tick, universe)
             universe.dirtyPending = {}
         end
         local head = heads[priorityKey] or 1
-        while processed < maxPerTick and head <= #chunkList do
+        local tail = universe.dirtyTails[priorityKey] or 0
+        while processed < maxPerTick and head <= tail do
             local chunkId = chunkList[head]
+            -- Null the consumed slot: the write cursor is the explicit tail,
+            -- so the array releases the entry now instead of holding every
+            -- processed id until the list happens to exhaust.
+            chunkList[head] = nil
             head = head + 1
             -- Skip stale entries: re-marked at a different priority, or
             -- already processed (its set entry is gone).
@@ -873,12 +878,13 @@ function Processor.processDirtyChunks(tick, universe)
         -- maintain the pending count: the list length now includes entries
         -- behind the head, so the pending count is the honest queue size
         -- (Metrics.sampleDirtyQueue and the long-run invariant read it).
-        if head > #chunkList then
+        if head > tail then
             universe.dirtyChunks[priorityKey] = {}
+            universe.dirtyTails[priorityKey] = 0
             head = 1
             universe.dirtyPending[priorityKey] = 0
         else
-            universe.dirtyPending[priorityKey] = #chunkList - head + 1
+            universe.dirtyPending[priorityKey] = tail - head + 1
         end
         heads[priorityKey] = head
 

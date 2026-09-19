@@ -12,6 +12,7 @@ local function resetDirty(universe)
         [4] = {}, [5] = {},
     }
     universe.dirtyChunkSet = {}
+    universe.dirtyTails = { 0, 0, 0, 0, 0 }
 end
 
 
@@ -301,6 +302,9 @@ my_collection:add('processDirtyChunks_respects_budget', function()
         Universe.dirtyChunks[1][i] = i
         Universe.dirtyChunkSet[i] = 1
     end
+    -- Direct array population bypasses markChunkDirty, so maintain the
+    -- explicit write cursor the drain reads.
+    Universe.dirtyTails[1] = totalChunks
 
     -- Mock processPheromone and getNeighborChunks to avoid complex chunk requirements
     local originalProcessPheromone = MapUtils.processPheromone

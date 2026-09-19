@@ -661,12 +661,18 @@ function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
     -- events, never during on_load (which must not write storage).
     if not universe.dirtyChunks then
         universe.dirtyChunks = { {}, {}, {}, {}, {} }
+        universe.dirtyTails = { 0, 0, 0, 0, 0 }
     elseif universe.dirtyChunks.priority1 then
         local legacy = universe.dirtyChunks
-        universe.dirtyChunks = {
-            legacy.priority1 or {}, legacy.priority2 or {}, legacy.priority3 or {},
-            legacy.priority4 or {}, legacy.priority5 or {},
-        }
+        local l1, l2 = legacy.priority1 or {}, legacy.priority2 or {}
+        local l3, l4, l5 = legacy.priority3 or {}, legacy.priority4 or {}, legacy.priority5 or {}
+        universe.dirtyChunks = { l1, l2, l3, l4, l5 }
+        universe.dirtyTails = { #l1, #l2, #l3, #l4, #l5 }
+    end
+    -- Explicit write cursor (tail): the drain nulls entries behind its head,
+    -- so the array must not rely on # (undefined with holes).
+    if not universe.dirtyTails then
+        universe.dirtyTails = { 0, 0, 0, 0, 0 }
     end
     local priorityKey = priority
     
@@ -679,14 +685,20 @@ function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
         -- and table.remove'd from the middle -- O(n) per upgrade.
         local existingPriority = universe.dirtyChunkSet[chunkId]
         if priority < existingPriority then
-            table.insert(universe.dirtyChunks[priorityKey], chunkId)
+            local list = universe.dirtyChunks[priorityKey]
+            local tail = universe.dirtyTails[priorityKey] + 1
+            list[tail] = chunkId
+            universe.dirtyTails[priorityKey] = tail
             universe.dirtyChunkSet[chunkId] = priority
         end
         return
     end
-    
-    -- Add to priority list
-    table.insert(universe.dirtyChunks[priorityKey], chunkId)
+
+    -- Add to priority list at the explicit tail
+    local list = universe.dirtyChunks[priorityKey]
+    local tail = universe.dirtyTails[priorityKey] + 1
+    list[tail] = chunkId
+    universe.dirtyTails[priorityKey] = tail
     universe.dirtyChunkSet[chunkId] = priority
 end
 

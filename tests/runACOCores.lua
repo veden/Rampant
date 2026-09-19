@@ -52,7 +52,8 @@ local Universe = {
         [4] = {},
         [5] = {}
     },
-    dirtyChunkSet = {}
+    dirtyChunkSet = {},
+    dirtyTails = { 0, 0, 0, 0, 0 }
 }
 
 -- markChunkDirty

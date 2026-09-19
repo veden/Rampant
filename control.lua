@@ -1081,7 +1081,14 @@ script.on_event(defines.events.on_tick,
                              " sweepMarks=", c["dirty.sweepMarks"] or 0,
                              " propagationMarks=", c["dirty.propagationMarks"] or 0,
                              " chunksProcessed=", c["dirty.chunksProcessed"] or 0,
-                             " epsilonSkips=", c["dirty.epsilonSkips"] or 0})
+                             " epsilonSkips=", c["dirty.epsilonSkips"] or 0,
+                             " indexLookups=", c["index.lookups"] or 0,
+                             " indexMisses=", c["index.misses"] or 0,
+                             " pending=", (function()
+                                 local p = Universe.dirtyPending
+                                 if not p then return 0 end
+                                 return (p[1] or 0) + (p[2] or 0) + (p[3] or 0) + (p[4] or 0) + (p[5] or 0)
+                             end)()})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
