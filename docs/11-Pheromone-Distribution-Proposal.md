@@ -180,3 +180,36 @@ Every change is gated by all of:
   save by the source density.
 - Touching the pick-based AI (0.071 ms) or the always-on AI (0.037 ms) in this proposal.
 - Changing the field math (the max-with-decay, the ratings) — prod-parity, verified.
+
+---
+
+## 9. Hypothesis test: scale the sweep rate (recorded)
+
+**Hypothesis**: the split's cost ceiling is the sweep rate x the dynamic fraction, so
+scaling the rate (40 -> 8, the dynamic fraction) bounds it.
+
+**Cost — CONFIRMED.** Same save, 12000 ticks x 3 runs:
+
+| Sweep rate | avg (3 runs) | spread |
+|---|---|---|
+| 40 | 1.105 / 1.110 / 1.112 ms | ±0.004 |
+| **8** | 0.903 / 0.894 / 0.896 ms | ±0.005 |
+
+Saving **0.211 ms** (predicted 0.23). The sweep's cost is its **rate**, not its list
+size — this is the confirmation.
+
+**Behavior — BROKEN.** All six scenarios **fail** at rate 8. The fields refresh 5x
+less often and the AI can no longer steer. **The rate cannot drop globally.**
+
+**Max — UNACCEPTABLE.** The max tick is **~15 ms at rate 8** (vs ~32 ms at 40) — near
+the 16.7 ms frame budget, i.e. a visible stutter. The max scales with the rate, which
+points at the sweep's periodic **burst** (the cycle-rollover list rebuild over the whole
+chunk grid via `pairs()`) rather than the per-tick slice.
+
+**Conclusion**: the static/dynamic split is the answer *precisely because* it keeps the
+rate at 40 for the **dynamic** chunks (behavior preserved) while excluding the static
+ones (cost down). Dropping the rate globally is not viable — it breaks the behavior and
+leaves the max unacceptable. The max burst is its own investigation (the rebuild).
+
+**Revised phasing**: (1) the static/dynamic split, (2) the rebuild burst (the max), then
+(3) the death decay, then (4) the derivation for the rare/long-range readers.
