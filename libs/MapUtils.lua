@@ -602,13 +602,18 @@ function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
 end
 
 -- PUBLIC: Orchestrate pheromone processing (reads storage.universe)
-function MapUtils.processPheromone(chunk, tick, player)
+function MapUtils.processPheromone(chunk, tick, player, neighbors)
     if chunk[CHUNK_TICK] > tick then
         return
     end
     chunk[CHUNK_TICK] = tick
 
-    local neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+    -- Neighbours are passed in by the caller (Processor.processDirtyChunk),
+    -- which also needs them for the propagation marking. Computing them here
+    -- again would repeat the same 8 lookups for every processed chunk. The
+    -- shared NeighborChunks table is consumed immediately below, so it is still
+    -- valid for the caller's propagation pass.
+    neighbors = neighbors or MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
     
     -- Pure calculation
     local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)

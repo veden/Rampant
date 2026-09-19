@@ -670,8 +670,17 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
     local bKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local bDeath = chunk.deathGenerator or 0
 
+    -- Neighbours are needed TWICE per chunk: the pheromone sum (inside
+    -- processPheromone) and the propagation marking below. Compute them ONCE
+    -- and pass them down. The shared NeighborChunks table is consumed
+    -- immediately in each use, so one computation serves both.
+    local neighbors
+    if chunk and chunk.map then
+        neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+    end
+
     -- Process pheromones
-    MapUtils.processPheromone(chunk, tick)
+    MapUtils.processPheromone(chunk, tick, nil, neighbors)
 
     -- Only propagate when something materially changed
     local aPlayer = chunk[PLAYER_PHEROMONE] or 0
@@ -721,13 +730,9 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
         if counters then
             counters.propagationMarks = counters.propagationMarks + 1
         end
-        -- Explicit guard: chunks always carry a map reference; if a chunk ever
-        -- lacks one the old pcall silently skipped its neighbors. Errors
-        -- beyond this guard are real bugs and must propagate.
-        local neighbors
-        if chunk and chunk.map then
-            neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
-        end
+        -- Neighbours were computed once above (chunks always carry a map
+        -- reference; if a chunk ever lacks one the old pcall silently skipped
+        -- its neighbours -- errors beyond this guard are real bugs).
         if neighbors then
             local neighborPriority = priority + 1
             if neighborPriority > 5 then neighborPriority = 5 end
