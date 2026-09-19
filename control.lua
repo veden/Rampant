@@ -1031,7 +1031,14 @@ script.on_event(defines.events.on_tick,
                     Metrics.sampleDirtyQueue(Universe.dirtyChunks)
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
-                    -- local profiler = game.create_profiler()
+                    -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
+                    -- tick's script time (2.1: game.create_profiler moved to
+                    -- helpers.create_profiler). Lets a completed non-verbose
+                    -- --benchmark run yield per-range numbers, since
+                    -- --benchmark-verbose crashes at teardown for long runs.
+                    local RANGE_TICKS = 500
+                    local rangeSample = (tick % RANGE_TICKS == 0)
+                    local rangeProfiler = rangeSample and helpers.create_profiler() or nil
 
                     if (pick == 0) then
                         processPendingChunks(tick)
@@ -1069,6 +1076,10 @@ script.on_event(defines.events.on_tick,
                     processBaseAIs(tick)
                     processNests(tick)
                     cleanSquads(tick)
+
+                    if rangeSample then
+                        log({"", "[RANGE] tick=", tick, " ", rangeProfiler})
+                    end
 end)
 
 script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
