@@ -213,3 +213,29 @@ leaves the max unacceptable. The max burst is its own investigation (the rebuild
 
 **Revised phasing**: (1) the static/dynamic split, (2) the rebuild burst (the max), then
 (3) the death decay, then (4) the derivation for the rare/long-range readers.
+
+## 10. Hypothesis test: the rebuild burst (recorded)
+
+**Hypothesis**: the max tick (~32 ms) is the cycle-rollover sweep-list rebuild — a
+`pairs()` over the whole chunk grid (~10,739 chunks) in one tick.
+
+**Change**: replaced `pairs()` with `next()` in bounded steps
+(`SWEEP_REBUILD_STEPS_PER_TICK = 40`), the old list swept meanwhile so the sweep
+never stalls. This is correct regardless (per the "pairs is unacceptable" rule) and it
+is a net improvement for the rebuild — but it is **not** the max.
+
+**Measured, same save, 12000 ticks x 3 runs:**
+
+| | avg | max |
+|---|---|---|
+| baseline | 1.109 | 31–33 ms |
+| incremental rebuild | 1.101 | 26–30 ms |
+
+**FALSIFIED**: the max is essentially unchanged, so the cycle-rollover rebuild is NOT
+the burst. The max is therefore elsewhere — the prime suspect is the **load/init path**
+(`initialScan`/`rescanAllChunks` over the whole grid in one tick, or the engine's own
+chunk generation), which is a one-time cost at load, not a per-tick burst.
+
+**Next for the max**: measure WHERE in the window it lands (first ticks vs mid-run) and
+isolate the load path. The incremental rebuild stays (correct, and it removes a
+map-size-proportional one-tick spike from the design regardless).

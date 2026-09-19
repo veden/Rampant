@@ -771,16 +771,37 @@ function Processor.processDirtyChunks(tick, universe)
         local cycleTicks = universe.chunkSweepCycleTicks
         local cycleIndex = cycleTicks and math.floor(tick / cycleTicks)
         if not sweepList or not cycleIndex or (cycleIndex ~= universe.chunkSweepCycle) then
-            sweepList = {}
-            for chunkId in pairs(universe.chunkById) do
-                sweepList[#sweepList + 1] = chunkId
+            -- INCREMENTAL REBUILD: collect ids via next() in bounded steps
+            -- per tick. pairs() over the whole grid in one tick was the max
+            -- burst (proportional to map size). The OLD list keeps being
+            -- swept while the new one is collected, so the sweep never stalls.
+            local rebuild = universe.chunkSweepRebuild
+            if not rebuild then
+                rebuild = { list = {}, cursor = nil, done = false }
+                universe.chunkSweepRebuild = rebuild
             end
-            cycleTicks = math.max(1, math.ceil(#sweepList / sweepRate))
-            universe.chunkSweepList = sweepList
-            universe.chunkSweepCycleTicks = cycleTicks
-            universe.chunkSweepCycle = cycleIndex or 0
+            local steps = 0
+            local maxSteps = Constants.SWEEP_REBUILD_STEPS_PER_TICK
+            while steps < maxSteps do
+                local k = next(universe.chunkById, rebuild.cursor)
+                if k == nil then
+                    rebuild.done = true
+                    break
+                end
+                rebuild.cursor = k
+                rebuild.list[#rebuild.list + 1] = k
+                steps = steps + 1
+            end
+            if rebuild.done then
+                sweepList = rebuild.list
+                cycleTicks = math.max(1, math.ceil(#sweepList / sweepRate))
+                universe.chunkSweepList = sweepList
+                universe.chunkSweepCycleTicks = cycleTicks
+                universe.chunkSweepCycle = cycleIndex or 0
+                universe.chunkSweepRebuild = nil
+            end
         end
-        local total = #sweepList
+        local total = sweepList and #sweepList or 0
         if total > 0 then
             local offset = (tick % cycleTicks) * sweepRate
             local sweepEnd = math.min(offset + sweepRate, total)

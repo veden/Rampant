@@ -56,6 +56,11 @@ constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 -- same rate; the sweep restores that cadence through the priority-5
 -- "stale chunks" queue. Event marks keep their higher priority.
 constants.PROCESS_SWEEP_CHUNKS_PER_TICK = 40
+-- Sweep-list rebuild: collect chunk ids via next() in bounded steps per tick
+-- rather than pairs() over the whole grid in one tick (the latter was the ~32 ms
+-- max burst). At 40/tick a ~10,739-chunk grid rebuilds in ~268 ticks (~4.5 s),
+-- spread, with the OLD list swept meanwhile so the sweep never stalls.
+constants.SWEEP_REBUILD_STEPS_PER_TICK = 40
 
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-
