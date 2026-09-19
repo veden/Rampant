@@ -1302,9 +1302,6 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     -- only checked building fit and allowed deep-water pockets).
     if not squadPosition then
         if MetricsG then MetricsG.inc("squad.deploy.centroidFailed") end
-        print("[DEPLOY] centroid failed: centroid=(" ..
-            string.format("%.1f", cx / unitCount) .. "," .. string.format("%.1f", cy / unitCount) ..
-            ") units=" .. unitCount .. " chunk=(" .. chunk.x .. "," .. chunk.y .. ")")
         squadPosition = findDeploymentPosition(
             surface,
             positionFromScaledDirections(

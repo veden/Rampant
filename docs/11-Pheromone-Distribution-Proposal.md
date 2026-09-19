@@ -269,3 +269,32 @@ allocations are the queue's `table.insert` (necessary) and the metrics ring buff
 **The max remains ~28–29 ms** — unchanged by all of the above, so it is not the sweep,
 not the rebuild, and not the metrics. The two candidates left are the **load/init scan**
 (`initialScan`/`rescanAllChunks` over the whole grid in one tick) and the **Lua GC**.
+
+## 12. Upper-end isolation: a SIGSEGV at ~25,400 ticks (recorded)
+
+Long-window benchmark (`--benchmark-ticks 50000`) on the real save:
+
+```
+Running update 25400
+timeout: the monitored command dumped core
+exit=139 (SIGSEGV)
+```
+
+**The upper end is not a slow tick — it is a hard crash (SIGSEGV) at ~25,400 ticks
+(~7 game-minutes in), with no Lua error message (a C-level crash).**
+
+The log showed repeated `[DEPLOY] centroid failed: centroid=(n,n) units=0`, i.e. NaN
+centroids. Those are a **red herring**: the centroid division IS guarded
+(`if unitCount > 0`), so the NaN only ever existed in the diagnostic `print` (now
+removed — it was debug scaffolding producing a ~7 MB log). Removing it did not stop
+the crash (exit 139 again).
+
+Candidates for the crash: the engine's own instability at long runs (the save is Space
+Age with platforms), the evolution-threshold rescan burst (`rescanAllChunks` over the whole
+grid in one tick), or a mod engine call receiving a bad value. **No Lua traceback means a
+C-level fault, so the next step is the core dump's stack (`coredumpctl`/gdb) or a narrower
+repro at the ~25,400-tick mark.**
+
+Note: `--benchmark` on the /tmp copy shows map version 2.1.14-1 and a larger file than
+the original (25.7 MB vs 24.2 MB) — the earlier UDP server runs saved the /tmp COPY. The
+original save is untouched (it was copied out first).
