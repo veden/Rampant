@@ -1037,8 +1037,8 @@ script.on_event(defines.events.on_tick,
                     -- --benchmark run yield per-range numbers, since
                     -- --benchmark-verbose crashes at teardown for long runs.
                     local RANGE_TICKS = 500
-                    local rangeSample = (tick % RANGE_TICKS == 0)
-                    local rangeProfiler = rangeSample and helpers.create_profiler() or nil
+                    local rangeSample = Metrics.isEnabled() and (tick % RANGE_TICKS == 0)
+                    local tPick = rangeSample and helpers.create_profiler() or nil
 
                     if (pick == 0) then
                         processPendingChunks(tick)
@@ -1066,19 +1066,32 @@ script.on_event(defines.events.on_tick,
                         processClouds(tick)
                         processScanChunks()
                     end
+                    if rangeSample then
+                        log({"", "[RANGE] tick=", tick, " phase=pick pick=", pick, " ", tPick})
+                    end
 
                     -- Event-driven pheromone processing (replaces wave-based processMap)
+                    local tDirty = rangeSample and helpers.create_profiler() or nil
                     processDirtyChunks(tick, Universe)
                     Executor.drain()
+                    if rangeSample then
+                        local m = Metrics.get()
+                        local c = m.counters or {}
+                        log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
+                             " sweepMarks=", c["dirty.sweepMarks"] or 0,
+                             " propagationMarks=", c["dirty.propagationMarks"] or 0,
+                             " chunksProcessed=", c["dirty.chunksProcessed"] or 0,
+                             " epsilonSkips=", c["dirty.epsilonSkips"] or 0})
+                    end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
 
+                    local tAI = rangeSample and helpers.create_profiler() or nil
                     processBaseAIs(tick)
                     processNests(tick)
                     cleanSquads(tick)
-
                     if rangeSample then
-                        log({"", "[RANGE] tick=", tick, " ", rangeProfiler})
+                        log({"", "[RANGE] tick=", tick, " phase=ai ", tAI})
                     end
 end)
 
