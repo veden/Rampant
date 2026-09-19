@@ -212,4 +212,29 @@ function Executor.run(commands)
     end
 end
 
+-- Deferred command queue.
+--
+-- Entity-lifecycle events (on_built / on_destroyed) must NOT run their
+-- handlers synchronously: a handler that creates an entity re-enters the
+-- engine's creation path while the engine is still inside the outer
+-- create_entity, which recurses (runSetup -> apply -> create -> ...) until the
+-- stack overflows. Queue the commands instead; on_tick drains a bounded number
+-- per tick, outside the engine's creation path.
+local COMMAND_QUEUE_DRAIN_PER_TICK = 20
+local _commandQueue = {}
+
+function Executor.queue(commands)
+    if not commands then return end
+    _commandQueue[#_commandQueue + 1] = commands
+end
+
+function Executor.drain()
+    local budget = COMMAND_QUEUE_DRAIN_PER_TICK
+    while budget > 0 and #_commandQueue > 0 do
+        local commands = table.remove(_commandQueue, 1)
+        Executor.run(commands)
+        budget = budget - 1
+    end
+end
+
 return Executor

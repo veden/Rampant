@@ -418,7 +418,7 @@ function biterUtils.makeUnitSpawner(attributes)
     entity.spawning_cooldown = attributes.spawningCooldown or ((attributes.spawningCooldownStart and attributes.spawningCooldownEnd) and {attributes.spawningCooldownStart, attributes.spawningCooldownEnd}) or {360, 150}
     entity.spawning_radius = attributes.spawningRadius or 10
     entity.spawning_spacing = attributes.spawningSpacing or 3
-    entity.build_base_evolution_requirement = attributes.evolutionRequirement or 0.0
+    -- build_base_evolution_requirement: removed in 2.1 (was 1.1 spawner base-building gate).
     entity.call_for_help_radius = attributes.helpRadius or 50
 
     -- Apply custom tints to inherited animations
@@ -502,7 +502,7 @@ function biterUtils.makeWorm(attributes)
         attack_from_start_frame = true,
 
         allow_turning_when_starting_attack = true,
-        build_base_evolution_requirement = attributes.evolutionRequirement or 0.0,
+        -- build_base_evolution_requirement: removed in 2.1.
         call_for_help_radius = attributes.helpRadius or 60,
         spawn_decorations_on_expansion = true,
         spawn_decoration =

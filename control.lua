@@ -423,7 +423,8 @@ local function onEnemyBaseBuild(entity, tick)
         cmd.tick = tick
     end
 
-    Executor.run(commands)
+    -- Defer: this runs inside an entity-creation event (see Executor.queue).
+    Executor.queue(commands)
 end
 
 local function onBuild(event)
@@ -571,7 +572,8 @@ local function onDeath(event)
                         cmd.causeRef = cause
                     end
                 end
-                Executor.run(commands)
+                -- Defer: runs inside on_destroyed (see Executor.queue).
+                Executor.queue(commands)
             end
 
             -- Scent application stays here (impure: modifies chunk pheromones directly)
@@ -1060,6 +1062,7 @@ script.on_event(defines.events.on_tick,
 
                     -- Event-driven pheromone processing (replaces wave-based processMap)
                     processDirtyChunks(tick, Universe)
+                    Executor.drain()
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
 
