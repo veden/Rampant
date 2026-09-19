@@ -623,6 +623,18 @@ local function onDeath(event)
     end
 end
 
+
+-- Per-subsystem benchmark timing. On sample ticks only, time one call and log
+-- it; otherwise call straight through. Module-level (no per-tick closure).
+local function timed(tick, rangeSample, name, fn, a, b)
+    if not rangeSample then
+        return fn(a, b)
+    end
+    local profiler = helpers.create_profiler()
+    fn(a, b)
+    log({"", "[SUB] tick=", tick, " name=", name, " ", profiler})
+end
+
 local function processSurfaceTile(map, position, chunks, tick)
     local chunk = getChunkByPosition(map, position)
 
@@ -1041,12 +1053,12 @@ script.on_event(defines.events.on_tick,
                     local tPick = rangeSample and helpers.create_profiler() or nil
 
                     if (pick == 0) then
-                        processPendingChunks(tick)
+                        timed(tick, rangeSample, "pendingChunks", processPendingChunks, tick)
                         if next(Universe.maps) ~= nil then
-                            recycleBases()
+                            timed(tick, rangeSample, "recycleBases", recycleBases)
                         end
-                        cleanUpMapTables(tick)
-                        planning(gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
+                        timed(tick, rangeSample, "cleanUpMap", cleanUpMapTables, tick)
+                        timed(tick, rangeSample, "planning", planning, gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
                         -- One-time rescan when evolution rises: registers enemy structures that spawned after chunk creation
                         if not Universe.rescannedForEvolution and Universe.evolutionLevel > 0.3 then
                             for _, map in pairs(Universe.maps) do
@@ -1054,17 +1066,17 @@ script.on_event(defines.events.on_tick,
                             end
                             Universe.rescannedForEvolution = true
                         end
-                        processHives(tick)
-                        cleanHivesData()
+                        timed(tick, rangeSample, "hives", processHives, tick)
+                        timed(tick, rangeSample, "cleanHives", cleanHivesData)
                     elseif (pick == 1) then
-                        processPlayers(gameRef.connected_players, tick)
+                        timed(tick, rangeSample, "players", processPlayers, gameRef.connected_players, tick)
                     elseif (pick == 2) then
-                        processPendingUpgrades(tick)
-                        processVengence()
-                        disperseVictoryScent(Universe)
-                        processAttackWaves()
-                        processClouds(tick)
-                        processScanChunks()
+                        timed(tick, rangeSample, "pendingUpgrades", processPendingUpgrades, tick)
+                        timed(tick, rangeSample, "vengence", processVengence)
+                        timed(tick, rangeSample, "victoryScent", disperseVictoryScent, Universe)
+                        timed(tick, rangeSample, "attackWaves", processAttackWaves)
+                        timed(tick, rangeSample, "clouds", processClouds, tick)
+                        timed(tick, rangeSample, "scanChunks", processScanChunks)
                     end
                     if rangeSample then
                         log({"", "[RANGE] tick=", tick, " phase=pick pick=", pick, " ", tPick})
@@ -1072,7 +1084,7 @@ script.on_event(defines.events.on_tick,
 
                     -- Event-driven pheromone processing (replaces wave-based processMap)
                     local tDirty = rangeSample and helpers.create_profiler() or nil
-                    processDirtyChunks(tick, Universe)
+                    timed(tick, rangeSample, "dirty", processDirtyChunks, tick, Universe)
                     Executor.drain()
                     if rangeSample then
                         local m = Metrics.get()
@@ -1090,9 +1102,9 @@ script.on_event(defines.events.on_tick,
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
 
                     local tAI = rangeSample and helpers.create_profiler() or nil
-                    processBaseAIs(tick)
-                    processNests(tick)
-                    cleanSquads(tick)
+                    timed(tick, rangeSample, "baseAIs", processBaseAIs, tick)
+                    timed(tick, rangeSample, "nests", processNests, tick)
+                    timed(tick, rangeSample, "cleanSquads", cleanSquads, tick)
                     if rangeSample then
                         log({"", "[RANGE] tick=", tick, " phase=ai ", tAI})
                     end

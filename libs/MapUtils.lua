@@ -335,6 +335,30 @@ end
     /|\
     6 7 8
 ]]--
+-- PRECOMPUTED MOVABLE NEIGHBOURS. The movable-neighbour set depends only on
+-- passable classes (terrain), which change only on landfill/water events, yet the
+-- per-chunk diffusion loop recomputed it every tick via 8 canMoveChunkDirection
+-- calls. chunk.movableMask is an 8-bit mask (bit i-1 = neighbour i movable) and
+-- chunk.movableCount = popcount(mask) + 1 (the divisor). Both are invalidated on
+-- setPassable for the chunk and its 8 neighbours (whose masks include this class).
+local function buildMovableMask(chunk, neighbors)
+    local startClass = chunk.passable or CHUNK_ALL_DIRECTIONS
+    local mask = 0
+    local count = 1
+    for i = 1, 8 do
+        local neighbor = neighbors[i]
+        if neighbor and neighbor ~= -1 then
+            local endClass = neighbor.passable or CHUNK_ALL_DIRECTIONS
+            if ChunkLogic.canMove(startClass, i, endClass) then
+                mask = mask + bit32.lshift(1, i - 1)
+                count = count + 1
+            end
+        end
+    end
+    return mask, count
+end
+MapUtils.buildMovableMask = buildMovableMask
+
 function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     -- Pure decision delegated to ChunkLogic (lookup table). The table is proven
     -- equivalent to the original branch chain over the whole input domain by
@@ -503,33 +527,39 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local chunkEnemy = chunk[ENEMY_PHEROMONE]
     local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE]
 
-    local chunkCount = 1
     local enemyStructureCount = getEnemyStructureCount(chunk)
 
+    -- Cached movable-neighbour mask/count (static between passable changes).
+    local movableMask = chunk.movableMask
+    if movableMask == nil then
+        local count
+        movableMask, count = buildMovableMask(chunk, neighbors)
+        chunk.movableMask = movableMask
+        chunk.movableCount = count
+    end
+    local chunkCount = chunk.movableCount
+
     for i = 1, 8 do
-        local neighbor = neighbors[i]
-        if neighbor and neighbor ~= -1 then
-            if MapUtils.canMoveChunkDirection(i, chunk, neighbor) then
-                chunkCount = chunkCount + 1
-                chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
-                chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
-                -- getCombinedDeathGenerator inlined (8 calls/chunk in the
-                -- hot loop; clamped sum, verbatim semantics).
-                local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
-                chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
-                
-                local tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
-                if chunkKamikaze < tempPheromone then
-                    chunkKamikaze = tempPheromone
-                end
-                tempPheromone = neighbor[BASE_PHEROMONE]
-                if chunkBase < tempPheromone then
-                    chunkBase = tempPheromone
-                end
-                tempPheromone = neighbor[RESOURCE_PHEROMONE]
-                if chunkResource < tempPheromone then
-                    chunkResource = tempPheromone
-                end
+        if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
+            local neighbor = neighbors[i]
+            chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
+            chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
+            -- getCombinedDeathGenerator inlined (8 calls/chunk in the
+            -- hot loop; clamped sum, verbatim semantics).
+            local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
+            chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
+
+            local tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
+            if chunkKamikaze < tempPheromone then
+                chunkKamikaze = tempPheromone
+            end
+            tempPheromone = neighbor[BASE_PHEROMONE]
+            if chunkBase < tempPheromone then
+                chunkBase = tempPheromone
+            end
+            tempPheromone = neighbor[RESOURCE_PHEROMONE]
+            if chunkResource < tempPheromone then
+                chunkResource = tempPheromone
             end
         end
     end

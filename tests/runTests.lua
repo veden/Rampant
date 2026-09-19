@@ -82,6 +82,7 @@ local function runIt()
     local c = ((2 ^ 32) - 1)
     bit32 = {}
     bit32["bxor"] = function(x, y) return (x ~ y) & c end
+    bit32["band"] = function(x, y) return x & y end
 
     bit32["lshift"] = function(x, y) return (x << y) & c end
 

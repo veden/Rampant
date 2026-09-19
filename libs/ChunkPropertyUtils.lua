@@ -343,6 +343,22 @@ function ChunkPropertyUtils.setPassable(chunk, value)
     else
         chunk.passable = value
     end
+    -- Invalidate the cached movable masks: this chunk's and its 8 neighbours'
+    -- (each neighbour's mask depends on this chunk's passable class). Terrain
+    -- events are rare, so the O(9) invalidation is negligible.
+    chunk.movableMask = nil
+    chunk.movableCount = nil
+    local map = chunk.map
+    if map and MapUtilsG then
+        local neighbors = MapUtilsG.getNeighborChunks(map, chunk.x, chunk.y)
+        for i = 1, 8 do
+            local n = neighbors[i]
+            if n and n ~= -1 then
+                n.movableMask = nil
+                n.movableCount = nil
+            end
+        end
+    end
 end
 
 function ChunkPropertyUtils.getPathRating(chunk)
