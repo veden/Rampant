@@ -239,3 +239,33 @@ chunk generation), which is a one-time cost at load, not a per-tick burst.
 **Next for the max**: measure WHERE in the window it lands (first ticks vs mid-run) and
 isolate the load path. The incremental rebuild stays (correct, and it removes a
 map-size-proportional one-tick spike from the design regardless).
+
+## 11. Hot-path scan: pairs / concat / allocation (recorded)
+
+Scanned libs/ for `pairs()`, string concatenation, and per-call allocation in the
+hot path.
+
+**1. `Metrics.inc` string-keyed counters — FIXED.** Called four times per chunk in
+the hot path (`dirty.propagationMarks`, `dirty.epsilonSkips`, `dirty.sweepMarks`,
+`dirty.chunksProcessed`); each was a string-keyed hash lookup on `counters[name]` —
+the same class as the queue keys. Now the hot path increments a per-tick accumulator
+table passed in by the caller, flushed to Metrics once per tick (public metric names
+preserved). Measured: avg 1.102 vs 1.109 (~0.007 ms) — small, as expected from
+~4 lookups/chunk.
+
+**2. `MapUtils.getEffectivePheromone` — DEAD.** It builds `type .. "LastRefresh"`
+(a concat per call) and compares `type == "PLAYER_PHEROMONE"` etc. (string compares).
+No callers (only the `ChunkPropertyUtils` wrapper, itself uncalled). Delete or leave;
+it is not hot.
+
+**3. `pairs()` — FIXED.** The only per-tick `pairs()` was the sweep-list rebuild,
+now `next()` in bounded steps. The remaining `pairs()` are in on-demand paths
+(Observability queries) or one-time migrations.
+
+**4. Allocations — mostly addressed.** The per-mark `{id=,priority=}` tables and the
+two snapshot tables are gone (direct marking, locals). The remaining per-chunk
+allocations are the queue's `table.insert` (necessary) and the metrics ring buffer.
+
+**The max remains ~28–29 ms** — unchanged by all of the above, so it is not the sweep,
+not the rebuild, and not the metrics. The two candidates left are the **load/init scan**
+(`initialScan`/`rescanAllChunks` over the whole grid in one tick) and the **Lua GC**.

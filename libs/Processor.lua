@@ -647,7 +647,11 @@ end
 -- ============================================
 
 -- PURE: Process a single dirty chunk (no side effects on Universe)
-function Processor.processDirtyChunk(chunk, tick, priority)
+-- `counters` is a per-tick accumulator (a plain local table passed in by the
+-- caller) so the hot path does not do a string-keyed Metrics hash lookup per
+-- chunk; the caller flushes it to Metrics once per tick, keeping the public
+-- metric names.
+function Processor.processDirtyChunk(chunk, tick, priority, counters)
     if not chunk or not chunk.valid then
         return false, 0
     end
@@ -714,8 +718,8 @@ function Processor.processDirtyChunk(chunk, tick, priority)
     -- (up to 8 per chunk) for the drain to read back. markChunkDirty dedupes,
     -- so marking here is equivalent.
     if changed then
-        if MetricsG then
-            MetricsG.inc("dirty.propagationMarks")
+        if counters then
+            counters.propagationMarks = counters.propagationMarks + 1
         end
         -- Explicit guard: chunks always carry a map reference; if a chunk ever
         -- lacks one the old pcall silently skipped its neighbors. Errors
@@ -734,8 +738,8 @@ function Processor.processDirtyChunk(chunk, tick, priority)
                 end
             end
         end
-    elseif MetricsG then
-        MetricsG.inc("dirty.epsilonSkips")
+    elseif counters then
+        counters.epsilonSkips = counters.epsilonSkips + 1
     end
 
     return true
@@ -746,6 +750,11 @@ function Processor.processDirtyChunks(tick, universe)
     universe = universe or storage.universe
     local processed = 0
     local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
+
+    -- Per-tick metric accumulator: the hot path increments plain fields and this
+    -- flushes to Metrics once at the end (string-keyed Metrics lookups per chunk
+    -- were the same class as the queue keys).
+    local counters = { propagationMarks = 0, epsilonSkips = 0, sweepMarks = 0, chunksProcessed = 0 }
 
     -- Background sweep: re-mark a slice of the chunk grid at priority 5 so
     -- persistent sources (player buildings, ore, nests) re-broadcast their
@@ -810,9 +819,7 @@ function Processor.processDirtyChunks(tick, universe)
                 -- Skip stale ids (chunks deleted since the rebuild; pruned
                 -- at the next cycle rebuild)
                 if MapUtils.getChunkById(chunkId, universe) then
-                    if MetricsG then
-                        MetricsG.inc("dirty.sweepMarks")
-                    end
+                    counters.sweepMarks = counters.sweepMarks + 1
                     markChunkDirty(chunkId, 5, tick, universe)
                 end
             end
@@ -848,13 +855,11 @@ function Processor.processDirtyChunks(tick, universe)
 
                 -- Get chunk from map
                 local chunk = MapUtils.getChunkById(chunkId, universe)
-                local success = Processor.processDirtyChunk(chunk, tick, priority)
+                local success = Processor.processDirtyChunk(chunk, tick, priority, counters)
 
                 if success then
                     processed = processed + 1
-                    if MetricsG then
-                        MetricsG.inc("dirty.chunksProcessed")
-                    end
+                    counters.chunksProcessed = counters.chunksProcessed + 1
                 end
             end
         end
@@ -873,6 +878,14 @@ function Processor.processDirtyChunks(tick, universe)
         heads[priorityKey] = head
 
         if processed >= maxPerTick then break end
+    end
+
+    -- Flush the per-tick counters once (public metric names preserved).
+    if MetricsG then
+        if counters.propagationMarks > 0 then MetricsG.inc("dirty.propagationMarks", counters.propagationMarks) end
+        if counters.epsilonSkips > 0 then MetricsG.inc("dirty.epsilonSkips", counters.epsilonSkips) end
+        if counters.sweepMarks > 0 then MetricsG.inc("dirty.sweepMarks", counters.sweepMarks) end
+        if counters.chunksProcessed > 0 then MetricsG.inc("dirty.chunksProcessed", counters.chunksProcessed) end
     end
 end
 
