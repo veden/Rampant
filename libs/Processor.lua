@@ -818,11 +818,7 @@ function Processor.processDirtyChunks(tick, universe)
                 local chunkId = sweepList[i]
                 -- Skip stale ids (chunks deleted since the rebuild; pruned
                 -- at the next cycle rebuild)
-                -- Direct table access, not MapUtils.getChunkById: this is only
-                -- an existence check (the drain re-fetches the chunk anyway), and
-                -- the function call plus its two metrics increments per swept
-                -- chunk cost more than the probe itself.
-                if universe.chunkById and universe.chunkById[chunkId] then
+                if MapUtils.getChunkById(chunkId, universe) then
                     counters.sweepMarks = counters.sweepMarks + 1
                     markChunkDirty(chunkId, 5, tick, universe)
                 end
