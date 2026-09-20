@@ -8,7 +8,7 @@ local Constants = require("Constants")
 local my_collection = TestCollection:new()
 
 local originalGetChunkById
-local originalGetNeighborChunks
+local originalGetChunkByXY
 local world
 
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
@@ -19,22 +19,17 @@ local function makeWorld()
         [1] = { id = 1, x = 0, y = 0, nestCount = 1 },
         [2] = { id = 2, x = 32, y = 0, nestCount = 0 },
     }
-    local neighbors = {
-        [1] = { [3] = chunks[2], [1] = -1, [2] = -1, [4] = -1,
-                [5] = -1, [6] = -1, [7] = -1, [8] = -1 },
-        [2] = { [6] = chunks[1], [1] = -1, [2] = -1, [3] = -1,
-                [4] = -1, [5] = -1, [7] = -1, [8] = -1 },
-    }
     local universe = { chunkById = chunks }
 
     originalGetChunkById = MapUtils.getChunkById
-    originalGetNeighborChunks = MapUtils.getNeighborChunks
+    originalGetChunkByXY = MapUtils.getChunkByXY
     MapUtils.getChunkById = function(chunkId)
         return chunks[chunkId]
     end
-    MapUtils.getNeighborChunks = function(_, x, y)
-        local chunkId = (x == 0 and y == 0) and 1 or 2
-        return neighbors[chunkId] or {}
+    MapUtils.getChunkByXY = function(_, x, y)
+        if x == 0 and y == 0 then return chunks[1] end
+        if x == 32 and y == 0 then return chunks[2] end
+        return -1
     end
 
     Runtime.init(universe)
@@ -43,7 +38,7 @@ end
 
 local function restoreWorld()
     MapUtils.getChunkById = originalGetChunkById
-    MapUtils.getNeighborChunks = originalGetNeighborChunks
+    MapUtils.getChunkByXY = originalGetChunkByXY
 end
 
 my_collection:set_setup(function()

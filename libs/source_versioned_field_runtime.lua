@@ -40,6 +40,17 @@ local FIELD_BASE = Constants.BASE_PHEROMONE
 local FIELD_ENEMY = Constants.ENEMY_PHEROMONE
 local FIELD_RESOURCE = Constants.RESOURCE_PHEROMONE
 local ENEMY_MULTIPLIER = Constants.ENEMY_PHEROMONE_MULTIPLER
+local CHUNK_SIZE = Constants.CHUNK_SIZE
+local NEIGHBOR_OFFSETS = {
+    { -CHUNK_SIZE, -CHUNK_SIZE }, -- 1
+    { 0, -CHUNK_SIZE },          -- 2
+    { CHUNK_SIZE, -CHUNK_SIZE },  -- 3
+    { -CHUNK_SIZE, 0 },           -- 4
+    { CHUNK_SIZE, 0 },            -- 5
+    { -CHUNK_SIZE, CHUNK_SIZE },  -- 6
+    { 0, CHUNK_SIZE },            -- 7
+    { CHUNK_SIZE, CHUNK_SIZE },   -- 8
+}
 
 local SOURCE_FIELDS = {
     [FIELD_PLAYER] = true,
@@ -152,13 +163,23 @@ function Runtime.process(opts)
 end
 
 -- Reusable neighbour-id table. Solver consumes it immediately.
+--
+-- This deliberately does not use MapUtils.getNeighborChunks: that function
+-- returns a single shared table. A source-versioned read can trigger a solve
+-- while MapUtils.calculatePheromoneUpdates is still iterating its neighbour
+-- table, which would overwrite that shared table mid-loop (observed as a
+-- non-recoverable `chunk` number error at tick 0). Building the ids from
+-- the chunk grid avoids the reentrancy.
 function Runtime.neighborOf(chunkId)
     local chunk = MapUtils.getChunkById(chunkId, Universe)
     if not chunk then return {} end
-    local neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+    local map = chunk.map
+    local x = chunk.x
+    local y = chunk.y
     local n = 0
     for i = 1, 8 do
-        local neighbor = neighbors[i]
+        local offset = NEIGHBOR_OFFSETS[i]
+        local neighbor = MapUtils.getChunkByXY(map, x + offset[1], y + offset[2])
         if neighbor and neighbor ~= -1 then
             n = n + 1
             NeighborIds[n] = neighbor.id
