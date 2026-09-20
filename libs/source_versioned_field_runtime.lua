@@ -22,6 +22,7 @@ local Solver = require("source_versioned_field")
 local MapUtils = require("MapUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local Constants = require("Constants")
+local SquadLogic = require("squad_logic")
 
 local Runtime = {}
 
@@ -31,6 +32,8 @@ local SourceQueue = {}
 local QueueHead = 1
 local QueueCount = 0
 local DRAIN_PER_TICK = 40
+local Initialized = false
+local SolvedFields = {}
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
 local FIELD_BASE = Constants.BASE_PHEROMONE
@@ -52,6 +55,16 @@ function Runtime.init(universe)
     SourceQueue = {}
     QueueHead = 1
     QueueCount = 0
+    SolvedFields = {}
+    Initialized = true
+    -- The pure SquadLogic accessors delegate to this reader when the
+    -- startup flag is enabled. Keeping the hook on SquadLogic avoids a
+    -- Factorio dependency in the pure decision module.
+    SquadLogic.setSourceVersionedFieldReader(Runtime.readChunk)
+end
+
+function Runtime.isInitialized()
+    return Initialized
 end
 
 function Runtime.fieldKey(fieldType)
@@ -69,6 +82,7 @@ function Runtime.ensureField(fieldType)
 end
 
 function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
+    if not Initialized or not chunk or not chunk.id then return false end
     QueueCount = QueueCount + 1
     SourceQueue[QueueCount] = {
         chunk = chunk,
@@ -76,16 +90,34 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
         oldValue = oldValue,
         newValue = newValue,
     }
+    return true
 end
 
 function Runtime.solveAll(opts)
     for fieldType in pairs(SOURCE_FIELDS) do
-        local field, _ = Runtime.solveField(fieldType, opts)
-        Universe.sourceVersionedFields[Runtime.fieldKey(fieldType)] = field
+        local field = Runtime.solveField(fieldType, opts)
+        local key = Runtime.fieldKey(fieldType)
+        Universe.sourceVersionedFields[key] = field
+        SolvedFields[key] = true
     end
 end
 
+-- Solve one field on first use. Solving lazily keeps the first H8 tick from
+-- paying for fields that are never read while still ensuring a source change
+-- propagates into a complete field.
+function Runtime.ensureSolved(fieldType, opts)
+    local key = Runtime.fieldKey(fieldType)
+    if not SolvedFields[key] then
+        local field = Runtime.solveField(fieldType, opts)
+        Universe.sourceVersionedFields[key] = field
+        SolvedFields[key] = true
+        return field, true
+    end
+    return Universe.sourceVersionedFields[key] or {}, false
+end
+
 function Runtime.process(opts)
+    if not Initialized then return 0 end
     if QueueHead > QueueCount then
         SourceQueue = {}
         QueueHead = 1
@@ -98,11 +130,16 @@ function Runtime.process(opts)
         SourceQueue[QueueHead] = nil
         QueueHead = QueueHead + 1
         processed = processed + 1
-        local field = Runtime.ensureField(item.fieldType)
-        if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
-            Runtime.propagateIncrease(item.chunk, item.fieldType, field, opts)
-        else
-            Runtime.recompute({ item.chunk.id }, item.fieldType, field, opts)
+
+        if item.chunk and item.chunk.id then
+            local field = Runtime.ensureSolved(item.fieldType, opts)
+            if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
+                Runtime.propagateIncrease(item.chunk, item.fieldType, field, opts)
+            else
+                local key = Runtime.fieldKey(item.fieldType)
+                Universe.sourceVersionedFields[key] = Runtime.recompute(
+                    { item.chunk.id }, item.fieldType, field, opts)
+            end
         end
     end
     if QueueHead > QueueCount then
@@ -133,6 +170,7 @@ function Runtime.neighborOf(chunkId)
 end
 
 function Runtime.sourceValue(chunk, fieldType)
+    if not chunk then return 0 end
     if fieldType == FIELD_PLAYER then
         return chunk.playerGenerator or 0
     elseif fieldType == FIELD_BASE then
@@ -173,6 +211,14 @@ end
 function Runtime.recompute(changedSources, fieldType, field, opts)
     local sources = Runtime.buildSources(fieldType)
     return Solver.recompute(changedSources, sources, field, Runtime.neighborOf, opts)
+end
+
+-- Read hook installed into SquadLogic. Returns the solved source-versioned
+-- value for the chunk, or nil when the runtime is not initialized.
+function Runtime.readChunk(fieldType, chunk)
+    if not Initialized or not chunk or chunk.id == nil then return nil end
+    local field = Runtime.ensureSolved(fieldType)
+    return field[chunk.id] or 0
 end
 
 function Runtime.read(field, chunkId, tick, lastRefresh, decay)

@@ -78,6 +78,8 @@ local GENERATOR_PHEROMONE_LEVEL_3 = Constants.GENERATOR_PHEROMONE_LEVEL_3
 local GENERATOR_PHEROMONE_LEVEL_5 = Constants.GENERATOR_PHEROMONE_LEVEL_5
 local GENERATOR_PHEROMONE_LEVEL_6 = Constants.GENERATOR_PHEROMONE_LEVEL_6
 
+local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
+
 -- imported functions
 
 local removeBaseResourceChunk = ChunkPropertyUtils.removeBaseResourceChunk
@@ -128,6 +130,23 @@ local mMax = math.max
 local mFloor = math.floor
 
 -- module code
+
+local SourceVersionedFieldRuntime
+
+function ChunkUtils.setSourceVersionedFieldRuntime(runtime)
+    SourceVersionedFieldRuntime = runtime
+end
+
+local function queueSourceChange(chunk, fieldType, oldValue, newValue)
+    if not SourceVersionedFieldRuntime then return end
+    if not chunk or chunk.id == nil then return end
+    if oldValue == newValue then return end
+    SourceVersionedFieldRuntime.queueSource(chunk, fieldType, oldValue, newValue)
+end
+
+local function enemySourceValue(chunk)
+    return getEnemyStructureCount(chunk) * ENEMY_PHEROMONE_MULTIPLER
+end
 
 local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box
@@ -272,7 +291,9 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
 
             local waterTiles = (1 - (surface.count_tiles_filtered(Universe.isFilteredTilesQuery) * 0.0009765625)) * 0.80
             setPathRating(chunk, waterTiles + neutralObjects)
+            local oldPlayerBaseGenerator = chunk.playerBaseGenerator or 0
             setPlayerBaseGenerator(chunk, playerObjects)
+            queueSourceChange(chunk, BASE_PHEROMONE, oldPlayerBaseGenerator, chunk.playerBaseGenerator or 0)
 
             local resources = surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
             setResourceGenerator(chunk, resources)
@@ -530,6 +551,7 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
+            local oldEnemySourceValue = enemySourceValue(chunk)
             if addFunc(chunk, entityUnitNumber) then
                 added = true
                 setChunkBase(chunk, base)
@@ -537,6 +559,7 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
                 if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
                     processNestActiveness(chunk, tick)
                 end
+                queueSourceChange(chunk, ENEMY_PHEROMONE, oldEnemySourceValue, enemySourceValue(chunk))
             end
         end
     end
@@ -597,6 +620,7 @@ function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
     for i=1,#chunks do
         local chunk = chunks[i]
         if (chunk ~= -1) then
+            local oldEnemySourceValue = enemySourceValue(chunk)
             if removeFunc(chunk, entityUnitNumber) then
                 local base = chunk.base
                 local baseId = base.id
@@ -614,6 +638,7 @@ function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
                     removeBaseResourceChunk(base, chunk)
                     removeChunkBase(chunk, base)
                 end
+                queueSourceChange(chunk, ENEMY_PHEROMONE, oldEnemySourceValue, enemySourceValue(chunk))
             end
         end
     end
@@ -642,7 +667,9 @@ function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
         for i=1,#overlapArray do
             local chunk = overlapArray[i]
             if (chunk ~= -1) then
+                local oldBaseSourceValue = chunk.playerBaseGenerator or 0
                 local amount = addPlayerBaseGenerator(chunk, entityValue)
+                queueSourceChange(chunk, BASE_PHEROMONE, oldBaseSourceValue, amount)
                 if (amount == 0) then
                     chunk[BASE_PHEROMONE] = 0
                 end

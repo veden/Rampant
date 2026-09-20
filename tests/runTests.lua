@@ -416,6 +416,9 @@ local test_collections = {}
     local test_source_versioned_field = require("tests.test_source_versioned_field")
     table.insert(test_collections, { name = "Source-Versioned Field", collection = test_source_versioned_field })
 
+    local test_source_versioned_field_runtime = require("tests.test_source_versioned_field_runtime")
+    table.insert(test_collections, { name = "Source-Versioned Field Runtime", collection = test_source_versioned_field_runtime })
+
     local test_squad_pure = require("tests.test_squad_pure")
     table.insert(test_collections, { name = "Squad Pure", collection = test_squad_pure })
 

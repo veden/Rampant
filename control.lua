@@ -209,6 +209,7 @@ local function initializeLibraries(addProperties)
     Metrics.init(Universe)
     if Constants.USE_SOURCE_VERSIONED_FIELD then
         SourceVersionedFieldRuntime.init(Universe)
+        ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
     end
 end
 
@@ -1088,6 +1089,9 @@ script.on_event(defines.events.on_tick,
                     local tDirty = rangeSample and helpers.create_profiler() or nil
                     timed(tick, rangeSample, "dirty", processDirtyChunks, tick, Universe)
                     Executor.drain()
+                    if Constants.USE_SOURCE_VERSIONED_FIELD then
+                        timed(tick, rangeSample, "sourceField", SourceVersionedFieldRuntime.process)
+                    end
                     if rangeSample then
                         local m = Metrics.get()
                         local c = m.counters or {}

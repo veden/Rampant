@@ -55,6 +55,24 @@ local PLAYER_PHEROMONE_MULTIPLER = Constants.PLAYER_PHEROMONE_MULTIPLER
 local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
 local KAMIKAZE_SIEGE_MULTIPLIER = Constants.KAMIKAZE_SIEGE_MULTIPLIER
 
+local Squad = {}
+
+-- Optional source-versioned field reader. The runtime adapter installs this
+-- when `rampant--sourceVersionedField` is enabled. Keeping it as an injected
+-- callback lets this module stay free of Factorio/storage dependencies.
+local sourceVersionedFieldReader
+
+function Squad.setSourceVersionedFieldReader(reader)
+    sourceVersionedFieldReader = reader
+end
+
+local function readSourceVersionedField(fieldType, chunk)
+    if Constants.USE_SOURCE_VERSIONED_FIELD and sourceVersionedFieldReader then
+        return sourceVersionedFieldReader(fieldType, chunk)
+    end
+    return nil
+end
+
 -- Settle trigger decision reasons
 local REASON_MAX_DISTANCE = "max_distance"
 local REASON_EMPTY_RESOURCE_CHUNK = "empty_resource_chunk"
@@ -80,8 +98,6 @@ local FORM_REJECT_METRICS = {
     settlerGroups = "squad.formReject.settler.groups",
     settlerThreshold = "squad.formReject.settler.threshold",
 }
-
-local Squad = {}
 
 --- Evaluate what a squad should do. Returns a table of commands.
 -- State transitions: RETREATING/GUARDING → SETTLING or RAIDING.
@@ -153,6 +169,11 @@ function Squad.playerPheromone(chunk, tick)
 end
 
 function Squad.basePheromone(chunk, tick)
+    local sourceVersionedValue = readSourceVersionedField(BASE_PHEROMONE, chunk)
+    if sourceVersionedValue ~= nil then
+        return sourceVersionedValue
+    end
+
     -- ACO decay-on-read: diffused base pheromone decays by time since the
     -- chunk last re-processed. But in a chunk WITH nests, the base
     -- pheromone IS the nests' presence — constant while they exist. Without
@@ -169,6 +190,11 @@ function Squad.basePheromone(chunk, tick)
 end
 
 function Squad.enemyPheromone(chunk, tick)
+    local sourceVersionedValue = readSourceVersionedField(ENEMY_PHEROMONE, chunk)
+    if sourceVersionedValue ~= nil then
+        return sourceVersionedValue
+    end
+
     local decayed = Squad.decayedValue(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
     local structures = (chunk.nestCount or 0) + (chunk.turretCount or 0)
         + (chunk.utilityCount or 0) + (chunk.hiveCount or 0)
