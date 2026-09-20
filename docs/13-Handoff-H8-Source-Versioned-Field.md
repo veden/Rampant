@@ -293,8 +293,17 @@ Detail: base=true squad=true unitsAtWall=true wallDamaged=true ticks=24917
 TESTS_COMPLETE
 ```
 
-Real-save A/B is still to be run. The benchmark can use the same writable
-user-data setup with `--benchmark Starting2.zip --benchmark-ticks 12000`.
+Real-save A/B has been started with the same writable user-data setup
+(`--benchmark Starting2.zip --benchmark-ticks 12000`). The H8-enabled side is
+still slower than H7, so the flag remains off by default. Batching decrease
+recomputes into one per field per tick narrowed the gap, but the full-solve
+fallback on source decreases remains the dominant extra cost. The next required
+work is a local/bounded decrease recompute or an equivalent per-source
+contribution structure.
+
+Per-range H8 dirty/source timings during the A/B showed the fallback solve
+appearing as isolated 80-180 ms source-field ranges; the surrounding ranges
+were sub-millisecond. That is the signature to remove.
 
 ## Death pheromone findings
 
