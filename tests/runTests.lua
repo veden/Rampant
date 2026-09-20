@@ -413,6 +413,9 @@ local test_collections = {}
     local test_chunk_logic = require("tests.test_chunk_logic")
     table.insert(test_collections, { name = "Chunk Logic", collection = test_chunk_logic })
 
+    local test_source_versioned_field = require("tests.test_source_versioned_field")
+    table.insert(test_collections, { name = "Source-Versioned Field", collection = test_source_versioned_field })
+
     local test_squad_pure = require("tests.test_squad_pure")
     table.insert(test_collections, { name = "Squad Pure", collection = test_squad_pure })
 
