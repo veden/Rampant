@@ -256,6 +256,30 @@ end-to-end for the enemy and base fields:
 This is still partial H8 integration. Player and resource fields have not
 been switched, and the decrease path still uses the full-solve fallback.
 
+### Behavior validation
+
+`pheromone-dynamics` was run with H8 enabled using a writable Factorio
+user-data directory and a copy of the mod (the read-only install can be
+left untouched; `read-data` can point at the installed data):
+
+```text
+[PASS] generation: wall base=550.00
+[PASS] diffusion gradient: wall 550.00 > mid 495.00 > nest 400.95
+[PASS] nest enemy presence=1822.50
+Passed: 1
+Failed: 0
+TESTS_COMPLETE
+ticks=29438
+```
+
+The first H8-enabled run exposed a real integration bug: the runtime
+neighbour lookup reused `MapUtils.getNeighborChunks`' shared table, and an H8
+read inside the H7 diffusion loop overwrote that table mid-iteration. Fixed
+in `749d9aa` by building solver neighbour ids directly from
+`MapUtils.getChunkByXY`.
+
+`wall-defense` and real-save A/B are still to be run.
+
 ## Death pheromone findings
 
 Controlled same-tick death-response test:
