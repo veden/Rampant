@@ -237,6 +237,25 @@ constants.USE_SOURCE_VERSIONED_FIELD
 
 The H8 path is initialized but not yet active.
 
+### Post-handoff wiring progress
+
+Commits `5cf6d13` and `39e608b` wired the first source-change path
+end-to-end for the enemy and base fields:
+
+- enemy structure changes queue from `registerEnemyBaseStructure` /
+  `unregisterEnemyBaseStructure`;
+- player-base changes queue from `accountPlayerEntity` and the initial scan;
+- the queue drains in the tick path behind
+  `Constants.USE_SOURCE_VERSIONED_FIELD`;
+- base/enemy reads delegate to the solved source-versioned field from
+  `SquadLogic`, `ChunkPropertyUtils`, `control.lua`, and
+  `Observability.queryPheromones`;
+- the field is solved lazily on first process/read, so no separate
+  startup solve is required.
+
+This is still partial H8 integration. Player and resource fields have not
+been switched, and the decrease path still uses the full-solve fallback.
+
 ## Death pheromone findings
 
 Controlled same-tick death-response test:
