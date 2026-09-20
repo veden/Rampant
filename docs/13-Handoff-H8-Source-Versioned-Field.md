@@ -305,6 +305,32 @@ Per-range H8 dirty/source timings during the A/B showed the fallback solve
 appearing as isolated 80-180 ms source-field ranges; the surrounding ranges
 were sub-millisecond. That is the signature to remove.
 
+### Remaining behavior battery
+
+With H8 enabled, using the writable temp user-data/mod copy:
+
+| Scenario | H8 | H7 control | Notes |
+|---|---|---|---|
+| death-response | PASS | not rerun | |
+| movement-diag | PASS | not rerun | |
+| movement-test | EXIT | EXIT | scenario-level `format` nil bug, not H8 |
+| multi-surface | PASS | not rerun | |
+| upgrade-threshold | FAIL | PASS | known-flaky low-leg timeout; H8 run failed once |
+| attack-wave | PASS | not rerun | |
+| base-ai-states | TIMEOUT | TIMEOUT | 240 s run budget, both sides |
+| base-expansion | PASS | not rerun | |
+| migration-settler | FAIL | PASS | H8-only behavior divergence: settler formed and dispatched, but did not move |
+| siege-settle | PASS | not rerun | |
+| player-death | PASS | not rerun | |
+| save-load | skipped | skipped | needs RCON `/save` + restart driver |
+| long-run | skipped | skipped | 4 game-hour budget |
+
+The H8-only `migration-settler` divergence is the next behavioral
+investigation: H8 base/enemy reads changed the migration movement scorer enough
+that the settler never moved within 25 game-minutes, while the H7 control moved
+within ~20 game-seconds. This needs the same per-range trajectory comparison as
+the performance A/B.
+
 ## Death pheromone findings
 
 Controlled same-tick death-response test:
