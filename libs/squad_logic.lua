@@ -168,12 +168,7 @@ function Squad.playerPheromone(chunk, tick)
     return decayed
 end
 
-function Squad.basePheromone(chunk, tick)
-    local sourceVersionedValue = readSourceVersionedField(BASE_PHEROMONE, chunk)
-    if sourceVersionedValue ~= nil then
-        return sourceVersionedValue
-    end
-
+local function legacyBasePheromone(chunk, tick)
     -- ACO decay-on-read: diffused base pheromone decays by time since the
     -- chunk last re-processed. But in a chunk WITH nests, the base
     -- pheromone IS the nests' presence — constant while they exist. Without
@@ -189,18 +184,40 @@ function Squad.basePheromone(chunk, tick)
     return decayed
 end
 
-function Squad.enemyPheromone(chunk, tick)
-    local sourceVersionedValue = readSourceVersionedField(ENEMY_PHEROMONE, chunk)
-    if sourceVersionedValue ~= nil then
-        return sourceVersionedValue
-    end
-
+local function legacyEnemyPheromone(chunk, tick)
     local decayed = Squad.decayedValue(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
     local structures = (chunk.nestCount or 0) + (chunk.turretCount or 0)
         + (chunk.utilityCount or 0) + (chunk.hiveCount or 0)
     local floor = structures * ENEMY_PHEROMONE_MULTIPLER * sourceRating(chunk)
     if floor > decayed then return floor end
     return decayed
+end
+
+function Squad.basePheromone(chunk, tick)
+    local sourceVersionedValue = readSourceVersionedField(BASE_PHEROMONE, chunk)
+    if sourceVersionedValue ~= nil then
+        return sourceVersionedValue
+    end
+    return legacyBasePheromone(chunk, tick)
+end
+
+function Squad.enemyPheromone(chunk, tick)
+    local sourceVersionedValue = readSourceVersionedField(ENEMY_PHEROMONE, chunk)
+    if sourceVersionedValue ~= nil then
+        return sourceVersionedValue
+    end
+    return legacyEnemyPheromone(chunk, tick)
+end
+
+-- Legacy H7 accessors. The H7 dirty-field loop must keep using these
+-- even when H8 reads are active; feeding H8 values back into the H7 write
+-- loop creates extra propagation churn and a real-save regression.
+function Squad.legacyBasePheromone(chunk, tick)
+    return legacyBasePheromone(chunk, tick)
+end
+
+function Squad.legacyEnemyPheromone(chunk, tick)
+    return legacyEnemyPheromone(chunk, tick)
 end
 
 function Squad.resourcePheromone(chunk, tick)

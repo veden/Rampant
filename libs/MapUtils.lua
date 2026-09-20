@@ -531,9 +531,12 @@ local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
     return value * factor
 end
 
+-- H7 raw-field maintenance must use the legacy accessors, not the
+-- H8 read path. Otherwise an H8 read feeds its value back into the H7
+-- write loop, which creates propagation churn and a real-save regression.
 local readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
-local readEnemy = function(chunk, tick) return SquadLogic.enemyPheromone(chunk, tick) end
-local readBase = function(chunk, tick) return SquadLogic.basePheromone(chunk, tick) end
+local readEnemy = function(chunk, tick) return SquadLogic.legacyEnemyPheromone(chunk, tick) end
+local readBase = function(chunk, tick) return SquadLogic.legacyBasePheromone(chunk, tick) end
 local readResource = function(chunk, tick) return SquadLogic.resourcePheromone(chunk, tick) end
 local readKamikaze = function(chunk, tick)
     return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)

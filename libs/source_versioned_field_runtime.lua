@@ -137,6 +137,7 @@ function Runtime.process(opts)
         return 0
     end
     local processed = 0
+    local decreasedFields
     while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
         local item = SourceQueue[QueueHead]
         SourceQueue[QueueHead] = nil
@@ -148,10 +149,20 @@ function Runtime.process(opts)
             if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
                 Runtime.propagateIncrease(item.chunk, item.fieldType, field, opts)
             else
-                local key = Runtime.fieldKey(item.fieldType)
-                Universe.sourceVersionedFields[key] = Runtime.recompute(
-                    { item.chunk.id }, item.fieldType, field, opts)
+                -- A decrease cannot be propagated in max-plus. Batch all
+                -- decreases for a field into one full recompute per tick
+                -- rather than one recompute per queue item.
+                decreasedFields = decreasedFields or {}
+                decreasedFields[item.fieldType] = true
             end
+        end
+    end
+    if decreasedFields then
+        for fieldType in pairs(decreasedFields) do
+            local key = Runtime.fieldKey(fieldType)
+            local field = Runtime.ensureSolved(fieldType, opts)
+            Universe.sourceVersionedFields[key] = Runtime.recompute(
+                nil, fieldType, field, opts)
         end
     end
     if QueueHead > QueueCount then
