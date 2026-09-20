@@ -30,6 +30,7 @@ local MapPosition
 local Constants = require("Constants")
 local ChunkLogic = require("chunk_logic")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
+local SquadLogic = require("squad_logic")
 local MathUtils = require("MathUtils")
 
 -- Constants
@@ -43,6 +44,8 @@ local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 local CHUNK_TICK = Constants.CHUNK_TICK
+local DECAY_095 = Constants.DECAY_095
+local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -519,6 +522,15 @@ end
 -- PURE: Calculate pheromone updates without side effects
 -- All inputs explicit, uses Constants directly (immutable)
 -- Returns table with new pheromone values
+local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
+    local value = chunk[index] or 0
+    if value == 0 then return 0 end
+    local lastRefresh = chunk[timestampKey] or 0
+    local elapsed = tick - lastRefresh
+    local factor = decayTable[elapsed] or decayTable[DECAY_TABLE_DEPTH]
+    return value * factor
+end
+
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
@@ -542,22 +554,22 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     for i = 1, 8 do
         if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
             local neighbor = neighbors[i]
-            chunkPlayer = chunkPlayer + neighbor[PLAYER_PHEROMONE]
-            chunkEnemy = chunkEnemy + neighbor[ENEMY_PHEROMONE]
+            chunkPlayer = chunkPlayer + SquadLogic.playerPheromone(neighbor, tick)
+            chunkEnemy = chunkEnemy + SquadLogic.enemyPheromone(neighbor, tick)
             -- getCombinedDeathGenerator inlined (8 calls/chunk in the
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
             chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
 
-            local tempPheromone = neighbor[KAMIKAZE_PHEROMONE]
+            local tempPheromone = effectiveValue(neighbor, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
             if chunkKamikaze < tempPheromone then
                 chunkKamikaze = tempPheromone
             end
-            tempPheromone = neighbor[BASE_PHEROMONE]
+            tempPheromone = SquadLogic.basePheromone(neighbor, tick)
             if chunkBase < tempPheromone then
                 chunkBase = tempPheromone
             end
-            tempPheromone = neighbor[RESOURCE_PHEROMONE]
+            tempPheromone = SquadLogic.resourcePheromone(neighbor, tick)
             if chunkResource < tempPheromone then
                 chunkResource = tempPheromone
             end
