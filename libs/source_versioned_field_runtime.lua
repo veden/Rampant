@@ -27,6 +27,10 @@ local Runtime = {}
 
 local Universe
 local NeighborIds = {}
+local SourceQueue = {}
+local QueueHead = 1
+local QueueCount = 0
+local DRAIN_PER_TICK = 40
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
 local FIELD_BASE = Constants.BASE_PHEROMONE
@@ -34,8 +38,79 @@ local FIELD_ENEMY = Constants.ENEMY_PHEROMONE
 local FIELD_RESOURCE = Constants.RESOURCE_PHEROMONE
 local ENEMY_MULTIPLIER = Constants.ENEMY_PHEROMONE_MULTIPLER
 
+local SOURCE_FIELDS = {
+    [FIELD_PLAYER] = true,
+    [FIELD_BASE] = true,
+    [FIELD_ENEMY] = true,
+    [FIELD_RESOURCE] = true,
+}
+
 function Runtime.init(universe)
     Universe = universe
+    Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
+    Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
+    SourceQueue = {}
+    QueueHead = 1
+    QueueCount = 0
+end
+
+function Runtime.fieldKey(fieldType)
+    return tostring(fieldType)
+end
+
+function Runtime.ensureField(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key]
+    if not field then
+        field = {}
+        Universe.sourceVersionedFields[key] = field
+    end
+    return field
+end
+
+function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
+    QueueCount = QueueCount + 1
+    SourceQueue[QueueCount] = {
+        chunk = chunk,
+        fieldType = fieldType,
+        oldValue = oldValue,
+        newValue = newValue,
+    }
+end
+
+function Runtime.solveAll(opts)
+    for fieldType in pairs(SOURCE_FIELDS) do
+        local field, _ = Runtime.solveField(fieldType, opts)
+        Universe.sourceVersionedFields[Runtime.fieldKey(fieldType)] = field
+    end
+end
+
+function Runtime.process(opts)
+    if QueueHead > QueueCount then
+        SourceQueue = {}
+        QueueHead = 1
+        QueueCount = 0
+        return 0
+    end
+    local processed = 0
+    while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
+        local item = SourceQueue[QueueHead]
+        SourceQueue[QueueHead] = nil
+        QueueHead = QueueHead + 1
+        processed = processed + 1
+        local field = Runtime.ensureField(item.fieldType)
+        if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
+            Runtime.propagateIncrease(item.chunk, item.fieldType, field, opts)
+        else
+            Runtime.recompute({ item.chunk.id }, item.fieldType, field, opts)
+        end
+    end
+    if QueueHead > QueueCount then
+        SourceQueue = {}
+        QueueHead = 1
+        QueueCount = 0
+    end
+    return processed
 end
 
 -- Reusable neighbour-id table. Solver consumes it immediately.

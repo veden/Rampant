@@ -32,6 +32,7 @@ local Metrics = require("libs/Metrics")
 local DeathLogic = require("libs/death_logic")
 local SquadCreation = require("libs/squad_creation")
 local BuildingLogic = require("libs/building")
+local SourceVersionedFieldRuntime = require("libs/source_versioned_field_runtime")
 
 -- Constants
 
@@ -206,6 +207,9 @@ local function initializeLibraries(addProperties)
     Observability.init(Universe)
     Executor.init(Universe)
     Metrics.init(Universe)
+    if Constants.USE_SOURCE_VERSIONED_FIELD then
+        SourceVersionedFieldRuntime.init(Universe)
+    end
 end
 
 local function rescanAllChunks(map, tick)
