@@ -46,17 +46,9 @@ constants.PROCESS_QUEUE_SIZE = 40
 -- The long-run's dirty-queue invariant (peak bounded, steady state 0) is the gate
 -- for the smallest budget that keeps up.
 constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
--- Background sweep rate: chunks re-marked dirty at priority 5 per tick so
--- persistent sources (player buildings, ore, nests) re-broadcast their
--- fields. Decay-on-read evaporates diffused fields within seconds of their
--- last write; without the sweep, gradients survive only inside active event
--- cascades and squad steering is blind in combat-quiet territory (observed:
--- base pheromone 0 at 3 chunks, 24 game-minutes after the last event).
--- The original wave system re-processed every chunk continuously at this
--- same rate; the sweep restores that cadence through the priority-5
--- "stale chunks" queue. Event marks keep their higher priority.
 -- H7: no periodic sweep. The field is maintained by floor-aware
--- effective reads and event/propagation marks.
+-- effective reads and event/propagation marks. Source chunks do not need
+-- periodic renewal; diffused fields are read through their timestamps.
 
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-

@@ -139,7 +139,7 @@ end
 -- (newBase = max(gen, neighborMax*0.9) * chunkDeathRating). A source
 -- chunk's field must never read below its own generator x rating: the
 -- generator is a floor, exactly as the write path applies it. This is what
--- lets the sweep be eliminated for source chunks.
+-- lets source chunks remain correct without periodic renewal.
 local function sourceRating(chunk)
     return ChunkPropertyUtils.getCombinedDeathGeneratorRating(chunk)
         * ChunkPropertyUtils.getPathRating(chunk)
