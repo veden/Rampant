@@ -319,17 +319,27 @@ With H8 enabled, using the writable temp user-data/mod copy:
 | attack-wave | PASS | not rerun | |
 | base-ai-states | TIMEOUT | TIMEOUT | 240 s run budget, both sides |
 | base-expansion | PASS | not rerun | |
-| migration-settler | FAIL | PASS | H8-only behavior divergence: settler formed and dispatched, but did not move |
+| migration-settler | FAIL* | PASS | *unpinned-map flake; with `--map-gen-seed 1`, both H7 and H8 PASS |
 | siege-settle | PASS | not rerun | |
 | player-death | PASS | not rerun | |
 | save-load | skipped | skipped | needs RCON `/save` + restart driver |
 | long-run | skipped | skipped | 4 game-hour budget |
 
-The H8-only `migration-settler` divergence is the next behavioral
-investigation: H8 base/enemy reads changed the migration movement scorer enough
-that the settler never moved within 25 game-minutes, while the H7 control moved
-within ~20 game-seconds. This needs the same per-range trajectory comparison as
-the performance A/B.
+The `migration-settler` failure was investigated: the original H8 run used a
+random map, while the H7 control used a different random map. Re-running with
+`--map-gen-seed 1` (and the phase budget shortened to 3 game-minutes for
+diagnosis) passed on both sides:
+
+```text
+H7 seed 1: settler left nest region at 0.1min (pos 112,18)
+H8 seed 1: settler left nest region at 0.1min (pos 112,18)
+```
+
+The debug instrumentation also showed H8 settling immediately in-place:
+`dbg.settleMove=1`, `dbg.settle.settle=1`, `dbg.settle.afterState.0=1`.
+So the unpinned failure was geography/timing variance, not an H8 read
+regression. Behavior comparisons must use pinned seeds; unpinned results are
+not evidence for or against H8.
 
 ## Death pheromone findings
 
