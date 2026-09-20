@@ -60,6 +60,14 @@ local function getBasePheromone(chunk)
     return SquadLogic.basePheromone(chunk, game.tick)
 end
 
+function Squad.getBasePheromone(chunk)
+    return getBasePheromone(chunk)
+end
+
+function Squad.getPlayerPheromone(chunk)
+    return getPlayerPheromone(chunk)
+end
+
 local COMPRESSION_COOLDOWN = Constants.COMPRESSION_COOLDOWN
 local EMPTY_RECRUIT_COOLDOWN = 600  -- 10 game-seconds
 

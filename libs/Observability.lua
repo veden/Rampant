@@ -38,6 +38,7 @@ local CHUNK_TICK = Constants.CHUNK_TICK
 
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local MapUtils = require("libs/MapUtils")
+local SquadLogic = require("libs/squad_logic")
 
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 local getChunkByPosition = MapUtils.getChunkByPosition
@@ -58,10 +59,17 @@ function Observability.queryPheromones(position, surface)
         return nil
     end
 
+    local enemy = chunk[ENEMY_PHEROMONE] or 0
+    local base = chunk[BASE_PHEROMONE] or 0
+    if Constants.USE_SOURCE_VERSIONED_FIELD then
+        enemy = SquadLogic.enemyPheromone(chunk, game.tick)
+        base = SquadLogic.basePheromone(chunk, game.tick)
+    end
+
     return {
         player = chunk[PLAYER_PHEROMONE] or 0,
-        enemy = chunk[ENEMY_PHEROMONE] or 0,
-        base = chunk[BASE_PHEROMONE] or 0,
+        enemy = enemy,
+        base = base,
         -- real death state (named fields, not numeric chunk indices)
         deathGenerator = chunk.deathGenerator or 0,
         permanentDeathGenerator = chunk.permanentDeathGenerator or 0,

@@ -23,6 +23,7 @@ local ChunkPropertyUtils = {}
 
 local Universe
 local Position
+local SourceVersionedFieldReader
 
 --
 
@@ -256,6 +257,20 @@ function ChunkPropertyUtils.getEnemyStructureCount(chunk)
         + (chunk.turretCount or 0)
         + (chunk.utilityCount or 0)
         + (chunk.hiveCount or 0)
+end
+
+function ChunkPropertyUtils.setSourceVersionedFieldReader(reader)
+    SourceVersionedFieldReader = reader
+end
+
+local function readField(fieldType, chunk, rawValue)
+    if Constants.USE_SOURCE_VERSIONED_FIELD and SourceVersionedFieldReader then
+        local value = SourceVersionedFieldReader(fieldType, chunk)
+        if value ~= nil then
+            return value
+        end
+    end
+    return rawValue
 end
 
 function ChunkPropertyUtils.setDrainPylons(map, entity1, entity2)
@@ -631,9 +646,11 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
 
     if chunk.nestCount then
         local surface = chunk.map.surface
-        if Universe.attackUsePlayer and (chunk[PLAYER_PHEROMONE] > Universe.attackPlayerThreshold) then
+        local playerPheromone = readField(PLAYER_PHEROMONE, chunk, chunk[PLAYER_PHEROMONE] or 0)
+        local basePheromone = readField(BASE_PHEROMONE, chunk, chunk[BASE_PHEROMONE] or 0)
+        if Universe.attackUsePlayer and (playerPheromone > Universe.attackPlayerThreshold) then
             registerActiveNest(chunk, tick)
-        elseif (chunk[BASE_PHEROMONE] > 0) then
+        elseif (basePheromone > 0) then
             local getPollution = surface.get_pollution
             if (getPollution(chunk) > 0) then
                 registerActiveNest(chunk, tick)
@@ -660,7 +677,7 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
                                 registerActiveNest(chunk, tick)
                             else
                                 unregisterActiveNest(chunk)
-                                if (chunk[BASE_PHEROMONE] > RAIDING_MINIMUM_BASE_THRESHOLD) then
+                                if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
                                     registerActiveRaidNest(chunk, tick)
                                 else
                                     unregisterActiveRaidNest(chunk)

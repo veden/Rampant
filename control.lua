@@ -45,9 +45,6 @@ local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
 
 local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 
-local BASE_PHEROMONE = Constants.BASE_PHEROMONE
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-
 local SETTLE_CLOUD_WARMUP = Constants.SETTLE_CLOUD_WARMUP
 
 -- imported functions
@@ -860,8 +857,8 @@ local function onUnitGroupCreated(event)
         squadCount = Universe.squadCount or 0,
         maxSquadCount = Universe.AI_MAX_VANILLA_SQUAD_COUNT,
         hasChunk = chunk ~= -1,
-        basePheromone = (chunk ~= -1) and chunk[BASE_PHEROMONE] or 0,
-        playerPheromone = (chunk ~= -1) and chunk[PLAYER_PHEROMONE] or 0,
+        basePheromone = (chunk ~= -1) and Squad.getBasePheromone(chunk) or 0,
+        playerPheromone = (chunk ~= -1) and Squad.getPlayerPheromone(chunk) or 0,
         aiNocturnalMode = Universe.aiNocturnalMode,
         darkness = surface.darkness,
         randomRoll = Universe.random(),
@@ -902,7 +899,7 @@ local function onGroupFinishedGathering(event)
             end
         else
             local chunk = getChunkByPosition(map, squad.group.position)
-            if (chunk ~= -1) and (chunk[BASE_PHEROMONE] < 0.0001) and (chunk[PLAYER_PHEROMONE] < 0.0001) then
+            if (chunk ~= -1) and (Squad.getBasePheromone(chunk) < 0.0001) and (Squad.getPlayerPheromone(chunk) < 0.0001) then
                 group.destroy()
                 return
             end

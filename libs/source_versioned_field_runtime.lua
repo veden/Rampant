@@ -61,6 +61,7 @@ function Runtime.init(universe)
     -- startup flag is enabled. Keeping the hook on SquadLogic avoids a
     -- Factorio dependency in the pure decision module.
     SquadLogic.setSourceVersionedFieldReader(Runtime.readChunk)
+    ChunkPropertyUtils.setSourceVersionedFieldReader(Runtime.readChunk)
 end
 
 function Runtime.isInitialized()
