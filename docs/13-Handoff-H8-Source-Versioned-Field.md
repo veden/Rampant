@@ -278,7 +278,23 @@ read inside the H7 diffusion loop overwrote that table mid-iteration. Fixed
 in `749d9aa` by building solver neighbour ids directly from
 `MapUtils.getChunkByXY`.
 
-`wall-defense` and real-save A/B are still to be run.
+`wall-defense` also passes with H8 enabled:
+
+```text
+[PASS] base formed at spawner (id=0) at 0.0min
+[PASS] 1 enemy squad(s) formed at 0.1min
+[PASS] 1 enemy unit(s) reached wall perimeter at 6.8min
+[PASS] wall damaged/destroyed (4 alive, 1 damaged) at 6.9min
+Passed: 1
+Failed: 0
+Detail: wall pheromone: player=0.00 base=16550.00 | spawner
+        pheromone: player=0.00 base=0.00 enemy=450.00
+Detail: base=true squad=true unitsAtWall=true wallDamaged=true ticks=24917
+TESTS_COMPLETE
+```
+
+Real-save A/B is still to be run. The benchmark can use the same writable
+user-data setup with `--benchmark Starting2.zip --benchmark-ticks 12000`.
 
 ## Death pheromone findings
 
