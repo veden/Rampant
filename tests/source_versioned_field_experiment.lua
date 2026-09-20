@@ -9,7 +9,7 @@
     This is a pure Lua prototype: no Factorio dependencies.
 ]]
 
-local W, H = 48, 48
+local W, H = 128, 128
 local DECAY = 0.9
 local EPS = 0.0005
 local RATING = 1.0
@@ -37,12 +37,12 @@ local function rnd()
     seed = (seed * 1103515245 + 12345) % 2147483648
     return seed / 2147483648
 end
-for i = 1, 300 do
+for i = 1, 1000 do
     local x = 1 + math.floor(rnd() * W)
     local y = 1 + math.floor(rnd() * H)
     addSource(staticSources, x, y, 1 + math.floor(rnd() * 100))
 end
-for i = 1, 60 do
+for i = 1, 200 do
     local x = 1 + math.floor(rnd() * W)
     local y = 1 + math.floor(rnd() * H)
     addSource(dynamicSources, x, y, 1 + math.floor(rnd() * 100))
@@ -118,7 +118,8 @@ local function heapPop(heap)
     end
     return top
 end
-local function maxPropagation(sources)
+local function maxPropagation(sources, eps)
+    eps = eps or EPS
     local field = {}
     local heap = {}
     local work = 0
@@ -137,7 +138,7 @@ local function maxPropagation(sources)
             for _, n in ipairs(neighbors(node.x, node.y)) do
                 local nk = id(n.x, n.y)
                 local cand = node.v * DECAY
-                if cand > (field[nk] or 0) + EPS then
+                if cand > (field[nk] or 0) + eps then
                     field[nk] = cand
                     heapPush(heap, { x = n.x, y = n.y, v = cand })
                     work = work + 1
@@ -196,3 +197,11 @@ print(string.format("static+dynamic max-propagation: %d updates, max |combined-f
 print(string.format("dynamic source increase: %d local updates, max |new-old| = %.6f",
     incWork, incDiff))
 print(string.format("one full relaxation pass = %d chunk-updates", W * H))
+print("")
+print("influence radius vs dynamic-source propagation:")
+for _, eps in ipairs({0.05, 0.01, 0.005, 0.001, 0.0005}) do
+    local _, w = maxPropagation({ dynamicSources[1] }, eps)
+    local r = math.ceil(math.log(eps) / math.log(DECAY))
+    print(string.format("  eps=%.4f range=%2d hops, one-source updates=%d", eps, r, w))
+end
+
