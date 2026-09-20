@@ -179,7 +179,13 @@ local function finish(passed, reason)
     local function crossing(name)
         local x = r[name]
         if not x then return name .. "=none" end
-        return name .. "=" .. string.format("%.2f", x.crossingMin) .. "min" ..
+        local crossingMin = x.crossingMin
+        if crossingMin then
+            crossingMin = string.format("%.2f", crossingMin) .. "min"
+        else
+            crossingMin = "none"
+        end
+        return name .. "=" .. crossingMin ..
             " members=" .. tostring(x.members) ..
             " formPos=(" .. tostring(x.formX) .. "," .. tostring(x.formY) .. ")" ..
             " gather=" .. tostring(x.gatherDist) ..
