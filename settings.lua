@@ -1227,9 +1227,9 @@ data:extend({
     {
         type = "bool-setting",
         name = "rampant--eventDrivenPheromones",
-        description = "Enable event-driven pheromone processing (dirty chunk queues, decay-on-read). Runs alongside wave-based processing when enabled.",
+        description = "H7 effective pheromone field: floor-aware effective reads and no periodic sweep. Disable for legacy raw-neighbor relaxation.",
         setting_type = "startup",
-        default_value = false,
+        default_value = true,
         order = "a[ai]-z[eventDriven]",
         per_user = false
     },

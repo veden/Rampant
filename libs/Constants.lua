@@ -55,9 +55,15 @@ constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 -- The original wave system re-processed every chunk continuously at this
 -- same rate; the sweep restores that cadence through the priority-5
 -- "stale chunks" queue. Event marks keep their higher priority.
--- H7: periodic sweep is disabled. The field is now maintained by
--- floor-aware effective reads and event/propagation marks.
-constants.PROCESS_SWEEP_CHUNKS_PER_TICK = 0
+-- H7: effective pheromone field. When enabled, neighbor reads use
+-- floor-aware effective values and the periodic sweep is disabled.
+-- Disabling this setting restores legacy raw-neighbor relaxation.
+local useEffectivePheromoneField = true
+if settings and settings.startup and settings.startup["rampant--eventDrivenPheromones"] then
+    useEffectivePheromoneField = settings.startup["rampant--eventDrivenPheromones"].value
+end
+constants.USE_EFFECTIVE_PHEROMONE_FIELD = useEffectivePheromoneField
+constants.PROCESS_SWEEP_CHUNKS_PER_TICK = useEffectivePheromoneField and 0 or 40
 -- Sweep-list rebuild: collect chunk ids via next() in bounded steps per tick
 -- rather than pairs() over the whole grid in one tick (the latter was the ~32 ms
 -- max burst). At 40/tick a ~10,739-chunk grid rebuilds in ~268 ticks (~4.5 s),

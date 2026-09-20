@@ -46,6 +46,7 @@ local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local CHUNK_TICK = Constants.CHUNK_TICK
 local DECAY_095 = Constants.DECAY_095
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
+local USE_EFFECTIVE_PHEROMONE_FIELD = Constants.USE_EFFECTIVE_PHEROMONE_FIELD
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -531,6 +532,23 @@ local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
     return value * factor
 end
 
+local readPlayer, readEnemy, readBase, readResource, readKamikaze
+if USE_EFFECTIVE_PHEROMONE_FIELD then
+    readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
+    readEnemy = function(chunk, tick) return SquadLogic.enemyPheromone(chunk, tick) end
+    readBase = function(chunk, tick) return SquadLogic.basePheromone(chunk, tick) end
+    readResource = function(chunk, tick) return SquadLogic.resourcePheromone(chunk, tick) end
+    readKamikaze = function(chunk, tick)
+        return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
+    end
+else
+    readPlayer = function(chunk, tick) return chunk[PLAYER_PHEROMONE] end
+    readEnemy = function(chunk, tick) return chunk[ENEMY_PHEROMONE] end
+    readBase = function(chunk, tick) return chunk[BASE_PHEROMONE] end
+    readResource = function(chunk, tick) return chunk[RESOURCE_PHEROMONE] end
+    readKamikaze = function(chunk, tick) return chunk[KAMIKAZE_PHEROMONE] end
+end
+
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
@@ -554,22 +572,22 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     for i = 1, 8 do
         if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
             local neighbor = neighbors[i]
-            chunkPlayer = chunkPlayer + SquadLogic.playerPheromone(neighbor, tick)
-            chunkEnemy = chunkEnemy + SquadLogic.enemyPheromone(neighbor, tick)
+            chunkPlayer = chunkPlayer + readPlayer(neighbor, tick)
+            chunkEnemy = chunkEnemy + readEnemy(neighbor, tick)
             -- getCombinedDeathGenerator inlined (8 calls/chunk in the
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
             chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
 
-            local tempPheromone = effectiveValue(neighbor, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
+            local tempPheromone = readKamikaze(neighbor, tick)
             if chunkKamikaze < tempPheromone then
                 chunkKamikaze = tempPheromone
             end
-            tempPheromone = SquadLogic.basePheromone(neighbor, tick)
+            tempPheromone = readBase(neighbor, tick)
             if chunkBase < tempPheromone then
                 chunkBase = tempPheromone
             end
-            tempPheromone = SquadLogic.resourcePheromone(neighbor, tick)
+            tempPheromone = readResource(neighbor, tick)
             if chunkResource < tempPheromone then
                 chunkResource = tempPheromone
             end
