@@ -118,7 +118,7 @@ local function heapPop(heap)
     end
     return top
 end
-local function maxPropagation(sources, eps)
+local function maxPropagation(sources, eps, maxRadius)
     eps = eps or EPS
     local field = {}
     local heap = {}
@@ -128,25 +128,61 @@ local function maxPropagation(sources, eps)
         local v = s.gen * RATING
         if v > (field[k] or 0) then
             field[k] = v
-            heapPush(heap, { x = s.x, y = s.y, v = v })
+            heapPush(heap, { x = s.x, y = s.y, v = v, d = 0 })
         end
     end
     while #heap > 0 do
         local node = heapPop(heap)
         local k = id(node.x, node.y)
         if node.v >= (field[k] or 0) then
-            for _, n in ipairs(neighbors(node.x, node.y)) do
-                local nk = id(n.x, n.y)
-                local cand = node.v * DECAY
-                if cand > (field[nk] or 0) + eps then
-                    field[nk] = cand
-                    heapPush(heap, { x = n.x, y = n.y, v = cand })
-                    work = work + 1
+            if maxRadius and node.d >= maxRadius then
+                -- reached the influence boundary
+            else
+                for _, n in ipairs(neighbors(node.x, node.y)) do
+                    local nk = id(n.x, n.y)
+                    local cand = node.v * DECAY
+                    if cand > (field[nk] or 0) + eps then
+                        field[nk] = cand
+                        heapPush(heap, { x = n.x, y = n.y, v = cand, d = node.d + 1 })
+                        work = work + 1
+                    end
                 end
             end
         end
     end
     return field, work
+end
+
+-- Increase-only local propagation: start from an existing field and push only
+-- the changed source's contribution where it exceeds the current value.
+local function propagateIncrease(source, field, eps, maxRadius)
+    local heap = {}
+    local work = 0
+    local k = id(source.x, source.y)
+    local v = source.gen * RATING
+    if v > (field[k] or 0) + eps then
+        field[k] = v
+        heapPush(heap, { x = source.x, y = source.y, v = v, d = 0 })
+        work = work + 1
+    end
+    while #heap > 0 do
+        local node = heapPop(heap)
+        local nk = id(node.x, node.y)
+        if node.v >= (field[nk] or 0) then
+            if not (maxRadius and node.d >= maxRadius) then
+                for _, n in ipairs(neighbors(node.x, node.y)) do
+                    local nnk = id(n.x, n.y)
+                    local cand = node.v * DECAY
+                    if cand > (field[nnk] or 0) + eps then
+                        field[nnk] = cand
+                        heapPush(heap, { x = n.x, y = n.y, v = cand, d = node.d + 1 })
+                        work = work + 1
+                    end
+                end
+            end
+        end
+    end
+    return work
 end
 
 -- full reference
@@ -196,6 +232,22 @@ print(string.format("static+dynamic max-propagation: %d updates, max |combined-f
     staticWork + dynamicWork, maxDiff))
 print(string.format("dynamic source increase: %d local updates, max |new-old| = %.6f",
     incWork, incDiff))
+
+-- event-local increase-only propagation
+local localField = {}
+for k, v in pairs(combined) do localField[k] = v end
+local incLocalWork = propagateIncrease(target, localField, EPS, 32)
+local incLocalDiff = 0
+for x = 1, W do
+    for y = 1, H do
+        local k = id(x, y)
+        local ref = math.max(staticField[k] or 0, incField[k] or 0)
+        local d = math.abs((localField[k] or 0) - ref)
+        if d > incLocalDiff then incLocalDiff = d end
+    end
+end
+print(string.format("event-local increase-only: %d updates, max |local-full| = %.6f",
+    incLocalWork, incLocalDiff))
 print(string.format("one full relaxation pass = %d chunk-updates", W * H))
 print("")
 print("influence radius vs dynamic-source propagation:")
@@ -203,5 +255,22 @@ for _, eps in ipairs({0.05, 0.01, 0.005, 0.001, 0.0005}) do
     local _, w = maxPropagation({ dynamicSources[1] }, eps)
     local r = math.ceil(math.log(eps) / math.log(DECAY))
     print(string.format("  eps=%.4f range=%2d hops, one-source updates=%d", eps, r, w))
+end
+
+print("")
+print("bounded dynamic radius vs full combined field:")
+for _, r in ipairs({2, 4, 8, 16, 29, 44, 73}) do
+    local lim, w = maxPropagation(dynamicSources, EPS, r)
+    local maxErr = 0
+    for x = 1, W do
+        for y = 1, H do
+            local k = id(x, y)
+            local v = math.max(staticField[k] or 0, lim[k] or 0)
+            local ref = math.max(staticField[k] or 0, incField[k] or 0)
+            local d = math.abs(v - ref)
+            if d > maxErr then maxErr = d end
+        end
+    end
+    print(string.format("  radius=%2d hops, updates=%5d, max |bounded-full| = %.6f", r, w, maxErr))
 end
 
