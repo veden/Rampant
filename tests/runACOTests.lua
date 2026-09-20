@@ -93,7 +93,7 @@ test("REFRESH_SPAWNERS_TICKS = 60", Constants.REFRESH_SPAWNERS_TICKS == 60)
 test("REFRESH_HIVES_TICKS = 120", Constants.REFRESH_HIVES_TICKS == 120)
 
 print("\nTest 5: Processing Budget")
-test("PROCESS_DIRTY_CHUNKS_PER_TICK = 200", Constants.PROCESS_DIRTY_CHUNKS_PER_TICK == 200)
+test("PROCESS_DIRTY_CHUNKS_PER_TICK = 40", Constants.PROCESS_DIRTY_CHUNKS_PER_TICK == 40)
 
 print("\n=== Test Summary ===")
 print("Passed: " .. passed)
