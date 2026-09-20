@@ -1,8 +1,9 @@
 # Proposal: Pheromone Distribution & Sweep Consolidation
 
-**Status**: proposed
-**Scope**: the pheromone field maintenance (the sweep) and its write path
+**Status**: implemented as H7 on `v4-refactor`
+**Scope**: the pheromone field maintenance and its write path
 **Baseline**: `v4-refactor` @ `15e398b`
+**Implementation note**: H7 uses floor-aware effective neighbor reads and removes the periodic sweep. The sections below are the historical proposal and measurements that led to it.
 
 ---
 

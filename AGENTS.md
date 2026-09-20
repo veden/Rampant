@@ -9,9 +9,10 @@ Rampant is a Factorio mod that implements advanced enemy AI using pheromone-base
 ## How the AI Works
 
 1. **Pheromone System**: Enemies use potential fields (not standard pathfinding) for single-step pathfinding
-2. **Squads**: Unit groups that probe defenses, retreat when outnumbered, call reinforcements, and hunt players
-3. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
-4. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
+2. **H7 Effective Field**: Neighbor reads use floor-aware effective/decayed values. There is no periodic global sweep; the field is maintained by event and propagation marks.
+3. **Squads**: Unit groups that probe defenses, retreat when outnumbered, call reinforcements, and hunt players
+4. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
+5. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
 
 ## Build Commands
 

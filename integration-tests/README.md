@@ -81,15 +81,15 @@ When you change the mod, this is the loop that answers "what did it affect":
 3. **How much, and in which direction?** — `just traj-dist <scenario> <seeds>`
    runs the scenario across seeds and prints the distribution (PASS/FAIL, the
    Detail numbers, the churn totals). Emergent behavior has an intrinsic noise
-   floor — same-seed runs diverge (tick-timing: the sweep's cycle list is built
-   via `pairs()`, whose hash order varies per process), so point values are NOT
+   floor — same-seed runs diverge (tick-timing: event marks and chunk generation
+   can vary per process), so point values are NOT
    comparable across changes; distributions are. A signal that disappears
    entirely, or a spread that shifts, is the effect picture.
 
 | If you change... | Run |
 |---|---|
 | pheromone generation/decay/diffusion | pheromone-dynamics |
-| the dirty-chunk sweep / field maintenance | pheromone-dynamics + long-run |
+| the dirty-chunk field maintenance / H7 effective reads | pheromone-dynamics + long-run |
 | squad formation gates / economy / quota | attack-wave + base-ai-states |
 | squad dispatch cadence / movement scoring | squad-cycle + movement-test |
 | retreat / death handling | death-response + player-death |
