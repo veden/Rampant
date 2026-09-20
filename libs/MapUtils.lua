@@ -46,7 +46,6 @@ local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local CHUNK_TICK = Constants.CHUNK_TICK
 local DECAY_095 = Constants.DECAY_095
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
-local USE_EFFECTIVE_PHEROMONE_FIELD = Constants.USE_EFFECTIVE_PHEROMONE_FIELD
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -532,21 +531,12 @@ local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
     return value * factor
 end
 
-local readPlayer, readEnemy, readBase, readResource, readKamikaze
-if USE_EFFECTIVE_PHEROMONE_FIELD then
-    readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
-    readEnemy = function(chunk, tick) return SquadLogic.enemyPheromone(chunk, tick) end
-    readBase = function(chunk, tick) return SquadLogic.basePheromone(chunk, tick) end
-    readResource = function(chunk, tick) return SquadLogic.resourcePheromone(chunk, tick) end
-    readKamikaze = function(chunk, tick)
-        return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
-    end
-else
-    readPlayer = function(chunk, tick) return chunk[PLAYER_PHEROMONE] end
-    readEnemy = function(chunk, tick) return chunk[ENEMY_PHEROMONE] end
-    readBase = function(chunk, tick) return chunk[BASE_PHEROMONE] end
-    readResource = function(chunk, tick) return chunk[RESOURCE_PHEROMONE] end
-    readKamikaze = function(chunk, tick) return chunk[KAMIKAZE_PHEROMONE] end
+local readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
+local readEnemy = function(chunk, tick) return SquadLogic.enemyPheromone(chunk, tick) end
+local readBase = function(chunk, tick) return SquadLogic.basePheromone(chunk, tick) end
+local readResource = function(chunk, tick) return SquadLogic.resourcePheromone(chunk, tick) end
+local readKamikaze = function(chunk, tick)
+    return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
 end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)

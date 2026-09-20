@@ -759,77 +759,7 @@ function Processor.processDirtyChunks(tick, universe)
     -- Per-tick metric accumulator: the hot path increments plain fields and this
     -- flushes to Metrics once at the end (string-keyed Metrics lookups per chunk
     -- were the same class as the queue keys).
-    local counters = { propagationMarks = 0, epsilonSkips = 0, sweepMarks = 0, chunksProcessed = 0 }
-
-    -- Background sweep: re-mark a slice of the chunk grid at priority 5 so
-    -- persistent sources (player buildings, ore, nests) re-broadcast their
-    -- fields. See Constants.PROCESS_SWEEP_CHUNKS_PER_TICK. The sweep list
-    -- rebuilds at cycle rollover (picking up created/deleted chunks); the
-    -- cursor is derived from tick (no persistent cursor state). The cycle
-    -- length is FROZEN at rebuild time (chunkSweepCycleTicks) and reused
-    -- until the next rollover — recomputing ceil(#list/rate) every tick
-    -- made the cycle index oscillate when the chunk count flapped across a
-    -- ceil boundary, rebuilding the O(N) list nearly every tick.
-    -- Event marks (priorities 1-4) drain before the sweep's priority-5
-    -- marks.
-    local sweepRate = Constants.PROCESS_SWEEP_CHUNKS_PER_TICK
-    -- Map-wide sweep. A source-driven variant (pinging only chunks with a
-    -- nonzero generator) was measured WORSE on the real late-game save
-    -- (1.412 ms vs 1.143): the resource generator is nonzero on most
-    -- chunks (ore is dense), so the source set is not sparse here and the
-    -- index maintenance costs more than the sweep it replaces. A source-driven
-    -- sweep needs the STATIC sources (ore) excluded and their field computed
-    -- once (or lazily) -- see docs/10.
-    if sweepRate > 0 and universe.chunkById and next(universe.chunkById) then
-        local sweepList = universe.chunkSweepList
-        local cycleTicks = universe.chunkSweepCycleTicks
-        local cycleIndex = cycleTicks and math.floor(tick / cycleTicks)
-        if not sweepList or not cycleIndex or (cycleIndex ~= universe.chunkSweepCycle) then
-            -- INCREMENTAL REBUILD: collect ids via next() in bounded steps
-            -- per tick. pairs() over the whole grid in one tick was the max
-            -- burst (proportional to map size). The OLD list keeps being
-            -- swept while the new one is collected, so the sweep never stalls.
-            local rebuild = universe.chunkSweepRebuild
-            if not rebuild then
-                rebuild = { list = {}, cursor = nil, done = false }
-                universe.chunkSweepRebuild = rebuild
-            end
-            local steps = 0
-            local maxSteps = Constants.SWEEP_REBUILD_STEPS_PER_TICK
-            while steps < maxSteps do
-                local k = next(universe.chunkById, rebuild.cursor)
-                if k == nil then
-                    rebuild.done = true
-                    break
-                end
-                rebuild.cursor = k
-                rebuild.list[#rebuild.list + 1] = k
-                steps = steps + 1
-            end
-            if rebuild.done then
-                sweepList = rebuild.list
-                cycleTicks = math.max(1, math.ceil(#sweepList / sweepRate))
-                universe.chunkSweepList = sweepList
-                universe.chunkSweepCycleTicks = cycleTicks
-                universe.chunkSweepCycle = cycleIndex or 0
-                universe.chunkSweepRebuild = nil
-            end
-        end
-        local total = sweepList and #sweepList or 0
-        if total > 0 then
-            local offset = (tick % cycleTicks) * sweepRate
-            local sweepEnd = math.min(offset + sweepRate, total)
-            for i = offset + 1, sweepEnd do
-                local chunkId = sweepList[i]
-                -- Skip stale ids (chunks deleted since the rebuild; pruned
-                -- at the next cycle rebuild)
-                if MapUtils.getChunkById(chunkId, universe) then
-                    counters.sweepMarks = counters.sweepMarks + 1
-                    markChunkDirty(chunkId, 5, tick, universe)
-                end
-            end
-        end
-    end
+    local counters = { propagationMarks = 0, epsilonSkips = 0, chunksProcessed = 0 }
 
     -- Intrusive bucket lists: dirtyHeads[p] is the head chunkId (0 = empty),
     -- dirtyNodes[chunkId] is the node {p, prev, next}. Unlink is O(1), so an
@@ -872,7 +802,6 @@ function Processor.processDirtyChunks(tick, universe)
     if MetricsG then
         if counters.propagationMarks > 0 then MetricsG.inc("dirty.propagationMarks", counters.propagationMarks) end
         if counters.epsilonSkips > 0 then MetricsG.inc("dirty.epsilonSkips", counters.epsilonSkips) end
-        if counters.sweepMarks > 0 then MetricsG.inc("dirty.sweepMarks", counters.sweepMarks) end
         if counters.chunksProcessed > 0 then MetricsG.inc("dirty.chunksProcessed", counters.chunksProcessed) end
     end
 end

@@ -359,7 +359,6 @@ local CHURN_KEYS = {
     "squad.formReject.settler.groups",
     "squad.formReject.attacker.points",
     "squad.wanderDestroy",
-    "dirty.sweepMarks",
     "dirty.chunksProcessed",
 }
 

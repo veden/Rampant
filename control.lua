@@ -300,8 +300,6 @@ local function onModSettingsChange(event)
 
     Universe["enabledPurpleSettlerCloud"] = settings.global["rampant--enabledPurpleSettlerCloud"].value
 
-    Universe["eventDrivenPheromones"] = settings.startup["rampant--eventDrivenPheromones"] and
-        settings.startup["rampant--eventDrivenPheromones"].value or false
     Universe["squadCompressionThreshold"] = settings.global["rampant--squadCompressionThreshold"].value
 
     Universe["AI_MAX_SQUAD_COUNT"] = settings.global["rampant--maxNumberOfSquads"].value
@@ -1091,7 +1089,6 @@ script.on_event(defines.events.on_tick,
                         local c = m.counters or {}
                         local pending = Universe.dirtyCount or 0
                         log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
-                             " sweep=" .. (c['dirty.sweepMarks'] or 0) ..
                              " prop=" .. (c['dirty.propagationMarks'] or 0) ..
                              " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
                              " skip=" .. (c['dirty.epsilonSkips'] or 0) ..

@@ -1224,15 +1224,6 @@ data:extend({
         per_user = false
     },
 
-    {
-        type = "bool-setting",
-        name = "rampant--eventDrivenPheromones",
-        description = "H7 effective pheromone field: floor-aware effective reads and no periodic sweep. Disable for legacy raw-neighbor relaxation.",
-        setting_type = "startup",
-        default_value = true,
-        order = "a[ai]-z[eventDriven]",
-        per_user = false
-    },
 })
 
 for i = 1, #FACTIONS do

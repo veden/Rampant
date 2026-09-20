@@ -305,7 +305,6 @@ local function timeoutDiagnostics(prefix, surface)
         " settle.max_distance=" .. tostring(c["squad.settle.max_distance"]) ..
         " settle.empty_resource=" .. tostring(c["squad.settle.empty_resource_chunk"]) ..
         " settle.path_terminated=" .. tostring(c["squad.settle.path_terminated"]) ..
-        " sweepMarks=" .. tostring(c["dirty.sweepMarks"]) ..
         " chunksProcessed=" .. tostring(c["dirty.chunksProcessed"]) ..
         " epsilonSkips=" .. tostring(c["dirty.epsilonSkips"]) ..
         " squad.created=" .. tostring(c["squad.created"]) ..
