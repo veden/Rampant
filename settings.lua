@@ -1216,6 +1216,16 @@ local FACTIONS = {
 data:extend({
     {
         type = "bool-setting",
+        name = "rampant--sourceVersionedField",
+        description = "Enable the source-versioned pheromone field solver (static precompute, event-local dynamic propagation).",
+        setting_type = "startup",
+        default_value = false,
+        order = "a[ai]-z[sourceVersioned]",
+        per_user = false
+    },
+
+    {
+        type = "bool-setting",
         name = "rampant--testMode",
         description = "Enable test mode for integration testing (skips full initialization)",
         setting_type = "startup",

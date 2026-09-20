@@ -49,6 +49,11 @@ constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
 -- H7: no periodic sweep. The field is maintained by floor-aware
 -- effective reads and event/propagation marks. Source chunks do not need
 -- periodic renewal; diffused fields are read through their timestamps.
+local useSourceVersionedField = false
+if settings and settings.startup and settings.startup["rampant--sourceVersionedField"] then
+    useSourceVersionedField = settings.startup["rampant--sourceVersionedField"].value
+end
+constants.USE_SOURCE_VERSIONED_FIELD = useSourceVersionedField
 
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-
