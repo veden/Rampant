@@ -43,8 +43,10 @@ end
 
 local function rampantSpawners(surface)
     local out = {}
-    for _, e in ipairs(surface.find_entities_filtered{
-        force = "enemy", type = "unit-spawner" }) do
+    -- Rampant replacements are not all unit-spawners: the biter-spawner
+    -- upgrade path can produce worm/turret-type variants whose names still
+    -- end in "-rampant". Filter by force + name, not by unit-spawner type.
+    for _, e in ipairs(surface.find_entities_filtered{ force = "enemy" }) do
         if e.valid and e.name:match("%-rampant$") then
             out[#out + 1] = e
         end
@@ -98,10 +100,6 @@ local function setPhase(phase)
     state.phaseStartedAt = game.tick
     print("PHASE: " .. phase .. " at " ..
         string.format("%.1f", Lib.gameMinutes(game.tick - state.stagedAt)) .. "min")
-end
-
-local function phaseTimedOut(budgetMinutes)
-    return game.tick - state.phaseStartedAt > budgetMinutes * Lib.TICKS_A_MINUTE
 end
 
 local function finish(passed, reason)
@@ -205,19 +203,8 @@ script.on_event(defines.events.on_tick, function()
                 " (tier=" .. r.lowTier .. ") at " ..
                 string.format("%.1f", Lib.gameMinutes(tick - state.stagedAt)) .. "min")
             setPhase("high")
-        elseif phaseTimedOut(PHASE_LIMIT_MINUTES) then
-            r.lowAttempts = (r.lowAttempts or 0) + 1
-            if r.lowAttempts < 3 then
-                r.lowArmed = false
-                r.lowCreated = false
-                r.lowCreateAt = nil
-                print("[RETRY] low leg attempt " .. r.lowAttempts ..
-                    " timed out; re-staging")
-                setPhase("low")
-            else
-                finish(false, "low: no rampant replacement after " ..
-                    r.lowAttempts .. " attempts")
-            end
+        elseif Lib.phaseTimedOut(state, PHASE_LIMIT_MINUTES,
+            "low: no rampant replacement", surface) then
             return
         end
 
@@ -269,19 +256,8 @@ script.on_event(defines.events.on_tick, function()
                 finish(false, "high-evolution tier not above low: low=" ..
                     r.lowTier .. " high=" .. r.highTier)
             end
-        elseif phaseTimedOut(PHASE_LIMIT_MINUTES) then
-            r.highAttempts = (r.highAttempts or 0) + 1
-            if r.highAttempts < 3 then
-                r.highArmed = false
-                r.highCreated = false
-                r.highCreateAt = nil
-                print("[RETRY] high leg attempt " .. r.highAttempts ..
-                    " timed out; re-staging")
-                setPhase("high")
-            else
-                finish(false, "high: no rampant replacement after " ..
-                    r.highAttempts .. " attempts")
-            end
+        elseif Lib.phaseTimedOut(state, PHASE_LIMIT_MINUTES,
+            "high: no rampant replacement", surface) then
             return
         end
     end
