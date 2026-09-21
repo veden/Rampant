@@ -148,6 +148,22 @@ local function enemySourceValue(chunk)
     return getEnemyStructureCount(chunk) * ENEMY_PHEROMONE_MULTIPLER
 end
 
+local function queueResourceSourceChange(chunk, oldValue)
+    local runtime = SourceVersionedFieldRuntime
+    if not runtime or not runtime.isInitialized() then return end
+    local newValue = runtime.sourceValue(chunk, RESOURCE_PHEROMONE)
+    if oldValue == newValue then return end
+    runtime.queueSource(chunk, RESOURCE_PHEROMONE, oldValue, newValue)
+end
+
+local function resourceSourceValue(chunk)
+    local runtime = SourceVersionedFieldRuntime
+    if runtime and runtime.isInitialized() then
+        return runtime.sourceValue(chunk, RESOURCE_PHEROMONE)
+    end
+    return chunk.resourceGenerator or 0
+end
+
 local function getEntityOverlapChunks(map, entity)
     local boundingBox = entity.prototype.collision_box or entity.prototype.selection_box
 
@@ -688,7 +704,9 @@ function ChunkUtils.unregisterResource(entity, map)
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
         if (chunk ~= -1) then
+            local oldValue = resourceSourceValue(chunk)
             addResourceGenerator(chunk, -RESOURCE_NORMALIZER)
+            queueResourceSourceChange(chunk, oldValue)
         end
     end
 end
@@ -699,7 +717,9 @@ function ChunkUtils.registerResource(entity, map)
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
         if (chunk ~= -1) then
+            local oldValue = resourceSourceValue(chunk)
             addResourceGenerator(chunk, RESOURCE_NORMALIZER)
+            queueResourceSourceChange(chunk, oldValue)
         end
     end
 end

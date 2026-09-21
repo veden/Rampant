@@ -221,6 +221,11 @@ function Squad.legacyEnemyPheromone(chunk, tick)
 end
 
 function Squad.resourcePheromone(chunk, tick)
+    local sourceVersionedValue = readSourceVersionedField(RESOURCE_PHEROMONE, chunk)
+    if sourceVersionedValue ~= nil then
+        return sourceVersionedValue
+    end
+
     local decayed = Squad.decayedValue(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
     local generator = chunk.resourceGenerator or 0
     if generator > 0 then

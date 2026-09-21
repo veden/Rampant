@@ -545,6 +545,7 @@ end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local skipBaseEnemy = USE_SOURCE_VERSIONED_FIELD
+    local skipResource = USE_SOURCE_VERSIONED_FIELD
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(chunk)
@@ -586,9 +587,11 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
                     chunkBase = tempPheromone
                 end
             end
-            tempPheromone = readResource(neighbor, tick)
-            if chunkResource < tempPheromone then
-                chunkResource = tempPheromone
+            if not skipResource then
+                tempPheromone = readResource(neighbor, tick)
+                if chunkResource < tempPheromone then
+                    chunkResource = tempPheromone
+                end
             end
         end
     end
@@ -622,7 +625,9 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         newPlayer + newBase
     ) * 0.95
 
-    local newResource = 0
+    local newResource = chunk[RESOURCE_PHEROMONE] or 0
+    if not skipResource then
+        newResource = 0
         local resourcePheromoneGenerator = chunk.resourceGenerator or 0
         if resourcePheromoneGenerator > 0 then
             newResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
@@ -633,6 +638,7 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         -- Diffuse to neighbors like base/enemy so squads can discover from distance
         newResource = mMax(newResource, chunkResource * 0.9)
         newResource = chunkDeathRating * newResource * 0.9
+    end
 
     return {
         deathGenerator = newDeathGenerator,
@@ -664,8 +670,10 @@ function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
     chunk.kamikazeLastRefresh = tick or 0
 
-    chunk[RESOURCE_PHEROMONE] = updates.resource
-    chunk.resourceLastRefresh = tick or 0
+    if not USE_SOURCE_VERSIONED_FIELD then
+        chunk[RESOURCE_PHEROMONE] = updates.resource
+        chunk.resourceLastRefresh = tick or 0
+    end
 end
 
 -- PUBLIC: Orchestrate pheromone processing (reads storage.universe)
