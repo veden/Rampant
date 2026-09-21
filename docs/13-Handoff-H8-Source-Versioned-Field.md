@@ -367,10 +367,39 @@ range 13486000-13486500: dirty 0.761 ms, sourceField 0.002 ms
 range 13486500-13487000: dirty 0.742 ms, sourceField 0.002 ms
 ```
 
-The 10x real-save regression is removed. H8 is still ~0.2 ms/tick above the
-H7 control in this partial integration; the remaining work is to stop paying
-the H7 base/enemy dirty-field maintenance once H8 is the active field, or to
-reduce the H8 queue/read overhead further.
+The 10x real-save regression is removed.
+
+### H7 base/enemy maintenance removed (d87a1fc)
+
+`MapUtils.calculatePheromoneUpdates` / `applyPheromoneUpdates` now skip the
+raw base/enemy field writes when `Constants.USE_SOURCE_VERSIONED_FIELD` is
+true. Death, kamikaze, player, and resource maintenance still run through the
+H7 dirty pass.
+
+Real-save `Starting2.zip`, 12,000 ticks, three runs each:
+
+```text
+H7 control: 1.765, 1.774, 1.673 ms
+H8:         1.804, 1.701, 1.711 ms
+```
+
+The distributions now overlap; H8 is no longer a regression. Per-range dirty
+timings also dropped:
+
+```text
+H7 range 13485000-13485500: dirty 0.837 ms
+H8 range 13485000-13485500: dirty 0.630 ms
+H7 range 13485500-13486000: dirty 0.739 ms
+H8 range 13485500-13486000: dirty 0.587 ms
+H7 range 13486000-13486500: dirty 0.759 ms
+H8 range 13486000-13486500: dirty 0.525 ms
+```
+
+`pheromone-dynamics` still passes with H8 enabled after the change.
+
+The remaining H7 work is the transient fields: player, death, kamikaze, and
+resource. Removing those requires the same source-versioned treatment for the
+player/resource fields and a read-time decay model for the transient fields.
 
 ### Remaining behavior battery
 
