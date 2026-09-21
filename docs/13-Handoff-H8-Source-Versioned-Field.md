@@ -417,6 +417,38 @@ pheromone-dynamics PASS
 migration-settler  PASS
 ```
 
+### H7 dirty budget halved (27e1158)
+
+With H8 owning base/enemy/resource, the remaining H7 transient pass only
+needs half the per-tick chunk budget. `Processor.processDirtyChunks` now
+halves `PROCESS_DIRTY_CHUNKS_PER_TICK` when H8 is active.
+
+Real-save `Starting2.zip`, 12,000 ticks, three runs each:
+
+```text
+H7 control: avg 1.765, 1.774, 1.673 ms
+H8:          avg 1.374, 1.388, 1.351 ms
+```
+
+Per-range dirty timings with the halved budget:
+
+```text
+range 13485000-13485500: dirty 0.284 ms
+range 13485500-13486000: dirty 0.384 ms
+range 13486000-13486500: dirty 0.281 ms
+range 13486500-13487000: dirty 0.244 ms
+range 13487000-13487500: dirty 0.280 ms
+```
+
+That is below half the H7 dirty range (~0.74-0.84 ms) and the whole-run
+average is ~20% below the H7 control. Behavior validation with H8 enabled:
+
+```text
+pheromone-dynamics PASS
+migration-settler  PASS
+wall-defense       PASS
+```
+
 The remaining H7 work is the transient fields: player, death, and kamikaze.
 Removing those requires a read-time decay model for the transient fields
 (and a local/bounded player field for the moving player source).
