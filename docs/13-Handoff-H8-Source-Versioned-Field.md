@@ -456,6 +456,24 @@ Two changes target the recurring `sourceField` spikes:
 1. **Cached neighbour ids** per chunk instead of recomputing the 8
    `MapUtils.getChunkByXY` lookups for every solver node.
 2. **Bounded influence radius** for H8 fields (`maxRadius = 4`).
+   This was reverted in `7650897`: radius 4 is not a small correction.
+   With decay 0.9 it discards every contribution below
+   `sourceValue * 0.9^4 = 0.6561 * sourceValue`; for source 500 that is a
+   cutoff at 328, while exact `eps = 0.0005` needs ~132 hops / ~4224 tiles.
+   A synthetic 128x128 grid with 1000 sources, values 1-500, showed:
+
+   ```text
+   max absolute error: 295.8
+   mean absolute error: 16.8
+   chunks with error >1:   20.55%
+   chunks with error >10:  18.04%
+   chunks with error >100:  6.13%
+   max relative error:    100%
+   ```
+
+   The exact neighbor-id cache is retained. Radius 4 is experimental only
+   and must not be the default until the full behavior battery and real-save
+   A/B validate it.
 
 Exact subsystem telemetry on `Starting2.zip`, 12,000 ticks:
 
