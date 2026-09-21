@@ -46,6 +46,7 @@ local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local CHUNK_TICK = Constants.CHUNK_TICK
 local DECAY_095 = Constants.DECAY_095
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
+local USE_SOURCE_VERSIONED_FIELD = Constants.USE_SOURCE_VERSIONED_FIELD
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -543,6 +544,7 @@ local readKamikaze = function(chunk, tick)
 end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
+    local skipBaseEnemy = USE_SOURCE_VERSIONED_FIELD
     local chunkPlayer = chunk[PLAYER_PHEROMONE]
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(chunk)
@@ -566,7 +568,9 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
             local neighbor = neighbors[i]
             chunkPlayer = chunkPlayer + readPlayer(neighbor, tick)
-            chunkEnemy = chunkEnemy + readEnemy(neighbor, tick)
+            if not skipBaseEnemy then
+                chunkEnemy = chunkEnemy + readEnemy(neighbor, tick)
+            end
             -- getCombinedDeathGenerator inlined (8 calls/chunk in the
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
@@ -576,9 +580,11 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
             if chunkKamikaze < tempPheromone then
                 chunkKamikaze = tempPheromone
             end
-            tempPheromone = readBase(neighbor, tick)
-            if chunkBase < tempPheromone then
-                chunkBase = tempPheromone
+            if not skipBaseEnemy then
+                tempPheromone = readBase(neighbor, tick)
+                if chunkBase < tempPheromone then
+                    chunkBase = tempPheromone
+                end
             end
             tempPheromone = readResource(neighbor, tick)
             if chunkResource < tempPheromone then
@@ -595,15 +601,21 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         (chunkPlayer / chunkCount) * 0.98
     ) * chunkDeathRating
 
-    local newBase = mMax(
-        chunk.playerBaseGenerator or 0,
-        chunkBase * 0.9
-    ) * chunkDeathRating
+    local newBase = chunk[BASE_PHEROMONE] or 0
+    if not skipBaseEnemy then
+        newBase = mMax(
+            chunk.playerBaseGenerator or 0,
+            chunkBase * 0.9
+        ) * chunkDeathRating
+    end
 
-    local newEnemy = chunkDeathRating * mMax(
-        enemyStructureCount * ENEMY_PHEROMONE_MULTIPLER,
-        (chunkEnemy / chunkCount) * 0.9
-    )
+    local newEnemy = chunk[ENEMY_PHEROMONE] or 0
+    if not skipBaseEnemy then
+        newEnemy = chunkDeathRating * mMax(
+            enemyStructureCount * ENEMY_PHEROMONE_MULTIPLER,
+            (chunkEnemy / chunkCount) * 0.9
+        )
+    end
 
     local newKamikaze = mMax(
         chunkKamikaze,
@@ -641,11 +653,13 @@ function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     chunk[PLAYER_PHEROMONE] = updates.player
     chunk.playerLastRefresh = tick or 0
 
-    chunk[BASE_PHEROMONE] = updates.base
-    chunk.baseLastRefresh = tick or 0
+    if not USE_SOURCE_VERSIONED_FIELD then
+        chunk[BASE_PHEROMONE] = updates.base
+        chunk.baseLastRefresh = tick or 0
 
-    chunk[ENEMY_PHEROMONE] = updates.enemy
-    chunk.enemyLastRefresh = tick or 0
+        chunk[ENEMY_PHEROMONE] = updates.enemy
+        chunk.enemyLastRefresh = tick or 0
+    end
 
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
     chunk.kamikazeLastRefresh = tick or 0
