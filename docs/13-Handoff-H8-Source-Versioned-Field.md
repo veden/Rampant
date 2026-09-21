@@ -449,6 +449,44 @@ migration-settler  PASS
 wall-defense       PASS
 ```
 
+### Source-field optimization (955dd82)
+
+Two changes target the recurring `sourceField` spikes:
+
+1. **Cached neighbour ids** per chunk instead of recomputing the 8
+   `MapUtils.getChunkByXY` lookups for every solver node.
+2. **Bounded influence radius** for H8 fields (`maxRadius = 4`).
+
+Exact subsystem telemetry on `Starting2.zip`, 12,000 ticks:
+
+```text
+sourceField >1 ms:
+  unbounded:        266 / 12000 = 2.22%
+  cached only:      126 / 12000 = 1.05%
+  cached + radius 4: 19 / 12000 = 0.16%
+
+slowest sourceField:
+  unbounded:        206 ms initial, then 10-25 ms recurring
+  cached + radius 4: 114 ms initial, then 2-7 ms recurring
+
+whole-run average:
+  H7 control: 1.617 ms
+  H8 cached + radius 4: 1.376 ms
+```
+
+Behavior validation with H8 enabled and radius 4:
+
+```text
+pheromone-dynamics PASS
+migration-settler  PASS
+wall-defense       PASS
+```
+
+Sub-step attribution showed the recurring spikes are
+`propagateIncrease` calls with `old=0 new=large`: pending-upgrade
+replacements create new enemy structures one at a time, and each new
+source propagates into an empty region. Radius 4 bounds that propagation.
+
 The remaining H7 work is the transient fields: player, death, and kamikaze.
 Removing those requires a read-time decay model for the transient fields
 (and a local/bounded player field for the moving player source).
