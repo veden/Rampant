@@ -176,6 +176,8 @@ def main():
     ap.add_argument("--columns", default=DEFAULT_COLUMNS)
     ap.add_argument("--verbose", default="all",
                     help='value for --benchmark-verbose (default: all)')
+    ap.add_argument("--subsystem-telemetry", action="store_true",
+                    help="temporarily enable exact per-call [SUB] logging in the mod copy")
     args = ap.parse_args()
 
     if not os.path.isfile(args.factorio):
@@ -203,11 +205,41 @@ def main():
     if args.mod_directory:
         cmd[1:1] = ["--mod-directory", args.mod_directory]
 
+    settings_path = None
+    settings_backup = None
+    settings_file = os.path.join(args.mod_directory, "Rampant", "settings.lua")
+    if args.subsystem_telemetry and os.path.isfile(settings_file):
+        settings_path = settings_file
+        with open(settings_path, "r", errors="replace") as f:
+            settings_backup = f.read()
+        patched = settings_backup
+        patched = patched.replace(
+            'name = "rampant--subsystemTelemetry",\n            description = "Log every timed subsystem call for benchmark breakdowns (high overhead).",\n            setting_type = "startup",\n            default_value = false,',
+            'name = "rampant--subsystemTelemetry",\n            description = "Log every timed subsystem call for benchmark breakdowns (high overhead).",\n            setting_type = "startup",\n            default_value = true,')
+        if patched == settings_backup:
+            print("# warning: subsystem telemetry setting not found in mod copy", file=sys.stderr)
+        else:
+            with open(settings_path, "w", errors="replace") as f:
+                f.write(patched)
+            print("# exact subsystem telemetry enabled in temp mod copy")
+    if args.mod_directory:
+        for stale in ("mod-settings.dat", os.path.join("mods", "mod-settings.dat")):
+            try:
+                os.unlink(os.path.join(args.mod_directory, stale))
+            except OSError:
+                pass
+
     print(f"# running: {' '.join(cmd)}")
     print(f"# raw output: {output}")
-    with open(output, "w", errors="replace") as f:
-        proc = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
-    print(f"# factorio exit: {proc.returncode} (SIGSEGV at teardown is expected for long verbose runs)")
+    try:
+        with open(output, "w", errors="replace") as f:
+            proc = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
+        print(f"# factorio exit: {proc.returncode} (SIGSEGV at teardown is expected for long verbose runs)")
+    finally:
+        if settings_path and settings_backup is not None:
+            with open(settings_path, "w", errors="replace") as f:
+                f.write(settings_backup)
+            print("# temp mod copy settings.lua restored")
 
     header, rows = parse_cli_rows(output)
     subs, ranges = parse_samples(output)

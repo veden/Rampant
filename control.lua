@@ -625,9 +625,11 @@ end
 
 
 -- Per-subsystem benchmark timing. On sample ticks only, time one call and log
--- it; otherwise call straight through. Module-level (no per-tick closure).
+-- it; otherwise call straight through. `SUBSYSTEM_TELEMETRY` is the
+-- benchmark-only exact mode: it logs every timed call so the parser can bucket
+-- min/avg/max per subsystem per range. It is high-overhead and off by default.
 local function timed(tick, rangeSample, name, fn, a, b)
-    if not rangeSample then
+    if not rangeSample and not Constants.SUBSYSTEM_TELEMETRY then
         return fn(a, b)
     end
     local profiler = helpers.create_profiler()

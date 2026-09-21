@@ -46,6 +46,16 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant--subsystemTelemetry",
+            description = "Log every timed subsystem call for benchmark breakdowns (high overhead).",
+            setting_type = "startup",
+            default_value = false,
+            order = "z[dev]-b[subsystemTelemetry]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant--unitsAffectedByTiles",
             setting_type = "startup",
             default_value = true,

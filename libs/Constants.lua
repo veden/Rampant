@@ -55,6 +55,12 @@ if settings and settings.startup and settings.startup["rampant--sourceVersionedF
 end
 constants.USE_SOURCE_VERSIONED_FIELD = useSourceVersionedField
 
+local subsystemTelemetry = false
+if settings and settings.startup and settings.startup["rampant--subsystemTelemetry"] then
+    subsystemTelemetry = settings.startup["rampant--subsystemTelemetry"].value
+end
+constants.SUBSYSTEM_TELEMETRY = subsystemTelemetry
+
 -- Dirty-queue propagation stops when a chunk's pheromone change is below
 -- this bound (relative to its previous value). Without this, the neighbor-
 -- marking cascade never terminates and the whole map is re-processed every
