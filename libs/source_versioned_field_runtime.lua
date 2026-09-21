@@ -34,6 +34,9 @@ local QueueCount = 0
 local DRAIN_PER_TICK = 40
 local Initialized = false
 local SolvedFields = {}
+local FieldTopSource = {}
+local FieldSecond = {}
+local FieldSecondSource = {}
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
 local FIELD_BASE = Constants.BASE_PHEROMONE
@@ -67,6 +70,9 @@ function Runtime.init(universe)
     QueueHead = 1
     QueueCount = 0
     SolvedFields = {}
+    FieldTopSource = {}
+    FieldSecond = {}
+    FieldSecondSource = {}
     Initialized = true
     -- The pure SquadLogic accessors delegate to this reader when the
     -- startup flag is enabled. Keeping the hook on SquadLogic avoids a
@@ -107,10 +113,7 @@ end
 
 function Runtime.solveAll(opts)
     for fieldType in pairs(SOURCE_FIELDS) do
-        local field = Runtime.solveField(fieldType, opts)
-        local key = Runtime.fieldKey(fieldType)
-        Universe.sourceVersionedFields[key] = field
-        SolvedFields[key] = true
+        Runtime.ensureSolved(fieldType, opts)
     end
 end
 
@@ -119,9 +122,12 @@ end
 -- propagates into a complete field.
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
-    if not SolvedFields[key] then
-        local field = Runtime.solveField(fieldType, opts)
+    if not SolvedFields[key] or not FieldTopSource[key] then
+        local field, topSource, second, secondSource = Runtime.solveFieldWithMetadata(fieldType, opts)
         Universe.sourceVersionedFields[key] = field
+        FieldTopSource[key] = topSource
+        FieldSecond[key] = second
+        FieldSecondSource[key] = secondSource
         SolvedFields[key] = true
         return field, true
     end
@@ -137,7 +143,6 @@ function Runtime.process(opts)
         return 0
     end
     local processed = 0
-    local decreasedFields
     while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
         local item = SourceQueue[QueueHead]
         SourceQueue[QueueHead] = nil
@@ -145,24 +150,15 @@ function Runtime.process(opts)
         processed = processed + 1
 
         if item.chunk and item.chunk.id then
-            local field = Runtime.ensureSolved(item.fieldType, opts)
+            Runtime.ensureSolved(item.fieldType, opts)
             if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
-                Runtime.propagateIncrease(item.chunk, item.fieldType, field, opts)
+                Runtime.propagateIncrease(item.chunk, item.fieldType, opts)
             else
-                -- A decrease cannot be propagated in max-plus. Batch all
-                -- decreases for a field into one full recompute per tick
-                -- rather than one recompute per queue item.
-                decreasedFields = decreasedFields or {}
-                decreasedFields[item.fieldType] = true
+                Runtime.removeSource(item.chunk, item.fieldType, item.oldValue, opts)
+                if (item.newValue or 0) > 0 then
+                    Runtime.propagateIncrease(item.chunk, item.fieldType, opts)
+                end
             end
-        end
-    end
-    if decreasedFields then
-        for fieldType in pairs(decreasedFields) do
-            local key = Runtime.fieldKey(fieldType)
-            local field = Runtime.ensureSolved(fieldType, opts)
-            Universe.sourceVersionedFields[key] = Runtime.recompute(
-                nil, fieldType, field, opts)
         end
     end
     if QueueHead > QueueCount then
@@ -231,14 +227,41 @@ function Runtime.buildSources(fieldType)
     return sources
 end
 
-function Runtime.solveField(fieldType, opts)
+function Runtime.solveFieldWithMetadata(fieldType, opts)
     local sources = Runtime.buildSources(fieldType)
-    return Solver.solve(sources, Runtime.neighborOf, opts)
+    return Solver.solveWithMetadata(sources, Runtime.neighborOf, opts)
 end
 
-function Runtime.propagateIncrease(chunk, fieldType, field, opts)
+function Runtime.solveField(fieldType, opts)
+    local field, _, _, _, work = Runtime.solveFieldWithMetadata(fieldType, opts)
+    return field, work
+end
+
+function Runtime.fieldMetadata(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    return FieldTopSource[key], FieldSecond[key], FieldSecondSource[key]
+end
+
+-- The optional third argument may be either the old API's `field` argument
+-- or the new options table. The metadata-backed field is always local, so the
+-- old `field` value is accepted and ignored for compatibility.
+function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
+    local opts = maybeOpts or fieldOrOpts
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key]
     local source = { id = chunk.id, gen = Runtime.sourceValue(chunk, fieldType) }
-    return Solver.propagateIncrease(source, field, Runtime.neighborOf, opts)
+    return Solver.propagateIncreaseWithMetadata(
+        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        Runtime.neighborOf, opts)
+end
+
+function Runtime.removeSource(chunk, fieldType, oldValue, opts)
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key]
+    local source = { id = chunk.id, gen = oldValue or 0 }
+    return Solver.removeSource(
+        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        Runtime.neighborOf, opts)
 end
 
 function Runtime.recompute(changedSources, fieldType, field, opts)

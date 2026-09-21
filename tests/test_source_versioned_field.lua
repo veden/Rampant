@@ -178,4 +178,75 @@ my_collection:add('recompute_fallback_is_exact', function()
         "recompute fallback must match full solve")
 end)
 
+local function metadataOptions()
+    return { decay = DECAY, eps = EPS, rating = RATING }
+end
+
+local function assertMetadataConsistent(field, topSource, second, secondSource)
+    for chunkId, value in pairs(field) do
+        local sec = second[chunkId] or 0
+        assert(sec <= value + EPS,
+            "second contribution must not exceed the field value")
+        if value > EPS then
+            assert(topSource[chunkId] ~= nil,
+                "every non-zero chunk must record its top source")
+        end
+    end
+end
+
+my_collection:add('solve_with_metadata_matches_solve', function()
+    local static, dynamic = makeSources()
+    local sources = allSources(static, dynamic)
+    local neighborOf = makeNeighborOf()
+    local ref = Solver.solve(sources, neighborOf, metadataOptions())
+    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+        sources, neighborOf, metadataOptions())
+    assert(maxDiff(field, ref) < 1e-6,
+        "metadata solve must match the plain solve")
+    assertMetadataConsistent(field, topSource, second, secondSource)
+end)
+
+my_collection:add('remove_source_matches_full_solve', function()
+    local static, dynamic = makeSources()
+    local sources = allSources(static, dynamic)
+    local neighborOf = makeNeighborOf()
+    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+        sources, neighborOf, metadataOptions())
+
+    local afterSources = {}
+    for _, source in ipairs(static) do
+        afterSources[#afterSources + 1] = { id = source.id, gen = source.gen }
+    end
+    for i, source in ipairs(dynamic) do
+        if i ~= 1 then
+            afterSources[#afterSources + 1] = { id = source.id, gen = source.gen }
+        end
+    end
+    local ref = Solver.solve(afterSources, neighborOf, metadataOptions())
+
+    Solver.removeSource(dynamic[1], field, topSource, second, secondSource,
+        neighborOf, metadataOptions())
+    assert(maxDiff(field, ref) < 1e-6,
+        "local source removal must match the full solve")
+    assertMetadataConsistent(field, topSource, second, secondSource)
+end)
+
+my_collection:add('propagate_increase_with_metadata_matches_solve', function()
+    local static, dynamic = makeSources()
+    local sources = allSources(static, dynamic)
+    local neighborOf = makeNeighborOf()
+    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+        sources, neighborOf, metadataOptions())
+
+    dynamic[1].gen = dynamic[1].gen + 10
+    local afterSources = allSources(static, dynamic)
+    local ref = Solver.solve(afterSources, neighborOf, metadataOptions())
+
+    Solver.propagateIncreaseWithMetadata(dynamic[1], field,
+        topSource, second, secondSource, neighborOf, metadataOptions())
+    assert(maxDiff(field, ref) < 1e-6,
+        "local metadata increase must match the full solve")
+    assertMetadataConsistent(field, topSource, second, secondSource)
+end)
+
 return my_collection

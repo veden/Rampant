@@ -139,4 +139,152 @@ function Solver.recompute(changedSources, allSources, field, neighborOf, opts)
     return Solver.solve(allSources, neighborOf, opts)
 end
 
+
+-- Solve while tracking the top two contributions per chunk. The second
+-- contribution is what makes a source decrease locally removable without a
+-- full solve. Returns field, topSource, second, secondSource, work.
+function Solver.solveWithMetadata(sources, neighborOf, opts)
+    local o = options(opts)
+    local field = {}
+    local topSource = {}
+    local second = {}
+    local secondSource = {}
+    local heap = {}
+    local work = 0
+
+    local function relax(nid, cand, src, d)
+        local top = field[nid] or 0
+        local sec = second[nid] or 0
+        if cand > top + o.eps then
+            if src ~= topSource[nid] then
+                second[nid] = top
+                secondSource[nid] = topSource[nid]
+            end
+            field[nid] = cand
+            topSource[nid] = src
+            heapPush(heap, { id = nid, v = cand, d = d, src = src })
+            work = work + 1
+        elseif src ~= topSource[nid] and cand > sec + o.eps then
+            second[nid] = cand
+            secondSource[nid] = src
+            heapPush(heap, { id = nid, v = cand, d = d, src = src, second = true })
+            work = work + 1
+        end
+    end
+
+    for _, source in ipairs(sources) do
+        local v = source.gen * o.rating
+        if v > (field[source.id] or 0) then
+            field[source.id] = v
+            topSource[source.id] = source.id
+            heapPush(heap, { id = source.id, v = v, d = 0, src = source.id })
+        end
+    end
+    while #heap > 0 do
+        local node = heapPop(heap)
+        if not (o.maxRadius and node.d >= o.maxRadius) then
+            for _, nid in ipairs(neighborOf(node.id)) do
+                relax(nid, node.v * o.decay, node.src, node.d + 1)
+            end
+        end
+    end
+    return field, topSource, second, secondSource, work
+end
+
+-- Increase propagation while maintaining the top-two metadata.
+function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, secondSource, neighborOf, opts)
+    local o = options(opts)
+    local heap = {}
+    local work = 0
+    local v = source.gen * o.rating
+    local top = field[source.id] or 0
+    local sec = second[source.id] or 0
+    if v > top + o.eps then
+        if source.id ~= topSource[source.id] then
+            second[source.id] = top
+            secondSource[source.id] = topSource[source.id]
+        end
+        field[source.id] = v
+        topSource[source.id] = source.id
+        heapPush(heap, { id = source.id, v = v, d = 0, src = source.id })
+        work = work + 1
+    elseif source.id ~= topSource[source.id] and v > sec + o.eps then
+        second[source.id] = v
+        secondSource[source.id] = source.id
+        heapPush(heap, { id = source.id, v = v, d = 0, src = source.id, second = true })
+        work = work + 1
+    end
+    while #heap > 0 do
+        local node = heapPop(heap)
+        local nid = node.id
+        local topValue = field[nid] or 0
+        local secValue = second[nid] or 0
+        local stillTop = (not node.second) and node.v >= topValue
+        local stillSecond = node.second and node.v >= secValue and node.src ~= topSource[nid]
+        if (stillTop or stillSecond) and not (o.maxRadius and node.d >= o.maxRadius) then
+            for _, neighborId in ipairs(neighborOf(nid)) do
+                local cand = node.v * o.decay
+                local neighborTop = field[neighborId] or 0
+                local neighborSecond = second[neighborId] or 0
+                if (not node.second) and cand > neighborTop + o.eps then
+                    if node.src ~= topSource[neighborId] then
+                        second[neighborId] = neighborTop
+                        secondSource[neighborId] = topSource[neighborId]
+                    end
+                    field[neighborId] = cand
+                    topSource[neighborId] = node.src
+                    heapPush(heap, { id = neighborId, v = cand, d = node.d + 1, src = node.src })
+                    work = work + 1
+                elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
+                    second[neighborId] = cand
+                    secondSource[neighborId] = node.src
+                    heapPush(heap, { id = neighborId, v = cand, d = node.d + 1, src = node.src, second = true })
+                    work = work + 1
+                end
+            end
+        end
+    end
+    return work
+end
+
+-- Remove an old source contribution locally. Exact when the top-two
+-- metadata is exact: a source that is neither top nor second at a chunk
+-- cannot become top or second farther along the decay path.
+function Solver.removeSource(source, field, topSource, second, secondSource, neighborOf, opts)
+    local o = options(opts)
+    local heap = {}
+    local v = source.gen * o.rating
+    local work = 0
+    if v > o.eps then
+        heapPush(heap, { id = source.id, v = v, d = 0, src = source.id })
+    end
+    while #heap > 0 do
+        local node = heapPop(heap)
+        if not (o.maxRadius and node.d >= o.maxRadius) then
+            for _, nid in ipairs(neighborOf(node.id)) do
+                local cand = node.v * o.decay
+                if cand > o.eps then
+                    local isTop = topSource[nid] == node.src
+                    local isSecond = secondSource[nid] == node.src
+                    if isTop then
+                        field[nid] = second[nid] or 0
+                        topSource[nid] = secondSource[nid]
+                        second[nid] = 0
+                        secondSource[nid] = nil
+                        heapPush(heap, { id = nid, v = cand, d = node.d + 1, src = node.src })
+                        work = work + 1
+                    elseif isSecond then
+                        second[nid] = 0
+                        secondSource[nid] = nil
+                        heapPush(heap, { id = nid, v = cand, d = node.d + 1, src = node.src })
+                        work = work + 1
+                    end
+                end
+            end
+        end
+    end
+    return work
+end
+
+
 return Solver
