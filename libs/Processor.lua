@@ -755,6 +755,12 @@ function Processor.processDirtyChunks(tick, universe)
     universe = universe or storage.universe
     local processed = 0
     local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
+    -- H8 removes the base/enemy/resource writes from this pass. The
+    -- remaining transient fields (player/death/kamikaze) need less than
+    -- half the budget to stay drained on the reference save.
+    if Constants.USE_SOURCE_VERSIONED_FIELD then
+        maxPerTick = maxPerTick * 0.5
+    end
 
     -- Per-tick metric accumulator: the hot path increments plain fields and this
     -- flushes to Metrics once at the end (string-keyed Metrics lookups per chunk
