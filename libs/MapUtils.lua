@@ -267,6 +267,17 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.vengenceQueue[chunkId] = nil
     Universe.chunkToVictory[chunkId] = nil
 
+    -- H8 neighbor-id cache: the removed chunk and its neighbours may
+    -- have cached adjacency that now includes the removed chunk.
+    chunk.sourceVersionedNeighborIds = nil
+    local neighbors = MapUtils.getNeighborChunks(map, chunk.x, chunk.y)
+    for i = 1, 8 do
+        local neighbor = neighbors[i]
+        if neighbor and neighbor ~= -1 then
+            neighbor.sourceVersionedNeighborIds = nil
+        end
+    end
+
     local base = chunk.base
     if base then
         base.chunkCount = base.chunkCount - 1
