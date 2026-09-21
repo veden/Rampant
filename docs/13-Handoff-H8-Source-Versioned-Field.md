@@ -333,11 +333,44 @@ H8 no decreases: avg 1.864 ms
 H7 control:      avg ~1.58 ms
 ```
 
-So the H8 overhead is almost entirely the 1,893 enemy-field full recomputes
-from source decreases. The event-local increase path itself is close to the H7
-baseline overhead. H8 has **not** reduced runtime overhead in its current
-partial integration; the next required work is a local/bounded decrease
-recompute, not further read-path wiring.
+So the H8 overhead was almost entirely the 1,893 enemy-field full
+recomputes from source decreases. The event-local increase path itself was
+close to the H7 baseline overhead.
+
+### Local decrease removal (be2660d)
+
+`Solver.solveWithMetadata` now tracks the top two contributions per chunk.
+`Solver.removeSource` removes an old source contribution locally and pushes
+only through chunks where the removed source was top or second. The runtime
+uses this for every decrease instead of the full-solve fallback.
+
+Validation:
+
+```text
+tests/runTests.lua: 194 passed / 0 failed
+```
+
+Real-save `Starting2.zip`, 12,000 ticks:
+
+```text
+H7 control:  avg 1.617 ms
+H8 top-two:  avg 1.828 ms  (previous H8 fallback: 15.8 ms)
+```
+
+Per-range H8 dirty/source timings no longer show the 80-180 ms fallback
+spikes:
+
+```text
+range 13485000-13485500: dirty 0.806 ms, sourceField 0.002 ms
+range 13485500-13486000: dirty 0.842 ms, sourceField 0.050 ms
+range 13486000-13486500: dirty 0.761 ms, sourceField 0.002 ms
+range 13486500-13487000: dirty 0.742 ms, sourceField 0.002 ms
+```
+
+The 10x real-save regression is removed. H8 is still ~0.2 ms/tick above the
+H7 control in this partial integration; the remaining work is to stop paying
+the H7 base/enemy dirty-field maintenance once H8 is the active field, or to
+reduce the H8 queue/read overhead further.
 
 ### Remaining behavior battery
 
