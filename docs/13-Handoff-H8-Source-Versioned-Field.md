@@ -397,9 +397,29 @@ H8 range 13486000-13486500: dirty 0.525 ms
 
 `pheromone-dynamics` still passes with H8 enabled after the change.
 
-The remaining H7 work is the transient fields: player, death, kamikaze, and
-resource. Removing those requires the same source-versioned treatment for the
-player/resource fields and a read-time decay model for the transient fields.
+### Resource field moved to H8 (8351b6d)
+
+Resource registration/depletion now queues H8 source changes, and
+`Squad.resourcePheromone` reads the source-versioned field. The H7 dirty
+pass no longer reads or writes the resource field when H8 is active.
+
+Real-save `Starting2.zip`, 12,000 ticks:
+
+```text
+H7 control: avg 1.617 ms
+H8:          avg 1.563 ms
+```
+
+Behavior validation with H8 enabled:
+
+```text
+pheromone-dynamics PASS
+migration-settler  PASS
+```
+
+The remaining H7 work is the transient fields: player, death, and kamikaze.
+Removing those requires a read-time decay model for the transient fields
+(and a local/bounded player field for the moving player source).
 
 ### Remaining behavior battery
 
