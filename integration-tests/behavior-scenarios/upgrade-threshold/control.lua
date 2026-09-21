@@ -45,8 +45,10 @@ local function rampantSpawners(surface)
     local out = {}
     -- Rampant replacements are not all unit-spawners: the biter-spawner
     -- upgrade path can produce worm/turret-type variants whose names still
-    -- end in "-rampant". Filter by force + name, not by unit-spawner type.
-    for _, e in ipairs(surface.find_entities_filtered{ force = "enemy" }) do
+    -- end in "-rampant". The replacement can also be created on a different
+    -- force (observed: neutral-worm-v1-t1-rampant). `find_entities` is the
+    -- only filter that reliably enumerates all of them.
+    for _, e in ipairs(surface.find_entities()) do
         if e.valid and e.name:match("%-rampant$") then
             out[#out + 1] = e
         end
