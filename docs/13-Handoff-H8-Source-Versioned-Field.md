@@ -305,6 +305,40 @@ Per-range H8 dirty/source timings during the A/B showed the fallback solve
 appearing as isolated 80-180 ms source-field ranges; the surrounding ranges
 were sub-millisecond. That is the signature to remove.
 
+### Overhead attribution (instrumented 12,000-tick run)
+
+The H8 runtime was instrumented with counters for `ensureSolved`,
+`recompute`, and field solves. On `Starting2.zip`:
+
+```text
+initial solves:        3 (fields 2, 3, 5)
+full recomputes:    1893 (all field 5, enemy)
+recompute rate:     ~0.16/tick
+```
+
+Per 500-tick range, the recompute counts were stable at roughly 77-90.
+The isolated per-range timings showed the same pattern:
+
+```text
+range 13485000-13485500: dirty 0.814 ms, sourceField 0.002 ms
+range 13485500-13486000: dirty 87.940 ms, sourceField 87.181 ms
+range 13486000-13486500: dirty 0.783 ms, sourceField 0.002 ms
+range 13486500-13487000: dirty 0.895 ms, sourceField 0.002 ms
+```
+
+A control run with decreases ignored (analysis-only patch) gave:
+
+```text
+H8 no decreases: avg 1.864 ms
+H7 control:      avg ~1.58 ms
+```
+
+So the H8 overhead is almost entirely the 1,893 enemy-field full recomputes
+from source decreases. The event-local increase path itself is close to the H7
+baseline overhead. H8 has **not** reduced runtime overhead in its current
+partial integration; the next required work is a local/bounded decrease
+recompute, not further read-path wiring.
+
 ### Remaining behavior battery
 
 With H8 enabled, using the writable temp user-data/mod copy:
