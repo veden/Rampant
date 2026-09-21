@@ -34,12 +34,6 @@ local QueueCount = 0
 local DRAIN_PER_TICK = 40
 local Initialized = false
 local SolvedFields = {}
--- Bounded influence radius for the source-versioned fields. The pure
--- prototype's radius table shows radius 16 is exact for the synthetic grid;
--- the real save has much larger source values, so radius 4 is the measured
--- cost/behavior trade-off: behavior scenarios still pass and the recurring
--- source-field spikes drop by an order of magnitude.
-local DEFAULT_OPTS = { maxRadius = 4 }
 local FieldTopSource = {}
 local FieldSecond = {}
 local FieldSecondSource = {}
@@ -127,7 +121,6 @@ end
 -- paying for fields that are never read while still ensuring a source change
 -- propagates into a complete field.
 function Runtime.ensureSolved(fieldType, opts)
-    opts = opts or DEFAULT_OPTS
     local key = Runtime.fieldKey(fieldType)
     if not SolvedFields[key] or not FieldTopSource[key] then
         local field, topSource, second, secondSource = Runtime.solveFieldWithMetadata(fieldType, opts)
@@ -142,7 +135,6 @@ function Runtime.ensureSolved(fieldType, opts)
 end
 
 function Runtime.process(opts)
-    opts = opts or DEFAULT_OPTS
     if not Initialized then return 0 end
     if QueueHead > QueueCount then
         SourceQueue = {}
@@ -254,7 +246,7 @@ end
 -- or the new options table. The metadata-backed field is always local, so the
 -- old `field` value is accepted and ignored for compatibility.
 function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
-    local opts = maybeOpts or fieldOrOpts or DEFAULT_OPTS
+    local opts = maybeOpts or fieldOrOpts
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
     local source = { id = chunk.id, gen = Runtime.sourceValue(chunk, fieldType) }
@@ -264,7 +256,6 @@ function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
 end
 
 function Runtime.removeSource(chunk, fieldType, oldValue, opts)
-    opts = opts or DEFAULT_OPTS
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
     local source = { id = chunk.id, gen = oldValue or 0 }
