@@ -29,6 +29,7 @@ local Runtime = {}
 local Universe
 local NeighborIds = {}
 local SourceQueue = {}
+local QueueIndex = {}
 local QueueHead = 1
 local QueueCount = 0
 local DRAIN_PER_TICK = 40
@@ -67,6 +68,7 @@ function Runtime.init(universe)
     Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
     Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
     SourceQueue = {}
+    QueueIndex = {}
     QueueHead = 1
     QueueCount = 0
     SolvedFields = {}
@@ -101,13 +103,30 @@ end
 
 function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not Initialized or not chunk or not chunk.id then return false end
+
+    -- Coalesce at enqueue time as well as at drain time. A source chunk
+    -- may be touched several times before the queue is drained; keep only the
+    -- first old value and the latest new value.
+    local byChunk = QueueIndex[fieldType]
+    if not byChunk then
+        byChunk = {}
+        QueueIndex[fieldType] = byChunk
+    end
+    local existing = byChunk[chunk.id]
+    if existing then
+        existing.newValue = newValue
+        return true
+    end
+
     QueueCount = QueueCount + 1
-    SourceQueue[QueueCount] = {
+    local item = {
         chunk = chunk,
         fieldType = fieldType,
         oldValue = oldValue,
         newValue = newValue,
     }
+    SourceQueue[QueueCount] = item
+    byChunk[chunk.id] = item
     return true
 end
 
@@ -138,6 +157,7 @@ function Runtime.process(opts)
     if not Initialized then return 0 end
     if QueueHead > QueueCount then
         SourceQueue = {}
+        QueueIndex = {}
         QueueHead = 1
         QueueCount = 0
         return 0
@@ -150,6 +170,10 @@ function Runtime.process(opts)
     while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
         local item = SourceQueue[QueueHead]
         SourceQueue[QueueHead] = nil
+        local byChunk = QueueIndex[item.fieldType]
+        if byChunk and byChunk[item.chunk.id] == item then
+            byChunk[item.chunk.id] = nil
+        end
         QueueHead = QueueHead + 1
         processed = processed + 1
 
@@ -198,6 +222,7 @@ function Runtime.process(opts)
 
     if QueueHead > QueueCount then
         SourceQueue = {}
+        QueueIndex = {}
         QueueHead = 1
         QueueCount = 0
     end
