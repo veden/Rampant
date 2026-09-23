@@ -475,6 +475,33 @@ Two changes target the recurring `sourceField` spikes:
    and must not be the default until the full behavior battery and real-save
    A/B validate it.
 
+### Batched source changes (b34b724)
+
+`Runtime.process` now collapses all queued changes for a field/source into one
+old -> final transition per tick, applies decreases locally, and runs one
+multi-source increase propagation per field with
+`Solver.propagateIncreasesWithMetadata`.
+
+Exact behavior preserved: 195 unit tests pass, including a new multi-source
+metadata test.
+
+Real-save exact subsystem telemetry:
+
+```text
+sourceField >1 ms:
+  before batching: 126 / 12000 = 1.05%
+  after batching:   81 / 12000 = 0.68%
+
+whole-run average:
+  before batching: ~1.52 ms
+  after batching:  ~1.276 ms
+```
+
+The recurring 25-45 ms spikes remain because the changed sources are often
+spatially disjoint: batching reduces repeated traversal overhead, but it cannot
+make two far-apart empty-region propagations cheaper. Exact batching is a safe
+incremental win, but it does not yet make H8's p95 better than the sweep.
+
 Exact subsystem telemetry on `Starting2.zip`, 12,000 ticks:
 
 ```text
