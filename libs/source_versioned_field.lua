@@ -247,6 +247,66 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
     return work
 end
 
+-- Multi-source increase propagation. Exact for a set of increases into
+-- an existing field: each source is seeded once and the heap is drained once.
+function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts)
+    local o = options(opts)
+    local heap = {}
+    local work = 0
+    for _, source in ipairs(sources) do
+        local id = source.id
+        local v = source.gen * o.rating
+        local top = field[id] or 0
+        local sec = second[id] or 0
+        if v > top + o.eps then
+            if id ~= topSource[id] then
+                second[id] = top
+                secondSource[id] = topSource[id]
+            end
+            field[id] = v
+            topSource[id] = id
+            heapPush(heap, { id = id, v = v, d = 0, src = id })
+            work = work + 1
+        elseif id ~= topSource[id] and v > sec + o.eps then
+            second[id] = v
+            secondSource[id] = id
+            heapPush(heap, { id = id, v = v, d = 0, src = id, second = true })
+            work = work + 1
+        end
+    end
+    while #heap > 0 do
+        local node = heapPop(heap)
+        local nid = node.id
+        local topValue = field[nid] or 0
+        local secValue = second[nid] or 0
+        local stillTop = (not node.second) and node.v >= topValue
+        local stillSecond = node.second and node.v >= secValue and node.src ~= topSource[nid]
+        if (stillTop or stillSecond) and not (o.maxRadius and node.d >= o.maxRadius) then
+            for _, neighborId in ipairs(neighborOf(nid)) do
+                local cand = node.v * o.decay
+                local neighborTop = field[neighborId] or 0
+                local neighborSecond = second[neighborId] or 0
+                if (not node.second) and cand > neighborTop + o.eps then
+                    if node.src ~= topSource[neighborId] then
+                        second[neighborId] = neighborTop
+                        secondSource[neighborId] = topSource[neighborId]
+                    end
+                    field[neighborId] = cand
+                    topSource[neighborId] = node.src
+                    heapPush(heap, { id = neighborId, v = cand, d = node.d + 1, src = node.src })
+                    work = work + 1
+                elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
+                    second[neighborId] = cand
+                    secondSource[neighborId] = node.src
+                    heapPush(heap, { id = neighborId, v = cand, d = node.d + 1, src = node.src, second = true })
+                    work = work + 1
+                end
+            end
+        end
+    end
+    return work
+end
+
 -- Remove an old source contribution locally. Exact when the top-two
 -- metadata is exact: a source that is neither top nor second at a chunk
 -- cannot become top or second farther along the decay path.

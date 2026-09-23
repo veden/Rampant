@@ -142,6 +142,10 @@ function Runtime.process(opts)
         QueueCount = 0
         return 0
     end
+
+    -- Collapse all queued changes for a field/source into one old -> final
+    -- transition, then run one multi-source increase propagation per field.
+    local changes = {}
     local processed = 0
     while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
         local item = SourceQueue[QueueHead]
@@ -150,17 +154,48 @@ function Runtime.process(opts)
         processed = processed + 1
 
         if item.chunk and item.chunk.id then
-            Runtime.ensureSolved(item.fieldType, opts)
-            if item.oldValue == nil or (item.newValue or 0) >= item.oldValue then
-                Runtime.propagateIncrease(item.chunk, item.fieldType, opts)
+            local key = Runtime.fieldKey(item.fieldType)
+            local fieldChanges = changes[key]
+            if not fieldChanges then
+                fieldChanges = { fieldType = item.fieldType, sources = {} }
+                changes[key] = fieldChanges
+            end
+            local sourceChange = fieldChanges.sources[item.chunk.id]
+            if not sourceChange then
+                fieldChanges.sources[item.chunk.id] = {
+                    chunk = item.chunk,
+                    oldValue = item.oldValue,
+                    newValue = item.newValue,
+                }
             else
-                Runtime.removeSource(item.chunk, item.fieldType, item.oldValue, opts)
-                if (item.newValue or 0) > 0 then
-                    Runtime.propagateIncrease(item.chunk, item.fieldType, opts)
-                end
+                sourceChange.newValue = item.newValue
             end
         end
     end
+
+    for _, fieldChanges in pairs(changes) do
+        local fieldType = fieldChanges.fieldType
+        local _, solvedNow = Runtime.ensureSolved(fieldType, opts)
+        if not solvedNow then
+            local increases = {}
+            for _, sourceChange in pairs(fieldChanges.sources) do
+                local oldValue = sourceChange.oldValue
+                local newValue = Runtime.sourceValue(sourceChange.chunk, fieldType)
+                if oldValue and newValue < oldValue then
+                    Runtime.removeSource(sourceChange.chunk, fieldType, oldValue, opts)
+                    if newValue > 0 then
+                        increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
+                    end
+                elseif newValue > 0 then
+                    increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
+                end
+            end
+            if #increases > 0 then
+                Runtime.propagateIncreases(increases, fieldType, opts)
+            end
+        end
+    end
+
     if QueueHead > QueueCount then
         SourceQueue = {}
         QueueHead = 1
@@ -261,6 +296,14 @@ function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local source = { id = chunk.id, gen = oldValue or 0 }
     return Solver.removeSource(
         source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        Runtime.neighborOf, opts)
+end
+
+function Runtime.propagateIncreases(sources, fieldType, opts)
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key]
+    return Solver.propagateIncreasesWithMetadata(
+        sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
         Runtime.neighborOf, opts)
 end
 

@@ -249,4 +249,25 @@ my_collection:add('propagate_increase_with_metadata_matches_solve', function()
     assertMetadataConsistent(field, topSource, second, secondSource)
 end)
 
+my_collection:add('propagate_increases_with_metadata_matches_solve', function()
+    local static, dynamic = makeSources()
+    local sources = allSources(static, dynamic)
+    local neighborOf = makeNeighborOf()
+    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+        sources, neighborOf, metadataOptions())
+
+    dynamic[1].gen = dynamic[1].gen + 10
+    dynamic[2].gen = dynamic[2].gen + 25
+    dynamic[3].gen = dynamic[3].gen + 5
+    local afterSources = allSources(static, dynamic)
+    local ref = Solver.solve(afterSources, neighborOf, metadataOptions())
+
+    Solver.propagateIncreasesWithMetadata(
+        { dynamic[1], dynamic[2], dynamic[3] },
+        field, topSource, second, secondSource, neighborOf, metadataOptions())
+    assert(maxDiff(field, ref) < 1e-6,
+        "multi-source metadata increase must match the full solve")
+    assertMetadataConsistent(field, topSource, second, secondSource)
+end)
+
 return my_collection
