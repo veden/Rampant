@@ -99,7 +99,6 @@ local function options(opts)
         eps = opts.eps or DEFAULT_EPS,
         rating = opts.rating or DEFAULT_RATING,
         maxRadius = opts.maxRadius,
-        maxWork = opts.maxWork,
     }
 end
 
@@ -251,7 +250,6 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
         work = work + 1
     end
     while #heap > 0 do
-        if maxWork and work >= maxWork then break end
         local node = heapPop(heap)
         local nid = node.id
         local topValue = field[nid] or 0
@@ -281,21 +279,14 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
             end
         end
     end
-    return work, heap
+    return work
 end
 
--- Multi-source increase propagation. Exact for a set of increases into an
--- existing field: each source is seeded once and the heap is drained once.
---
--- `heap` may be a frontier left over from a previous call, and `opts.maxWork`
--- bounds the relaxations this call performs. Re-seeding is idempotent: a source
--- already at its value fails the `v > top + eps` test and pushes nothing, so a
--- resumed call can re-seed safely. Returns work, heap; a non-empty heap means the
--- propagation is incomplete and must be resumed.
-function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, heap)
+-- Multi-source increase propagation. Exact for a set of increases into
+-- an existing field: each source is seeded once and the heap is drained once.
+function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts)
     local o = options(opts)
-    heap = heap or {}
-    local maxWork = o.maxWork
+    local heap = {}
     local work = 0
     for _, source in ipairs(sources) do
         local id = source.id
@@ -319,7 +310,6 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         end
     end
     while #heap > 0 do
-        if maxWork and work >= maxWork then break end
         local node = heapPop(heap)
         local nid = node.id
         local topValue = field[nid] or 0
@@ -349,7 +339,7 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
             end
         end
     end
-    return work, heap
+    return work
 end
 
 -- Remove an old source contribution locally. Exact when the top-two

@@ -270,41 +270,4 @@ my_collection:add('propagate_increases_with_metadata_matches_solve', function()
     assertMetadataConsistent(field, topSource, second, secondSource)
 end)
 
--- Test: a work-bounded propagation resumes and converges to the unbounded
--- field. This is what bounds the recurring source-field spikes: the frontier is
--- kept between calls, and re-seeding is idempotent.
-my_collection:add('bounded_propagation_resumes_to_the_unbounded_field', function()
-    local Solver = require("libs/source_versioned_field")
-
-    local function neighborOf(id)
-        local out = {}
-        if id > 0 then out[#out + 1] = id - 1 end
-        if id < 4 then out[#out + 1] = id + 1 end
-        return out
-    end
-
-    local fieldA, topA, secondA, secondSourceA = {}, {}, {}, {}
-    Solver.propagateIncreasesWithMetadata(
-        { { id = 0, gen = 100 } }, fieldA, topA, secondA, secondSourceA,
-        neighborOf, { decay = 0.9, eps = 0.0005 })
-
-    local fieldB, topB, secondB, secondSourceB = {}, {}, {}, {}
-    local heap = {}
-    local calls = 0
-    repeat
-        local _, remaining = Solver.propagateIncreasesWithMetadata(
-            { { id = 0, gen = 100 } }, fieldB, topB, secondB, secondSourceB,
-            neighborOf, { decay = 0.9, eps = 0.0005, maxWork = 1 }, heap)
-        heap = remaining
-        calls = calls + 1
-    until #heap == 0 or calls > 200
-
-    assert(calls > 1, "maxWork of 1 must not finish in one call")
-    assert(calls <= 200, "bounded propagation must terminate")
-    for id = 0, 4 do
-        assert(math.abs((fieldA[id] or 0) - (fieldB[id] or 0)) < 1e-9,
-            "bounded propagation must converge to the unbounded field at id " .. id)
-    end
-end)
-
 return my_collection
