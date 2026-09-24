@@ -28,16 +28,35 @@ local Runtime = {}
 
 local Universe
 local NeighborIds = {}
-local SourceQueue = {}
+-- Per-field source-change queues. Each field drains on its own budget so a
+-- slow field (resource) cannot starve a decision-critical one (base/enemy).
+local SourceQueues = {}
 local QueueIndex = {}
-local QueueHead = 1
-local QueueCount = 0
 local DRAIN_PER_TICK = 40
+local FIELD_DRAIN_PER_TICK = {}
+local FIELD_DRAIN_ACC = {}
 local Initialized = false
 local SolvedFields = {}
 local FieldTopSource = {}
 local FieldSecond = {}
 local FieldSecondSource = {}
+
+-- Solved-field state is persisted in storage so a load does not re-solve. The
+-- module locals alias the storage tables. `on_load` must not write storage, so
+-- creation and the layout version check live in ensureStorage(), which is called
+-- from init(addProperties=true) and from the tick path.
+local SOLVE_VERSION = 1
+local EMPTY_SOLVED = {}
+local EMPTY_TOP = {}
+local EMPTY_SECOND = {}
+local EMPTY_SECOND_SOURCE = {}
+
+local function bindSolvedState()
+    SolvedFields = Universe.sourceVersionedSolved or EMPTY_SOLVED
+    FieldTopSource = Universe.sourceVersionedTop or EMPTY_TOP
+    FieldSecond = Universe.sourceVersionedSecond or EMPTY_SECOND
+    FieldSecondSource = Universe.sourceVersionedSecondSource or EMPTY_SECOND_SOURCE
+end
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
 local FIELD_BASE = Constants.BASE_PHEROMONE
@@ -63,18 +82,48 @@ local SOURCE_FIELDS = {
     [FIELD_RESOURCE] = true,
 }
 
-function Runtime.init(universe)
+-- Create or version-check the persisted solved state. Writes storage, so it
+-- must NOT run on the load path; init(addProperties=true) and the tick path call it.
+function Runtime.ensureStorage()
+    local U = Universe
+    if not U then return end
+    if U.sourceVersionedSolved and U.sourceVersionedSolveVersion == SOLVE_VERSION then
+        bindSolvedState()
+        return
+    end
+    -- New save, or state from an older layout. The field values and the top-two
+    -- metadata must be dropped together: the decrease path is only exact while the
+    -- metadata matches the field.
+    U.sourceVersionedFields = {}
+    U.sourceVersionedSolved = {}
+    U.sourceVersionedTop = {}
+    U.sourceVersionedSecond = {}
+    U.sourceVersionedSecondSource = {}
+    U.sourceVersionedSolveVersion = SOLVE_VERSION
+    bindSolvedState()
+end
+
+function Runtime.init(universe, addProperties)
     Universe = universe
-    Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
-    Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
-    SourceQueue = {}
+    if addProperties then
+        Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
+        Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
+    end
+    SourceQueues = {}
     QueueIndex = {}
-    QueueHead = 1
-    QueueCount = 0
-    SolvedFields = {}
-    FieldTopSource = {}
-    FieldSecond = {}
-    FieldSecondSource = {}
+    FIELD_DRAIN_ACC = {}
+    FIELD_DRAIN_PER_TICK = {}
+    -- Per-field drain budgets (source changes per tick). Round 1 keeps the sum
+    -- at the old single budget (40) so the work is equivalent; the split is
+    -- what makes each field's cadence independently tunable.
+    FIELD_DRAIN_PER_TICK[FIELD_RESOURCE] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_BASE] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_ENEMY] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_PLAYER] = 10
+    bindSolvedState()
+    if addProperties then
+        Runtime.ensureStorage()
+    end
     Initialized = true
     -- The pure SquadLogic accessors delegate to this reader when the
     -- startup flag is enabled. Keeping the hook on SquadLogic avoids a
@@ -118,14 +167,19 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
         return true
     end
 
-    QueueCount = QueueCount + 1
+    local queue = SourceQueues[fieldType]
+    if not queue then
+        queue = { items = {}, head = 1, count = 0 }
+        SourceQueues[fieldType] = queue
+    end
+    queue.count = queue.count + 1
     local item = {
         chunk = chunk,
         fieldType = fieldType,
         oldValue = oldValue,
         newValue = newValue,
     }
-    SourceQueue[QueueCount] = item
+    queue.items[queue.count] = item
     byChunk[chunk.id] = item
     return true
 end
@@ -153,28 +207,33 @@ function Runtime.ensureSolved(fieldType, opts)
     return Universe.sourceVersionedFields[key] or {}, false
 end
 
-function Runtime.process(opts)
+-- Drain ONE field's source-change queue. `budget` is that field's own
+-- share of the per-tick work, so a slow field (resource) cannot starve a
+-- decision-critical one (base/enemy). Collapses queued changes for a source into
+-- one old -> final transition, then runs one multi-source increase propagation.
+function Runtime.process(fieldType, budget, opts)
     if not Initialized then return 0 end
-    if QueueHead > QueueCount then
-        SourceQueue = {}
-        QueueIndex = {}
-        QueueHead = 1
-        QueueCount = 0
+    local queue = SourceQueues[fieldType]
+    if not queue or queue.head > queue.count then
+        if queue then
+            queue.items = {}
+            queue.head = 1
+            queue.count = 0
+        end
         return 0
     end
+    if not budget or budget < 1 then budget = DRAIN_PER_TICK end
 
-    -- Collapse all queued changes for a field/source into one old -> final
-    -- transition, then run one multi-source increase propagation per field.
     local changes = {}
     local processed = 0
-    while QueueHead <= QueueCount and processed < DRAIN_PER_TICK do
-        local item = SourceQueue[QueueHead]
-        SourceQueue[QueueHead] = nil
-        local byChunk = QueueIndex[item.fieldType]
+    while queue.head <= queue.count and processed < budget do
+        local item = queue.items[queue.head]
+        queue.items[queue.head] = nil
+        local byChunk = QueueIndex[fieldType]
         if byChunk and byChunk[item.chunk.id] == item then
             byChunk[item.chunk.id] = nil
         end
-        QueueHead = QueueHead + 1
+        queue.head = queue.head + 1
         processed = processed + 1
 
         if item.chunk and item.chunk.id then
@@ -198,15 +257,15 @@ function Runtime.process(opts)
     end
 
     for _, fieldChanges in pairs(changes) do
-        local fieldType = fieldChanges.fieldType
-        local _, solvedNow = Runtime.ensureSolved(fieldType, opts)
+        local fType = fieldChanges.fieldType
+        local _, solvedNow = Runtime.ensureSolved(fType, opts)
         if not solvedNow then
             local increases = {}
             for _, sourceChange in pairs(fieldChanges.sources) do
                 local oldValue = sourceChange.oldValue
-                local newValue = Runtime.sourceValue(sourceChange.chunk, fieldType)
+                local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
                 if oldValue and newValue < oldValue then
-                    Runtime.removeSource(sourceChange.chunk, fieldType, oldValue, opts)
+                    Runtime.removeSource(sourceChange.chunk, fType, oldValue, opts)
                     if newValue > 0 then
                         increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
                     end
@@ -215,18 +274,36 @@ function Runtime.process(opts)
                 end
             end
             if #increases > 0 then
-                Runtime.propagateIncreases(increases, fieldType, opts)
+                Runtime.propagateIncreases(increases, fType, opts)
             end
         end
     end
 
-    if QueueHead > QueueCount then
-        SourceQueue = {}
-        QueueIndex = {}
-        QueueHead = 1
-        QueueCount = 0
+    if queue.head > queue.count then
+        queue.items = {}
+        queue.head = 1
+        queue.count = 0
     end
     return processed
+end
+
+-- Fractional per-field budgets: accumulate and run when a whole unit is due.
+-- This is the knob that puts the resource field on its own cadence without
+-- touching the decision-critical base/enemy fields.
+function Runtime.processScheduled(fieldType, opts)
+    if not Initialized then return 0 end
+    local perTick = FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK
+    local acc = (FIELD_DRAIN_ACC[fieldType] or 0) + perTick
+    local whole = math.floor(acc)
+    FIELD_DRAIN_ACC[fieldType] = acc - whole
+    if whole < 1 then return 0 end
+    return Runtime.process(fieldType, whole, opts)
+end
+
+-- Set one field's drain budget (source changes per tick). Fractional values
+-- spread a full distribution over many ticks.
+function Runtime.setFieldDrainPerTick(fieldType, perTick)
+    FIELD_DRAIN_PER_TICK[fieldType] = perTick
 end
 
 -- Reusable neighbour-id table. Solver consumes it immediately.

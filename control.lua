@@ -205,7 +205,7 @@ local function initializeLibraries(addProperties)
     Executor.init(Universe)
     Metrics.init(Universe)
     if Constants.USE_SOURCE_VERSIONED_FIELD then
-        SourceVersionedFieldRuntime.init(Universe)
+        SourceVersionedFieldRuntime.init(Universe, addProperties)
         ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
     end
 end
@@ -1089,7 +1089,14 @@ script.on_event(defines.events.on_tick,
                     timed(tick, rangeSample, "dirty", processDirtyChunks, tick, Universe)
                     Executor.drain()
                     if Constants.USE_SOURCE_VERSIONED_FIELD then
-                        timed(tick, rangeSample, "sourceField", SourceVersionedFieldRuntime.process)
+                        -- Persisted solved state: a no-op once created.
+                        SourceVersionedFieldRuntime.ensureStorage()
+                        -- Per-field cadence: each field drains on its own budget so the
+                        -- resource field's slow cadence cannot starve base/enemy.
+                        timed(tick, rangeSample, "sourceField.resource", SourceVersionedFieldRuntime.processScheduled, Constants.RESOURCE_PHEROMONE)
+                        timed(tick, rangeSample, "sourceField.base", SourceVersionedFieldRuntime.processScheduled, Constants.BASE_PHEROMONE)
+                        timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
+                        timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
                     end
                     if rangeSample then
                         local m = Metrics.get()

@@ -32,7 +32,7 @@ local function makeWorld()
         return -1
     end
 
-    Runtime.init(universe)
+    Runtime.init(universe, true)
     return chunks
 end
 
@@ -66,7 +66,7 @@ my_collection:add('process_increase_propagates_locally', function()
     world[1].nestCount = 2
     Runtime.queueSource(world[1], ENEMY_PHEROMONE,
         1 * ENEMY_MULTIPLIER, 2 * ENEMY_MULTIPLIER)
-    Runtime.process({ decay = 0.9, eps = 0.0005 })
+    Runtime.process(ENEMY_PHEROMONE, 40, { decay = 0.9, eps = 0.0005 })
 
     assert(math.abs(Runtime.readChunk(ENEMY_PHEROMONE, world[1]) - 2 * ENEMY_MULTIPLIER) < 1e-9,
         "increased source must be updated")
@@ -80,12 +80,37 @@ my_collection:add('process_decrease_recomputes_field', function()
     world[1].nestCount = 0
     Runtime.queueSource(world[1], ENEMY_PHEROMONE,
         1 * ENEMY_MULTIPLIER, 0)
-    Runtime.process({ decay = 0.9, eps = 0.0005 })
+    Runtime.process(ENEMY_PHEROMONE, 40, { decay = 0.9, eps = 0.0005 })
 
     assert(Runtime.readChunk(ENEMY_PHEROMONE, world[1]) == 0,
         "removed source must be cleared")
     assert(Runtime.readChunk(ENEMY_PHEROMONE, world[2]) == 0,
         "removed source must clear its propagated neighbor")
+end)
+
+my_collection:add('per_field_queues_drain_independently', function()
+    local BASE_PHEROMONE = Constants.BASE_PHEROMONE
+    Runtime.readChunk(BASE_PHEROMONE, world[1])
+    Runtime.readChunk(ENEMY_PHEROMONE, world[1])
+
+    -- Queue an enemy change and a base change, then drain ONLY the base field.
+    local enemyBefore = Runtime.readChunk(ENEMY_PHEROMONE, world[1])
+    world[1].nestCount = 3
+    Runtime.queueSource(world[1], ENEMY_PHEROMONE,
+        2 * ENEMY_MULTIPLIER, 3 * ENEMY_MULTIPLIER)
+    world[1].playerBaseGenerator = 7
+    Runtime.queueSource(world[1], BASE_PHEROMONE, 0, 7)
+    Runtime.process(BASE_PHEROMONE, 40, { decay = 0.9, eps = 0.0005 })
+
+    assert(math.abs(Runtime.readChunk(BASE_PHEROMONE, world[1]) - 7) < 1e-9,
+        "drained field must be updated")
+    assert(math.abs(Runtime.readChunk(ENEMY_PHEROMONE, world[1]) - enemyBefore) < 1e-9,
+        "undrained field must NOT be updated by another field's drain")
+
+    -- Now drain the enemy field; its change must land.
+    Runtime.process(ENEMY_PHEROMONE, 40, { decay = 0.9, eps = 0.0005 })
+    assert(math.abs(Runtime.readChunk(ENEMY_PHEROMONE, world[1]) - 3 * ENEMY_MULTIPLIER) < 1e-9,
+        "draining the enemy field must apply its own queued change")
 end)
 
 my_collection:add('squad_logic_uses_injected_reader', function()
