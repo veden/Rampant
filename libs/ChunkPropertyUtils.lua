@@ -704,9 +704,14 @@ function ChunkPropertyUtils.init(universe, mapUtils)
     end
 end
 
+-- Cached lazy require: MapUtils requires this module at load time, so the
+-- dependency is resolved on first use rather than hoisted. The local keeps the
+-- hot path (per movable neighbour, per processed chunk) off `require`.
+local MapUtils
+
 -- ACO: Get effective pheromone value with decay-on-read (wrapper for MapUtils.getEffectivePheromone)
 function ChunkPropertyUtils.getEffectivePheromone(chunk, type, tick)
-    local MapUtils = require("libs/MapUtils")
+    MapUtils = MapUtils or require("libs/MapUtils")
     return MapUtils.getEffectivePheromone(chunk, type, tick)
 end
 

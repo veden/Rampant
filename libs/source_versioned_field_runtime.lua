@@ -23,6 +23,7 @@ local MapUtils = require("MapUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local Constants = require("Constants")
 local SquadLogic = require("squad_logic")
+local MathUtils = require("MathUtils")
 
 local Runtime = {}
 
@@ -346,7 +347,7 @@ function Runtime.sourceValue(chunk, fieldType)
     elseif fieldType == FIELD_RESOURCE then
         local generator = chunk.resourceGenerator or 0
         if generator > 0 then
-            return require("MathUtils").linearInterpolation(generator, 15000, 20000)
+            return MathUtils.linearInterpolation(generator, 15000, 20000)
         end
         return 0
     end
