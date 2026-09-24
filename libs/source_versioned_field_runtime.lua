@@ -90,6 +90,7 @@ local SOURCE_FIELDS = {
 function Runtime.ensureStorage()
     local U = Universe
     if not U then return end
+    U.sourceVersionedFrontier = U.sourceVersionedFrontier or {}
     if U.sourceVersionedSolved and U.sourceVersionedSolveVersion == SOLVE_VERSION then
         bindSolvedState()
         return
