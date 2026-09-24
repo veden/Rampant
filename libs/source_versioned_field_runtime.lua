@@ -225,7 +225,10 @@ function Runtime.process(fieldType, budget, opts)
     end
     if not budget or budget < 1 then budget = DRAIN_PER_TICK end
 
-    local changes = {}
+    -- process() handles ONE field, so the field-keyed `changes` map is
+    -- vestigial: one accumulator is equivalent and drops a table plus a keyed
+    -- lookup per tick.
+    local fieldChanges = { fieldType = fieldType, sources = {} }
     local processed = 0
     while queue.head <= queue.count and processed < budget do
         local item = queue.items[queue.head]
@@ -238,12 +241,6 @@ function Runtime.process(fieldType, budget, opts)
         processed = processed + 1
 
         if item.chunk and item.chunk.id then
-            local key = Runtime.fieldKey(item.fieldType)
-            local fieldChanges = changes[key]
-            if not fieldChanges then
-                fieldChanges = { fieldType = item.fieldType, sources = {} }
-                changes[key] = fieldChanges
-            end
             local sourceChange = fieldChanges.sources[item.chunk.id]
             if not sourceChange then
                 fieldChanges.sources[item.chunk.id] = {
@@ -257,26 +254,24 @@ function Runtime.process(fieldType, budget, opts)
         end
     end
 
-    for _, fieldChanges in pairs(changes) do
-        local fType = fieldChanges.fieldType
-        local _, solvedNow = Runtime.ensureSolved(fType, opts)
-        if not solvedNow then
-            local increases = {}
-            for _, sourceChange in pairs(fieldChanges.sources) do
-                local oldValue = sourceChange.oldValue
-                local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
-                if oldValue and newValue < oldValue then
-                    Runtime.removeSource(sourceChange.chunk, fType, oldValue, opts)
-                    if newValue > 0 then
-                        increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
-                    end
-                elseif newValue > 0 then
+    local fType = fieldType
+    local _, solvedNow = Runtime.ensureSolved(fType, opts)
+    if not solvedNow then
+        local increases = {}
+        for _, sourceChange in pairs(fieldChanges.sources) do
+            local oldValue = sourceChange.oldValue
+            local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
+            if oldValue and newValue < oldValue then
+                Runtime.removeSource(sourceChange.chunk, fType, oldValue, opts)
+                if newValue > 0 then
                     increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
                 end
+            elseif newValue > 0 then
+                increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
             end
-            if #increases > 0 then
-                Runtime.propagateIncreases(increases, fType, opts)
-            end
+        end
+        if #increases > 0 then
+            Runtime.propagateIncreases(increases, fType, opts)
         end
     end
 
