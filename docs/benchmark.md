@@ -158,7 +158,19 @@ ticks, load 6.9-11.2):
 | 3 | 0.0582 / 2.871 / 80 | 0.0524 / 1.530 / 4 |
 
 The spike count is separated in all three pairs (74-188 -> 4-16, a 5-47x cut) and the
-average overlaps, with the bound slightly better in the two cleaner pairs. So the bound
+average overlaps, with the bound slightly better in the two cleaner pairs.
+
+The same runs at the whole-tick level are **overlapping**, i.e. the bound is invisible
+in the whole tick:
+
+| run | whole avg | script avg | whole max |
+|---|---|---|---|
+| no-bound 1-3 | 0.915-1.255 | 0.221-0.278 | 9.3-11.6 |
+| bound 1-3 | 0.911-1.361 | 0.216-0.256 | 8.5-12.9 |
+
+That is the case for the per-range per-subsystem mandate: the enemy field is ~6% of
+the script time, so a 5-47x cut in its spike count does not move a whole-tick
+average. A whole-tick A/B alone would have read the bound as a no-op. So the bound
 does what it was designed to do: it trades a marginally higher average for a much
 lower spike count. Restored in ade13e5.
 
