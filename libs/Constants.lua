@@ -67,6 +67,13 @@ constants.SUBSYSTEM_TELEMETRY = subsystemTelemetry
 -- tick. Decay-on-read keeps time-correctness while raw values are frozen.
 constants.PROPAGATION_RELATIVE_EPSILON = 0.001
 constants.PROPAGATION_ABSOLUTE_EPSILON = 0.0001
+
+-- Bound on the increase-propagation work per field per tick. A new source in an
+-- empty region otherwise floods until it falls below eps, which showed up as
+-- isolated 2-4 ms source-field spikes. The frontier is kept between ticks so the
+-- propagation still completes exactly; the bound only spreads it over a few ticks,
+-- which is invisible at the 600-tick decision cadence.
+constants.PROPAGATION_MAX_WORK_PER_TICK = 32
 constants.SCAN_QUEUE_SIZE = 2
 constants.RESOURCE_QUEUE_SIZE = 2
 constants.ENEMY_QUEUE_SIZE = 1
