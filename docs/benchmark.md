@@ -127,7 +127,17 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | movement-diag | PASS reachedState4=8 | PASS (baseline) |
 | attack-wave | needs >1000 s | PASS (baseline) |
 | movement-test | FAIL (known scenario-level bug, fails on both sides) | FAIL (baseline) |
-| save-load, long-run | need relocated drivers (both write into the read-only install) | - |
+| save-load | PASS base persisted, wall pheromone persisted, units persisted, AI loop alive (chunksProcessed=7152, index.misses=0), retreat works | PASS (baseline) |
+| long-run | needs a relocated driver (writes into the read-only install) | - |
+
+13 of the 14 runnable scenarios pass on the restored bound. `save-load` is the
+one that validates the persisted solved state and the chunk index directly: the
+pheromone survives the reload and the index has zero misses.
+
+`tools/save_load_local.py` exists because `tools/save_load.py` has two problems
+for this setup: it hardcodes the install's saves/scenarios dirs (read-only here) and
+it omits `--mod-directory`, so it would have tested the installed mod copy rather
+than the working tree.
 
 12 of the 13 runnable scenarios pass on the restored bound, including the
 sensitive `pheromone-dynamics` at its exact pre-bound values.
