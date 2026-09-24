@@ -101,6 +101,29 @@ solve. Eliminating the first solve is the largest single win.
 | 11000-11499 | 0.758 / 1.062 | 0.230 / 0.390 |
 | 11500-11999 | 0.766 / 1.394 | 0.214 / 0.383 |
 
+## Behavior battery — H8, seed 1
+
+`tools/behavior-local.sh <name> <seed>` stages the scenario and the prepared
+save into `.bench/user-data` (the install dir is read-only, so `just
+test-behavior` cannot run here). This made the battery runnable and it immediately
+caught a regression the cost benchmark and the unit tests could not see: the decay
+decoupling had `setDeathGenerator` clear the decay timestamp on every processing
+pass, so the death generator never decayed, the death rating stayed suppressed and
+the base pheromone collapsed to 0. Fixed in bce2ab8.
+
+| scenario | H8 (bce2ab8) | committed a284c07 (h7) |
+|---|---|---|
+| pheromone-dynamics | PASS wall=550 mid=495 nest=400.95 | PASS wall=550 mid=495 nest=285.32 |
+| wall-defense | PASS base squad unitsAtWall wallDamaged | PASS (baseline) |
+| death-response | PASS base retreat pointsDropped preKillPoints=2000 | PASS (baseline) |
+| squad-cycle | PASS base attack retreated reEngaged statusAfter=4 | PASS (baseline) |
+| migration-settler | running | PASS (baseline) |
+
+Note on sensitivity: `pheromone-dynamics` asserts the gradient ordering
+(wall > mid > nest), which both sides satisfy, yet H8's nest value is 400.95 against
+h7's 285.32 (+40%). An ordinal assertion does not catch a 40% value shift, so the
+battery is a regression guard, not a parity check.
+
 ## Caveats
 
 - Spike counts are not stable run-to-run on the same config (`dirty >1ms`
