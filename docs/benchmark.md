@@ -118,6 +118,19 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | death-response | PASS base retreat pointsDropped preKillPoints=2000 | PASS (baseline) |
 | squad-cycle | PASS base attack retreated reEngaged statusAfter=4 | PASS (baseline) |
 | migration-settler | PASS base settlerFormed dispatched moved site:2 | PASS (baseline) |
+| base-ai-states | PASS base attack raidDelta onslaughtDelta migration rolled | PASS (baseline) |
+| base-expansion | PASS base dispatched built upgraded registered | PASS (baseline) |
+| siege-settle | PASS base formBuilder marchSite siegeDist failedSites kamikazeSeen | PASS (baseline) |
+| upgrade-threshold | PASS tier scales with evolution (low=1 -> high=9) | PASS (baseline) |
+| player-death | PASS base destroyed victoryScent credit destroyedBuildings | PASS (baseline) |
+| multi-surface | PASS base1 surface2 base2 excluded | PASS (baseline) |
+| movement-diag | PASS reachedState4=8 | PASS (baseline) |
+| attack-wave | needs >1000 s | PASS (baseline) |
+| movement-test | FAIL (known scenario-level bug, fails on both sides) | FAIL (baseline) |
+| save-load, long-run | need relocated drivers (both write into the read-only install) | - |
+
+12 of the 13 runnable scenarios pass on the restored bound, including the
+sensitive `pheromone-dynamics` at its exact pre-bound values.
 
 ## The h7/h8 field-value difference, and its cause
 
