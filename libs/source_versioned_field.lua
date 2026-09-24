@@ -17,7 +17,15 @@
     Propagation is a max-plus Dijkstra:
       value(c) = max over sources s of source(s) * decay^distance(c, s)
 
-    Time decay is applied by the read path, not by propagation.
+    There is NO time decay in these fields. A source-versioned field is maintained
+    by source changes alone: a static source (ore, a structure) is solved once and
+    never renewed, and a dynamic source (a base, a nest) is re-propagated when it
+    changes. The H7 decay-on-read and the periodic sweep it required applied to the
+    transient fields (player, death, kamikaze), which this solver does not own.
+
+    (This comment previously read "Time decay is applied by the read path, not by
+    propagation". That described the transient fields and was misread as an
+    unimplemented read-time decay for these fields, which cost two rounds.)
 ]]
 
 local Solver = {}
