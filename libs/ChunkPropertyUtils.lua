@@ -448,8 +448,12 @@ function ChunkPropertyUtils.addDeathGenerator(chunk, value)
     end
 end
 
+-- NOTE: this is the per-processing write of the already-decayed value, so it
+-- must NOT clear the decay timestamp: doing so means every processing pass
+-- restarts the interval and the generator never decays at all (observed as the
+-- base pheromone collapsing to 0 in pheromone-dynamics). Only the event writes
+-- (addDeathGenerator) restart the interval.
 function ChunkPropertyUtils.setDeathGenerator(chunk, value)
-    chunk.deathGeneratorDecayTick = nil
     if (value > 1) then
         chunk.deathGenerator = 1
     elseif (value < -1) then
