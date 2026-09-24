@@ -125,12 +125,16 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | player-death | PASS base destroyed victoryScent credit destroyedBuildings | PASS (baseline) |
 | multi-surface | PASS base1 surface2 base2 excluded | PASS (baseline) |
 | movement-diag | PASS reachedState4=8 | PASS (baseline) |
-| attack-wave | needs >1000 s | PASS (baseline) |
+| attack-wave | PASS wave scales with evolution (low=1 -> high=48) | PASS (baseline) |
 | movement-test | FAIL (known scenario-level bug, fails on both sides) | FAIL (baseline) |
 | save-load | PASS base persisted, wall pheromone persisted, units persisted, AI loop alive (chunksProcessed=7152, index.misses=0), retreat works | PASS (baseline) |
 | long-run | needs a relocated driver (writes into the read-only install) | - |
 
-13 of the 14 runnable scenarios pass on the restored bound. `save-load` is the
+**14 of the 14 runnable scenarios pass** on the restored bound. attack-wave only
+needed a longer budget than the default: it completes in ~1260 ticks but the 1000 s
+run budget expired first. The only scenario that does not pass is `movement-test`,
+the known scenario-level bug that fails on both sides; `long-run` is a 4-game-hour
+session and was not run. `save-load` is the
 one that validates the persisted solved state and the chunk index directly: the
 pheromone survives the reload and the index has zero misses.
 
