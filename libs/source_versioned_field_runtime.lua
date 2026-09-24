@@ -36,6 +36,8 @@ local QueueIndex = {}
 local DRAIN_PER_TICK = 40
 local FIELD_DRAIN_PER_TICK = {}
 local FIELD_DRAIN_ACC = {}
+local PROPAGATION_MAX_WORK_PER_TICK = Constants.PROPAGATION_MAX_WORK_PER_TICK
+local BOUNDED_OPTS = { maxWork = PROPAGATION_MAX_WORK_PER_TICK }
 local Initialized = false
 local SolvedFields = {}
 local FieldTopSource = {}
@@ -100,6 +102,8 @@ function Runtime.ensureStorage()
     U.sourceVersionedTop = {}
     U.sourceVersionedSecond = {}
     U.sourceVersionedSecondSource = {}
+    -- A frontier from a dropped field is meaningless: the field restarts.
+    U.sourceVersionedFrontier = {}
     U.sourceVersionedSolveVersion = SOLVE_VERSION
     bindSolvedState()
 end
@@ -397,12 +401,27 @@ function Runtime.removeSource(chunk, fieldType, oldValue, opts)
         Runtime.neighborOf, opts)
 end
 
+-- Bounded increase propagation. A frontier left over from the previous tick
+-- means the last propagation hit the work budget, so resume it. Re-seeding is
+-- idempotent (a source already at its value pushes nothing), so passing
+-- `sources` again is safe and the field still converges exactly.
 function Runtime.propagateIncreases(sources, fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
-    return Solver.propagateIncreasesWithMetadata(
+    local frontier = Universe.sourceVersionedFrontier[key]
+    if not frontier then
+        frontier = {}
+        Universe.sourceVersionedFrontier[key] = frontier
+    end
+    -- Reused scratch: the solver copies what it needs, so this allocates nothing.
+    BOUNDED_OPTS.decay = opts and opts.decay
+    BOUNDED_OPTS.eps = opts and opts.eps
+    BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
+    local _, remaining = Solver.propagateIncreasesWithMetadata(
         sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
-        Runtime.neighborOf, opts)
+        Runtime.neighborOf, BOUNDED_OPTS, frontier)
+    Universe.sourceVersionedFrontier[key] = remaining
+    return remaining and #remaining or 0
 end
 
 function Runtime.recompute(changedSources, fieldType, field, opts)
