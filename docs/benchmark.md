@@ -205,6 +205,41 @@ save (a crash on the load path, caught by the benchmark).
 **Always check `uptime` first and prefer an interleaved A/B.** A load shift of this
 size moves the floor by more than the effect being measured.
 
+## State of the branch
+
+Landed and validated (each committed separately, all with the SHA above):
+
+- `2dd08e7` per-field source-change queues, per-field drain budgets, and
+  per-field `sourceField.{resource,base,enemy,player}` telemetry.
+- `234c423` + `bce2ab8` generator decay decoupled from the maintenance
+  cadence: the factor is per tick against a fixed reference
+  (`DECAY_REFERENCE_TICKS = 270`), and only event writes restart the
+  interval. This is what makes the cadence a cost knob rather than a gameplay
+  parameter.
+- `cae9b52` solved state persisted in storage, so a load does not re-solve
+  (first solve: base 51.5 -> 0.04 ms, enemy 141 -> 1.06 ms). Validated by
+  `save-load`.
+- `a7e9ffd` + `7ce46c5` + `4c78b8c` the propagation bound, with its three
+  bugs fixed. Cuts the enemy field's >1ms count 74-188 -> 4-16, invisible at the
+  whole-tick level.
+- `2993e0e` `tools/behavior-local.sh`, `236e546`
+  `tools/save_load_local.py`: the battery and the save/load driver, both
+  runnable from the workspace against a read-only install.
+
+Open:
+
+- `attack-wave` needs more than 1000 s; `long-run` is a 4-game-hour session
+  (hours of wall time) and was not run.
+- The read-time decay (`Runtime.read`) is still not wired: h8's source-versioned
+  reads are systematically higher than h7's effective reads by the elapsed-time
+  factor (the nest reads 400.95 against 285.32). Whether the static
+  base/enemy/resource fields should decay at all is a design decision the code does
+  not settle.
+- Two premises in the original objective were falsified by measurement: the resource
+  field does not need a minutes-scale cadence (it is 0.003 ms/tick with 1 spike in
+  12000 ticks), and a bucket queue is not exact for max-plus propagation with
+  differing source values.
+
 ## Caveats
 
 - Spike counts are not stable run-to-run on the same config (`dirty >1ms`
