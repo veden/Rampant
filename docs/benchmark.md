@@ -117,7 +117,25 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | wall-defense | PASS base squad unitsAtWall wallDamaged | PASS (baseline) |
 | death-response | PASS base retreat pointsDropped preKillPoints=2000 | PASS (baseline) |
 | squad-cycle | PASS base attack retreated reEngaged statusAfter=4 | PASS (baseline) |
-| migration-settler | running | PASS (baseline) |
+| migration-settler | PASS base settlerFormed dispatched moved site:2 | PASS (baseline) |
+
+## The h7/h8 field-value difference, and its cause
+
+`pheromone-dynamics` passes on both sides but the nest value differs: h7 285.32
+against h8 400.95 (+40%). h8's value is exactly `550 * 0.9^3`, i.e. the wall's
+value diffused three hops with no time decay; h7's is that value times a further
+~0.71, i.e. the decay-on-read at the nest chunk.
+
+Cause: the read-time decay is **not wired**. `Runtime.read(field, chunkId, tick,
+lastRefresh, decay)` exists and the solver's docstring says "time decay is applied
+by the read path, not by propagation", but `Runtime.readChunk` returns
+`field[chunk.id] or 0` undecayed, and `Universe.sourceVersionedRefresh` is
+created and never used. So h8's source-versioned reads are systematically higher
+than h7's effective reads by exactly the elapsed-time factor.
+
+Whether that is a bug or the intended semantics is a design question the code does
+not settle: the base/enemy/resource fields are maintained by source changes, so they
+do not need a time decay, while the solver docstring says the read path applies one.
 
 Note on sensitivity: `pheromone-dynamics` asserts the gradient ordering
 (wall > mid > nest), which both sides satisfy, yet H8's nest value is 400.95 against
