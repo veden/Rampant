@@ -14,6 +14,32 @@ Machine: 32 cores, load 1.1-5.0 (self-inflicted, no drift across runs).
 | a284c07 | 2026-09-22 | h7 | 1.671-1.745 | 0.928-0.951 | 2.878-3.323 | 352 | 7.27 | - | - | 10.9-12.8k |
 | a284c07 | 2026-09-22 | h8 | 1.204-1.269 | 0.462-0.485 | 2.112-2.458 | 6 | 4.25 | 56 | 202.65 | ~1.0k |
 | cae9b52 | 2026-09-23 | h8 | 1.245-1.280 | 0.476-0.489 | - | 24 | 169.58 | - | - | - |
+| 2dd08e7 | 2026-09-23 | h8 | 0.782-0.797 | 0.118-0.119 | - | 69 | 2.25 | - | - | - |
+
+## Per-range whole/script, a284c07 (original save)
+
+The whole-run average is startup-inflated: the scan flush and the first solves
+land in range 0-999. Steady state is the 1000+ rows.
+
+| range | whole avg | script avg |
+|---|---|---|
+| 0-999 | 3.008 | 2.041 |
+| 1000-1999 | 1.210 | 0.335 |
+| 2000-2999 | 1.062 | 0.289 |
+| 3000-3999 | 0.992 | 0.293 |
+| 4000-4999 | 1.059 | 0.357 |
+| 5000-5999 | 0.984 | 0.294 |
+| 6000-6999 | 1.178 | 0.339 |
+| 7000-7999 | 1.085 | 0.333 |
+| 8000-8999 | 1.111 | 0.364 |
+| 9000-9999 | 1.044 | 0.332 |
+| 10000-10999 | 0.971 | 0.314 |
+| 11000-11999 | 1.042 | 0.371 |
+
+So the whole-run averages in the per-commit table (1.204-1.269 / 0.462-0.485) are
+not steady state; steady state is ~1.0 / ~0.33. The 2dd08e7 row's 0.782-0.797 /
+0.118-0.119 is a settled save (already-scanned, already-solved, drained queue),
+so it is not comparable to the a284c07 rows either.
 
 `pending` = `Universe.dirtyCount` at steady state. h7 sits at the passable map
 size (12,861 chunks; engine `surface.get_chunks()` = 19,494 generated) and never
