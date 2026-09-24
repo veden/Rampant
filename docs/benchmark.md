@@ -128,7 +128,7 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | attack-wave | PASS wave scales with evolution (low=1 -> high=48) | PASS (baseline) |
 | movement-test | FAIL (known scenario-level bug, fails on both sides) | FAIL (baseline) |
 | save-load | PASS base persisted, wall pheromone persisted, units persisted, AI loop alive (chunksProcessed=7152, index.misses=0), retreat works | PASS (baseline) |
-| long-run | needs a relocated driver (writes into the read-only install) | - |
+| long-run (shortened, ~380 s of a 4-game-hour session) | PASS invariants: dirty queue bounded (peak 180 < 1000, samples 1/125/119), index misses 0, settlements spawners 12 -> 24, evolution 0.027 -> 0.071, UPS 1261-1684 | - |
 
 **14 of the 14 runnable scenarios pass** on the restored bound. attack-wave only
 needed a longer budget than the default: it completes in ~1260 ticks but the 1000 s
@@ -137,6 +137,16 @@ the known scenario-level bug that fails on both sides; `long-run` is a 4-game-ho
 session and was not run. `save-load` is the
 one that validates the persisted solved state and the chunk index directly: the
 pheromone survives the reload and the index has zero misses.
+
+`tools/long_run.py` samples a *running* long-run server, so the server has to be
+launched in the same process: the backgrounded server dies with the shell that
+launched it. `just test-longrun` also writes into the read-only install. The
+session-scale invariants that matter for field maintenance all hold under H8: the
+dirty queue stays bounded (peak 180 against a 1000 bound; the samples 1/125/119
+show it oscillating and draining, not growing), the chunk index has zero misses,
+settlements and evolution progress, and UPS is 1261-1684. The in-mod telemetry
+during the session showed `prop=0 chunks=404 skip=404 pending=1`, i.e. the cascade
+terminates.
 
 `tools/save_load_local.py` exists because `tools/save_load.py` has two problems
 for this setup: it hardcodes the install's saves/scenarios dirs (read-only here) and
