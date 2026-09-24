@@ -126,7 +126,13 @@ the base pheromone collapsed to 0. Fixed in bce2ab8.
 | multi-surface | PASS base1 surface2 base2 excluded | PASS (baseline) |
 | movement-diag | PASS reachedState4=8 | PASS (baseline) |
 | attack-wave | PASS wave scales with evolution (low=1 -> high=48) | PASS (baseline) |
-| movement-test | FAIL (known scenario-level bug, fails on both sides) | FAIL (baseline) |
+| movement-test | FAIL N=1 squad 47 vanished mid-crossing (destroyed at 1.2min) | **FAIL identically on the committed baseline a284c07** |
+
+`movement-test` is **pre-existing**: the committed baseline (h7, shipped default)
+fails it with the same symptom, `N=1: squad 47 vanished mid-crossing (destroyed at
+1.2min)`. So every scenario that passes on the committed baseline also passes on
+this branch, and the one that fails, fails on both. That is behavioral parity with
+the baseline, which is what "preserving gameplay" requires.
 | save-load | PASS base persisted, wall pheromone persisted, units persisted, AI loop alive (chunksProcessed=7152, index.misses=0), retreat works | PASS (baseline) |
 | long-run (shortened, ~380 s of a 4-game-hour session) | PASS invariants: dirty queue bounded (peak 180 < 1000, samples 1/125/119), index misses 0, settlements spawners 12 -> 24, evolution 0.027 -> 0.071, UPS 1261-1684 | - |
 
