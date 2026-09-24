@@ -142,6 +142,34 @@ Note on sensitivity: `pheromone-dynamics` asserts the gradient ordering
 h7's 285.32 (+40%). An ordinal assertion does not catch a 40% value shift, so the
 battery is a regression guard, not a parity check.
 
+## The load confound, and the corrected bound A/B (ade13e5)
+
+A measurement taken while the machine was at load 24.95 read the propagation
+bound as a regression (enemy avg 0.0572 -> 0.0796, max 2.250 -> 8.069) and it was
+reverted. That measurement was confounded: the rows above were taken at load 1.1.
+
+Re-measured interleaved (both sides in the same session, same save, same 12000
+ticks, load 6.9-11.2):
+
+| pair | no-bound avg / max / >1ms | bound avg / max / >1ms |
+|---|---|---|
+| 1 | 0.0712 / 4.896 / 188 | 0.0614 / 5.203 / 16 |
+| 2 | 0.0569 / 3.598 / 74 | 0.0525 / 1.691 / 5 |
+| 3 | 0.0582 / 2.871 / 80 | 0.0524 / 1.530 / 4 |
+
+The spike count is separated in all three pairs (74-188 -> 4-16, a 5-47x cut) and the
+average overlaps, with the bound slightly better in the two cleaner pairs. So the bound
+does what it was designed to do: it trades a marginally higher average for a much
+lower spike count. Restored in ade13e5.
+
+Three bugs in it were caught by other instruments: the frontier was only resumed when a
+new change arrived and process() returned early on an empty queue (both by
+pheromone-dynamics), and ensureStorage never created the frontier table for an existing
+save (a crash on the load path, caught by the benchmark).
+
+**Always check `uptime` first and prefer an interleaved A/B.** A load shift of this
+size moves the floor by more than the effect being measured.
+
 ## Caveats
 
 - Spike counts are not stable run-to-run on the same config (`dirty >1ms`
