@@ -665,7 +665,7 @@ end
 -- IMPURE: Apply pheromone updates to chunk (side effects)
 function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     setDeathGenerator(chunk, updates.deathGenerator)
-    decayPlayerGenerator(chunk)
+    decayPlayerGenerator(chunk, tick)
 
     chunk[PLAYER_PHEROMONE] = updates.player
     chunk.playerLastRefresh = tick or 0
@@ -708,7 +708,7 @@ function MapUtils.processPheromone(chunk, tick, player, neighbors)
     MapUtils.applyPheromoneUpdates(chunk, updates, tick)
 
     if not player then
-        decayDeathGenerator(chunk)
+        decayDeathGenerator(chunk, tick)
     end
 end
 

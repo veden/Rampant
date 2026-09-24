@@ -242,8 +242,20 @@ constants.IMPASSABLE_TERRAIN_GENERATOR_AMOUNT = 0
 
 -- pheromone diffusion amounts
 
+-- Retention per full-map maintenance pass. The decay is applied per
+-- processing, so this value is also the transient cloud's lifetime: a shorter
+-- maintenance cycle (a smaller budget, or H8's halved budget) made clouds decay
+-- proportionally faster in real time. The per-tick factors below fix the
+-- reference so the cadence is a cost knob, not a gameplay parameter.
 constants.MOVEMENT_GENERATOR_PERSISTANCE = 0.92
 constants.PLAYER_GENERATOR_PERSISTANCE = 0.92
+-- The reference is the pre-2.0 sweep: 40 chunks/tick over a ~10.7k-chunk map,
+-- i.e. one full pass per ~270 ticks.
+constants.DECAY_REFERENCE_TICKS = 270
+constants.MOVEMENT_GENERATOR_DECAY_PER_TICK =
+    constants.MOVEMENT_GENERATOR_PERSISTANCE ^ (1 / constants.DECAY_REFERENCE_TICKS)
+constants.PLAYER_GENERATOR_DECAY_PER_TICK =
+    constants.PLAYER_GENERATOR_PERSISTANCE ^ (1 / constants.DECAY_REFERENCE_TICKS)
 
 -- chunk attributes
 

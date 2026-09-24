@@ -153,4 +153,49 @@ my_collection:add('getCombinedDeathGeneratorRating_very_low', function()
     assert(result == 0.001, "Should clamp to 0.001")
 end)
 
+-- Test: the generator decay is time-based, so the maintenance cadence is a
+-- cost knob rather than a gameplay parameter.
+my_collection:add('generator_decay_is_time_based', function()
+    local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+
+    local split = { deathGenerator = 1 }
+    ChunkPropertyUtils.decayDeathGenerator(split, 0)
+    ChunkPropertyUtils.decayDeathGenerator(split, 100)
+    ChunkPropertyUtils.decayDeathGenerator(split, 200)
+
+    local whole = { deathGenerator = 1 }
+    ChunkPropertyUtils.decayDeathGenerator(whole, 0)
+    ChunkPropertyUtils.decayDeathGenerator(whole, 200)
+
+    assert(math.abs(split.deathGenerator - whole.deathGenerator) < 1e-9,
+        "two 100-tick decays must equal one 200-tick decay")
+end)
+
+-- Test: the reference cadence reproduces the old per-pass factor, so decoupling
+-- does not change the tuned behaviour at the design cadence.
+my_collection:add('generator_decay_reference_cadence_matches_per_pass', function()
+    local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+    local Constants = require("Constants")
+
+    local chunk = { deathGenerator = 1 }
+    ChunkPropertyUtils.decayDeathGenerator(chunk, 0)
+    ChunkPropertyUtils.decayDeathGenerator(chunk, Constants.DECAY_REFERENCE_TICKS)
+
+    assert(math.abs(chunk.deathGenerator - Constants.MOVEMENT_GENERATOR_PERSISTANCE) < 1e-9,
+        "one reference pass must equal the per-pass persistence, got " .. chunk.deathGenerator)
+end)
+
+-- Test: a deposit restarts the decay interval.
+my_collection:add('generator_deposit_restarts_decay_interval', function()
+    local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+
+    local chunk = { deathGenerator = 1 }
+    ChunkPropertyUtils.decayDeathGenerator(chunk, 0)
+    ChunkPropertyUtils.addDeathGenerator(chunk, 0)
+    ChunkPropertyUtils.decayDeathGenerator(chunk, 5000)
+
+    assert(chunk.deathGenerator == 1,
+        "a deposit must restart the decay interval, got " .. tostring(chunk.deathGenerator))
+end)
+
 return my_collection

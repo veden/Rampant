@@ -45,6 +45,8 @@ local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 
 local MOVEMENT_GENERATOR_PERSISTANCE = Constants.MOVEMENT_GENERATOR_PERSISTANCE
+local MOVEMENT_GENERATOR_DECAY_PER_TICK = Constants.MOVEMENT_GENERATOR_DECAY_PER_TICK
+local PLAYER_GENERATOR_DECAY_PER_TICK = Constants.PLAYER_GENERATOR_DECAY_PER_TICK
 local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
 local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
@@ -434,6 +436,8 @@ function ChunkPropertyUtils.addPermanentDeathGenerator(chunk, amount)
 end
 
 function ChunkPropertyUtils.addDeathGenerator(chunk, value)
+    -- A deposit restarts the decay interval, so the decay stays time-based.
+    chunk.deathGeneratorDecayTick = nil
     local currentAmount = (chunk.deathGenerator or 0) + value
     if (currentAmount > 1) then
         chunk.deathGenerator = 1
@@ -445,6 +449,7 @@ function ChunkPropertyUtils.addDeathGenerator(chunk, value)
 end
 
 function ChunkPropertyUtils.setDeathGenerator(chunk, value)
+    chunk.deathGeneratorDecayTick = nil
     if (value > 1) then
         chunk.deathGenerator = 1
     elseif (value < -1) then
@@ -506,10 +511,20 @@ function ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
     chunk.deathGenerator = newValue
 end
 
--- PUBLIC: Decay death generator (wrapper)
-function ChunkPropertyUtils.decayDeathGenerator(chunk)
+-- PUBLIC: Decay death generator (wrapper).
+-- Time-based: the factor is per tick against a fixed reference cadence, so the
+-- maintenance cadence no longer sets the cloud's lifetime. The writers clear the
+-- timestamp, so a deposit restarts the interval.
+function ChunkPropertyUtils.decayDeathGenerator(chunk, tick)
     local gen = chunk.deathGenerator
-    local newValue = ChunkPropertyUtils.calculateDeathGeneratorDecay(gen, MOVEMENT_GENERATOR_PERSISTANCE)
+    if not gen then return end
+    local last = chunk.deathGeneratorDecayTick
+    chunk.deathGeneratorDecayTick = tick
+    if not last then return end
+    local elapsed = tick - last
+    if elapsed <= 0 then return end
+    local newValue = ChunkPropertyUtils.calculateDeathGeneratorDecay(
+        gen, MOVEMENT_GENERATOR_DECAY_PER_TICK ^ elapsed)
     ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
 end
 
@@ -532,14 +547,23 @@ function ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
     chunk.playerGenerator = newValue
 end
 
--- PUBLIC: Decay player generator (wrapper)
-function ChunkPropertyUtils.decayPlayerGenerator(chunk)
+-- PUBLIC: Decay player generator (wrapper). Time-based, as above.
+function ChunkPropertyUtils.decayPlayerGenerator(chunk, tick)
     local gen = chunk.playerGenerator
-    local newValue = ChunkPropertyUtils.calculatePlayerGeneratorDecay(gen, PLAYER_GENERATOR_PERSISTANCE)
+    if not gen then return end
+    local last = chunk.playerGeneratorDecayTick
+    chunk.playerGeneratorDecayTick = tick
+    if not last then return end
+    local elapsed = tick - last
+    if elapsed <= 0 then return end
+    local newValue = ChunkPropertyUtils.calculatePlayerGeneratorDecay(
+        gen, PLAYER_GENERATOR_DECAY_PER_TICK ^ elapsed)
     ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
 end
 
 function ChunkPropertyUtils.addPlayerGenerator(chunk, playerMaxGenerator)
+    -- A deposit restarts the decay interval, so the decay stays time-based.
+    chunk.playerGeneratorDecayTick = nil
     local value = chunk.playerGenerator
     if value then
         chunk.playerGenerator = mMin(
