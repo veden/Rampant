@@ -47,7 +47,6 @@ local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
-local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 local PROPAGATION_RELATIVE_EPSILON = Constants.PROPAGATION_RELATIVE_EPSILON
 local PROPAGATION_ABSOLUTE_EPSILON = Constants.PROPAGATION_ABSOLUTE_EPSILON
@@ -672,17 +671,13 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
         return false, 0
     end
 
-    -- Snapshot the maintained fields as LOCALS — the previous snapshot tables
-    -- allocated twice per chunk (the single biggest per-chunk allocation). The
-    -- predicate is identical: changed iff any field moved beyond both epsilons.
-    -- The original short-circuited at the first changed field; this evaluates
-    -- all of them (same boolean, no loop, no abs call).
-    -- Only kamikaze and death are maintained here: base, enemy, resource and
-    -- player are solved by the source-versioned solver and this pass does not
-    -- write them, so their delta is identically 0.
-    -- deathGenerator is included: it decays ONLY while the chunk is processed,
-    -- so excluding it would freeze death clouds forever.
-    local bKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
+    -- Snapshot the maintained field as a LOCAL — the previous snapshot tables
+    -- allocated twice per chunk (the single biggest per-chunk allocation).
+    -- deathGenerator is the ONLY field this pass maintains: base, enemy,
+    -- resource, player and kamikaze are solved by the source-versioned solver
+    -- and this pass does not write them, so their delta is identically 0.
+    -- It is included because it decays ONLY while the chunk is processed, so
+    -- excluding it would freeze death clouds forever.
     local bDeath = chunk.deathGenerator or 0
 
     -- Neighbours are needed TWICE per chunk: the pheromone sum (inside
@@ -698,20 +693,14 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
     MapUtils.processPheromone(chunk, tick, nil, neighbors)
 
     -- Only propagate when something materially changed
-    local aKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local aDeath = chunk.deathGenerator or 0
 
-    local d5 = aKamikaze - bKamikaze
-    if d5 < 0 then d5 = -d5 end
     local d6 = aDeath - bDeath
     if d6 < 0 then d6 = -d6 end
-    local a5 = bKamikaze
-    if a5 < 0 then a5 = -a5 end
     local a6 = bDeath
     if a6 < 0 then a6 = -a6 end
 
-    local changed = (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
-        or (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
+    local changed = (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
 
     -- Mark neighbors dirty DIRECTLY (no per-mark tables, no list handed to the
     -- drain). The previous version built a {id=, priority=} table per neighbor

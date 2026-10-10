@@ -47,7 +47,6 @@ local COMMAND_TIMEOUT = Constants.COMMAND_TIMEOUT
 local BUILD_COMMAND_TIMEOUT = Constants.BUILD_COMMAND_TIMEOUT
 local SQUAD_DISPATCH_INTERVAL = Constants.SQUAD_DISPATCH_INTERVAL
 local SQUAD_RETREAT_DWELL = Constants.SQUAD_RETREAT_DWELL
-local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 -- Decay-on-read getters: the pure math lives in SquadLogic; the game.tick
 -- read here is the impure boundary threaded into it (squad_logic never
@@ -148,7 +147,7 @@ local euclideanDistanceNamed = MathUtils.euclideanDistanceNamed
 
 -- module code
 local function scoreRetreatLocation(neighborChunk)
-    return (-neighborChunk[KAMIKAZE_PHEROMONE] +
+    return (-SquadLogic.kamikazePheromone(neighborChunk, game.tick) +
             -((neighborChunk.playerBaseGenerator or 0) * 1000))
 end
 
@@ -185,7 +184,7 @@ local function scoreAttackKamikazeLocation(neighborChunk)
     then
         preferred = true
     end
-    local damage = neighborChunk[KAMIKAZE_PHEROMONE]
+    local damage = SquadLogic.kamikazePheromone(neighborChunk, game.tick)
     if preferred then
         damage = damage * 2
     end

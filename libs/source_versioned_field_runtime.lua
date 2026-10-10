@@ -78,12 +78,32 @@ local NEIGHBOR_OFFSETS = {
     { CHUNK_SIZE, CHUNK_SIZE },   -- 8
 }
 
+-- Kamikaze is derived from the player field, not an independent quantity:
+-- K(c) = 0.95 * max(max_n K(n), P(c)) at the pass level, which is a max-plus
+-- propagation of the player's own sources at 0.95 per hop, scaled 0.95 at the
+-- source. It is therefore a solver field sharing the player's sources with its
+-- own decay, which makes the read a table lookup instead of a maintained slot.
+local FIELD_KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
+local KAMIKAZE_DECAY = Constants.DECAY_KAMIKAZE
+local KAMIKAZE_SCALE = 0.95
+
 local SOURCE_FIELDS = {
     [FIELD_PLAYER] = true,
     [FIELD_BASE] = true,
     [FIELD_ENEMY] = true,
     [FIELD_RESOURCE] = true,
+    [FIELD_KAMIKAZE] = true,
 }
+
+-- Per-field solver options. A field's reach is log(eps/source)/log(decay), so
+-- leaving decay at the shared default makes every field's extent an accident of
+-- its source magnitude; the kamikaze field needs its own.
+local FIELD_OPTS = {}
+FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY }
+
+local function fieldOpts(fieldType, opts)
+    return opts or FIELD_OPTS[fieldType]
+end
 
 -- Create or version-check the persisted solved state. Writes storage, so it
 -- must NOT run on the load path; init(addProperties=true) and the tick path call it.
@@ -126,6 +146,7 @@ function Runtime.init(universe, addProperties)
     FIELD_DRAIN_PER_TICK[FIELD_BASE] = 10
     FIELD_DRAIN_PER_TICK[FIELD_ENEMY] = 10
     FIELD_DRAIN_PER_TICK[FIELD_PLAYER] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_KAMIKAZE] = 10
     bindSolvedState()
     if addProperties then
         Runtime.ensureStorage()
@@ -202,7 +223,8 @@ end
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     if not SolvedFields[key] or not FieldTopSource[key] then
-        local field, topSource, second, secondSource = Runtime.solveFieldWithMetadata(fieldType, opts)
+        local field, topSource, second, secondSource =
+            Runtime.solveFieldWithMetadata(fieldType, fieldOpts(fieldType, opts))
         Universe.sourceVersionedFields[key] = field
         FieldTopSource[key] = topSource
         FieldSecond[key] = second
@@ -266,14 +288,17 @@ function Runtime.process(fieldType, budget, opts)
     end
 
     local fType = fieldType
-    local _, solvedNow = Runtime.ensureSolved(fType, opts)
+    local fOpts = fieldOpts(fType, opts)
+    local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
     if not solvedNow then
         local increases = {}
+        local removed = false
         for _, sourceChange in pairs(fieldChanges.sources) do
             local oldValue = sourceChange.oldValue
             local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
             if oldValue and newValue < oldValue then
-                Runtime.removeSource(sourceChange.chunk, fType, oldValue, opts)
+                Runtime.removeSource(sourceChange.chunk, fType, oldValue, fOpts)
+                removed = true
                 if newValue > 0 then
                     increases[#increases + 1] = { id = sourceChange.chunk.id, gen = newValue }
                 end
@@ -287,7 +312,7 @@ function Runtime.process(fieldType, budget, opts)
         -- field's nest staying 0 in pheromone-dynamics).
         local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
         if #increases > 0 or (frontier and #frontier > 0) then
-            Runtime.propagateIncreases(increases, fType, opts)
+            Runtime.propagateIncreases(increases, fType, fOpts, removed)
         end
     end
 
@@ -370,7 +395,9 @@ end
 
 function Runtime.sourceValue(chunk, fieldType)
     if not chunk then return 0 end
-    if fieldType == FIELD_PLAYER then
+    if fieldType == FIELD_KAMIKAZE then
+        return (chunk.playerGenerator or 0) * KAMIKAZE_SCALE
+    elseif fieldType == FIELD_PLAYER then
         return chunk.playerGenerator or 0
     elseif fieldType == FIELD_BASE then
         return chunk.playerBaseGenerator or 0
@@ -438,7 +465,14 @@ end
 -- means the last propagation hit the work budget, so resume it. Re-seeding is
 -- idempotent (a source already at its value pushes nothing), so passing
 -- `sources` again is safe and the field still converges exactly.
-function Runtime.propagateIncreases(sources, fieldType, opts)
+-- `flush` drops the per-call work bound and runs to completion. A removal needs
+-- it: removeSource drops every chunk that had the removed source as its top to
+-- its second source, which leaves a hole only the re-propagation fills, and
+-- bounded that hole persists for several ticks -- reads then see a field that
+-- has lost its extent. Observed as pheromone-dynamics failing 1 run in 6 with
+-- the base field 0 at the nest while the wall still read 550. A removal is a
+-- one-time event, like a burst, so it pays the one-time cost.
+function Runtime.propagateIncreases(sources, fieldType, opts, flush)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
     local frontier = Universe.sourceVersionedFrontier[key]
@@ -447,6 +481,7 @@ function Runtime.propagateIncreases(sources, fieldType, opts)
         Universe.sourceVersionedFrontier[key] = frontier
     end
     -- Reused scratch: the solver copies what it needs, so this allocates nothing.
+    BOUNDED_OPTS.maxWork = flush and nil or PROPAGATION_MAX_WORK_PER_TICK
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius

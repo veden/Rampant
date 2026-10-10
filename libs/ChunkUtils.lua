@@ -48,7 +48,6 @@ local BASE_AI_STATE_ONSLAUGHT = Constants.BASE_AI_STATE_ONSLAUGHT
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
-local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local BUILDING_PHEROMONES = Constants.BUILDING_PHEROMONES
 
 local CHUNK_SIZE = Constants.CHUNK_SIZE
@@ -439,9 +438,8 @@ function ChunkUtils.createChunk(map, topX, topY)
     -- Executor handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
     chunk[CHUNK_TICK] = 0
-    -- Only kamikaze has a chunk slot: base, enemy, resource and player all live
-    -- in the source-versioned solver's fields.
-    chunk[KAMIKAZE_PHEROMONE] = 0
+    -- No pheromone slots: base, enemy, resource, player and kamikaze all live in
+    -- the source-versioned solver's fields.
     
     -- ACO: Timestamp fields for decay-on-read
     chunk.playerBaseLastRefresh = 0

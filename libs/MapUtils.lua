@@ -30,17 +30,12 @@ local MapPosition
 local Constants = require("Constants")
 local ChunkLogic = require("chunk_logic")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
-local SquadLogic = require("squad_logic")
 local MathUtils = require("MathUtils")
 
 -- Constants
 
-local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
-local KAMIKAZE_PHEROMONE_MIN = Constants.KAMIKAZE_PHEROMONE_MIN
 
 local CHUNK_TICK = Constants.CHUNK_TICK
-local DECAY_095 = Constants.DECAY_095
-local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -66,7 +61,6 @@ local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
 local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
-local mMax = math.max
 local mFloor = math.floor
 local getPassable = ChunkPropertyUtils.getPassable
 local sFind = string.find
@@ -524,25 +518,13 @@ end
 -- PURE: Calculate pheromone updates without side effects
 -- All inputs explicit, uses Constants directly (immutable)
 -- Returns table with new pheromone values
-local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
-    local value = chunk[index] or 0
-    if value == 0 then return 0 end
-    local lastRefresh = chunk[timestampKey] or 0
-    local elapsed = tick - lastRefresh
-    local factor = decayTable[elapsed] or decayTable[DECAY_TABLE_DEPTH]
-    return value * factor
-end
 
 -- The transient fields (player, kamikaze) are still maintained here; base,
 -- enemy and resource are solved by the source-versioned solver and are not
 -- written by this pass. There is no H7 read path to avoid feeding back into.
-local readKamikaze = function(chunk, tick)
-    return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
-end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local chunkDeath = getCombinedDeathGenerator(chunk)
-    local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
 
     local enemyStructureCount = getEnemyStructureCount(chunk)
 
@@ -563,35 +545,13 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
             chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
-
-            local tempPheromone = readKamikaze(neighbor, tick)
-            if chunkKamikaze < tempPheromone then
-                chunkKamikaze = tempPheromone
-            end
         end
     end
 
     local newDeathGenerator = (chunkDeath / chunkCount) * 0.75
 
-    -- The kamikaze field is seeded from the player field, which is solved, and
-    -- from the base field, which is solved. Neither is damped by the death
-    -- rating: the solver's sources are not (base/enemy/resource never were
-    -- under the source-versioned scheme).
-    local newKamikaze = mMax(
-        chunkKamikaze,
-        SquadLogic.playerPheromone(chunk, tick)
-    ) * 0.95
-    -- Clear below the same floor the other generators use. Without this a chunk
-    -- never leaves the working set and re-marks every pass.
-    -- Zero it rather than nil it: Squad.lua and MapUtils do arithmetic on this
-    -- field directly and do not nil-check it.
-    if (newKamikaze < KAMIKAZE_PHEROMONE_MIN) and (newKamikaze > -KAMIKAZE_PHEROMONE_MIN) then
-        newKamikaze = 0
-    end
-
     return {
         deathGenerator = newDeathGenerator,
-        kamikaze = newKamikaze,
         enemyStructureCount = enemyStructureCount,
     }
 end
@@ -599,9 +559,6 @@ end
 -- IMPURE: Apply pheromone updates to chunk (side effects)
 function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     setDeathGenerator(chunk, updates.deathGenerator)
-
-    chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
-    chunk.kamikazeLastRefresh = tick or 0
 end
 
 -- PUBLIC: Orchestrate pheromone processing (reads storage.universe)

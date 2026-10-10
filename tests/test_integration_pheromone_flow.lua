@@ -54,8 +54,8 @@ my_collection:add('complete_flow_marks_and_processes_chunk', function()
     local universe = setupUniverse()
     MapUtils.init(universe)
     
-    local chunk1 = createChunk(123, 0, 0, { kamikaze = 100 })
-    local chunk2 = createChunk(124, 1, 0, { kamikaze = 0 })
+    local chunk1 = createChunk(123, 0, 0, { deathGenerator = 1 })
+    local chunk2 = createChunk(124, 1, 0, { deathGenerator = 0 })
     
     universe.maps = { [1] = { [0] = { [0] = chunk1 }, [1] = { [0] = chunk2 } } }
 
@@ -89,11 +89,11 @@ my_collection:add('complete_flow_marks_and_processes_chunk', function()
     -- Verify: chunk1 should have been processed (CHUNK_TICK updated)
     assert(chunk1[Constants.CHUNK_TICK] == 100, "Chunk 1 should be processed")
     
-    -- Verify: chunk2 should have absorbed the kamikaze field from chunk1.
-    -- The transient pass maintains kamikaze and death only; base, enemy,
-    -- resource and player are solved by the source-versioned field and have no
-    -- chunk slot to absorb into.
-    assert(chunk2[Constants.KAMIKAZE_PHEROMONE] > 0, "Chunk 2 should absorb kamikaze pheromone")
+    -- Verify: chunk2 should have absorbed the death generator from chunk1.
+    -- The death generator is the only field the pass still maintains: base,
+    -- enemy, resource, player and kamikaze are solved by the source-versioned
+    -- field and have no chunk slot to absorb into.
+    assert(chunk2.deathGenerator > 0, "Chunk 2 should absorb the death generator")
     
     -- Restore
     MapUtils.getNeighborChunks = originalNeighbors

@@ -42,6 +42,7 @@ local COOLDOWN_DRAIN = Constants.COOLDOWN_DRAIN
 local RAIDING_MINIMUM_BASE_THRESHOLD = Constants.RAIDING_MINIMUM_BASE_THRESHOLD
 
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
+local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 
 local MOVEMENT_GENERATOR_PERSISTANCE = Constants.MOVEMENT_GENERATOR_PERSISTANCE
@@ -72,12 +73,19 @@ function ChunkPropertyUtils.setSourceVersionedFieldRuntime(runtime)
     SourceVersionedFieldRuntime = runtime
 end
 
+-- The kamikaze field is the player field's sources at a faster decay, scaled
+-- 0.95 (see the runtime's FIELD_KAMIKAZE). Both are driven by the one generator,
+-- so one write queues both.
+local KAMIKAZE_SCALE = 0.95
+
 local function queuePlayerSourceChange(chunk, oldValue, newValue)
     local runtime = SourceVersionedFieldRuntime
     if not runtime or not runtime.isInitialized() then return end
     if not chunk or chunk.id == nil then return end
     if oldValue == newValue then return end
     runtime.queueSource(chunk, PLAYER_PHEROMONE, oldValue, newValue)
+    runtime.queueSource(chunk, KAMIKAZE_PHEROMONE,
+        oldValue * KAMIKAZE_SCALE, newValue * KAMIKAZE_SCALE)
 end
 
 -- Chunks holding a live player generator. A generator only decays while its

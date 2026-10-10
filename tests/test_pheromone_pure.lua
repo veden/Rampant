@@ -50,14 +50,15 @@ my_collection:add('calculatePheromoneUpdates_returns_correct_structure', functio
     
     local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
     
-    assert(updates.kamikaze ~= nil, "Should have kamikaze pheromone")
     assert(updates.deathGenerator ~= nil, "Should have death generator")
-    -- base/enemy/resource/player are solved by the source-versioned field: this
-    -- pass does not compute or write them, so they must not appear in the updates.
+    -- base/enemy/resource/player/kamikaze are solved by the source-versioned
+    -- field: this pass does not compute or write them, so they must not appear
+    -- in the updates.
     assert(updates.base == nil, "base must not be computed by the transient pass")
     assert(updates.enemy == nil, "enemy must not be computed by the transient pass")
     assert(updates.resource == nil, "resource must not be computed by the transient pass")
     assert(updates.player == nil, "player must not be computed by the transient pass")
+    assert(updates.kamikaze == nil, "kamikaze must not be computed by the transient pass")
 end)
 
 -- Test: The death generator is still a mean-field average over the neighbours
@@ -81,7 +82,7 @@ end)
 my_collection:add('calculatePheromoneUpdates_no_neighbors', function()
     local MapUtils = require("libs/MapUtils")
     
-    local chunk = createChunk({ player = 100, enemy = 50 })
+    local chunk = createChunk({})
     local neighbors = createNeighbors({
         [1] = -1, [2] = -1, [3] = -1, [4] = -1,
         [5] = -1, [6] = -1, [7] = -1, [8] = -1
@@ -89,7 +90,7 @@ my_collection:add('calculatePheromoneUpdates_no_neighbors', function()
     
     local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
     
-    assert(updates.kamikaze ~= nil, "Should still calculate kamikaze pheromone")
+    assert(updates.deathGenerator ~= nil, "Should still calculate the death generator")
 end)
 
 -- Test: Multiple neighbors contribute
@@ -109,25 +110,17 @@ my_collection:add('calculatePheromoneUpdates_multiple_neighbors', function()
     assert(updates.deathGenerator > 0, "Should absorb from multiple neighbors")
 end)
 
--- Test: Kamikaze pheromone is seeded from the solved player field
-my_collection:add('calculatePheromoneUpdates_calculates_kamikaze', function()
-    local MapUtils = require("libs/MapUtils")
+-- Test: The kamikaze field is solved from the player generator, at its own decay
+my_collection:add('kamikazePheromone_reads_the_source_versioned_field', function()
     local SquadLogic = require("libs/squad_logic")
     SquadLogic.setSourceVersionedFieldReader(function(fieldType)
-        if fieldType == Constants.PLAYER_PHEROMONE then return 100 end
+        if fieldType == Constants.KAMIKAZE_PHEROMONE then return 285 end
         return nil
     end)
-
-    local chunk = createChunk({})
-    local neighbors = createNeighbors({
-        [1] = {}, [2] = -1, [3] = -1, [4] = -1,
-        [5] = -1, [6] = -1, [7] = -1, [8] = -1
-    })
-
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-
-    assert(updates.kamikaze > 0, "kamikaze must be seeded from the player field")
+    assert(SquadLogic.kamikazePheromone({}, 0) == 285,
+        "kamikaze must come from the solver")
     SquadLogic.setSourceVersionedFieldReader(nil)
+    assert(SquadLogic.kamikazePheromone({}, 0) == 0, "no reader must yield 0, not nil")
 end)
 
 return my_collection

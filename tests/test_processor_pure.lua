@@ -72,11 +72,11 @@ my_collection:add('processDirtyChunk_collects_neighbors', function()
     local MapUtils = require("libs/MapUtils")
     
     -- Mock processPheromone to produce a material change (the epsilon gate
-    -- only propagates when values actually change). The gate watches the fields
-    -- this pass maintains: kamikaze and death.
+    -- only propagates when values actually change). The gate watches the only
+    -- field this pass maintains: the death generator.
     local original = MapUtils.processPheromone
     MapUtils.processPheromone = function(chunk)
-        chunk[Constants.KAMIKAZE_PHEROMONE] = 100
+        chunk.deathGenerator = 1
     end
     
     local chunk = createChunk(123, 0, 0, true)
@@ -193,11 +193,11 @@ my_collection:add('processDirtyChunk_increments_priority', function()
     local MapUtils = require("libs/MapUtils")
     
     -- Mock processPheromone to produce a material change. The gate watches the
-    -- fields this pass maintains (kamikaze, death); the player field is solved
-    -- and this pass does not write it.
+    -- only field this pass maintains (the death generator); every pheromone
+    -- field is solved and this pass does not write them.
     local original = MapUtils.processPheromone
     MapUtils.processPheromone = function(chunk)
-        chunk[Constants.KAMIKAZE_PHEROMONE] = 100
+        chunk.deathGenerator = 1
     end
     
     local chunk = createChunk(123, 0, 0, true)

@@ -169,6 +169,13 @@ function Squad.resourcePheromone(chunk, tick)
     return readSourceVersionedField(RESOURCE_PHEROMONE, chunk)
 end
 
+-- The kamikaze field is the player field's sources at a faster decay (0.95
+-- against 0.9), scaled 0.95, so it is solved rather than maintained. It is what
+-- kamikaze squads press toward and what retreat scoring moves away from.
+function Squad.kamikazePheromone(chunk, tick)
+    return readSourceVersionedField(KAMIKAZE_PHEROMONE, chunk)
+end
+
 -- Raw scorers (numbers in → number out; canonical prod formulas)
 
 function Squad.settlerFormationRaw(resource, player)
@@ -258,8 +265,8 @@ function Squad.scoreSiegeKamikazeMovementChunk(chunk, tick)
     -- the prod scorer read the chunk fields directly and only the enemy
     -- term went through decay-on-read.
     local score = Squad.siegeKamikazeMovementRaw(
-        chunk[KAMIKAZE_PHEROMONE],
-        chunk[RESOURCE_PHEROMONE],
+        Squad.kamikazePheromone(chunk, tick),
+        Squad.resourcePheromone(chunk, tick),
         Squad.enemyPheromone(chunk, tick)
     )
     return score, preferred

@@ -29,7 +29,6 @@ local mFloor = math.floor
 local Constants = require("libs/Constants")
 local DEATH_PHEROMONE = Constants.DEATH_PHEROMONE
 local VICTORY_PHEROMONE = Constants.VICTORY_PHEROMONE
-local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local CHUNK_TICK = Constants.CHUNK_TICK
 
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
@@ -62,7 +61,7 @@ function Observability.queryPheromones(position, surface)
         -- real death state (named fields, not numeric chunk indices)
         deathGenerator = chunk.deathGenerator or 0,
         permanentDeathGenerator = chunk.permanentDeathGenerator or 0,
-        kamikaze = chunk[KAMIKAZE_PHEROMONE] or 0,
+        kamikaze = SquadLogic.kamikazePheromone(chunk, game.tick),
         resource = SquadLogic.resourcePheromone(chunk, game.tick),
         -- persistent source generators (diagnostics: a computed pheromone
         -- of 0 with a live generator means the chunk is not being
@@ -411,7 +410,7 @@ function Observability.onUdpPacket(event)
                         p = to_number(SquadLogic.playerPheromone(chunk, game.tick)),
                         r = to_number(SquadLogic.resourcePheromone(chunk, game.tick)),
                         e = to_number(SquadLogic.enemyPheromone(chunk, game.tick)),
-                        k = to_number(chunk[KAMIKAZE_PHEROMONE]),
+                        k = to_number(SquadLogic.kamikazePheromone(chunk, game.tick)),
                         sqs = to_number(chunk.squads), tick = to_number(chunk[CHUNK_TICK]),
                     })
                 end

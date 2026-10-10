@@ -238,6 +238,7 @@ local function transientWorkingSet()
     local KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
     local PLAYER = Constants.PLAYER_PHEROMONE
     local svPlayer, svPlayerMax = 0, 0
+    local svKami, svKamiMax = 0, 0
     local h7Player, h7PlayerMax, both, svOnly, h7Only = 0, 0, 0, 0, 0
     for _, chunk in pairs(Universe.chunkById) do
         local d = (chunk.deathGenerator or 0) ~= 0
@@ -247,6 +248,11 @@ local function transientWorkingSet()
         if p then player = player + 1 end
         if k then kami = kami + 1 end
         if d or p or k then any = any + 1 end
+        local svk = SourceVersionedFieldRuntime.readChunk(Constants.KAMIKAZE_PHEROMONE, chunk) or 0
+        if svk ~= 0 then
+            svKami = svKami + 1
+            if svk > svKamiMax then svKamiMax = svk end
+        end
         local sv = SourceVersionedFieldRuntime.readChunk(PLAYER, chunk) or 0
         local h7 = chunk[PLAYER] or 0
         if sv ~= 0 then
@@ -262,7 +268,7 @@ local function transientWorkingSet()
         elseif h7 ~= 0 then h7Only = h7Only + 1 end
     end
     return death, player, kami, any, svPlayer, svPlayerMax,
-        h7Player, h7PlayerMax, both, svOnly, h7Only
+        h7Player, h7PlayerMax, both, svOnly, h7Only, svKami, svKamiMax
 end
 
 local function onLoad()
@@ -1133,12 +1139,14 @@ script.on_event(defines.events.on_tick,
                     timed(tick, rangeSample, "sourceField.base", SourceVersionedFieldRuntime.processScheduled, Constants.BASE_PHEROMONE)
                     timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
                     timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.kamikaze", SourceVersionedFieldRuntime.processScheduled, Constants.KAMIKAZE_PHEROMONE)
                     if rangeSample then
                         local m = Metrics.get()
                         local c = m.counters or {}
                         local pending = Universe.dirtyCount or 0
                         local wsDeath, wsPlayer, wsKami, wsAny, svPlayer, svPlayerMax,
-                            h7Player, h7PlayerMax, both, svOnly, h7Only = transientWorkingSet()
+                            h7Player, h7PlayerMax, both, svOnly, h7Only,
+                            svKami, svKamiMax = transientWorkingSet()
                         log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
                              " prop=" .. (c['dirty.propagationMarks'] or 0) ..
                              " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
@@ -1155,7 +1163,9 @@ script.on_event(defines.events.on_tick,
                              " h7PlayerMax=" .. h7PlayerMax ..
                              " both=" .. both ..
                              " svOnly=" .. svOnly ..
-                             " h7Only=" .. h7Only})
+                             " h7Only=" .. h7Only ..
+                             " svKami=" .. svKami ..
+                             " svKamiMax=" .. svKamiMax})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})

@@ -244,20 +244,22 @@ my_collection:add('scoreSiegeMovementChunk_composition', function()
     assert(blocked == false, "player generator blocks preference")
 end)
 
-my_collection:add('scoreSiegeKamikazeMovementChunk_readsKamikazeRaw', function()
-    local chunk = {
-        [KAMIKAZE_PHEROMONE] = 30,
-        [RESOURCE_PHEROMONE] = 100,
-        [ENEMY_PHEROMONE] = 10,
-        -- stale timestamps: K and R must still be RAW (law_kamikaze_raw)
-        resourceLastRefresh = 0,
-        enemyLastRefresh = 1000,
-    }
+my_collection:add('scoreSiegeKamikazeMovementChunk_reads_the_solved_fields', function()
+    -- Kamikaze, resource and enemy are all solved now: the scorer reads the
+    -- solver for each, so the chunk carries no pheromone slots at all.
+    SquadLogic.setSourceVersionedFieldReader(function(fieldType)
+        if fieldType == KAMIKAZE_PHEROMONE then return 30 end
+        if fieldType == RESOURCE_PHEROMONE then return 100 end
+        if fieldType == ENEMY_PHEROMONE then return 10 end
+        return nil
+    end)
+    local chunk = {}
     local tick = 1000
-    local expected = SquadLogic.siegeKamikazeMovementRaw(30, 100, SquadLogic.enemyPheromone(chunk, tick))
+    local expected = SquadLogic.siegeKamikazeMovementRaw(30, 100, 10)
     local score, preferred = SquadLogic.scoreSiegeKamikazeMovementChunk(chunk, tick)
-    assert(score == expected, "kamikaze/resource raw + decayed enemy")
+    assert(score == expected, "score must compose the solved fields through the raw formula")
     assert(preferred == true, "no player structures -> preferred")
+    SquadLogic.setSourceVersionedFieldReader(nil)
 end)
 
 my_collection:add('formationChunkScorers_preferredAlwaysTrue', function()

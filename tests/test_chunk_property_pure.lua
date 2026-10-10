@@ -238,10 +238,14 @@ my_collection:add('addPlayerGenerator_registers_the_chunk_and_queues_the_source'
     assert(chunk.playerGenerator == Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT,
         "a deposit must set the generator, got " .. tostring(chunk.playerGenerator))
     assert(universe.playerGeneratorChunks[7] == chunk,
-        "the chunk must be registered so the pass re-marks it")
-    assert(#queued == 1, "the deposit must queue exactly one source change")
+        "the chunk must be registered so its decay is driven")
+    -- The kamikaze field shares the player's sources, so one deposit queues both.
+    assert(#queued == 2, "the deposit must queue a player and a kamikaze change")
     assert(queued[1].fieldType == Constants.PLAYER_PHEROMONE, "queued for the player field")
     assert(queued[1].new == chunk.playerGenerator, "queued value must be the generator")
+    assert(queued[2].fieldType == Constants.KAMIKAZE_PHEROMONE, "queued for the kamikaze field")
+    assert(math.abs(queued[2].new - chunk.playerGenerator * 0.95) < 1e-9,
+        "the kamikaze source is the player generator scaled 0.95")
 end)
 
 my_collection:add('decayPlayerGenerator_queues_the_decayed_value', function()
@@ -260,7 +264,7 @@ my_collection:add('decayPlayerGenerator_queues_the_decayed_value', function()
     local expected = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT * Constants.PLAYER_GENERATOR_PERSISTANCE
     assert(math.abs(chunk.playerGenerator - expected) < 1e-9,
         "expected " .. expected .. ", got " .. tostring(chunk.playerGenerator))
-    assert(#queued == 1, "the decay must queue a source change")
+    assert(#queued == 2, "the decay must queue both fields' source changes")
     assert(queued[1].new == chunk.playerGenerator, "queued value must be the decayed generator")
 end)
 
@@ -278,7 +282,8 @@ my_collection:add('decayPlayerGenerator_below_cutoff_unregisters_and_clears', fu
 
     assert(chunk.playerGenerator == nil, "the generator must clear below the cutoff")
     assert(universe.playerGeneratorChunks[9] == nil, "the chunk must be unregistered")
-    assert(#queued == 1 and queued[1].new == 0, "clearing must queue a zero source value")
+    assert(#queued == 2, "clearing must queue both fields")
+    assert(queued[1].new == 0 and queued[2].new == 0, "clearing must queue a zero source value")
 end)
 
 return my_collection
