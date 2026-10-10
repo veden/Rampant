@@ -47,6 +47,9 @@ local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local MOVEMENT_GENERATOR_PERSISTANCE = Constants.MOVEMENT_GENERATOR_PERSISTANCE
 local MOVEMENT_GENERATOR_DECAY_PER_TICK = Constants.MOVEMENT_GENERATOR_DECAY_PER_TICK
 local PLAYER_GENERATOR_DECAY_PER_TICK = Constants.PLAYER_GENERATOR_DECAY_PER_TICK
+local MOVEMENT_GENERATOR_DECAY_TABLE = Constants.DECAY_MOVEMENT_GENERATOR_PER_TICK
+local PLAYER_GENERATOR_DECAY_TABLE = Constants.DECAY_PLAYER_GENERATOR_PER_TICK
+local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 local CHUNK_ALL_DIRECTIONS = Constants.CHUNK_ALL_DIRECTIONS
 
 local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
@@ -527,8 +530,9 @@ function ChunkPropertyUtils.decayDeathGenerator(chunk, tick)
     if not last then return end
     local elapsed = tick - last
     if elapsed <= 0 then return end
-    local newValue = ChunkPropertyUtils.calculateDeathGeneratorDecay(
-        gen, MOVEMENT_GENERATOR_DECAY_PER_TICK ^ elapsed)
+    local factor = MOVEMENT_GENERATOR_DECAY_TABLE[elapsed]
+        or MOVEMENT_GENERATOR_DECAY_TABLE[DECAY_TABLE_DEPTH]
+    local newValue = ChunkPropertyUtils.calculateDeathGeneratorDecay(gen, factor)
     ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
 end
 
@@ -560,8 +564,9 @@ function ChunkPropertyUtils.decayPlayerGenerator(chunk, tick)
     if not last then return end
     local elapsed = tick - last
     if elapsed <= 0 then return end
-    local newValue = ChunkPropertyUtils.calculatePlayerGeneratorDecay(
-        gen, PLAYER_GENERATOR_DECAY_PER_TICK ^ elapsed)
+    local factor = PLAYER_GENERATOR_DECAY_TABLE[elapsed]
+        or PLAYER_GENERATOR_DECAY_TABLE[DECAY_TABLE_DEPTH]
+    local newValue = ChunkPropertyUtils.calculatePlayerGeneratorDecay(gen, factor)
     ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
 end
 

@@ -548,7 +548,7 @@ test-behavior name="wall-defense" seed="1" strict="0": copy
     rm -f /mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}*
 
     # Create private server settings (auto_pause: false is required — the
-    # server pauses with no players otherwise; see docs/09-Engine-Testing.md)
+    # server pauses with no players otherwise)
     echo '{"name":"Rampant Behavior Tests","description":"Staged behavior scenarios","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}' > /tmp/rampant-behavior-server-settings.json
 
     just make-saves

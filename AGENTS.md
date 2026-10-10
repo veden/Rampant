@@ -136,8 +136,7 @@ The integration testing framework consists of:
 
 ### Engine Testing on Factorio 2.1.x — READ THIS FIRST
 
-**Read `docs/09-Engine-Testing.md` before launching any headless test.** It
-contains the hard-won engine knowledge that cost hours to discover:
+The hard-won engine knowledge that cost hours to discover:
 
 - **`auto_pause` is the #1 test-killer**: default `true` — with no players
   connected the server advances ~1 tick per 3.6s (0.276 UPS). `pause_when_no_players`

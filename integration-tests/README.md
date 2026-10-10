@@ -2,11 +2,10 @@
 
 Integration tests for the Rampant mod that run within the actual Factorio game engine.
 
-> **IMPORTANT — read `docs/09-Engine-Testing.md` before launching any headless
-> test.** It documents the engine 2.1.x behaviors that silently break test runs:
-> `auto_pause` (server pauses with no players), `--console-log` not capturing
-> Lua prints, stale saves hijacking scenario loading, per-mod `storage` scoping,
-> and the scenario authoring contract.
+> **IMPORTANT — before launching any headless test, know the engine 2.1.x
+> behaviors that silently break test runs:** `auto_pause` (server pauses with no
+> players), `--console-log` not capturing Lua prints, stale saves hijacking
+> scenario loading, per-mod `storage` scoping, and the scenario authoring contract.
 
 ## Current Canonical Flow (2.1.x)
 

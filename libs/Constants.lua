@@ -46,6 +46,11 @@ constants.PROCESS_QUEUE_SIZE = 40
 -- The long-run's dirty-queue invariant (peak bounded, steady state 0) is the gate
 -- for the smallest budget that keeps up.
 constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
+-- H8 maintains the transient fields only (base/enemy/resource are source-versioned
+-- and skip this pass), and their decay is time-based (DECAY_REFERENCE_TICKS), so this
+-- budget sets freshness alone. The readers decide the target: the cloud lanes are read
+-- on a ~600-tick decision cadence and the player lane is served by priority order.
+constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK = 20
 -- H7: no periodic sweep. The field is maintained by floor-aware
 -- effective reads and event/propagation marks. Source chunks do not need
 -- periodic renewal; diffused fields are read through their timestamps.
@@ -272,6 +277,13 @@ constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 constants.ENEMY_PHEROMONE = 5
 constants.KAMIKAZE_PHEROMONE = 6
+-- The kamikaze field had no epsilon cutoff, unlike the other generators: once a
+-- chunk acquired any kamikaze value it never left the working set, and since it
+-- decays 5% per pass it always exceeded the relative propagation gate, so it
+-- re-marked itself every pass forever. That is what grew the dirty queue's
+-- steady-state depth (measured: ws=15 -> 2143 over 12000 ticks, 1592 of it
+-- kamikaze). This cutoff makes it clear like the others.
+constants.KAMIKAZE_PHEROMONE_MIN = 0.0001
 
 -- constants.PATH_RATING = 7
 
@@ -1926,6 +1938,12 @@ end
 -- Create decay tables for each rate
 constants.DECAY_090 = createDecayTable(constants.DECAY_BASE)        -- Base, Resource, Enemy
 constants.DECAY_092 = createDecayTable(constants.DECAY_GENERATOR)   -- Generators
+-- Per-tick tables for the time-based generator decay. decayDeathGenerator and
+-- decayPlayerGenerator used to compute persistence^elapsed per processed chunk (a
+-- float pow in the hot path); these index the same value instead. rate^i equals
+-- persistence^(i/REFERENCE_TICKS), so the arithmetic is unchanged.
+constants.DECAY_MOVEMENT_GENERATOR_PER_TICK = createDecayTable(constants.MOVEMENT_GENERATOR_DECAY_PER_TICK)
+constants.DECAY_PLAYER_GENERATOR_PER_TICK = createDecayTable(constants.PLAYER_GENERATOR_DECAY_PER_TICK)
 constants.DECAY_095 = createDecayTable(constants.DECAY_KAMIKAZE)    -- Kamikaze
 constants.DECAY_098 = createDecayTable(constants.DECAY_PLAYER)      -- Player
 constants.DECAY_TRAIL = createDecayTable(constants.DECAY_TRAIL)     -- Scout trails

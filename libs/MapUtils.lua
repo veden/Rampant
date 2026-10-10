@@ -42,6 +42,7 @@ local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
+local KAMIKAZE_PHEROMONE_MIN = Constants.KAMIKAZE_PHEROMONE_MIN
 
 local CHUNK_TICK = Constants.CHUNK_TICK
 local DECAY_095 = Constants.DECAY_095
@@ -557,12 +558,14 @@ end
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     local skipBaseEnemy = USE_SOURCE_VERSIONED_FIELD
     local skipResource = USE_SOURCE_VERSIONED_FIELD
-    local chunkPlayer = chunk[PLAYER_PHEROMONE]
+    -- "or 0" on all of these: a cleared field is nil, and these feed numeric
+    -- comparisons directly (the kamikaze cutoff made that reachable).
+    local chunkPlayer = chunk[PLAYER_PHEROMONE] or 0
     local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(chunk)
     local chunkResource = -MAGIC_MAXIMUM_NUMBER
-    local chunkEnemy = chunk[ENEMY_PHEROMONE]
-    local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE]
+    local chunkEnemy = chunk[ENEMY_PHEROMONE] or 0
+    local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
 
     local enemyStructureCount = getEnemyStructureCount(chunk)
 
@@ -635,6 +638,13 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         chunkKamikaze,
         newPlayer + newBase
     ) * 0.95
+    -- Clear below the same floor the other generators use. Without this a chunk
+    -- never leaves the working set and re-marks every pass.
+    -- Zero it rather than nil it: Squad.lua and MapUtils do arithmetic on this
+    -- field directly and do not nil-check it.
+    if (newKamikaze < KAMIKAZE_PHEROMONE_MIN) and (newKamikaze > -KAMIKAZE_PHEROMONE_MIN) then
+        newKamikaze = 0
+    end
 
     local newResource = chunk[RESOURCE_PHEROMONE] or 0
     if not skipResource then

@@ -228,6 +228,24 @@ local function rescanAllChunks(map, tick)
     end
 end
 
+-- Diagnostic: the transient working set is the set of chunks with a live
+-- player/death/kamikaze generator, and it is what the dirty queue's steady-state
+-- depth measures. Sampled (not per tick) because it scans the chunk index.
+local function transientWorkingSet()
+    local death, player, kami, any = 0, 0, 0, 0
+    local KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
+    for _, chunk in pairs(Universe.chunkById) do
+        local d = (chunk.deathGenerator or 0) ~= 0
+        local p = (chunk.playerGenerator or 0) ~= 0
+        local k = (chunk[KAMIKAZE] or 0) ~= 0
+        if d then death = death + 1 end
+        if p then player = player + 1 end
+        if k then kami = kami + 1 end
+        if d or p or k then any = any + 1 end
+    end
+    return death, player, kami, any
+end
+
 local function onLoad()
     Universe = storage.universe
 
@@ -1102,12 +1120,17 @@ script.on_event(defines.events.on_tick,
                         local m = Metrics.get()
                         local c = m.counters or {}
                         local pending = Universe.dirtyCount or 0
+                        local wsDeath, wsPlayer, wsKami, wsAny = transientWorkingSet()
                         log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
                              " prop=" .. (c['dirty.propagationMarks'] or 0) ..
                              " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
                              " skip=" .. (c['dirty.epsilonSkips'] or 0) ..
                              " lookups=" .. (c['index.lookups'] or 0) ..
-                             " pending=" .. pending})
+                             " pending=" .. pending ..
+                             " ws=" .. wsAny ..
+                             " wsDeath=" .. wsDeath ..
+                             " wsPlayer=" .. wsPlayer ..
+                             " wsKami=" .. wsKami})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})
