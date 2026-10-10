@@ -72,12 +72,6 @@ my_collection:add('reset_clears_everything', function()
     assert(m.samples["test.series"] == nil, "samples cleared")
 end)
 
-my_collection:add('dirty_queue_size_sampled', function()
-    local universe, Metrics = makeUniverse(true)
-    Metrics.sampleDirtyQueue(3)
-    local m = Metrics.get()
-    assert(m.latest["dirtyQueueSize"] == 3, "queue size should sum priority lists")
-end)
 
 my_collection:add('set_enabled_toggles_gate', function()
     local universe, Metrics = makeUniverse(false)

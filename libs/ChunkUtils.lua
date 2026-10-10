@@ -758,6 +758,9 @@ function ChunkUtils.init(universe)
     if not universe.playerGeneratorChunks then
         universe.playerGeneratorChunks = {}
     end
+    if not universe.deathGeneratorChunks then
+        universe.deathGeneratorChunks = {}
+    end
 end
 
 ChunkUtilsG = ChunkUtils

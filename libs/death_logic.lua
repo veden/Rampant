@@ -57,7 +57,6 @@ function Death.evaluateEnemy(data)
 
         if data.chunkId ~= -1 then
             -- Mark chunk dirty for pheromone recalculation
-            table.insert(commands, Command.markChunkDirty(data.chunkId, 3))
 
             if data.baseId then
                 local base = data.base
@@ -101,7 +100,6 @@ function Death.evaluateEnemy(data)
         if data.chunkId ~= -1 then
             table.insert(commands, Command.unregisterStructure(
                 data.chunkId, data.entityName, data.damageType))
-            table.insert(commands, Command.markChunkDirty(data.chunkId, 3))
 
             if data.baseId then
                 if data.entityType == "unit-spawner" then

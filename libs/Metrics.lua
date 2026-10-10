@@ -126,12 +126,6 @@ function Metrics.highWater(name, value)
     end
 end
 
---- Sample the dirty-queue size (sum of the 5 priority lists).
-function Metrics.sampleDirtyQueue(dirtyCount)
-    if not active() then return end
-    Metrics.sample("dirtyQueueSize", dirtyCount or 0)
-end
-
 --- Pull snapshot: counters, samples, highWater, latest + diagnostics.
 function Metrics.get()
     local diagnostics = {

@@ -136,7 +136,6 @@ local removeSquadFromChunk = ChunkPropertyUtils.removeSquadFromChunk
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
 local getNeighborChunks = MapUtils.getNeighborChunks
-local markChunkDirty = MapUtils.markChunkDirty
 local addSquadToChunk = ChunkPropertyUtils.addSquadToChunk
 local getChunkByXY = MapUtils.getChunkByXY
 local positionToChunkXY = MapUtils.positionToChunkXY
@@ -449,7 +448,6 @@ local function settleMove(squad, tick)
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
         addDeathGenerator(squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-        markChunkDirty(squadChunk.id, 3, tick)  -- Priority 3: recent event
     end
     if chunk ~= -1 then
         addSquadToChunk(chunk, squad)
@@ -531,7 +529,6 @@ local function settleMove(squad, tick)
             else
                 lastChunk = i
                 addDeathGenerator(moveChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-                markChunkDirty(moveChunk.id, 3, tick)  -- Priority 3: recent event
             end
         end
     end
@@ -594,7 +591,6 @@ local function attackMove(squad, tick)
     local squadChunk = squad.chunk
     if squadChunk ~= -1 then
         addDeathGenerator(squadChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-        markChunkDirty(squadChunk.id, 3, tick)  -- Priority 3: recent event
     end
     if chunk ~= -1 then
         addSquadToChunk(chunk, squad)
@@ -658,7 +654,6 @@ local function attackMove(squad, tick)
         local attackChunk = searchPath[i].chunk
         if (attackChunk ~= -1) then
             addDeathGenerator(attackChunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-            markChunkDirty(attackChunk.id, 3, tick)  -- Priority 3: recent event
             if attackChunk.playerBaseGenerator or
                 (getPlayerPheromone(attackChunk) >= Universe.attackPlayerThreshold)
             then
@@ -725,7 +720,6 @@ function Squad.cleanSquads(tick)
         if not group.valid then
             if squad.chunk ~= -1 then
                 addDeathGenerator(squad.chunk, -FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT)
-                markChunkDirty(squad.chunk.id, 3, tick)  -- Priority 3: recent event
             end
             removeSquadFromChunk(squad)
             if squad.settlers then

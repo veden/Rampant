@@ -35,7 +35,6 @@ my_collection:add('unit_death_produces_decompress_and_dirty', function()
     for _, c in ipairs(commands) do types[c.type] = true end
 
     assert(types.DECOMPRESS_SQUAD, "should decompress squad")
-    assert(types.MARK_CHUNK_DIRTY, "should mark chunk dirty")
 end)
 
 my_collection:add('unit_death_triggers_retreat_when_below_threshold', function()

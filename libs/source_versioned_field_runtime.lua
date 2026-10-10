@@ -87,12 +87,23 @@ local FIELD_KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
 local KAMIKAZE_DECAY = Constants.DECAY_KAMIKAZE
 local KAMIKAZE_SCALE = 0.95
 
+-- The death field is signed and max-plus cannot lower a value, so the two signs
+-- are separate fields and the read subtracts them (min-plus == negated
+-- max-plus). Both are driven by the one death generator, like player/kamikaze.
+local FIELD_DEATH_GAIN = Constants.DEATH_GAIN_PHEROMONE
+local FIELD_DEATH_LOSS = Constants.DEATH_LOSS_PHEROMONE
+local DEATH_DECAY = Constants.DEATH_FIELD_DECAY
+local DEATH_RADIUS = Constants.DEATH_FIELD_RADIUS
+local DEATH_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
+
 local SOURCE_FIELDS = {
     [FIELD_PLAYER] = true,
     [FIELD_BASE] = true,
     [FIELD_ENEMY] = true,
     [FIELD_RESOURCE] = true,
     [FIELD_KAMIKAZE] = true,
+    [FIELD_DEATH_GAIN] = true,
+    [FIELD_DEATH_LOSS] = true,
 }
 
 -- Per-field solver options. A field's reach is log(eps/source)/log(decay), so
@@ -100,6 +111,8 @@ local SOURCE_FIELDS = {
 -- its source magnitude; the kamikaze field needs its own.
 local FIELD_OPTS = {}
 FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY }
+FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
+FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
 
 local function fieldOpts(fieldType, opts)
     return opts or FIELD_OPTS[fieldType]
@@ -147,6 +160,8 @@ function Runtime.init(universe, addProperties)
     FIELD_DRAIN_PER_TICK[FIELD_ENEMY] = 10
     FIELD_DRAIN_PER_TICK[FIELD_PLAYER] = 10
     FIELD_DRAIN_PER_TICK[FIELD_KAMIKAZE] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_DEATH_GAIN] = 10
+    FIELD_DRAIN_PER_TICK[FIELD_DEATH_LOSS] = 10
     bindSolvedState()
     if addProperties then
         Runtime.ensureStorage()
@@ -395,7 +410,12 @@ end
 
 function Runtime.sourceValue(chunk, fieldType)
     if not chunk then return 0 end
-    if fieldType == FIELD_KAMIKAZE then
+    if fieldType == FIELD_DEATH_GAIN or fieldType == FIELD_DEATH_LOSS then
+        local combined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
+        local magnitude = (fieldType == FIELD_DEATH_GAIN) and combined or -combined
+        if magnitude <= 0 then return 0 end
+        return magnitude * DEATH_SCALE
+    elseif fieldType == FIELD_KAMIKAZE then
         return (chunk.playerGenerator or 0) * KAMIKAZE_SCALE
     elseif fieldType == FIELD_PLAYER then
         return chunk.playerGenerator or 0

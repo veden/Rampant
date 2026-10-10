@@ -35,7 +35,6 @@ local MathUtils = require("MathUtils")
 -- Constants
 
 
-local CHUNK_TICK = Constants.CHUNK_TICK
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -56,10 +55,6 @@ local CHUNK_SIZE_DIVIDER = Constants.CHUNK_SIZE_DIVIDER
 local addVictoryGenerator = ChunkPropertyUtils.addVictoryGenerator
 local addPermanentDeathGenerator = ChunkPropertyUtils.addPermanentDeathGenerator
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
-local getCombinedDeathGenerator = ChunkPropertyUtils.getCombinedDeathGenerator
-local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
-local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
-local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
 local mFloor = math.floor
 local getPassable = ChunkPropertyUtils.getPassable
@@ -334,29 +329,6 @@ end
     /|\
     6 7 8
 ]]--
--- PRECOMPUTED MOVABLE NEIGHBOURS. The movable-neighbour set depends only on
--- passable classes (terrain), which change only on landfill/water events, yet the
--- per-chunk diffusion loop recomputed it every tick via 8 canMoveChunkDirection
--- calls. chunk.movableMask is an 8-bit mask (bit i-1 = neighbour i movable) and
--- chunk.movableCount = popcount(mask) + 1 (the divisor). Both are invalidated on
--- setPassable for the chunk and its 8 neighbours (whose masks include this class).
-local function buildMovableMask(chunk, neighbors)
-    local startClass = chunk.passable or CHUNK_ALL_DIRECTIONS
-    local mask = 0
-    local count = 1
-    for i = 1, 8 do
-        local neighbor = neighbors[i]
-        if neighbor and neighbor ~= -1 then
-            local endClass = neighbor.passable or CHUNK_ALL_DIRECTIONS
-            if ChunkLogic.canMove(startClass, i, endClass) then
-                mask = mask + bit32.lshift(1, i - 1)
-                count = count + 1
-            end
-        end
-    end
-    return mask, count
-end
-MapUtils.buildMovableMask = buildMovableMask
 
 function MapUtils.canMoveChunkDirection(direction, startChunk, endChunk)
     -- Pure decision delegated to ChunkLogic (lookup table). The table is proven
@@ -523,69 +495,6 @@ end
 -- enemy and resource are solved by the source-versioned solver and are not
 -- written by this pass. There is no H7 read path to avoid feeding back into.
 
-function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
-    local chunkDeath = getCombinedDeathGenerator(chunk)
-
-    local enemyStructureCount = getEnemyStructureCount(chunk)
-
-    -- Cached movable-neighbour mask/count (static between passable changes).
-    local movableMask = chunk.movableMask
-    if movableMask == nil then
-        local count
-        movableMask, count = buildMovableMask(chunk, neighbors)
-        chunk.movableMask = movableMask
-        chunk.movableCount = count
-    end
-    local chunkCount = chunk.movableCount
-
-    for i = 1, 8 do
-        if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
-            local neighbor = neighbors[i]
-            -- getCombinedDeathGenerator inlined (8 calls/chunk in the
-            -- hot loop; clamped sum, verbatim semantics).
-            local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
-            chunkDeath = chunkDeath + (dAmount > 1 and 1 or (dAmount < -1 and -1 or dAmount))
-        end
-    end
-
-    local newDeathGenerator = (chunkDeath / chunkCount) * 0.75
-
-    return {
-        deathGenerator = newDeathGenerator,
-        enemyStructureCount = enemyStructureCount,
-    }
-end
-
--- IMPURE: Apply pheromone updates to chunk (side effects)
-function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
-    setDeathGenerator(chunk, updates.deathGenerator)
-end
-
--- PUBLIC: Orchestrate pheromone processing (reads storage.universe)
-function MapUtils.processPheromone(chunk, tick, player, neighbors)
-    if chunk[CHUNK_TICK] > tick then
-        return
-    end
-    chunk[CHUNK_TICK] = tick
-
-    -- Neighbours are passed in by the caller (Processor.processDirtyChunk),
-    -- which also needs them for the propagation marking. Computing them here
-    -- again would repeat the same 8 lookups for every processed chunk. The
-    -- shared NeighborChunks table is consumed immediately below, so it is still
-    -- valid for the caller's propagation pass.
-    neighbors = neighbors or MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
-    
-    -- Pure calculation
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
-    
-    -- Apply updates (side effects)
-    MapUtils.applyPheromoneUpdates(chunk, updates, tick)
-
-    if not player then
-        decayDeathGenerator(chunk, tick)
-    end
-end
-
 function MapUtils.init(universe)
     Universe = universe
     if universe.mapUtilsQueries then
@@ -601,67 +510,11 @@ function MapUtils.init(universe)
         Universe.chunkById = {}
     end
 
-    -- dirtyChunks is created (and a legacy string-keyed form converted) LAZILY
-    -- by markChunkDirty, which only runs on gameplay events. Nothing is created
-    -- or migrated here: on_load must never write storage (the CRC check fails the
-    -- load). The queue is transient, so a save's stale marks are harmless.
-    if not Universe.dirtyChunkSet then
-        Universe.dirtyChunkSet = {}  -- Quick lookup to prevent duplicates
-    end
 end
 
 -- ============================================
 -- ACO: Dirty Chunk Management
 -- ============================================
-
-function MapUtils.markChunkDirty(chunkId, priority, tick, universe)
-    universe = universe or Universe
-    if not chunkId or chunkId == -1 then return end
-    priority = math.min(math.max(priority, 1), 5)
-
-    -- Intrusive doubly-linked bucket queue. dirtyNodes[chunkId] is the node
-    -- {p=priority, prev=chunkId|0, next=chunkId|0}; dirtyHeads[p] and
-    -- dirtyTails[p] are head/tail chunkId cursors (0 = empty). prev/next are
-    -- chunkId INDICES (not table references) so the whole thing serializes.
-    -- An upgrade unlinks the node and relinks it in O(1), so a chunk occupies
-    -- exactly one slot -- no stale duplicates to skip at drain time.
-    local heads = universe.dirtyHeads
-    if not heads then
-        heads = { 0, 0, 0, 0, 0 }
-        universe.dirtyHeads = heads
-        universe.dirtyTails = { 0, 0, 0, 0, 0 }
-        universe.dirtyNodes = {}
-        universe.dirtyCount = 0
-    end
-    local nodes = universe.dirtyNodes
-    local tails = universe.dirtyTails
-
-    local node = nodes[chunkId]
-    if node then
-        local oldP = node.p
-        if priority < oldP then
-            -- Unlink from the old bucket list (O(1)).
-            local prev, nxt = node.prev, node.next
-            if prev ~= 0 then nodes[prev].next = nxt else heads[oldP] = nxt end
-            if nxt ~= 0 then nodes[nxt].prev = prev else tails[oldP] = prev end
-            -- Relink at the tail of the new bucket list (O(1)).
-            local tail = tails[priority]
-            node.p = priority
-            node.prev = tail
-            node.next = 0
-            if tail ~= 0 then nodes[tail].next = chunkId else heads[priority] = chunkId end
-            tails[priority] = chunkId
-        end
-        return
-    end
-
-    -- New node, append at the tail of its bucket list (O(1)).
-    local tail = tails[priority]
-    nodes[chunkId] = { p = priority, prev = tail, next = 0 }
-    if tail ~= 0 then nodes[tail].next = chunkId else heads[priority] = chunkId end
-    tails[priority] = chunkId
-    universe.dirtyCount = universe.dirtyCount + 1
-end
 
 -- ACO: Get effective pheromone value with decay-on-read
 function MapUtils.getEffectivePheromone(chunk, type, tick)

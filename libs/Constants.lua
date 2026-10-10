@@ -284,6 +284,22 @@ constants.KAMIKAZE_PHEROMONE = 6
 -- kamikaze). This cutoff makes it clear like the others.
 constants.KAMIKAZE_PHEROMONE_MIN = 0.0001
 
+-- The death field is signed: a loss is negative, a kill is positive. Max-plus
+-- cannot lower a value, so the two signs are separate source-versioned fields
+-- and the read subtracts them (min-plus == negated max-plus). They carry no
+-- chunk slot.
+constants.DEATH_GAIN_PHEROMONE = 7
+constants.DEATH_LOSS_PHEROMONE = 8
+-- The replaced mean-field was v' = 0.75 * (v + sum(v_n)) / movableCount. On an
+-- 8-neighbour grid that dilutes a deposit by 0.75/8 in one pass and then spreads
+-- it at 0.75 per hop, measured on a single 0.005 deposit: 0.000469 at the
+-- centre after one pass, ~0.00001 at four hops after six. These three constants
+-- reproduce that magnitude and reach; they are a fit to the measured profile,
+-- not free parameters.
+constants.DEATH_FIELD_SOURCE_SCALE = 0.75 / 8
+constants.DEATH_FIELD_DECAY = 0.75
+constants.DEATH_FIELD_RADIUS = 4
+
 -- constants.PATH_RATING = 7
 
 -- Squad status

@@ -43,6 +43,9 @@ local RAIDING_MINIMUM_BASE_THRESHOLD = Constants.RAIDING_MINIMUM_BASE_THRESHOLD
 
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
+local DEATH_GAIN_PHEROMONE = Constants.DEATH_GAIN_PHEROMONE
+local DEATH_LOSS_PHEROMONE = Constants.DEATH_LOSS_PHEROMONE
+local DEATH_FIELD_SOURCE_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 
 local MOVEMENT_GENERATOR_PERSISTANCE = Constants.MOVEMENT_GENERATOR_PERSISTANCE
@@ -86,6 +89,43 @@ local function queuePlayerSourceChange(chunk, oldValue, newValue)
     runtime.queueSource(chunk, PLAYER_PHEROMONE, oldValue, newValue)
     runtime.queueSource(chunk, KAMIKAZE_PHEROMONE,
         oldValue * KAMIKAZE_SCALE, newValue * KAMIKAZE_SCALE)
+end
+
+-- The death field is signed, so one generator write queues two fields (the
+-- gain and the loss), each carrying its own side of the clamped combined value.
+-- The scale must match the runtime's sourceValue or the decrease comparison in
+-- Runtime.process sees a spurious change.
+local function queueDeathSourceChange(chunk, oldCombined)
+    local runtime = SourceVersionedFieldRuntime
+    if not runtime or not runtime.isInitialized() then return end
+    if not chunk or chunk.id == nil then return end
+    local newCombined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
+    if oldCombined == newCombined then return end
+    local oldGain = oldCombined > 0 and oldCombined or 0
+    local oldLoss = oldCombined < 0 and -oldCombined or 0
+    local newGain = newCombined > 0 and newCombined or 0
+    local newLoss = newCombined < 0 and -newCombined or 0
+    if oldGain ~= newGain then
+        runtime.queueSource(chunk, DEATH_GAIN_PHEROMONE,
+            oldGain * DEATH_FIELD_SOURCE_SCALE, newGain * DEATH_FIELD_SOURCE_SCALE)
+    end
+    if oldLoss ~= newLoss then
+        runtime.queueSource(chunk, DEATH_LOSS_PHEROMONE,
+            oldLoss * DEATH_FIELD_SOURCE_SCALE, newLoss * DEATH_FIELD_SOURCE_SCALE)
+    end
+end
+
+-- Chunks holding a live death generator. Its decay is time-based and must run
+-- whether or not anything else touches the chunk, so the set is tracked and
+-- refreshed on a pick rather than relying on a chunk being queued.
+local function registerDeathGeneratorChunk(chunk)
+    if Universe.deathGeneratorChunks then
+        Universe.deathGeneratorChunks[chunk.id] = chunk
+    end
+end
+
+function ChunkPropertyUtils.getDeathGeneratorChunks()
+    return Universe.deathGeneratorChunks
 end
 
 -- Chunks holding a live player generator. A generator only decays while its
@@ -409,22 +449,6 @@ function ChunkPropertyUtils.setPassable(chunk, value)
     else
         chunk.passable = value
     end
-    -- Invalidate the cached movable masks: this chunk's and its 8 neighbours'
-    -- (each neighbour's mask depends on this chunk's passable class). Terrain
-    -- events are rare, so the O(9) invalidation is negligible.
-    chunk.movableMask = nil
-    chunk.movableCount = nil
-    local map = chunk.map
-    if map and MapUtilsG then
-        local neighbors = MapUtilsG.getNeighborChunks(map, chunk.x, chunk.y)
-        for i = 1, 8 do
-            local n = neighbors[i]
-            if n and n ~= -1 then
-                n.movableMask = nil
-                n.movableCount = nil
-            end
-        end
-    end
 end
 
 function ChunkPropertyUtils.getPathRating(chunk)
@@ -474,6 +498,7 @@ function ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
 end
 
 function ChunkPropertyUtils.addPermanentDeathGenerator(chunk, amount)
+    local oldCombined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
     local adjustedAmount = (amount * 0.25) + (chunk.permanentDeathGenerator or 0)
     if (adjustedAmount > 0.75) then
         chunk.permanentDeathGenerator = 0.75
@@ -482,9 +507,11 @@ function ChunkPropertyUtils.addPermanentDeathGenerator(chunk, amount)
     else
         chunk.permanentDeathGenerator = adjustedAmount
     end
+    queueDeathSourceChange(chunk, oldCombined)
 end
 
 function ChunkPropertyUtils.addDeathGenerator(chunk, value)
+    local oldCombined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
     -- A deposit restarts the decay interval, so the decay stays time-based.
     chunk.deathGeneratorDecayTick = nil
     local currentAmount = (chunk.deathGenerator or 0) + value
@@ -495,6 +522,8 @@ function ChunkPropertyUtils.addDeathGenerator(chunk, value)
     else
         chunk.deathGenerator = currentAmount
     end
+    registerDeathGeneratorChunk(chunk)
+    queueDeathSourceChange(chunk, oldCombined)
 end
 
 -- NOTE: this is the per-processing write of the already-decayed value, so it
@@ -561,7 +590,9 @@ end
 
 -- IMPURE: Apply decayed death generator to chunk
 function ChunkPropertyUtils.applyDeathGeneratorDecay(chunk, newValue)
+    local oldCombined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
     chunk.deathGenerator = newValue
+    queueDeathSourceChange(chunk, oldCombined)
 end
 
 -- PUBLIC: Decay death generator (wrapper).

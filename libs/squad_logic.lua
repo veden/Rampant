@@ -52,6 +52,8 @@ local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
+local DEATH_GAIN_PHEROMONE = Constants.DEATH_GAIN_PHEROMONE
+local DEATH_LOSS_PHEROMONE = Constants.DEATH_LOSS_PHEROMONE
 
 -- Decay-on-read tables (indexed 0..depth, table[0] = 1)
 
@@ -174,6 +176,26 @@ end
 -- kamikaze squads press toward and what retreat scoring moves away from.
 function Squad.kamikazePheromone(chunk, tick)
     return readSourceVersionedField(KAMIKAZE_PHEROMONE, chunk)
+end
+
+-- The death field is signed, so it is two source-versioned fields and the read
+-- subtracts them: min-plus is max-plus on negated sources. Losses are negative,
+-- which is the case max-plus alone cannot express.
+function Squad.deathGenerator(chunk, tick)
+    return readSourceVersionedField(DEATH_GAIN_PHEROMONE, chunk)
+        - readSourceVersionedField(DEATH_LOSS_PHEROMONE, chunk)
+end
+
+--- The retreat gate's input: 1 with no recent losses nearby, falling toward 0
+-- as they accumulate. Same clamp the chunk-slot version applied.
+function Squad.deathGeneratorRating(chunk, tick)
+    local combined = Squad.deathGenerator(chunk, tick)
+    if combined > 1 then combined = 1
+    elseif combined < -1 then combined = -1 end
+    local amount = 1 + combined
+    if amount > 1 then return 1
+    elseif amount <= 0 then return 0.001
+    else return amount end
 end
 
 -- Raw scorers (numbers in → number out; canonical prod formulas)

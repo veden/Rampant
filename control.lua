@@ -16,6 +16,7 @@
 -- imports
 
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+local SquadLogic = require("libs/squad_logic")
 local UnitUtils = require("libs/UnitUtils")
 local BaseUtils = require("libs/BaseUtils")
 local Processor = require("libs/Processor")
@@ -70,7 +71,6 @@ local processBaseAIs = BaseUtils.processBaseAIs
 local registerEnemyBaseStructure = ChunkUtils.registerEnemyBaseStructure
 
 local queueGeneratedChunk = MapUtils.queueGeneratedChunk
-local markChunkDirty = MapUtils.markChunkDirty
 local isRampantSetting = Utils.isRampantSetting
 
 local processPendingUpgrades = Processor.processPendingUpgrades
@@ -97,7 +97,7 @@ local processPendingChunks = Processor.processPendingChunks
 local processScanChunks = Processor.processScanChunks
 
 local processPlayers = Processor.processPlayers
-local processDirtyChunks = Processor.processDirtyChunks
+local processDeathGenerators = Processor.processDeathGenerators
 
 local processNests = Processor.processNests
 local processHives = Processor.processHives
@@ -122,7 +122,6 @@ local createDrainPylon = UnitUtils.createDrainPylon
 local initialScan = ChunkUtils.initialScan
 local isDrained = ChunkPropertyUtils.isDrained
 local setDrainedTick = ChunkPropertyUtils.setDrainedTick
-local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 
 local accountPlayerEntity = ChunkUtils.accountPlayerEntity
 local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
@@ -220,55 +219,10 @@ local function rescanAllChunks(map, tick)
                     -- scan's unit purge would destroy every unit near
                     -- every nest.
                     initialScan(chunk, map, tick, false)
-                    markChunkDirty(chunk.id, 4, tick)
                 end
             end
         end
     end
-end
-
--- Diagnostic: the transient working set is the set of chunks with a live
--- player/death/kamikaze generator, and it is what the dirty queue's steady-state
--- depth measures. Sampled (not per tick) because it scans the chunk index.
---
--- Also reports the source-versioned player field's own footprint, so the two
--- player representations can be compared while the readers are still on H7.
-local function transientWorkingSet()
-    local death, player, kami, any = 0, 0, 0, 0
-    local KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
-    local PLAYER = Constants.PLAYER_PHEROMONE
-    local svPlayer, svPlayerMax = 0, 0
-    local svKami, svKamiMax = 0, 0
-    local h7Player, h7PlayerMax, both, svOnly, h7Only = 0, 0, 0, 0, 0
-    for _, chunk in pairs(Universe.chunkById) do
-        local d = (chunk.deathGenerator or 0) ~= 0
-        local p = (chunk.playerGenerator or 0) ~= 0
-        local k = (chunk[KAMIKAZE] or 0) ~= 0
-        if d then death = death + 1 end
-        if p then player = player + 1 end
-        if k then kami = kami + 1 end
-        if d or p or k then any = any + 1 end
-        local svk = SourceVersionedFieldRuntime.readChunk(Constants.KAMIKAZE_PHEROMONE, chunk) or 0
-        if svk ~= 0 then
-            svKami = svKami + 1
-            if svk > svKamiMax then svKamiMax = svk end
-        end
-        local sv = SourceVersionedFieldRuntime.readChunk(PLAYER, chunk) or 0
-        local h7 = chunk[PLAYER] or 0
-        if sv ~= 0 then
-            svPlayer = svPlayer + 1
-            if sv > svPlayerMax then svPlayerMax = sv end
-        end
-        if h7 ~= 0 then
-            h7Player = h7Player + 1
-            if h7 > h7PlayerMax then h7PlayerMax = h7 end
-        end
-        if sv ~= 0 and h7 ~= 0 then both = both + 1
-        elseif sv ~= 0 then svOnly = svOnly + 1
-        elseif h7 ~= 0 then h7Only = h7Only + 1 end
-    end
-    return death, player, kami, any, svPlayer, svPlayerMax,
-        h7Player, h7PlayerMax, both, svOnly, h7Only, svKami, svKamiMax
 end
 
 local function onLoad()
@@ -486,11 +440,9 @@ local function onBuild(event)
             if entity.type == "resource" then
                 registerResource(entity, map)
                 local c = getChunkByPosition(map, entity.position)
-                if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
             else
                 accountPlayerEntity(entity, map, true)
                 local c = getChunkByPosition(map, entity.position)
-                if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
                 if Universe.safeEntities[entity.type] or Universe.safeEntities[entity.name] then
                     entity.destructible = false
                 end
@@ -509,7 +461,6 @@ local function onMine(event)
         end
         accountPlayerEntity(entity, map, false)
         local c = getChunkByPosition(map, entity.position)
-        if c ~= -1 then markChunkDirty(c.id, 1, event.tick) end
     end
 end
 
@@ -574,7 +525,7 @@ local function onDeath(event)
 
             if chunk ~= -1 then
                 Metrics.sample("death.rating",
-                    getCombinedDeathGeneratorRating(chunk))
+                    SquadLogic.deathGeneratorRating(chunk, tick))
                 Metrics.sample("death.threshold",
                     Universe.retreatThreshold or 0)
                 Metrics.inc("death.causeValid",
@@ -589,7 +540,7 @@ local function onDeath(event)
                 squadId = squad and squad.id or nil,
                 damageType = damageTypeName,
                 isArtilleryCause = artilleryBlast,
-                deathGeneratorRating = chunk ~= -1 and getCombinedDeathGeneratorRating(chunk) or 0,
+                deathGeneratorRating = chunk ~= -1 and SquadLogic.deathGeneratorRating(chunk, tick) or 0,
                 retreatThreshold = Universe.retreatThreshold or 0,
                 causeValid = cause and cause.valid and (cause.get_health_ratio() ~= nil),
                 rallyThreshold = Universe.rallyThreshold or 0,
@@ -743,7 +694,6 @@ local function onResourceDepleted(event)
         end
         unregisterResource(entity, map)
         local c = getChunkByPosition(map, entity.position)
-        if c ~= -1 then markChunkDirty(c.id, 4, event.tick) end
     end
 end
 
@@ -1085,8 +1035,6 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
 
-                    Metrics.sampleDirtyQueue(Universe.dirtyCount)
-
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
                     -- tick's script time (2.1: game.create_profiler moved to
@@ -1115,6 +1063,7 @@ script.on_event(defines.events.on_tick,
                         timed(tick, rangeSample, "cleanHives", cleanHivesData)
                     elseif (pick == 1) then
                         timed(tick, rangeSample, "players", processPlayers, gameRef.connected_players, tick)
+                        timed(tick, rangeSample, "deathGenerators", processDeathGenerators, tick)
                     elseif (pick == 2) then
                         timed(tick, rangeSample, "pendingUpgrades", processPendingUpgrades, tick)
                         timed(tick, rangeSample, "vengence", processVengence)
@@ -1127,9 +1076,6 @@ script.on_event(defines.events.on_tick,
                         log({"", "[RANGE] tick=", tick, " phase=pick pick=", pick, " ", tPick})
                     end
 
-                    -- Event-driven pheromone processing (replaces wave-based processMap)
-                    local tDirty = rangeSample and helpers.create_profiler() or nil
-                    timed(tick, rangeSample, "dirty", processDirtyChunks, tick, Universe)
                     Executor.drain()
                     -- Persisted solved state: a no-op once created.
                     SourceVersionedFieldRuntime.ensureStorage()
@@ -1140,32 +1086,21 @@ script.on_event(defines.events.on_tick,
                     timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
                     timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
                     timed(tick, rangeSample, "sourceField.kamikaze", SourceVersionedFieldRuntime.processScheduled, Constants.KAMIKAZE_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.deathGain", SourceVersionedFieldRuntime.processScheduled, Constants.DEATH_GAIN_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.deathLoss", SourceVersionedFieldRuntime.processScheduled, Constants.DEATH_LOSS_PHEROMONE)
                     if rangeSample then
-                        local m = Metrics.get()
-                        local c = m.counters or {}
-                        local pending = Universe.dirtyCount or 0
-                        local wsDeath, wsPlayer, wsKami, wsAny, svPlayer, svPlayerMax,
-                            h7Player, h7PlayerMax, both, svOnly, h7Only,
-                            svKami, svKamiMax = transientWorkingSet()
-                        log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
-                             " prop=" .. (c['dirty.propagationMarks'] or 0) ..
-                             " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
-                             " skip=" .. (c['dirty.epsilonSkips'] or 0) ..
-                             " lookups=" .. (c['index.lookups'] or 0) ..
-                             " pending=" .. pending ..
-                             " ws=" .. wsAny ..
-                             " wsDeath=" .. wsDeath ..
-                             " wsPlayer=" .. wsPlayer ..
-                             " wsKami=" .. wsKami ..
-                             " svPlayer=" .. svPlayer ..
-                             " svPlayerMax=" .. svPlayerMax ..
-                             " h7Player=" .. h7Player ..
-                             " h7PlayerMax=" .. h7PlayerMax ..
-                             " both=" .. both ..
-                             " svOnly=" .. svOnly ..
-                             " h7Only=" .. h7Only ..
-                             " svKami=" .. svKami ..
-                             " svKamiMax=" .. svKamiMax})
+                        -- The source-versioned fields are the only pheromone
+                        -- state left: report each field's undrained queue depth,
+                        -- which is the backlog that would make a read stale.
+                        local q = SourceVersionedFieldRuntime.queueDepth
+                        log({"", "[RANGE] tick=", tick, " phase=sourceField ",
+                             " qResource=" .. q(Constants.RESOURCE_PHEROMONE) ..
+                             " qBase=" .. q(Constants.BASE_PHEROMONE) ..
+                             " qEnemy=" .. q(Constants.ENEMY_PHEROMONE) ..
+                             " qPlayer=" .. q(Constants.PLAYER_PHEROMONE) ..
+                             " qKamikaze=" .. q(Constants.KAMIKAZE_PHEROMONE) ..
+                             " qDeathGain=" .. q(Constants.DEATH_GAIN_PHEROMONE) ..
+                             " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE)})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})

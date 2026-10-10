@@ -50,7 +50,6 @@ function Building.evaluateEnemy(data)
             table.insert(commands, Command.createBase(data.chunkId, data.chunkX, data.chunkY))
         end
 
-        table.insert(commands, Command.markChunkDirty(data.chunkId, 3))
 
         if data.newEnemies then
             if data.isVanillaEntity then

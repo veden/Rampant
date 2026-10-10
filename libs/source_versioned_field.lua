@@ -258,8 +258,10 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
         heapPush(heap, source.id, v, 0, source.id, true)
         work = work + 1
     end
+    -- Runs to completion: this path returns no resumable frontier, so bounding it
+    -- would strand a partially propagated field. The multi-source
+    -- propagateIncreasesWithMetadata is the bounded, resumable one.
     while #heap > 0 do
-        if maxWork and work >= maxWork then break end
         local node = heapPop(heap)
         local nid = node.id
         local topValue = field[nid] or 0

@@ -30,6 +30,7 @@ local Queries
 local Utils = require("Utils")
 local MapUtils = require("MapUtils")
 local Squad = require("Squad")
+local SquadLogic = require("squad_logic")
 local Constants = require("Constants")
 local ChunkUtils = require("ChunkUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
@@ -48,8 +49,6 @@ local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
 
-local PROPAGATION_RELATIVE_EPSILON = Constants.PROPAGATION_RELATIVE_EPSILON
-local PROPAGATION_ABSOLUTE_EPSILON = Constants.PROPAGATION_ABSOLUTE_EPSILON
 
 local AI_VENGENCE_SQUAD_COST = Constants.AI_VENGENCE_SQUAD_COST
 
@@ -80,6 +79,8 @@ local setPositionInQuery = Utils.setPositionInQuery
 
 local addPlayerGenerator = ChunkPropertyUtils.addPlayerGenerator
 local getPlayerGeneratorChunks = ChunkPropertyUtils.getPlayerGeneratorChunks
+local getDeathGeneratorChunks = ChunkPropertyUtils.getDeathGeneratorChunks
+local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
@@ -87,7 +88,6 @@ local removeChunkToNest = MapUtils.removeChunkToNest
 
 local queueCreation = BaseUtils.queueCreation
 
-local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 local processBaseMutation = BaseUtils.processBaseMutation
 
 local processNestActiveness = ChunkPropertyUtils.processNestActiveness
@@ -99,7 +99,6 @@ local formSettlers = Squad.formSettlers
 
 local getChunkByPosition = MapUtils.getChunkByPosition
 local getChunkByXY = MapUtils.getChunkByXY
-local markChunkDirty = MapUtils.markChunkDirty
 
 local validPlayer = Utils.validPlayer
 
@@ -124,6 +123,24 @@ local next = next
     Localized player radius where processing takes place in realtime, doesn't store state
     between calls.
 --]]
+-- The death generator's decay is time-based and must run whether or not the
+-- chunk is touched by anything else, so its own registry drives it. The set is
+-- one entry per chunk with a live death cloud.
+function Processor.processDeathGenerators(tick)
+    local deathChunks = getDeathGeneratorChunks()
+    if not deathChunks then return end
+    for id, chunk in pairs(deathChunks) do
+        if chunk.valid then
+            decayDeathGenerator(chunk, tick)
+            if chunk.deathGenerator == nil then
+                deathChunks[id] = nil
+            end
+        else
+            deathChunks[id] = nil
+        end
+    end
+end
+
 function Processor.processPlayers(players, tick)
     -- put down player pheromone for player hunters
     -- randomize player order to ensure a single player isn't singled out
@@ -189,7 +206,7 @@ function Processor.processPlayers(players, tick)
     local vengence = allowingAttacks and
         (base.unitPoints >= AI_VENGENCE_SQUAD_COST) and
         ((getEnemyStructureCount(playerChunk) > 0) or
-            (getCombinedDeathGeneratorRating(playerChunk) < Universe.retreatThreshold))
+            (SquadLogic.deathGeneratorRating(playerChunk, tick) < Universe.retreatThreshold))
 
     local quadrant = Universe.random(4)
 
@@ -513,16 +530,12 @@ function Processor.processPendingChunks(tick, flush)
             local chunk = initialScan(oldChunk, map, tick)
             if (chunk == -1) then
                 removeChunkFromMap(map, oldChunk)
-            else
-                markChunkDirty(chunk.id, 4, tick)
             end
         else
             local initialChunk = createChunk(map, x, y)
             map[x][y] = initialChunk
             local chunk = initialScan(initialChunk, map, tick)
-            if (chunk ~= -1) then
-                markChunkDirty(chunk.id, 4, tick)
-            else
+            if (chunk == -1) then
                 map[x][y] = nil
             end
         end
@@ -666,128 +679,6 @@ end
 -- caller) so the hot path does not do a string-keyed Metrics hash lookup per
 -- chunk; the caller flushes it to Metrics once per tick, keeping the public
 -- metric names.
-function Processor.processDirtyChunk(chunk, tick, priority, counters)
-    if not chunk or not chunk.valid then
-        return false, 0
-    end
-
-    -- Snapshot the maintained field as a LOCAL — the previous snapshot tables
-    -- allocated twice per chunk (the single biggest per-chunk allocation).
-    -- deathGenerator is the ONLY field this pass maintains: base, enemy,
-    -- resource, player and kamikaze are solved by the source-versioned solver
-    -- and this pass does not write them, so their delta is identically 0.
-    -- It is included because it decays ONLY while the chunk is processed, so
-    -- excluding it would freeze death clouds forever.
-    local bDeath = chunk.deathGenerator or 0
-
-    -- Neighbours are needed TWICE per chunk: the pheromone sum (inside
-    -- processPheromone) and the propagation marking below. Compute them ONCE
-    -- and pass them down. The shared NeighborChunks table is consumed
-    -- immediately in each use, so one computation serves both.
-    local neighbors
-    if chunk and chunk.map then
-        neighbors = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
-    end
-
-    -- Process pheromones
-    MapUtils.processPheromone(chunk, tick, nil, neighbors)
-
-    -- Only propagate when something materially changed
-    local aDeath = chunk.deathGenerator or 0
-
-    local d6 = aDeath - bDeath
-    if d6 < 0 then d6 = -d6 end
-    local a6 = bDeath
-    if a6 < 0 then a6 = -a6 end
-
-    local changed = (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
-
-    -- Mark neighbors dirty DIRECTLY (no per-mark tables, no list handed to the
-    -- drain). The previous version built a {id=, priority=} table per neighbor
-    -- (up to 8 per chunk) for the drain to read back. markChunkDirty dedupes,
-    -- so marking here is equivalent.
-    if changed then
-        if counters then
-            counters.propagationMarks = counters.propagationMarks + 1
-        end
-        -- Neighbours were computed once above (chunks always carry a map
-        -- reference; if a chunk ever lacks one the old pcall silently skipped
-        -- its neighbours -- errors beyond this guard are real bugs).
-        if neighbors then
-            local neighborPriority = priority + 1
-            if neighborPriority > 5 then neighborPriority = 5 end
-            for i = 1, 8 do
-                local neighbor = neighbors[i]
-                if neighbor and neighbor ~= -1 then
-                    MapUtils.markChunkDirty(neighbor.id, neighborPriority, tick)
-                end
-            end
-        end
-    elseif counters then
-        counters.epsilonSkips = counters.epsilonSkips + 1
-    end
-
-    return true
-end
-
--- PUBLIC: Process dirty chunks (reads storage.universe)
-function Processor.processDirtyChunks(tick, universe)
-    universe = universe or storage.universe
-    local processed = 0
-    -- This pass maintains the transient fields only (base/enemy/resource are
-    -- solved by the source-versioned solver). Their decay is time-based
-    -- (DECAY_REFERENCE_TICKS), so this budget sets freshness alone.
-    local maxPerTick = Constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK
-
-    -- Per-tick metric accumulator: the hot path increments plain fields and this
-    -- flushes to Metrics once at the end (string-keyed Metrics lookups per chunk
-    -- were the same class as the queue keys).
-    local counters = { propagationMarks = 0, epsilonSkips = 0, chunksProcessed = 0 }
-
-    -- Intrusive bucket lists: dirtyHeads[p] is the head chunkId (0 = empty),
-    -- dirtyNodes[chunkId] is the node {p, prev, next}. Unlink is O(1), so an
-    -- upgrade moves the node instead of leaving a stale duplicate, and a chunk
-    -- occupies exactly one slot.
-    local heads = universe.dirtyHeads
-    if not heads then return end
-    local nodes = universe.dirtyNodes
-    if not nodes then return end
-    local tails = universe.dirtyTails
-
-    -- Process by priority (1 = highest, 5 = lowest)
-    for priority = 1, 5 do
-        local chunkId = heads[priority]
-        while processed < maxPerTick and chunkId ~= 0 do
-            local node = nodes[chunkId]
-            local nxt = node.next
-            -- Unlink the head (O(1)).
-            nodes[chunkId] = nil
-            if nxt ~= 0 then nodes[nxt].prev = 0 else tails[priority] = 0 end
-            heads[priority] = nxt
-            universe.dirtyCount = universe.dirtyCount - 1
-
-            -- Get chunk from map
-            local chunk = MapUtils.getChunkById(chunkId, universe)
-            local success = Processor.processDirtyChunk(chunk, tick, priority, counters)
-
-            if success then
-                processed = processed + 1
-                counters.chunksProcessed = counters.chunksProcessed + 1
-            end
-            chunkId = nxt
-        end
-
-        if processed >= maxPerTick then break end
-    end
-
-
-    -- Flush the per-tick counters once (public metric names preserved).
-    if MetricsG then
-        if counters.propagationMarks > 0 then MetricsG.inc("dirty.propagationMarks", counters.propagationMarks) end
-        if counters.epsilonSkips > 0 then MetricsG.inc("dirty.epsilonSkips", counters.epsilonSkips) end
-        if counters.chunksProcessed > 0 then MetricsG.inc("dirty.chunksProcessed", counters.chunksProcessed) end
-    end
-end
 
 ProcessorG = Processor
 return Processor

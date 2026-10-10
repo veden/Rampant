@@ -156,14 +156,6 @@ function Command.unregisterStructure(chunkId, entityName, damageType)
     }
 end
 
-function Command.markChunkDirty(chunkId, priority)
-    return {
-        type = "MARK_CHUNK_DIRTY",
-        chunkId = chunkId,
-        priority = priority or 4,
-    }
-end
-
 function Command.triggerChunkGeneration(chunkX, chunkY)
     return {
         type = "TRIGGER_CHUNK_GENERATION",

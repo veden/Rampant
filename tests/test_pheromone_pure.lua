@@ -1,126 +1,83 @@
--- Pure function tests for pheromone calculations
--- These tests don't require global.universe or Factorio
+-- Pheromone field accessor tests.
+--
+-- Every pheromone field is solved by the source-versioned solver now: there is
+-- no chunk-slot maintenance pass left to test here, so what remains is that the
+-- accessors read the solver and stay total.
 
 local TestCollection = require("tests/framework")
 local Constants = require("Constants")
 
 local my_collection = TestCollection:new()
 
--- Helper to create mock chunk
-local function createChunk(pheromones)
-    return {
-        [Constants.CHUNK_TICK] = 0,
-        [Constants.PLAYER_PHEROMONE] = pheromones.player or 0,
-        [Constants.ENEMY_PHEROMONE] = pheromones.enemy or 0,
-        [Constants.BASE_PHEROMONE] = pheromones.base or 0,
-        [Constants.KAMIKAZE_PHEROMONE] = pheromones.kamikaze or 0,
-        [Constants.RESOURCE_PHEROMONE] = pheromones.resource or 0,
-        playerGenerator = pheromones.playerGenerator or 0,
-        playerBaseGenerator = pheromones.playerBaseGenerator or 0,
-        resourceGenerator = pheromones.resourceGenerator or 0,
-        deathGenerator = pheromones.deathGenerator or 0,
-        passable = Constants.CHUNK_ALL_DIRECTIONS,
-    }
-end
-
--- Helper to create mock neighbors
-local function createNeighbors(pheromoneGrid)
-    -- pheromoneGrid = { [1] = {player=100, enemy=10}, [2] = -1, ... }
-    local neighbors = {}
-    for i = 1, 8 do
-        local data = pheromoneGrid[i]
-        if data and data ~= -1 then
-            neighbors[i] = createChunk(data)
-        else
-            neighbors[i] = -1
-        end
-    end
-    return neighbors
-end
-
--- Test: Pure function returns correct structure
-my_collection:add('calculatePheromoneUpdates_returns_correct_structure', function()
-    local MapUtils = require("libs/MapUtils")
-    
-    local chunk = createChunk({ player = 10, enemy = 5 })
-    local neighbors = createNeighbors({
-        [1] = { player = 100, enemy = 10 },
-        [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
-    })
-    
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-    
-    assert(updates.deathGenerator ~= nil, "Should have death generator")
-    -- base/enemy/resource/player/kamikaze are solved by the source-versioned
-    -- field: this pass does not compute or write them, so they must not appear
-    -- in the updates.
-    assert(updates.base == nil, "base must not be computed by the transient pass")
-    assert(updates.enemy == nil, "enemy must not be computed by the transient pass")
-    assert(updates.resource == nil, "resource must not be computed by the transient pass")
-    assert(updates.player == nil, "player must not be computed by the transient pass")
-    assert(updates.kamikaze == nil, "kamikaze must not be computed by the transient pass")
-end)
-
--- Test: The death generator is still a mean-field average over the neighbours
-my_collection:add('calculatePheromoneUpdates_averages_death_generator', function()
-    local MapUtils = require("libs/MapUtils")
-    
-    local chunk = createChunk({})
-    local neighbors = createNeighbors({
-        [1] = { deathGenerator = 1 },
-        [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
-    })
-    
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-    
-    -- One neighbour at 1, averaged over the movable neighbours and scaled 0.75.
-    assert(updates.deathGenerator > 0, "death generator must absorb from neighbours")
-    assert(updates.deathGenerator < 1, "death generator must be averaged, not copied")
-end)
-
--- Test: No neighbors = no change
-my_collection:add('calculatePheromoneUpdates_no_neighbors', function()
-    local MapUtils = require("libs/MapUtils")
-    
-    local chunk = createChunk({})
-    local neighbors = createNeighbors({
-        [1] = -1, [2] = -1, [3] = -1, [4] = -1,
-        [5] = -1, [6] = -1, [7] = -1, [8] = -1
-    })
-    
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-    
-    assert(updates.deathGenerator ~= nil, "Should still calculate the death generator")
-end)
-
--- Test: Multiple neighbors contribute
-my_collection:add('calculatePheromoneUpdates_multiple_neighbors', function()
-    local MapUtils = require("libs/MapUtils")
-    
-    local chunk = createChunk({})
-    local neighbors = createNeighbors({
-        [1] = { deathGenerator = 1 },  -- West
-        [3] = { deathGenerator = 1 },  -- East
-        [6] = { deathGenerator = 1 },  -- South
-        [2] = -1, [4] = -1, [5] = -1, [7] = -1, [8] = -1
-    })
-    
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-    
-    assert(updates.deathGenerator > 0, "Should absorb from multiple neighbors")
-end)
-
--- Test: The kamikaze field is solved from the player generator, at its own decay
-my_collection:add('kamikazePheromone_reads_the_source_versioned_field', function()
+local function withReader(map, fn)
     local SquadLogic = require("libs/squad_logic")
     SquadLogic.setSourceVersionedFieldReader(function(fieldType)
-        if fieldType == Constants.KAMIKAZE_PHEROMONE then return 285 end
-        return nil
+        return map[fieldType]
     end)
-    assert(SquadLogic.kamikazePheromone({}, 0) == 285,
-        "kamikaze must come from the solver")
+    fn(SquadLogic)
     SquadLogic.setSourceVersionedFieldReader(nil)
-    assert(SquadLogic.kamikazePheromone({}, 0) == 0, "no reader must yield 0, not nil")
+end
+
+my_collection:add('field_accessors_read_the_solver', function()
+    withReader({
+        [Constants.BASE_PHEROMONE] = 11,
+        [Constants.ENEMY_PHEROMONE] = 22,
+        [Constants.RESOURCE_PHEROMONE] = 33,
+        [Constants.PLAYER_PHEROMONE] = 44,
+        [Constants.KAMIKAZE_PHEROMONE] = 55,
+    }, function(SquadLogic)
+        local chunk = {}
+        assert(SquadLogic.basePheromone(chunk, 0) == 11, "base")
+        assert(SquadLogic.enemyPheromone(chunk, 0) == 22, "enemy")
+        assert(SquadLogic.resourcePheromone(chunk, 0) == 33, "resource")
+        assert(SquadLogic.playerPheromone(chunk, 0) == 44, "player")
+        assert(SquadLogic.kamikazePheromone(chunk, 0) == 55, "kamikaze")
+    end)
+end)
+
+my_collection:add('field_accessors_are_total_without_a_reader', function()
+    -- nil here would be nil arithmetic in every scorer and navigator downstream.
+    withReader({}, function(SquadLogic)
+        local chunk = {}
+        assert(SquadLogic.basePheromone(chunk, 0) == 0, "base")
+        assert(SquadLogic.enemyPheromone(chunk, 0) == 0, "enemy")
+        assert(SquadLogic.resourcePheromone(chunk, 0) == 0, "resource")
+        assert(SquadLogic.playerPheromone(chunk, 0) == 0, "player")
+        assert(SquadLogic.kamikazePheromone(chunk, 0) == 0, "kamikaze")
+    end)
+end)
+
+my_collection:add('deathGenerator_is_the_difference_of_the_two_signed_fields', function()
+    -- Losses are negative, which max-plus alone cannot express: the read
+    -- subtracts the loss field from the gain field (min-plus == negated max-plus).
+    withReader({
+        [Constants.DEATH_GAIN_PHEROMONE] = 0.5,
+        [Constants.DEATH_LOSS_PHEROMONE] = 0.2,
+    }, function(SquadLogic)
+        local combined = SquadLogic.deathGenerator({}, 0)
+        assert(math.abs(combined - 0.3) < 1e-12,
+            "gain minus loss, got " .. tostring(combined))
+        assert(math.abs(SquadLogic.deathGeneratorRating({}, 0) - 1.0) < 1e-12,
+            "a net gain leaves the rating clamped at 1")
+    end)
+
+    withReader({
+        [Constants.DEATH_GAIN_PHEROMONE] = 0,
+        [Constants.DEATH_LOSS_PHEROMONE] = 0.4,
+    }, function(SquadLogic)
+        assert(math.abs(SquadLogic.deathGenerator({}, 0) + 0.4) < 1e-12,
+            "a pure loss reads negative")
+        assert(math.abs(SquadLogic.deathGeneratorRating({}, 0) - 0.6) < 1e-12,
+            "the rating falls with the loss")
+    end)
+
+    withReader({
+        [Constants.DEATH_GAIN_PHEROMONE] = 0,
+        [Constants.DEATH_LOSS_PHEROMONE] = 5,
+    }, function(SquadLogic)
+        assert(math.abs(SquadLogic.deathGeneratorRating({}, 0) - 0.001) < 1e-12,
+            "the rating clamps at 0.001, never negative")
+    end)
 end)
 
 return my_collection
