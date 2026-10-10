@@ -114,12 +114,6 @@ local next = next
 -- module code
 
 --[[
-    Event-driven pheromone processing replaces the old wave-based processMap:
-    generators mark chunks dirty and processDirtyChunks propagates outward
-    with a bounded per-tick budget.
---]]
-
---[[
     Localized player radius where processing takes place in realtime, doesn't store state
     between calls.
 --]]
