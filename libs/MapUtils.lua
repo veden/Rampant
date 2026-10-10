@@ -64,7 +64,6 @@ local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 local getCombinedDeathGenerator = ChunkPropertyUtils.getCombinedDeathGenerator
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
-local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
 local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
 local mMax = math.max
@@ -600,9 +599,6 @@ end
 -- IMPURE: Apply pheromone updates to chunk (side effects)
 function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     setDeathGenerator(chunk, updates.deathGenerator)
-    -- The player generator is the player field's source: decaying it here is
-    -- what queues the source change that makes the field fade.
-    decayPlayerGenerator(chunk, tick)
 
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
     chunk.kamikazeLastRefresh = tick or 0

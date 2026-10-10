@@ -81,6 +81,7 @@ local setPositionInQuery = Utils.setPositionInQuery
 
 local addPlayerGenerator = ChunkPropertyUtils.addPlayerGenerator
 local getPlayerGeneratorChunks = ChunkPropertyUtils.getPlayerGeneratorChunks
+local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
 local removeChunkToNest = MapUtils.removeChunkToNest
@@ -140,22 +141,24 @@ function Processor.processPlayers(players, tick)
 
                 if (playerChunk ~= -1) then
                     addPlayerGenerator(playerChunk, playerMaxGenerator)
-                    markChunkDirty(playerChunk.id, 1, tick)  -- Priority 1: player-adjacent
                 end
             end
         end
     end
 
-    -- A player generator only decays while its chunk is processed, and walking
-    -- away does not mark the chunk that was left behind. Re-mark every chunk
-    -- still holding one, or its source never expires and the player field keeps
-    -- pointing at where the player used to be. The set is one entry per
-    -- player-occupied chunk, so this is a handful of marks.
+    -- The player generator is the player field's source. Its decay is driven
+    -- here rather than by the dirty pass: the pass would only reach a chunk it
+    -- happens to process, and walking away does not mark the chunk left behind,
+    -- so a stale source would keep the field pointing at where the player used
+    -- to be. The set is one entry per player-occupied chunk.
     local playerGeneratorChunks = getPlayerGeneratorChunks()
     if playerGeneratorChunks then
         for id, chunk in pairs(playerGeneratorChunks) do
             if chunk.valid then
-                markChunkDirty(id, 1, tick)
+                decayPlayerGenerator(chunk, tick)
+                if chunk.playerGenerator == nil then
+                    playerGeneratorChunks[id] = nil
+                end
             else
                 playerGeneratorChunks[id] = nil
             end
