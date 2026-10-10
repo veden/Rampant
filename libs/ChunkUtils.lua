@@ -51,6 +51,12 @@ local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local BUILDING_PHEROMONES = Constants.BUILDING_PHEROMONES
 
 local CHUNK_SIZE = Constants.CHUNK_SIZE
+-- Tile offsets to the 8 neighbours, matching Runtime.neighborOf.
+local CHUNK_NEIGHBOR_OFFSETS = {
+    { -CHUNK_SIZE, -CHUNK_SIZE }, { 0, -CHUNK_SIZE }, { CHUNK_SIZE, -CHUNK_SIZE },
+    { -CHUNK_SIZE, 0 },           { CHUNK_SIZE, 0 },
+    { -CHUNK_SIZE, CHUNK_SIZE },  { 0, CHUNK_SIZE },  { CHUNK_SIZE, CHUNK_SIZE },
+}
 local CHUNK_SIZE_DIVIDER = Constants.CHUNK_SIZE_DIVIDER
 
 local CHUNK_NORTH_SOUTH = Constants.CHUNK_NORTH_SOUTH
@@ -309,8 +315,15 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
             setPlayerBaseGenerator(chunk, playerObjects)
             queueSourceChange(chunk, BASE_PHEROMONE, oldPlayerBaseGenerator, chunk.playerBaseGenerator or 0)
 
+            -- Queue the resource source change too, exactly like the base one
+            -- above. Without it the resource field is only ever built from the
+            -- initial solve, which runs before this scan has covered the map, so
+            -- a loaded save's resource field stays empty and every
+            -- resource-seeking scorer reads 0.
+            local oldResourceSourceValue = resourceSourceValue(chunk)
             local resources = surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
             setResourceGenerator(chunk, resources)
+            queueResourceSourceChange(chunk, oldResourceSourceValue)
 
             if (#enemyBuildings > 0) then
                 local base = findNearbyBase(chunk)
@@ -437,6 +450,22 @@ function ChunkUtils.createChunk(map, topX, topY)
     -- Reverse index: id -> chunk (O(1) lookup for the dirty queue and
     -- Executor handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
+
+    -- H8 neighbor-id cache. Runtime.neighborOf caches a chunk's adjacency the
+    -- first time it is asked, permanently. This chunk did not exist then, so the
+    -- 8 chunks around it hold lists that do not include it, and field
+    -- propagation stops at that seam forever -- observed as the base field
+    -- failing to reach a chunk three hops from its only source while the queue
+    -- and frontier both read empty. removeChunkFromMap already invalidates on
+    -- removal; this is the matching invalidation on creation.
+    for i = 1, 8 do
+        local offset = CHUNK_NEIGHBOR_OFFSETS[i]
+        local neighbor = getChunkByXY(map, topX + offset[1], topY + offset[2])
+        if neighbor and neighbor ~= -1 then
+            neighbor.sourceVersionedNeighborIds = nil
+        end
+    end
+
     chunk[CHUNK_TICK] = 0
     -- No pheromone slots: base, enemy, resource, player and kamikaze all live in
     -- the source-versioned solver's fields.

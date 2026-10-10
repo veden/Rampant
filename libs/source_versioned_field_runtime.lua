@@ -339,6 +339,14 @@ function Runtime.process(fieldType, budget, opts)
     return processed
 end
 
+-- Work left in a field's propagation frontier (0 = converged). A non-zero
+-- frontier means the field is still partial, which reads can observe.
+function Runtime.frontierDepth(fieldType)
+    local frontier = Universe and Universe.sourceVersionedFrontier
+        and Universe.sourceVersionedFrontier[Runtime.fieldKey(fieldType)]
+    return frontier and #frontier or 0
+end
+
 -- Queued source changes not yet drained for a field.
 function Runtime.queueDepth(fieldType)
     local queue = SourceQueues[fieldType]

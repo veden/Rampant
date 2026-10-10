@@ -1093,9 +1093,12 @@ script.on_event(defines.events.on_tick,
                         -- state left: report each field's undrained queue depth,
                         -- which is the backlog that would make a read stale.
                         local q = SourceVersionedFieldRuntime.queueDepth
+                        local f = SourceVersionedFieldRuntime.frontierDepth
                         log({"", "[RANGE] tick=", tick, " phase=sourceField ",
                              " qResource=" .. q(Constants.RESOURCE_PHEROMONE) ..
+                             " fResource=" .. f(Constants.RESOURCE_PHEROMONE) ..
                              " qBase=" .. q(Constants.BASE_PHEROMONE) ..
+                             " fBase=" .. f(Constants.BASE_PHEROMONE) ..
                              " qEnemy=" .. q(Constants.ENEMY_PHEROMONE) ..
                              " qPlayer=" .. q(Constants.PLAYER_PHEROMONE) ..
                              " qKamikaze=" .. q(Constants.KAMIKAZE_PHEROMONE) ..
