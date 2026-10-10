@@ -272,6 +272,7 @@ two runs per side. The absolute floor moves between sessions for the same build
 | `1e49b75` | player field moved into the solver | 1.211-1.221 vs 1.259-1.270 | 0.470-0.474 vs 0.508-0.511 |
 | `f3bfc15` | flush a source-change burst instead of draining at the cadence | 1.168-1.187 vs 1.213-1.259 | 0.460-0.467 vs 0.468-0.493 |
 | `f273c14` | player generator decay driven by processPlayers | 1.295-1.305 vs 1.310-1.335 | 0.506-0.507 vs 0.509-0.511 |
+| `dc72376` | kamikaze field moved into the solver (+ removal flush) | 1.047-1.049 vs 1.172-1.178 | 0.328-0.328 vs 0.465-0.467 |
 
 `28a8c50` is behaviour-preserving and it is proven, not assumed: every
 deterministic counter in the `[RANGE]` telemetry (`prop`, `chunks`, `skip`,
@@ -290,8 +291,21 @@ was non-deterministic: on one build it returned 550/495/400.95 (pass),
 it returns 550/495/400.95 on consecutive runs, matching the pre-session baseline
 `a284c07` exactly. **Treat any pre-`f3bfc15` scenario value as unreliable.**
 
+`dc72376` is the largest single win of the removal and it is structural, not a
+tuning result. The kamikaze field was the entire working set -- 2,147 chunks
+re-marked every pass -- so moving it into the solver took the dirty queue's
+steady state from ~1,800 to 1-12 and the working set from ~2,150 to 3-8. It also
+fixed a transient hole that the change exposed: `removeSource` drops every chunk
+that had the removed source as its top to its second source, and bounded at
+`PROPAGATION_MAX_WORK_PER_TICK` that hole persisted for ticks, so reads saw a
+field that had lost its extent (pheromone-dynamics failed 1 run in 6, base field
+0 at the nest while the wall read 550, where HEAD was 8/8). The re-propagation
+after a removal now runs to completion in the same call, and the scenario is
+5/5 at 550/495/400.95.
+
 Known open: the enemy field's value at the nest still varies run to run
-(500-2916). It is a second, separate cause and is not addressed.
+(500-2916). It is a separate cause and is not addressed. The dirty pass still
+exists and now maintains the death generator alone.
 
 ## Caveats
 
