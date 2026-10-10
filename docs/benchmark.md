@@ -303,9 +303,31 @@ field that had lost its extent (pheromone-dynamics failed 1 run in 6, base field
 after a removal now runs to completion in the same call, and the scenario is
 5/5 at 550/495/400.95.
 
-Known open: the enemy field's value at the nest still varies run to run
-(500-2916). It is a separate cause and is not addressed. The dirty pass still
-exists and now maintains the death generator alone.
+`5ef66a9` finishes the removal: the death field is signed and source-versioned
+(max-plus cannot lower a value, so it is two fields and the read subtracts them)
+and the dirty pass is deleted -- queue, epsilon gate, propagation marking,
+processDirtyChunks, MapUtils.markChunkDirty and its 15 call sites. Its parameters
+are a fit to a measurement of the mean-field it replaced, not free choices: a
+single 0.005 deposit became 0.000469 at the centre after one pass (a 0.75/8
+dilution) and spread ~4 hops at 0.75/hop, and the loss field now reads max
+0.00046875 = 0.005 * 0.75/8 on the reference save. Cost-neutral (whole
+1.032-1.063 -> 1.049-1.061, overlapping): the pass was already near-idle after
+the kamikaze field moved, so this stage is a simplification, not an optimisation.
+
+Open, in priority order:
+
+1. **The resource field is empty on a loaded save.** `ChunkUtils.initialScan`
+   sets `resourceGenerator` but never queues the resource source change, unlike
+   the base one immediately above it. The field is therefore only ever built by
+   the initial solve, which runs before the scan has covered the map, so every
+   resource-seeking scorer reads 0. Measured: 0 populated chunks, against 12,857
+   for base. The one-line fix (queue it like base) takes the field to 12,859
+   chunks / max 19,228, but it also makes `pheromone-dynamics` fail about 1 run
+   in 2 with the base field 0 at the nest while the wall reads 550 -- a transient
+   extent loss I have not explained. Verified 2/2 passing without the fix, so the
+   fix is implicated and the interaction is not understood. The fix is correct
+   and is held back until it is.
+2. The enemy field's value at the nest varies run to run (500-2916).
 
 ## Caveats
 
