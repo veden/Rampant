@@ -558,11 +558,14 @@ function Upgrade.attempt()
                     for _, chunk in pairs(xChunks) do
                         if type(chunk) == "table" and chunk.id then
                             chunk[CHUNK_TICK] = 0
-                            chunk[BASE_PHEROMONE] = 0
                             chunk[PLAYER_PHEROMONE] = 0
-                            chunk[RESOURCE_PHEROMONE] = 0
-                            chunk[ENEMY_PHEROMONE] = 0
                             chunk[KAMIKAZE_PHEROMONE] = 0
+                            -- Stale slots from a save that ran the H7 scheme:
+                            -- nothing writes or reads them any more, so they are
+                            -- cleared rather than left to look like live state.
+                            chunk[BASE_PHEROMONE] = nil
+                            chunk[RESOURCE_PHEROMONE] = nil
+                            chunk[ENEMY_PHEROMONE] = nil
                         end
                     end
                 end

@@ -204,10 +204,8 @@ local function initializeLibraries(addProperties)
     Observability.init(Universe)
     Executor.init(Universe)
     Metrics.init(Universe)
-    if Constants.USE_SOURCE_VERSIONED_FIELD then
-        SourceVersionedFieldRuntime.init(Universe, addProperties)
-        ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
-    end
+    SourceVersionedFieldRuntime.init(Universe, addProperties)
+    ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
 end
 
 local function rescanAllChunks(map, tick)
@@ -1106,16 +1104,14 @@ script.on_event(defines.events.on_tick,
                     local tDirty = rangeSample and helpers.create_profiler() or nil
                     timed(tick, rangeSample, "dirty", processDirtyChunks, tick, Universe)
                     Executor.drain()
-                    if Constants.USE_SOURCE_VERSIONED_FIELD then
-                        -- Persisted solved state: a no-op once created.
-                        SourceVersionedFieldRuntime.ensureStorage()
-                        -- Per-field cadence: each field drains on its own budget so the
-                        -- resource field's slow cadence cannot starve base/enemy.
-                        timed(tick, rangeSample, "sourceField.resource", SourceVersionedFieldRuntime.processScheduled, Constants.RESOURCE_PHEROMONE)
-                        timed(tick, rangeSample, "sourceField.base", SourceVersionedFieldRuntime.processScheduled, Constants.BASE_PHEROMONE)
-                        timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
-                        timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
-                    end
+                    -- Persisted solved state: a no-op once created.
+                    SourceVersionedFieldRuntime.ensureStorage()
+                    -- Per-field cadence: each field drains on its own budget so the
+                    -- resource field's slow cadence cannot starve base/enemy.
+                    timed(tick, rangeSample, "sourceField.resource", SourceVersionedFieldRuntime.processScheduled, Constants.RESOURCE_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.base", SourceVersionedFieldRuntime.processScheduled, Constants.BASE_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
+                    timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
                     if rangeSample then
                         local m = Metrics.get()
                         local c = m.counters or {}

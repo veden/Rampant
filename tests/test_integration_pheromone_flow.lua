@@ -89,9 +89,10 @@ my_collection:add('complete_flow_marks_and_processes_chunk', function()
     -- Verify: chunk1 should have been processed (CHUNK_TICK updated)
     assert(chunk1[Constants.CHUNK_TICK] == 100, "Chunk 1 should be processed")
     
-    -- Verify: chunk2 should have absorbed some pheromone from chunk1
+    -- Verify: chunk2 should have absorbed some pheromone from chunk1.
+    -- The transient pass maintains player/kamikaze/death only; enemy is solved
+    -- by the source-versioned field and has no chunk slot to absorb into.
     assert(chunk2[Constants.PLAYER_PHEROMONE] > 0, "Chunk 2 should absorb player pheromone")
-    assert(chunk2[Constants.ENEMY_PHEROMONE] > 0, "Chunk 2 should absorb enemy pheromone")
     
     -- Restore
     MapUtils.getNeighborChunks = originalNeighbors

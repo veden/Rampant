@@ -440,18 +440,15 @@ function ChunkUtils.createChunk(map, topX, topY)
     -- Executor handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
     chunk[CHUNK_TICK] = 0
-    chunk[BASE_PHEROMONE] = 0
+    -- The transient fields this pass maintains. base/enemy/resource have no
+    -- chunk slot: they live in the source-versioned solver's fields.
     chunk[PLAYER_PHEROMONE] = 0
-    chunk[RESOURCE_PHEROMONE] = 0
-    chunk[ENEMY_PHEROMONE] = 0
     chunk[KAMIKAZE_PHEROMONE] = 0
     
     -- ACO: Timestamp fields for decay-on-read
     chunk.playerLastRefresh = 0
     chunk.playerBaseLastRefresh = 0
     chunk.deathLastRefresh = 0
-    chunk.resourceLastRefresh = 0
-    chunk.trailLastRefresh = 0
     
     -- ACO: Trail fields
     chunk.positiveTrail = 0
@@ -686,9 +683,6 @@ function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
                 local oldBaseSourceValue = chunk.playerBaseGenerator or 0
                 local amount = addPlayerBaseGenerator(chunk, entityValue)
                 queueSourceChange(chunk, BASE_PHEROMONE, oldBaseSourceValue, amount)
-                if (amount == 0) then
-                    chunk[BASE_PHEROMONE] = 0
-                end
             end
         end
     end

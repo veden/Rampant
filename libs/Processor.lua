@@ -48,9 +48,6 @@ local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-local BASE_PHEROMONE = Constants.BASE_PHEROMONE
-local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
-local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 local PROPAGATION_RELATIVE_EPSILON = Constants.PROPAGATION_RELATIVE_EPSILON
@@ -656,17 +653,16 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
         return false, 0
     end
 
-    -- Snapshot the six fields as LOCALS — the previous two 6-element
-    -- snapshot tables allocated twice per chunk (the single biggest per-chunk
-    -- allocation). The predicate is identical: changed iff any field moved
-    -- beyond both epsilons. The original short-circuited at the first changed
-    -- field; this evaluates all six (same boolean, no loop, no abs call).
+    -- Snapshot the maintained fields as LOCALS — the previous snapshot tables
+    -- allocated twice per chunk (the single biggest per-chunk allocation). The
+    -- predicate is identical: changed iff any field moved beyond both epsilons.
+    -- The original short-circuited at the first changed field; this evaluates
+    -- all of them (same boolean, no loop, no abs call).
+    -- base/enemy/resource are not here: they are solved by the source-versioned
+    -- solver and this pass does not write them, so their delta is identically 0.
     -- deathGenerator is included: it decays ONLY while the chunk is processed,
     -- so excluding it would freeze death clouds forever.
     local bPlayer = chunk[PLAYER_PHEROMONE] or 0
-    local bBase = chunk[BASE_PHEROMONE] or 0
-    local bEnemy = chunk[ENEMY_PHEROMONE] or 0
-    local bResource = chunk[RESOURCE_PHEROMONE] or 0
     local bKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local bDeath = chunk.deathGenerator or 0
 
@@ -684,41 +680,23 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
 
     -- Only propagate when something materially changed
     local aPlayer = chunk[PLAYER_PHEROMONE] or 0
-    local aBase = chunk[BASE_PHEROMONE] or 0
-    local aEnemy = chunk[ENEMY_PHEROMONE] or 0
-    local aResource = chunk[RESOURCE_PHEROMONE] or 0
     local aKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local aDeath = chunk.deathGenerator or 0
 
     local d1 = aPlayer - bPlayer
     if d1 < 0 then d1 = -d1 end
-    local d2 = aBase - bBase
-    if d2 < 0 then d2 = -d2 end
-    local d3 = aEnemy - bEnemy
-    if d3 < 0 then d3 = -d3 end
-    local d4 = aResource - bResource
-    if d4 < 0 then d4 = -d4 end
     local d5 = aKamikaze - bKamikaze
     if d5 < 0 then d5 = -d5 end
     local d6 = aDeath - bDeath
     if d6 < 0 then d6 = -d6 end
     local a1 = bPlayer
     if a1 < 0 then a1 = -a1 end
-    local a2 = bBase
-    if a2 < 0 then a2 = -a2 end
-    local a3 = bEnemy
-    if a3 < 0 then a3 = -a3 end
-    local a4 = bResource
-    if a4 < 0 then a4 = -a4 end
     local a5 = bKamikaze
     if a5 < 0 then a5 = -a5 end
     local a6 = bDeath
     if a6 < 0 then a6 = -a6 end
 
     local changed = (d1 > PROPAGATION_ABSOLUTE_EPSILON and d1 > a1 * PROPAGATION_RELATIVE_EPSILON)
-        or (d2 > PROPAGATION_ABSOLUTE_EPSILON and d2 > a2 * PROPAGATION_RELATIVE_EPSILON)
-        or (d3 > PROPAGATION_ABSOLUTE_EPSILON and d3 > a3 * PROPAGATION_RELATIVE_EPSILON)
-        or (d4 > PROPAGATION_ABSOLUTE_EPSILON and d4 > a4 * PROPAGATION_RELATIVE_EPSILON)
         or (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
         or (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
 
@@ -754,13 +732,10 @@ end
 function Processor.processDirtyChunks(tick, universe)
     universe = universe or storage.universe
     local processed = 0
-    local maxPerTick = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
-    -- H8 removes the base/enemy/resource writes from this pass, so it maintains the
-    -- transient fields only. Their decay is time-based (DECAY_REFERENCE_TICKS), so this
-    -- budget sets freshness alone; PROCESS_TRANSIENT_CHUNKS_PER_TICK is the knob.
-    if Constants.USE_SOURCE_VERSIONED_FIELD then
-        maxPerTick = Constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK
-    end
+    -- This pass maintains the transient fields only (base/enemy/resource are
+    -- solved by the source-versioned solver). Their decay is time-based
+    -- (DECAY_REFERENCE_TICKS), so this budget sets freshness alone.
+    local maxPerTick = Constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK
 
     -- Per-tick metric accumulator: the hot path increments plain fields and this
     -- flushes to Metrics once at the end (string-keyed Metrics lookups per chunk

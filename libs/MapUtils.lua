@@ -35,19 +35,13 @@ local MathUtils = require("MathUtils")
 
 -- Constants
 
-local MAGIC_MAXIMUM_NUMBER = Constants.MAGIC_MAXIMUM_NUMBER
-local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
-local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
-local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local KAMIKAZE_PHEROMONE_MIN = Constants.KAMIKAZE_PHEROMONE_MIN
 
 local CHUNK_TICK = Constants.CHUNK_TICK
 local DECAY_095 = Constants.DECAY_095
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
-local USE_SOURCE_VERSIONED_FIELD = Constants.USE_SOURCE_VERSIONED_FIELD
 
 local VICTORY_SCENT = Constants.VICTORY_SCENT
 local VICTORY_SCENT_MULTIPLER = Constants.VICTORY_SCENT_MULTIPLER
@@ -74,7 +68,6 @@ local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
 local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
 local getPathRating = ChunkPropertyUtils.getPathRating
-local linearInterpolation = MathUtils.linearInterpolation
 local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
 local mMax = math.max
@@ -544,27 +537,19 @@ local function effectiveValue(chunk, index, timestampKey, decayTable, tick)
     return value * factor
 end
 
--- H7 raw-field maintenance must use the legacy accessors, not the
--- H8 read path. Otherwise an H8 read feeds its value back into the H7
--- write loop, which creates propagation churn and a real-save regression.
+-- The transient fields (player, kamikaze) are still maintained here; base,
+-- enemy and resource are solved by the source-versioned solver and are not
+-- written by this pass. There is no H7 read path to avoid feeding back into.
 local readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
-local readEnemy = function(chunk, tick) return SquadLogic.legacyEnemyPheromone(chunk, tick) end
-local readBase = function(chunk, tick) return SquadLogic.legacyBasePheromone(chunk, tick) end
-local readResource = function(chunk, tick) return SquadLogic.resourcePheromone(chunk, tick) end
 local readKamikaze = function(chunk, tick)
     return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
 end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
-    local skipBaseEnemy = USE_SOURCE_VERSIONED_FIELD
-    local skipResource = USE_SOURCE_VERSIONED_FIELD
     -- "or 0" on all of these: a cleared field is nil, and these feed numeric
     -- comparisons directly (the kamikaze cutoff made that reachable).
     local chunkPlayer = chunk[PLAYER_PHEROMONE] or 0
-    local chunkBase = -MAGIC_MAXIMUM_NUMBER
     local chunkDeath = getCombinedDeathGenerator(chunk)
-    local chunkResource = -MAGIC_MAXIMUM_NUMBER
-    local chunkEnemy = chunk[ENEMY_PHEROMONE] or 0
     local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
 
     local enemyStructureCount = getEnemyStructureCount(chunk)
@@ -583,9 +568,6 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
             local neighbor = neighbors[i]
             chunkPlayer = chunkPlayer + readPlayer(neighbor, tick)
-            if not skipBaseEnemy then
-                chunkEnemy = chunkEnemy + readEnemy(neighbor, tick)
-            end
             -- getCombinedDeathGenerator inlined (8 calls/chunk in the
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
@@ -594,18 +576,6 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
             local tempPheromone = readKamikaze(neighbor, tick)
             if chunkKamikaze < tempPheromone then
                 chunkKamikaze = tempPheromone
-            end
-            if not skipBaseEnemy then
-                tempPheromone = readBase(neighbor, tick)
-                if chunkBase < tempPheromone then
-                    chunkBase = tempPheromone
-                end
-            end
-            if not skipResource then
-                tempPheromone = readResource(neighbor, tick)
-                if chunkResource < tempPheromone then
-                    chunkResource = tempPheromone
-                end
             end
         end
     end
@@ -618,25 +588,12 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         (chunkPlayer / chunkCount) * 0.98
     ) * chunkDeathRating
 
-    local newBase = chunk[BASE_PHEROMONE] or 0
-    if not skipBaseEnemy then
-        newBase = mMax(
-            chunk.playerBaseGenerator or 0,
-            chunkBase * 0.9
-        ) * chunkDeathRating
-    end
-
-    local newEnemy = chunk[ENEMY_PHEROMONE] or 0
-    if not skipBaseEnemy then
-        newEnemy = chunkDeathRating * mMax(
-            enemyStructureCount * ENEMY_PHEROMONE_MULTIPLER,
-            (chunkEnemy / chunkCount) * 0.9
-        )
-    end
-
+    -- base is read from the source-versioned solver, so the kamikaze seed is
+    -- the player field alone (the BASE_PHEROMONE slot this used to add is no
+    -- longer written and is always 0).
     local newKamikaze = mMax(
         chunkKamikaze,
-        newPlayer + newBase
+        newPlayer
     ) * 0.95
     -- Clear below the same floor the other generators use. Without this a chunk
     -- never leaves the working set and re-marks every pass.
@@ -646,28 +603,10 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
         newKamikaze = 0
     end
 
-    local newResource = chunk[RESOURCE_PHEROMONE] or 0
-    if not skipResource then
-        newResource = 0
-        local resourcePheromoneGenerator = chunk.resourceGenerator or 0
-        if resourcePheromoneGenerator > 0 then
-            newResource = linearInterpolation(resourcePheromoneGenerator, 15000, 20000)
-        end
-        if enemyStructureCount ~= 0 then
-            newResource = newResource * 0.0001
-        end
-        -- Diffuse to neighbors like base/enemy so squads can discover from distance
-        newResource = mMax(newResource, chunkResource * 0.9)
-        newResource = chunkDeathRating * newResource * 0.9
-    end
-
     return {
         deathGenerator = newDeathGenerator,
         player = newPlayer,
-        base = newBase,
-        enemy = newEnemy,
         kamikaze = newKamikaze,
-        resource = newResource,
         enemyStructureCount = enemyStructureCount,
     }
 end
@@ -680,21 +619,8 @@ function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     chunk[PLAYER_PHEROMONE] = updates.player
     chunk.playerLastRefresh = tick or 0
 
-    if not USE_SOURCE_VERSIONED_FIELD then
-        chunk[BASE_PHEROMONE] = updates.base
-        chunk.baseLastRefresh = tick or 0
-
-        chunk[ENEMY_PHEROMONE] = updates.enemy
-        chunk.enemyLastRefresh = tick or 0
-    end
-
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
     chunk.kamikazeLastRefresh = tick or 0
-
-    if not USE_SOURCE_VERSIONED_FIELD then
-        chunk[RESOURCE_PHEROMONE] = updates.resource
-        chunk.resourceLastRefresh = tick or 0
-    end
 end
 
 -- PUBLIC: Orchestrate pheromone processing (reads storage.universe)

@@ -273,8 +273,10 @@ my_collection:add('processDirtyChunks_respects_budget', function()
     local chunksTable = {}
     Universe.maps = { [1] = chunksTable }
 
-    -- Budget comes from the constant (retuned 40 -> 200 in recent work)
-    local budget = Constants.PROCESS_DIRTY_CHUNKS_PER_TICK
+    -- Budget comes from the constant the pass actually reads. base/enemy/
+    -- resource are solved by the source-versioned field, so this pass maintains
+    -- the transient fields only and PROCESS_TRANSIENT_CHUNKS_PER_TICK is the knob.
+    local budget = Constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK
     local totalChunks = budget + 100  -- exceed budget so remaining is measurable
 
     -- Create minimal mock chunks

@@ -23,7 +23,6 @@ local SquadLogic = require("libs/squad_logic")
 
 local my_collection = TestCollection:new()
 
-local DECAY_090 = Constants.DECAY_090
 local DECAY_098 = Constants.DECAY_098
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
@@ -102,39 +101,31 @@ my_collection:add('playerPheromone_uses_DECAY_098', function()
     assert(math.abs(value - expected) < 1e-12, "player pheromone must decay at 0.98")
 end)
 
-my_collection:add('enemyPheromone_uses_DECAY_090', function()
-    local chunk = { [ENEMY_PHEROMONE] = 500, enemyLastRefresh = 1000 }
-    local expected = 500 * DECAY_090[50]
-    local value = SquadLogic.enemyPheromone(chunk, 1050)
-    assert(math.abs(value - expected) < 1e-12, "enemy pheromone must decay at 0.90")
+my_collection:add('baseEnemyResource_read_the_source_versioned_field', function()
+    SquadLogic.setSourceVersionedFieldReader(function(fieldType)
+        if fieldType == BASE_PHEROMONE then return 77 end
+        if fieldType == ENEMY_PHEROMONE then return 88 end
+        if fieldType == RESOURCE_PHEROMONE then return 99 end
+        return nil
+    end)
+
+    -- The chunk slots are ignored: these three fields have no chunk slot any
+    -- more, and the accessors must not fall back to reading one.
+    local chunk = { [BASE_PHEROMONE] = 1, [ENEMY_PHEROMONE] = 2, [RESOURCE_PHEROMONE] = 3 }
+    assert(SquadLogic.basePheromone(chunk, 1050) == 77, "base must come from the solver")
+    assert(SquadLogic.enemyPheromone(chunk, 1050) == 88, "enemy must come from the solver")
+    assert(SquadLogic.resourcePheromone(chunk, 1050) == 99, "resource must come from the solver")
+
+    SquadLogic.setSourceVersionedFieldReader(nil)
 end)
 
-my_collection:add('resourcePheromone_uses_DECAY_090', function()
-    local chunk = { [RESOURCE_PHEROMONE] = 500, resourceLastRefresh = 1000 }
-    local expected = 500 * DECAY_090[50]
-    local value = SquadLogic.resourcePheromone(chunk, 1050)
-    assert(math.abs(value - expected) < 1e-12, "resource pheromone must decay at 0.90")
-end)
-
-my_collection:add('basePheromone_nestExemption_returns_raw', function()
-    local chunk = {
-        [BASE_PHEROMONE] = 77,
-        baseLastRefresh = 0,
-        nestCount = 3,
-    }
-    local value = SquadLogic.basePheromone(chunk, 100000)
-    assert(value == 77, "chunks with nests must return raw base pheromone (no decay)")
-end)
-
-my_collection:add('basePheromone_noNest_decays', function()
-    local chunk = {
-        [BASE_PHEROMONE] = 77,
-        baseLastRefresh = 0,
-    }
-    local value = SquadLogic.basePheromone(chunk, 100)
-    assert(math.abs(value - 77 * (0.90 ^ 100)) < 1e-9, "chunks without nests must decay")
-    local valueZeroNest = SquadLogic.basePheromone({ [BASE_PHEROMONE] = 77, baseLastRefresh = 0, nestCount = 0 }, 100)
-    assert(math.abs(valueZeroNest - 77 * (0.90 ^ 100)) < 1e-9, "nestCount 0 must decay (not exempt)")
+my_collection:add('baseEnemyResource_are_total_without_a_reader', function()
+    SquadLogic.setSourceVersionedFieldReader(nil)
+    local chunk = {}
+    -- nil here would be nil arithmetic in every scorer and navigator downstream.
+    assert(SquadLogic.basePheromone(chunk, 0) == 0, "no reader must yield 0, not nil")
+    assert(SquadLogic.enemyPheromone(chunk, 0) == 0, "no reader must yield 0, not nil")
+    assert(SquadLogic.resourcePheromone(chunk, 0) == 0, "no reader must yield 0, not nil")
 end)
 
 -- Raw scorers: canonical prod formulas (exact values)

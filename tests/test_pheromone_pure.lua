@@ -50,11 +50,13 @@ my_collection:add('calculatePheromoneUpdates_returns_correct_structure', functio
     local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
     
     assert(updates.player ~= nil, "Should have player pheromone")
-    assert(updates.enemy ~= nil, "Should have enemy pheromone")
-    assert(updates.base ~= nil, "Should have base pheromone")
     assert(updates.kamikaze ~= nil, "Should have kamikaze pheromone")
-    assert(updates.resource ~= nil, "Should have resource pheromone")
     assert(updates.deathGenerator ~= nil, "Should have death generator")
+    -- base/enemy/resource are solved by the source-versioned field: this pass
+    -- does not compute or write them, so they must not appear in the updates.
+    assert(updates.base == nil, "base must not be computed by the transient pass")
+    assert(updates.enemy == nil, "enemy must not be computed by the transient pass")
+    assert(updates.resource == nil, "resource must not be computed by the transient pass")
 end)
 
 -- Test: Pheromone averages with neighbors
@@ -109,28 +111,13 @@ my_collection:add('calculatePheromoneUpdates_multiple_neighbors', function()
     assert(updates.player > 10, "Should absorb from multiple neighbors")
 end)
 
--- Test: Enemy pheromone from death rating
-my_collection:add('calculatePheromoneUpdates_calculates_enemy_pheromone', function()
-    local MapUtils = require("libs/MapUtils")
-    
-    local chunk = createChunk({ player = 100, enemy = 50 })
-    local neighbors = createNeighbors({
-        [1] = { player = 200, enemy = 100 },
-        [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
-    })
-    
-    local updates = MapUtils.calculatePheromoneUpdates(chunk, neighbors, 100)
-    
-    assert(updates.enemy > 0, "Should calculate enemy pheromone")
-end)
-
--- Test: Kamikaze pheromone combines player and base
+-- Test: Kamikaze pheromone is seeded from the player field
 my_collection:add('calculatePheromoneUpdates_calculates_kamikaze', function()
     local MapUtils = require("libs/MapUtils")
     
-    local chunk = createChunk({ player = 100, base = 50 })
+    local chunk = createChunk({ player = 100 })
     local neighbors = createNeighbors({
-        [1] = { player = 200, base = 100 },
+        [1] = { player = 200 },
         [2] = -1, [3] = -1, [4] = -1, [5] = -1, [6] = -1, [7] = -1, [8] = -1
     })
     

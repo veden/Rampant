@@ -31,7 +31,6 @@
 local Command = require("command")
 local Constants = require("Constants")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
-local MathUtils = require("MathUtils")
 
 local SQUAD_RAIDING    = Constants.SQUAD_RAIDING
 local SQUAD_SETTLING   = Constants.SQUAD_SETTLING
@@ -42,12 +41,10 @@ local SQUAD_RETREATING = Constants.SQUAD_RETREATING
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
-local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 -- Decay-on-read tables (indexed 0..depth, table[0] = 1)
-local DECAY_090 = Constants.DECAY_090
 local DECAY_098 = Constants.DECAY_098
 local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 
@@ -57,20 +54,27 @@ local KAMIKAZE_SIEGE_MULTIPLIER = Constants.KAMIKAZE_SIEGE_MULTIPLIER
 
 local Squad = {}
 
--- Optional source-versioned field reader. The runtime adapter installs this
--- when `rampant--sourceVersionedField` is enabled. Keeping it as an injected
--- callback lets this module stay free of Factorio/storage dependencies.
+-- Source-versioned field reader. The runtime adapter installs this at init.
+-- Keeping it as an injected callback lets this module stay free of
+-- Factorio/storage dependencies.
 local sourceVersionedFieldReader
 
 function Squad.setSourceVersionedFieldReader(reader)
     sourceVersionedFieldReader = reader
 end
 
+-- Total: returns 0 rather than nil, so every accessor built on it yields a
+-- number. The reader itself returns nil only before init or for a chunk with no
+-- id, and nil arithmetic downstream would be a crash rather than a stale read.
 local function readSourceVersionedField(fieldType, chunk)
-    if Constants.USE_SOURCE_VERSIONED_FIELD and sourceVersionedFieldReader then
-        return sourceVersionedFieldReader(fieldType, chunk)
+    if not sourceVersionedFieldReader then
+        return 0
     end
-    return nil
+    local value = sourceVersionedFieldReader(fieldType, chunk)
+    if value == nil then
+        return 0
+    end
+    return value
 end
 
 -- Settle trigger decision reasons
@@ -168,72 +172,20 @@ function Squad.playerPheromone(chunk, tick)
     return decayed
 end
 
-local function legacyBasePheromone(chunk, tick)
-    -- ACO decay-on-read: diffused base pheromone decays by time since the
-    -- chunk last re-processed. But in a chunk WITH nests, the base
-    -- pheromone IS the nests' presence — constant while they exist. Without
-    -- this exemption the value decays to ~0 within ~90 ticks of the last
-    -- dirty pass and the attack-formation gate (basePheromone < 0.0001)
-    -- locks the base out of forming attack squads on quiet maps.
-    if (chunk.nestCount or 0) > 0 then
-        return chunk[BASE_PHEROMONE] or 0
-    end
-    local decayed = Squad.decayedValue(chunk, BASE_PHEROMONE, "baseLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
-    local floor = (chunk.playerBaseGenerator or 0) * sourceRating(chunk)
-    if floor > decayed then return floor end
-    return decayed
-end
-
-local function legacyEnemyPheromone(chunk, tick)
-    local decayed = Squad.decayedValue(chunk, ENEMY_PHEROMONE, "enemyLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
-    local structures = (chunk.nestCount or 0) + (chunk.turretCount or 0)
-        + (chunk.utilityCount or 0) + (chunk.hiveCount or 0)
-    local floor = structures * ENEMY_PHEROMONE_MULTIPLER * sourceRating(chunk)
-    if floor > decayed then return floor end
-    return decayed
-end
-
+-- base, enemy and resource are solved by the source-versioned field and read
+-- straight from it. There is no H7 fallback left: the runtime adapter is always
+-- installed at init, and readSourceVersionedField is total (0 for an unknown
+-- chunk), so these accessors never return nil.
 function Squad.basePheromone(chunk, tick)
-    local sourceVersionedValue = readSourceVersionedField(BASE_PHEROMONE, chunk)
-    if sourceVersionedValue ~= nil then
-        return sourceVersionedValue
-    end
-    return legacyBasePheromone(chunk, tick)
+    return readSourceVersionedField(BASE_PHEROMONE, chunk)
 end
 
 function Squad.enemyPheromone(chunk, tick)
-    local sourceVersionedValue = readSourceVersionedField(ENEMY_PHEROMONE, chunk)
-    if sourceVersionedValue ~= nil then
-        return sourceVersionedValue
-    end
-    return legacyEnemyPheromone(chunk, tick)
-end
-
--- Legacy H7 accessors. The H7 dirty-field loop must keep using these
--- even when H8 reads are active; feeding H8 values back into the H7 write
--- loop creates extra propagation churn and a real-save regression.
-function Squad.legacyBasePheromone(chunk, tick)
-    return legacyBasePheromone(chunk, tick)
-end
-
-function Squad.legacyEnemyPheromone(chunk, tick)
-    return legacyEnemyPheromone(chunk, tick)
+    return readSourceVersionedField(ENEMY_PHEROMONE, chunk)
 end
 
 function Squad.resourcePheromone(chunk, tick)
-    local sourceVersionedValue = readSourceVersionedField(RESOURCE_PHEROMONE, chunk)
-    if sourceVersionedValue ~= nil then
-        return sourceVersionedValue
-    end
-
-    local decayed = Squad.decayedValue(chunk, RESOURCE_PHEROMONE, "resourceLastRefresh", tick, DECAY_090, DECAY_TABLE_DEPTH)
-    local generator = chunk.resourceGenerator or 0
-    if generator > 0 then
-        -- the write path stores linearInterpolation(gen, 15000, 20000) * rating * 0.9
-        local floor = MathUtils.linearInterpolation(generator, 15000, 20000) * sourceRating(chunk) * 0.9
-        if floor > decayed then return floor end
-    end
-    return decayed
+    return readSourceVersionedField(RESOURCE_PHEROMONE, chunk)
 end
 
 -- Raw scorers (numbers in → number out; canonical prod formulas)

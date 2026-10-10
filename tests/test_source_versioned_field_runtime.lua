@@ -115,8 +115,6 @@ end)
 
 my_collection:add('squad_logic_uses_injected_reader', function()
     local SquadLogic = require("squad_logic")
-    local oldFlag = Constants.USE_SOURCE_VERSIONED_FIELD
-    Constants.USE_SOURCE_VERSIONED_FIELD = true
     SquadLogic.setSourceVersionedFieldReader(function(fieldType)
         if fieldType == Constants.BASE_PHEROMONE then return 11 end
         if fieldType == Constants.ENEMY_PHEROMONE then return 22 end
@@ -128,8 +126,14 @@ my_collection:add('squad_logic_uses_injected_reader', function()
     assert(SquadLogic.enemyPheromone(world[1], 0) == 22,
         "enemy pheromone must use the injected source-versioned reader")
 
+    -- The accessors are total: a reader that declines (or no reader at all)
+    -- yields 0, never nil, because callers do arithmetic on the result.
+    assert(SquadLogic.resourcePheromone(world[1], 0) == 0,
+        "a declining reader must yield 0, not nil")
+
     SquadLogic.setSourceVersionedFieldReader(nil)
-    Constants.USE_SOURCE_VERSIONED_FIELD = oldFlag
+    assert(SquadLogic.basePheromone(world[1], 0) == 0,
+        "with no reader installed the accessor must still yield 0, not nil")
 end)
 
 return my_collection

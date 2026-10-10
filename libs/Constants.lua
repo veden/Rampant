@@ -54,11 +54,10 @@ constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK = 20
 -- H7: no periodic sweep. The field is maintained by floor-aware
 -- effective reads and event/propagation marks. Source chunks do not need
 -- periodic renewal; diffused fields are read through their timestamps.
-local useSourceVersionedField = false
-if settings and settings.startup and settings.startup["rampant--sourceVersionedField"] then
-    useSourceVersionedField = settings.startup["rampant--sourceVersionedField"].value
-end
-constants.USE_SOURCE_VERSIONED_FIELD = useSourceVersionedField
+--
+-- The source-versioned field is the only scheme: base/enemy/resource are solved
+-- by the max-plus solver and maintained by event-local propagation, so there is
+-- no H7 path left to select between. The old startup flag is gone.
 
 local subsystemTelemetry = false
 if settings and settings.startup and settings.startup["rampant--subsystemTelemetry"] then

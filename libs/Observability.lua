@@ -59,22 +59,15 @@ function Observability.queryPheromones(position, surface)
         return nil
     end
 
-    local enemy = chunk[ENEMY_PHEROMONE] or 0
-    local base = chunk[BASE_PHEROMONE] or 0
-    if Constants.USE_SOURCE_VERSIONED_FIELD then
-        enemy = SquadLogic.enemyPheromone(chunk, game.tick)
-        base = SquadLogic.basePheromone(chunk, game.tick)
-    end
-
     return {
         player = chunk[PLAYER_PHEROMONE] or 0,
-        enemy = enemy,
-        base = base,
+        enemy = SquadLogic.enemyPheromone(chunk, game.tick),
+        base = SquadLogic.basePheromone(chunk, game.tick),
         -- real death state (named fields, not numeric chunk indices)
         deathGenerator = chunk.deathGenerator or 0,
         permanentDeathGenerator = chunk.permanentDeathGenerator or 0,
         kamikaze = chunk[KAMIKAZE_PHEROMONE] or 0,
-        resource = chunk[RESOURCE_PHEROMONE] or 0,
+        resource = SquadLogic.resourcePheromone(chunk, game.tick),
         -- persistent source generators (diagnostics: a computed pheromone
         -- of 0 with a live generator means the chunk is not being
         -- re-processed; a dead generator means the source never registered)
@@ -414,12 +407,14 @@ function Observability.onUdpPacket(event)
         local function collect_one(xChunks)
             for _, chunk in pairs(xChunks) do
                 if type(chunk) == "table" and chunk.id then
+                    -- base/enemy/resource come from the source-versioned solver;
+                    -- their chunk slots are no longer written.
                     table.insert(all_chunks, {
                         x = to_number(chunk.x), y = to_number(chunk.y),
-                        b = to_number(chunk[BASE_PHEROMONE]),
+                        b = to_number(SquadLogic.basePheromone(chunk, game.tick)),
                         p = to_number(chunk[PLAYER_PHEROMONE]),
-                        r = to_number(chunk[RESOURCE_PHEROMONE]),
-                        e = to_number(chunk[ENEMY_PHEROMONE]),
+                        r = to_number(SquadLogic.resourcePheromone(chunk, game.tick)),
+                        e = to_number(SquadLogic.enemyPheromone(chunk, game.tick)),
                         k = to_number(chunk[KAMIKAZE_PHEROMONE]),
                         sqs = to_number(chunk.squads), tick = to_number(chunk[CHUNK_TICK]),
                     })

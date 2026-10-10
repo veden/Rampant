@@ -269,7 +269,7 @@ function ChunkPropertyUtils.setSourceVersionedFieldReader(reader)
 end
 
 local function readField(fieldType, chunk, rawValue)
-    if Constants.USE_SOURCE_VERSIONED_FIELD and SourceVersionedFieldReader then
+    if SourceVersionedFieldReader then
         local value = SourceVersionedFieldReader(fieldType, chunk)
         if value ~= nil then
             return value
