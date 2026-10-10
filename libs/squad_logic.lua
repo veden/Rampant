@@ -181,9 +181,22 @@ end
 -- The death field is signed, so it is two source-versioned fields and the read
 -- subtracts them: min-plus is max-plus on negated sources. Losses are negative,
 -- which is the case max-plus alone cannot express.
+--
+-- The field is propagated asynchronously, so at the instant of a deposit it does
+-- not yet carry that deposit -- and the death handler reads the rating in the
+-- same call that makes it. A source chunk must therefore never read below its
+-- own generator, the floor the old accessors applied, and it must be the RAW
+-- generator: the replaced mean-field diluted a deposit only when the pass next
+-- touched the chunk, so the death that triggers a retreat was read undiluted.
+-- The propagated field carries the diluted value to everything else, which is
+-- what DEATH_FIELD_SOURCE_SCALE reproduces.
 function Squad.deathGenerator(chunk, tick)
-    return readSourceVersionedField(DEATH_GAIN_PHEROMONE, chunk)
-        - readSourceVersionedField(DEATH_LOSS_PHEROMONE, chunk)
+    local gain = readSourceVersionedField(DEATH_GAIN_PHEROMONE, chunk)
+    local loss = readSourceVersionedField(DEATH_LOSS_PHEROMONE, chunk)
+    local own = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
+    if own > gain then gain = own end
+    if -own > loss then loss = -own end
+    return gain - loss
 end
 
 --- The retreat gate's input: 1 with no recent losses nearby, falling toward 0
