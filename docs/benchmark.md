@@ -260,6 +260,39 @@ Open:
   12000 ticks), and a bucket queue is not exact for max-plus propagation with
   differing source values.
 
+## Removing H7 (the source-versioned field becomes the only scheme)
+
+Branch `h8-source-versioned-field`, Starting2.zip, 12,000 ticks, interleaved A/B,
+two runs per side. The absolute floor moves between sessions for the same build
+(whole 1.21 -> 1.31 observed), so only interleaved pairs are quoted.
+
+| commit | change | whole | script |
+|---|---|---|---|
+| `28a8c50` | H8 unconditional; H7 base/enemy/resource paths deleted | 1.294-1.307 vs 1.315-1.331 | 0.521-0.529 vs 0.546-0.552 |
+| `1e49b75` | player field moved into the solver | 1.211-1.221 vs 1.259-1.270 | 0.470-0.474 vs 0.508-0.511 |
+| `f3bfc15` | flush a source-change burst instead of draining at the cadence | 1.168-1.187 vs 1.213-1.259 | 0.460-0.467 vs 0.468-0.493 |
+| `f273c14` | player generator decay driven by processPlayers | 1.295-1.305 vs 1.310-1.335 | 0.506-0.507 vs 0.509-0.511 |
+
+`28a8c50` is behaviour-preserving and it is proven, not assumed: every
+deterministic counter in the `[RANGE]` telemetry (`prop`, `chunks`, `skip`,
+`lookups`, `pending`, `ws`, `wsDeath`, `wsPlayer`, `wsKami`) is **bit-identical
+across all 24 ranges** against `869b4ed`, two runs per side.
+
+`1e49b75` moves the player field without changing its shape: the solver's field
+covers the identical 2,147-chunk region the H7 field did (`svOnly=0`,
+`h7Only=0` at convergence), max 300 against H7's 270.9.
+
+`f3bfc15` is a correctness fix as much as a cost one. Draining a burst at
+`FIELD_DRAIN_PER_TICK` left a ~1,500-tick tail on a 15k-chunk rescan, during
+which reads saw a partially updated field. That tail is why `pheromone-dynamics`
+was non-deterministic: on one build it returned 550/495/400.95 (pass),
+550/0/400.95, 25/22.5/18.225 (pass) and 0/0/0 (fail) across runs. With the flush
+it returns 550/495/400.95 on consecutive runs, matching the pre-session baseline
+`a284c07` exactly. **Treat any pre-`f3bfc15` scenario value as unreliable.**
+
+Known open: the enemy field's value at the nest still varies run to run
+(500-2916). It is a second, separate cause and is not addressed.
+
 ## Caveats
 
 - Spike counts are not stable run-to-run on the same config (`dirty >1ms`
