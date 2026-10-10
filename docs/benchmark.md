@@ -329,6 +329,61 @@ Open, in priority order:
    and is held back until it is.
 2. The enemy field's value at the nest varies run to run (500-2916).
 
+## After the removal: three-way (H7 vs pre-session H8 vs HEAD)
+
+Starting2.zip, 12,000 ticks, 3 rounds interleaved, one `--benchmark-verbose all`
+run per side per round. **Load average was 15-20 throughout** (external to this
+sandbox: no factorio process of ours was running between rounds), which inflates
+every absolute figure by roughly 2x against the quiet-machine numbers earlier in
+this file. The interleaved design is what makes the comparison valid; re-take
+these on a quiet machine before quoting the absolutes.
+
+| side | whole avg | script avg |
+|---|---|---|
+| H7 (the old shipped default) | 4.087-4.384 | 1.881-1.992 |
+| H8 `a284c07` (pre-session baseline) | 3.080-4.005 | 0.967-1.056 |
+| HEAD (H7 removed) | **2.630-2.916** | **0.676-0.738** |
+
+Script is cleanly separated across all three sides. Whole overlaps between
+`a284c07` and HEAD, which is the load noise; the per-range buckets put HEAD
+below both on every bucket but one:
+
+    H7      6.81 5.15 3.82 3.62 4.45 3.36 3.87 4.59 3.32 4.04 4.15 3.25
+    a284c07 7.26 3.59 3.47 3.27 2.86 3.20 2.96 3.41 2.71 3.37 2.53 2.64
+    HEAD    6.34 3.28 2.03 2.63 2.19 2.04 2.72 2.21 2.65 1.98 2.09 2.91
+
+H7 -> HEAD is whole -33% and script -63%. `a284c07` -> HEAD is script -30%.
+
+### Where the time went (per-subsystem, exact telemetry)
+
+These runs have `rampant--subsystemTelemetry` on for **both** sides, so they are
+for attribution only: the two builds emit different numbers of `[SUB]` lines
+(200 for H7, 352 for HEAD, because the source-versioned fields are timed
+individually), and whole/script from them is not comparable. The clean A/B above
+is a separate run without the flag.
+
+| subsystem | H7 avg | H7 max | HEAD avg | HEAD max |
+|---|---|---|---|---|
+| `dirty` (the H7 pass) | **1.3789** | 3.535 | **gone** | - |
+| `pendingUpgrades` | 0.2344 | 0.756 | 0.2753 | 1.121 |
+| `sourceField.deathLoss` | - | - | 0.1182 | 0.624 |
+| `sourceField.enemy` | - | - | 0.0729 | 0.336 |
+| `players` | 0.0621 | 0.125 | 0.0432 | 0.083 |
+| `attackWaves` | 0.0452 | 0.325 | 0.0392 | 0.170 |
+| `sourceField.base` | - | - | 0.0343 | 0.652 |
+| `deathGenerators` | - | - | 0.0296 | 0.075 |
+| `sourceField.resource` | - | - | 0.0137 | 0.073 |
+| `sourceField.{player,kamikaze,deathGain}` | - | - | 0.0055 / 0.0050 / 0.0044 | <=0.028 |
+
+Field maintenance went from **1.379 ms/tick** in one `dirty` pass to **~0.284
+ms/tick** across seven solved fields plus the death registry: a **79% cut**, and
+it is no longer the dominant cost.
+
+The two things to look at next are visible here: `pendingUpgrades` (0.2753,
+max 1.121) is now the largest single subsystem, and `sourceField.deathLoss`
+(0.1182, max 0.624) is 27x `deathGain` despite the field having a 4-chunk radius,
+which is more than that field's shape should cost.
+
 ## Caveats
 
 - Spike counts are not stable run-to-run on the same config (`dirty >1ms`
