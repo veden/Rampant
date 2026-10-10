@@ -198,4 +198,87 @@ my_collection:add('generator_deposit_restarts_decay_interval', function()
         "a deposit must restart the decay interval, got " .. tostring(chunk.deathGenerator))
 end)
 
+-- The player field is source-versioned, so every write to chunk.playerGenerator
+-- must reach the solver. The registry exists because a generator only decays
+-- while its chunk is processed, and nothing re-marks the chunk a player walked
+-- away from: without it a stale source would keep the field pointing at where
+-- the player used to be.
+
+local function playerFieldHarness()
+    local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
+    local universe = {
+        playerGeneratorChunks = {},
+        chunkPropertyUtilsQueries = { position = {} },
+    }
+    ChunkPropertyUtils.init(universe, nil)
+    local queued = {}
+    ChunkPropertyUtils.setSourceVersionedFieldRuntime({
+        isInitialized = function() return true end,
+        queueSource = function(chunk, fieldType, oldValue, newValue)
+            queued[#queued + 1] = {
+                id = chunk.id, fieldType = fieldType,
+                old = oldValue, new = newValue,
+            }
+        end,
+    })
+    return ChunkPropertyUtils, universe, queued
+end
+
+local function clearQueued(queued)
+    for i = #queued, 1, -1 do queued[i] = nil end
+end
+
+my_collection:add('addPlayerGenerator_registers_the_chunk_and_queues_the_source', function()
+    local CPU, universe, queued = playerFieldHarness()
+    local Constants = require("Constants")
+    local chunk = { id = 7 }
+
+    CPU.addPlayerGenerator(chunk, 1000)
+
+    assert(chunk.playerGenerator == Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT,
+        "a deposit must set the generator, got " .. tostring(chunk.playerGenerator))
+    assert(universe.playerGeneratorChunks[7] == chunk,
+        "the chunk must be registered so the pass re-marks it")
+    assert(#queued == 1, "the deposit must queue exactly one source change")
+    assert(queued[1].fieldType == Constants.PLAYER_PHEROMONE, "queued for the player field")
+    assert(queued[1].new == chunk.playerGenerator, "queued value must be the generator")
+end)
+
+my_collection:add('decayPlayerGenerator_queues_the_decayed_value', function()
+    local CPU, _, queued = playerFieldHarness()
+    local Constants = require("Constants")
+    local chunk = { id = 8 }
+    CPU.addPlayerGenerator(chunk, 1000)
+    clearQueued(queued)
+
+    -- First call after a deposit only stamps the interval.
+    CPU.decayPlayerGenerator(chunk, 0)
+    assert(#queued == 0, "stamping the interval is not a change")
+
+    -- A full reference period decays by PLAYER_GENERATOR_PERSISTANCE.
+    CPU.decayPlayerGenerator(chunk, Constants.DECAY_REFERENCE_TICKS)
+    local expected = Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT * Constants.PLAYER_GENERATOR_PERSISTANCE
+    assert(math.abs(chunk.playerGenerator - expected) < 1e-9,
+        "expected " .. expected .. ", got " .. tostring(chunk.playerGenerator))
+    assert(#queued == 1, "the decay must queue a source change")
+    assert(queued[1].new == chunk.playerGenerator, "queued value must be the decayed generator")
+end)
+
+my_collection:add('decayPlayerGenerator_below_cutoff_unregisters_and_clears', function()
+    local CPU, universe, queued = playerFieldHarness()
+    local chunk = { id = 9 }
+    CPU.addPlayerGenerator(chunk, 1000)
+    clearQueued(queued)
+
+    -- Below the 1e-4 cutoff the generator clears; the source must be removed and
+    -- the chunk must leave the registry, or the pass re-marks it forever.
+    chunk.playerGenerator = 0.00005
+    chunk.playerGeneratorDecayTick = 0
+    CPU.decayPlayerGenerator(chunk, 1)
+
+    assert(chunk.playerGenerator == nil, "the generator must clear below the cutoff")
+    assert(universe.playerGeneratorChunks[9] == nil, "the chunk must be unregistered")
+    assert(#queued == 1 and queued[1].new == 0, "clearing must queue a zero source value")
+end)
+
 return my_collection

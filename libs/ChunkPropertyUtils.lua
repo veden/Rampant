@@ -63,6 +63,44 @@ local mMin = math.min
 
 -- module code
 
+-- Injected by init (control.lua) so this module stays free of a direct
+-- dependency on the runtime. The player field is source-versioned: every write
+-- to chunk.playerGenerator is a source change the solver has to hear about.
+local SourceVersionedFieldRuntime
+
+function ChunkPropertyUtils.setSourceVersionedFieldRuntime(runtime)
+    SourceVersionedFieldRuntime = runtime
+end
+
+local function queuePlayerSourceChange(chunk, oldValue, newValue)
+    local runtime = SourceVersionedFieldRuntime
+    if not runtime or not runtime.isInitialized() then return end
+    if not chunk or chunk.id == nil then return end
+    if oldValue == newValue then return end
+    runtime.queueSource(chunk, PLAYER_PHEROMONE, oldValue, newValue)
+end
+
+-- Chunks holding a live player generator. A generator only decays while its
+-- chunk is processed, and nothing re-marks the chunk a player walked away from
+-- (processPlayers marks only the current one), so the set is tracked explicitly
+-- and marked each pass. Without this a stale source would keep the player field
+-- pointing at where the player used to be.
+local function registerPlayerGeneratorChunk(chunk)
+    if Universe.playerGeneratorChunks then
+        Universe.playerGeneratorChunks[chunk.id] = chunk
+    end
+end
+
+local function unregisterPlayerGeneratorChunk(chunk)
+    if Universe.playerGeneratorChunks then
+        Universe.playerGeneratorChunks[chunk.id] = nil
+    end
+end
+
+function ChunkPropertyUtils.getPlayerGeneratorChunks()
+    return Universe.playerGeneratorChunks
+end
+
 local function getActiveTick(chunk)
     return chunk.activeTick or 0
 end
@@ -552,7 +590,12 @@ end
 
 -- IMPURE: Apply decayed player generator to chunk
 function ChunkPropertyUtils.applyPlayerGeneratorDecay(chunk, newValue)
+    local oldValue = chunk.playerGenerator or 0
     chunk.playerGenerator = newValue
+    if newValue == nil then
+        unregisterPlayerGeneratorChunk(chunk)
+    end
+    queuePlayerSourceChange(chunk, oldValue, newValue or 0)
 end
 
 -- PUBLIC: Decay player generator (wrapper). Time-based, as above.
@@ -571,6 +614,7 @@ function ChunkPropertyUtils.decayPlayerGenerator(chunk, tick)
 end
 
 function ChunkPropertyUtils.addPlayerGenerator(chunk, playerMaxGenerator)
+    local oldValue = chunk.playerGenerator or 0
     -- A deposit restarts the decay interval, so the decay stays time-based.
     chunk.playerGeneratorDecayTick = nil
     local value = chunk.playerGenerator
@@ -582,6 +626,8 @@ function ChunkPropertyUtils.addPlayerGenerator(chunk, playerMaxGenerator)
     else
         chunk.playerGenerator = PLAYER_PHEROMONE_GENERATOR_AMOUNT
     end
+    registerPlayerGeneratorChunk(chunk)
+    queuePlayerSourceChange(chunk, oldValue, chunk.playerGenerator or 0)
 end
 
 function ChunkPropertyUtils.getPlayerGenerator(chunk)

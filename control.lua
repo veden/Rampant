@@ -206,6 +206,7 @@ local function initializeLibraries(addProperties)
     Metrics.init(Universe)
     SourceVersionedFieldRuntime.init(Universe, addProperties)
     ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
+    ChunkPropertyUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
 end
 
 local function rescanAllChunks(map, tick)
@@ -229,9 +230,15 @@ end
 -- Diagnostic: the transient working set is the set of chunks with a live
 -- player/death/kamikaze generator, and it is what the dirty queue's steady-state
 -- depth measures. Sampled (not per tick) because it scans the chunk index.
+--
+-- Also reports the source-versioned player field's own footprint, so the two
+-- player representations can be compared while the readers are still on H7.
 local function transientWorkingSet()
     local death, player, kami, any = 0, 0, 0, 0
     local KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
+    local PLAYER = Constants.PLAYER_PHEROMONE
+    local svPlayer, svPlayerMax = 0, 0
+    local h7Player, h7PlayerMax, both, svOnly, h7Only = 0, 0, 0, 0, 0
     for _, chunk in pairs(Universe.chunkById) do
         local d = (chunk.deathGenerator or 0) ~= 0
         local p = (chunk.playerGenerator or 0) ~= 0
@@ -240,8 +247,22 @@ local function transientWorkingSet()
         if p then player = player + 1 end
         if k then kami = kami + 1 end
         if d or p or k then any = any + 1 end
+        local sv = SourceVersionedFieldRuntime.readChunk(PLAYER, chunk) or 0
+        local h7 = chunk[PLAYER] or 0
+        if sv ~= 0 then
+            svPlayer = svPlayer + 1
+            if sv > svPlayerMax then svPlayerMax = sv end
+        end
+        if h7 ~= 0 then
+            h7Player = h7Player + 1
+            if h7 > h7PlayerMax then h7PlayerMax = h7 end
+        end
+        if sv ~= 0 and h7 ~= 0 then both = both + 1
+        elseif sv ~= 0 then svOnly = svOnly + 1
+        elseif h7 ~= 0 then h7Only = h7Only + 1 end
     end
-    return death, player, kami, any
+    return death, player, kami, any, svPlayer, svPlayerMax,
+        h7Player, h7PlayerMax, both, svOnly, h7Only
 end
 
 local function onLoad()
@@ -1116,7 +1137,8 @@ script.on_event(defines.events.on_tick,
                         local m = Metrics.get()
                         local c = m.counters or {}
                         local pending = Universe.dirtyCount or 0
-                        local wsDeath, wsPlayer, wsKami, wsAny = transientWorkingSet()
+                        local wsDeath, wsPlayer, wsKami, wsAny, svPlayer, svPlayerMax,
+                            h7Player, h7PlayerMax, both, svOnly, h7Only = transientWorkingSet()
                         log({"", "[RANGE] tick=", tick, " phase=dirty ", tDirty,
                              " prop=" .. (c['dirty.propagationMarks'] or 0) ..
                              " chunks=" .. (c['dirty.chunksProcessed'] or 0) ..
@@ -1126,7 +1148,14 @@ script.on_event(defines.events.on_tick,
                              " ws=" .. wsAny ..
                              " wsDeath=" .. wsDeath ..
                              " wsPlayer=" .. wsPlayer ..
-                             " wsKami=" .. wsKami})
+                             " wsKami=" .. wsKami ..
+                             " svPlayer=" .. svPlayer ..
+                             " svPlayerMax=" .. svPlayerMax ..
+                             " h7Player=" .. h7Player ..
+                             " h7PlayerMax=" .. h7PlayerMax ..
+                             " both=" .. both ..
+                             " svOnly=" .. svOnly ..
+                             " h7Only=" .. h7Only})
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})

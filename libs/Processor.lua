@@ -47,7 +47,6 @@ local CLEANUP_QUEUE_SIZE = Constants.CLEANUP_QUEUE_SIZE
 
 local PROCESS_PLAYER_BOUND = Constants.PROCESS_PLAYER_BOUND
 
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 local PROPAGATION_RELATIVE_EPSILON = Constants.PROPAGATION_RELATIVE_EPSILON
@@ -81,6 +80,7 @@ local unregisterEnemyBaseStructure = ChunkUtils.unregisterEnemyBaseStructure
 local setPositionInQuery = Utils.setPositionInQuery
 
 local addPlayerGenerator = ChunkPropertyUtils.addPlayerGenerator
+local getPlayerGeneratorChunks = ChunkPropertyUtils.getPlayerGeneratorChunks
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 
 local removeChunkToNest = MapUtils.removeChunkToNest
@@ -142,6 +142,22 @@ function Processor.processPlayers(players, tick)
                     addPlayerGenerator(playerChunk, playerMaxGenerator)
                     markChunkDirty(playerChunk.id, 1, tick)  -- Priority 1: player-adjacent
                 end
+            end
+        end
+    end
+
+    -- A player generator only decays while its chunk is processed, and walking
+    -- away does not mark the chunk that was left behind. Re-mark every chunk
+    -- still holding one, or its source never expires and the player field keeps
+    -- pointing at where the player used to be. The set is one entry per
+    -- player-occupied chunk, so this is a handful of marks.
+    local playerGeneratorChunks = getPlayerGeneratorChunks()
+    if playerGeneratorChunks then
+        for id, chunk in pairs(playerGeneratorChunks) do
+            if chunk.valid then
+                markChunkDirty(id, 1, tick)
+            else
+                playerGeneratorChunks[id] = nil
             end
         end
     end
@@ -658,11 +674,11 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
     -- predicate is identical: changed iff any field moved beyond both epsilons.
     -- The original short-circuited at the first changed field; this evaluates
     -- all of them (same boolean, no loop, no abs call).
-    -- base/enemy/resource are not here: they are solved by the source-versioned
-    -- solver and this pass does not write them, so their delta is identically 0.
+    -- Only kamikaze and death are maintained here: base, enemy, resource and
+    -- player are solved by the source-versioned solver and this pass does not
+    -- write them, so their delta is identically 0.
     -- deathGenerator is included: it decays ONLY while the chunk is processed,
     -- so excluding it would freeze death clouds forever.
-    local bPlayer = chunk[PLAYER_PHEROMONE] or 0
     local bKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local bDeath = chunk.deathGenerator or 0
 
@@ -679,25 +695,19 @@ function Processor.processDirtyChunk(chunk, tick, priority, counters)
     MapUtils.processPheromone(chunk, tick, nil, neighbors)
 
     -- Only propagate when something materially changed
-    local aPlayer = chunk[PLAYER_PHEROMONE] or 0
     local aKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
     local aDeath = chunk.deathGenerator or 0
 
-    local d1 = aPlayer - bPlayer
-    if d1 < 0 then d1 = -d1 end
     local d5 = aKamikaze - bKamikaze
     if d5 < 0 then d5 = -d5 end
     local d6 = aDeath - bDeath
     if d6 < 0 then d6 = -d6 end
-    local a1 = bPlayer
-    if a1 < 0 then a1 = -a1 end
     local a5 = bKamikaze
     if a5 < 0 then a5 = -a5 end
     local a6 = bDeath
     if a6 < 0 then a6 = -a6 end
 
-    local changed = (d1 > PROPAGATION_ABSOLUTE_EPSILON and d1 > a1 * PROPAGATION_RELATIVE_EPSILON)
-        or (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
+    local changed = (d5 > PROPAGATION_ABSOLUTE_EPSILON and d5 > a5 * PROPAGATION_RELATIVE_EPSILON)
         or (d6 > PROPAGATION_ABSOLUTE_EPSILON and d6 > a6 * PROPAGATION_RELATIVE_EPSILON)
 
     -- Mark neighbors dirty DIRECTLY (no per-mark tables, no list handed to the

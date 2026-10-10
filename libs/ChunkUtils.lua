@@ -46,7 +46,6 @@ local DEFINES_WIRE_TYPE_GREEN = defines.wire_type.green
 local BASE_AI_STATE_ONSLAUGHT = Constants.BASE_AI_STATE_ONSLAUGHT
 
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
@@ -440,13 +439,11 @@ function ChunkUtils.createChunk(map, topX, topY)
     -- Executor handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
     chunk[CHUNK_TICK] = 0
-    -- The transient fields this pass maintains. base/enemy/resource have no
-    -- chunk slot: they live in the source-versioned solver's fields.
-    chunk[PLAYER_PHEROMONE] = 0
+    -- Only kamikaze has a chunk slot: base, enemy, resource and player all live
+    -- in the source-versioned solver's fields.
     chunk[KAMIKAZE_PHEROMONE] = 0
     
     -- ACO: Timestamp fields for decay-on-read
-    chunk.playerLastRefresh = 0
     chunk.playerBaseLastRefresh = 0
     chunk.deathLastRefresh = 0
     
@@ -757,6 +754,12 @@ end
 function ChunkUtils.init(universe)
     Universe = universe
     ChunkOverlapArray = universe.chunkOverlapArray
+    -- Chunks holding a live player generator. Registered on deposit and
+    -- unregistered when the generator decays away, so the pass can re-mark them
+    -- (see ChunkPropertyUtils.getPlayerGeneratorChunks).
+    if not universe.playerGeneratorChunks then
+        universe.playerGeneratorChunks = {}
+    end
 end
 
 ChunkUtilsG = ChunkUtils

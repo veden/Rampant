@@ -37,68 +37,23 @@ local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
 
 my_collection:add('squad_logic_module_loads', function()
     assert(SquadLogic ~= nil, "squad_logic should load")
-    assert(type(SquadLogic.decayedValue) == "function", "should have decayedValue")
     assert(type(SquadLogic.evaluateFormationGate) == "function", "should have evaluateFormationGate")
     assert(type(SquadLogic.evaluateSettleTrigger) == "function", "should have evaluateSettleTrigger")
     assert(type(SquadLogic.evaluateKamikazeRoll) == "function", "should have evaluateKamikazeRoll")
 end)
 
--- Decay core (law_decay_bound, prop_decay_zero)
-
-my_collection:add('decayedValue_zero_elapsed_is_raw', function()
-    local chunk = {
-        [PLAYER_PHEROMONE] = 42,
-        playerLastRefresh = 100,
-    }
-    local value = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", 100, DECAY_098, DECAY_TABLE_DEPTH)
-    assert(value == 42, "elapsed 0 must return the raw value, got " .. tostring(value))
-end)
-
-my_collection:add('decayedValue_positive_elapsed_strictly_smaller', function()
-    local chunk = {
-        [PLAYER_PHEROMONE] = 1000,
-        playerLastRefresh = 0,
-    }
-    local raw = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", 0, DECAY_098, DECAY_TABLE_DEPTH)
-    local decayed = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", 10, DECAY_098, DECAY_TABLE_DEPTH)
-    assert(raw == 1000, "tau=0 must be raw, got " .. tostring(raw))
-    assert(decayed < raw, "tau>0 must decay strictly below raw, got " .. tostring(decayed))
-    assert(math.abs(decayed - 1000 * (0.98 ^ 10)) < 1e-9, "must be value * rate^tau")
-end)
-
-my_collection:add('decayedValue_clamps_beyond_depth', function()
-    local chunk = {
-        [PLAYER_PHEROMONE] = 1000,
-        playerLastRefresh = 0,
-    }
-    local atDepth = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", DECAY_TABLE_DEPTH, DECAY_098, DECAY_TABLE_DEPTH)
-    local beyond = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", DECAY_TABLE_DEPTH + 5000, DECAY_098, DECAY_TABLE_DEPTH)
-    assert(math.abs(atDepth - 1000 * (0.98 ^ DECAY_TABLE_DEPTH)) < 1e-9, "tau=depth must be rate^depth")
-    assert(beyond == atDepth, "tau>depth must clamp to rate^depth")
-end)
-
-my_collection:add('decayedValue_zero_value_returns_zero', function()
-    local chunk = {
-        [PLAYER_PHEROMONE] = 0,
-        playerLastRefresh = 0,
-    }
-    local value = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", 500, DECAY_098, DECAY_TABLE_DEPTH)
-    assert(value == 0, "zero value must stay zero")
-end)
-
-my_collection:add('decayedValue_missing_timestamp_defaults_zero', function()
-    local chunk = { [PLAYER_PHEROMONE] = 10 }
-    local value = SquadLogic.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", 7, DECAY_098, DECAY_TABLE_DEPTH)
-    assert(math.abs(value - 10 * (0.98 ^ 7)) < 1e-9, "missing timestamp means elapsed from tick 0")
-end)
-
 -- Pheromone accessors
 
-my_collection:add('playerPheromone_uses_DECAY_098', function()
-    local chunk = { [PLAYER_PHEROMONE] = 500, playerLastRefresh = 1000 }
-    local expected = 500 * DECAY_098[100]
-    local value = SquadLogic.playerPheromone(chunk, 1100)
-    assert(math.abs(value - expected) < 1e-12, "player pheromone must decay at 0.98")
+my_collection:add('playerPheromone_reads_the_source_versioned_field', function()
+    SquadLogic.setSourceVersionedFieldReader(function(fieldType)
+        if fieldType == PLAYER_PHEROMONE then return 321 end
+        return nil
+    end)
+    assert(SquadLogic.playerPheromone({ [PLAYER_PHEROMONE] = 500 }, 1100) == 321,
+        "player must come from the solver, not the chunk slot")
+    SquadLogic.setSourceVersionedFieldReader(nil)
+    assert(SquadLogic.playerPheromone({ [PLAYER_PHEROMONE] = 500 }, 1100) == 0,
+        "no reader must yield 0, not nil")
 end)
 
 my_collection:add('baseEnemyResource_read_the_source_versioned_field', function()

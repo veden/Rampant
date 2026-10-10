@@ -35,7 +35,6 @@ local MathUtils = require("MathUtils")
 
 -- Constants
 
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 local KAMIKAZE_PHEROMONE_MIN = Constants.KAMIKAZE_PHEROMONE_MIN
 
@@ -63,11 +62,9 @@ local addVictoryGenerator = ChunkPropertyUtils.addVictoryGenerator
 local addPermanentDeathGenerator = ChunkPropertyUtils.addPermanentDeathGenerator
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 local getCombinedDeathGenerator = ChunkPropertyUtils.getCombinedDeathGenerator
-local getCombinedDeathGeneratorRating = ChunkPropertyUtils.getCombinedDeathGeneratorRating
 local getEnemyStructureCount = ChunkPropertyUtils.getEnemyStructureCount
 local setDeathGenerator = ChunkPropertyUtils.setDeathGenerator
 local decayPlayerGenerator = ChunkPropertyUtils.decayPlayerGenerator
-local getPathRating = ChunkPropertyUtils.getPathRating
 local decayDeathGenerator = ChunkPropertyUtils.decayDeathGenerator
 
 local mMax = math.max
@@ -540,15 +537,11 @@ end
 -- The transient fields (player, kamikaze) are still maintained here; base,
 -- enemy and resource are solved by the source-versioned solver and are not
 -- written by this pass. There is no H7 read path to avoid feeding back into.
-local readPlayer = function(chunk, tick) return SquadLogic.playerPheromone(chunk, tick) end
 local readKamikaze = function(chunk, tick)
     return effectiveValue(chunk, KAMIKAZE_PHEROMONE, "kamikazeLastRefresh", DECAY_095, tick)
 end
 
 function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
-    -- "or 0" on all of these: a cleared field is nil, and these feed numeric
-    -- comparisons directly (the kamikaze cutoff made that reachable).
-    local chunkPlayer = chunk[PLAYER_PHEROMONE] or 0
     local chunkDeath = getCombinedDeathGenerator(chunk)
     local chunkKamikaze = chunk[KAMIKAZE_PHEROMONE] or 0
 
@@ -567,7 +560,6 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     for i = 1, 8 do
         if bit32.band(bit32.rshift(movableMask, i - 1), 1) == 1 then
             local neighbor = neighbors[i]
-            chunkPlayer = chunkPlayer + readPlayer(neighbor, tick)
             -- getCombinedDeathGenerator inlined (8 calls/chunk in the
             -- hot loop; clamped sum, verbatim semantics).
             local dAmount = (neighbor.deathGenerator or 0) + (neighbor.permanentDeathGenerator or 0)
@@ -581,19 +573,14 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
     end
 
     local newDeathGenerator = (chunkDeath / chunkCount) * 0.75
-    local chunkDeathRating = getCombinedDeathGeneratorRating(chunk) * getPathRating(chunk)
 
-    local newPlayer = mMax(
-        chunk.playerGenerator or 0,
-        (chunkPlayer / chunkCount) * 0.98
-    ) * chunkDeathRating
-
-    -- base is read from the source-versioned solver, so the kamikaze seed is
-    -- the player field alone (the BASE_PHEROMONE slot this used to add is no
-    -- longer written and is always 0).
+    -- The kamikaze field is seeded from the player field, which is solved, and
+    -- from the base field, which is solved. Neither is damped by the death
+    -- rating: the solver's sources are not (base/enemy/resource never were
+    -- under the source-versioned scheme).
     local newKamikaze = mMax(
         chunkKamikaze,
-        newPlayer
+        SquadLogic.playerPheromone(chunk, tick)
     ) * 0.95
     -- Clear below the same floor the other generators use. Without this a chunk
     -- never leaves the working set and re-marks every pass.
@@ -605,7 +592,6 @@ function MapUtils.calculatePheromoneUpdates(chunk, neighbors, tick)
 
     return {
         deathGenerator = newDeathGenerator,
-        player = newPlayer,
         kamikaze = newKamikaze,
         enemyStructureCount = enemyStructureCount,
     }
@@ -614,10 +600,9 @@ end
 -- IMPURE: Apply pheromone updates to chunk (side effects)
 function MapUtils.applyPheromoneUpdates(chunk, updates, tick)
     setDeathGenerator(chunk, updates.deathGenerator)
+    -- The player generator is the player field's source: decaying it here is
+    -- what queues the source change that makes the field fade.
     decayPlayerGenerator(chunk, tick)
-
-    chunk[PLAYER_PHEROMONE] = updates.player
-    chunk.playerLastRefresh = tick or 0
 
     chunk[KAMIKAZE_PHEROMONE] = updates.kamikaze
     chunk.kamikazeLastRefresh = tick or 0

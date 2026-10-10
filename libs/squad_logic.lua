@@ -28,6 +28,15 @@
       kamikazeDecision { kamikaze: bool, threshold: number }
 ]]
 
+-- Module cache. This module holds injected state (the source-versioned field
+-- reader), and Factorio resolves both "squad_logic" and "libs/squad_logic" to
+-- this file under different package.loaded keys. Without the guard those are two
+-- instances with two readers, and whichever one the runtime did not install into
+-- silently reads zeros. The other libraries in this tree use the same guard.
+if SquadLogicG then
+    return SquadLogicG
+end
+
 local Command = require("command")
 local Constants = require("Constants")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
@@ -45,8 +54,6 @@ local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
 
 -- Decay-on-read tables (indexed 0..depth, table[0] = 1)
-local DECAY_098 = Constants.DECAY_098
-local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 
 local PLAYER_PHEROMONE_MULTIPLER = Constants.PLAYER_PHEROMONE_MULTIPLER
 local BASE_AI_STATE_SIEGE = Constants.BASE_AI_STATE_SIEGE
@@ -135,41 +142,15 @@ function Squad.evaluate(squad)
     return commands
 end
 
--- Decay core (tick always a parameter)
+-- Every field is source-versioned now, so there is no decay-on-read left: a
+-- field fades because its source fades, and the solver re-propagates the change.
 
---- Decay-on-read for a chunk value: value scaled by rate^elapsed, clamped
--- at the table depth. Port of Squad.lua getDecayed with the clock threaded
--- in as a parameter.
--- @param chunk chunkValue table
--- @param index numeric chunk field index (pheromone slot)
--- @param timestampKey chunk field holding the last-refresh tick
--- @param tick the current tick (the impure caller reads the clock)
--- @param decayTable precomputed rate^i table (i = 0..depth)
--- @param depth decay table depth
-function Squad.decayedValue(chunk, index, timestampKey, tick, decayTable, depth)
-    local value = chunk[index] or 0
-    if value == 0 then return 0 end
-    local lastRefresh = chunk[timestampKey] or 0
-    local elapsed = tick - lastRefresh
-    local factor = decayTable[elapsed] or decayTable[depth]
-    return value * factor
-end
-
---- The source rating the write path multiplies a generator by
--- (newBase = max(gen, neighborMax*0.9) * chunkDeathRating). A source
--- chunk's field must never read below its own generator x rating: the
--- generator is a floor, exactly as the write path applies it. This is what
--- lets source chunks remain correct without periodic renewal.
-local function sourceRating(chunk)
-    return ChunkPropertyUtils.getCombinedDeathGeneratorRating(chunk)
-        * ChunkPropertyUtils.getPathRating(chunk)
-end
-
+-- The player field is solved from the player generator, exactly like base,
+-- enemy and resource. The generator is registered with the solver on deposit
+-- and on decay (ChunkPropertyUtils), so the field follows the player and fades
+-- as the deposit fades.
 function Squad.playerPheromone(chunk, tick)
-    local decayed = Squad.decayedValue(chunk, PLAYER_PHEROMONE, "playerLastRefresh", tick, DECAY_098, DECAY_TABLE_DEPTH)
-    local floor = (chunk.playerGenerator or 0) * sourceRating(chunk)
-    if floor > decayed then return floor end
-    return decayed
+    return readSourceVersionedField(PLAYER_PHEROMONE, chunk)
 end
 
 -- base, enemy and resource are solved by the source-versioned field and read
@@ -443,4 +424,5 @@ Squad.SETTLE_REASON_MAX_DISTANCE = REASON_MAX_DISTANCE
 Squad.SETTLE_REASON_EMPTY_RESOURCE_CHUNK = REASON_EMPTY_RESOURCE_CHUNK
 Squad.SETTLE_REASON_PATH_TERMINATED = REASON_PATH_TERMINATED
 
+SquadLogicG = Squad
 return Squad

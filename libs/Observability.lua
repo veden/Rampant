@@ -27,13 +27,9 @@ end
 local mFloor = math.floor
 
 local Constants = require("libs/Constants")
-local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
-local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
-local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local DEATH_PHEROMONE = Constants.DEATH_PHEROMONE
 local VICTORY_PHEROMONE = Constants.VICTORY_PHEROMONE
 local KAMIKAZE_PHEROMONE = Constants.KAMIKAZE_PHEROMONE
-local RESOURCE_PHEROMONE = Constants.RESOURCE_PHEROMONE
 local CHUNK_TICK = Constants.CHUNK_TICK
 
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
@@ -60,7 +56,7 @@ function Observability.queryPheromones(position, surface)
     end
 
     return {
-        player = chunk[PLAYER_PHEROMONE] or 0,
+        player = SquadLogic.playerPheromone(chunk, game.tick),
         enemy = SquadLogic.enemyPheromone(chunk, game.tick),
         base = SquadLogic.basePheromone(chunk, game.tick),
         -- real death state (named fields, not numeric chunk indices)
@@ -412,7 +408,7 @@ function Observability.onUdpPacket(event)
                     table.insert(all_chunks, {
                         x = to_number(chunk.x), y = to_number(chunk.y),
                         b = to_number(SquadLogic.basePheromone(chunk, game.tick)),
-                        p = to_number(chunk[PLAYER_PHEROMONE]),
+                        p = to_number(SquadLogic.playerPheromone(chunk, game.tick)),
                         r = to_number(SquadLogic.resourcePheromone(chunk, game.tick)),
                         e = to_number(SquadLogic.enemyPheromone(chunk, game.tick)),
                         k = to_number(chunk[KAMIKAZE_PHEROMONE]),

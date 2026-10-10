@@ -19,6 +19,7 @@ globals = {
         "MetricsG",
         "MathUtilsG",
         "SquadG",
+        "SquadLogicG",
         "unitUtilsG",
         "BaseUtilsG",
         "UtilsG"
