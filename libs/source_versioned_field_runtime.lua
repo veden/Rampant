@@ -299,11 +299,32 @@ function Runtime.process(fieldType, budget, opts)
     return processed
 end
 
+-- Queued source changes not yet drained for a field.
+function Runtime.queueDepth(fieldType)
+    local queue = SourceQueues[fieldType]
+    if not queue then return 0 end
+    return queue.count - queue.head + 1
+end
+
+-- A burst (the initial scan, the evolution rescan, a mass build or destroy)
+-- queues thousands of source changes at once. Draining that at
+-- FIELD_DRAIN_PER_TICK leaves the field stale for hundreds of ticks -- measured
+-- as a 1,500-tick tail on a 15k-chunk rescan -- during which every read sees a
+-- partially updated field. Flush a burst in the tick it appears instead: the
+-- cost is one-time and proportional to the burst, which is the trade the cadence
+-- exists to make. Below the threshold the per-field cadence is unchanged.
+local FLUSH_QUEUE_DEPTH = 64
+
 -- Fractional per-field budgets: accumulate and run when a whole unit is due.
 -- This is the knob that puts the resource field on its own cadence without
 -- touching the decision-critical base/enemy fields.
 function Runtime.processScheduled(fieldType, opts)
     if not Initialized then return 0 end
+    local depth = Runtime.queueDepth(fieldType)
+    if depth >= FLUSH_QUEUE_DEPTH then
+        FIELD_DRAIN_ACC[fieldType] = 0
+        return Runtime.process(fieldType, depth, opts)
+    end
     local perTick = FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK
     local acc = (FIELD_DRAIN_ACC[fieldType] or 0) + perTick
     local whole = math.floor(acc)
