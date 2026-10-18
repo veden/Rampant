@@ -52,3 +52,6 @@ luac.out
 
 # benchmark scratch: per-build copies of the mod, captures and saves
 /.bench/
+
+# python bytecode from tools/
+__pycache__/

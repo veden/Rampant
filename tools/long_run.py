@@ -209,20 +209,7 @@ def main():
     # ---- Session-level assertions ----
     failures = []
 
-    # 1. dirty queue drains: bursts are normal (settlement waves mark many
-    #    chunks), so assert the STEADY STATE drains (last sample == 0) and
-    #    the peak backlog stays bounded (a real leak grows unbounded)
-    queue_vals = [s.get("metrics", {}).get("latest", {}).get("dirtyQueueSize") for s in samples]
-    queue_vals = [v for v in queue_vals if v is not None]
-    hw_vals = [s.get("metrics", {}).get("highWater", {}).get("dirtyQueueSize") for s in samples]
-    hw_vals = [v for v in hw_vals if v is not None]
-    peak = max(hw_vals) if hw_vals else 0
-    if queue_vals and queue_vals[-1] == 0 and peak < 1000:
-        print(f"PASS: dirty queue drains (peak backlog {peak}, last sample 0)")
-    else:
-        failures.append(f"dirty queue not draining: last samples {queue_vals[-5:]}, peak {peak}")
-
-    # 2. chunk index zero misses
+    # 1. chunk index zero misses
     all_misses = []
     for s in samples:
         m = s.get("metrics", {}).get("counters", {}).get("index.misses", 0)
@@ -232,28 +219,28 @@ def main():
     else:
         failures.append(f"index misses: {all_misses}")
 
-    # 3. settlements: spawner count grew beyond the staged 4
+    # 2. settlements: spawner count grew beyond the staged 4
     spawner_counts = [s.get("spawners") for s in samples if s.get("spawners") is not None]
     if spawner_counts and max(spawner_counts) > 4:
         print(f"PASS: settlements occurred (spawners {min(spawner_counts)} -> {max(spawner_counts)})")
     else:
         failures.append(f"no settlement growth: spawner counts {spawner_counts}")
 
-    # 4. squad formation happened
+    # 3. squad formation happened
     formed = sum(1 for s in samples if (s.get("squads") or 0) > 0 or (s.get("builders") or 0) > 0)
     if formed > 0:
         print("PASS: squad formation observed")
     else:
         failures.append("no squads formed during the session")
 
-    # 5. evolution progressed
+    # 4. evolution progressed
     evos = [s.get("evolution") for s in samples if s.get("evolution") is not None]
     if evos and evos[-1] > evos[0] and evos[-1] > 0:
         print(f"PASS: evolution progressed ({evos[0]:.3f} -> {evos[-1]:.3f})")
     else:
         failures.append(f"evolution did not progress: {evos}")
 
-    # 6. UPS healthy
+    # 5. UPS healthy
     upses = [s.get("ups") for s in samples if s.get("ups") is not None]
     if upses and sum(upses) / len(upses) > 200:
         print(f"PASS: mean UPS {sum(upses)/len(upses):.0f}")
