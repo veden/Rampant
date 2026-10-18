@@ -164,20 +164,6 @@ my_collection:add('no_sources_returns_empty', function()
     assert(work == 0, "no sources must do no work")
 end)
 
-my_collection:add('recompute_fallback_is_exact', function()
-    local static, dynamic = makeSources()
-    local sources = allSources(static, dynamic)
-    local neighborOf = makeNeighborOf()
-    local ref = Solver.solve(sources, neighborOf, {
-        decay = DECAY, eps = EPS, rating = RATING,
-    })
-    local field = Solver.recompute({ dynamic[1] }, sources, {}, neighborOf, {
-        decay = DECAY, eps = EPS, rating = RATING,
-    })
-    assert(maxDiff(field, ref) < 1e-6,
-        "recompute fallback must match full solve")
-end)
-
 local function metadataOptions()
     return { decay = DECAY, eps = EPS, rating = RATING }
 end

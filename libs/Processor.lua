@@ -664,15 +664,5 @@ function Processor.init(universe)
     end
 end
 
--- ============================================
--- ACO: Process Dirty Chunks
--- ============================================
-
--- PURE: Process a single dirty chunk (no side effects on Universe)
--- `counters` is a per-tick accumulator (a plain local table passed in by the
--- caller) so the hot path does not do a string-keyed Metrics hash lookup per
--- chunk; the caller flushes it to Metrics once per tick, keeping the public
--- metric names.
-
 ProcessorG = Processor
 return Processor

@@ -1173,16 +1173,9 @@ script.on_event(defines.events.on_build_base_arrived, onBuilderArrived)
 
 remote.add_interface("rampantTests",
                      {
-                         dumpEnvironment = tests.dumpEnvironment,
-                         -- fillableDirtTest = tests.fillableDirtTest,
-                         -- tunnelTest = tests.tunnelTest,
-                         reveal = tests.reveal,
-                         -- showMovementGrid = tests.showMovementGrid,
-                         -- showBaseGrid = tests.showBaseGrid,
-                         -- colorResourcePoints = tests.colorResourcePoints,
-                         exportAiState = tests.exportAiState(nil),
-                         scanEnemy = tests.scanEnemy,
-                         chunkCount = tests.chunkCount
+                         fillableDirtTest = tests.fillableDirtTest,
+                         tunnelTest = tests.tunnelTest,
+                         reveal = tests.reveal
                      }
 )
 

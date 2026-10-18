@@ -49,3 +49,6 @@ luac.out
 /.emacs.desktop.lock
 /README.html
 /c.org
+
+# benchmark scratch: per-build copies of the mod, captures and saves
+/.bench/

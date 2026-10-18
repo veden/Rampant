@@ -391,13 +391,6 @@ local test_collections = {}
     local test_utils = require("tests.test_utils")
     table.insert(test_collections, { name = "Utils", collection = test_utils })
 
-    -- ACO Tests (NEW - our focus)
-    local test_aco_core = require("tests.test_aco_core")
-    table.insert(test_collections, { name = "ACO Core", collection = test_aco_core })
-
-    local test_aco_trails = require("tests.test_aco_trails")
-    table.insert(test_collections, { name = "ACO Trails", collection = test_aco_trails })
-
     local test_pheromone_pure = require("tests.test_pheromone_pure")
     table.insert(test_collections, { name = "Pheromone Pure", collection = test_pheromone_pure })
 
@@ -433,46 +426,20 @@ local test_collections = {}
     local test_metrics = require("tests.test_metrics")
     table.insert(test_collections, { name = "Metrics", collection = test_metrics })
 
-    -- TODO: Commented out - will be replaced/refactored for ACO system
-    -- local test_map = require("tests.test_map")
-    -- table.insert(test_collections, { name = "MapUtils", collection = test_map })
-
-    -- local test_base = require("tests.test_base")
-    -- table.insert(test_collections, { name = "Base", collection = test_base })
-
-    -- local test_pheromones = require("tests.test_pheromones")
-    -- table.insert(test_collections, { name = "Pheromones", collection = test_pheromones })
-
     -- Run all tests
     local total_passed = 0
-    local total_failed = 0
 
     for _, tc in ipairs(test_collections) do
         print("\n--- " .. tc.name .. " Tests ---")
-        tc.collection:run_all()
-
-        -- tests is a name-keyed hash table; # would be 0. Count properly.
-        local count = 0
-        for _ in pairs(tc.collection.tests) do count = count + 1 end
-
-        if count > 0 then
-            total_passed = total_passed + count
-            print("All " .. tostring(count) .. " tests passed!")
-        else
-            print("0 tests passed")
-        end
+        local count = tc.collection:run_all()
+        total_passed = total_passed + count
+        print("All " .. tostring(count) .. " tests passed!")
     end
 
     print("\n=== Test Summary ===")
     print("Total passed: " .. tostring(total_passed))
-    print("Total failed: " .. tostring(total_failed))
     print("===================")
-
-    if total_failed == 0 then
-        print("All tests passed!")
-    else
-        print("Some tests failed!")
-    end
+    print("All tests passed!")
 
     -- Optionally run onInit for integration tests
     -- print("\n--- Running onInit ---")

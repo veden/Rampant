@@ -94,12 +94,6 @@ local function heapPop(heap)
     return OUT
 end
 
--- Test hook: drop pooled entries so a suite starts from a known state.
-function Solver.resetPool()
-    POOL = {}
-    POOL_N = 0
-end
-
 local function options(opts)
     opts = opts or {}
     return {
@@ -176,13 +170,6 @@ function Solver.propagateIncrease(source, field, neighborOf, opts)
     end
     return work
 end
-
--- Decrease fallback: recompute a bounded region around changed sources.
--- For now this is a full solve; the local-window version is the next step.
-function Solver.recompute(changedSources, allSources, field, neighborOf, opts)
-    return Solver.solve(allSources, neighborOf, opts)
-end
-
 
 -- Solve while tracking the top two contributions per chunk. The second
 -- contribution is what makes a source decrease locally removable without a

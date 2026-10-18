@@ -125,12 +125,9 @@ local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 local linearInterpolation = MathUtils.linearInterpolation
 
 local setPassable = ChunkPropertyUtils.setPassable
-local setPathRating = ChunkPropertyUtils.setPathRating
 
 local getChunkByXY = MapUtils.getChunkByXY
 
-local mMin = math.min
-local mMax = math.max
 local mFloor = math.floor
 
 -- module code
@@ -289,10 +286,8 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
         MetricsG.inc("scan.chunksScanned")
     end
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.isFilteredTilesQuery, chunk)
     setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
     setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
-    setAreaInQueryChunkSize(Universe.isFilteredEntitiesChunkNeutral, chunk)
     local pass = scanPaths(chunk, map)
     local enemyBuildings = surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
     local playerObjects = scorePlayerBuildings(map, chunk)
@@ -303,14 +298,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
         end
 
         if (pass ~= CHUNK_IMPASSABLE) then
-            local neutralObjects = mMax(0,
-                                        mMin(1 - (surface.count_entities_filtered(Universe.isFilteredEntitiesChunkNeutral) * 0.005),
-                                             1) * 0.20)
-
             setPassable(chunk, pass)
-
-            local waterTiles = (1 - (surface.count_tiles_filtered(Universe.isFilteredTilesQuery) * 0.0009765625)) * 0.80
-            setPathRating(chunk, waterTiles + neutralObjects)
             local oldPlayerBaseGenerator = chunk.playerBaseGenerator or 0
             setPlayerBaseGenerator(chunk, playerObjects)
             queueSourceChange(chunk, BASE_PHEROMONE, oldPlayerBaseGenerator, chunk.playerBaseGenerator or 0)
@@ -394,23 +382,16 @@ end
 
 function ChunkUtils.chunkPassScan(chunk, map)
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.cpsFilteredTilesQuery, chunk)
     local pass = scanPaths(chunk, map)
     local enemyCount = surface.count_entities_filtered(Universe.cpsFilteredEnemyAnyFound)
     local playerObjects = (chunk.playerBaseGenerator or 0)
 
     if (pass ~= CHUNK_IMPASSABLE) or (enemyCount > 0) or playerObjects then
-        local neutralObjects = mMax(0,
-                                    mMin(1 - (surface.count_entities_filtered(Universe.cpsFilteredEntitiesChunkNeutral) * 0.005),
-                                         1) * 0.20)
-        local waterTiles = (1 - (surface.count_tiles_filtered(Universe.cpsFilteredTilesQuery) * 0.0009765625)) * 0.80
-
         if ((playerObjects > 0) or (enemyCount > 0)) and (pass == CHUNK_IMPASSABLE) then
             pass = CHUNK_ALL_DIRECTIONS
         end
 
         setPassable(chunk, pass)
-        setPathRating(chunk, waterTiles + neutralObjects)
 
         return chunk
     end
@@ -443,12 +424,11 @@ function ChunkUtils.createChunk(map, topX, topY)
         id = newChunkId(),
         map = map,
         -- Chunks in the grid are always valid; removal is done by
-        -- removeChunkFromMap (which nils the grid slot). processDirtyChunk
-        -- and friends guard on this field.
+        -- removeChunkFromMap (which nils the grid slot).
         valid = true,
     }
-    -- Reverse index: id -> chunk (O(1) lookup for the dirty queue and
-    -- Executor handlers; getChunkById must never scan the grid)
+    -- Reverse index: id -> chunk (O(1) lookup for the solver's Executor
+    -- handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
 
     -- H8 neighbor-id cache. Runtime.neighborOf caches a chunk's adjacency the
@@ -469,17 +449,6 @@ function ChunkUtils.createChunk(map, topX, topY)
     chunk[CHUNK_TICK] = 0
     -- No pheromone slots: base, enemy, resource, player and kamikaze all live in
     -- the source-versioned solver's fields.
-    
-    -- ACO: Timestamp fields for decay-on-read
-    chunk.playerBaseLastRefresh = 0
-    chunk.deathLastRefresh = 0
-    
-    -- ACO: Trail fields
-    chunk.positiveTrail = 0
-    chunk.negativeTrail = 0
-    
-    -- ACO: Exploration state
-    chunk.explorationState = "unexplored"  -- "unexplored", "partially-explored", "explored"
 
     return chunk
 end

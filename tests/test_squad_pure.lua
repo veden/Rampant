@@ -23,8 +23,6 @@ local SquadLogic = require("libs/squad_logic")
 
 local my_collection = TestCollection:new()
 
-local DECAY_098 = Constants.DECAY_098
-local DECAY_TABLE_DEPTH = Constants.DECAY_TABLE_DEPTH
 local PLAYER_PHEROMONE = Constants.PLAYER_PHEROMONE
 local BASE_PHEROMONE = Constants.BASE_PHEROMONE
 local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE

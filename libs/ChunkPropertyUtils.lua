@@ -431,10 +431,6 @@ function ChunkPropertyUtils.setResourceGenerator(chunk, resourceGenerator)
     end
 end
 
-function ChunkPropertyUtils.getResourceGenerator(chunk)
-    return chunk.resourceGenerator or 0
-end
-
 function ChunkPropertyUtils.addResourceGenerator(chunk, delta)
     chunk.resourceGenerator = (chunk.resourceGenerator or 0) + delta
 end
@@ -449,41 +445,6 @@ function ChunkPropertyUtils.setPassable(chunk, value)
     else
         chunk.passable = value
     end
-end
-
-function ChunkPropertyUtils.getPathRating(chunk)
-    return chunk.pathRating or 1
-end
-
-function ChunkPropertyUtils.setPathRating(chunk, value)
-    if (value == 1) then
-        chunk.pathRating = nil
-    else
-        chunk.pathRating = value
-    end
-end
-
-function ChunkPropertyUtils.getDeathGeneratorRating(chunk)
-    return 1 + (chunk.deathGenerator or 0)
-end
-
-function ChunkPropertyUtils.getCombinedDeathGeneratorRating(chunk)
-    local amount = 1 + ((chunk.deathGenerator or 0) + (chunk.permanentDeathGenerator or 0))
-    if (amount > 1) then
-        return 1
-    elseif (amount <= 0) then
-        return 0.001
-    else
-        return amount
-    end
-end
-
-function ChunkPropertyUtils.getDeathGenerator(chunk)
-    return chunk.deathGenerator or 0
-end
-
-function ChunkPropertyUtils.getPermanentDeathGeneratorRating(chunk)
-    return 1 + (chunk.permanentDeathGenerator or 0)
 end
 
 function ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
@@ -524,39 +485,6 @@ function ChunkPropertyUtils.addDeathGenerator(chunk, value)
     end
     registerDeathGeneratorChunk(chunk)
     queueDeathSourceChange(chunk, oldCombined)
-end
-
--- NOTE: this is the per-processing write of the already-decayed value, so it
--- must NOT clear the decay timestamp: doing so means every processing pass
--- restarts the interval and the generator never decays at all (observed as the
--- base pheromone collapsing to 0 in pheromone-dynamics). Only the event writes
--- (addDeathGenerator) restart the interval.
-function ChunkPropertyUtils.setDeathGenerator(chunk, value)
-    if (value > 1) then
-        chunk.deathGenerator = 1
-    elseif (value < -1) then
-        chunk.deathGenerator = -1
-    else
-        chunk.deathGenerator = value
-    end
-end
-
--- PURE: Calculate victory generator update
-function ChunkPropertyUtils.calculateVictoryGeneratorUpdate(chunkId, currentVictory, value)
-    local newVictory = (currentVictory or 0) + value
-    return {
-        chunkId = chunkId,
-        victory = newVictory
-    }
-end
-
--- IMPURE: Apply victory generator update (writes to chunk/universe)
-function ChunkPropertyUtils.applyVictoryGenerator(chunk, update)
-    local chunkId = update.chunkId
-    if not chunk.victoryGenerators then
-        chunk.victoryGenerators = {}
-    end
-    chunk.victoryGenerators[chunkId] = update.victory
 end
 
 -- PUBLIC: Add victory generator (reads storage.universe)
@@ -667,14 +595,6 @@ function ChunkPropertyUtils.addPlayerGenerator(chunk, playerMaxGenerator)
     end
     registerPlayerGeneratorChunk(chunk)
     queuePlayerSourceChange(chunk, oldValue, chunk.playerGenerator or 0)
-end
-
-function ChunkPropertyUtils.getPlayerGenerator(chunk)
-    return chunk.playerGenerator or 0
-end
-
-function ChunkPropertyUtils.getPlayerBaseGenerator(chunk)
-    return chunk.playerBaseGenerator or 0
 end
 
 function ChunkPropertyUtils.addSquadToChunk(chunk, squad)
@@ -820,17 +740,6 @@ function ChunkPropertyUtils.init(universe, mapUtils)
     if universe.chunkPropertyUtilsQueries then
         Position = universe.chunkPropertyUtilsQueries.position
     end
-end
-
--- Cached lazy require: MapUtils requires this module at load time, so the
--- dependency is resolved on first use rather than hoisted. The local keeps the
--- hot path (per movable neighbour, per processed chunk) off `require`.
-local MapUtils
-
--- ACO: Get effective pheromone value with decay-on-read (wrapper for MapUtils.getEffectivePheromone)
-function ChunkPropertyUtils.getEffectivePheromone(chunk, type, tick)
-    MapUtils = MapUtils or require("libs/MapUtils")
-    return MapUtils.getEffectivePheromone(chunk, type, tick)
 end
 
 ChunkPropertyUtilsG = ChunkPropertyUtils

@@ -35,42 +35,11 @@ constants.TEMPERAMENT_RANGE_MAX = 10000
 constants.TEMPERAMENT_RANGE_MIN = -constants.TEMPERAMENT_RANGE_MAX
 constants.TEMPERAMENT_DIVIDER = 1 / (2 * constants.TEMPERAMENT_RANGE_MAX)
 
-constants.PROCESS_QUEUE_SIZE = 40
--- Drain budget: the MAX chunks processed per tick. The v4 core raised this
--- 40 -> 200 (5x the pre-2.0 rate), which quintupled the end-game pheromone
--- cost: on a real late-game save (12.9M ticks) the engine benchmark measured
--- avg 23.0 ms/tick at 200 vs 3.7 ms/tick at 40 (6.2x, max 1144 -> 9.4 ms).
--- At 60 UPS (16.7 ms budget) 40 leaves the frame at ~22%, 200 overruns it.
--- The budget is the cost-vs-lag trade-off: a smaller budget drains slower, so
--- the dirty queue can back up under heavy event activity (fields refresh later).
--- The long-run's dirty-queue invariant (peak bounded, steady state 0) is the gate
--- for the smallest budget that keeps up.
-constants.PROCESS_DIRTY_CHUNKS_PER_TICK = 40
--- H8 maintains the transient fields only (base/enemy/resource are source-versioned
--- and skip this pass), and their decay is time-based (DECAY_REFERENCE_TICKS), so this
--- budget sets freshness alone. The readers decide the target: the cloud lanes are read
--- on a ~600-tick decision cadence and the player lane is served by priority order.
-constants.PROCESS_TRANSIENT_CHUNKS_PER_TICK = 20
--- H7: no periodic sweep. The field is maintained by floor-aware
--- effective reads and event/propagation marks. Source chunks do not need
--- periodic renewal; diffused fields are read through their timestamps.
---
--- The source-versioned field is the only scheme: base/enemy/resource are solved
--- by the max-plus solver and maintained by event-local propagation, so there is
--- no H7 path left to select between. The old startup flag is gone.
-
 local subsystemTelemetry = false
 if settings and settings.startup and settings.startup["rampant--subsystemTelemetry"] then
     subsystemTelemetry = settings.startup["rampant--subsystemTelemetry"].value
 end
 constants.SUBSYSTEM_TELEMETRY = subsystemTelemetry
-
--- Dirty-queue propagation stops when a chunk's pheromone change is below
--- this bound (relative to its previous value). Without this, the neighbor-
--- marking cascade never terminates and the whole map is re-processed every
--- tick. Decay-on-read keeps time-correctness while raw values are frozen.
-constants.PROPAGATION_RELATIVE_EPSILON = 0.001
-constants.PROPAGATION_ABSOLUTE_EPSILON = 0.0001
 
 -- Bound on the increase-propagation work per field per tick. A new source in an
 -- empty region otherwise floods until it falls below eps, which showed up as
@@ -78,42 +47,13 @@ constants.PROPAGATION_ABSOLUTE_EPSILON = 0.0001
 -- propagation still completes exactly; the bound only spreads it over a few ticks,
 -- which is invisible at the 600-tick decision cadence.
 constants.PROPAGATION_MAX_WORK_PER_TICK = 32
-constants.SCAN_QUEUE_SIZE = 2
-constants.RESOURCE_QUEUE_SIZE = 2
-constants.ENEMY_QUEUE_SIZE = 1
-constants.PLAYER_QUEUE_SIZE = 2
 constants.CLEANUP_QUEUE_SIZE = 8
-constants.ATTACK_QUEUE_SIZE = 18
-constants.BASE_QUEUE_SIZE = 1
 constants.PROCESS_PLAYER_BOUND = 128
 constants.VICTORY_SCENT_BOUND = 128
 
--- ACO: Decay table configuration
 constants.DECAY_TABLE_DEPTH = 10000  -- 10,000 ticks (~2.8 hours)
 
--- ACO: Decay rates
-constants.DECAY_BASE = 0.90        -- Base, Resource, Enemy pheromones
-constants.DECAY_GENERATOR = 0.92   -- Generators (player, death, etc.)
 constants.DECAY_KAMIKAZE = 0.95    -- Kamikaze pheromone
-constants.DECAY_PLAYER = 0.98      -- Player pheromone
-constants.DECAY_TRAIL = 0.97       -- Scout trails
-
--- ACO: Trail system
-constants.TRAIL_BASE_AMOUNT = 10
-constants.TRAIL_SCOUT_MULTIPLIER = 2.5
-constants.TRAIL_WEIGHT = 0.3
-constants.PHEROMONE_WEIGHT = 0.7
-constants.TRAIL_SPREAD_FACTOR = 0.95
-
--- ACO: Scout selection
-constants.SCOUT_SELECTION_RATE = 0.07
-constants.SCOUT_REFRESH_TICKS = 600  -- Every 10 seconds
-
--- ACO: Source refresh intervals
-constants.REFRESH_PLAYER_TICKS = 5
-constants.REFRESH_STRUCTURES_TICKS = 30
-constants.REFRESH_SPAWNERS_TICKS = 60
-constants.REFRESH_HIVES_TICKS = 120
 
 constants.TICKS_A_SECOND = 60
 constants.TICKS_A_MINUTE = constants.TICKS_A_SECOND * 60
@@ -154,8 +94,6 @@ constants.CHUNK_ALL_DIRECTIONS = 3
 
 constants.BASE_SEARCH_RADIUS = 4 * constants.CHUNK_SIZE
 constants.EVOLUTION_INCREMENTS = 0.05
-
-constants.DIVISOR_DEATH_TRAIL_TABLE = { 0.75, 0.65, 0.55, 0.45, 0.35 }
 
 -- ai
 
@@ -276,13 +214,6 @@ constants.PLAYER_PHEROMONE = 3
 constants.RESOURCE_PHEROMONE = 4
 constants.ENEMY_PHEROMONE = 5
 constants.KAMIKAZE_PHEROMONE = 6
--- The kamikaze field had no epsilon cutoff, unlike the other generators: once a
--- chunk acquired any kamikaze value it never left the working set, and since it
--- decays 5% per pass it always exceeded the relative propagation gate, so it
--- re-marked itself every pass forever. That is what grew the dirty queue's
--- steady-state depth (measured: ws=15 -> 2143 over 12000 ticks, 1592 of it
--- kamikaze). This cutoff makes it clear like the others.
-constants.KAMIKAZE_PHEROMONE_MIN = 0.0001
 
 -- The death field is signed: a loss is negative, a kill is positive. Max-plus
 -- cannot lower a value, so the two signs are separate source-versioned fields
@@ -468,8 +399,6 @@ constants.ENERGY_THIEF_DRAIN_CRYSTALS = {
     "crystal-v9-drain-rampant",
     "crystal-v10-drain-rampant"
 }
-
-constants.NEIGHBOR_DIVIDER = {1/1, 1/2, 1/3, 1/4, 1/5, 1/6, 1/7, 1/8}
 
 -- unit spawners
 
@@ -1939,7 +1868,7 @@ for i=1,constants.TIERS do
 end
 
 -- ============================================
--- ACO: Pre-computed Decay Tables
+-- Pre-computed decay tables
 -- ============================================
 
 local function createDecayTable(rate)
@@ -1951,17 +1880,12 @@ local function createDecayTable(rate)
 end
 
 -- Create decay tables for each rate
-constants.DECAY_090 = createDecayTable(constants.DECAY_BASE)        -- Base, Resource, Enemy
-constants.DECAY_092 = createDecayTable(constants.DECAY_GENERATOR)   -- Generators
 -- Per-tick tables for the time-based generator decay. decayDeathGenerator and
 -- decayPlayerGenerator used to compute persistence^elapsed per processed chunk (a
 -- float pow in the hot path); these index the same value instead. rate^i equals
 -- persistence^(i/REFERENCE_TICKS), so the arithmetic is unchanged.
 constants.DECAY_MOVEMENT_GENERATOR_PER_TICK = createDecayTable(constants.MOVEMENT_GENERATOR_DECAY_PER_TICK)
 constants.DECAY_PLAYER_GENERATOR_PER_TICK = createDecayTable(constants.PLAYER_GENERATOR_DECAY_PER_TICK)
-constants.DECAY_095 = createDecayTable(constants.DECAY_KAMIKAZE)    -- Kamikaze
-constants.DECAY_098 = createDecayTable(constants.DECAY_PLAYER)      -- Player
-constants.DECAY_TRAIL = createDecayTable(constants.DECAY_TRAIL)     -- Scout trails
 
 constantsG =  constants
 return constants

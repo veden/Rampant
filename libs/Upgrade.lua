@@ -177,18 +177,6 @@ local function addCommandSet()
         {0,0},
         {0,0}
     }
-    Universe.isFilteredTilesQuery = {
-        collision_mask="player",
-        area=isSharedChunkArea
-    }
-    Universe.isFilteredEntitiesChunkNeutral = {
-        area=isSharedChunkArea,
-        collision_mask = "player",
-        types={
-            "tree",
-            "simple-entity"
-        }
-    }
     Universe.isFilteredEntitiesEnemyStructureQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
@@ -211,18 +199,6 @@ local function addCommandSet()
     local cpsSharedChunkArea = {
         {0,0},
         {0,0}
-    }
-    Universe.cpsFilteredTilesQuery = {
-        collision_mask="player",
-        area=cpsSharedChunkArea
-    }
-    Universe.cpsFilteredEntitiesChunkNeutral = {
-        area=cpsSharedChunkArea,
-        collision_mask = "player",
-        types={
-            "tree",
-            "simple-entity"
-        }
     }
     Universe.cpsFilteredEnemyAnyFound = {
         area=cpsSharedChunkArea,

@@ -9,7 +9,7 @@ Rampant is a Factorio mod that implements advanced enemy AI using pheromone-base
 ## How the AI Works
 
 1. **Pheromone System**: Enemies use potential fields (not standard pathfinding) for single-step pathfinding
-2. **H7 Effective Field**: Neighbor reads use floor-aware effective/decayed values. There is no periodic global sweep; the field is maintained by event and propagation marks.
+2. **Source-Versioned Fields**: every field (base, enemy, resource, player, kamikaze, and the signed death gain/loss pair) is a max-plus potential field solved by `libs/source_versioned_field.lua`. There is no periodic sweep and no dirty queue: a write is a queued source change, and each field drains its own queue on a per-tick budget, propagating from the changed sources. Fields are solved lazily on first read and kept in `storage.universe.sourceVersionedFields`.
 3. **Squads**: Unit groups that probe defenses, retreat when outnumbered, call reinforcements, and hunt players
 4. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
 5. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
@@ -36,7 +36,7 @@ just play           # Launch Factorio
 ## Linting
 
 ```bash
-luacheck .         # Uses .luacheckrc (24 globals defined)
+luacheck .         # Uses .luacheckrc (declared globals; .bench/ scratch excluded)
 ```
 
 ## Testing
@@ -62,8 +62,8 @@ meaningless. Always report **per-tick-range** numbers, broken down by subsystem.
 
 - Per-range, per-phase: the mod logs `[RANGE] ... phase=...` every
   `RANGE_TICKS` (see `control.lua`), gated by `rampant--telemetryEnabled`.
-- Per-range, per-subsystem: `[SUB] tick=N name=<subsystem> Elapsed: Nms`, 17
-  subsystems timed independently (`dirty`, `pendingUpgrades`, `players`, ...).
+- Per-range, per-subsystem: `[SUB] tick=N name=<subsystem> Elapsed: Nms`, 24
+  subsystems timed independently (`sourceField.*`, `pendingUpgrades`, `players`, ...).
 - Parse with `tools/range-telemetry.py` (bucket by tick range).
 - `--benchmark-verbose` also emits per-tick CSV but SIGSEGVs at teardown for long
   runs; prefer the in-mod telemetry.

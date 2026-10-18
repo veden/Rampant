@@ -512,35 +512,5 @@ function MapUtils.init(universe)
 
 end
 
--- ============================================
--- ACO: Dirty Chunk Management
--- ============================================
-
--- ACO: Get effective pheromone value with decay-on-read
-function MapUtils.getEffectivePheromone(chunk, type, tick)
-    local value = chunk[type] or 0
-    if value == 0 then return 0 end
-    
-    local timestampField = type .. "LastRefresh"
-    local lastRefresh = chunk[timestampField] or 0
-    local ticksElapsed = tick - lastRefresh
-    
-    -- Select appropriate decay table
-    local decayTable
-    if type == "PLAYER_PHEROMONE" then
-        decayTable = Constants.DECAY_098
-    elseif type == "BASE_PHEROMONE" or type == "RESOURCE_PHEROMONE" or type == "ENEMY_PHEROMONE" then
-        decayTable = Constants.DECAY_090
-    elseif type == "KAMIKAZE_PHEROMONE" then
-        decayTable = Constants.DECAY_095
-    else
-        return value  -- No decay
-    end
-    
-    -- Apply decay
-    local decayFactor = decayTable[ticksElapsed] or decayTable[Constants.DECAY_TABLE_DEPTH]
-    return value * decayFactor
-end
-
 MapUtilsG = MapUtils
 return MapUtils

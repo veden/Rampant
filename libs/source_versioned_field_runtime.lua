@@ -28,7 +28,6 @@ local MathUtils = require("MathUtils")
 local Runtime = {}
 
 local Universe
-local NeighborIds = {}
 -- Per-field source-change queues. Each field drains on its own budget so a
 -- slow field (resource) cannot starve a decision-critical one (base/enemy).
 local SourceQueues = {}
@@ -95,16 +94,6 @@ local FIELD_DEATH_LOSS = Constants.DEATH_LOSS_PHEROMONE
 local DEATH_DECAY = Constants.DEATH_FIELD_DECAY
 local DEATH_RADIUS = Constants.DEATH_FIELD_RADIUS
 local DEATH_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
-
-local SOURCE_FIELDS = {
-    [FIELD_PLAYER] = true,
-    [FIELD_BASE] = true,
-    [FIELD_ENEMY] = true,
-    [FIELD_RESOURCE] = true,
-    [FIELD_KAMIKAZE] = true,
-    [FIELD_DEATH_GAIN] = true,
-    [FIELD_DEATH_LOSS] = true,
-}
 
 -- Per-field solver options. A field's reach is log(eps/source)/log(decay), so
 -- leaving decay at the shared default makes every field's extent an accident of
@@ -182,16 +171,6 @@ function Runtime.fieldKey(fieldType)
     return tostring(fieldType)
 end
 
-function Runtime.ensureField(fieldType)
-    local key = Runtime.fieldKey(fieldType)
-    local field = Universe.sourceVersionedFields[key]
-    if not field then
-        field = {}
-        Universe.sourceVersionedFields[key] = field
-    end
-    return field
-end
-
 function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not Initialized or not chunk or not chunk.id then return false end
 
@@ -224,12 +203,6 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     queue.items[queue.count] = item
     byChunk[chunk.id] = item
     return true
-end
-
-function Runtime.solveAll(opts)
-    for fieldType in pairs(SOURCE_FIELDS) do
-        Runtime.ensureSolved(fieldType, opts)
-    end
 end
 
 -- Solve one field on first use. Solving lazily keeps the first H8 tick from
@@ -381,12 +354,6 @@ function Runtime.processScheduled(fieldType, opts)
     return Runtime.process(fieldType, whole, opts)
 end
 
--- Set one field's drain budget (source changes per tick). Fractional values
--- spread a full distribution over many ticks.
-function Runtime.setFieldDrainPerTick(fieldType, perTick)
-    FIELD_DRAIN_PER_TICK[fieldType] = perTick
-end
-
 -- Reusable neighbour-id table. Solver consumes it immediately.
 --
 -- This deliberately does not use MapUtils.getNeighborChunks: that function
@@ -457,16 +424,6 @@ function Runtime.solveFieldWithMetadata(fieldType, opts)
     return Solver.solveWithMetadata(sources, Runtime.neighborOf, opts)
 end
 
-function Runtime.solveField(fieldType, opts)
-    local field, _, _, _, work = Runtime.solveFieldWithMetadata(fieldType, opts)
-    return field, work
-end
-
-function Runtime.fieldMetadata(fieldType)
-    local key = Runtime.fieldKey(fieldType)
-    return FieldTopSource[key], FieldSecond[key], FieldSecondSource[key]
-end
-
 -- The optional third argument may be either the old API's `field` argument
 -- or the new options table. The metadata-backed field is always local, so the
 -- old `field` value is accepted and ignored for compatibility.
@@ -518,11 +475,6 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
         Runtime.neighborOf, BOUNDED_OPTS, frontier)
     Universe.sourceVersionedFrontier[key] = remaining
     return remaining and #remaining or 0
-end
-
-function Runtime.recompute(changedSources, fieldType, field, opts)
-    local sources = Runtime.buildSources(fieldType)
-    return Solver.recompute(changedSources, sources, field, Runtime.neighborOf, opts)
 end
 
 -- Read hook installed into SquadLogic. Returns the solved source-versioned
