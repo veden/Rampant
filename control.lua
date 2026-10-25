@@ -208,20 +208,50 @@ local function initializeLibraries(addProperties)
     ChunkPropertyUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
 end
 
-local function rescanAllChunks(map, tick)
-    if not map or not map.surface or not map.surface.valid then return end
-    for x, xChunks in pairs(map) do
-        if type(xChunks) == "table" and xChunks[1] then
-            for y, chunk in pairs(xChunks) do
-                if type(chunk) == "table" and chunk.id then
-                    -- purgeUnits=false: the rescan re-scans LIVING
-                    -- territory (evolution crossed 0.3); the initial
-                    -- scan's unit purge would destroy every unit near
-                    -- every nest.
-                    initialScan(chunk, map, tick, false)
+-- Chunks rescanned per tick when evolution crosses 0.3. Scanning every chunk
+-- of every surface in one tick cost 24.6ms on a 1k-chunk map (measured), so the
+-- work is spread like every other scan: build the list once, then drain a
+-- slice per tick until it is empty.
+local RESCAN_PER_TICK = 16
+
+local function buildRescanQueue()
+    local queue = {}
+    for _, map in pairs(Universe.maps) do
+        if map.surface and map.surface.valid then
+            for _, xChunks in pairs(map) do
+                if type(xChunks) == "table" and xChunks[1] then
+                    for _, chunk in pairs(xChunks) do
+                        if type(chunk) == "table" and chunk.id then
+                            queue[#queue + 1] = { map = map, chunk = chunk }
+                        end
+                    end
                 end
             end
         end
+    end
+    return queue
+end
+
+local function rescanAllChunks(tick)
+    local state = Universe.rescanState
+    if not state then
+        state = { queue = buildRescanQueue(), index = 1 }
+        Universe.rescanState = state
+    end
+    local queue = state.queue
+    local last = state.index + RESCAN_PER_TICK - 1
+    if last > #queue then last = #queue end
+    for i = state.index, last do
+        local item = queue[i]
+        -- purgeUnits=false: the rescan re-scans LIVING territory (evolution
+        -- crossed 0.3); the initial scan's unit purge would destroy every
+        -- unit near every nest.
+        initialScan(item.chunk, item.map, tick, false)
+    end
+    state.index = last + 1
+    if state.index > #queue then
+        Universe.rescanState = nil
+        Universe.rescannedForEvolution = true
     end
 end
 
@@ -1094,12 +1124,7 @@ script.on_event(defines.events.on_tick,
                         timed(tick, rangeSample, "planning", planning, gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
                         -- One-time rescan when evolution rises: registers enemy structures that spawned after chunk creation
                         if not Universe.rescannedForEvolution and Universe.evolutionLevel > 0.3 then
-                            timed(tick, rangeSample, "rescanAllChunks", function()
-                                for _, map in pairs(Universe.maps) do
-                                    rescanAllChunks(map, tick)
-                                end
-                            end)
-                            Universe.rescannedForEvolution = true
+                            timed(tick, rangeSample, "rescanAllChunks", rescanAllChunks, tick)
                         end
                         timed(tick, rangeSample, "hives", processHives, tick)
                         timed(tick, rangeSample, "cleanHives", cleanHivesData)
