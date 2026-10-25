@@ -227,19 +227,54 @@ end
 -- Solve one field on first use. Solving lazily keeps the first H8 tick from
 -- paying for fields that are never read while still ensuring a source change
 -- propagates into a complete field.
+-- Chunks examined per tick while building a field's source list. The first
+-- solve used to scan every tracked chunk and run a full Dijkstra in one tick:
+-- measured 12.4ms on a ~1k-chunk map (and 40-50ms on the whole tick), once per
+-- field, which is what produced the early-game maximum.
+local SOURCE_BUILD_PER_TICK = 256
+local SourceBuilds = {}
+
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
-    if not SolvedFields[key] or not FieldTopSource[key] then
-        local field, topSource, second, secondSource =
-            Runtime.solveFieldWithMetadata(fieldType, fieldOpts(fieldType, opts))
-        Universe.sourceVersionedFields[key] = field
-        FieldTopSource[key] = topSource
-        FieldSecond[key] = second
-        FieldSecondSource[key] = secondSource
-        SolvedFields[key] = true
-        return field, true
+    if SolvedFields[key] and FieldTopSource[key] then
+        return Universe.sourceVersionedFields[key] or {}, false
     end
-    return Universe.sourceVersionedFields[key] or {}, false
+    local build = SourceBuilds[key]
+    if not build then
+        build = { list = {}, iterator = nil }
+        SourceBuilds[key] = build
+    end
+    local examined = 0
+    local iter = build.iterator
+    while examined < SOURCE_BUILD_PER_TICK do
+        local chunkId, chunk = next(Universe.chunkById or {}, iter)
+        if not chunk then
+            build.iterator = nil
+            build.done = true
+            break
+        end
+        iter = chunkId
+        examined = examined + 1
+        local value = Runtime.sourceValue(chunk, fieldType)
+        if value > 0 then
+            build.list[#build.list + 1] = { id = chunk.id, gen = value }
+        end
+    end
+    build.iterator = iter
+    if not build.done then
+        -- Still scanning: readers see the (empty) field for a few ticks rather
+        -- than one tick paying for the whole map.
+        return Universe.sourceVersionedFields[key] or {}, false
+    end
+    local field, topSource, second, secondSource =
+        Solver.solveWithMetadata(build.list, Runtime.neighborOf, fieldOpts(fieldType, opts))
+    Universe.sourceVersionedFields[key] = field
+    FieldTopSource[key] = topSource
+    FieldSecond[key] = second
+    FieldSecondSource[key] = secondSource
+    SolvedFields[key] = true
+    SourceBuilds[key] = nil
+    return field, true
 end
 
 -- Drain ONE field's source-change queue. `budget` is that field's own
@@ -298,6 +333,10 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     local fType = fieldType
     local fOpts = fieldOpts(fType, opts)
     local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
+    if not SolvedFields[Runtime.fieldKey(fType)] then
+        -- Source list still being built; keep the queue so nothing is lost.
+        return 0
+    end
     if not solvedNow then
         local increases = {}
         local removed = false

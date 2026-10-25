@@ -367,13 +367,19 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
     hTop = hTop or newIndexedHeap()
     hSec = hSec or newIndexedHeap()
     local maxWork = o.maxWork
+    -- Hoist the option lookups and the tables the inner loop touches: the
+    -- neighbour loop runs ~8 times per popped node and table indexing there was
+    -- a measurable share of sourceFields' cost.
+    local decay = o.decay
+    local eps = o.eps
+    local maxRadius = o.maxRadius
     local work = 0
     for _, source in ipairs(sources) do
         local id = source.id
         local v = source.gen * o.rating
         local top = field[id] or 0
         local sec = second[id] or 0
-        if v > top + o.eps then
+        if v > top + eps then
             if id ~= topSource[id] then
                 second[id] = top
                 secondSource[id] = topSource[id]
@@ -382,7 +388,7 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
             topSource[id] = id
             ihPush(hTop, id, v, 0, id)
             work = work + 1
-        elseif id ~= topSource[id] and v > sec + o.eps then
+        elseif id ~= topSource[id] and v > sec + eps then
             second[id] = v
             secondSource[id] = id
             ihPush(hSec, id, v, 0, id)
@@ -402,12 +408,12 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         local secValue = second[nid] or 0
         local stillTop = (not useSecond) and v >= topValue
         local stillSecond = useSecond and v >= secValue and src ~= topSource[nid]
-        if (stillTop or stillSecond) and not (o.maxRadius and d >= o.maxRadius) then
+        if (stillTop or stillSecond) and not (maxRadius and d >= maxRadius) then
             for _, neighborId in ipairs(neighborOf(nid)) do
-                local cand = v * o.decay
+                local cand = v * decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
-                if (not useSecond) and cand > neighborTop + o.eps then
+                if (not useSecond) and cand > neighborTop + eps then
                     if src ~= topSource[neighborId] then
                         second[neighborId] = neighborTop
                         secondSource[neighborId] = topSource[neighborId]
@@ -416,7 +422,7 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
                     topSource[neighborId] = src
                     ihPush(hTop, neighborId, cand, d + 1, src)
                     work = work + 1
-                elseif src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
+                elseif src ~= topSource[neighborId] and cand > neighborSecond + eps then
                     second[neighborId] = cand
                     secondSource[neighborId] = src
                     ihPush(hSec, neighborId, cand, d + 1, src)
