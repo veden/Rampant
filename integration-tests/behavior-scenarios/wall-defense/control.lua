@@ -78,6 +78,8 @@ local function stage(surface)
     }
     -- Pollution activates the nest (processNestActiveness).
     surface.pollute(SPAWNER_POS, 50)
+    remote.call("Rampant", "drawField", "base", true)
+    remote.call("Rampant", "drawField", "enemy", true)
 end
 
 local function checkExpectations()

@@ -100,6 +100,8 @@ local function stage(surface)
         raise_built = true,
     }
     surface.pollute(SPAWNER_POS, 50)
+    remote.call("Rampant", "drawField", "base", true)
+    remote.call("Rampant", "drawField", "enemy", true)
 end
 
 local function setPhase(phase)

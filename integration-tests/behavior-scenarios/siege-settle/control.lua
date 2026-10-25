@@ -201,6 +201,8 @@ local function stage(surface)
         raise_built = true,
     }
     surface.pollute(SPAWNER_POS, 50)
+    remote.call("Rampant", "drawField", "player", true)
+    remote.call("Rampant", "drawField", "base", true)
 end
 
 --- Free units near the nest so the builder wave can recruit members

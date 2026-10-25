@@ -543,6 +543,28 @@ traj-review:
 test-autoplace: copy
     python3 tools/check-autoplace.py --mod-directory {{ modFolder }}
 
+# Install a behaviour scenario into the game so it can be played from the GUI
+# (Single player -> New game -> Scenarios), without killing the running game and
+# without touching your saves. Stages the same prepared map the headless runner
+# uses when a save for that seed exists.
+install-scenario name="wall-defense" seed="1": copy
+    #!/usr/bin/env -S bash
+    set -e
+    SCEN=/mnt/gallery/gameFiles/factorio/scenarios/rampant-behavior-{{name}}
+    SAVE=/mnt/gallery/gameFiles/factorio/saves/rampant-behavior-{{name}}.zip
+    rm -rf "$SCEN"
+    cp -r integration-tests/behavior-scenarios/{{name}} "$SCEN"
+    cp integration-tests/lib/scenario-lib.lua "$SCEN/scenario-lib.lua"
+    PREP=integration-tests/behavior-saves/rampant-behavior-{{name}}-s{{seed}}.zip
+    if [ -f "$PREP" ]; then
+        cp "$PREP" "$SAVE"
+        echo "Installed scenario '{{name}}' with prepared map seed {{seed}}."
+    else
+        rm -f "$SAVE"
+        echo "Installed scenario '{{name}}' (no prepared save for seed {{seed}}; it will generate a map)."
+    fi
+    echo "Load it from: Single player -> New game -> Scenarios -> rampant-behavior-{{name}}"
+
 test-behavior name="wall-defense" seed="1" strict="0": copy
     #!/usr/bin/env -S bash
     set -e

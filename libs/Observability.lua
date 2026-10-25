@@ -34,6 +34,8 @@ local CHUNK_TICK = Constants.CHUNK_TICK
 local ChunkPropertyUtils = require("libs/ChunkPropertyUtils")
 local MapUtils = require("libs/MapUtils")
 local SquadLogic = require("libs/squad_logic")
+local SourceVersionedFieldRuntime = require("libs/source_versioned_field_runtime")
+local Runtime = { fieldKey = SourceVersionedFieldRuntime.fieldKey }
 
 local findNearbyBase = ChunkPropertyUtils.findNearbyBase
 local getChunkByPosition = MapUtils.getChunkByPosition
@@ -281,6 +283,79 @@ function Observability.getActiveStructures(surface)
 end
 
 -- RCON Test Helpers
+-- In-world pheromone overlay.
+--
+-- The field numbers are only meaningful compared across neighbouring chunks, so
+-- a log line cannot be watched. This draws one rectangle per chunk, coloured by
+-- the field value relative to that field's peak, refreshed every few ticks.
+-- Toggled with remote Rampant.drawField(name[, enabled]).
+local FIELD_COLORS = {
+    player = { r = 0.2, g = 0.4, b = 1.0 },
+    kamikaze = { r = 0.7, g = 0.2, b = 1.0 },
+    enemy = { r = 1.0, g = 0.2, b = 0.2 },
+    base = { r = 1.0, g = 0.9, b = 0.2 },
+    resource = { r = 0.2, g = 1.0, b = 0.4 },
+    deathGain = { r = 1.0, g = 1.0, b = 1.0 },
+    deathLoss = { r = 0.1, g = 0.1, b = 0.1 },
+}
+local FIELD_TYPES = {
+    player = Constants.PLAYER_PHEROMONE,
+    kamikaze = Constants.KAMIKAZE_PHEROMONE,
+    enemy = Constants.ENEMY_PHEROMONE,
+    base = Constants.BASE_PHEROMONE,
+    resource = Constants.RESOURCE_PHEROMONE,
+    deathGain = Constants.DEATH_GAIN_PHEROMONE,
+    deathLoss = Constants.DEATH_LOSS_PHEROMONE,
+}
+local Visualizers = {}
+local VISUALIZE_EVERY = 15
+
+function Observability.toggleField(name, enabled)
+    if enabled == nil then enabled = not Visualizers[name] end
+    if not enabled then
+        Visualizers[name] = nil
+        -- LuaRendering has no per-object destroy in 2.1; clear this mod's
+        -- objects and let the tick redraw whichever fields are still enabled.
+        rendering.clear("Rampant")
+        return name .. ": off"
+    end
+    local fieldType = FIELD_TYPES[name]
+    if not fieldType then return "unknown field: " .. tostring(name) end
+    Visualizers[name] = { fieldType = fieldType, color = FIELD_COLORS[name], rendering = {} }
+    return name .. ": on"
+end
+
+function Observability.updateVisualizers(tick)
+    if tick % VISUALIZE_EVERY ~= 0 then return end
+    local any = false
+    for _ in pairs(Visualizers) do any = true break end
+    if not any then return end
+    rendering.clear("Rampant")
+    for _, v in pairs(Visualizers) do
+        local field = Universe.sourceVersionedFields[Runtime.fieldKey(v.fieldType)] or {}
+        local peak = 0
+        for _, value in pairs(field) do
+            if value > peak then peak = value end
+        end
+        if peak > 0 then
+            for chunkId, value in pairs(field) do
+                local chunk = MapUtils.getChunkById(chunkId, Universe)
+                if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
+                    local t = value / peak
+                    rendering.draw_rectangle{
+                        surface = chunk.map.surface,
+                        left_top = { chunk.x, chunk.y },
+                        right_bottom = { chunk.x + 32, chunk.y + 32 },
+                        color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.05 + 0.35 * t },
+                        filled = true,
+                        only_during_screenshot = false,
+                    }
+                end
+            end
+        end
+    end
+end
+
 function Observability.getGameState()
     return {
         tick = game.tick,

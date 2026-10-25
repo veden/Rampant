@@ -1104,6 +1104,7 @@ script.on_event(defines.events.on_tick,
 
                     local gameRef = game
                     local tick = gameRef.tick
+                    Observability.updateVisualizers(tick)
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
@@ -1539,6 +1540,12 @@ remote.add_interface("Rampant", {
         end
         return table.concat(parts, " ")
     end,
+    -- Toggle an in-world pheromone overlay: one translucent rectangle per
+    -- chunk, coloured by field value relative to that field's peak.
+    --   /c remote.call("Rampant","drawField","player",true)
+    drawField = function(name, enabled)
+        return Observability.toggleField(name, enabled)
+    end,
     -- Compare a live field against a fresh full solve of its sources.
     verifyField = function(name, tolerance)
         local map = {
@@ -1550,8 +1557,9 @@ remote.add_interface("Rampant", {
         local fType = map[name]
         if not fType then return "unknown field: " .. tostring(name) end
         local r = SourceVersionedFieldRuntime.verifyField(fType, tolerance)
-        local line = string.format("%s sources=%d checked=%d mismatches=%d liveOnly=%d maxDelta=%s worst=%s",
-            r.field, r.sources, r.checked, r.mismatches, r.liveOnly, r.maxDelta, r.worstChunk)
+        local line = string.format("%s sources=%d checked=%d mismatches=%d liveOnly=%d maxRel=%s maxDelta=%s worst=%s livePeak=%s expectedPeak=%s %s frontier=%d queued=%d iter=%d",
+            r.field, r.sources, r.checked, r.mismatches, r.liveOnly, r.maxRel, r.maxDelta, r.worstChunk,
+            r.livePeak, r.expectedPeak, r.sample, r.frontier, r.queued, r.iterations)
         log({"", "[VERIFY] ", line})
         return line
     end,
