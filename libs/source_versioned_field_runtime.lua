@@ -476,8 +476,15 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
     -- drain it completely in one tick; a bounded one-off cost beats a permanent
     -- one.
     local frontierBacklog = frontier and #frontier or 0
-    BOUNDED_OPTS.maxWork = (flush or frontierBacklog > FRONTIER_FLUSH_DEPTH)
-        and nil or PROPAGATION_MAX_WORK_PER_TICK
+    -- NB: `cond and nil or x` in Lua always yields x, because `true and nil`
+    -- is nil and `nil or x` is x. The unset MUST be an if/else: the previous
+    -- one-liner left maxWork at 32 for every call, so neither this threshold
+    -- nor the pre-existing burst/removal flush ever actually ran.
+    if flush or frontierBacklog > FRONTIER_FLUSH_DEPTH then
+        BOUNDED_OPTS.maxWork = nil
+    else
+        BOUNDED_OPTS.maxWork = PROPAGATION_MAX_WORK_PER_TICK
+    end
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
