@@ -69,17 +69,46 @@ function Utils.intersection(set1, set2)
     return result
 end
 
+-- Resolve a coordinate without letting a missing field silently keep the
+-- table's initialiser. The query/command tables are created as {0,0}, so
+-- `point[1] = position.x` with position.x == nil writes nil, Lua keeps the
+-- old 0, and the engine is faithfully told (0,0) with no error anywhere.
+-- That is how a base could be built at the origin. Accept either position
+-- form, and on a genuine miss count it and log the caller once.
+local function resolveXY(position)
+    if not position then return nil, nil, "nil" end
+    local x, y = position.x, position.y
+    if x == nil then x = position[1] end
+    if y == nil then y = position[2] end
+    if not x or not y then return nil, nil, "missing" end
+    return x, y
+end
+
+local function writeXY(point, position)
+    local x, y, why = resolveXY(position)
+    if not x then
+        if MetricsG then MetricsG.inc("position." .. why) end
+        log({"", "[POS] " .. why .. " coordinates, keeping previous value: ",
+             debug.traceback("", 1):gsub("\n", " | ")})
+        return false
+    end
+    point[1] = x
+    point[2] = y
+    -- Keep the named form coherent too: the engine accepts either, but a
+    -- stale {0,0} is exactly what must never survive a set.
+    point.x = x
+    point.y = y
+    return true
+end
+
 function Utils.setPositionInQuery(query, position)
-    if not query or not query.position or not position then return end
-    local point = query.position
-    point[1] = position.x
-    point[2] = position.y
+    if not query or not query.position then return end
+    writeXY(query.position, position)
 end
 
 function Utils.setPositionInCommand(cmd, position)
-    local point = cmd.destination
-    point[1] = position.x
-    point[2] = position.y
+    if not cmd or not cmd.destination then return end
+    writeXY(cmd.destination, position)
 end
 
 function Utils.setPositionXYInQuery(query, x, y)
