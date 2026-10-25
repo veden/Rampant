@@ -469,7 +469,8 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
                      " src=" .. tostring(epos.x) .. "," .. tostring(epos.y),
                      " req=" .. tostring(position.x) .. "," .. tostring(position.y),
                      " disPos=" .. tostring(disPos ~= nil),
-                     " evolve=" .. tostring(evolve)})
+                     " evolve=" .. tostring(evolve),
+                     " from=" .. tostring(debug.traceback("", 1):gsub("\n", " | "):sub(1, 260))})
             end
         end
         local sdx, sdy = position.x - epos.x, position.y - epos.y
