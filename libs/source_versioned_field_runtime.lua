@@ -35,6 +35,7 @@ local QueueIndex = {}
 local DRAIN_PER_TICK = 40
 local FIELD_DRAIN_PER_TICK = {}
 local FIELD_DRAIN_ACC = {}
+local FIELD_CADENCE = {}
 local PROPAGATION_MAX_WORK_PER_TICK = Constants.PROPAGATION_MAX_WORK_PER_TICK
 local BOUNDED_OPTS = { maxWork = PROPAGATION_MAX_WORK_PER_TICK }
 local Initialized = false
@@ -148,6 +149,9 @@ function Runtime.init(universe, addProperties)
     FIELD_DRAIN_PER_TICK[FIELD_BASE] = 10
     FIELD_DRAIN_PER_TICK[FIELD_ENEMY] = 10
     FIELD_DRAIN_PER_TICK[FIELD_PLAYER] = 10
+    -- Propagate the player-derived fields every 4 ticks instead of every tick.
+    FIELD_CADENCE[FIELD_PLAYER] = 4
+    FIELD_CADENCE[FIELD_KAMIKAZE] = 4
     FIELD_DRAIN_PER_TICK[FIELD_KAMIKAZE] = 10
     FIELD_DRAIN_PER_TICK[FIELD_DEATH_GAIN] = 10
     FIELD_DRAIN_PER_TICK[FIELD_DEATH_LOSS] = 10
@@ -343,12 +347,24 @@ local FRONTIER_FLUSH_WORK = 512
 -- touching the decision-critical base/enemy fields.
 function Runtime.processScheduled(fieldType, opts)
     if not Initialized then return 0 end
+    -- Player and kamikaze are deposited every tick (the player genererator is
+    -- written by processPlayers), so they were re-propagated every tick. Their
+    -- readers decide on a ~600-tick cadence, so that precision buys nothing and
+    -- makes those two fields the most expensive thing in the mod: measured
+    -- 0.221ms and 0.204ms average with a 0.43ms p90, while every other field
+    -- cost <=0.06ms. Batch them on a cadence, draining the accumulated changes
+    -- in one go; the source queue already coalesces per chunk, so this only
+    -- reduces how often propagation runs.
+    local cadence = FIELD_CADENCE[fieldType]
+    if cadence and (game.tick % cadence) ~= 0 then
+        return 0
+    end
     local depth = Runtime.queueDepth(fieldType)
     if depth >= FLUSH_QUEUE_DEPTH then
         FIELD_DRAIN_ACC[fieldType] = 0
         return Runtime.process(fieldType, depth, opts)
     end
-    local perTick = FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK
+    local perTick = (FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK) * (cadence or 1)
     local acc = (FIELD_DRAIN_ACC[fieldType] or 0) + perTick
     local whole = math.floor(acc)
     FIELD_DRAIN_ACC[fieldType] = acc - whole
