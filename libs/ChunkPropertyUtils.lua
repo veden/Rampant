@@ -650,6 +650,13 @@ function ChunkPropertyUtils.addPlayerBaseGenerator(chunk, playerBaseGenerator)
 end
 
 function ChunkPropertyUtils.findNearbyBase(chunk)
+    -- getChunkByPosition returns the number -1 when a position is outside the
+    -- tracked grid, and several callers pass that sentinel straight through.
+    -- Indexing it killed the death handler:
+    --   attempt to index local 'chunk' (a number value)
+    if type(chunk) ~= "table" then
+        return nil
+    end
     local foundBase = chunk.base
     if foundBase then
         return foundBase

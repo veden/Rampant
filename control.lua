@@ -547,7 +547,7 @@ local function onDeath(event)
                 end
             end
 
-            if not base then
+            if not base and chunk ~= -1 then
                 base = findNearbyBase(chunk)
             end
 
