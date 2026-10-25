@@ -81,11 +81,24 @@ end
 -- so one write queues both.
 local KAMIKAZE_SCALE = 0.95
 
+-- A source change below this fraction of the current value is not queued: the
+-- player generator decays every tick, so every tick used to queue a player and a
+-- kamikaze change, and those two fields consumed the whole 96-pop quantum every
+-- tick (measured wPlayer=33 wKamikaze=34 per tick, sourceFields avg 0.6ms).
+-- The field tolerates eps = 5e-4, so skipping a 5% step is far inside its noise,
+-- and it cuts the propagation rate by roughly 5x.
+local PLAYER_SOURCE_CHANGE_FRACTION = 0.05
+
 local function queuePlayerSourceChange(chunk, oldValue, newValue)
     local runtime = SourceVersionedFieldRuntime
     if not runtime or not runtime.isInitialized() then return end
     if not chunk or chunk.id == nil then return end
     if oldValue == newValue then return end
+    if oldValue and oldValue > 0 and newValue and newValue > 0 then
+        local delta = newValue - oldValue
+        if delta < 0 then delta = -delta end
+        if delta < oldValue * PLAYER_SOURCE_CHANGE_FRACTION then return end
+    end
     runtime.queueSource(chunk, PLAYER_PHEROMONE, oldValue, newValue)
     runtime.queueSource(chunk, KAMIKAZE_PHEROMONE,
         oldValue * KAMIKAZE_SCALE, newValue * KAMIKAZE_SCALE)

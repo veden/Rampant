@@ -86,6 +86,8 @@ local NEIGHBOR_OFFSETS = {
 local FIELD_KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
 local KAMIKAZE_DECAY = Constants.DECAY_KAMIKAZE
 local PLAYER_FIELD_RADIUS = 8
+local REGIONAL_FIELD_RADIUS = 32
+local RESOURCE_FIELD_RADIUS = 24
 local KAMIKAZE_SCALE = 0.95
 
 -- The death field is signed and max-plus cannot lower a value, so the two signs
@@ -107,6 +109,12 @@ local FIELD_OPTS = {}
 -- is 256 tiles: far more than a hunter needs, and it bounds the work per move and
 -- the field's memory to a fixed neighbourhood.
 FIELD_OPTS[FIELD_PLAYER] = { maxRadius = PLAYER_FIELD_RADIUS }
+-- Base, enemy and resource change rarely (structure events, chunk scans) but
+-- their nominal reach was also 126 hops, so every one of those rare changes
+-- re-propagated the entire tracked map and paid O(map) work in a single tick.
+FIELD_OPTS[FIELD_BASE] = { maxRadius = REGIONAL_FIELD_RADIUS }
+FIELD_OPTS[FIELD_ENEMY] = { maxRadius = REGIONAL_FIELD_RADIUS }
+FIELD_OPTS[FIELD_RESOURCE] = { maxRadius = RESOURCE_FIELD_RADIUS }
 FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS }
 FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
 FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }

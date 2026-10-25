@@ -1174,7 +1174,7 @@ script.on_event(defines.events.on_tick,
                              " workAvg=" .. string.format("%.2f", (function()
                                  local st = SourceVersionedFieldRuntime.workStats
                                  local avg = st.n > 0 and (st.sum / st.n) or 0
-                                 st.sum, st.n, st.max = 0, 0, 0
+                                 st.sum, st.n = 0, 0
                                  return avg
                              end)()) ..
                              " workMax=" .. tostring((function()
