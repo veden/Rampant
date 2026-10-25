@@ -535,6 +535,14 @@ traj-review:
 # Flaky registry: integration-tests/behavior-flaky.list — a listed
 # scenario failing prints KNOWN-FLAKY + the recorded reason and exits 0
 # (so batteries don't block on tracked flakes). strict=1 overrides.
+# Assert that no Rampant prototype is placed by map generation. Mapgen only
+# places structures, and generated spawners deep-copy the vanilla prototype --
+# if they keep its autoplace, every faction/tier/variant becomes its own
+# autoplaced enemy type and the map fills with spawners near the origin
+# (observed as 354 autoplaced spawner prototypes). Offline, ~10s, no server.
+test-autoplace: copy
+    python3 tools/check-autoplace.py --mod-directory {{ modFolder }}
+
 test-behavior name="wall-defense" seed="1" strict="0": copy
     #!/usr/bin/env -S bash
     set -e
