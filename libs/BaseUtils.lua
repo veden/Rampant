@@ -447,6 +447,25 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local baseAlignment = base.alignment
     local position = disPos or entity.position
 
+    -- Enqueue-time telemetry: where the SOURCE entity actually is, before the
+    -- replacement path can touch it. Distinguishes "the entity was already at
+    -- the origin when queued" from "the replacement moved it".
+    if entity and entity.valid then
+        local st = Universe.spawnTelemetry
+        if not st then
+            st = { total = 0, near64 = 0, maxShift = 0, blocked = 0 }
+            Universe.spawnTelemetry = st
+        end
+        local epos = entity.position
+        st.enq = (st.enq or 0) + 1
+        if (math.abs(epos.x) < 64) and (math.abs(epos.y) < 64) then
+            st.enqNear64 = (st.enqNear64 or 0) + 1
+        end
+        local sdx, sdy = position.x - epos.x, position.y - epos.y
+        local sshift = math.sqrt(sdx * sdx + sdy * sdy)
+        if sshift > (st.enqMaxShift or 0) then st.enqMaxShift = sshift end
+    end
+
     local pickedBaseAlignment
     if baseAlignment[2] then
         if Universe.random() < 0.75 then

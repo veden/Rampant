@@ -1114,6 +1114,9 @@ script.on_event(defines.events.on_tick,
                                  " hive=" .. tostring(st.hive or 0),
                                  " blocked=" .. tostring(st.blocked or 0),
                                  " near64=" .. tostring(st.near64),
+                                 " enq=" .. tostring(st.enq or 0),
+                                 " enqNear64=" .. tostring(st.enqNear64 or 0),
+                                 " enqShift=" .. string.format("%.1f", st.enqMaxShift or 0),
                                  " maxShift=" .. string.format("%.1f", st.maxShift or 0)})
                             Universe.spawnTelemetry = nil
                         end
