@@ -285,10 +285,16 @@ end
 -- RCON Test Helpers
 -- In-world pheromone overlay.
 --
--- The field numbers are only meaningful compared across neighbouring chunks, so
--- a log line cannot be watched. This draws one rectangle per chunk, coloured by
--- the field value relative to that field's peak, refreshed every few ticks.
--- Toggled with remote Rampant.drawField(name[, enabled]).
+-- A filled heat map is unreadable for a field that covers 1024 tiles: the whole
+-- screen is tinted and no shape is visible. Three sparse views instead, chosen
+-- with the third argument of Rampant.drawField(name, enabled, mode):
+--
+--   "arrows"  (default) one short arrow every 2 chunks pointing at the
+--             neighbouring chunk with the highest value, i.e. exactly the step
+--             a unit reading the field would take. Shows direction and flow.
+--   "contour" thin rings where the value crosses 20/40/60/80% of the field peak.
+--   "fill"    the old per-chunk tint, for close-up inspection.
+--   "numbers" like fill plus the value drawn as text.
 local FIELD_COLORS = {
     player = { r = 0.2, g = 0.4, b = 1.0 },
     kamikaze = { r = 0.7, g = 0.2, b = 1.0 },
@@ -308,70 +314,150 @@ local FIELD_TYPES = {
     deathLoss = Constants.DEATH_LOSS_PHEROMONE,
 }
 local Visualizers = {}
--- Redraw once a second: fast enough to watch a field move, slow enough not to
--- flicker (15 ticks redrew the whole field four times a second).
 local VISUALIZE_EVERY = 60
--- Only draw chunks that are a meaningful fraction of the field's peak. The
--- long faint tail is most of the rectangle count and it is what made the
--- picture unreadable; it is still there in the data, just not painted.
-local VISUALIZE_MIN_FRACTION = 0.05
--- Numbers only where they are legible: the top fifth of the field.
-local VISUALIZE_NUMBER_FRACTION = 0.20
+local CONTOUR_BANDS = { 0.8, 0.6, 0.4, 0.2 }
+local CONTOUR_WIDTH = 0.03
 
-function Observability.toggleField(name, enabled, showNumbers)
+local function fieldOf(v)
+    return Universe.sourceVersionedFields[Runtime.fieldKey(v.fieldType)] or {}
+end
+
+local function peakOf(field)
+    local peak = 0
+    for _, value in pairs(field) do
+        if value > peak then peak = value end
+    end
+    return peak
+end
+
+local function drawArrows(v, field, peak)
+    for chunkId, value in pairs(field) do
+        local t = value / peak
+        if t >= 0.10 then
+            local chunk = MapUtils.getChunkById(chunkId, Universe)
+            if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
+                -- One arrow per 2x2 chunk cell keeps the screen mostly clear.
+                local gx = mFloor(chunk.x / 32)
+                local gy = mFloor(chunk.y / 32)
+                if gx % 2 == 0 and gy % 2 == 0 then
+                    -- getNeighborChunks(map, x, y) returns 8 slots, -1 for a
+                    -- chunk that is not tracked.
+                    local neighbours = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+                    local bestId, bestValue = nil, value
+                    if neighbours then
+                        for i = 1, 8 do
+                            local neighbour = neighbours[i]
+                            if type(neighbour) == "table" and neighbour.id then
+                                local nv = field[neighbour.id] or 0
+                                if nv > bestValue then bestValue, bestId = nv, neighbour.id end
+                            end
+                        end
+                    end
+                    if bestId then
+                        local target = MapUtils.getChunkById(bestId, Universe)
+                        if target then
+                            local cx, cy = chunk.x + 16, chunk.y + 16
+                            local tx, ty = cx, cy
+                            if target.x > chunk.x then tx = cx + 14 elseif target.x < chunk.x then tx = cx - 14 end
+                            if target.y > chunk.y then ty = cy + 14 elseif target.y < chunk.y then ty = cy - 14 end
+                            rendering.draw_line{
+                                surface = chunk.map.surface,
+                                from = { cx, cy },
+                                to = { tx, ty },
+                                color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.25 + 0.5 * t },
+                                width = 2,
+                                only_during_screenshot = false,
+                            }
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function drawContours(v, field, peak)
+    for chunkId, value in pairs(field) do
+        local t = value / peak
+        for _, band in ipairs(CONTOUR_BANDS) do
+            if t >= band - CONTOUR_WIDTH and t <= band + CONTOUR_WIDTH then
+                local chunk = MapUtils.getChunkById(chunkId, Universe)
+                if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
+                    rendering.draw_rectangle{
+                        surface = chunk.map.surface,
+                        left_top = { chunk.x, chunk.y },
+                        right_bottom = { chunk.x + 32, chunk.y + 32 },
+                        color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.7 },
+                        filled = false,
+                        width = 2,
+                        only_during_screenshot = false,
+                    }
+                end
+                break
+            end
+        end
+    end
+end
+
+function Observability.toggleField(name, enabled, mode)
     if enabled == nil then enabled = not Visualizers[name] end
     if not enabled then
         Visualizers[name] = nil
-        -- LuaRendering has no per-object destroy in 2.1; clear this mod's
-        -- objects and let the tick redraw whichever fields are still enabled.
         rendering.clear("Rampant")
         return name .. ": off"
     end
     local fieldType = FIELD_TYPES[name]
     if not fieldType then return "unknown field: " .. tostring(name) end
-    Visualizers[name] = { fieldType = fieldType, color = FIELD_COLORS[name], numbers = showNumbers }
-    local legend = "[Rampant] " .. name .. " pheromone: brighter = stronger. " ..
-        "It is strongest at the source (a nest, a spawner, the player) and fades one step per chunk outward."
-    if showNumbers then legend = legend .. " Chunk values are drawn as text." end
+    mode = mode or "arrows"
+    Visualizers[name] = { fieldType = fieldType, color = FIELD_COLORS[name], mode = mode }
+    local legend = "[Rampant] " .. name .. " pheromone (" .. mode .. ")"
+    if mode == "arrows" then
+        legend = legend .. ": arrows point toward the stronger neighbour, i.e. the step a unit takes."
+    elseif mode == "contour" then
+        legend = legend .. ": rings mark 80/60/40/20% of the strongest chunk."
+    end
     game.print(legend)
-    return name .. ": on"
+    return name .. ": on (" .. mode .. ")"
 end
 
 function Observability.updateVisualizers(tick)
     if tick % VISUALIZE_EVERY ~= 0 then return end
     local any = false
-    for _ in pairs(Visualizers) do any = true break end
+    for _ in pairs(Visualizers) do any = true; break end
     if not any then return end
     rendering.clear("Rampant")
     for _, v in pairs(Visualizers) do
-        local field = Universe.sourceVersionedFields[Runtime.fieldKey(v.fieldType)] or {}
-        local peak = 0
-        for _, value in pairs(field) do
-            if value > peak then peak = value end
-        end
+        local field = fieldOf(v)
+        local peak = peakOf(field)
         if peak > 0 then
-            for chunkId, value in pairs(field) do
-                local chunk = MapUtils.getChunkById(chunkId, Universe)
-                if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid and (value / peak) >= VISUALIZE_MIN_FRACTION then
+            if v.mode == "arrows" then
+                drawArrows(v, field, peak)
+            elseif v.mode == "contour" then
+                drawContours(v, field, peak)
+            else
+                for chunkId, value in pairs(field) do
                     local t = value / peak
-                    rendering.draw_rectangle{
-                        surface = chunk.map.surface,
-                        left_top = { chunk.x, chunk.y },
-                        right_bottom = { chunk.x + 32, chunk.y + 32 },
-                        color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.10 + 0.45 * t },
-                        filled = true,
-                        only_during_screenshot = false,
-                    }
-                    if v.numbers and (value / peak) >= VISUALIZE_NUMBER_FRACTION then
-                        rendering.draw_text{
+                    local chunk = MapUtils.getChunkById(chunkId, Universe)
+                    if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid and t >= 0.05 then
+                        rendering.draw_rectangle{
                             surface = chunk.map.surface,
-                            text = string.format("%.0f", value),
-                            target = { chunk.x + 16, chunk.y + 16 },
-                            color = { r = 1, g = 1, b = 1, a = 0.85 },
-                            scale = 1.1,
-                            alignment = "center",
+                            left_top = { chunk.x, chunk.y },
+                            right_bottom = { chunk.x + 32, chunk.y + 32 },
+                            color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.10 + 0.45 * t },
+                            filled = true,
                             only_during_screenshot = false,
                         }
+                        if v.mode == "numbers" and t >= 0.20 then
+                            rendering.draw_text{
+                                surface = chunk.map.surface,
+                                text = string.format("%.0f", value),
+                                target = { chunk.x + 16, chunk.y + 16 },
+                                color = { r = 1, g = 1, b = 1, a = 0.85 },
+                                scale = 1.1,
+                                alignment = "center",
+                                only_during_screenshot = false,
+                            }
+                        end
                     end
                 end
             end
