@@ -308,7 +308,15 @@ local FIELD_TYPES = {
     deathLoss = Constants.DEATH_LOSS_PHEROMONE,
 }
 local Visualizers = {}
-local VISUALIZE_EVERY = 15
+-- Redraw once a second: fast enough to watch a field move, slow enough not to
+-- flicker (15 ticks redrew the whole field four times a second).
+local VISUALIZE_EVERY = 60
+-- Only draw chunks that are a meaningful fraction of the field's peak. The
+-- long faint tail is most of the rectangle count and it is what made the
+-- picture unreadable; it is still there in the data, just not painted.
+local VISUALIZE_MIN_FRACTION = 0.05
+-- Numbers only where they are legible: the top fifth of the field.
+local VISUALIZE_NUMBER_FRACTION = 0.20
 
 function Observability.toggleField(name, enabled, showNumbers)
     if enabled == nil then enabled = not Visualizers[name] end
@@ -344,7 +352,7 @@ function Observability.updateVisualizers(tick)
         if peak > 0 then
             for chunkId, value in pairs(field) do
                 local chunk = MapUtils.getChunkById(chunkId, Universe)
-                if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
+                if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid and (value / peak) >= VISUALIZE_MIN_FRACTION then
                     local t = value / peak
                     rendering.draw_rectangle{
                         surface = chunk.map.surface,
@@ -354,7 +362,7 @@ function Observability.updateVisualizers(tick)
                         filled = true,
                         only_during_screenshot = false,
                     }
-                    if v.numbers and value >= 1 then
+                    if v.numbers and (value / peak) >= VISUALIZE_NUMBER_FRACTION then
                         rendering.draw_text{
                             surface = chunk.map.surface,
                             text = string.format("%.0f", value),
