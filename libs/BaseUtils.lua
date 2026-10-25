@@ -464,6 +464,20 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         local sdx, sdy = position.x - epos.x, position.y - epos.y
         local sshift = math.sqrt(sdx * sdx + sdy * sdy)
         if sshift > (st.enqMaxShift or 0) then st.enqMaxShift = sshift end
+        -- Identity of the source: was it a vanilla spawner placed by map
+        -- generation, or one this mod already created? Distinct unit_numbers
+        -- tell repeated queueing of one entity from many entities.
+        local un = entity.unit_number
+        st.enqSeen = st.enqSeen or {}
+        if un and not st.enqSeen[un] then
+            st.enqSeen[un] = true
+            st.enqUnique = (st.enqUnique or 0) + 1
+        end
+        if string.find(entity.name, "rampant", 1, true) then
+            st.enqRampant = (st.enqRampant or 0) + 1
+        else
+            st.enqVanilla = (st.enqVanilla or 0) + 1
+        end
     end
 
     local pickedBaseAlignment

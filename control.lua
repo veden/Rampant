@@ -1116,7 +1116,10 @@ script.on_event(defines.events.on_tick,
                                  " near64=" .. tostring(st.near64),
                                  " enq=" .. tostring(st.enq or 0),
                                  " enqNear64=" .. tostring(st.enqNear64 or 0),
-                                 " enqShift=" .. string.format("%.1f", st.enqMaxShift or 0),
+                                 " enqShift=" .. string.format("%.1f", st.enqMaxShift or 0) ..
+                                 " enqUnique=" .. tostring(st.enqUnique or 0) ..
+                                 " enqVanilla=" .. tostring(st.enqVanilla or 0) ..
+                                 " enqRampant=" .. tostring(st.enqRampant or 0),
                                  " maxShift=" .. string.format("%.1f", st.maxShift or 0)})
                             Universe.spawnTelemetry = nil
                         end
