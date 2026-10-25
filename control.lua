@@ -1186,6 +1186,42 @@ script.on_event(defines.events.on_tick,
                              end)()) ..
                              " wPlayer=" .. tostring(SourceVersionedFieldRuntime.lastFieldWork[Constants.PLAYER_PHEROMONE] or 0) ..
                              " wKamikaze=" .. tostring(SourceVersionedFieldRuntime.lastFieldWork[Constants.KAMIKAZE_PHEROMONE] or 0)})
+                        -- Gameplay rates: cumulative counters differenced over
+                        -- the range, so expansion, upgrade, squad and player
+                        -- activity are readable as rates instead of a single
+                        -- lifetime total. Clamped at 0 because Metrics.reset()
+                        -- clears the counters at scenario phase boundaries.
+                        local counters = Metrics.getCounters()
+                        local prev = Universe.gameplaySnapshot
+                        local snap = {}
+                        local parts = {}
+                        local tracked = {
+                            { "squad", "squad.created" },
+                            { "squadEnd", "squad.destroyed" },
+                            { "formTry", "squad.formAttempt" },
+                            { "formEmpty", "squad.formEmpty" },
+                            { "retreat", "squad.retreated" },
+                            { "dispatch", "cmd.DISPATCH_SQUAD" },
+                            { "settler", "squad.settle" },
+                            { "upgrade", "spawn.upgrade" },
+                            { "upgradeBlocked", "upgrade.createBlocked" },
+                            { "groupCreated", "event.onUnitGroupCreated" },
+                            { "playerBuild", "player.build" },
+                            { "playerMine", "player.mine" },
+                            { "resource", "resource.registered" },
+                            { "resDepleted", "event.onResourceDepleted" },
+                            { "kills", "death.commandsEmitted" },
+                        }
+                        for _, entry in ipairs(tracked) do
+                            local now = counters[entry[2]] or 0
+                            local was = prev and prev[entry[2]] or 0
+                            local delta = now - was
+                            if delta < 0 then delta = 0 end
+                            snap[entry[2]] = now
+                            parts[#parts + 1] = entry[1] .. "=" .. tostring(delta)
+                        end
+                        Universe.gameplaySnapshot = snap
+                        log({"", "[RANGE] tick=", tick, " phase=gameplay ", table.concat(parts, " ")})
                         local st = Universe.spawnTelemetry
                         if st then
                             log({"", "[RANGE] tick=", tick, " phase=spawn",

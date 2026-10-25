@@ -127,6 +127,11 @@ function Metrics.highWater(name, value)
 end
 
 --- Pull snapshot: counters, samples, highWater, latest + diagnostics.
+function Metrics.getCounters()
+    if not active() then return {} end
+    return Universe.metrics.counters or {}
+end
+
 function Metrics.get()
     local diagnostics = {
         universeRef = Universe ~= nil,

@@ -653,6 +653,16 @@ end
 
 function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
     if (BUILDING_PHEROMONES[entity.type] ~= nil) and (entity.force.name ~= "enemy") then
+        -- Player-side activity: what the player builds and mines is the input
+        -- that steers attacks, and it had no counter at all.
+        if MetricsG then
+            if addObject then
+                MetricsG.inc("player.build")
+                MetricsG.inc("player.build." .. entity.type)
+            else
+                MetricsG.inc("player.mine")
+            end
+        end
         local entityValue = BUILDING_PHEROMONES[entity.type]
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
@@ -699,6 +709,7 @@ function ChunkUtils.unregisterResource(entity, map)
 end
 
 function ChunkUtils.registerResource(entity, map)
+    if MetricsG then MetricsG.inc("resource.registered") end
     local overlapArray = getEntityOverlapChunks(map, entity)
 
     for i=1,#overlapArray do
