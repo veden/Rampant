@@ -650,7 +650,11 @@ local function timedEvent(name, fn, event)
 end
 
 local function timed(tick, rangeSample, name, fn, a, b)
-    if not rangeSample and not Constants.SUBSYSTEM_TELEMETRY then
+    -- Universe.diagTicks opens a bounded window in which EVERY subsystem logs,
+    -- every tick. Range sampling (every 500 ticks) cannot attribute a spike:
+    -- a 24ms tick that is not a sample tick leaves no line at all, and the
+    -- profiler cannot be read numerically from Lua by design.
+    if not rangeSample and not Constants.SUBSYSTEM_TELEMETRY and not Universe.diagTicks then
         return fn(a, b)
     end
     local profiler = helpers.create_profiler()
@@ -1057,6 +1061,10 @@ script.on_event(defines.events.on_tick,
                     -- profiler is read before the log call, so the log itself is not
                     -- counted.
                     local tickProfiler = Metrics.isEnabled() and helpers.create_profiler() or nil
+                    if Universe.diagTicks then
+                        Universe.diagTicks = Universe.diagTicks - 1
+                        if Universe.diagTicks <= 0 then Universe.diagTicks = nil end
+                    end
                     -- Poll for incoming UDP packets (triggers on_udp_packet_received)
                     -- Poll all available sockets: server + connected players
                     helpers.recv_udp()
@@ -1086,9 +1094,11 @@ script.on_event(defines.events.on_tick,
                         timed(tick, rangeSample, "planning", planning, gameRef.forces.enemy.get_evolution_factor(game.surfaces[1]))
                         -- One-time rescan when evolution rises: registers enemy structures that spawned after chunk creation
                         if not Universe.rescannedForEvolution and Universe.evolutionLevel > 0.3 then
-                            for _, map in pairs(Universe.maps) do
-                                rescanAllChunks(map, tick)
-                            end
+                            timed(tick, rangeSample, "rescanAllChunks", function()
+                                for _, map in pairs(Universe.maps) do
+                                    rescanAllChunks(map, tick)
+                                end
+                            end)
                             Universe.rescannedForEvolution = true
                         end
                         timed(tick, rangeSample, "hives", processHives, tick)
@@ -1245,7 +1255,13 @@ remote.add_interface("rampantTests",
                      {
                          fillableDirtTest = tests.fillableDirtTest,
                          tunnelTest = tests.tunnelTest,
-                         reveal = tests.reveal
+                         reveal = tests.reveal,
+                         -- Log every subsystem on every tick for N ticks, so a
+                         -- spike can be attributed without range sampling.
+                         diagnose = function(ticks)
+                             Universe.diagTicks = tonumber(ticks) or 600
+                             return Universe.diagTicks
+                         end
                      }
 )
 
