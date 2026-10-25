@@ -122,7 +122,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        types={
+        type={
             "wall",
             "transport-belt"
         }
@@ -131,7 +131,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        types={
+        type={
             "splitter",
             "pump",
             "offshore-pump",
@@ -148,7 +148,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        types={
+        type={
             "furnace",
             "lab",
             "roboport",
@@ -165,7 +165,7 @@ local function addCommandSet()
         area=spbSharedChunkArea,
         force=Universe.playerForces,
         collision_mask = "player",
-        types={
+        type={
             "artillery-turret",
             "reactor",
             "rocket-silo"
@@ -180,19 +180,19 @@ local function addCommandSet()
     Universe.isFilteredEntitiesEnemyStructureQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
-        types={
+        type={
             "turret",
             "unit-spawner"
         }
     }
     Universe.isCountResourcesQuery = {
         area=isSharedChunkArea,
-        types="resource"
+        type="resource"
     }
     Universe.isFilteredEntitiesUnitQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
-        types="unit"
+        type="unit"
     }
 
     -- cps
@@ -203,7 +203,7 @@ local function addCommandSet()
     Universe.cpsFilteredEnemyAnyFound = {
         area=cpsSharedChunkArea,
         force=Universe.enemyForces,
-        types={
+        type={
             "turret",
             "unit-spawner"
         },
@@ -217,7 +217,7 @@ local function addCommandSet()
     }
     Universe.spFilteredEntitiesCliffQuery = {
         area=spSharedAreaChunk,
-        types="cliff",
+        type="cliff",
         limit = 1
     }
     Universe.spFilteredTilesPathQuery = {
@@ -232,7 +232,7 @@ local function addCommandSet()
             {0,0},
             {0,0}
         },
-        types="cliff"
+        type="cliff"
     }
 
     -- ppu

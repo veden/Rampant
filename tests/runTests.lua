@@ -429,6 +429,9 @@ local test_collections = {}
     local test_metrics = require("tests.test_metrics")
     table.insert(test_collections, { name = "Metrics", collection = test_metrics })
 
+    local test_query_keys = require("tests.test_query_keys")
+    table.insert(test_collections, { name = "Query Keys", collection = test_query_keys })
+
     -- Run all tests
     local total_passed = 0
 
