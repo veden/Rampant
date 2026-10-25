@@ -613,6 +613,35 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     return work or 0
 end
 
+-- Correctness check: solve the field from its sources with the pure solver and
+-- compare against the incrementally maintained live field. The incremental path
+-- (queues, dedupe, indexed heap, radius caps) must converge to the same values;
+-- a mismatch means a change was dropped or a cap is being applied inconsistently.
+function Runtime.verifyField(fieldType, tolerance)
+    local key = Runtime.fieldKey(fieldType)
+    local live = Universe.sourceVersionedFields[key] or {}
+    local sources = Runtime.buildSources(fieldType)
+    local expected = Solver.solve(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
+    tolerance = tolerance or 0.5
+    local checked, mismatches, extra, maxDelta, worstId = 0, 0, 0, 0, nil
+    for id, v in pairs(expected) do
+        checked = checked + 1
+        local liveV = live[id] or 0
+        local d = liveV - v
+        if d < 0 then d = -d end
+        if d > maxDelta then maxDelta, worstId = d, id end
+        if d > tolerance then mismatches = mismatches + 1 end
+    end
+    for id, v in pairs(live) do
+        if v > tolerance and not expected[id] then extra = extra + 1 end
+    end
+    return {
+        field = tostring(fieldType), sources = #sources, checked = checked,
+        mismatches = mismatches, liveOnly = extra,
+        maxDelta = string.format("%.3f", maxDelta), worstChunk = tostring(worstId),
+    }
+end
+
 -- Read hook installed into SquadLogic. Returns the solved source-versioned
 -- value for the chunk, or nil when the runtime is not initialized.
 function Runtime.readChunk(fieldType, chunk)

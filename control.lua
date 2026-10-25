@@ -1539,6 +1539,22 @@ remote.add_interface("Rampant", {
         end
         return table.concat(parts, " ")
     end,
+    -- Compare a live field against a fresh full solve of its sources.
+    verifyField = function(name, tolerance)
+        local map = {
+            resource = Constants.RESOURCE_PHEROMONE, base = Constants.BASE_PHEROMONE,
+            enemy = Constants.ENEMY_PHEROMONE, player = Constants.PLAYER_PHEROMONE,
+            kamikaze = Constants.KAMIKAZE_PHEROMONE,
+            deathGain = Constants.DEATH_GAIN_PHEROMONE, deathLoss = Constants.DEATH_LOSS_PHEROMONE,
+        }
+        local fType = map[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        local r = SourceVersionedFieldRuntime.verifyField(fType, tolerance)
+        local line = string.format("%s sources=%d checked=%d mismatches=%d liveOnly=%d maxDelta=%s worst=%s",
+            r.field, r.sources, r.checked, r.mismatches, r.liveOnly, r.maxDelta, r.worstChunk)
+        log({"", "[VERIFY] ", line})
+        return line
+    end,
     setTelemetry = function(enabled)
         Metrics.setEnabled(enabled)
         return Metrics.isEnabled()
