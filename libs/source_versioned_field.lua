@@ -289,9 +289,15 @@ end
 -- already at its value fails the `v > top + eps` test and pushes nothing, so a
 -- resumed call can re-seed safely. Returns work, heap; a non-empty heap means the
 -- propagation is incomplete and must be resumed.
-function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, heap)
+function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, heap, pending)
     local o = options(opts)
     heap = heap or {}
+    -- Deduplicate top-value pushes. The heap is a lazy-deletion Dijkstra, so a
+    -- chunk can be queued once per improvement; with sources arriving
+    -- incrementally the heap then holds hundreds of copies of the same chunk and
+    -- grows without bound (measured: 584k nodes for a ~1000-chunk field, 248k
+    -- added in 13 seconds, ~25MB of live tables). `pending[id]` is the best
+    -- value already queued for that chunk, so only an improvement is pushed.
     local maxWork = o.maxWork
     local work = 0
     for _, source in ipairs(sources) do
@@ -306,7 +312,10 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
             end
             field[id] = v
             topSource[id] = id
-            heapPush(heap, id, v, 0, id)
+            if not pending or not pending[id] or v > pending[id] then
+                if pending then pending[id] = v end
+                heapPush(heap, id, v, 0, id)
+            end
             work = work + 1
         elseif id ~= topSource[id] and v > sec + o.eps then
             second[id] = v
@@ -319,6 +328,9 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         if maxWork and work >= maxWork then break end
         local node = heapPop(heap)
         local nid = node.id
+        if pending and not node.second and pending[nid] == node.v then
+            pending[nid] = nil
+        end
         local topValue = field[nid] or 0
         local secValue = second[nid] or 0
         local stillTop = (not node.second) and node.v >= topValue
@@ -335,7 +347,10 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
                     end
                     field[neighborId] = cand
                     topSource[neighborId] = node.src
-                    heapPush(heap, neighborId, cand, node.d + 1, node.src)
+                    if not pending or not pending[neighborId] or cand > pending[neighborId] then
+                        if pending then pending[neighborId] = cand end
+                        heapPush(heap, neighborId, cand, node.d + 1, node.src)
+                    end
                     work = work + 1
                 elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
                     second[neighborId] = cand

@@ -570,10 +570,26 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
+    -- Per-field dedupe map for the heap (see Solver.propagateIncreases*). It is
+    -- bounded by the field size, so it cannot grow like the heap did.
+    local pending = Universe.sourceVersionedPending
+    if not pending then
+        pending = {}
+        Universe.sourceVersionedPending = pending
+    end
+    local fieldPending = pending[key]
+    if not fieldPending then
+        fieldPending = {}
+        pending[key] = fieldPending
+    end
     local _, remaining, _, _, work = Solver.propagateIncreasesWithMetadata(
         sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
-        Runtime.neighborOf, BOUNDED_OPTS, frontier)
+        Runtime.neighborOf, BOUNDED_OPTS, frontier, fieldPending)
     Universe.sourceVersionedFrontier[key] = remaining
+    if not remaining or #remaining == 0 then
+        -- Converged: nothing is queued, so no pending entry is meaningful.
+        pending[key] = {}
+    end
     return work or 0
 end
 
