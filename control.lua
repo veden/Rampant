@@ -622,6 +622,23 @@ end
 -- it; otherwise call straight through. `SUBSYSTEM_TELEMETRY` is the
 -- benchmark-only exact mode: it logs every timed call so the parser can bucket
 -- min/avg/max per subsystem per range. It is high-overhead and off by default.
+-- Event handlers are charged to the event, not to a tick subsystem, so a
+-- command burst inside one is invisible in [SUB]. Time them when subsystem
+-- telemetry is on and log an [EVT] line; the profiler includes the engine work
+-- done inside the call (set_multi_command, create_unit_group), which is where a
+-- group-movement spike would actually be spent.
+local function timedEvent(name, fn, event)
+    -- Log every event while telemetry is on: a spike lands on an arbitrary
+    -- tick, so sampling by range would miss exactly the one we want.
+    if not Metrics.isEnabled() and not Constants.SUBSYSTEM_TELEMETRY then
+        return fn(event)
+    end
+    local profiler = helpers.create_profiler()
+    local r1, r2 = fn(event)
+    log({"", "[EVT] tick=", game.tick, " name=", name, " ", profiler})
+    return r1, r2
+end
+
 local function timed(tick, rangeSample, name, fn, a, b)
     if not rangeSample and not Constants.SUBSYSTEM_TELEMETRY then
         return fn(a, b)
@@ -1076,7 +1093,7 @@ script.on_event(defines.events.on_tick,
                         log({"", "[RANGE] tick=", tick, " phase=pick pick=", pick, " ", tPick})
                     end
 
-                    Executor.drain()
+                    timed(tick, rangeSample, "executor", Executor.drain)
                     -- Persisted solved state: a no-op once created.
                     SourceVersionedFieldRuntime.ensureStorage()
                     -- Per-field cadence: each field drains on its own budget so the
@@ -1175,18 +1192,19 @@ script.on_event(
         defines.events.script_raised_revive,
         defines.events.on_biter_base_built
     },
-    onBuild)
+    function(e) timedEvent("onBuild", onBuild, e) end)
 
 script.on_event(defines.events.on_rocket_launched, onRocketLaunch)
 script.on_event({defines.events.on_entity_died,
-                 defines.events.script_raised_destroy}, onDeath)
-script.on_event(defines.events.on_chunk_generated, onChunkGenerated)
-script.on_event(defines.events.on_unit_group_created, onUnitGroupCreated)
+                 defines.events.script_raised_destroy},
+                function(e) timedEvent("onDeath", onDeath, e) end)
+script.on_event(defines.events.on_chunk_generated, function(e) timedEvent("onChunkGenerated", onChunkGenerated, e) end)
+script.on_event(defines.events.on_unit_group_created, function(e) timedEvent("onUnitGroupCreated", onUnitGroupCreated, e) end)
 script.on_event(defines.events.on_force_created, onForceCreated)
 script.on_event(defines.events.on_forces_merged, onForceMerged)
-script.on_event(defines.events.on_unit_group_finished_gathering, onGroupFinishedGathering)
+script.on_event(defines.events.on_unit_group_finished_gathering, function(e) timedEvent("onGroupFinishedGathering", onGroupFinishedGathering, e) end)
 
-script.on_event(defines.events.on_build_base_arrived, onBuilderArrived)
+script.on_event(defines.events.on_build_base_arrived, function(e) timedEvent("onBuilderArrived", onBuilderArrived, e) end)
 
 -- testing
 
