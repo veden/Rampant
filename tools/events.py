@@ -88,8 +88,9 @@ def main():
         print("no events", file=sys.stderr)
         return 1
 
-    print(f"events {first_tick}..{last_tick} ticks "
-          f"({(last_tick - first_tick) / 60 / 60:.1f} game-hours)\n")
+    # 60 ticks per second, 60 seconds per minute: ticks/3600 is game-MINUTES.
+    span_minutes = (last_tick - first_tick) / 60 / 60
+    print(f"events {first_tick}..{last_tick} ticks ({span_minutes:.1f} game-minutes)\n")
     print(f"{'kind':<30}{'count':>8}")
     for kind, n in counts.most_common():
         print(f"{kind:<30}{n:>8}")
