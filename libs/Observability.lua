@@ -310,7 +310,7 @@ local FIELD_TYPES = {
 local Visualizers = {}
 local VISUALIZE_EVERY = 15
 
-function Observability.toggleField(name, enabled)
+function Observability.toggleField(name, enabled, showNumbers)
     if enabled == nil then enabled = not Visualizers[name] end
     if not enabled then
         Visualizers[name] = nil
@@ -321,7 +321,11 @@ function Observability.toggleField(name, enabled)
     end
     local fieldType = FIELD_TYPES[name]
     if not fieldType then return "unknown field: " .. tostring(name) end
-    Visualizers[name] = { fieldType = fieldType, color = FIELD_COLORS[name], rendering = {} }
+    Visualizers[name] = { fieldType = fieldType, color = FIELD_COLORS[name], numbers = showNumbers }
+    local legend = "[Rampant] " .. name .. " pheromone: brighter = stronger. " ..
+        "It is strongest at the source (a nest, a spawner, the player) and fades one step per chunk outward."
+    if showNumbers then legend = legend .. " Chunk values are drawn as text." end
+    game.print(legend)
     return name .. ": on"
 end
 
@@ -346,10 +350,21 @@ function Observability.updateVisualizers(tick)
                         surface = chunk.map.surface,
                         left_top = { chunk.x, chunk.y },
                         right_bottom = { chunk.x + 32, chunk.y + 32 },
-                        color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.05 + 0.35 * t },
+                        color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.10 + 0.45 * t },
                         filled = true,
                         only_during_screenshot = false,
                     }
+                    if v.numbers and value >= 1 then
+                        rendering.draw_text{
+                            surface = chunk.map.surface,
+                            text = string.format("%.0f", value),
+                            target = { chunk.x + 16, chunk.y + 16 },
+                            color = { r = 1, g = 1, b = 1, a = 0.85 },
+                            scale = 1.1,
+                            alignment = "center",
+                            only_during_screenshot = false,
+                        }
+                    end
                 end
             end
         end

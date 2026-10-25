@@ -1543,8 +1543,8 @@ remote.add_interface("Rampant", {
     -- Toggle an in-world pheromone overlay: one translucent rectangle per
     -- chunk, coloured by field value relative to that field's peak.
     --   /c remote.call("Rampant","drawField","player",true)
-    drawField = function(name, enabled)
-        return Observability.toggleField(name, enabled)
+    drawField = function(name, enabled, showNumbers)
+        return Observability.toggleField(name, enabled, showNumbers)
     end,
     -- Compare a live field against a fresh full solve of its sources.
     verifyField = function(name, tolerance)
