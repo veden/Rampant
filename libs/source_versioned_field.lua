@@ -312,15 +312,20 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
             end
             field[id] = v
             topSource[id] = id
-            if not pending or not pending[id] or v > pending[id] then
-                if pending then pending[id] = v end
+            local top = pending and pending.top
+            if not top or not top[id] or v > top[id] then
+                if top then top[id] = v end
                 heapPush(heap, id, v, 0, id)
             end
             work = work + 1
         elseif id ~= topSource[id] and v > sec + o.eps then
             second[id] = v
             secondSource[id] = id
-            heapPush(heap, id, v, 0, id, true)
+            local sec = pending and pending.second
+            if not sec or not sec[id] or v > sec[id] then
+                if sec then sec[id] = v end
+                heapPush(heap, id, v, 0, id, true)
+            end
             work = work + 1
         end
     end
@@ -328,8 +333,9 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         if maxWork and work >= maxWork then break end
         local node = heapPop(heap)
         local nid = node.id
-        if pending and not node.second and pending[nid] == node.v then
-            pending[nid] = nil
+        if pending then
+            local side = node.second and pending.second or pending.top
+            if side and side[nid] == node.v then side[nid] = nil end
         end
         local topValue = field[nid] or 0
         local secValue = second[nid] or 0
@@ -347,15 +353,20 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
                     end
                     field[neighborId] = cand
                     topSource[neighborId] = node.src
-                    if not pending or not pending[neighborId] or cand > pending[neighborId] then
-                        if pending then pending[neighborId] = cand end
+                    local top = pending and pending.top
+                    if not top or not top[neighborId] or cand > top[neighborId] then
+                        if top then top[neighborId] = cand end
                         heapPush(heap, neighborId, cand, node.d + 1, node.src)
                     end
                     work = work + 1
                 elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
                     second[neighborId] = cand
                     secondSource[neighborId] = node.src
-                    heapPush(heap, neighborId, cand, node.d + 1, node.src, true)
+                    local sec = pending and pending.second
+                    if not sec or not sec[neighborId] or cand > sec[neighborId] then
+                        if sec then sec[neighborId] = cand end
+                        heapPush(heap, neighborId, cand, node.d + 1, node.src, true)
+                    end
                     work = work + 1
                 end
             end

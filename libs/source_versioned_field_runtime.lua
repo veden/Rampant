@@ -579,7 +579,10 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     end
     local fieldPending = pending[key]
     if not fieldPending then
-        fieldPending = {}
+        -- Two sides: the best value queued per chunk, and the best second-best.
+        -- Both are needed, because the second-best pushes are what actually fill
+        -- the heap when sources keep improving.
+        fieldPending = { top = {}, second = {} }
         pending[key] = fieldPending
     end
     local _, remaining, _, _, work = Solver.propagateIncreasesWithMetadata(
@@ -588,7 +591,7 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     Universe.sourceVersionedFrontier[key] = remaining
     if not remaining or #remaining == 0 then
         -- Converged: nothing is queued, so no pending entry is meaningful.
-        pending[key] = {}
+        pending[key] = { top = {}, second = {} }
     end
     return work or 0
 end
