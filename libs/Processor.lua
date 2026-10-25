@@ -70,6 +70,21 @@ local gaussianRandomRangeRG = MathUtils.gaussianRandomRangeRG
 
 local createChunk = ChunkUtils.createChunk
 local initialScan = ChunkUtils.initialScan
+-- Per-chunk scan timing. [SUB] pendingChunks times the whole batch, so one
+-- expensive chunk (a dense base, a big resource field, a first pass after a
+-- long pause) hides inside it. Log each scan with its chunk coordinates and
+-- the profiler when telemetry is on; the log then gives count / total / max
+-- and the chunk that cost the most.
+local function timedInitialScan(chunk, map, tick)
+    if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
+        return initialScan(chunk, map, tick)
+    end
+    local profiler = helpers.create_profiler()
+    local result = initialScan(chunk, map, tick)
+    log({"", "[SCAN] tick=", tick, " chunk=", chunk.x, ",", chunk.y, " ", profiler})
+    return result
+end
+
 
 local removeChunkFromMap = MapUtils.removeChunkFromMap
 local chunkPassScan = ChunkUtils.chunkPassScan
@@ -536,14 +551,14 @@ function Processor.processPendingChunks(tick, flush)
 
         if map[x][y] then
             local oldChunk = map[x][y]
-            local chunk = initialScan(oldChunk, map, tick)
+            local chunk = timedInitialScan(oldChunk, map, tick)
             if (chunk == -1) then
                 removeChunkFromMap(map, oldChunk)
             end
         else
             local initialChunk = createChunk(map, x, y)
             map[x][y] = initialChunk
-            local chunk = initialScan(initialChunk, map, tick)
+            local chunk = timedInitialScan(initialChunk, map, tick)
             if (chunk == -1) then
                 map[x][y] = nil
             end
