@@ -275,15 +275,15 @@ my_collection:add('bounded_propagation_resumes_to_the_unbounded_field', function
         neighborOf, { decay = 0.9, eps = 0.0005 })
 
     local fieldB, topB, secondB, secondSourceB = {}, {}, {}, {}
-    local heap = {}
+    local hTop, hSec = Solver.newIncrementalHeap(), Solver.newIncrementalHeap()
     local calls = 0
     repeat
-        local _, remaining = Solver.propagateIncreasesWithMetadata(
+        local _, nextTop, nextSec = Solver.propagateIncreasesWithMetadata(
             { { id = 0, gen = 100 } }, fieldB, topB, secondB, secondSourceB,
-            neighborOf, { decay = 0.9, eps = 0.0005, maxWork = 1 }, heap)
-        heap = remaining
+            neighborOf, { decay = 0.9, eps = 0.0005, maxWork = 1 }, hTop, hSec)
+        hTop, hSec = nextTop, nextSec
         calls = calls + 1
-    until #heap == 0 or calls > 200
+    until (hTop.n == 0 and hSec.n == 0) or calls > 200
 
     assert(calls > 1, "maxWork of 1 must not finish in one call")
     assert(calls <= 200, "bounded propagation must terminate")

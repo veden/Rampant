@@ -289,15 +289,83 @@ end
 -- already at its value fails the `v > top + eps` test and pushes nothing, so a
 -- resumed call can re-seed safely. Returns work, heap; a non-empty heap means the
 -- propagation is incomplete and must be resumed.
-function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, heap, pending)
+-- Indexed heap for the resumable propagator.
+--
+-- One entry per chunk per side, held in parallel arrays that are reused every
+-- tick, with `pos[id]` giving the slot. An improvement updates in place; there
+-- are no node tables, no pool, no duplicate entries and no frontier that can
+-- grow with activity. The old lazy-deletion heap allocated one table per
+-- improvement (310 per tick) and accumulated 584k entries in a live game.
+local function newIndexedHeap()
+    return { id = {}, v = {}, d = {}, src = {}, pos = {}, n = 0 }
+end
+
+local function ihPush(h, id, v, d, src)
+    local p = h.pos[id]
+    if p then
+        if v <= h.v[p] then return false end
+        h.v[p], h.d[p], h.src[p] = v, d, src
+    else
+        p = h.n + 1
+        h.n = p
+        h.id[p], h.v[p], h.d[p], h.src[p] = id, v, d, src
+        h.pos[id] = p
+    end
+    while p > 1 do
+        local parent = math.floor(p / 2)
+        if h.v[parent] >= h.v[p] then break end
+        h.id[parent], h.id[p] = h.id[p], h.id[parent]
+        h.v[parent], h.v[p] = h.v[p], h.v[parent]
+        h.d[parent], h.d[p] = h.d[p], h.d[parent]
+        h.src[parent], h.src[p] = h.src[p], h.src[parent]
+        h.pos[h.id[parent]] = parent
+        h.pos[h.id[p]] = p
+        p = parent
+    end
+    return true
+end
+
+local function ihPop(h)
+    local n = h.n
+    if n == 0 then return nil end
+    local id, v, d, src = h.id[1], h.v[1], h.d[1], h.src[1]
+    h.pos[id] = nil
+    if n == 1 then
+        h.id[1], h.v[1], h.d[1], h.src[1] = nil, nil, nil, nil
+        h.n = 0
+        return id, v, d, src
+    end
+    h.id[1], h.v[1], h.d[1], h.src[1] = h.id[n], h.v[n], h.d[n], h.src[n]
+    h.id[n], h.v[n], h.d[n], h.src[n] = nil, nil, nil, nil
+    h.n = n - 1
+    h.pos[h.id[1]] = 1
+    local i = 1
+    local size = h.n
+    while true do
+        local l, r = i * 2, i * 2 + 1
+        local largest = i
+        if l <= size and h.v[l] > h.v[largest] then largest = l end
+        if r <= size and h.v[r] > h.v[largest] then largest = r end
+        if largest == i then break end
+        h.id[i], h.id[largest] = h.id[largest], h.id[i]
+        h.v[i], h.v[largest] = h.v[largest], h.v[i]
+        h.d[i], h.d[largest] = h.d[largest], h.d[i]
+        h.src[i], h.src[largest] = h.src[largest], h.src[i]
+        h.pos[h.id[i]] = i
+        h.pos[h.id[largest]] = largest
+        i = largest
+    end
+    return id, v, d, src
+end
+
+function Solver.newIncrementalHeap()
+    return newIndexedHeap()
+end
+
+function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, hTop, hSec)
     local o = options(opts)
-    heap = heap or {}
-    -- Deduplicate top-value pushes. The heap is a lazy-deletion Dijkstra, so a
-    -- chunk can be queued once per improvement; with sources arriving
-    -- incrementally the heap then holds hundreds of copies of the same chunk and
-    -- grows without bound (measured: 584k nodes for a ~1000-chunk field, 248k
-    -- added in 13 seconds, ~25MB of live tables). `pending[id]` is the best
-    -- value already queued for that chunk, so only an improvement is pushed.
+    hTop = hTop or newIndexedHeap()
+    hSec = hSec or newIndexedHeap()
     local maxWork = o.maxWork
     local work = 0
     for _, source in ipairs(sources) do
@@ -312,67 +380,52 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
             end
             field[id] = v
             topSource[id] = id
-            local top = pending and pending.top
-            if not top or not top[id] or v > top[id] then
-                if top then top[id] = v end
-                heapPush(heap, id, v, 0, id)
-            end
+            ihPush(hTop, id, v, 0, id)
             work = work + 1
         elseif id ~= topSource[id] and v > sec + o.eps then
             second[id] = v
             secondSource[id] = id
-            local sec = pending and pending.second
-            if not sec or not sec[id] or v > sec[id] then
-                if sec then sec[id] = v end
-                heapPush(heap, id, v, 0, id, true)
-            end
+            ihPush(hSec, id, v, 0, id)
             work = work + 1
         end
     end
-    while #heap > 0 do
+    while hTop.n > 0 or hSec.n > 0 do
         if maxWork and work >= maxWork then break end
-        local node = heapPop(heap)
-        local nid = node.id
-        if pending then
-            local side = node.second and pending.second or pending.top
-            if side and side[nid] == node.v then side[nid] = nil end
+        local useSecond = hSec.n > 0 and (hTop.n == 0 or hSec.v[1] > hTop.v[1])
+        local nid, v, d, src
+        if useSecond then
+            nid, v, d, src = ihPop(hSec)
+        else
+            nid, v, d, src = ihPop(hTop)
         end
         local topValue = field[nid] or 0
         local secValue = second[nid] or 0
-        local stillTop = (not node.second) and node.v >= topValue
-        local stillSecond = node.second and node.v >= secValue and node.src ~= topSource[nid]
-        if (stillTop or stillSecond) and not (o.maxRadius and node.d >= o.maxRadius) then
+        local stillTop = (not useSecond) and v >= topValue
+        local stillSecond = useSecond and v >= secValue and src ~= topSource[nid]
+        if (stillTop or stillSecond) and not (o.maxRadius and d >= o.maxRadius) then
             for _, neighborId in ipairs(neighborOf(nid)) do
-                local cand = node.v * o.decay
+                local cand = v * o.decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
-                if (not node.second) and cand > neighborTop + o.eps then
-                    if node.src ~= topSource[neighborId] then
+                if (not useSecond) and cand > neighborTop + o.eps then
+                    if src ~= topSource[neighborId] then
                         second[neighborId] = neighborTop
                         secondSource[neighborId] = topSource[neighborId]
                     end
                     field[neighborId] = cand
-                    topSource[neighborId] = node.src
-                    local top = pending and pending.top
-                    if not top or not top[neighborId] or cand > top[neighborId] then
-                        if top then top[neighborId] = cand end
-                        heapPush(heap, neighborId, cand, node.d + 1, node.src)
-                    end
+                    topSource[neighborId] = src
+                    ihPush(hTop, neighborId, cand, d + 1, src)
                     work = work + 1
-                elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
+                elseif src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
                     second[neighborId] = cand
-                    secondSource[neighborId] = node.src
-                    local sec = pending and pending.second
-                    if not sec or not sec[neighborId] or cand > sec[neighborId] then
-                        if sec then sec[neighborId] = cand end
-                        heapPush(heap, neighborId, cand, node.d + 1, node.src, true)
-                    end
+                    secondSource[neighborId] = src
+                    ihPush(hSec, neighborId, cand, d + 1, src)
                     work = work + 1
                 end
             end
         end
     end
-    return work, heap
+    return work, hTop, hSec
 end
 
 -- Remove an old source contribution locally. Exact when the top-two

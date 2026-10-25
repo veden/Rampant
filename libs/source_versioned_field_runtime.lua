@@ -85,6 +85,7 @@ local NEIGHBOR_OFFSETS = {
 -- own decay, which makes the read a table lookup instead of a maintained slot.
 local FIELD_KAMIKAZE = Constants.KAMIKAZE_PHEROMONE
 local KAMIKAZE_DECAY = Constants.DECAY_KAMIKAZE
+local PLAYER_FIELD_RADIUS = 8
 local KAMIKAZE_SCALE = 0.95
 
 -- The death field is signed and max-plus cannot lower a value, so the two signs
@@ -100,7 +101,13 @@ local DEATH_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
 -- leaving decay at the shared default makes every field's extent an accident of
 -- its source magnitude; the kamikaze field needs its own.
 local FIELD_OPTS = {}
-FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY }
+-- Radius caps on the two fields the player writes every tick. Nominal reach at
+-- decay 0.9 / eps 5e-4 is 126 hops (~4000 tiles), so one step improved most of
+-- the map and the field filled every tracked chunk (991 chunks measured). 8 hops
+-- is 256 tiles: far more than a hunter needs, and it bounds the work per move and
+-- the field's memory to a fixed neighbourhood.
+FIELD_OPTS[FIELD_PLAYER] = { maxRadius = PLAYER_FIELD_RADIUS }
+FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS }
 FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
 FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
 
@@ -240,7 +247,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- empty queue would strand it and the field would stay partial forever
     -- (observed as the base field's nest staying 0 in pheromone-dynamics).
     local frontier = Universe.sourceVersionedFrontier[key]
-    if queueEmpty and not (frontier and #frontier > 0) then
+    if queueEmpty and not (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
         if queue then
             queue.items = {}
             queue.head = 1
@@ -304,7 +311,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
         -- completes, and the field stays partial forever (observed as the base
         -- field's nest staying 0 in pheromone-dynamics).
         local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
-        if #increases > 0 or (frontier and #frontier > 0) then
+        if #increases > 0 or (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
             workUsed = workUsed + (Runtime.propagateIncreases(increases, fType, fOpts, removed, workLimit) or 0)
         end
     end
@@ -322,7 +329,8 @@ end
 function Runtime.frontierDepth(fieldType)
     local frontier = Universe and Universe.sourceVersionedFrontier
         and Universe.sourceVersionedFrontier[Runtime.fieldKey(fieldType)]
-    return frontier and #frontier or 0
+    if not frontier then return 0 end
+    return frontier.top.n + frontier.second.n
 end
 
 -- Queued source changes not yet drained for a field.
@@ -533,36 +541,18 @@ end
 function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
+    -- The frontier is two indexed heaps (top and second-best paths), one entry
+    -- per chunk per side, arrays reused every tick. It cannot grow with activity:
+    -- bounded by field size, no node tables, no dedupe map.
     local frontier = Universe.sourceVersionedFrontier[key]
-    if not frontier then
-        frontier = {}
+    if not frontier or not frontier.top then
+        frontier = { top = Solver.newIncrementalHeap(), second = Solver.newIncrementalHeap() }
         Universe.sourceVersionedFrontier[key] = frontier
     end
-    -- Reused scratch: the solver copies what it needs, so this allocates nothing.
-    -- Same idea as the source-queue flush: the frontier is the solver's
-    -- remaining heap, and it is only drained 32 nodes per tick. When new
-    -- sources keep arriving (a moving player does this every tick) pushes
-    -- exceed pops and the heap grows without bound -- observed as a 7559-node
-    -- frontier for a 238-chunk kamikaze field, which made that one field cost
-    -- 0.175ms/tick while every other field cost 0.005ms. Past the threshold,
-    -- drain it completely in one tick; a bounded one-off cost beats a permanent
-    -- one.
-    local frontierBacklog = frontier and #frontier or 0
-    -- NB: `cond and nil or x` in Lua always yields x, because `true and nil`
-    -- is nil and `nil or x` is x. The unset MUST be an if/else: the previous
-    -- one-liner left maxWork at 32 for every call, so neither this threshold
-    -- nor the pre-existing burst/removal flush ever actually ran.
-    -- A flush must be BOUNDED WORK, not unbounded. Draining the whole heap in
-    -- one tick cost 2.3ms for a 250-chunk field (the max improved but the
-    -- average got worse, because those ticks dominate the mean). A larger
-    -- budget still clears a >512 backlog in one or two ticks while capping the
-    -- tick at roughly 0.5ms.
-    -- Uniform distribution: the scheduler hands each field a slice of one
-    -- shared per-tick work budget. A flush (removal) may spend the whole slice
-    -- but never more, so a removal cannot produce a spike either.
+    local backlog = frontier.top.n + frontier.second.n
     if workLimit and workLimit > 0 then
         BOUNDED_OPTS.maxWork = workLimit
-    elseif flush or frontierBacklog > FRONTIER_FLUSH_DEPTH then
+    elseif flush or backlog > FRONTIER_FLUSH_DEPTH then
         BOUNDED_OPTS.maxWork = FRONTIER_FLUSH_WORK
     else
         BOUNDED_OPTS.maxWork = PROPAGATION_MAX_WORK_PER_TICK
@@ -570,29 +560,9 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
-    -- Per-field dedupe map for the heap (see Solver.propagateIncreases*). It is
-    -- bounded by the field size, so it cannot grow like the heap did.
-    local pending = Universe.sourceVersionedPending
-    if not pending then
-        pending = {}
-        Universe.sourceVersionedPending = pending
-    end
-    local fieldPending = pending[key]
-    if not fieldPending then
-        -- Two sides: the best value queued per chunk, and the best second-best.
-        -- Both are needed, because the second-best pushes are what actually fill
-        -- the heap when sources keep improving.
-        fieldPending = { top = {}, second = {} }
-        pending[key] = fieldPending
-    end
-    local _, remaining, _, _, work = Solver.propagateIncreasesWithMetadata(
+    local work = Solver.propagateIncreasesWithMetadata(
         sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
-        Runtime.neighborOf, BOUNDED_OPTS, frontier, fieldPending)
-    Universe.sourceVersionedFrontier[key] = remaining
-    if not remaining or #remaining == 0 then
-        -- Converged: nothing is queued, so no pending entry is meaningful.
-        pending[key] = { top = {}, second = {} }
-    end
+        Runtime.neighborOf, BOUNDED_OPTS, frontier.top, frontier.second)
     return work or 0
 end
 
