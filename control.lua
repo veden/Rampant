@@ -1120,7 +1120,10 @@ script.on_event(defines.events.on_tick,
                              " qPlayer=" .. q(Constants.PLAYER_PHEROMONE) ..
                              " qKamikaze=" .. q(Constants.KAMIKAZE_PHEROMONE) ..
                              " qDeathGain=" .. q(Constants.DEATH_GAIN_PHEROMONE) ..
-                             " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE)})
+                             " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE) ..
+                             " fEnemy=" .. f(Constants.ENEMY_PHEROMONE) ..
+                             " fPlayer=" .. f(Constants.PLAYER_PHEROMONE) ..
+                             " fKamikaze=" .. f(Constants.KAMIKAZE_PHEROMONE)})
                         local st = Universe.spawnTelemetry
                         if st then
                             log({"", "[RANGE] tick=", tick, " phase=spawn",

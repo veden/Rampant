@@ -335,6 +335,7 @@ end
 -- cost is one-time and proportional to the burst, which is the trade the cadence
 -- exists to make. Below the threshold the per-field cadence is unchanged.
 local FLUSH_QUEUE_DEPTH = 64
+local FRONTIER_FLUSH_DEPTH = 512
 
 -- Fractional per-field budgets: accumulate and run when a whole unit is due.
 -- This is the knob that puts the resource field on its own cadence without
@@ -466,7 +467,17 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
         Universe.sourceVersionedFrontier[key] = frontier
     end
     -- Reused scratch: the solver copies what it needs, so this allocates nothing.
-    BOUNDED_OPTS.maxWork = flush and nil or PROPAGATION_MAX_WORK_PER_TICK
+    -- Same idea as the source-queue flush: the frontier is the solver's
+    -- remaining heap, and it is only drained 32 nodes per tick. When new
+    -- sources keep arriving (a moving player does this every tick) pushes
+    -- exceed pops and the heap grows without bound -- observed as a 7559-node
+    -- frontier for a 238-chunk kamikaze field, which made that one field cost
+    -- 0.175ms/tick while every other field cost 0.005ms. Past the threshold,
+    -- drain it completely in one tick; a bounded one-off cost beats a permanent
+    -- one.
+    local frontierBacklog = frontier and #frontier or 0
+    BOUNDED_OPTS.maxWork = (flush or frontierBacklog > FRONTIER_FLUSH_DEPTH)
+        and nil or PROPAGATION_MAX_WORK_PER_TICK
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
