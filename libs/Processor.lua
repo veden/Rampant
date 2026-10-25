@@ -79,7 +79,7 @@ local initialScan = ChunkUtils.initialScan
 -- burst; the flush slice bounds the initial scan instead of doing hundreds of
 -- chunks in one tick.
 local SCAN_PER_TICK = 4
-local FLUSH_SCAN_PER_TICK = 40
+local FLUSH_SCAN_PER_TICK = 16
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
