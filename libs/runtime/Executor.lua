@@ -180,6 +180,23 @@ function Executor.init(universe)
 end
 
 --- Execute a single command or a table of commands.
+
+-- Per-command timing. The drain is budgeted at 20 commands per tick, and each
+-- command can do engine work (set_multi_command, create_unit_group, pathing),
+-- so a single expensive command type is the difference between a 1ms tick and
+-- a 20ms spike. Log the slow ones with telemetry on.
+local function runHandler(cmd)
+    local handler = Handlers[cmd.type]
+    if not handler then return end
+    if not (MetricsG and MetricsG.isEnabled())
+        and not (ConstantsG and ConstantsG.SUBSYSTEM_TELEMETRY) then
+        return handler(cmd)
+    end
+    local profiler = helpers.create_profiler()
+    handler(cmd)
+    log({"", "[CMD] tick=", game.tick, " type=", tostring(cmd.type), " ", profiler})
+end
+
 function Executor.run(commands)
     if not commands then return end
     _lastCreatedBaseId = nil
@@ -189,10 +206,7 @@ function Executor.run(commands)
         if MetricsG then
             MetricsG.inc("cmd." .. commands.type)
         end
-        local handler = Handlers[commands.type]
-        if handler then
-            handler(commands)
-        end
+        runHandler(commands)
         return
     end
 
@@ -205,10 +219,7 @@ function Executor.run(commands)
         if MetricsG then
             MetricsG.inc("cmd." .. cmd.type)
         end
-        local handler = Handlers[cmd.type]
-        if handler then
-            handler(cmd)
-        end
+        runHandler(cmd)
     end
 end
 
