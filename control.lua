@@ -1472,6 +1472,24 @@ remote.add_interface("Rampant", {
         Metrics.reset()
         return true
     end,
+    -- Heap probe callable from RCON or /c while the game is paused: reports
+    -- the Lua heap and the shallow size of every storage.universe key, so the
+    -- holder of a large heap can be identified without telemetry.
+    heapStats = function()
+        collectgarbage("collect")
+        local function count(t)
+            local n = 0
+            if type(t) == "table" then for _ in pairs(t) do n = n + 1 end end
+            return n
+        end
+        local parts = { "heapKB=" .. tostring(math.floor(collectgarbage("count"))) }
+        for k, v in pairs(storage.universe) do
+            if type(v) == "table" then
+                parts[#parts + 1] = k .. "=" .. tostring(count(v))
+            end
+        end
+        return table.concat(parts, " ")
+    end,
     setTelemetry = function(enabled)
         Metrics.setEnabled(enabled)
         return Metrics.isEnabled()
