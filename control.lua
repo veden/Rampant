@@ -687,10 +687,19 @@ local function timed(tick, rangeSample, name, fn, a, b)
     -- a 24ms tick that is not a sample tick leaves no line at all, and the
     -- profiler cannot be read numerically from Lua by design.
     if not rangeSample and not Constants.SUBSYSTEM_TELEMETRY and not Universe.diagTicks then
-        return fn(a, b)
+        if b ~= nil then return fn(a, b) elseif a ~= nil then return fn(a) else return fn() end
     end
     local profiler = helpers.create_profiler()
-    fn(a, b)
+    -- Call with only the arguments that were supplied: wrapping a zero-argument
+    -- function (helpers.recv_udp, ensureStorage) with fn(a, b) passes two nils
+    -- and the engine rejects it.
+    if b ~= nil then
+        fn(a, b)
+    elseif a ~= nil then
+        fn(a)
+    else
+        fn()
+    end
     log({"", "[SUB] tick=", tick, " name=", name, " ", profiler})
 end
 
@@ -1099,15 +1108,15 @@ script.on_event(defines.events.on_tick,
                     end
                     -- Poll for incoming UDP packets (triggers on_udp_packet_received)
                     -- Poll all available sockets: server + connected players
-                    helpers.recv_udp()
+                    timed(tick, rangeSample, "udp", helpers.recv_udp)
                     if game.connected_players[1] then
-                        helpers.recv_udp(1)
+                        timed(tick, rangeSample, "udpPlayer", helpers.recv_udp, 1)
                     end
 
                     local gameRef = game
                     local tick = gameRef.tick
-                    Observability.updateVisualizers(tick)
-                    Telemetry.maybeFlush(tick)
+                    timed(tick, rangeSample, "overlay", Observability.updateVisualizers, tick)
+                    timed(tick, rangeSample, "eventFlush", Telemetry.maybeFlush, tick)
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
@@ -1119,8 +1128,14 @@ script.on_event(defines.events.on_tick,
                     local rangeSample = Metrics.isEnabled() and (tick % RANGE_TICKS == 0)
                     local tPick = rangeSample and helpers.create_profiler() or nil
 
+                    -- Scan every tick instead of one tick in three. Whole
+                    -- subsystems gated to tick%3 made the cost alternate by 3x
+                    -- (measured phase averages 764/243/494us), which is the
+                    -- up-and-down the human sees. The same total work, halved
+                    -- per call, is flat.
+                    timed(tick, rangeSample, "pendingChunks", processPendingChunks, tick)
+                    timed(tick, rangeSample, "scanChunks", processScanChunks)
                     if (pick == 0) then
-                        timed(tick, rangeSample, "pendingChunks", processPendingChunks, tick)
                         if next(Universe.maps) ~= nil then
                             timed(tick, rangeSample, "recycleBases", recycleBases)
                         end
@@ -1141,7 +1156,6 @@ script.on_event(defines.events.on_tick,
                         timed(tick, rangeSample, "victoryScent", disperseVictoryScent, Universe)
                         timed(tick, rangeSample, "attackWaves", processAttackWaves)
                         timed(tick, rangeSample, "clouds", processClouds, tick)
-                        timed(tick, rangeSample, "scanChunks", processScanChunks)
                     end
                     if rangeSample then
                         log({"", "[RANGE] tick=", tick, " phase=pick pick=", pick, " ", tPick})
@@ -1149,7 +1163,7 @@ script.on_event(defines.events.on_tick,
 
                     timed(tick, rangeSample, "executor", Executor.drain)
                     -- Persisted solved state: a no-op once created.
-                    SourceVersionedFieldRuntime.ensureStorage()
+                    timed(tick, rangeSample, "ensureStorage", SourceVersionedFieldRuntime.ensureStorage)
                     -- Per-field cadence: each field drains on its own budget so the
                     -- resource field's slow cadence cannot starve base/enemy.
                     -- One shared work quantum per tick, spent across fields in

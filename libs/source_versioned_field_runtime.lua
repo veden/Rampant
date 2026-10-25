@@ -232,6 +232,9 @@ end
 -- measured 12.4ms on a ~1k-chunk map (and 40-50ms on the whole tick), once per
 -- field, which is what produced the early-game maximum.
 local SOURCE_BUILD_PER_TICK = 256
+-- Propagation work allowed per tick while building a field. The solve is spread
+-- like the normal drain so a rebuild cannot spike the tick.
+local SOURCE_SOLVE_WORK_PER_TICK = 256
 local SourceBuilds = {}
 
 -- Ticks between full reconciliations of one field. The incremental path only
@@ -287,8 +290,31 @@ function Runtime.ensureSolved(fieldType, opts)
         -- than one tick paying for the whole map.
         return Universe.sourceVersionedFields[key] or {}, false
     end
+    -- Solve incrementally too, not with one Dijkstra over the whole map. A
+    -- one-shot solve cost 115-154ms on a large save (measured at ticks
+    -- 13484423/39/75), and the reconcile runs about every 30 seconds, so that
+    -- was the periodic spike. Seeding the resumable propagator and draining it
+    -- on a per-tick budget spreads the same work; the swap happens only when
+    -- the heaps empty, so readers keep the old field meanwhile.
+    if not build.field then
+        build.field = {}
+        build.topSource = {}
+        build.second = {}
+        build.secondSource = {}
+        build.hTop = Solver.newIncrementalHeap()
+        build.hSec = Solver.newIncrementalHeap()
+    end
+    Solver.propagateIncreasesWithMetadata(
+        build.list, build.field, build.topSource, build.second, build.secondSource,
+        Runtime.neighborOf, { maxWork = SOURCE_SOLVE_WORK_PER_TICK,
+            decay = opts and opts.decay, eps = opts and opts.eps,
+            maxRadius = opts and opts.maxRadius },
+        build.hTop, build.hSec)
+    if build.hTop.n > 0 or build.hSec.n > 0 then
+        return Universe.sourceVersionedFields[key] or {}, false
+    end
     local field, topSource, second, secondSource =
-        Solver.solveWithMetadata(build.list, Runtime.neighborOf, fieldOpts(fieldType, opts))
+        build.field, build.topSource, build.second, build.secondSource
     Universe.sourceVersionedFields[key] = field
     FieldTopSource[key] = topSource
     FieldSecond[key] = second

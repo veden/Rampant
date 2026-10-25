@@ -78,8 +78,8 @@ local initialScan = ChunkUtils.initialScan
 -- Chunk scans per tick. Steady state keeps up with a moving player without a
 -- burst; the flush slice bounds the initial scan instead of doing hundreds of
 -- chunks in one tick.
-local SCAN_PER_TICK = 4
-local FLUSH_SCAN_PER_TICK = 16
+local SCAN_PER_TICK = 2
+local FLUSH_SCAN_PER_TICK = 8
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then

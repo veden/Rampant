@@ -480,9 +480,11 @@ local function settleMove(squad, tick)
             if MetricsG then
                 MetricsG.inc("squad.settle." .. settleDecision.reason)
             end
-            Squad.decompressSquad(squad, tick)
+            timedSquad("squad.decompress", function() Squad.decompressSquad(squad, tick) end)
 
-            position = findMovementPosition(surface, groupPosition) or groupPosition
+            position = timedSquad("squad.findPosition", function()
+                return findMovementPosition(surface, groupPosition)
+            end) or groupPosition
 
             cmd = Queries.settleCommand
             cmd.distraction = DISTRACTION_BY_KEY[SquadLogic.selectSettleDistraction(squad.kamikaze)]
@@ -492,22 +494,18 @@ local function settleMove(squad, tick)
             squad.status = SQUAD_BUILDING
             squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
 
-            group.set_command(cmd)
+            timedSquad("squad.command", function() group.set_command(cmd) end)
             return
         end
     end
 
-    local searchPath = scoreNeighbors(
-        map,
-        chunk,
-        getNeighborChunks(map, x, y),
-        scoreFunction,
-        tick
-    )
+    local searchPath = timedSquad("squad.score", function()
+        return scoreNeighbors(map, chunk, getNeighborChunks(map, x, y), scoreFunction, tick)
+    end)
 
     if (searchPath[1].chunk == -1) then
         cmd = Queries.wanderCommand
-        group.set_command(cmd)
+        timedSquad("squad.command", function() group.set_command(cmd) end)
         return
     end
 
@@ -544,7 +542,7 @@ local function settleMove(squad, tick)
 
     if not position then
         cmd = Queries.wanderCommand
-        group.set_command(cmd)
+        timedSquad("squad.command", function() group.set_command(cmd) end)
         return
     end
 
@@ -630,7 +628,7 @@ local function attackMove(squad, tick)
         end
         if MetricsG then MetricsG.inc("squad.wander") end
         cmd = Queries.wanderCommand
-        group.set_command(cmd)
+        timedSquad("squad.command", function() group.set_command(cmd) end)
         return
     end
 
@@ -645,7 +643,7 @@ local function attackMove(squad, tick)
 
     if not position then
         cmd = Queries.wanderCommand
-        group.set_command(cmd)
+        timedSquad("squad.command", function() group.set_command(cmd) end)
         return
     end
 
@@ -699,6 +697,24 @@ local function buildMove(squad, tick)
     group.set_command(Queries.settleCommand)
 end
 
+-- Split a squad operation in the diagnostic timeline: our scoring versus the
+-- engine call that issues the group command. Only logs inside a diagnose
+-- window, so it costs nothing in normal play.
+local function timedSquad(name, fn)
+    if not (Universe and Universe.diagTicks) then
+        return fn()
+    end
+    local profiler = helpers.create_profiler()
+    local result = fn()
+    log({"", "[SUB] tick=", game.tick, " name=", name, " ", profiler})
+    return result
+end
+
+-- Members per dispatch "batch": a squad larger than this is re-commanded less
+-- often, in proportion. 50 keeps a 200-unit squad to one dispatch every four
+-- intervals, which amortises the per-member cost without changing its orders.
+local SQUAD_DISPATCH_BATCH = 50
+
 function Squad.cleanSquads(tick)
     local squads = Universe.groupNumberToSquad
     local groupId = Universe.squadIterator
@@ -747,9 +763,9 @@ function Squad.cleanSquads(tick)
         elseif (group.state == 4) then
             squad.wanders = 0
             if MetricsG then MetricsG.inc("squad.reachedState4") end
-            Squad.squadDispatch(squad, tick)
+            timedSquad("squad.dispatch", function() Squad.squadDispatch(squad, tick) end)
             if group.valid then
-                compressSquad(squad, tick)
+                timedSquad("squad.compress", function() compressSquad(squad, tick) end)
             end
         elseif (squad.commandTick and (squad.commandTick < tick)) then
             -- Mod-owned dispatch cadence: refresh the path regardless of
@@ -757,8 +773,14 @@ function Squad.cleanSquads(tick)
             -- the old fallback wandered blindly and never re-dispatched).
             -- The dispatch's no-path branch handles the wander + the
             -- anti-stuck guard.
-            squad.commandTick = tick + SQUAD_DISPATCH_INTERVAL
-            Squad.squadDispatch(squad, tick)
+            -- A dispatch is one group.set_command plus per-member engine work,
+            -- so its cost scales with the group. Measured 138ms for a late-game
+            -- squad. Refresh big groups less often so the same total work is
+            -- spread over more ticks instead of landing in one.
+            local members = (group and group.valid and #group.members) or 0
+            local scale = math.max(1, math.ceil(members / SQUAD_DISPATCH_BATCH))
+            squad.commandTick = tick + SQUAD_DISPATCH_INTERVAL * scale
+            timedSquad("squad.dispatch", function() Squad.squadDispatch(squad, tick) end)
         end
     end
 end
@@ -775,9 +797,12 @@ function Squad.squadDispatch(squad, tick)
         status = squad.status,
         settlers = squad.settlers,
     }
-    local commands = SquadLogic.evaluate(squadData)
+    local commands
+    timedSquad("squad.evaluate", function()
+        commands = SquadLogic.evaluate(squadData)
+    end)
     if #commands > 0 then
-        Executor.run(commands)
+        timedSquad("squad.commands", function() Executor.run(commands) end)
     end
 
     -- Execute the movement command for current status.
@@ -786,14 +811,16 @@ function Squad.squadDispatch(squad, tick)
     local status = squad.status
     if (status == SQUAD_RAIDING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
-        attackMove(squad, tick)
+        timedSquad("squad.attackMove", function() attackMove(squad, tick) end)
     elseif (status == SQUAD_SETTLING) then
         squad.commandTick = tick + COMMAND_TIMEOUT
-        settleMove(squad, tick)
+        timedSquad("squad.settleMove", function() settleMove(squad, tick) end)
     elseif (status == SQUAD_BUILDING) then
         squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
-        removeSquadFromChunk(squad)
-        buildMove(squad, tick)
+        timedSquad("squad.buildMove", function()
+            removeSquadFromChunk(squad)
+            buildMove(squad, tick)
+        end)
     end
 end
 
