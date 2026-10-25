@@ -888,9 +888,22 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
         MetricsG.inc("squad.retreatBail.noCause")
         return
     end
-    if not ((tick - getRetreatTick(chunk) > COOLDOWN_RETREAT)
-        and (getEnemyStructureCount(chunk) == 0))
-    then
+    -- getRetreatTick returns 0 for "never retreated", which as a cooldown
+    -- check means "retreated at tick 0" and suppresses every retreat during the
+    -- first COOLDOWN_RETREAT ticks of a save. That is how death-response and
+    -- squad-cycle failed: units reached the wall and were killed inside those
+    -- first 10 seconds, so the retreat that should follow the first deaths was
+    -- gated out. Split the two conditions and let a chunk with no recorded
+    -- retreat act immediately.
+    local lastRetreat = getRetreatTick(chunk)
+    local cooled = (lastRetreat == 0) or ((tick - lastRetreat) > COOLDOWN_RETREAT)
+    if getEnemyStructureCount(chunk) ~= 0 then
+        MetricsG.inc("squad.retreatBail.structures")
+        MetricsG.inc("squad.retreatBail.gate")
+        return
+    end
+    if not cooled then
+        MetricsG.inc("squad.retreatBail.cooldown")
         MetricsG.inc("squad.retreatBail.gate")
         return
     end

@@ -327,7 +327,9 @@ script.on_event(defines.events.on_tick, function()
                     " retreated=" .. tostring(c["squad.retreated"]) ..
                     " bail.noCause=" .. tostring(c["squad.retreatBail.noCause"]) ..
                     " bail.noUnits=" .. tostring(c["squad.retreatBail.noUnits"]) ..
-                    " bail.gate=" .. tostring(c["squad.retreatBail.gate"]))
+                    " bail.gate=" .. tostring(c["squad.retreatBail.gate"]) ..
+                    " bail.cooldown=" .. tostring(c["squad.retreatBail.cooldown"]) ..
+                    " bail.structures=" .. tostring(c["squad.retreatBail.structures"]))
             elseif phaseElapsed > 2 * TICKS_A_MINUTE then
                 finish(false, "fewer than 3 enemy units at the wall in the retreat phase")
                 return
