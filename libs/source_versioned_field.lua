@@ -437,16 +437,23 @@ end
 -- Remove an old source contribution locally. Exact when the top-two
 -- metadata is exact: a source that is neither top nor second at a chunk
 -- cannot become top or second farther along the decay path.
-function Solver.removeSource(source, field, topSource, second, secondSource, neighborOf, opts)
+function Solver.removeSource(source, field, topSource, second, secondSource, neighborOf, opts, heap)
     local o = options(opts)
-    local heap = {}
-    local v = source.gen * o.rating
+    heap = heap or {}
     local work = 0
-    if v > o.eps then
-        heapPush(heap, source.id, v, 0, source.id)
+    if source then
+        local v = source.gen * o.rating
+        if v > o.eps then
+            heapPush(heap, source.id, v, 0, source.id)
+        end
     end
     while #heap > 0 do
+        -- Bound removal too. An unbounded re-propagation from one removed source
+        -- cost 25ms on a large field (measured inside sourceFields' drain); the
+        -- leftover heap is returned so the caller can resume next tick.
+        if o.maxWork and work >= o.maxWork then break end
         local node = heapPop(heap)
+        work = work + 1
         if not (o.maxRadius and node.d >= o.maxRadius) then
             for _, nid in ipairs(neighborOf(node.id)) do
                 local cand = node.v * o.decay
@@ -470,7 +477,7 @@ function Solver.removeSource(source, field, topSource, second, secondSource, nei
             end
         end
     end
-    return work
+    return work, heap
 end
 
 

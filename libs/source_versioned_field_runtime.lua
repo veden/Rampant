@@ -304,12 +304,28 @@ function Runtime.ensureSolved(fieldType, opts)
         build.hTop = Solver.newIncrementalHeap()
         build.hSec = Solver.newIncrementalHeap()
     end
-    Solver.propagateIncreasesWithMetadata(
-        build.list, build.field, build.topSource, build.second, build.secondSource,
-        Runtime.neighborOf, { maxWork = SOURCE_SOLVE_WORK_PER_TICK,
-            decay = opts and opts.decay, eps = opts and opts.eps,
-            maxRadius = opts and opts.maxRadius },
-        build.hTop, build.hSec)
+    -- The solve budget is per TICK, shared by every field and every read:
+    -- scoring a settle reads four fields per neighbour, and a per-call budget of
+    -- 256 pops let one 32-read scoring pass spend 8192 pops in a single tick
+    -- (measured 151ms in squad.settleMove -> squad.score).
+    if Universe.solveWorkTick ~= game.tick then
+        Universe.solveWorkTick = game.tick
+        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
+    end
+    local allowance = Universe.solveWorkLeft or 0
+    if allowance > 0 then
+        local profiler = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
+        local used = Solver.propagateIncreasesWithMetadata(
+            build.list, build.field, build.topSource, build.second, build.secondSource,
+            Runtime.neighborOf, { maxWork = allowance,
+                decay = opts and opts.decay, eps = opts and opts.eps,
+                maxRadius = opts and opts.maxRadius },
+            build.hTop, build.hSec)
+        Universe.solveWorkLeft = allowance - (used or 0)
+        if profiler then
+            log({"", "[SUB] tick=", game.tick, " name=field.solve ", profiler})
+        end
+    end
     if build.hTop.n > 0 or build.hSec.n > 0 then
         return Universe.sourceVersionedFields[key] or {}, false
     end
@@ -626,10 +642,36 @@ end
 function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
-    local source = { id = chunk.id, gen = oldValue or 0 }
-    return Solver.removeSource(
+    -- Removal is budgeted like the rest of the field work, and resumes from the
+    -- leftover heap next tick: one removed source re-propagated the whole field
+    -- in a single call (measured 25ms inside the drain).
+    if Universe.solveWorkTick ~= game.tick then
+        Universe.solveWorkTick = game.tick
+        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
+    end
+    local allowance = Universe.solveWorkLeft or 0
+    local heaps = Universe.sourceVersionedRemoval
+    if not heaps then
+        heaps = {}
+        Universe.sourceVersionedRemoval = heaps
+    end
+    local pending = heaps[key]
+    local source
+    if not pending then
+        source = { id = chunk.id, gen = oldValue or 0 }
+    end
+    local removalOpts = opts or {}
+    removalOpts.maxWork = allowance
+    local work, heap = Solver.removeSource(
         source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
-        Runtime.neighborOf, opts)
+        Runtime.neighborOf, removalOpts, pending)
+    Universe.solveWorkLeft = allowance - (work or 0)
+    if heap and #heap > 0 then
+        heaps[key] = heap
+    else
+        heaps[key] = nil
+    end
+    return work
 end
 
 -- Bounded increase propagation. A frontier left over from the previous tick
