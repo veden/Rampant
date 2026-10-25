@@ -502,6 +502,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     )
 
     Universe.pendingUpgrades[Universe.upgradeId] = {
+        ["kind"] = "upgrade",
         ["position"] = position,
         ["map"] = map,
         ["name"] = name,
@@ -564,6 +565,7 @@ function BaseUtils.queueCreation(base, position, entityType, timeDelay, hiveData
     end
 
     Universe.pendingUpgrades[Universe.upgradeId] = {
+        ["kind"] = (entityType == "hive" and "hive") or (entityType == "turret" and "turret") or "nest",
         ["position"] = position,
         ["map"] = map,
         ["name"] = name,

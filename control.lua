@@ -1104,6 +1104,19 @@ script.on_event(defines.events.on_tick,
                              " qKamikaze=" .. q(Constants.KAMIKAZE_PHEROMONE) ..
                              " qDeathGain=" .. q(Constants.DEATH_GAIN_PHEROMONE) ..
                              " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE)})
+                        local st = Universe.spawnTelemetry
+                        if st then
+                            log({"", "[RANGE] tick=", tick, " phase=spawn",
+                                 " total=" .. tostring(st.total),
+                                 " upgrade=" .. tostring(st.upgrade or 0),
+                                 " nest=" .. tostring(st.nest or 0),
+                                 " turret=" .. tostring(st.turret or 0),
+                                 " hive=" .. tostring(st.hive or 0),
+                                 " blocked=" .. tostring(st.blocked or 0),
+                                 " near64=" .. tostring(st.near64),
+                                 " maxShift=" .. string.format("%.1f", st.maxShift or 0)})
+                            Universe.spawnTelemetry = nil
+                        end
                     end
 
                     -- game.print({"", "--dispatch3 ", profiler, " , ", pick," , ",math.random()})

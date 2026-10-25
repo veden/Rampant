@@ -333,6 +333,21 @@ function Processor.processNests(tick)
     end
 end
 
+
+-- Nest/upgrade creation telemetry. Counts by origin kind so a cluster of new
+-- spawners can be attributed per range without a traceback: "upgrade" (the
+-- in-place replacement), "nest"/"turret"/"hive" (queueCreation from a hive).
+-- `near64` is how many landed within 64 tiles of the origin, `maxShift` how
+-- far the placed entity moved from the requested position.
+local function spawnStats()
+    local st = Universe.spawnTelemetry
+    if not st then
+        st = { total = 0, near64 = 0, maxShift = 0, blocked = 0 }
+        Universe.spawnTelemetry = st
+    end
+    return st
+end
+
 local function processSpawnersBody(iterator, chunks)
     local chunkId = Universe[iterator]
     local chunk
@@ -590,6 +605,7 @@ function Processor.processPendingUpgrades(tick)
             if MetricsG then
                 MetricsG.inc("upgrade.createBlocked")
             end
+            spawnStats().blocked = spawnStats().blocked + 1
             local retryPosition = surface.find_non_colliding_position(
                 name,
                 position,
@@ -603,6 +619,21 @@ function Processor.processPendingUpgrades(tick)
             end
         end
         if newEntity and newEntity.valid then
+            local st = spawnStats()
+            local kind = entityData.kind or "other"
+            st.total = st.total + 1
+            st[kind] = (st[kind] or 0) + 1
+            local dx = newEntity.position.x - position.x
+            local dy = newEntity.position.y - position.y
+            local shift = math.sqrt(dx * dx + dy * dy)
+            if shift > st.maxShift then st.maxShift = shift end
+            if (math.abs(newEntity.position.x) < 64) and (math.abs(newEntity.position.y) < 64) then
+                st.near64 = st.near64 + 1
+            end
+            if MetricsG then
+                MetricsG.inc("spawn." .. kind)
+                MetricsG.highWater("spawn.shift", shift)
+            end
             local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
             if hiveType == "hive" then
                 Universe.hives[newEntity.unit_number] = entityData.hive
