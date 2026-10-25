@@ -336,6 +336,7 @@ end
 -- exists to make. Below the threshold the per-field cadence is unchanged.
 local FLUSH_QUEUE_DEPTH = 64
 local FRONTIER_FLUSH_DEPTH = 512
+local FRONTIER_FLUSH_WORK = 512
 
 -- Fractional per-field budgets: accumulate and run when a whole unit is due.
 -- This is the knob that puts the resource field on its own cadence without
@@ -480,8 +481,13 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
     -- is nil and `nil or x` is x. The unset MUST be an if/else: the previous
     -- one-liner left maxWork at 32 for every call, so neither this threshold
     -- nor the pre-existing burst/removal flush ever actually ran.
+    -- A flush must be BOUNDED WORK, not unbounded. Draining the whole heap in
+    -- one tick cost 2.3ms for a 250-chunk field (the max improved but the
+    -- average got worse, because those ticks dominate the mean). A larger
+    -- budget still clears a >512 backlog in one or two ticks while capping the
+    -- tick at roughly 0.5ms.
     if flush or frontierBacklog > FRONTIER_FLUSH_DEPTH then
-        BOUNDED_OPTS.maxWork = nil
+        BOUNDED_OPTS.maxWork = FRONTIER_FLUSH_WORK
     else
         BOUNDED_OPTS.maxWork = PROPAGATION_MAX_WORK_PER_TICK
     end
