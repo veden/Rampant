@@ -1098,13 +1098,10 @@ script.on_event(defines.events.on_tick,
                     SourceVersionedFieldRuntime.ensureStorage()
                     -- Per-field cadence: each field drains on its own budget so the
                     -- resource field's slow cadence cannot starve base/enemy.
-                    timed(tick, rangeSample, "sourceField.resource", SourceVersionedFieldRuntime.processScheduled, Constants.RESOURCE_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.base", SourceVersionedFieldRuntime.processScheduled, Constants.BASE_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.enemy", SourceVersionedFieldRuntime.processScheduled, Constants.ENEMY_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.player", SourceVersionedFieldRuntime.processScheduled, Constants.PLAYER_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.kamikaze", SourceVersionedFieldRuntime.processScheduled, Constants.KAMIKAZE_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.deathGain", SourceVersionedFieldRuntime.processScheduled, Constants.DEATH_GAIN_PHEROMONE)
-                    timed(tick, rangeSample, "sourceField.deathLoss", SourceVersionedFieldRuntime.processScheduled, Constants.DEATH_LOSS_PHEROMONE)
+                    -- One shared work quantum per tick, spent across fields in
+                    -- rotating priority order (see Runtime.processAll): flat
+                    -- per-tick cost instead of the sum of seven budgets.
+                    timed(tick, rangeSample, "sourceFields", SourceVersionedFieldRuntime.processAll, tick)
                     if rangeSample then
                         -- The source-versioned fields are the only pheromone
                         -- state left: report each field's undrained queue depth,
@@ -1123,7 +1120,21 @@ script.on_event(defines.events.on_tick,
                              " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE) ..
                              " fEnemy=" .. f(Constants.ENEMY_PHEROMONE) ..
                              " fPlayer=" .. f(Constants.PLAYER_PHEROMONE) ..
-                             " fKamikaze=" .. f(Constants.KAMIKAZE_PHEROMONE)})
+                             " fKamikaze=" .. f(Constants.KAMIKAZE_PHEROMONE) ..
+                             " workAvg=" .. string.format("%.2f", (function()
+                                 local st = SourceVersionedFieldRuntime.workStats
+                                 local avg = st.n > 0 and (st.sum / st.n) or 0
+                                 st.sum, st.n, st.max = 0, 0, 0
+                                 return avg
+                             end)()) ..
+                             " workMax=" .. tostring((function()
+                                 local st = SourceVersionedFieldRuntime.workStats
+                                 local mx = st.max
+                                 st.max = 0
+                                 return mx
+                             end)()) ..
+                             " wPlayer=" .. tostring(SourceVersionedFieldRuntime.lastFieldWork[Constants.PLAYER_PHEROMONE] or 0) ..
+                             " wKamikaze=" .. tostring(SourceVersionedFieldRuntime.lastFieldWork[Constants.KAMIKAZE_PHEROMONE] or 0)})
                         local st = Universe.spawnTelemetry
                         if st then
                             log({"", "[RANGE] tick=", tick, " phase=spawn",

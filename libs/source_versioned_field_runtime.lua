@@ -231,7 +231,7 @@ end
 -- share of the per-tick work, so a slow field (resource) cannot starve a
 -- decision-critical one (base/enemy). Collapses queued changes for a source into
 -- one old -> final transition, then runs one multi-source increase propagation.
-function Runtime.process(fieldType, budget, opts)
+function Runtime.process(fieldType, budget, opts, workLimit)
     if not Initialized then return 0 end
     local key = Runtime.fieldKey(fieldType)
     local queue = SourceQueues[fieldType]
@@ -255,6 +255,7 @@ function Runtime.process(fieldType, budget, opts)
     -- lookup per tick.
     local fieldChanges = { fieldType = fieldType, sources = {} }
     local processed = 0
+    local workUsed = 0
     while queue and queue.head <= queue.count and processed < budget do
         local item = queue.items[queue.head]
         queue.items[queue.head] = nil
@@ -304,7 +305,7 @@ function Runtime.process(fieldType, budget, opts)
         -- field's nest staying 0 in pheromone-dynamics).
         local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
         if #increases > 0 or (frontier and #frontier > 0) then
-            Runtime.propagateIncreases(increases, fType, fOpts, removed)
+            workUsed = workUsed + (Runtime.propagateIncreases(increases, fType, fOpts, removed, workLimit) or 0)
         end
     end
 
@@ -313,7 +314,7 @@ function Runtime.process(fieldType, budget, opts)
         queue.head = 1
         queue.count = 0
     end
-    return processed
+    return workUsed
 end
 
 -- Work left in a field's propagation frontier (0 = converged). A non-zero
@@ -370,6 +371,56 @@ function Runtime.processScheduled(fieldType, opts)
     FIELD_DRAIN_ACC[fieldType] = acc - whole
     if whole < 1 then return 0 end
     return Runtime.process(fieldType, whole, opts)
+end
+
+-- Uniform field scheduling.
+--
+-- Every field used to drain on its own budget, so the per-tick total was the
+-- sum of seven independent budgets (~7 x 32 pops) and activity in one field
+-- could spike the tick. Here one shared quantum is spent per tick, in rotating
+-- priority order, and whatever a field cannot use flows to the next one. That
+-- makes the per-tick cost flat: work expands to the quantum when there is
+-- backlog and collapses to near zero when the map is quiet, and no single
+-- field can starve or spike the frame.
+local GLOBAL_FIELD_WORK_PER_TICK = 320
+local FIELD_QUANTUM = 64
+-- Rotated so the head of the list changes every tick; death first because
+-- retreat reads it during combat, resource last because it only feeds the
+-- migration decision.
+local FIELD_ROTATION = {
+    FIELD_DEATH_LOSS, FIELD_DEATH_GAIN,
+    FIELD_PLAYER, FIELD_KAMIKAZE,
+    FIELD_BASE, FIELD_ENEMY, FIELD_RESOURCE,
+}
+Runtime.lastFieldWork = {}
+-- Flatness accounting: work spent per tick, so the report can show whether the
+-- load is uniform (avg close to max) rather than bursty.
+Runtime.workStats = { sum = 0, n = 0, max = 0 }
+
+function Runtime.processAll(tick)
+    if not Initialized then return 0 end
+    local budget = GLOBAL_FIELD_WORK_PER_TICK
+    local n = #FIELD_ROTATION
+    local start = (tick % n) + 1
+    local total = 0
+    for i = 0, n - 1 do
+        if budget <= 0 then break end
+        local fType = FIELD_ROTATION[((start + i - 1) % n) + 1]
+        local slice = budget < FIELD_QUANTUM and budget or FIELD_QUANTUM
+        local used = Runtime.process(fType, DRAIN_PER_TICK, FIELD_OPTS[fType], slice)
+        Runtime.lastFieldWork[fType] = used
+        budget = budget - used
+        total = total + used
+    end
+    for i = 0, n - 1 do
+        local fType = FIELD_ROTATION[(start + i - 1) % n + 1]
+        if Runtime.lastFieldWork[fType] == nil then Runtime.lastFieldWork[fType] = 0 end
+    end
+    local stats = Runtime.workStats
+    stats.sum = stats.sum + total
+    stats.n = stats.n + 1
+    if total > stats.max then stats.max = total end
+    return total
 end
 
 -- Reusable neighbour-id table. Solver consumes it immediately.
@@ -475,7 +526,7 @@ end
 -- has lost its extent. Observed as pheromone-dynamics failing 1 run in 6 with
 -- the base field 0 at the nest while the wall still read 550. A removal is a
 -- one-time event, like a burst, so it pays the one-time cost.
-function Runtime.propagateIncreases(sources, fieldType, opts, flush)
+function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
     local frontier = Universe.sourceVersionedFrontier[key]
@@ -502,7 +553,12 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
     -- average got worse, because those ticks dominate the mean). A larger
     -- budget still clears a >512 backlog in one or two ticks while capping the
     -- tick at roughly 0.5ms.
-    if flush or frontierBacklog > FRONTIER_FLUSH_DEPTH then
+    -- Uniform distribution: the scheduler hands each field a slice of one
+    -- shared per-tick work budget. A flush (removal) may spend the whole slice
+    -- but never more, so a removal cannot produce a spike either.
+    if workLimit and workLimit > 0 then
+        BOUNDED_OPTS.maxWork = workLimit
+    elseif flush or frontierBacklog > FRONTIER_FLUSH_DEPTH then
         BOUNDED_OPTS.maxWork = FRONTIER_FLUSH_WORK
     else
         BOUNDED_OPTS.maxWork = PROPAGATION_MAX_WORK_PER_TICK
@@ -510,11 +566,11 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush)
     BOUNDED_OPTS.decay = opts and opts.decay
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
-    local _, remaining = Solver.propagateIncreasesWithMetadata(
+    local _, remaining, _, _, work = Solver.propagateIncreasesWithMetadata(
         sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
         Runtime.neighborOf, BOUNDED_OPTS, frontier)
     Universe.sourceVersionedFrontier[key] = remaining
-    return remaining and #remaining or 0
+    return work or 0
 end
 
 -- Read hook installed into SquadLogic. Returns the solved source-versioned
