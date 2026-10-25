@@ -301,17 +301,20 @@ local function compressSquad(squad, tick)
     if (#members <= Universe.squadCompressionThreshold) then
         return
     end
+    -- Collect what has to go, then destroy a budget per tick. Compressing a
+    -- 200-member squad used to be 200 entity.destroy() calls in one tick.
     local compressionSet = {}
     local compressedTotal = 0
     local totalTypes = 0
     local entityToTag
+    local toDestroy = {}
     for _, entity in pairs(members) do
         local entityName = entity.name
         local count = compressionSet[entityName]
         if not count then
             totalTypes = totalTypes + 1
             if totalTypes > 6 then
-                entity.destroy()
+                toDestroy[#toDestroy + 1] = entity
                 compressedTotal = compressedTotal + 1
                 compressionSet[entityName] = 1
             else
@@ -321,18 +324,48 @@ local function compressSquad(squad, tick)
         else
             compressionSet[entityName] = count + 1
             compressedTotal = compressedTotal + 1
-            entity.destroy()
+            toDestroy[#toDestroy + 1] = entity
         end
     end
-    local query = Queries.renderText
-    query.surface = group.surface
-    query.text = compressedTotal
-    query.target = entityToTag
-    squad.compressionText = rendering.draw_text(query)
-    squad.compressionSet = compressionSet
-    squad.compressedTotal = compressedTotal
+    squad.compressQueue = toDestroy
+    squad.compressSetPending = compressionSet
+    squad.compressTotalPending = compressedTotal
+    squad.compressTag = entityToTag
     squad.canBeCompressed = false
+    local materializing = Universe.materializing or {}
+    Universe.materializing = materializing
+    materializing[squad.id] = squad
 end
+
+-- Drain the compression queue on a per-tick budget. Called from cleanSquads so
+-- a large squad materialises over several ticks instead of one 100ms tick.
+function Squad.processCompression(squad)
+    local queue = squad.compressQueue
+    if not queue then return end
+    local done = 0
+    while done < SQUAD_MATERIALIZE_PER_TICK and #queue > 0 do
+        local entity = table.remove(queue)
+        if entity and entity.valid then entity.destroy() end
+        done = done + 1
+    end
+    if #queue == 0 then
+        squad.compressQueue = nil
+        if Universe.materializing then Universe.materializing[squad.id] = nil end
+        local query = Queries.renderText
+        query.surface = squad.group.surface
+        query.text = squad.compressTotalPending
+        query.target = squad.compressTag
+        squad.compressionText = rendering.draw_text(query)
+        squad.compressionSet = squad.compressSetPending
+        squad.compressedTotal = squad.compressTotalPending
+        squad.compressSetPending = nil
+    end
+end
+
+-- Members compressed or decompressed per tick: entity create/destroy is the
+-- per-member cost, so a large squad materialises over several ticks.
+local SQUAD_MATERIALIZE_PER_TICK = 25
+local SQUAD_MATERIALIZE_SQUADS_PER_TICK = 2
 
 function Squad.decompressSquad(squad, tick)
     if not squad.compressionSet then
@@ -344,12 +377,33 @@ function Squad.decompressSquad(squad, tick)
     local add_member = group.add_member
     local create_entity = squad.map.surface.create_entity
     query.position = {group.position.x, group.position.y}  -- fresh table each time
-    for name,count in pairs(squad.compressionSet) do
-        query.name = name
-        for _ = 1, count do
-            add_member(create_entity(query))
+    -- Materialise a budget per tick: re-creating 200 members in one tick was
+    -- the other half of the 100ms+ squad dispatch.
+    if not squad.decompressQueue then
+        local queue = {}
+        for name, count in pairs(squad.compressionSet) do
+            queue[#queue + 1] = { name = name, count = count }
         end
+        squad.decompressQueue = queue
     end
+    local done = 0
+    local queue = squad.decompressQueue
+    while done < SQUAD_MATERIALIZE_PER_TICK and #queue > 0 do
+        local entry = queue[#queue]
+        query.name = entry.name
+        add_member(create_entity(query))
+        entry.count = entry.count - 1
+        if entry.count <= 0 then table.remove(queue) end
+        done = done + 1
+    end
+    if #queue > 0 then
+        local materializing = Universe.materializing or {}
+        Universe.materializing = materializing
+        materializing[squad.id] = squad
+        return
+    end
+    squad.decompressQueue = nil
+    if Universe.materializing then Universe.materializing[squad.id] = nil end
     -- 2.x API: rendering.destroy(id) no longer exists on LuaRendering —
     -- destruction moved onto the LuaRenderObject (its destroy() does not
     -- error on invalid). Found at session scale: the long-run's natural
@@ -716,6 +770,24 @@ end
 local SQUAD_DISPATCH_BATCH = 50
 
 function Squad.cleanSquads(tick)
+    -- Materialisation work (large squads compressing/decompressing) is drained
+    -- first, so it keeps progressing even when the round-robin does not reach
+    -- that squad for a while.
+    local materializing = Universe.materializing
+    if materializing then
+        local drained = 0
+        for id, squad in pairs(materializing) do
+            if squad.compressQueue then
+                Squad.processCompression(squad)
+            elseif squad.decompressQueue then
+                Squad.decompressSquad(squad, tick)
+            else
+                materializing[id] = nil
+            end
+            drained = drained + 1
+            if drained >= SQUAD_MATERIALIZE_SQUADS_PER_TICK then break end
+        end
+    end
     local squads = Universe.groupNumberToSquad
     local groupId = Universe.squadIterator
     local squad
