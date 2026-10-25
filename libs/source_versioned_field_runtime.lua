@@ -382,8 +382,12 @@ end
 -- makes the per-tick cost flat: work expands to the quantum when there is
 -- backlog and collapses to near zero when the map is quiet, and no single
 -- field can starve or spike the frame.
-local GLOBAL_FIELD_WORK_PER_TICK = 320
-local FIELD_QUANTUM = 64
+-- Measured: sourceFields cost ~0.95ms/tick at 320 pops, i.e. ~3.0us per pop,
+-- and the quantum was being spent in full every tick on a live map. 96 pops
+-- keeps the same flat shape at roughly a third of the cost; the backlog is
+-- simply drained a little later.
+local GLOBAL_FIELD_WORK_PER_TICK = 96
+local FIELD_QUANTUM = 32
 -- Rotated so the head of the list changes every tick; death first because
 -- retreat reads it during combat, resource last because it only feeds the
 -- migration decision.
