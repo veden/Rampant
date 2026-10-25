@@ -75,6 +75,12 @@ local initialScan = ChunkUtils.initialScan
 -- long pause) hides inside it. Log each scan with its chunk coordinates and
 -- the profiler when telemetry is on; the log then gives count / total / max
 -- and the chunk that cost the most.
+-- Chunk scans per tick. Steady state keeps up with a moving player without a
+-- burst; the flush slice bounds the initial scan instead of doing hundreds of
+-- chunks in one tick.
+local SCAN_PER_TICK = 4
+local FLUSH_SCAN_PER_TICK = 40
+
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
         return initialScan(chunk, map, tick)
@@ -524,11 +530,18 @@ function Processor.processPendingChunks(tick, flush)
         return
     end
 
-    local endCount = 1
+    -- Uniform distribution: a player moving fast generates several chunks per
+    -- tick, and the flush path used to scan ALL queued chunks in one tick (9ms
+    -- at map load, tens of ms on a large map). Scan a bounded number per tick
+    -- and leave the rest queued, so moving produces a steady cost instead of a
+    -- burst. The flush is merely a larger slice, not an unbounded one.
     local flushAllChunks = flush or Universe.flushPendingChunks
+    local endCount
     if flushAllChunks then
-        endCount = tableSize(pendingChunks)
+        endCount = FLUSH_SCAN_PER_TICK
         Universe.flushPendingChunks = false
+    else
+        endCount = SCAN_PER_TICK
     end
     for _=1,endCount do
         if not flushAllChunks and (event.tick > tick) then
