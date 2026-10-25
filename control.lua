@@ -635,7 +635,17 @@ local function timedEvent(name, fn, event)
     end
     local profiler = helpers.create_profiler()
     local r1, r2 = fn(event)
-    log({"", "[EVT] tick=", game.tick, " name=", name, " ", profiler})
+    -- A chunk-generation burst fires this many times in one tick; cap logging
+    -- so the diagnostics cannot become the spike they are meant to find.
+    local tick = game.tick
+    if Universe.evtLogTick ~= tick then
+        Universe.evtLogTick = tick
+        Universe.evtLogCount = 0
+    end
+    if Universe.evtLogCount < 8 then
+        Universe.evtLogCount = Universe.evtLogCount + 1
+        log({"", "[EVT] tick=", tick, " name=", name, " ", profiler})
+    end
     return r1, r2
 end
 
@@ -1042,6 +1052,11 @@ script.on_event(defines.events.on_tick,
                     if not Universe or not Universe.awake or not Universe.random then
                         return
                     end
+                    -- Measure the whole tick body: [SUB] only covers code that is
+                    -- explicitly wrapped, so untimed script would be invisible. The
+                    -- profiler is read before the log call, so the log itself is not
+                    -- counted.
+                    local tickProfiler = Metrics.isEnabled() and helpers.create_profiler() or nil
                     -- Poll for incoming UDP packets (triggers on_udp_packet_received)
                     -- Poll all available sockets: server + connected players
                     helpers.recv_udp()
@@ -1165,9 +1180,12 @@ script.on_event(defines.events.on_tick,
                     if rangeSample then
                         log({"", "[RANGE] tick=", tick, " phase=ai ", tAI})
                     end
+                    if tickProfiler then
+                        log({"", "[TICK] tick=", tick, " ", tickProfiler})
+                    end
 end)
 
-script.on_event(defines.events.on_chunk_deleted, onChunkDeleted)
+script.on_event(defines.events.on_chunk_deleted, function(e) timedEvent("onChunkDeleted", onChunkDeleted, e) end)
 script.on_event(defines.events.on_surface_deleted, onSurfaceDeleted)
 script.on_event(defines.events.on_surface_cleared, onSurfaceCleared)
 script.on_event(defines.events.on_surface_created, onSurfaceCreated)
@@ -1184,7 +1202,7 @@ script.on_configuration_changed(function(event)
     onConfigChanged(event)
 end)
 
-script.on_event(defines.events.on_resource_depleted, onResourceDepleted)
+script.on_event(defines.events.on_resource_depleted, function(e) timedEvent("onResourceDepleted", onResourceDepleted, e) end)
 script.on_event({defines.events.on_player_built_tile,
                  defines.events.on_robot_built_tile,
                  defines.events.script_raised_set_tiles}, onSurfaceTileChange)
@@ -1193,10 +1211,11 @@ script.on_event(defines.events.on_player_used_capsule, onUsedCapsule)
 
 script.on_event(defines.events.on_script_trigger_effect, onTriggerEntityCreated)
 
-script.on_event(defines.events.on_pre_robot_exploded_cliff, onRobotCliff)
+script.on_event(defines.events.on_pre_robot_exploded_cliff, function(e) timedEvent("onRobotCliff", onRobotCliff, e) end)
 
 script.on_event({defines.events.on_player_mined_entity,
-                 defines.events.on_robot_mined_entity}, onMine)
+                 defines.events.on_robot_mined_entity},
+                function(e) timedEvent("onMine", onMine, e) end)
 
 script.on_event(
     {
