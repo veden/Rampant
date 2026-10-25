@@ -104,6 +104,11 @@ local ATTACKING_DISTRACTION = defines.group_state.attacking_distraction
 local ATTACKING_TARGET = defines.group_state.attacking_target
 local GATHERING = defines.group_state.gathering
 
+-- Members compressed or decompressed per tick: entity create/destroy is the
+-- per-member cost, so a large squad materialises over several ticks.
+local SQUAD_MATERIALIZE_SQUADS_PER_TICK = 2
+local SQUAD_MATERIALIZE_PER_TICK = 25
+
 -- imported functions
 
 local setPositionInQuery = Utils.setPositionInQuery
@@ -350,6 +355,9 @@ function Squad.processCompression(squad)
     end
     if #queue == 0 then
         squad.compressQueue = nil
+        if TelemetryG then
+            TelemetryG.emit("squad.compress", { squad = squad.id, members = squad.compressTotalPending })
+        end
         if Universe.materializing then Universe.materializing[squad.id] = nil end
         local query = Queries.renderText
         query.surface = squad.group.surface
@@ -364,11 +372,43 @@ end
 
 -- Members compressed or decompressed per tick: entity create/destroy is the
 -- per-member cost, so a large squad materialises over several ticks.
-local SQUAD_MATERIALIZE_PER_TICK = 25
-local SQUAD_MATERIALIZE_SQUADS_PER_TICK = 2
+-- Split a squad operation in the diagnostic timeline: our scoring versus the
+-- engine call that issues the group command. Only logs inside a diagnose
+-- window, so it costs nothing in normal play.
+local function timedSquad(name, fn)
+    if not (Universe and Universe.diagTicks) then
+        return fn()
+    end
+    local profiler = helpers.create_profiler()
+    local result = fn()
+    log({"", "[SUB] tick=", game.tick, " name=", name, " ", profiler})
+    return result
+end
 
-function Squad.decompressSquad(squad, tick)
+
+-- Is this squad actually fighting? Decompressing is only worth its kernel cost
+-- when the members are about to be needed; a squad that merely lost a straggler
+-- while marching can stay compressed.
+local function squadIsEngaged(squad)
+    local group = squad.group
+    if not (group and group.valid) then return false end
+    local state = group.state
+    return state == ATTACKING_DISTRACTION
+        or state == ATTACKING_TARGET
+        or state == GATHERING
+        or squad.status == SQUAD_BUILDING
+end
+
+function Squad.decompressSquad(squad, tick, force)
     if not squad.compressionSet then
+        return
+    end
+    if not force and not squadIsEngaged(squad) and squad.compressedTotal and squad.compressedTotal > 0
+        and not squad.decompressQueue then
+        if MetricsG then MetricsG.inc("squad.decompressSkipped") end
+        if TelemetryG then
+            TelemetryG.emit("squad.decompressSkipped", { squad = squad.id, members = squad.compressedTotal })
+        end
         return
     end
 
@@ -403,6 +443,9 @@ function Squad.decompressSquad(squad, tick)
         return
     end
     squad.decompressQueue = nil
+    if TelemetryG then
+        TelemetryG.emit("squad.decompress", { squad = squad.id, members = squad.compressedTotal })
+    end
     if Universe.materializing then Universe.materializing[squad.id] = nil end
     -- 2.x API: rendering.destroy(id) no longer exists on LuaRendering —
     -- destruction moved onto the LuaRenderObject (its destroy() does not
@@ -621,7 +664,7 @@ local function settleMove(squad, tick)
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING
         squad.commandTick = tick + BUILD_COMMAND_TIMEOUT
-        Squad.decompressSquad(squad, tick)
+        Squad.decompressSquad(squad, tick, true)
         cmd.distraction = DISTRACTION_BY_KEY[SquadLogic.selectSettleDistraction(squad.kamikaze)]
     else
         cmd = Queries.moveCommand
@@ -749,19 +792,6 @@ local function buildMove(squad, tick)
     Squad.decompressSquad(squad, tick)
 
     group.set_command(Queries.settleCommand)
-end
-
--- Split a squad operation in the diagnostic timeline: our scoring versus the
--- engine call that issues the group command. Only logs inside a diagnose
--- window, so it costs nothing in normal play.
-local function timedSquad(name, fn)
-    if not (Universe and Universe.diagTicks) then
-        return fn()
-    end
-    local profiler = helpers.create_profiler()
-    local result = fn()
-    log({"", "[SUB] tick=", game.tick, " name=", name, " ", profiler})
-    return result
 end
 
 -- Members per dispatch "batch": a squad larger than this is re-commanded less

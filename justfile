@@ -676,4 +676,15 @@ test-behavior name="wall-defense" seed="1" strict="0": copy
     # tools/rcon_client.py)
     kill -9 $PID 2>/dev/null || true
 
-    echo ""
+    echo ""# Syntax-check the mod with Lua 5.2, the dialect Factorio embeds. `luac` on the
+# dev box is 5.4+, which accepts operators the engine rejects (bitwise ~ cost a
+# load failure in BaseUtils: "unexpected symbol near '~'").
+lint-lua52:
+    #!/usr/bin/env -S bash
+    set -e
+    fail=0
+    for f in $(git ls-files '*.lua' | grep -v '^tests/' | grep -v '^integration-tests/'); do
+        lua5.2 -e "assert(loadfile('$f'))" || { echo "FAIL $f"; fail=1; }
+    done
+    [ "$fail" = 0 ] && echo "Lua 5.2 syntax OK"
+

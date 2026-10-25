@@ -244,7 +244,7 @@ constants.SQUAD_BUILDING = 6
 
 -- Squad Related
 
-constants.COMPRESSION_COOLDOWN = 600
+constants.COMPRESSION_COOLDOWN = 1800 -- 30s: recompression must not thrash
 
 constants.MINIMUM_EXPANSION_DISTANCE = 10
 
