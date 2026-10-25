@@ -1515,7 +1515,11 @@ remote.add_interface("Rampant", {
             parts[#parts + 1] = r[1] .. "=" .. tostring(r[2]) .. "(" ..
                 (r[3] >= 0 and "+" or "") .. tostring(r[3]) .. ")"
         end
-        return table.concat(parts, " ")
+        local line = table.concat(parts, " ")
+        -- Also write it to the log so an operator does not have to copy the
+        -- console output out by hand.
+        log({"", "[HEAP] ", line})
+        return line
     end,
     -- Heap probe callable from RCON or /c while the game is paused: reports
     -- the Lua heap and the shallow size of every storage.universe key, so the
