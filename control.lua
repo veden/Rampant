@@ -1472,6 +1472,51 @@ remote.add_interface("Rampant", {
         Metrics.reset()
         return true
     end,
+    -- Heap growth trace callable from RCON or /c while paused.
+    -- Takes a deduplicated node count per storage.universe key, compares it with
+    -- the previous call, and returns the biggest absolute changes. Run it once as
+    -- a baseline, play for a while, run it again: the key that grew is the
+    -- retention. A plain snapshot cannot distinguish a legitimately large table
+    -- from one that is leaking.
+    heapDiff = function()
+        collectgarbage("collect")
+        local seen = {}
+        local function size(v)
+            if type(v) ~= "table" then return 1 end
+            if seen[v] then return 0 end
+            seen[v] = true
+            local n = 1
+            for _, x in pairs(v) do n = n + 2 + size(x) end
+            return n
+        end
+        -- Cover every storage key, and expand `universe` one level: a leak can
+        -- sit outside Universe, and a single key called "universe" would hide it.
+        local cur = {}
+        for k, v in pairs(storage) do
+            if k == "universe" and type(v) == "table" then
+                for uk, uv in pairs(v) do
+                    cur["universe." .. uk] = size(uv)
+                end
+            else
+                cur[k] = size(v)
+            end
+        end
+        local prev = storage._rampantHeapSnap
+        storage._rampantHeapSnap = cur
+        local rows = {}
+        for k, v in pairs(cur) do
+            local d = v - ((prev and prev[k]) or 0)
+            if d ~= 0 then rows[#rows + 1] = { k, v, d } end
+        end
+        table.sort(rows, function(a, b) return math.abs(a[3]) > math.abs(b[3]) end)
+        local parts = { "heapKB=" .. tostring(math.floor(collectgarbage("count"))) }
+        for i = 1, math.min(10, #rows) do
+            local r = rows[i]
+            parts[#parts + 1] = r[1] .. "=" .. tostring(r[2]) .. "(" ..
+                (r[3] >= 0 and "+" or "") .. tostring(r[3]) .. ")"
+        end
+        return table.concat(parts, " ")
+    end,
     -- Heap probe callable from RCON or /c while the game is paused: reports
     -- the Lua heap and the shallow size of every storage.universe key, so the
     -- holder of a large heap can be identified without telemetry.
