@@ -33,6 +33,24 @@ just zip            # Create mod zip
 just play           # Launch Factorio
 ```
 
+## Change Classes — say which restart is needed
+
+When telling a human to pick up a change, always state which restart it needs,
+and prefer the cheaper one:
+
+- **Data stage** — `data.lua`, `data-updates.lua`, `data-final-fixes.lua`,
+  `prototypes/**`, `settings.lua`, `migrations/**`, `info.json`.
+  The game must be **restarted completely** (quit the process and relaunch).
+  Prototypes are built once per launch; loading a map cannot pick them up.
+- **Control / runtime** — `control.lua`, `libs/**`, `tests/**` (anything that
+  is not the above). **Restarting the level** (new game, or load a save) is
+  enough: the control stage is re-initialised per session and re-reads the
+  files. This is much faster, so do not ask for a full reboot for these.
+
+When a single change set mixes both, say so explicitly: the data-stage part
+needs one full restart, after which control-stage changes only need level
+restarts.
+
 ## Linting
 
 ```bash
