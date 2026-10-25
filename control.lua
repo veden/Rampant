@@ -1579,6 +1579,14 @@ remote.add_interface("Rampant", {
         end
         return table.concat(parts, " ")
     end,
+    -- Switch the structured event stream on/off for this session without a
+    -- restart. Writes to script-output/rampant/events.jsonl.
+    eventTelemetry = function(on)
+        return Telemetry.setEnabled(on)
+    end,
+    eventTelemetryStatus = function()
+        return Telemetry.summary()
+    end,
     -- Toggle an in-world pheromone overlay: one translucent rectangle per
     -- chunk, coloured by field value relative to that field's peak.
     --   /c remote.call("Rampant","drawField","player",true)

@@ -46,6 +46,10 @@ local Telemetry = {}
 
 local Universe
 local enabled = false
+-- Runtime override: the startup setting is the default, but an operator can
+-- switch the stream on for a session without a restart (and without editing
+-- mod-settings.dat) via remote Rampant.eventTelemetry(true).
+local forced = nil
 local buffer = {}
 local buffered = 0
 local FLUSH_TICKS = 300
@@ -77,14 +81,20 @@ function Telemetry.init(universe)
 end
 
 function Telemetry.isEnabled()
+    if forced ~= nil then return forced end
     return enabled
+end
+
+function Telemetry.setEnabled(on)
+    forced = on == true
+    return Telemetry.isEnabled()
 end
 
 -- kind: short event name. fields: table of key -> string/number/boolean.
 -- Nil and non-primitive values are skipped, so callers can pass optional
 -- fields without guarding.
 function Telemetry.emit(kind, fields)
-    if not enabled then return end
+    if not Telemetry.isEnabled() then return end
     local parts = { "t=" .. tostring(game.tick), "|", kind }
     if fields then
         for key, value in pairs(fields) do
@@ -102,7 +112,7 @@ function Telemetry.emit(kind, fields)
 end
 
 function Telemetry.flush(tick)
-    if not enabled then return end
+    if not Telemetry.isEnabled() then return end
     tick = tick or (game and game.tick) or 0
     if buffered == 0 and (tick - lastFlushTick) < FLUSH_TICKS then return end
     if buffered > 0 then
@@ -120,7 +130,7 @@ function Telemetry.flush(tick)
 end
 
 function Telemetry.maybeFlush(tick)
-    if not enabled then return end
+    if not Telemetry.isEnabled() then return end
     if buffered >= FLUSH_LINES or (tick - lastFlushTick) >= FLUSH_TICKS then
         Telemetry.flush(tick)
     end
@@ -128,7 +138,7 @@ end
 
 function Telemetry.summary()
     return {
-        enabled = enabled,
+        enabled = Telemetry.isEnabled(),
         buffered = buffered,
         written = totalLines,
         file = file,
