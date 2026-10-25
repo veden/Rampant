@@ -234,10 +234,31 @@ end
 local SOURCE_BUILD_PER_TICK = 256
 local SourceBuilds = {}
 
+-- Ticks between full reconciliations of one field. The incremental path only
+-- applies increases (max-plus), so improvements skipped by the eps test and
+-- values left behind by removals let the live field drift from the exact solve:
+-- measured 109 of 613 chunks off by more than 10% (worst 50%) and 35 stale
+-- chunks on an enemy field. Rebuilding periodically bounds that drift; the swap
+-- happens only when the rebuild completes, so readers keep the old field while
+-- it is being rebuilt.
+local RECONCILE_INTERVAL = 30 * 60 * 5
+
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     if SolvedFields[key] and FieldTopSource[key] then
-        return Universe.sourceVersionedFields[key] or {}, false
+        local solvedAt = Universe.sourceVersionedSolvedAt
+        local last = solvedAt and solvedAt[key]
+        if last and (game.tick - last) > RECONCILE_INTERVAL then
+            -- Rebuild in place: the stored field stays readable until the fresh
+            -- one is swapped in by the rebuild below.
+            SolvedFields[key] = false
+            SourceBuilds[key] = nil
+            if TelemetryG then
+                TelemetryG.emit("field.reconcile", { field = key, age = game.tick - last })
+            end
+        else
+            return Universe.sourceVersionedFields[key] or {}, false
+        end
     end
     local build = SourceBuilds[key]
     if not build then
@@ -274,6 +295,17 @@ function Runtime.ensureSolved(fieldType, opts)
     FieldSecondSource[key] = secondSource
     SolvedFields[key] = true
     SourceBuilds[key] = nil
+    local solvedAt = Universe.sourceVersionedSolvedAt
+    if not solvedAt then
+        solvedAt = {}
+        Universe.sourceVersionedSolvedAt = solvedAt
+    end
+    solvedAt[key] = game.tick
+    if TelemetryG then
+        TelemetryG.emit("field.solved", {
+            field = key, sources = #build.list, chunks = #field,
+        })
+    end
     return field, true
 end
 
@@ -619,26 +651,63 @@ end
 -- a mismatch means a change was dropped or a cap is being applied inconsistently.
 function Runtime.verifyField(fieldType, tolerance)
     local key = Runtime.fieldKey(fieldType)
+    -- The comparison is only meaningful on a complete field: solve it if it has
+    -- never been read, and drain any queued source changes, otherwise the live
+    -- field is legitimately behind and every entry looks like a mismatch.
+    if not SolvedFields[key] then
+        local field, top, sec, secSrc = Solver.solveWithMetadata(
+            Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
+        Universe.sourceVersionedFields[key] = field
+        FieldTopSource[key], FieldSecond[key], FieldSecondSource[key] = top, sec, secSrc
+        SolvedFields[key] = true
+    end
+    -- Drain to convergence: process() is bounded by PROPAGATION_MAX_WORK_PER_TICK,
+    -- so one call leaves a frontier and the comparison would see a partial field.
+    local iterations = 0
+    while iterations < 2000 do
+        iterations = iterations + 1
+        Runtime.process(fieldType, 100000, fieldOpts(fieldType, nil))
+        if Runtime.frontierDepth(fieldType) == 0 and Runtime.queueDepth(fieldType) == 0 then
+            break
+        end
+    end
     local live = Universe.sourceVersionedFields[key] or {}
     local sources = Runtime.buildSources(fieldType)
     local expected = Solver.solve(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
-    tolerance = tolerance or 0.5
-    local checked, mismatches, extra, maxDelta, worstId = 0, 0, 0, 0, nil
+    -- Relative tolerance: absolute 0.5 is meaningless for a resource field in
+    -- the thousands. A chunk is wrong when it differs from the exact solve by
+    -- more than `tolerance` (default 10%) of the exact value.
+    tolerance = tolerance or 0.10
+    local checked, mismatches, extra, maxDelta, maxRel, worstId = 0, 0, 0, 0, 0, nil
+    local livePeak, expectedPeak, sampleId, sampleLive, sampleExpected = 0, 0, nil, 0, 0
+    for _, v in pairs(live) do if v > livePeak then livePeak = v end end
+    for _, v in pairs(expected) do if v > expectedPeak then expectedPeak = v end end
     for id, v in pairs(expected) do
         checked = checked + 1
         local liveV = live[id] or 0
         local d = liveV - v
         if d < 0 then d = -d end
         if d > maxDelta then maxDelta, worstId = d, id end
-        if d > tolerance then mismatches = mismatches + 1 end
+        local rel = v > 0 and (d / v) or (liveV > 0 and 1 or 0)
+        if rel > maxRel then maxRel = rel end
+        if rel > tolerance then
+            mismatches = mismatches + 1
+            if not sampleId then sampleId, sampleLive, sampleExpected = id, liveV, v end
+        end
     end
     for id, v in pairs(live) do
-        if v > tolerance and not expected[id] then extra = extra + 1 end
+        if not expected[id] and v > 0 then extra = extra + 1 end
     end
     return {
         field = tostring(fieldType), sources = #sources, checked = checked,
         mismatches = mismatches, liveOnly = extra,
         maxDelta = string.format("%.3f", maxDelta), worstChunk = tostring(worstId),
+        livePeak = string.format("%.1f", livePeak), expectedPeak = string.format("%.1f", expectedPeak),
+        sample = tostring(sampleId) .. " live=" .. string.format("%.1f", sampleLive) ..
+            " expected=" .. string.format("%.1f", sampleExpected),
+        frontier = Runtime.frontierDepth(fieldType), queued = Runtime.queueDepth(fieldType),
+        iterations = iterations,
+        maxRel = string.format("%.1f%%", maxRel * 100),
     }
 end
 

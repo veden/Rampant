@@ -51,6 +51,35 @@ When a single change set mixes both, say so explicitly: the data-stage part
 needs one full restart, after which control-stage changes only need level
 restarts.
 
+## Event Telemetry (what happened, not how slow)
+
+Per-tick timings answer "how expensive"; the event stream answers "what did it
+do". It is off by default and writes one line per event:
+
+```
+t=331|cmd.CREATE_BASE|chunk=147|name=neutral-biter-spawner-v1-t1-rampant|id=6
+t=331|base.points|base=0|delta=250|tag=built|total=250|state=1
+```
+
+- **Enable:** startup setting `rampant--eventTelemetry` (full game restart).
+  Optional `rampant--eventTelemetryUdpPort` mirrors each batch to
+  `helpers.send_udp` for a live listener instead of reading a file.
+- **Where:** `script-output/rampant/events.jsonl` under the game's write-data,
+  appended in batches every 300 ticks. For RAM instead of disk, point the
+  run's write-data at `/dev/shm` (a `-c` config with
+  `write-data=/dev/shm/factorio`) or symlink `script-output` there.
+- **Read:** `python3 tools/events.py FILE` summarises by kind and per 5-minute
+  bucket; `--kind cmd.DISPATCH_SQUAD`, `--tick FROM TO`, `--grep base=4` narrow
+  it down.
+- **Covered today:** every executed command (type plus base/chunk/entity/
+  position/amount/reason), base point grants and spends, upgrade creation and
+  blocked creations, player build/mine with positions, resource registration,
+  field solve and reconcile.
+
+When a change breaks behaviour, this stream is the thing to read: it shows the
+order of decisions and the values they were made on, which a tick average
+cannot.
+
 ## Linting
 
 ```bash

@@ -663,6 +663,13 @@ function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
                 MetricsG.inc("player.mine")
             end
         end
+        if TelemetryG then
+            TelemetryG.emit(addObject and "player.build" or "player.mine", {
+                name = entity.name, type = entity.type,
+                x = entity.position.x, y = entity.position.y,
+                force = entity.force.name,
+            })
+        end
         local entityValue = BUILDING_PHEROMONES[entity.type]
         local overlapArray = getEntityOverlapChunks(map, entity)
         if not addObject then
@@ -710,6 +717,12 @@ end
 
 function ChunkUtils.registerResource(entity, map)
     if MetricsG then MetricsG.inc("resource.registered") end
+    if TelemetryG then
+        TelemetryG.emit("resource.register", {
+            name = entity.name, amount = entity.amount,
+            x = entity.position.x, y = entity.position.y,
+        })
+    end
     local overlapArray = getEntityOverlapChunks(map, entity)
 
     for i=1,#overlapArray do

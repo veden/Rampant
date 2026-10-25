@@ -53,6 +53,22 @@ data:extend({
             order = "z[dev]-b[subsystemTelemetry]",
             per_user = false
         },
+        {
+            type = "bool-setting",
+            name = "rampant--eventTelemetry",
+            setting_type = "startup",
+            default_value = false,
+            order = "z[dev]-c[eventTelemetry]"
+        },
+        {
+            type = "int-setting",
+            name = "rampant--eventTelemetryUdpPort",
+            setting_type = "startup",
+            default_value = 0,
+            minimum_value = 0,
+            maximum_value = 65535,
+            order = "z[dev]-d[eventTelemetryUdp]"
+        },
 
         {
             type = "bool-setting",

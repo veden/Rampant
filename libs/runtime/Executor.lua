@@ -188,6 +188,17 @@ end
 local function runHandler(cmd)
     local handler = Handlers[cmd.type]
     if not handler then return end
+    if TelemetryG then
+        local ents = cmd.entityRef
+        TelemetryG.emit("cmd." .. tostring(cmd.type), {
+            base = cmd.baseId, chunk = cmd.chunkId, amount = cmd.amount,
+            reason = cmd.reason, evolve = cmd.evolve, radius = cmd.radius,
+            name = ents and ents.valid and ents.name or nil,
+            id = ents and ents.valid and ents.unit_number or nil,
+            x = ents and ents.valid and ents.position.x or nil,
+            y = ents and ents.valid and ents.position.y or nil,
+        })
+    end
     if not (MetricsG and MetricsG.isEnabled())
         and not (ConstantsG and ConstantsG.SUBSYSTEM_TELEMETRY) then
         return handler(cmd)

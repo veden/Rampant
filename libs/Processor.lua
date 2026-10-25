@@ -633,6 +633,12 @@ function Processor.processPendingUpgrades(tick)
             if MetricsG then
                 MetricsG.inc("upgrade.createBlocked")
             end
+            if TelemetryG then
+                TelemetryG.emit("upgrade.blocked", {
+                    name = name, x = position.x, y = position.y,
+                    kind = entityData.kind, base = entityData.baseId,
+                })
+            end
             spawnStats().blocked = spawnStats().blocked + 1
             local retryPosition = surface.find_non_colliding_position(
                 name,
@@ -661,6 +667,14 @@ function Processor.processPendingUpgrades(tick)
             if MetricsG then
                 MetricsG.inc("spawn." .. kind)
                 MetricsG.highWater("spawn.shift", shift)
+            end
+            if TelemetryG then
+                TelemetryG.emit("upgrade.create", {
+                    name = name, kind = kind,
+                    x = position.x, y = position.y,
+                    shift = shift, base = entityData.baseId,
+                    id = newEntity.unit_number,
+                })
             end
             local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
             if hiveType == "hive" then

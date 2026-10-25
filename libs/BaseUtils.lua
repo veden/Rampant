@@ -894,6 +894,13 @@ function BaseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
     x = x or nil
     y = y or nil
 
+    if TelemetryG then
+        TelemetryG.emit("base.points", {
+            base = base.id, delta = points, tag = tag,
+            total = base.points + points, x = x, y = y,
+            state = base.stateAI,
+        })
+    end
     base.points = base.points + points
 
     local overflowMessage = ""

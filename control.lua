@@ -30,6 +30,7 @@ local Utils = require("libs/Utils")
 local Observability = require("libs/Observability")
 local Executor = require("libs/runtime/Executor")
 local Metrics = require("libs/Metrics")
+local Telemetry = require("libs/Telemetry")
 local DeathLogic = require("libs/death_logic")
 local SquadCreation = require("libs/squad_creation")
 local BuildingLogic = require("libs/building")
@@ -203,6 +204,7 @@ local function initializeLibraries(addProperties)
     Observability.init(Universe)
     Executor.init(Universe)
     Metrics.init(Universe)
+    Telemetry.init(Universe)
     SourceVersionedFieldRuntime.init(Universe, addProperties)
     ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
     ChunkPropertyUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
@@ -1105,6 +1107,7 @@ script.on_event(defines.events.on_tick,
                     local gameRef = game
                     local tick = gameRef.tick
                     Observability.updateVisualizers(tick)
+                    Telemetry.maybeFlush(tick)
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
