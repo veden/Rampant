@@ -366,6 +366,14 @@ function biterUtils.makeUnitSpawner(attributes)
     local vanillaPrototype = data.raw["unit-spawner"][vanillaName]
     local entity = util.table.deepcopy(vanillaPrototype)
 
+    -- Never let map generation place this spawner. The prototype is a deep
+    -- copy of the vanilla one, so it inherits vanilla's autoplace; with every
+    -- faction, tier and variant generated the mod would ship 354 autoplaced
+    -- spawner types instead of vanilla's 2, and map generation piles them up
+    -- near the starting area. The design is the other way round: vanilla
+    -- spawners generate, and the mod upgrades them in place.
+    entity.autoplace = nil
+
     -- Override fields that differ from vanilla
     entity.name = attributes.name .. "-rampant"
     entity.localised_name = biterUtils.getLocalisedName(attributes)
@@ -427,9 +435,6 @@ function biterUtils.makeUnitSpawner(attributes)
     -- Remove integration (uses broken sprite refs)
     entity.integration = nil
 
-    if attributes.autoplace then
-        entity["autoplace"] = enemy_spawner_autoplace(attributes.autoplace)
-    end
     if attributes.appendFlags then
         for flag in pairs(attributes.appendFlags) do
             entity.flags[#entity.flags+1] = flag
