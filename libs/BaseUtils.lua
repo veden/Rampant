@@ -460,6 +460,17 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         st.enq = (st.enq or 0) + 1
         if (math.abs(epos.x) < 64) and (math.abs(epos.y) < 64) then
             st.enqNear64 = (st.enqNear64 or 0) + 1
+            -- Name the first few near-origin sources outright: "spawners
+            -- clustered at 0,0" needs to say what they are and where they
+            -- came from, not just how many.
+            if (st.enqNearLogged or 0) < 8 then
+                st.enqNearLogged = (st.enqNearLogged or 0) + 1
+                log({"", "[ENQ] ", tostring(entity.name),
+                     " src=" .. tostring(epos.x) .. "," .. tostring(epos.y),
+                     " req=" .. tostring(position.x) .. "," .. tostring(position.y),
+                     " disPos=" .. tostring(disPos ~= nil),
+                     " evolve=" .. tostring(evolve)})
+            end
         end
         local sdx, sdy = position.x - epos.x, position.y - epos.y
         local sshift = math.sqrt(sdx * sdx + sdy * sdy)
