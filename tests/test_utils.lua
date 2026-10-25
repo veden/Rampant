@@ -181,4 +181,58 @@ my_collection:add('setPointAreaInQuery', function()
     assert(query.area[2][2] == 60, "Expected area[2][2] = 60 (50 + 10)")
 end)
 
+-- setPositionInCommand / setPositionInQuery: the command and query tables are
+-- created as {0,0}. If a caller passes a position without coordinates, the
+-- old code wrote nil over the array slots, Lua kept the initial 0, and the
+-- engine was handed (0,0) with no error -- a base built at the origin. These
+-- pin the contract: both forms are accepted, both forms are written, and a
+-- missing position must not leave a stale zero silently.
+
+my_collection:add('setPositionInCommand_named_form', function()
+    local cmd = { destination = {0,0} }
+    Utils.setPositionInCommand(cmd, { x = 500, y = -300 })
+    assert(cmd.destination[1] == 500 and cmd.destination[2] == -300,
+        "array slots must carry the named coordinates")
+    assert(cmd.destination.x == 500 and cmd.destination.y == -300,
+        "named slots must stay coherent with the array slots")
+end)
+
+my_collection:add('setPositionInCommand_array_form', function()
+    local cmd = { destination = {0,0} }
+    Utils.setPositionInCommand(cmd, { 7, 9 })
+    assert(cmd.destination[1] == 7 and cmd.destination[2] == 9,
+        "array-form input must be accepted")
+    assert(cmd.destination.x == 7 and cmd.destination.y == 9,
+        "array-form input must also populate the named slots")
+end)
+
+my_collection:add('setPositionInCommand_never_leaves_stale_zero', function()
+    local cmd = { destination = {0,0} }
+    Utils.setPositionInCommand(cmd, { x = 0, y = 0 })
+    assert(cmd.destination[1] == 0 and cmd.destination[2] == 0, "explicit zero is a real position")
+    Utils.setPositionInCommand(cmd, { x = -64, y = 32 })
+    assert(cmd.destination[1] == -64 and cmd.destination[2] == 32, "a later set must overwrite")
+end)
+
+my_collection:add('setPositionInCommand_missing_coordinates_is_not_applied', function()
+    local cmd = { destination = {0,0} }
+    Utils.setPositionInCommand(cmd, { x = 40, y = 50 })
+    Utils.setPositionInCommand(cmd, {})   -- no coordinates at all
+    assert(cmd.destination[1] == 40 and cmd.destination[2] == 50,
+        "a position without coordinates must not overwrite the previous one")
+end)
+
+my_collection:add('setPositionInCommand_nil_position_is_safe', function()
+    local cmd = { destination = {0,0} }
+    Utils.setPositionInCommand(cmd, nil)
+    assert(cmd.destination[1] == 0 and cmd.destination[2] == 0, "nil must be safe to pass")
+end)
+
+my_collection:add('setPositionInQuery_array_and_named', function()
+    local query = { position = {0,0} }
+    Utils.setPositionInQuery(query, { x = 12, y = 34 })
+    assert(query.position[1] == 12 and query.position[2] == 34, "query array slots updated")
+    assert(query.position.x == 12 and query.position.y == 34, "query named slots updated")
+end)
+
 return my_collection

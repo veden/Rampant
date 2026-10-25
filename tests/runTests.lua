@@ -381,6 +381,9 @@ local function runIt()
     print("=== Running Headless Tests ===")
 
     -- Load and run all test collections
+-- Factorio global: the position setters log when a coordinate is missing.
+log = log or function() end
+
 local test_collections = {}
 
     -- Load test collections
