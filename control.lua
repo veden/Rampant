@@ -1273,6 +1273,8 @@ script.on_event(defines.events.on_tick,
                             { "resDepleted", "event.onResourceDepleted" },
                             { "kills", "death.commandsEmitted" },
                             { "registered", "cmd.REGISTER_STRUCTURE" },
+                            { "scanQueued", "scan.queued" },
+                            { "scanRepeat", "scan.repeat" },
                             { "unregistered", "cmd.UNREGISTER_STRUCTURE" },
                         }
                         for _, entry in ipairs(tracked) do
@@ -1807,6 +1809,33 @@ remote.add_interface("Rampant", {
     end,
     -- Queue every generated chunk of a surface for scanning with the load flush
     -- on: the diagnostic for "how long does the first-load backlog actually take".
+    -- Compare the cost of COUNTING entities in a chunk with the cost of
+    -- RETRIEVING them: counts do not instantiate LuaEntity objects, arrays do.
+    gcControl = function(on)
+        collectgarbage(on and "restart" or "stop")
+        log({"", "[GC] ", (on and "running" or "stopped"), " at tick=", game.tick})
+        return on and true or false
+    end,
+    probeChunkCost = function(x, y)
+        local surface = game.surfaces[1]
+        local area = { { x, y }, { x + 32, y + 32 } }
+        local function timed(label, fn)
+            local p = helpers.create_profiler()
+            local n = fn()
+            log({"", "[PROBE] chunk=", x, ",", y, " ", label, " n=", n or 0, " ", p})
+        end
+        timed("countAll", function() return surface.count_entities_filtered({ area = area }) end)
+        timed("findAll", function() return #surface.find_entities_filtered({ area = area }) end)
+        timed("countEnemy", function() return surface.count_entities_filtered({ area = area, force = "enemy" }) end)
+        timed("findEnemy", function() return #surface.find_entities_filtered({ area = area, force = "enemy" }) end)
+        timed("findScanUnion", function()
+            local areaRef = Universe.chunkScanQueryArea
+            areaRef[1][1], areaRef[1][2] = x, y
+            areaRef[2][1], areaRef[2][2] = x + 32, y + 32
+            return #surface.find_entities_filtered(Universe.chunkScanQuery)
+        end)
+        return true
+    end,
     chunkQueueStatus = function()
         local U = storage.universe
         local n, minTick, maxTick, noBucket = 0, math.huge, -math.huge, 0

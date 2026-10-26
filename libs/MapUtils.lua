@@ -140,6 +140,7 @@ function MapUtils.queueGeneratedChunk(event)
     if not map then
         return
     end
+    if MetricsG then MetricsG.inc("scan.queued") end
     event.tick = (event.tick or game.tick) + 20
     Universe.eventId = Universe.eventId + 1
     event.id = Universe.eventId

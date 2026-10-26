@@ -655,6 +655,9 @@ function Processor.processPendingChunks(tick, flush)
         local chunkKey = MapUtils.chunkKey(x, y)
 
         if map.chunks[chunkKey] then
+            -- A chunk that already exists is being scanned again: either a
+            -- re-queue (rescan) or a duplicate queue entry.
+            if MetricsG then MetricsG.inc("scan.repeat") end
             local oldChunk = map.chunks[chunkKey]
             local chunk = timedInitialScan(oldChunk, map, tick)
             if (chunk == -1) then
