@@ -528,6 +528,14 @@ constants.FACTIONS_BY_DAMAGE_TYPE = {
 }
 
 constants.FACTION_SET = {}
+-- Name -> numeric identity, packed as factionIndex * 64 + tier. The tables below
+-- already map a prototype name to its faction and tier separately
+-- (enemyAlignmentLookup, buildingHiveTierLookup); this is the single integer the
+-- runtime compares, so an upgrade candidate test is arithmetic rather than
+-- string parsing. Built once here, where the names themselves are generated.
+constants.IDENTITY_LOOKUP = {}
+constants.FACTION_INDEX = {}
+constants.IDENTITY_TIER_MASK = 63
 
 local neutralTints = convertHexPairs(settings.startup["rampant--neutralTints"].value)
 constants.FACTION_SET[#constants.FACTION_SET+1] = {
@@ -1799,6 +1807,8 @@ for i=1,#constants.FACTION_SET do
             do
                 local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                 enemyAlignmentLookup[entry] = faction.type
+                constants.FACTION_INDEX[faction.type] = i
+                constants.IDENTITY_LOOKUP[entry] = i * 64 + t
                 costLookup[entry] = constants.HIVE_BUILDINGS_COST[building.type]
                 buildingHiveTypeLookup[entry] = building.type
                 buildingHiveTierLookup[entry] = t
