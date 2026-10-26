@@ -322,9 +322,17 @@ function Runtime.ensureSolved(fieldType, opts)
             return Universe.sourceVersionedFields[key] or {}, false
         end
     end
+    -- A chunk-id compaction re-keys every chunk, so an in-progress build's
+    -- iterator key and source ids belong to the old id space. The epoch makes
+    -- such a build detectable: discard it and restart from the new ids.
+    local epoch = Universe.chunkEpoch or 0
     local build = SourceBuilds[key]
+    if build and build.epoch ~= epoch then
+        SourceBuilds[key] = nil
+        build = nil
+    end
     if not build then
-        build = { list = {}, iterator = nil }
+        build = { list = {}, iterator = nil, epoch = epoch }
         SourceBuilds[key] = build
     end
     local examined = 0

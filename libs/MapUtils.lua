@@ -58,6 +58,10 @@ local addPermanentDeathGenerator = ChunkPropertyUtils.addPermanentDeathGenerator
 local addDeathGenerator = ChunkPropertyUtils.addDeathGenerator
 
 local mFloor = math.floor
+-- Compact chunk ids when the counter approaches the provenance packing bound
+-- (2^26 = 67,108,864). Compaction keeps ids dense, so the bound is never reached.
+local CHUNK_ID_COMPACT_THRESHOLD = 60000000
+
 local getPassable = ChunkPropertyUtils.getPassable
 local sFind = string.find
 
@@ -304,9 +308,116 @@ function MapUtils.newChunkId()
             return id
         end
     end
+    -- Keep the counter clear of the provenance packing bound by compacting ids
+    -- back to a dense range. Without this the counter could eventually reach
+    -- 2^26 and the packing assertion would fire, which in-game means a
+    -- non-recoverable error (a bricked save). Compaction is O(live chunks) and
+    -- happens once per ~60M chunk creations.
+    if Universe.chunkId >= CHUNK_ID_COMPACT_THRESHOLD then
+        MapUtils.compactChunkIds()
+    end
     local id = Universe.chunkId
     Universe.chunkId = Universe.chunkId + 1
     return id
+end
+
+--- Re-key every chunk id to a dense range 1..N, then restart the counter. All
+--- id-keyed state is rewritten in one pass: the reverse index, the per-field
+--- tables, the chunk registries and the chunk records themselves. Field values
+--- are not recomputed - only their keys change - so the fields stay exact.
+function MapUtils.compactChunkIds()
+    local chunkById = Universe.chunkById
+    if not chunkById then return 0 end
+    local mapping = {}
+    local chunks = {}
+    local nextId = 1
+    for oldId, chunk in pairs(chunkById) do
+        mapping[oldId] = nextId
+        chunks[nextId] = chunk
+        nextId = nextId + 1
+    end
+    local count = nextId - 1
+
+    -- reverse index and the record's own id
+    Universe.chunkById = {}
+    for newId, chunk in ipairs(chunks) do
+        chunk.id = newId
+        Universe.chunkById[newId] = chunk
+    end
+
+    -- per-field tables keyed by chunk id
+    local function rekey(tableList)
+        for _, t in ipairs(tableList) do
+            if type(t) == "table" then
+                for fieldKey, fieldTable in pairs(t) do
+                    if type(fieldTable) == "table" then
+                        local fresh = {}
+                        for oldId, value in pairs(fieldTable) do
+                            local newId2 = mapping[oldId]
+                            if newId2 then fresh[newId2] = value end
+                        end
+                        t[fieldKey] = fresh
+                    end
+                end
+            end
+        end
+    end
+    rekey({ Universe.sourceVersionedFields, Universe.sourceVersionedProvenance,
+        Universe.sourceVersionedSecond })
+    -- The frontier and removal heaps index chunk ids inside their own arrays
+    -- (pos/heap slots), which rekeying the tables above cannot fix. Drop them:
+    -- the field values are already exact, only pending propagation is lost, and
+    -- a source that changes again re-queues.
+    Universe.sourceVersionedFrontier = {}
+    Universe.sourceVersionedRemoval = {}
+
+    -- registries keyed by chunk id
+    for _, name in ipairs({ "chunkToNests", "chunkToUtilities", "chunkToHives",
+        "chunkToActiveNest", "chunkToActiveRaidNest", "chunkToDrained",
+        "chunkToRetreats", "chunkToRallys", "chunkToPassScan", "chunkToVictory",
+        "vengenceQueue", "deathGeneratorChunks", "playerGeneratorChunks" }) do
+        local t = Universe[name]
+        if type(t) == "table" then
+            local fresh = {}
+            for oldId, value in pairs(t) do
+                local newId2 = mapping[oldId]
+                if newId2 then fresh[newId2] = value end
+            end
+            Universe[name] = fresh
+        end
+    end
+
+    -- Per-base sets are keyed by chunk id as well.
+    if Universe.bases then
+        for _, base in pairs(Universe.bases) do
+            if type(base.resourceChunks) == "table" then
+                local fresh = {}
+                for oldId in pairs(base.resourceChunks) do
+                    local newId2 = mapping[oldId]
+                    if newId2 then fresh[newId2] = true end
+                end
+                base.resourceChunks = fresh
+            end
+        end
+    end
+
+    -- iterators hold old ids; drop them and let the walks restart
+    Universe.processBaseAIIterator = nil
+    Universe.processNestIterator = nil
+    Universe.processActiveSpawnerIterator = nil
+    Universe.processActiveRaidSpawnerIterator = nil
+    Universe.processMigrationIterator = nil
+    -- any id held by a pending command or upgrade is stale now
+    Universe.pendingUpgrades = {}
+    Universe.pendingUpgradesLength = 0
+    Universe.freeChunkIds = nil
+    Universe.freeChunkTicks = nil
+    Universe.chunkId = count + 1
+    -- Invalidate anything that cached a chunk id across calls: field builds
+    -- (checked per solve) and squads (they resolve ids on use).
+    Universe.chunkEpoch = (Universe.chunkEpoch or 0) + 1
+    log({"", "[HEAP] compacted chunk ids: ", count, " live chunks, counter reset"})
+    return count
 end
 
 --- Hand a removed chunk's id back for reuse, aged.

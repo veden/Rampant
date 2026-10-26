@@ -1957,6 +1957,11 @@ remote.add_interface("Rampant", {
             " noMap=" .. noMap .. " notInGrid=" .. notInGrid .. " inGrid=" .. inGrid ..
             " byMap[" .. table.concat(parts, ",") .. "]"
     end,
+    -- Force a chunk-id compaction so it can be exercised without waiting for the
+    -- counter to reach the threshold.
+    compactIds = function()
+        return MapUtils.compactChunkIds()
+    end,
     reconcileChunks = function()
         return MapUtils.reconcileOrphanChunks()
     end,
