@@ -352,14 +352,19 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
             )
         -- The tier is the base's version, not a roll: the name is built the same
         -- way the data stage builds it, so IDENTITY_LOOKUP has it.
-        local useTier = targetTier or maxTier
-        if useTier < tier then useTier = tier end
+        local useTier = targetTier or maxTier or 0
+        if useTier > 0 and useTier < tier then useTier = tier end
+        if useTier <= 0 then
+            -- Nothing to upgrade to: a no-op, not a devolution. The structure
+            -- keeps its identity and is not queued again until a version change.
+            return nil
+        end
         local typeName = makeHive and "hive" or entityType
         local name = baseAlignment .. "-" .. typeName .. "-v1-t" .. useTier .. "-rampant"
         if Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[name] then
             return name
         end
-        return initialEntityUpgrade(baseAlignment, tier, maxTier, (makeHive and "hive"), entityType)
+        return nil
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity)
     end
@@ -514,10 +519,15 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     -- Evolution is the CAP and also raises the version when it crosses a tier
     -- boundary; points can raise it further but never past the cap. The version
     -- itself never falls here (devolution is an explicit event).
-    local capTier = evoToTier(evoIndex, 4)
+    local capTier = evoToTier(evoIndex, 4) or 0
     if not base.upgradeVersion then
         base.upgradeVersion = capTier
     end
+    if base.upgradeVersion < 0 then
+        base.upgradeVersion = 0
+    end
+    -- Monotone: evolution may raise the version, never lower it. Version 0 means
+    -- "no upgrade available", which is a valid resting state.
     if capTier > base.upgradeVersion then
         base.upgradeVersion = capTier
     end
@@ -602,6 +612,8 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         ["entity"] = entity,
         ["delayTLL"] = timeDelay,
         ["hive"] = Universe.hives[unitNumber] or Universe.hiveData[unitNumber],
+        ["base"] = base,
+        ["oldUnitNumber"] = unitNumber,
         ["state"] = 1
     }
     Universe.pendingUpgradesLength = Universe.pendingUpgradesLength + 1
@@ -811,7 +823,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
         )
         local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
         local capTier = evoToTier(evoIndex, 4)
-        local version = base.upgradeVersion or 1
+        local version = base.upgradeVersion or 0
         if version < capTier then
             local cost = (COST_LOOKUP[chunk.nestIds and "biter-spawner"] or MINIMUM_BUILDING_COST)
             if base.points >= cost then
@@ -868,7 +880,7 @@ function BaseUtils.createBase(map, chunk, tick)
     -- once per identity change.
     local baseFactionType = alignment[1] or "neutral"
     local baseFactionId = Constants.FACTION_INDEX[baseFactionType] or 0
-    local baseTier = evoToTier(evoIndex, 4)
+    local baseTier = evoToTier(evoIndex, 4) or 0
 
     local base = {
         x = x,

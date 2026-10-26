@@ -651,6 +651,27 @@ function Processor.processPendingUpgrades(tick)
                 query.position = {retryPosition.x, retryPosition.y}
                 newEntity = surface.create_entity(query)
             end
+            if not (newEntity and newEntity.valid) then
+                -- The upgrade produced nothing. That is allowed - it is a
+                -- no-op, not a devolution - but the structure's identity must
+                -- drop to 0 so it is a candidate again instead of being
+                -- remembered as upgraded. Negative would mean "worse than the
+                -- previous tier"; zero means "no rampant identity".
+                local base = entityData.base
+                local oldUnitNumber = entityData.oldUnitNumber
+                if base and base.structures and oldUnitNumber then
+                    base.structures[oldUnitNumber] = 0
+                    if base.structureEntities then
+                        base.structureEntities[oldUnitNumber] = nil
+                    end
+                end
+                if TelemetryG then
+                    TelemetryG.emit("upgrade.none", {
+                        name = name, base = base and base.id or nil,
+                        x = position.x, y = position.y,
+                    })
+                end
+            end
         end
         if newEntity and newEntity.valid then
             local st = spawnStats()
