@@ -172,50 +172,6 @@ local function addCommandSet()
         }
     }
 
-    -- One query per chunk instead of nine kernel crossings: the enemy structure
-    -- query, the four player-building level queries, the resource count and the
-    -- unit query all read the same 32x32 area, and a dense chunk measured 4.87ms.
-    -- The union is by TYPE (2.1 uses `type`, not `types`); force and weight are
-    -- classified in Lua from the one list.
-    local scanTypes = {
-        "turret", "unit-spawner", "unit", "resource",
-        "wall", "transport-belt",
-        "splitter", "pump", "offshore-pump", "lamp", "solar-panel",
-        "programmable-speaker", "accumulator", "assembling-machine", "ammo-turret",
-        "furnace", "lab", "roboport", "beacon", "radar",
-        "electric-turret", "boiler", "generator", "fluid-turret", "mining-drill",
-        "artillery-turret", "reactor", "rocket-silo",
-    }
-    local scanQueryArea = { {0,0}, {0,0} }
-    -- Two variants: units are only needed for the load-time purge, and a dense
-    -- chunk can hold hundreds of them, which is what made a single query cost
-    -- 8.5ms. limit bounds the returned array; a query that hits it is subdivided.
-    local scanTypesNoUnits = {}
-    for _, t in ipairs(scanTypes) do
-        if t ~= "unit" then scanTypesNoUnits[#scanTypesNoUnits + 1] = t end
-    end
-    local SCAN_QUERY_LIMIT = 64
-    Universe.chunkScanQuery = { area = scanQueryArea, type = scanTypesNoUnits, limit = SCAN_QUERY_LIMIT }
-    Universe.chunkScanQueryUnits = { area = scanQueryArea, type = scanTypes, limit = SCAN_QUERY_LIMIT }
-    Universe.chunkScanQueryLimit = SCAN_QUERY_LIMIT
-
-    -- type -> player pheromone weight, mirroring the four level queries above.
-    local playerWeight = {}
-    for _, t in ipairs({"wall", "transport-belt"}) do playerWeight[t] = Constants.GENERATOR_PHEROMONE_LEVEL_1 end
-    for _, t in ipairs({"splitter", "pump", "offshore-pump", "lamp", "solar-panel",
-        "programmable-speaker", "accumulator", "assembling-machine", "turret", "ammo-turret"}) do
-        playerWeight[t] = Constants.GENERATOR_PHEROMONE_LEVEL_3
-    end
-    for _, t in ipairs({"furnace", "lab", "roboport", "beacon", "radar",
-        "electric-turret", "boiler", "generator", "fluid-turret", "mining-drill"}) do
-        playerWeight[t] = Constants.GENERATOR_PHEROMONE_LEVEL_5
-    end
-    for _, t in ipairs({"artillery-turret", "reactor", "rocket-silo"}) do
-        playerWeight[t] = Constants.GENERATOR_PHEROMONE_LEVEL_6
-    end
-    Universe.playerBuildingWeight = playerWeight
-    Universe.chunkScanQueryArea = scanQueryArea
-
     -- is
     local isSharedChunkArea = {
         {0,0},

@@ -217,16 +217,6 @@ local function scanPaths(chunk, map)
     local passableNorthSouth = false
     local passableEastWest = false
 
-    -- Fast path: most chunks are empty, and the column walk below costs two
-    -- kernel calls per column (up to 64 crossings per chunk). One query for the
-    -- whole chunk decides the empty case outright.
-    setAreaInQueryChunkSize(filteredEntitiesCliffQuery, chunk)
-    setAreaInQueryChunkSize(filteredTilesPathQuery, chunk)
-    if (count_entities_filtered(filteredEntitiesCliffQuery) == 0)
-        and (count_tiles_filtered(filteredTilesPathQuery) == 0) then
-        return CHUNK_ALL_DIRECTIONS
-    end
-
     setAreaYInQuery(filteredEntitiesCliffQuery, y, y + CHUNK_SIZE)
 
     for xi=x, x + CHUNK_SIZE do
@@ -305,138 +295,18 @@ local function timedScanPhase(name, fn)
     return result
 end
 
--- Entity work allowed per chunk scan. The scan's per-entity registration loop
--- was the unbounded part: a full-map rescan measured 9.48ms for one dense chunk
--- with paths+query accounting for only 0.13ms of it. A chunk whose entity list
--- is longer than this is re-queued next tick and resumes from its cursor.
--- Registration is the expensive per-entity unit: 16 per tick measured up to
--- 11ms on dense chunks. 2 keeps a single registration spike small.
-local SCAN_ENTITIES_PER_TICK = 2
-
-local function continueScan(chunk, map, tick, state)
-    local budget = SCAN_ENTITIES_PER_TICK
-    local units, enemies = state.units, state.enemies
-    local base = state.base
-    while budget > 0 do
-        if state.unitIdx <= #units then
-            local u = units[state.unitIdx]
-            state.unitIdx = state.unitIdx + 1
-            if u.valid and u.type == "unit" then
-                u.destroy()
-                if MetricsG then MetricsG.inc("scan.unitsKilled") end
-            end
-        elseif state.enemyIdx <= #enemies then
-            local enemyBuilding = enemies[state.enemyIdx]
-            state.enemyIdx = state.enemyIdx + 1
-            if enemyBuilding.valid then
-                timedScanPhase("register", function()
-                    ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
-                    local entityName = enemyBuilding.name
-                    local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
-                    if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
-                        queueUpgrade(enemyBuilding, base, nil, true)
-                    end
-                end)
-            end
-        else
-            break
-        end
-        budget = budget - 1
-    end
-    if (state.unitIdx > #units) and (state.enemyIdx > #enemies) then
-        chunk.scanState = nil
-        return chunk
-    end
-    return -2 -- partial: caller re-queues this chunk for the next tick
-end
-
 function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
+    if MetricsG then
+        MetricsG.inc("scan.chunksScanned")
+    end
     local surface = map.surface
-    local state = chunk.scanState
-    if state and state.entities then
-        -- Registration/purge continuation (see continueScan).
-        return continueScan(chunk, map, tick, state)
-    end
-
-    -- Phase 1: the entity query, one quadrant per tick. A dense chunk's single
-    -- whole-chunk query measured 5.93ms (p99 70us), so the chunk is split into
-    -- four 16x16 queries and the results accumulate across ticks.
-    if not state or not state.queried then
-        if not state then
-            if MetricsG then
-                MetricsG.inc("scan.chunksScanned")
-            end
-            state = {
-                quad = 1,
-                areas = {
-                    { 0, 0, CHUNK_SIZE / 2 },
-                    { CHUNK_SIZE / 2, 0, CHUNK_SIZE / 2 },
-                    { 0, CHUNK_SIZE / 2, CHUNK_SIZE / 2 },
-                    { CHUNK_SIZE / 2, CHUNK_SIZE / 2, CHUNK_SIZE / 2 },
-                },
-                enemies = {},
-                units = {},
-                playerObjects = 0,
-                resources = 0,
-                tick = tick,
-                purgeUnits = purgeUnits ~= false and Universe.NEW_ENEMIES,
-            }
-            chunk.scanState = state
-        end
-        local queried = 0
-        while state.quad <= #state.areas and queried < 2 do
-            queried = queried + 1
-            local areaDef = state.areas[state.quad]
-            local entities = timedScanPhase("query", function()
-                local area = Universe.chunkScanQueryArea
-                area[1][1], area[1][2] = chunk.x + areaDef[1], chunk.y + areaDef[2]
-                area[2][1], area[2][2] = chunk.x + areaDef[1] + areaDef[3],
-                    chunk.y + areaDef[2] + areaDef[3]
-                local query = state.purgeUnits and Universe.chunkScanQueryUnits
-                    or Universe.chunkScanQuery
-                return surface.find_entities_filtered(query)
-            end)
-            -- A query that hit the limit on a still-large area is subdivided, so
-            -- one call never returns more than the limit.
-            if #entities >= (Universe.chunkScanQueryLimit or 64) and areaDef[3] > 4 then
-                local half = areaDef[3] / 2
-                state.areas[#state.areas + 1] = { areaDef[1], areaDef[2], half }
-                state.areas[#state.areas + 1] = { areaDef[1] + half, areaDef[2], half }
-                state.areas[#state.areas + 1] = { areaDef[1], areaDef[2] + half, half }
-                state.areas[#state.areas + 1] = { areaDef[1] + half, areaDef[2] + half, half }
-            end
-            local weights = Universe.playerBuildingWeight
-            for i = 1, #entities do
-                local e = entities[i]
-                if e.valid then
-                    local kind = e.type
-                    if kind == "resource" then
-                        state.resources = state.resources + 1
-                    elseif e.force.name == "enemy" then
-                        if kind == "unit" then
-                            state.units[#state.units + 1] = e
-                        else
-                            state.enemies[#state.enemies + 1] = e
-                        end
-                    else
-                        local w = weights and weights[kind]
-                        if w then state.playerObjects = state.playerObjects + w end
-                    end
-                end
-            end
-            state.quad = state.quad + 1
-        end
-        if state.quad <= #state.areas then
-            return -2
-        end
-        state.queried = true
-    end
-
+    setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
+    setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
     local pass = timedScanPhase("paths", function() return scanPaths(chunk, map) end)
-    local enemyBuildings = state.enemies
-    local unitList = state.units
-    local playerObjects = state.playerObjects
-    local resourceCount = state.resources
+    local enemyBuildings = timedScanPhase("enemyQuery", function()
+        return surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
+    end)
+    local playerObjects = timedScanPhase("playerQuery", function() return scorePlayerBuildings(map, chunk) end)
 
     if (pass ~= CHUNK_IMPASSABLE) or (#enemyBuildings > 0) or (playerObjects > 0) then
         if ((playerObjects > 0) or (#enemyBuildings > 0)) and (pass == CHUNK_IMPASSABLE) then
@@ -455,31 +325,72 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
             -- a loaded save's resource field stays empty and every
             -- resource-seeking scorer reads 0.
             local oldResourceSourceValue = resourceSourceValue(chunk)
-            local resources = resourceCount * RESOURCE_NORMALIZER
+            local resources = timedScanPhase("resourceQuery", function()
+                return surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
+            end)
             setResourceGenerator(chunk, resources)
             queueResourceSourceChange(chunk, oldResourceSourceValue)
 
             if (#enemyBuildings > 0) then
-                local base = timedScanPhase("base", function()
-                    local b = findNearbyBase(chunk)
-                    if not b then b = createBase(map, chunk, tick) end
-                    return b
-                end)
+                local base = findNearbyBase(chunk)
+                if not base then
+                    base = createBase(map, chunk, tick)
+                end
+
                 -- Unit purge: clears PRE-MOD units at map load (the initial
-                -- scan). The evolution RESCAN must NOT purge (it re-runs over
-                -- living territory). Registration and purge are budgeted per
-                -- tick through continueScan: a dense chunk measured 9.35ms of
-                -- untimed per-entity work.
-                local unitsToPurge = (purgeUnits ~= false and Universe.NEW_ENEMIES) and unitList or {}
-                chunk.scanState = {
-                    entities = true,
-                    units = unitsToPurge,
-                    enemies = enemyBuildings,
-                    unitIdx = 1,
-                    enemyIdx = 1,
-                    base = base,
-                }
-                return continueScan(chunk, map, tick, chunk.scanState)
+                -- scan). The one-time evolution RESCAN must NOT purge — it
+                -- re-runs this over LIVING territory and would destroy
+                -- every unit near every nest (the "recycle race": staged
+                -- units vanished instantly, formations starved, zero death
+                -- events because script destroy() is silent).
+                if purgeUnits ~= false and Universe.NEW_ENEMIES then
+                    local unitList = timedScanPhase("unitQuery", function()
+                        return surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
+                    end)
+                    if #unitList > 0 then
+                        local killed = 0
+                        local dbgMsg = "initialScan: checking " .. #unitList .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
+                        for i=1,#unitList do
+                            local u = unitList[i]
+                            if u.valid and u.type == "unit" then
+                                dbgMsg = dbgMsg .. " KILL " .. u.name .. "(" .. u.position.x .. "," .. u.position.y .. ")"
+                                u.destroy()
+                                killed = killed + 1
+                                if MetricsG then MetricsG.inc("scan.unitsKilled") end
+                            else
+                                dbgMsg = dbgMsg .. " SKIP " .. u.name .. "(type=" .. u.type .. ")"
+                            end
+                        end
+                        dbgMsg = dbgMsg .. " total_killed=" .. killed
+                        if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] " .. dbgMsg) end
+                    end
+
+                    for i = 1, #enemyBuildings do
+                        local enemyBuilding = enemyBuildings[i]
+                        if enemyBuilding.valid then
+                            local entityName = enemyBuilding.name
+                            if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: registerEnemyBaseStructure(" .. entityName .. ") base=" .. (base.id or "?")) end
+                            ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
+                            local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
+                            if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
+                                if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: queueUpgrade(" .. entityName .. ")") end
+                                queueUpgrade(enemyBuilding,
+                                             base,
+                                             nil,
+                                             true)
+                            else
+                                if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: SKIPPED upgrade(" .. entityName .. ") - is hive") end
+                            end
+                        end
+                    end
+                else
+                    for i=1,#enemyBuildings do
+                        local building = enemyBuildings[i]
+                        if building.valid then
+                            ChunkUtils.registerEnemyBaseStructure(building, base, tick)
+                        end
+                    end
+                end
             end
 
             return chunk
