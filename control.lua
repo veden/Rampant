@@ -402,6 +402,29 @@ local function onConfigChanged()
     end
 end
 
+-- Cached metric names for the two per-event dynamic values. Without these,
+-- "death.force." .. name and "group.created." .. name allocated a string on
+-- every death and every group creation even with telemetry off.
+local DEATH_FORCE_METRIC = {}
+local function deathForceMetric(forceName)
+    local name = DEATH_FORCE_METRIC[forceName]
+    if not name then
+        name = "death.force." .. forceName
+        DEATH_FORCE_METRIC[forceName] = name
+    end
+    return name
+end
+local GROUP_CREATED_METRIC = {}
+local function groupCreatedMetric(forceName, scriptDriven)
+    local key = forceName .. (scriptDriven and ".script" or ".vanilla")
+    local name = GROUP_CREATED_METRIC[key]
+    if not name then
+        name = "group.created." .. key
+        GROUP_CREATED_METRIC[key] = name
+    end
+    return name
+end
+
 local function dbgEntity(msg)
     if Universe and Universe.DEBUG_ENTITY_EVENTS then
         game.print("[RAMPANT] " .. msg)
@@ -409,10 +432,10 @@ local function dbgEntity(msg)
 end
 
 local function onEnemyBaseBuild(entity, tick)
-    dbgEntity("onEnemyBaseBuild: " .. entity.name .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") tick=" .. tick)
+    if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("onEnemyBaseBuild: " .. entity.name .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") tick=" .. tick) end
     local map = Universe.maps[entity.surface.index]
     if not map then
-        dbgEntity("  -> NO MAP for surface=" .. entity.surface.index)
+        if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("  -> NO MAP for surface=" .. entity.surface.index) end
         return
     end
     local chunk = getChunkByPosition(map, entity.position)
@@ -421,7 +444,7 @@ local function onEnemyBaseBuild(entity, tick)
     if chunk ~= -1 then
         base = findNearbyBase(chunk)
         if not base then
-            dbgEntity("  -> creating new base at chunk(" .. chunk.x .. "," .. chunk.y .. ")")
+            if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("  -> creating new base at chunk(" .. chunk.x .. "," .. chunk.y .. ")") end
             isNewBase = true
         end
     end
@@ -460,7 +483,7 @@ local function onBuild(event)
     Metrics.inc("event.onBuild")
     local entity = event.created_entity or event.entity
     if entity.valid then
-        dbgEntity("onBuild: event=" .. tostring(event.event) .. " entity=" .. entity.name .. " force=" .. entity.force.name .. " type=" .. entity.type .. " created_entity=" .. tostring(event.created_entity ~= nil) .. " has_entity=" .. tostring(event.entity ~= nil))
+        if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("onBuild: event=" .. tostring(event.event) .. " entity=" .. entity.name .. " force=" .. entity.force.name .. " type=" .. entity.type .. " created_entity=" .. tostring(event.created_entity ~= nil) .. " has_entity=" .. tostring(event.entity ~= nil)) end
         local entityForceName = entity.force.name
         if entityForceName == "enemy" then
             onEnemyBaseBuild(entity, event.tick)
@@ -502,7 +525,7 @@ local function onDeath(event)
     if not entity.valid then
         return
     end
-    dbgEntity("onDeath: " .. entity.name .. " type=" .. entity.type .. " force=" .. (entity.force and entity.force.name or "nil") .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") cause=" .. (event.cause and event.cause.name or "nil"))
+    if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("onDeath: " .. entity.name .. " type=" .. entity.type .. " force=" .. (entity.force and entity.force.name or "nil") .. " @(" .. entity.position.x .. "," .. entity.position.y .. ") cause=" .. (event.cause and event.cause.name or "nil")) end
     local surface = entity.surface
     local map = Universe.maps[surface.index]
     if not map then
@@ -510,7 +533,7 @@ local function onDeath(event)
         return
     end
     local entityForceName = entity.force.name
-    Metrics.inc("death.force." .. entityForceName)
+    Metrics.inc(deathForceMetric(entityForceName))
     if (entityForceName == "neutral") then
         if (entity.name == "cliff") then
             entityForPassScan(map, entity)
@@ -893,10 +916,8 @@ end
 local function onUnitGroupCreated(event)
     Metrics.inc("event.onUnitGroupCreated")
     local group = event.group
-    Metrics.inc("group.created." .. group.force.name ..
-        (group.is_script_driven and ".script" or ".vanilla"))
-    dbgEntity("onUnitGroupCreated: force=" .. group.force.name .. " is_script=" .. tostring(group.is_script_driven) .. " @(" .. group.position.x .. "," .. group.position.y .. ")")
-
+    Metrics.inc(groupCreatedMetric(group.force.name, group.is_script_driven))
+    if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("onUnitGroupCreated: force=" .. group.force.name .. " is_script=" .. tostring(group.is_script_driven) .. " @(" .. group.position.x .. "," .. group.position.y .. ")") end
     local surface = group.surface
     local map = Universe.maps[surface.index]
 
@@ -1052,7 +1073,7 @@ local function onChunkDeleted(event)
 end
 
 local function onBuilderArrived(event)
-    dbgEntity("onBuilderArrived: has_group=" .. tostring(event.group ~= nil and event.group.valid) .. " has_unit=" .. tostring(event.unit ~= nil and event.unit.valid))
+    if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("onBuilderArrived: has_group=" .. tostring(event.group ~= nil and event.group.valid) .. " has_unit=" .. tostring(event.unit ~= nil and event.unit.valid)) end
     local builder = event.group
     local usingUnit = false
     if not (builder and builder.valid) then
@@ -1071,8 +1092,7 @@ local function onBuilderArrived(event)
     if usingUnit then
         builderName = builder.name
     end
-    dbgEntity("  -> builder=" .. builderName .. " @(" .. builder.position.x .. "," .. builder.position.y .. ") usingUnit=" .. tostring(usingUnit))
-
+    if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("  -> builder=" .. builderName .. " @(" .. builder.position.x .. "," .. builder.position.y .. ") usingUnit=" .. tostring(usingUnit)) end
     local map = Universe.maps[builder.surface.index]
     if not map then
         return

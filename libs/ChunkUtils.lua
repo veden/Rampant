@@ -251,6 +251,17 @@ local function scanPaths(chunk, map)
     return pass
 end
 
+-- Cached "player.build." .. type name.
+local BUILD_METRIC = {}
+local function buildMetric(typeName)
+    local name = BUILD_METRIC[typeName]
+    if not name then
+        name = "player.build." .. typeName
+        BUILD_METRIC[typeName] = name
+    end
+    return name
+end
+
 local function scorePlayerBuildings(map, chunk)
     local surface = map.surface
     setAreaInQueryChunkSize(Universe.spbHasPlayerStructuresQuery, chunk)
@@ -349,20 +360,30 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                     end)
                     if #unitList > 0 then
                         local killed = 0
-                        local dbgMsg = "initialScan: checking " .. #unitList .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
+                        -- The debug line used to be concatenated per unit even
+                        -- when DEBUG_ENTITY_EVENTS was off.
+                        if Universe.DEBUG_ENTITY_EVENTS then
+                            local dbgMsg = "initialScan: checking " .. #unitList
+                                .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
+                            for i=1,#unitList do
+                                local u = unitList[i]
+                                if u.valid and u.type == "unit" then
+                                    dbgMsg = dbgMsg .. " KILL " .. u.name
+                                        .. "(" .. u.position.x .. "," .. u.position.y .. ")"
+                                else
+                                    dbgMsg = dbgMsg .. " SKIP " .. u.name .. "(type=" .. u.type .. ")"
+                                end
+                            end
+                            game.print("[RAMPANT] " .. dbgMsg)
+                        end
                         for i=1,#unitList do
                             local u = unitList[i]
                             if u.valid and u.type == "unit" then
-                                dbgMsg = dbgMsg .. " KILL " .. u.name .. "(" .. u.position.x .. "," .. u.position.y .. ")"
                                 u.destroy()
                                 killed = killed + 1
                                 if MetricsG then MetricsG.inc("scan.unitsKilled") end
-                            else
-                                dbgMsg = dbgMsg .. " SKIP " .. u.name .. "(type=" .. u.type .. ")"
                             end
                         end
-                        dbgMsg = dbgMsg .. " total_killed=" .. killed
-                        if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] " .. dbgMsg) end
                     end
 
                     for i = 1, #enemyBuildings do
@@ -694,12 +715,12 @@ function ChunkUtils.accountPlayerEntity(entity, map, addObject, base)
         if MetricsG then
             if addObject then
                 MetricsG.inc("player.build")
-                MetricsG.inc("player.build." .. entity.type)
+                MetricsG.inc(buildMetric(entity.type))
             else
                 MetricsG.inc("player.mine")
             end
         end
-        if TelemetryG then
+        if TelemetryG and TelemetryG.isEnabled() then
             TelemetryG.emit(addObject and "player.build" or "player.mine", {
                 name = entity.name, type = entity.type,
                 x = entity.position.x, y = entity.position.y,
@@ -753,7 +774,7 @@ end
 
 function ChunkUtils.registerResource(entity, map)
     if MetricsG then MetricsG.inc("resource.registered") end
-    if TelemetryG then
+    if TelemetryG and TelemetryG.isEnabled() then
         TelemetryG.emit("resource.register", {
             name = entity.name, amount = entity.amount,
             x = entity.position.x, y = entity.position.y,

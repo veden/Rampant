@@ -360,6 +360,17 @@ end
 -- in-place replacement), "nest"/"turret"/"hive" (queueCreation from a hive).
 -- `near64` is how many landed within 64 tiles of the origin, `maxShift` how
 -- far the placed entity moved from the requested position.
+-- Cached spawn metric names: "spawn." .. kind concatenated per creation.
+local SPAWN_METRIC = {}
+local function spawnMetric(kind)
+    local name = SPAWN_METRIC[kind]
+    if not name then
+        name = "spawn." .. kind
+        SPAWN_METRIC[kind] = name
+    end
+    return name
+end
+
 local function spawnStats()
     local st = Universe.spawnTelemetry
     if not st then
@@ -633,7 +644,7 @@ function Processor.processPendingUpgrades(tick)
             if MetricsG then
                 MetricsG.inc("upgrade.createBlocked")
             end
-            if TelemetryG then
+            if TelemetryG and TelemetryG.isEnabled() then
                 TelemetryG.emit("upgrade.blocked", {
                     name = name, x = position.x, y = position.y,
                     kind = entityData.kind, base = entityData.baseId,
@@ -665,7 +676,7 @@ function Processor.processPendingUpgrades(tick)
                         base.structureEntities[oldUnitNumber] = nil
                     end
                 end
-                if TelemetryG then
+                if TelemetryG and TelemetryG.isEnabled() then
                     TelemetryG.emit("upgrade.none", {
                         name = name, base = base and base.id or nil,
                         x = position.x, y = position.y,
@@ -686,10 +697,10 @@ function Processor.processPendingUpgrades(tick)
                 st.near64 = st.near64 + 1
             end
             if MetricsG then
-                MetricsG.inc("spawn." .. kind)
+                MetricsG.inc(spawnMetric(kind))
                 MetricsG.highWater("spawn.shift", shift)
             end
-            if TelemetryG then
+            if TelemetryG and TelemetryG.isEnabled() then
                 TelemetryG.emit("upgrade.create", {
                     name = name, kind = kind,
                     x = position.x, y = position.y,

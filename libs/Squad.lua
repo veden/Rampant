@@ -356,7 +356,9 @@ function Squad.processCompression(squad)
     if #queue == 0 then
         squad.compressQueue = nil
         if TelemetryG then
-            TelemetryG.emit("squad.compress", { squad = squad.id, members = squad.compressTotalPending })
+            if TelemetryG.isEnabled() then
+                TelemetryG.emit("squad.compress", { squad = squad.id, members = squad.compressTotalPending })
+            end
         end
         if Universe.materializing then Universe.materializing[squad.id] = nil end
         local query = Queries.renderText
@@ -375,6 +377,17 @@ end
 -- Split a squad operation in the diagnostic timeline: our scoring versus the
 -- engine call that issues the group command. Only logs inside a diagnose
 -- window, so it costs nothing in normal play.
+-- Cached metric names for the settle reason: the set is tiny and bounded.
+local SETTLE_METRIC = {}
+local function settleMetric(reason)
+    local name = SETTLE_METRIC[reason]
+    if not name then
+        name = "squad.settle." .. reason
+        SETTLE_METRIC[reason] = name
+    end
+    return name
+end
+
 local function timedSquad(name, fn)
     if not (Universe and Universe.diagTicks) then
         return fn()
@@ -407,7 +420,9 @@ function Squad.decompressSquad(squad, tick, force)
         and not squad.decompressQueue then
         if MetricsG then MetricsG.inc("squad.decompressSkipped") end
         if TelemetryG then
-            TelemetryG.emit("squad.decompressSkipped", { squad = squad.id, members = squad.compressedTotal })
+            if TelemetryG.isEnabled() then
+                TelemetryG.emit("squad.decompressSkipped", { squad = squad.id, members = squad.compressedTotal })
+            end
         end
         return
     end
@@ -444,7 +459,9 @@ function Squad.decompressSquad(squad, tick, force)
     end
     squad.decompressQueue = nil
     if TelemetryG then
-        TelemetryG.emit("squad.decompress", { squad = squad.id, members = squad.compressedTotal })
+        if TelemetryG.isEnabled() then
+            TelemetryG.emit("squad.decompress", { squad = squad.id, members = squad.compressedTotal })
+        end
     end
     if Universe.materializing then Universe.materializing[squad.id] = nil end
     -- 2.x API: rendering.destroy(id) no longer exists on LuaRendering —
@@ -575,7 +592,7 @@ local function settleMove(squad, tick)
         })
         if settleDecision.settle then
             if MetricsG then
-                MetricsG.inc("squad.settle." .. settleDecision.reason)
+                MetricsG.inc(settleMetric(settleDecision.reason))
             end
             timedSquad("squad.decompress", function() Squad.decompressSquad(squad, tick) end)
 
@@ -659,7 +676,7 @@ local function settleMove(squad, tick)
     })
     if settleDecision.settle then
         if MetricsG then
-            MetricsG.inc("squad.settle." .. settleDecision.reason)
+            MetricsG.inc(settleMetric(settleDecision.reason))
         end
         cmd = Queries.settleCommand
         squad.status = SQUAD_BUILDING

@@ -75,6 +75,17 @@ end
 -- old 0, and the engine is faithfully told (0,0) with no error anywhere.
 -- That is how a base could be built at the origin. Accept either position
 -- form, and on a genuine miss count it and log the caller once.
+-- Cached "position." .. reason names (anomaly path, but it runs per setter).
+local POSITION_METRIC = {}
+local function positionMetric(reason)
+    local name = POSITION_METRIC[reason]
+    if not name then
+        name = "position." .. reason
+        POSITION_METRIC[reason] = name
+    end
+    return name
+end
+
 local function resolveXY(position)
     if not position then return nil, nil, "nil" end
     local x, y = position.x, position.y
@@ -87,7 +98,7 @@ end
 local function writeXY(point, position)
     local x, y, why = resolveXY(position)
     if not x then
-        if MetricsG then MetricsG.inc("position." .. why) end
+        if MetricsG then MetricsG.inc(positionMetric(why)) end
         log({"", "[POS] " .. why .. " coordinates, keeping previous value: ",
              debug.traceback("", 1):gsub("\n", " | ")})
         return false

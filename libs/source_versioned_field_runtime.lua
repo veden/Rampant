@@ -256,7 +256,7 @@ function Runtime.ensureSolved(fieldType, opts)
             -- one is swapped in by the rebuild below.
             SolvedFields[key] = false
             SourceBuilds[key] = nil
-            if TelemetryG then
+            if TelemetryG and TelemetryG.isEnabled() then
                 TelemetryG.emit("field.reconcile", { field = key, age = game.tick - last })
             end
         else
@@ -343,7 +343,7 @@ function Runtime.ensureSolved(fieldType, opts)
         Universe.sourceVersionedSolvedAt = solvedAt
     end
     solvedAt[key] = game.tick
-    if TelemetryG then
+    if TelemetryG and TelemetryG.isEnabled() then
         TelemetryG.emit("field.solved", {
             field = key, sources = #build.list, chunks = #field,
         })

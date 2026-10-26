@@ -54,7 +54,7 @@ end
 
 Handlers.DESTROY_GROUP = function(cmd)
     if MetricsG then
-        MetricsG.inc("group.reject." .. (cmd.reason or "unknown"))
+        MetricsG.inc(metricName(REJECT_METRIC, "group.reject.", cmd.reason or "unknown"))
     end
     if cmd.groupRef and cmd.groupRef.valid then
         cmd.groupRef.destroy()
@@ -185,12 +185,25 @@ end
 -- command can do engine work (set_multi_command, create_unit_group, pathing),
 -- so a single expensive command type is the difference between a 1ms tick and
 -- a 20ms spike. Log the slow ones with telemetry on.
+-- Cached metric/telemetry names: "cmd." .. type concatenated per command was an
+-- allocation on every command, even with telemetry off.
+local CMD_METRIC = {}
+local REJECT_METRIC = {}
+local function metricName(cache, prefix, suffix)
+    local name = cache[suffix]
+    if not name then
+        name = prefix .. suffix
+        cache[suffix] = name
+    end
+    return name
+end
+
 local function runHandler(cmd)
     local handler = Handlers[cmd.type]
     if not handler then return end
-    if TelemetryG then
+    if TelemetryG and TelemetryG.isEnabled() then
         local ents = cmd.entityRef
-        TelemetryG.emit("cmd." .. tostring(cmd.type), {
+        TelemetryG.emit(metricName(CMD_METRIC, "cmd.", tostring(cmd.type)), {
             base = cmd.baseId, chunk = cmd.chunkId, amount = cmd.amount,
             reason = cmd.reason, evolve = cmd.evolve, radius = cmd.radius,
             name = ents and ents.valid and ents.name or nil,
@@ -215,7 +228,7 @@ function Executor.run(commands)
     -- Single command
     if commands.type then
         if MetricsG then
-            MetricsG.inc("cmd." .. commands.type)
+            MetricsG.inc(metricName(CMD_METRIC, "cmd.", commands.type))
         end
         runHandler(commands)
         return
@@ -228,7 +241,7 @@ function Executor.run(commands)
             cmd.baseId = _lastCreatedBaseId
         end
         if MetricsG then
-            MetricsG.inc("cmd." .. cmd.type)
+            MetricsG.inc(metricName(CMD_METRIC, "cmd.", cmd.type))
         end
         runHandler(cmd)
     end

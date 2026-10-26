@@ -551,7 +551,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     base.identity = factionId * 64 + base.upgradeVersion
     if oldIdentity and oldIdentity ~= base.identity then
         base.versionCounter = (base.versionCounter or 0) + 1
-        if TelemetryG then
+        if TelemetryG and TelemetryG.isEnabled() then
             TelemetryG.emit("base.version", {
                 base = base.id, old = oldIdentity, new = base.identity,
                 tier = base.upgradeVersion, faction = factionId,
@@ -623,7 +623,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         base.structureAttempted[unitNumber] = wave
     end
     if rolledTier <= currentTier then
-        if TelemetryG then
+        if TelemetryG and TelemetryG.isEnabled() then
             TelemetryG.emit("upgrade.skipped", {
                 base = base.id, name = entity.name, tier = currentTier, wave = wave,
             })
@@ -891,7 +891,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
                 base.upgradeVersion = version + 1
                 base.identity = (base.factionId or 0) * 64 + base.upgradeVersion
                 base.versionCounter = (base.versionCounter or 0) + 1
-                if TelemetryG then
+                if TelemetryG and TelemetryG.isEnabled() then
                     TelemetryG.emit("base.version", {
                         base = base.id, old = oldIdentity, new = base.identity,
                         tier = base.upgradeVersion, reason = "points",
@@ -1045,7 +1045,7 @@ function BaseUtils.modifyBaseSpecialPoints(base, points, tag, x, y)
     x = x or nil
     y = y or nil
 
-    if TelemetryG then
+    if TelemetryG and TelemetryG.isEnabled() then
         TelemetryG.emit("base.points", {
             base = base.id, delta = points, tag = tag,
             total = base.points + points, x = x, y = y,
