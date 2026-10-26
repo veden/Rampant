@@ -17,10 +17,11 @@ Usage:
 
 import socket
 import json
+import os
 import sys
 import time
 
-FACTORIO_UDP_PORT = 5200  # Port Factorio listens on for incoming packets
+FACTORIO_UDP_PORT = int(os.environ.get("RAMPANT_UDP_PORT", 5200))  # Port Factorio listens on for incoming packets
 RESPONSE_TIMEOUT = 5.0    # Seconds to wait for response
 
 
