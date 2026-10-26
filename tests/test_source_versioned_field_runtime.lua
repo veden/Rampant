@@ -15,10 +15,15 @@ local ENEMY_PHEROMONE = Constants.ENEMY_PHEROMONE
 local ENEMY_MULTIPLIER = Constants.ENEMY_PHEROMONE_MULTIPLER
 
 local function makeWorld()
+    -- Production resolves neighbours through the chunk's surface index
+    -- (map.chunks[chunkKey(x, y)]), so the fake world has to carry one too.
+    local chunkMap = { chunks = {} }
     local chunks = {
-        [1] = { id = 1, x = 0, y = 0, nestCount = 1 },
-        [2] = { id = 2, x = 32, y = 0, nestCount = 0 },
+        [1] = { id = 1, x = 0, y = 0, map = chunkMap, nestCount = 1 },
+        [2] = { id = 2, x = 32, y = 0, map = chunkMap, nestCount = 0 },
     }
+    chunkMap.chunks[MapUtils.chunkKey(0, 0)] = chunks[1]
+    chunkMap.chunks[MapUtils.chunkKey(32, 0)] = chunks[2]
     local universe = { chunkById = chunks }
 
     originalGetChunkById = MapUtils.getChunkById

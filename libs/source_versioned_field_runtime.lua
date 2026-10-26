@@ -556,31 +556,38 @@ function Runtime.processAll(tick)
     return total
 end
 
--- Reusable neighbour-id table. Solver consumes it immediately.
+-- Neighbour ids, computed from the chunk's coordinates instead of cached on the
+-- chunk. The cache stored each edge twice (A lists B, B lists A), duplicated
+-- what the coordinates already say, and had to be invalidated on every chunk
+-- add/remove. Computing it costs 8 key lookups per pop, and propagation is
+-- budgeted (96 pops/tick), so the cost is a few hundred hash lookups per tick.
 --
--- This deliberately does not use MapUtils.getNeighborChunks: that function
--- returns a single shared table. A source-versioned read can trigger a solve
--- while MapUtils.calculatePheromoneUpdates is still iterating its neighbour
--- table, which would overwrite that shared table mid-loop (observed as a
--- non-recoverable `chunk` number error at tick 0). Building the ids from
--- the chunk grid avoids the reentrancy.
+-- A rotation of scratch arrays keeps a nested call (a read inside a solve) from
+-- clobbering the caller's list; the solver consumes the list immediately.
+local EMPTY_IDS = {}
+local NEIGHBOR_SCRATCH = { {}, {}, {}, {}, {}, {}, {}, {} }
+local NEIGHBOR_SCRATCH_INDEX = 0
+
 function Runtime.neighborOf(chunkId)
-    local chunk = MapUtils.getChunkById(chunkId, Universe)
-    if not chunk then return {} end
-    local ids = chunk.sourceVersionedNeighborIds
-    if not ids then
-        ids = {}
-        local map = chunk.map
-        local x = chunk.x
-        local y = chunk.y
-        for i = 1, 8 do
-            local offset = NEIGHBOR_OFFSETS[i]
-            local neighbor = MapUtils.getChunkByXY(map, x + offset[1], y + offset[2])
-            if neighbor and neighbor ~= -1 then
-                ids[#ids + 1] = neighbor.id
-            end
+    local chunk = Universe.chunkById[chunkId]
+    if not chunk then return EMPTY_IDS end
+    local map = chunk.map
+    local chunks = map and map.chunks
+    if not chunks then return EMPTY_IDS end
+    NEIGHBOR_SCRATCH_INDEX = (NEIGHBOR_SCRATCH_INDEX % #NEIGHBOR_SCRATCH) + 1
+    local ids = NEIGHBOR_SCRATCH[NEIGHBOR_SCRATCH_INDEX]
+    local x, y = chunk.x, chunk.y
+    local n = 0
+    for i = 1, 8 do
+        local offset = NEIGHBOR_OFFSETS[i]
+        local neighbor = chunks[MapUtils.chunkKey(x + offset[1], y + offset[2])]
+        if neighbor then
+            n = n + 1
+            ids[n] = neighbor.id
         end
-        chunk.sourceVersionedNeighborIds = ids
+    end
+    for i = n + 1, 8 do
+        ids[i] = nil
     end
     return ids
 end

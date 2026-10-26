@@ -478,20 +478,6 @@ function ChunkUtils.createChunk(map, topX, topY)
         map.chunks[chunk.key] = chunk
     end
 
-    -- H8 neighbor-id cache. Runtime.neighborOf caches a chunk's adjacency the
-    -- first time it is asked, permanently. This chunk did not exist then, so the
-    -- 8 chunks around it hold lists that do not include it, and field
-    -- propagation stops at that seam forever -- observed as the base field
-    -- failing to reach a chunk three hops from its only source while the queue
-    -- and frontier both read empty. removeChunkFromMap already invalidates on
-    -- removal; this is the matching invalidation on creation.
-    for i = 1, 8 do
-        local offset = CHUNK_NEIGHBOR_OFFSETS[i]
-        local neighbor = getChunkByXY(map, topX + offset[1], topY + offset[2])
-        if neighbor and neighbor ~= -1 then
-            neighbor.sourceVersionedNeighborIds = nil
-        end
-    end
 
     chunk[CHUNK_TICK] = 0
     -- No pheromone slots: base, enemy, resource, player and kamikaze all live in
