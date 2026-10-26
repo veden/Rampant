@@ -117,8 +117,12 @@ end
 -- top * 2^25 + second is exact in a double for ids below 33.5M. This replaces two
 -- tables of ~107k entries (top, secondSource) with one.
 local mFloor = math.floor
-local PROV_SCALE = 33554432
-local PROV_INV = 1 / 33554432
+-- 2^26 is the widest base that keeps the packed pair exact in a double:
+-- (2^26-1)*2^26 + (2^26-1) = 4.50e15, under the 2^53 = 9.01e15 exact-integer
+-- limit. Ids are sequential and never reused, so this bounds chunk creations per
+-- session (67.1M), not concurrent chunks.
+local PROV_SCALE = 67108864
+local PROV_INV = 1 / 67108864
 
 local function pTop(prov, id)
     local p = prov[id]
@@ -132,12 +136,21 @@ local function pSec(prov, id)
     return p - mFloor(p * PROV_INV) * PROV_SCALE
 end
 
+local function pCheck(id)
+    if id >= PROV_SCALE then
+        error("chunk id " .. id .. " exceeds the provenance packing limit of "
+            .. PROV_SCALE .. "; widen PROV_SCALE")
+    end
+end
+
 local function pSetTop(prov, id, top)
     local p = prov[id]
     local second = 0
     if p then
         second = p - mFloor(p * PROV_INV) * PROV_SCALE
     end
+    pCheck(top)
+    pCheck(top)
     prov[id] = top * PROV_SCALE + second
 end
 
@@ -147,6 +160,7 @@ local function pSetSec(prov, id, second)
     if p then
         top = mFloor(p * PROV_INV)
     end
+    pCheck(top)
     prov[id] = top * PROV_SCALE + second
 end
 
