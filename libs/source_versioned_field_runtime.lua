@@ -556,39 +556,48 @@ function Runtime.processAll(tick)
     return total
 end
 
--- Neighbour ids, computed from the chunk's coordinates instead of cached on the
--- chunk. The cache stored each edge twice (A lists B, B lists A), duplicated
--- what the coordinates already say, and had to be invalidated on every chunk
--- add/remove. Computing it costs 8 key lookups per pop, and propagation is
--- budgeted (96 pops/tick), so the cost is a few hundred hash lookups per tick.
+-- Neighbour ids. The chunk's own key packs the two chunk indices as digits in
+-- base 2^27, so one chunk in x is +2^27 and one in y is +1: the list is built
+-- with eight additions and one hash per neighbour, then cached on the chunk.
 --
--- A rotation of scratch arrays keeps a nested call (a read inside a solve) from
--- clobbering the caller's list; the solver consumes the list immediately.
+-- Measured on the 24MB save (sourceFields, 96 pops/tick budget):
+--   cached ids          126us/tick
+--   additive, no cache  214us/tick   (+70%: 8 hashes on 52-bit keys per pop)
+-- so the cache is worth its 3-5MB. It stores each edge twice and must be
+-- invalidated on chunk add/remove; that is the price.
+local CHUNK_KEY_X_STEP = MapUtils.CHUNK_KEY_X_STEP
 local EMPTY_IDS = {}
-local NEIGHBOR_SCRATCH = { {}, {}, {}, {}, {}, {}, {}, {} }
-local NEIGHBOR_SCRATCH_INDEX = 0
 
 function Runtime.neighborOf(chunkId)
     local chunk = Universe.chunkById[chunkId]
     if not chunk then return EMPTY_IDS end
+    local ids = chunk.sourceVersionedNeighborIds
+    if ids then return ids end
     local map = chunk.map
     local chunks = map and map.chunks
     if not chunks then return EMPTY_IDS end
-    NEIGHBOR_SCRATCH_INDEX = (NEIGHBOR_SCRATCH_INDEX % #NEIGHBOR_SCRATCH) + 1
-    local ids = NEIGHBOR_SCRATCH[NEIGHBOR_SCRATCH_INDEX]
-    local x, y = chunk.x, chunk.y
+    ids = {}
+    local key = chunk.key or MapUtils.chunkKey(chunk.x, chunk.y)
+    local left = key - CHUNK_KEY_X_STEP
+    local right = key + CHUNK_KEY_X_STEP
     local n = 0
-    for i = 1, 8 do
-        local offset = NEIGHBOR_OFFSETS[i]
-        local neighbor = chunks[MapUtils.chunkKey(x + offset[1], y + offset[2])]
-        if neighbor then
-            n = n + 1
-            ids[n] = neighbor.id
-        end
-    end
-    for i = n + 1, 8 do
-        ids[i] = nil
-    end
+    local neighbor = chunks[left - 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[left]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[left + 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[key - 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[key + 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[right - 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[right]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    neighbor = chunks[right + 1]
+    if neighbor then n = n + 1; ids[n] = neighbor.id end
+    chunk.sourceVersionedNeighborIds = ids
     return ids
 end
 

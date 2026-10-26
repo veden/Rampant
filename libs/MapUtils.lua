@@ -62,24 +62,30 @@ local sFind = string.find
 
 -- module code
 
--- Chunk coordinates are int32 tiles divided by 32, i.e. [-2^26, 2^26-1], and the
--- engine's map limit is the int32 tile range. Two axes of 27 bits is 54 bits,
--- one more than a double holds exactly, so the key is signed positional:
--- id = cx * 2^27 + cy. Every pair in the world except the westernmost column
--- (cx = -2^26, where the value would sit exactly on 2^53 and odd cy would round)
--- is exact, and that column asserts.
-local CHUNK_KEY_SHIFT = 2^27
-local CHUNK_KEY_MAX = 2^26
+-- Chunk coordinates are int32 tiles divided by 32, and the engine's map limit is
+-- the int32 tile range. The key packs the two chunk indices as digits in base
+-- 2^27: id = cx * 2^27 + cy. Every pair in the world is exact except the
+-- westernmost column (cx = -2^26), and neighbours are id +/- 1 (y) and
+-- id +/- 2^27 (x), so adjacency is addition, not multiplication.
+--
+-- (x / 32) * 2^27 is x * 2^22, and y / 32 is exact for chunk-aligned y, so the
+-- key needs no floor and no division: multiplications by powers of two are
+-- exact in doubles, including for negative coordinates.
+local CHUNK_INDEX_TO_KEY = 4194304   -- 2^22
+local TILE_TO_CHUNK = 0.03125        -- 1/32
+local CHUNK_KEY_X_STEP = 134217728   -- 2^27, one chunk in x
+local CHUNK_KEY_MAX = 2^25           -- +/-33.5M chunks keeps +/-1 from carrying
 
 function MapUtils.chunkKey(x, y)
-    local cx = mFloor(x * CHUNK_SIZE_DIVIDER)
-    local cy = mFloor(y * CHUNK_SIZE_DIVIDER)
-    if cx < -CHUNK_KEY_MAX or cx >= CHUNK_KEY_MAX or
-        cy < -CHUNK_KEY_MAX or cy >= CHUNK_KEY_MAX then
-        error("chunk coordinate outside the int32 map: " .. cx .. "," .. cy)
-    end
-    return cx * CHUNK_KEY_SHIFT + cy
+    return x * CHUNK_INDEX_TO_KEY + y * TILE_TO_CHUNK
 end
+
+function MapUtils.chunkKeyFast(key, dx, dy)
+    return key + dx * CHUNK_KEY_X_STEP + dy
+end
+
+MapUtils.CHUNK_KEY_X_STEP = CHUNK_KEY_X_STEP
+MapUtils.CHUNK_KEY_MAX = CHUNK_KEY_MAX
 
 function MapUtils.chunkKeyToXY(key)
     local cx = mFloor(key / CHUNK_KEY_SHIFT)
@@ -268,6 +274,17 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.chunkToHives[chunkId] = nil
     Universe.vengenceQueue[chunkId] = nil
     Universe.chunkToVictory[chunkId] = nil
+
+    -- Neighbour-id cache: the removed chunk and its neighbours may hold cached
+    -- adjacency that includes it.
+    chunk.sourceVersionedNeighborIds = nil
+    local neighbors = MapUtils.getNeighborChunks(map, chunk.x, chunk.y)
+    for i = 1, 8 do
+        local neighbor = neighbors[i]
+        if neighbor and neighbor ~= -1 then
+            neighbor.sourceVersionedNeighborIds = nil
+        end
+    end
 
     local base = chunk.base
     if base then

@@ -474,6 +474,16 @@ function ChunkUtils.createChunk(map, topX, topY)
     -- Reverse index: id -> chunk (O(1) lookup for the solver's Executor
     -- handlers; getChunkById must never scan the grid)
     Universe.chunkById[chunk.id] = chunk
+    -- A new neighbour changes the adjacency of everything around it.
+    do
+        local neighbors = MapUtils.getNeighborChunks(map, topX, topY)
+        for i = 1, 8 do
+            local neighbor = neighbors[i]
+            if neighbor and neighbor ~= -1 then
+                neighbor.sourceVersionedNeighborIds = nil
+            end
+        end
+    end
     if map.chunks then
         map.chunks[chunk.key] = chunk
     end
