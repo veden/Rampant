@@ -145,6 +145,25 @@ function MapUtils.queueGeneratedChunk(event)
     event.id = Universe.eventId
     event.map = map
     Universe.pendingChunks[event.id] = event
+    -- Distance bucket so the queue drains nearest-first; see
+    -- Processor.processPendingChunks.
+    local buckets = Universe.pendingChunkBuckets
+    if not buckets then
+        buckets = {}
+        Universe.pendingChunkBuckets = buckets
+    end
+    local topLeft = event.area.left_top
+    local dx = topLeft.x - (Universe.scanFocusX or 0)
+    local dy = topLeft.y - (Universe.scanFocusY or 0)
+    local bucket = mFloor(math.sqrt(dx * dx + dy * dy) / 256)
+    if bucket > 15 then bucket = 15 end
+    event.bucket = bucket
+    local bucketTable = buckets[bucket]
+    if not bucketTable then
+        bucketTable = {}
+        buckets[bucket] = bucketTable
+    end
+    bucketTable[event.id] = event
 end
 
 function MapUtils.excludeSurface()

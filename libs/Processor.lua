@@ -32,6 +32,7 @@ local MapUtils = require("MapUtils")
 local Squad = require("Squad")
 local SquadLogic = require("squad_logic")
 local Constants = require("Constants")
+local mFloor = math.floor
 local ChunkUtils = require("ChunkUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local BaseUtils = require("BaseUtils")
@@ -78,7 +79,10 @@ local initialScan = ChunkUtils.initialScan
 -- Chunk scans per tick. Steady state keeps up with a moving player without a
 -- burst; the flush slice bounds the initial scan instead of doing hundreds of
 -- chunks in one tick.
-local SCAN_PER_TICK = 2
+-- One chunk per tick (60/s at 60 UPS). The cost is not the average (32us/chunk)
+-- but the worst case: a dense chunk reaches 4.9-9.5ms, so two per tick meant two
+-- of those could land together. One per tick bounds a tick to a single chunk.
+local SCAN_PER_TICK = 1
 local FLUSH_SCAN_PER_TICK = 8
 
 local function timedInitialScan(chunk, map, tick)
@@ -529,14 +533,43 @@ function Processor.cleanHivesData()
     end
 end
 
+local function scanBucketOf(event)
+    local topLeft = event.area.left_top
+    local px = Universe.scanFocusX or 0
+    local py = Universe.scanFocusY or 0
+    local dx = topLeft.x - px
+    local dy = topLeft.y - py
+    local bucket = mFloor(math.sqrt(dx * dx + dy * dy) / 256)
+    if bucket > 15 then bucket = 15 end
+    return bucket
+end
+
+--- Nearest-first pick: the lowest non-empty bucket whose front event is due.
+--- The visible region comes online in seconds while the far map drains behind.
+local function pickPendingChunk(tick, pendingChunks)
+    local buckets = Universe.pendingChunkBuckets
+    if not buckets then return next(pendingChunks, nil) end
+    for b = 0, 15 do
+        local bucket = buckets[b]
+        if bucket then
+            local id, event = next(bucket, nil)
+            if id and (event.tick <= tick) then
+                return id, event
+            end
+        end
+    end
+    return nil, nil
+end
+
 function Processor.processPendingChunks(tick, flush)
     local pendingChunks = Universe.pendingChunks
-    local eventId, event = next(pendingChunks, nil)
+    local eventId, event = pickPendingChunk(tick, pendingChunks)
 
     if not eventId then
         if (next(pendingChunks) == nil) then
             -- this is needed as the next command remembers the max length a table has been
             Universe.pendingChunks = {}
+            Universe.pendingChunkBuckets = nil
         end
         return
     end
@@ -558,8 +591,13 @@ function Processor.processPendingChunks(tick, flush)
         if not flushAllChunks and (event.tick > tick) then
             return
         end
-        local newEventId, newEvent = next(pendingChunks, eventId)
+        local newEventId, newEvent = pickPendingChunk(tick, pendingChunks)
         pendingChunks[eventId] = nil
+        local buckets = Universe.pendingChunkBuckets
+        if buckets and event.bucket then
+            local bucket = buckets[event.bucket]
+            if bucket then bucket[eventId] = nil end
+        end
         local map = event.map
         if not map.surface.valid then
             return

@@ -1762,6 +1762,7 @@ remote.add_interface("Rampant", {
         -- residual breakdown
         a = kb()
         storage.universe.pendingChunks = {}
+        storage.universe.pendingChunkBuckets = nil
         collectgarbage("collect")
         local c = kb()
         out[#out+1] = "pendingChunksKB=" .. string.format("%.0f", a - c)

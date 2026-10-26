@@ -428,6 +428,7 @@ function Upgrade.addUniverseProperties()
         Universe.chunkById = {}
         Universe.groupNumberToSquad = {}
         Universe.pendingChunks = {}
+        Universe.pendingChunkBuckets = nil
         Universe.squadIterator = nil
         Universe.processNestIterator = nil
         Universe.vengenceQueue = {}
