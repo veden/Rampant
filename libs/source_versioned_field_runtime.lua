@@ -56,12 +56,16 @@ local EMPTY_SECOND = {}
 local EMPTY_SECOND_SOURCE = {}
 
 local function bindSolvedState()
-    -- Derived state lives in RamState (RAM only), not in storage: it is solved
-    -- from the sources and must not be written to the save file.
-    SolvedFields = RamState.solved
-    FieldTopSource = RamState.top
-    FieldSecond = RamState.second
-    FieldSecondSource = RamState.secondSource
+    -- The field tables MUST live in storage: multiplayer transfers storage, and
+    -- a late-joining client re-executes the module code with empty module tables.
+    -- The incremental solver does not reproduce a full solve exactly (measured:
+    -- 21 mismatches, 606 live-only chunks), so a client that re-derived them
+    -- locally would disagree with the host. Only pure derivations may live
+    -- outside storage (see RamState.neighborIds).
+    SolvedFields = Universe.sourceVersionedSolved
+    FieldTopSource = Universe.sourceVersionedTop
+    FieldSecond = Universe.sourceVersionedSecond
+    FieldSecondSource = Universe.sourceVersionedSecondSource
 end
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
@@ -138,11 +142,11 @@ function Runtime.ensureStorage()
     -- New save, or state from an older layout. The field values and the top-two
     -- metadata must be dropped together: the decrease path is only exact while the
     -- metadata matches the field.
-    RamState.fields, RamState.top = {}, {}
-    RamState.second, RamState.secondSource = {}, {}
-    RamState.solved, RamState.solvedAt = {}, {}
+    Universe.sourceVersionedFields, Universe.sourceVersionedTop = {}, {}
+    Universe.sourceVersionedSecond, Universe.sourceVersionedSecondSource = {}, {}
+    Universe.sourceVersionedSolved, Universe.sourceVersionedSolvedAt = {}, {}
     -- A frontier from a dropped field is meaningless: the field restarts.
-    RamState.frontier, RamState.removal = {}, {}
+    Universe.sourceVersionedFrontier, Universe.sourceVersionedRemoval = {}, {}
     U.sourceVersionedSolveVersion = SOLVE_VERSION
     SourceQueues = {}
     QueueIndex = {}
@@ -152,7 +156,7 @@ end
 function Runtime.init(universe, addProperties)
     Universe = universe
     if addProperties then
-        RamState.fields = RamState.fields
+        Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
         Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
     end
     SourceQueues = {}
@@ -251,7 +255,7 @@ local RECONCILE_INTERVAL = 30 * 60 * 5
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     if SolvedFields[key] and FieldTopSource[key] then
-        local solvedAt = RamState.solvedAt
+        local solvedAt = Universe.sourceVersionedSolvedAt
         local last = solvedAt and solvedAt[key]
         if last and (game.tick - last) > RECONCILE_INTERVAL then
             -- Rebuild in place: the stored field stays readable until the fresh
@@ -262,7 +266,7 @@ function Runtime.ensureSolved(fieldType, opts)
                 TelemetryG.emit("field.reconcile", { field = key, age = game.tick - last })
             end
         else
-            return RamState.fields[key] or {}, false
+            return Universe.sourceVersionedFields[key] or {}, false
         end
     end
     local build = SourceBuilds[key]
@@ -290,7 +294,7 @@ function Runtime.ensureSolved(fieldType, opts)
     if not build.done then
         -- Still scanning: readers see the (empty) field for a few ticks rather
         -- than one tick paying for the whole map.
-        return RamState.fields[key] or {}, false
+        return Universe.sourceVersionedFields[key] or {}, false
     end
     -- Solve incrementally too, not with one Dijkstra over the whole map. A
     -- one-shot solve cost 115-154ms on a large save (measured at ticks
@@ -329,20 +333,20 @@ function Runtime.ensureSolved(fieldType, opts)
         end
     end
     if build.hTop.n > 0 or build.hSec.n > 0 then
-        return RamState.fields[key] or {}, false
+        return Universe.sourceVersionedFields[key] or {}, false
     end
     local field, topSource, second, secondSource =
         build.field, build.topSource, build.second, build.secondSource
-    RamState.fields[key] = field
+    Universe.sourceVersionedFields[key] = field
     FieldTopSource[key] = topSource
     FieldSecond[key] = second
     FieldSecondSource[key] = secondSource
     SolvedFields[key] = true
     SourceBuilds[key] = nil
-    local solvedAt = RamState.solvedAt
+    local solvedAt = Universe.sourceVersionedSolvedAt
     if not solvedAt then
         solvedAt = {}
-        RamState.solvedAt = solvedAt
+        Universe.sourceVersionedSolvedAt = solvedAt
     end
     solvedAt[key] = game.tick
     if TelemetryG and TelemetryG.isEnabled() then
@@ -365,7 +369,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- A frontier left by a previous tick is still work: returning early on an
     -- empty queue would strand it and the field would stay partial forever
     -- (observed as the base field's nest staying 0 in pheromone-dynamics).
-    local frontier = RamState.frontier[key]
+    local frontier = Universe.sourceVersionedFrontier[key]
     if queueEmpty and not (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
         if queue then
             queue.items = {}
@@ -433,7 +437,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
         -- new changes: otherwise a single change that hit the work budget never
         -- completes, and the field stays partial forever (observed as the base
         -- field's nest staying 0 in pheromone-dynamics).
-        local frontier = RamState.frontier[Runtime.fieldKey(fType)]
+        local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
         if #increases > 0 or (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
             workUsed = workUsed + (Runtime.propagateIncreases(increases, fType, fOpts, removed, workLimit) or 0)
         end
@@ -450,8 +454,8 @@ end
 -- Work left in a field's propagation frontier (0 = converged). A non-zero
 -- frontier means the field is still partial, which reads can observe.
 function Runtime.frontierDepth(fieldType)
-    local frontier = Universe and RamState.frontier
-        and RamState.frontier[Runtime.fieldKey(fieldType)]
+    local frontier = Universe and Universe.sourceVersionedFrontier
+        and Universe.sourceVersionedFrontier[Runtime.fieldKey(fieldType)]
     if not frontier then return 0 end
     return frontier.top.n + frontier.second.n
 end
@@ -657,7 +661,7 @@ end
 function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
     local opts = maybeOpts or fieldOrOpts
     local key = Runtime.fieldKey(fieldType)
-    local field = RamState.fields[key]
+    local field = Universe.sourceVersionedFields[key]
     local source = { id = chunk.id, gen = Runtime.sourceValue(chunk, fieldType) }
     return Solver.propagateIncreaseWithMetadata(
         source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
@@ -666,7 +670,7 @@ end
 
 function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local key = Runtime.fieldKey(fieldType)
-    local field = RamState.fields[key]
+    local field = Universe.sourceVersionedFields[key]
     -- Removal is budgeted like the rest of the field work, and resumes from the
     -- leftover heap next tick: one removed source re-propagated the whole field
     -- in a single call (measured 25ms inside the drain).
@@ -675,10 +679,10 @@ function Runtime.removeSource(chunk, fieldType, oldValue, opts)
         Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
     end
     local allowance = Universe.solveWorkLeft or 0
-    local heaps = RamState.removal
+    local heaps = Universe.sourceVersionedRemoval
     if not heaps then
         heaps = {}
-        RamState.removal = heaps
+        Universe.sourceVersionedRemoval = heaps
     end
     local pending = heaps[key]
     local source
@@ -712,14 +716,14 @@ end
 -- one-time event, like a burst, so it pays the one-time cost.
 function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     local key = Runtime.fieldKey(fieldType)
-    local field = RamState.fields[key]
+    local field = Universe.sourceVersionedFields[key]
     -- The frontier is two indexed heaps (top and second-best paths), one entry
     -- per chunk per side, arrays reused every tick. It cannot grow with activity:
     -- bounded by field size, no node tables, no dedupe map.
-    local frontier = RamState.frontier[key]
+    local frontier = Universe.sourceVersionedFrontier[key]
     if not frontier or not frontier.top then
         frontier = { top = Solver.newIncrementalHeap(), second = Solver.newIncrementalHeap() }
-        RamState.frontier[key] = frontier
+        Universe.sourceVersionedFrontier[key] = frontier
     end
     local backlog = frontier.top.n + frontier.second.n
     if workLimit and workLimit > 0 then
@@ -750,7 +754,7 @@ function Runtime.verifyField(fieldType, tolerance)
     if not SolvedFields[key] then
         local field, top, sec, secSrc = Solver.solveWithMetadata(
             Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
-        RamState.fields[key] = field
+        Universe.sourceVersionedFields[key] = field
         FieldTopSource[key], FieldSecond[key], FieldSecondSource[key] = top, sec, secSrc
         SolvedFields[key] = true
     end
@@ -764,7 +768,7 @@ function Runtime.verifyField(fieldType, tolerance)
             break
         end
     end
-    local live = RamState.fields[key] or {}
+    local live = Universe.sourceVersionedFields[key] or {}
     local sources = Runtime.buildSources(fieldType)
     local expected = Solver.solve(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
     -- Relative tolerance: absolute 0.5 is meaningless for a resource field in

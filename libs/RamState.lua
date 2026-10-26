@@ -13,14 +13,20 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
--- Derived state that does NOT belong in the save file.
+-- Derived state that is safe to keep OUTSIDE storage.
 --
--- Everything here is recomputable: the source-versioned fields are solved from
--- their sources, and the neighbour-id cache is derived from chunk coordinates.
--- Keeping them in `storage` meant ~14MB of the session heap was written to the
--- save and read back on load, for data the mod rebuilds anyway. Module-level
--- tables are re-created when the control stage is re-executed, so they live in
--- RAM only.
+-- Multiplayer constraint: Factorio transfers `storage` (per-mod global) and
+-- re-executes module code locally, so anything mutable outside storage must be a
+-- PURE derivation of stored data - every peer must compute the same value from
+-- the same storage, and the value must not depend on which events a peer saw.
+--
+-- The neighbour-id cache qualifies: ids are a function of the chunk's stored
+-- coordinates and the stored chunk records, so a late joiner gets identical ids.
+--
+-- The source-versioned FIELDS do not qualify and stayed in storage: the
+-- incremental solver does not reproduce a full solve exactly (measured 21
+-- mismatches, 606 live-only chunk values), so a client re-deriving them on load
+-- would diverge from the host.
 --
 -- This is a deliberate exception to the "globals must be constant" rule: these
 -- tables are mutable, but they are pure caches with no authoritative state. If
@@ -32,19 +38,7 @@ if RamStateG then
 end
 
 local RamState = {
-    -- Per field: chunkId -> value / top source / second best / second source.
-    fields = {},
-    top = {},
-    second = {},
-    secondSource = {},
-    -- Per field: chunkIds whose value may still need to propagate.
-    frontier = {},
-    -- Per field: solve bookkeeping.
-    solved = {},
-    solvedAt = {},
-    -- Leftover heap for a budgeted source removal.
-    removal = {},
-    -- chunkId -> list of neighbour chunk ids (derived from coordinates).
+    -- chunkId -> list of neighbour chunk ids (pure function of stored coordinates).
     neighborIds = {},
 }
 

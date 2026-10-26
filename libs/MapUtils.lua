@@ -319,17 +319,17 @@ function MapUtils.removeChunkFromMap(map, chunk)
     -- removing a chunk (or releasing a whole surface) traded chunk records for
     -- orphaned field entries - four tables per field plus the frontier, which is
     -- the larger half of the per-chunk cost.
-    local fields = RamState.fields
+    local fields = Universe.sourceVersionedFields
     if fields then
         for key, values in pairs(fields) do
             values[chunkId] = nil
-            local top = RamState.top[key]
+            local top = Universe.sourceVersionedTop[key]
             if top then top[chunkId] = nil end
-            local second = RamState.second[key]
+            local second = Universe.sourceVersionedSecond[key]
             if second then second[chunkId] = nil end
-            local secondSource = RamState.secondSource[key]
+            local secondSource = Universe.sourceVersionedSecondSource[key]
             if secondSource then secondSource[chunkId] = nil end
-            local frontier = RamState.frontier[key]
+            local frontier = Universe.sourceVersionedFrontier[key]
             if frontier then frontier[chunkId] = nil end
         end
     end

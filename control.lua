@@ -1680,11 +1680,11 @@ remote.add_interface("Rampant", {
         -- whether the radii or the cleanup are the lever.
         local perField = {}
         local fieldSources = {
-            { "svFields", RamState.fields },
-            { "svTop", RamState.top },
-            { "svSecond", RamState.second },
-            { "svSecondSource", RamState.secondSource },
-            { "svFrontier", RamState.frontier },
+            { "svFields", Universe.sourceVersionedFields },
+            { "svTop", Universe.sourceVersionedTop },
+            { "svSecond", Universe.sourceVersionedSecond },
+            { "svSecondSource", Universe.sourceVersionedSecondSource },
+            { "svFrontier", Universe.sourceVersionedFrontier },
         }
         for _, pair in ipairs(fieldSources) do
             local name, t = pair[1], pair[2]
@@ -1738,9 +1738,9 @@ remote.add_interface("Rampant", {
         out[#out+1] = "cacheKB=" .. string.format("%.0f", a - b)
         -- 2. field tables
         a = kb()
-        RamState.fields, RamState.top = {}, {}
-        RamState.second, RamState.secondSource = {}, {}
-        RamState.frontier = {}
+        Universe.sourceVersionedFields, Universe.sourceVersionedTop = {}, {}
+        Universe.sourceVersionedSecond, Universe.sourceVersionedSecondSource = {}, {}
+        Universe.sourceVersionedFrontier = {}
         collectgarbage("collect")
         b = kb()
         out[#out+1] = "fieldTablesKB=" .. string.format("%.0f", a - b)
