@@ -18,6 +18,7 @@ if ChunkUtilsG then
     return ChunkUtilsG
 end
 local ChunkUtils = {}
+local RamState = require("libs/RamState")
 
 --
 
@@ -480,7 +481,7 @@ function ChunkUtils.createChunk(map, topX, topY)
         for i = 1, 8 do
             local neighbor = neighbors[i]
             if neighbor and neighbor ~= -1 then
-                neighbor.sourceVersionedNeighborIds = nil
+                RamState.neighborIds[neighbor.id] = nil
             end
         end
     end

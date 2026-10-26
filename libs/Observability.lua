@@ -19,6 +19,7 @@ end
 
 local Universe
 local Observability = {}
+local RamState = require("libs/RamState")
 
 function Observability.init(universe)
     Universe = universe
@@ -319,7 +320,7 @@ local CONTOUR_BANDS = { 0.8, 0.6, 0.4, 0.2 }
 local CONTOUR_WIDTH = 0.03
 
 local function fieldOf(v)
-    return Universe.sourceVersionedFields[Runtime.fieldKey(v.fieldType)] or {}
+    return RamState.fields[Runtime.fieldKey(v.fieldType)] or {}
 end
 
 local function peakOf(field)

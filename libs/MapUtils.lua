@@ -18,6 +18,7 @@ if MapUtilsG then
     return MapUtilsG
 end
 local MapUtils = {}
+local RamState = require("libs/RamState")
 
 --
 
@@ -76,8 +77,17 @@ local TILE_TO_CHUNK = 0.03125        -- 1/32
 local CHUNK_KEY_X_STEP = 134217728   -- 2^27, one chunk in x
 local CHUNK_KEY_MAX = 2^25           -- +/-33.5M chunks keeps +/-1 from carrying
 
+--- Key for chunk-aligned coordinates (chunk.x/chunk.y, or x +/- CHUNK_SIZE).
+--- Exact, no floor: the caller guarantees alignment. This is the hot form.
 function MapUtils.chunkKey(x, y)
     return x * CHUNK_INDEX_TO_KEY + y * TILE_TO_CHUNK
+end
+
+--- Key for an arbitrary tile position. Must floor: a position like (2.5, 0) is
+--- inside chunk (0,0), and the aligned form would produce a fractional key that
+--- matches no chunk.
+function MapUtils.chunkKeyFromPosition(x, y)
+    return mFloor(x * TILE_TO_CHUNK) * CHUNK_KEY_X_STEP + mFloor(y * TILE_TO_CHUNK)
 end
 
 function MapUtils.chunkKeyFast(key, dx, dy)
@@ -95,7 +105,7 @@ end
 function MapUtils.getChunkByXY(map, x, y)
     local chunks = map.chunks
     if not chunks then return -1 end
-    return chunks[MapUtils.chunkKey(x, y)] or -1
+    return chunks[MapUtils.chunkKeyFromPosition(x, y)] or -1
 end
 
 --- Find a chunk by its unique id. O(1) via the chunkById reverse index
@@ -116,7 +126,7 @@ end
 function MapUtils.getChunkByPosition(map, position)
     local chunks = map.chunks
     if not chunks then return -1 end
-    return chunks[MapUtils.chunkKey(position.x, position.y)] or -1
+    return chunks[MapUtils.chunkKeyFromPosition(position.x, position.y)] or -1
 end
 
 function MapUtils.positionToChunkXY(position)
@@ -277,12 +287,12 @@ function MapUtils.removeChunkFromMap(map, chunk)
 
     -- Neighbour-id cache: the removed chunk and its neighbours may hold cached
     -- adjacency that includes it.
-    chunk.sourceVersionedNeighborIds = nil
+    RamState.neighborIds[chunk.id] = nil
     local neighbors = MapUtils.getNeighborChunks(map, chunk.x, chunk.y)
     for i = 1, 8 do
         local neighbor = neighbors[i]
         if neighbor and neighbor ~= -1 then
-            neighbor.sourceVersionedNeighborIds = nil
+            RamState.neighborIds[neighbor.id] = nil
         end
     end
 
@@ -309,17 +319,17 @@ function MapUtils.removeChunkFromMap(map, chunk)
     -- removing a chunk (or releasing a whole surface) traded chunk records for
     -- orphaned field entries - four tables per field plus the frontier, which is
     -- the larger half of the per-chunk cost.
-    local fields = Universe.sourceVersionedFields
+    local fields = RamState.fields
     if fields then
         for key, values in pairs(fields) do
             values[chunkId] = nil
-            local top = Universe.sourceVersionedTop[key]
+            local top = RamState.top[key]
             if top then top[chunkId] = nil end
-            local second = Universe.sourceVersionedSecond[key]
+            local second = RamState.second[key]
             if second then second[chunkId] = nil end
-            local secondSource = Universe.sourceVersionedSecondSource[key]
+            local secondSource = RamState.secondSource[key]
             if secondSource then secondSource[chunkId] = nil end
-            local frontier = Universe.sourceVersionedFrontier[key]
+            local frontier = RamState.frontier[key]
             if frontier then frontier[chunkId] = nil end
         end
     end

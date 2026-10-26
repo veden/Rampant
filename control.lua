@@ -31,6 +31,7 @@ local Observability = require("libs/Observability")
 local Executor = require("libs/runtime/Executor")
 local Metrics = require("libs/Metrics")
 local Telemetry = require("libs/Telemetry")
+local RamState = require("libs/RamState")
 local DeathLogic = require("libs/death_logic")
 local SquadCreation = require("libs/squad_creation")
 local BuildingLogic = require("libs/building")
@@ -1656,12 +1657,10 @@ remote.add_interface("Rampant", {
         local liveWithCacheKB = collectgarbage("count")
         local collectMs = profilerMs(function() collectgarbage("collect") end)
         local cachedChunks = 0
-        for _, chunk in pairs(storage.universe.chunkById) do
-            if chunk.sourceVersionedNeighborIds then
-                cachedChunks = cachedChunks + 1
-                chunk.sourceVersionedNeighborIds = nil
-            end
+        for chunkId in pairs(RamState.neighborIds) do
+            cachedChunks = cachedChunks + 1
         end
+        RamState.neighborIds = {}
         collectgarbage("collect")
         local liveWithoutKB = collectgarbage("count")
         local cacheKB = liveWithCacheKB - liveWithoutKB
@@ -1680,10 +1679,15 @@ remote.add_interface("Rampant", {
         -- chunk id, and knowing how many entries each FIELD holds is what says
         -- whether the radii or the cleanup are the lever.
         local perField = {}
-        for _, name in ipairs({ "sourceVersionedFields", "sourceVersionedTop",
-            "sourceVersionedSecond", "sourceVersionedSecondSource",
-            "sourceVersionedFrontier" }) do
-            local t = storage.universe[name]
+        local fieldSources = {
+            { "svFields", RamState.fields },
+            { "svTop", RamState.top },
+            { "svSecond", RamState.second },
+            { "svSecondSource", RamState.secondSource },
+            { "svFrontier", RamState.frontier },
+        }
+        for _, pair in ipairs(fieldSources) do
+            local name, t = pair[1], pair[2]
             if type(t) == "table" then
                 local row = {}
                 for fieldKey, fieldTable in pairs(t) do
@@ -1692,8 +1696,7 @@ remote.add_interface("Rampant", {
                     end
                 end
                 table.sort(row)
-                perField[#perField + 1] = name:gsub("sourceVersioned", "sv") ..
-                    "{" .. table.concat(row, ",") .. "}"
+                perField[#perField + 1] = name .. "{" .. table.concat(row, ",") .. "}"
             end
         end
         parts[#parts + 1] = table.concat(perField, " ")
@@ -1718,6 +1721,93 @@ remote.add_interface("Rampant", {
     end,
     -- Switch the structured event stream on/off for this session without a
     -- restart. Writes to script-output/rampant/events.jsonl.
+    -- Byte-accurate heap census: clear one category at a time and collect after
+    -- each, so the delta belongs to that category alone. Destructive (fields
+    -- re-solve lazily, the map rebuilds by rescanning) - for measurement only.
+    heapCensus = function()
+        local out = {}
+        local function kb() return collectgarbage("count") end
+        collectgarbage("collect")
+        local start = kb()
+        -- 1. neighbour cache
+        collectgarbage("collect")
+        local a = kb()
+        RamState.neighborIds = {}
+        collectgarbage("collect")
+        local b = kb()
+        out[#out+1] = "cacheKB=" .. string.format("%.0f", a - b)
+        -- 2. field tables
+        a = kb()
+        RamState.fields, RamState.top = {}, {}
+        RamState.second, RamState.secondSource = {}, {}
+        RamState.frontier = {}
+        collectgarbage("collect")
+        b = kb()
+        out[#out+1] = "fieldTablesKB=" .. string.format("%.0f", a - b)
+        -- 3. per-chunk registries and chunk records
+        a = kb()
+        for _, name in ipairs({ "chunkToNests", "chunkToUtilities", "chunkToHives",
+            "chunkToActiveNest", "chunkToActiveRaidNest", "chunkToDrained",
+            "chunkToRetreats", "chunkToRallys", "chunkToPassScan", "chunkToVictory",
+            "vengenceQueue", "deathGeneratorChunks" }) do
+            storage.universe[name] = {}
+        end
+        collectgarbage("collect")
+        b = kb()
+        out[#out+1] = "registriesKB=" .. string.format("%.0f", a - b)
+        a = kb()
+        storage.universe.chunkById = {}
+        for _, map in pairs(storage.universe.maps) do
+            map.chunks = {}
+        end
+        collectgarbage("collect")
+        b = kb()
+        out[#out+1] = "chunkRecordsKB=" .. string.format("%.0f", a - b)
+        -- residual breakdown
+        a = kb()
+        storage.universe.pendingChunks = {}
+        collectgarbage("collect")
+        local c = kb()
+        out[#out+1] = "pendingChunksKB=" .. string.format("%.0f", a - c)
+        a = kb()
+        storage.universe.metrics = {}
+        collectgarbage("collect")
+        c = kb()
+        out[#out+1] = "metricsKB=" .. string.format("%.0f", a - c)
+        a = kb()
+        storage.universe.bases = {}
+        storage.universe.hives = {}
+        storage.universe.hiveData = {}
+        storage.universe.activeHives = {}
+        storage.universe.groupNumberToSquad = {}
+        collectgarbage("collect")
+        c = kb()
+        out[#out+1] = "basesHivesSquadsKB=" .. string.format("%.0f", a - c)
+        do
+            local function deepSize(v, seen)
+                if type(v) ~= "table" then return 1 end
+                if seen[v] then return 0 end
+                seen[v] = true
+                local n = 1
+                for _, x in pairs(v) do n = n + 2 + deepSize(x, seen) end
+                return n
+            end
+            local seen = {}
+            local nan = {}
+            for name, v in pairs(Constants) do
+                if type(v) == "table" then
+                    nan[#nan + 1] = name .. ":" .. deepSize(v, seen)
+                end
+            end
+            table.sort(nan, function(x, y)
+                return tonumber(x:match(":(%d+)$")) > tonumber(y:match(":(%d+)$"))
+            end)
+            out[#out+1] = "topConstants{" .. table.concat(nan, ",", 1, math.min(8, #nan)) .. "}"
+        end
+        out[#out+1] = "residualKB=" .. string.format("%.0f", c)
+        out[#out+1] = "totalStartKB=" .. string.format("%.0f", start)
+        return table.concat(out, " ")
+    end,
     neighborCache = function(on)
         storage.universe.neighborCacheEnabled = on and true or false
         log({"", "[MARK] phase=", (on and "cacheOn" or "cacheOff"), " tick=", game.tick})
