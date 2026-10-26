@@ -185,18 +185,18 @@ my_collection:add('solve_with_metadata_matches_solve', function()
     local sources = allSources(static, dynamic)
     local neighborOf = makeNeighborOf()
     local ref = Solver.solve(sources, neighborOf, metadataOptions())
-    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+    local field, prov, second = Solver.solveWithMetadata(
         sources, neighborOf, metadataOptions())
     assert(maxDiff(field, ref) < 1e-6,
         "metadata solve must match the plain solve")
-    assertMetadataConsistent(field, topSource, second, secondSource)
+    assertMetadataConsistent(field, prov, second)
 end)
 
 my_collection:add('remove_source_matches_full_solve', function()
     local static, dynamic = makeSources()
     local sources = allSources(static, dynamic)
     local neighborOf = makeNeighborOf()
-    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+    local field, prov, second = Solver.solveWithMetadata(
         sources, neighborOf, metadataOptions())
 
     local afterSources = {}
@@ -210,18 +210,18 @@ my_collection:add('remove_source_matches_full_solve', function()
     end
     local ref = Solver.solve(afterSources, neighborOf, metadataOptions())
 
-    Solver.removeSource(dynamic[1], field, topSource, second, secondSource,
+    Solver.removeSource(dynamic[1], field, prov, second,
         neighborOf, metadataOptions())
     assert(maxDiff(field, ref) < 1e-6,
         "local source removal must match the full solve")
-    assertMetadataConsistent(field, topSource, second, secondSource)
+    assertMetadataConsistent(field, prov, second)
 end)
 
 my_collection:add('propagate_increase_with_metadata_matches_solve', function()
     local static, dynamic = makeSources()
     local sources = allSources(static, dynamic)
     local neighborOf = makeNeighborOf()
-    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+    local field, prov, second = Solver.solveWithMetadata(
         sources, neighborOf, metadataOptions())
 
     dynamic[1].gen = dynamic[1].gen + 10
@@ -229,17 +229,17 @@ my_collection:add('propagate_increase_with_metadata_matches_solve', function()
     local ref = Solver.solve(afterSources, neighborOf, metadataOptions())
 
     Solver.propagateIncreaseWithMetadata(dynamic[1], field,
-        topSource, second, secondSource, neighborOf, metadataOptions())
+        prov, second, neighborOf, metadataOptions())
     assert(maxDiff(field, ref) < 1e-6,
         "local metadata increase must match the full solve")
-    assertMetadataConsistent(field, topSource, second, secondSource)
+    assertMetadataConsistent(field, prov, second)
 end)
 
 my_collection:add('propagate_increases_with_metadata_matches_solve', function()
     local static, dynamic = makeSources()
     local sources = allSources(static, dynamic)
     local neighborOf = makeNeighborOf()
-    local field, topSource, second, secondSource = Solver.solveWithMetadata(
+    local field, prov, second = Solver.solveWithMetadata(
         sources, neighborOf, metadataOptions())
 
     dynamic[1].gen = dynamic[1].gen + 10
@@ -250,10 +250,10 @@ my_collection:add('propagate_increases_with_metadata_matches_solve', function()
 
     Solver.propagateIncreasesWithMetadata(
         { dynamic[1], dynamic[2], dynamic[3] },
-        field, topSource, second, secondSource, neighborOf, metadataOptions())
+        field, prov, second, neighborOf, metadataOptions())
     assert(maxDiff(field, ref) < 1e-6,
         "multi-source metadata increase must match the full solve")
-    assertMetadataConsistent(field, topSource, second, secondSource)
+    assertMetadataConsistent(field, prov, second)
 end)
 
 -- Test: a work-bounded propagation resumes and converges to the unbounded
@@ -269,17 +269,17 @@ my_collection:add('bounded_propagation_resumes_to_the_unbounded_field', function
         return out
     end
 
-    local fieldA, topA, secondA, secondSourceA = {}, {}, {}, {}
+    local fieldA, provA, secondA = {}, {}, {}
     Solver.propagateIncreasesWithMetadata(
-        { { id = 0, gen = 100 } }, fieldA, topA, secondA, secondSourceA,
+        { { id = 0, gen = 100 } }, fieldA, provA, secondA,
         neighborOf, { decay = 0.9, eps = 0.0005 })
 
-    local fieldB, topB, secondB, secondSourceB = {}, {}, {}, {}
+    local fieldB, provB, secondB = {}, {}, {}
     local hTop, hSec = Solver.newIncrementalHeap(), Solver.newIncrementalHeap()
     local calls = 0
     repeat
         local _, nextTop, nextSec = Solver.propagateIncreasesWithMetadata(
-            { { id = 0, gen = 100 } }, fieldB, topB, secondB, secondSourceB,
+            { { id = 0, gen = 100 } }, fieldB, provB, secondB,
             neighborOf, { decay = 0.9, eps = 0.0005, maxWork = 1 }, hTop, hSec)
         hTop, hSec = nextTop, nextSec
         calls = calls + 1

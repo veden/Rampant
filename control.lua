@@ -1684,9 +1684,9 @@ remote.add_interface("Rampant", {
         local perField = {}
         local fieldSources = {
             { "svFields", Universe.sourceVersionedFields },
-            { "svTop", Universe.sourceVersionedTop },
+            { "svProv", Universe.sourceVersionedProvenance },
             { "svSecond", Universe.sourceVersionedSecond },
-            { "svSecondSource", Universe.sourceVersionedSecondSource },
+            
             { "svFrontier", Universe.sourceVersionedFrontier },
         }
         for _, pair in ipairs(fieldSources) do
@@ -1740,8 +1740,8 @@ remote.add_interface("Rampant", {
         out[#out+1] = "cacheKB=" .. string.format("%.0f", a - b)
         -- 2. field tables
         a = kb()
-        Universe.sourceVersionedFields, Universe.sourceVersionedTop = {}, {}
-        Universe.sourceVersionedSecond, Universe.sourceVersionedSecondSource = {}, {}
+        Universe.sourceVersionedFields, Universe.sourceVersionedProvenance = {}, {}
+        Universe.sourceVersionedSecond = {}
         Universe.sourceVersionedFrontier = {}
         collectgarbage("collect")
         b = kb()

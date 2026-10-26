@@ -41,15 +41,14 @@ local PROPAGATION_MAX_WORK_PER_TICK = Constants.PROPAGATION_MAX_WORK_PER_TICK
 local BOUNDED_OPTS = { maxWork = PROPAGATION_MAX_WORK_PER_TICK }
 local Initialized = false
 local SolvedFields = {}
-local FieldTopSource = {}
+local FieldProvenance = {}
 local FieldSecond = {}
-local FieldSecondSource = {}
 
 -- Solved-field state is persisted in storage so a load does not re-solve. The
 -- module locals alias the storage tables. `on_load` must not write storage, so
 -- creation and the layout version check live in ensureStorage(), which is called
 -- from init(addProperties=true) and from the tick path.
-local SOLVE_VERSION = 1
+local SOLVE_VERSION = 2
 local EMPTY_SOLVED = {}
 local EMPTY_TOP = {}
 local EMPTY_SECOND = {}
@@ -63,9 +62,8 @@ local function bindSolvedState()
     -- locally would disagree with the host. Only pure derivations may live
     -- outside storage (see RamState.neighborIds).
     SolvedFields = Universe.sourceVersionedSolved
-    FieldTopSource = Universe.sourceVersionedTop
+    FieldProvenance = Universe.sourceVersionedProvenance or EMPTY_TOP
     FieldSecond = Universe.sourceVersionedSecond
-    FieldSecondSource = Universe.sourceVersionedSecondSource
 end
 
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
@@ -135,15 +133,16 @@ end
 function Runtime.ensureStorage()
     local U = Universe
     if not U then return end
-    if U.sourceVersionedSolveVersion == SOLVE_VERSION then
+    if U.sourceVersionedSolveVersion == SOLVE_VERSION
+        and U.sourceVersionedProvenance then
         bindSolvedState()
         return
     end
     -- New save, or state from an older layout. The field values and the top-two
     -- metadata must be dropped together: the decrease path is only exact while the
     -- metadata matches the field.
-    Universe.sourceVersionedFields, Universe.sourceVersionedTop = {}, {}
-    Universe.sourceVersionedSecond, Universe.sourceVersionedSecondSource = {}, {}
+    Universe.sourceVersionedFields, Universe.sourceVersionedProvenance = {}, {}
+    Universe.sourceVersionedSecond = {}
     Universe.sourceVersionedSolved, Universe.sourceVersionedSolvedAt = {}, {}
     -- A frontier from a dropped field is meaningless: the field restarts.
     Universe.sourceVersionedFrontier, Universe.sourceVersionedRemoval = {}, {}
@@ -308,7 +307,7 @@ local RECONCILE_INTERVAL = 30 * 60 * 5
 
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
-    if SolvedFields[key] and FieldTopSource[key] then
+    if SolvedFields[key] and FieldProvenance[key] then
         local solvedAt = Universe.sourceVersionedSolvedAt
         local last = solvedAt and solvedAt[key]
         if last and (game.tick - last) > RECONCILE_INTERVAL then
@@ -358,9 +357,8 @@ function Runtime.ensureSolved(fieldType, opts)
     -- the heaps empty, so readers keep the old field meanwhile.
     if not build.field then
         build.field = {}
-        build.topSource = {}
+        build.provenance = {}
         build.second = {}
-        build.secondSource = {}
         build.hTop = Solver.newIncrementalHeap()
         build.hSec = Solver.newIncrementalHeap()
     end
@@ -376,7 +374,7 @@ function Runtime.ensureSolved(fieldType, opts)
     if allowance > 0 then
         local profiler = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
         local used = Solver.propagateIncreasesWithMetadata(
-            build.list, build.field, build.topSource, build.second, build.secondSource,
+            build.list, build.field, build.provenance, build.second,
             Runtime.neighborOf, { maxWork = allowance,
                 decay = opts and opts.decay, eps = opts and opts.eps,
                 maxRadius = opts and opts.maxRadius },
@@ -389,12 +387,10 @@ function Runtime.ensureSolved(fieldType, opts)
     if build.hTop.n > 0 or build.hSec.n > 0 then
         return Universe.sourceVersionedFields[key] or {}, false
     end
-    local field, topSource, second, secondSource =
-        build.field, build.topSource, build.second, build.secondSource
+    local field, prov, second = build.field, build.provenance, build.second
     Universe.sourceVersionedFields[key] = field
-    FieldTopSource[key] = topSource
+    FieldProvenance[key] = prov
     FieldSecond[key] = second
-    FieldSecondSource[key] = secondSource
     SolvedFields[key] = true
     SourceBuilds[key] = nil
     local solvedAt = Universe.sourceVersionedSolvedAt
@@ -749,7 +745,7 @@ function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
     local field = Universe.sourceVersionedFields[key]
     local source = { id = chunk.id, gen = Runtime.sourceValue(chunk, fieldType) }
     return Solver.propagateIncreaseWithMetadata(
-        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        source, field, FieldProvenance[key], FieldSecond[key],
         Runtime.neighborOf, opts)
 end
 
@@ -793,7 +789,7 @@ function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local removalOpts = opts or REMOVAL_OPTS
     removalOpts.maxWork = allowance
     local work, leftover = Solver.removeSource(
-        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        source, field, FieldProvenance[key], FieldSecond[key],
         Runtime.neighborOf, removalOpts, heap)
     Universe.solveWorkLeft = allowance - (work or 0)
     heaps[key] = leftover or heap
@@ -834,7 +830,7 @@ function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
     BOUNDED_OPTS.eps = opts and opts.eps
     BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
     local work = Solver.propagateIncreasesWithMetadata(
-        sources, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        sources, field, FieldProvenance[key], FieldSecond[key],
         Runtime.neighborOf, BOUNDED_OPTS, frontier.top, frontier.second)
     return work or 0
 end
@@ -849,10 +845,10 @@ function Runtime.verifyField(fieldType, tolerance)
     -- never been read, and drain any queued source changes, otherwise the live
     -- field is legitimately behind and every entry looks like a mismatch.
     if not SolvedFields[key] then
-        local field, top, sec, secSrc = Solver.solveWithMetadata(
+        local field, prov2, sec = Solver.solveWithMetadata(
             Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
         Universe.sourceVersionedFields[key] = field
-        FieldTopSource[key], FieldSecond[key], FieldSecondSource[key] = top, sec, secSrc
+        FieldProvenance[key], FieldSecond[key] = prov2, sec
         SolvedFields[key] = true
     end
     -- Drain to convergence: process() is bounded by PROPAGATION_MAX_WORK_PER_TICK,
@@ -867,7 +863,7 @@ function Runtime.verifyField(fieldType, tolerance)
     end
     local live = Universe.sourceVersionedFields[key] or {}
     local sources = Runtime.buildSources(fieldType)
-    local expected = Solver.solve(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
+    local expected = Solver.solveWithMetadata(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
     -- Relative tolerance: absolute 0.5 is meaningless for a resource field in
     -- the thousands. A chunk is wrong when it differs from the exact solve by
     -- more than `tolerance` (default 10%) of the exact value.

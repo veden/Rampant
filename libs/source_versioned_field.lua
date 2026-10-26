@@ -112,6 +112,44 @@ local function options(opts)
     return opts
 end
 
+-- Provenance packing: the id of the source supplying the maximum and the id
+-- supplying the runner-up share one table entry. Both are chunk ids, so
+-- top * 2^25 + second is exact in a double for ids below 33.5M. This replaces two
+-- tables of ~107k entries (top, secondSource) with one.
+local mFloor = math.floor
+local PROV_SCALE = 33554432
+local PROV_INV = 1 / 33554432
+
+local function pTop(prov, id)
+    local p = prov[id]
+    if not p then return 0 end
+    return mFloor(p * PROV_INV)
+end
+
+local function pSec(prov, id)
+    local p = prov[id]
+    if not p then return 0 end
+    return p - mFloor(p * PROV_INV) * PROV_SCALE
+end
+
+local function pSetTop(prov, id, top)
+    local p = prov[id]
+    local second = 0
+    if p then
+        second = p - mFloor(p * PROV_INV) * PROV_SCALE
+    end
+    prov[id] = top * PROV_SCALE + second
+end
+
+local function pSetSec(prov, id, second)
+    local p = prov[id]
+    local top = 0
+    if p then
+        top = mFloor(p * PROV_INV)
+    end
+    prov[id] = top * PROV_SCALE + second
+end
+
 -- Solve a set of sources to convergence.
 -- @param sources array of { id=, gen= }
 -- @param neighborOf function(id) -> array of neighbor ids
@@ -184,9 +222,8 @@ end
 function Solver.solveWithMetadata(sources, neighborOf, opts)
     local o = options(opts)
     local field = {}
-    local topSource = {}
+    local prov = {}
     local second = {}
-    local secondSource = {}
     local heap = {}
     local work = 0
 
@@ -194,17 +231,17 @@ function Solver.solveWithMetadata(sources, neighborOf, opts)
         local top = field[nid] or 0
         local sec = second[nid] or 0
         if cand > top + o.eps then
-            if src ~= topSource[nid] then
+            if src ~= pTop(prov, nid) then
                 second[nid] = top
-                secondSource[nid] = topSource[nid]
+                pSetSec(prov, nid, pTop(prov, nid))
             end
             field[nid] = cand
-            topSource[nid] = src
+            pSetTop(prov, nid, src)
             heapPush(heap, nid, cand, d, src)
             work = work + 1
-        elseif src ~= topSource[nid] and cand > sec + o.eps then
+        elseif src ~= pTop(prov, nid) and cand > sec + o.eps then
             second[nid] = cand
-            secondSource[nid] = src
+            pSetSec(prov, nid, src)
             heapPush(heap, nid, cand, d, src, true)
             work = work + 1
         end
@@ -214,7 +251,7 @@ function Solver.solveWithMetadata(sources, neighborOf, opts)
         local v = source.gen * o.rating
         if v > (field[source.id] or 0) then
             field[source.id] = v
-            topSource[source.id] = source.id
+            pSetTop(prov, source.id, source.id)
             heapPush(heap, source.id, v, 0, source.id)
         end
     end
@@ -226,11 +263,11 @@ function Solver.solveWithMetadata(sources, neighborOf, opts)
             end
         end
     end
-    return field, topSource, second, secondSource, work
+    return field, prov, second, work
 end
 
 -- Increase propagation while maintaining the top-two metadata.
-function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, secondSource, neighborOf, opts)
+function Solver.propagateIncreaseWithMetadata(source, field, prov, second, neighborOf, opts)
     local o = options(opts)
     local heap = {}
     local work = 0
@@ -238,17 +275,17 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
     local top = field[source.id] or 0
     local sec = second[source.id] or 0
     if v > top + o.eps then
-        if source.id ~= topSource[source.id] then
+        if source.id ~= pTop(prov, source.id) then
             second[source.id] = top
-            secondSource[source.id] = topSource[source.id]
+            pSetSec(prov, source.id, pTop(prov, source.id))
         end
         field[source.id] = v
-        topSource[source.id] = source.id
+        pSetTop(prov, source.id, source.id)
         heapPush(heap, source.id, v, 0, source.id)
         work = work + 1
-    elseif source.id ~= topSource[source.id] and v > sec + o.eps then
+    elseif source.id ~= pTop(prov, source.id) and v > sec + o.eps then
         second[source.id] = v
-        secondSource[source.id] = source.id
+        pSetSec(prov, source.id, source.id)
         heapPush(heap, source.id, v, 0, source.id, true)
         work = work + 1
     end
@@ -261,24 +298,24 @@ function Solver.propagateIncreaseWithMetadata(source, field, topSource, second, 
         local topValue = field[nid] or 0
         local secValue = second[nid] or 0
         local stillTop = (not node.second) and node.v >= topValue
-        local stillSecond = node.second and node.v >= secValue and node.src ~= topSource[nid]
+        local stillSecond = node.second and node.v >= secValue and node.src ~= pTop(prov, nid)
         if (stillTop or stillSecond) and not (o.maxRadius and node.d >= o.maxRadius) then
             for _, neighborId in ipairs(neighborOf(nid)) do
                 local cand = node.v * o.decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
                 if (not node.second) and cand > neighborTop + o.eps then
-                    if node.src ~= topSource[neighborId] then
+                    if node.src ~= pTop(prov, neighborId) then
                         second[neighborId] = neighborTop
-                        secondSource[neighborId] = topSource[neighborId]
+                        pSetSec(prov, neighborId, pTop(prov, neighborId))
                     end
                     field[neighborId] = cand
-                    topSource[neighborId] = node.src
+                    pSetTop(prov, neighborId, node.src)
                     heapPush(heap, neighborId, cand, node.d + 1, node.src)
                     work = work + 1
-                elseif node.src ~= topSource[neighborId] and cand > neighborSecond + o.eps then
+                elseif node.src ~= pTop(prov, neighborId) and cand > neighborSecond + o.eps then
                     second[neighborId] = cand
-                    secondSource[neighborId] = node.src
+                    pSetSec(prov, neighborId, node.src)
                     heapPush(heap, neighborId, cand, node.d + 1, node.src, true)
                     work = work + 1
                 end
@@ -369,7 +406,7 @@ function Solver.newIncrementalHeap()
     return newIndexedHeap()
 end
 
-function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second, secondSource, neighborOf, opts, hTop, hSec)
+function Solver.propagateIncreasesWithMetadata(sources, field, prov, second, neighborOf, opts, hTop, hSec)
     local o = options(opts)
     hTop = hTop or newIndexedHeap()
     hSec = hSec or newIndexedHeap()
@@ -387,17 +424,17 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         local top = field[id] or 0
         local sec = second[id] or 0
         if v > top + eps then
-            if id ~= topSource[id] then
+            if id ~= pTop(prov, id) then
                 second[id] = top
-                secondSource[id] = topSource[id]
+                pSetSec(prov, id, pTop(prov, id))
             end
             field[id] = v
-            topSource[id] = id
+            pSetTop(prov, id, id)
             ihPush(hTop, id, v, 0, id)
             work = work + 1
-        elseif id ~= topSource[id] and v > sec + eps then
+        elseif id ~= pTop(prov, id) and v > sec + eps then
             second[id] = v
-            secondSource[id] = id
+            pSetSec(prov, id, id)
             ihPush(hSec, id, v, 0, id)
             work = work + 1
         end
@@ -414,24 +451,24 @@ function Solver.propagateIncreasesWithMetadata(sources, field, topSource, second
         local topValue = field[nid] or 0
         local secValue = second[nid] or 0
         local stillTop = (not useSecond) and v >= topValue
-        local stillSecond = useSecond and v >= secValue and src ~= topSource[nid]
+        local stillSecond = useSecond and v >= secValue and src ~= pTop(prov, nid)
         if (stillTop or stillSecond) and not (maxRadius and d >= maxRadius) then
             for _, neighborId in ipairs(neighborOf(nid)) do
                 local cand = v * decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
                 if (not useSecond) and cand > neighborTop + eps then
-                    if src ~= topSource[neighborId] then
+                    if src ~= pTop(prov, neighborId) then
                         second[neighborId] = neighborTop
-                        secondSource[neighborId] = topSource[neighborId]
+                        pSetSec(prov, neighborId, pTop(prov, neighborId))
                     end
                     field[neighborId] = cand
-                    topSource[neighborId] = src
+                    pSetTop(prov, neighborId, src)
                     ihPush(hTop, neighborId, cand, d + 1, src)
                     work = work + 1
-                elseif src ~= topSource[neighborId] and cand > neighborSecond + eps then
+                elseif src ~= pTop(prov, neighborId) and cand > neighborSecond + eps then
                     second[neighborId] = cand
-                    secondSource[neighborId] = src
+                    pSetSec(prov, neighborId, src)
                     ihPush(hSec, neighborId, cand, d + 1, src)
                     work = work + 1
                 end
@@ -444,7 +481,7 @@ end
 -- Remove an old source contribution locally. Exact when the top-two
 -- metadata is exact: a source that is neither top nor second at a chunk
 -- cannot become top or second farther along the decay path.
-function Solver.removeSource(source, field, topSource, second, secondSource, neighborOf, opts, heap)
+function Solver.removeSource(source, field, prov, second, neighborOf, opts, heap)
     local o = options(opts)
     heap = heap or {}
     local work = 0
@@ -465,18 +502,18 @@ function Solver.removeSource(source, field, topSource, second, secondSource, nei
             for _, nid in ipairs(neighborOf(node.id)) do
                 local cand = node.v * o.decay
                 if cand > o.eps then
-                    local isTop = topSource[nid] == node.src
-                    local isSecond = secondSource[nid] == node.src
+                    local isTop = pTop(prov, nid) == node.src
+                    local isSecond = pSec(prov, nid) == node.src
                     if isTop then
                         field[nid] = second[nid] or 0
-                        topSource[nid] = secondSource[nid]
+                        pSetTop(prov, nid, pSec(prov, nid))
                         second[nid] = 0
-                        secondSource[nid] = nil
+                        pSetSec(prov, nid, 0)
                         heapPush(heap, nid, cand, node.d + 1, node.src)
                         work = work + 1
                     elseif isSecond then
                         second[nid] = 0
-                        secondSource[nid] = nil
+                        pSetSec(prov, nid, 0)
                         heapPush(heap, nid, cand, node.d + 1, node.src)
                         work = work + 1
                     end

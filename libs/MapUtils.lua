@@ -337,12 +337,12 @@ function MapUtils.removeChunkFromMap(map, chunk)
     if fields then
         for key, values in pairs(fields) do
             values[chunkId] = nil
-            local top = Universe.sourceVersionedTop[key]
-            if top then top[chunkId] = nil end
+            local prov = Universe.sourceVersionedProvenance[key]
+            if prov then prov[chunkId] = nil end
             local second = Universe.sourceVersionedSecond[key]
             if second then second[chunkId] = nil end
-            local secondSource = Universe.sourceVersionedSecondSource[key]
-            if secondSource then secondSource[chunkId] = nil end
+            
+            
             local frontier = Universe.sourceVersionedFrontier[key]
             if frontier then frontier[chunkId] = nil end
         end
