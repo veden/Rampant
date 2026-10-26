@@ -300,13 +300,38 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
         MetricsG.inc("scan.chunksScanned")
     end
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
-    setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
     local pass = timedScanPhase("paths", function() return scanPaths(chunk, map) end)
-    local enemyBuildings = timedScanPhase("enemyQuery", function()
-        return surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
+    -- One kernel query for the whole chunk, classified in Lua: enemy structures,
+    -- units, resources and the player-building score all come from this list.
+    local entities = timedScanPhase("query", function()
+        local area = Universe.chunkScanQueryArea
+        area[1][1], area[1][2] = chunk.x, chunk.y
+        area[2][1], area[2][2] = chunk.x + CHUNK_SIZE, chunk.y + CHUNK_SIZE
+        return surface.find_entities_filtered(Universe.chunkScanQuery)
     end)
-    local playerObjects = timedScanPhase("playerQuery", function() return scorePlayerBuildings(map, chunk) end)
+    local enemyBuildings = {}
+    local unitList = {}
+    local playerObjects = 0
+    local resourceCount = 0
+    local weights = Universe.playerBuildingWeight
+    for i = 1, #entities do
+        local e = entities[i]
+        if e.valid then
+            local kind = e.type
+            if kind == "resource" then
+                resourceCount = resourceCount + 1
+            elseif e.force.name == "enemy" then
+                if kind == "unit" then
+                    unitList[#unitList + 1] = e
+                else
+                    enemyBuildings[#enemyBuildings + 1] = e
+                end
+            else
+                local w = weights and weights[kind]
+                if w then playerObjects = playerObjects + w end
+            end
+        end
+    end
 
     if (pass ~= CHUNK_IMPASSABLE) or (#enemyBuildings > 0) or (playerObjects > 0) then
         if ((playerObjects > 0) or (#enemyBuildings > 0)) and (pass == CHUNK_IMPASSABLE) then
@@ -325,9 +350,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
             -- a loaded save's resource field stays empty and every
             -- resource-seeking scorer reads 0.
             local oldResourceSourceValue = resourceSourceValue(chunk)
-            local resources = timedScanPhase("resourceQuery", function()
-                return surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
-            end)
+            local resources = resourceCount * RESOURCE_NORMALIZER
             setResourceGenerator(chunk, resources)
             queueResourceSourceChange(chunk, oldResourceSourceValue)
 
@@ -344,9 +367,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                 -- units vanished instantly, formations starved, zero death
                 -- events because script destroy() is silent).
                 if purgeUnits ~= false and Universe.NEW_ENEMIES then
-                    local unitList = timedScanPhase("unitQuery", function()
-                        return surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
-                    end)
+                    -- (unitList was collected by the single query above)
                     if #unitList > 0 then
                         local killed = 0
                         local dbgMsg = "initialScan: checking " .. #unitList .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
