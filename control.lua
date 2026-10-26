@@ -205,10 +205,6 @@ local function initializeLibraries(addProperties)
     Executor.init(Universe)
     Metrics.init(Universe)
     Telemetry.init(Universe)
-    -- Manual pacing with a ceiling: the timer is stopped and stepped every tick,
-    -- so collection cost is spread instead of arriving as a 10-15ms block. If the
-    -- heap still crosses GC_MAX_KB, one full collection runs (rare, bounded).
-    collectgarbage("stop")
     SourceVersionedFieldRuntime.init(Universe, addProperties)
     ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
     ChunkPropertyUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
@@ -667,9 +663,6 @@ end
 -- telemetry is on and log an [EVT] line; the profiler includes the engine work
 -- done inside the call (set_multi_command, create_unit_group), which is where a
 -- group-movement spike would actually be spent.
-local GC_STEP_KB = 256
-local GC_MAX_KB = 450000
-
 local function timedEvent(name, fn, event)
     -- Log every event while telemetry is on: a spike lands on an arbitrary
     -- tick, so sampling by range would miss exactly the one we want.
@@ -1128,16 +1121,6 @@ script.on_event(defines.events.on_tick,
                     local tick = gameRef.tick
                     timed(tick, rangeSample, "overlay", Observability.updateVisualizers, tick)
                     timed(tick, rangeSample, "eventFlush", Telemetry.maybeFlush, tick)
-                    -- Manual GC pacing. This save's Lua heap is ~300MB and the
-                    -- engine's automatic full collections land as 10-15ms pauses
-                    -- inside whichever script call triggers them (with the GC
-                    -- stopped, [TICK] max fell from 29ms to 0.28ms). The timer is
-                    -- stopped at init and stepped here every tick, so the cost is
-                    -- spread instead of arriving as a block.
-                    collectgarbage("step", GC_STEP_KB)
-                    if collectgarbage("count") > GC_MAX_KB then
-                        collectgarbage("collect")
-                    end
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
