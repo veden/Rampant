@@ -20,6 +20,7 @@ my_collection:add('unit_death_produces_decompress_and_dirty', function()
         baseId = 1,
         base = { lostEnemyUnits = 0, damagedBy = {}, deathEvents = 0 },
         squadId = 10,
+        squadCompressed = true,
         damageType = "physical",
         isArtilleryCause = false,
         deathGeneratorRating = 0.5,
@@ -35,6 +36,34 @@ my_collection:add('unit_death_produces_decompress_and_dirty', function()
     for _, c in ipairs(commands) do types[c.type] = true end
 
     assert(types.DECOMPRESS_SQUAD, "should decompress squad")
+end)
+
+my_collection:add('unit_death_does_not_decompress_an_uncompressed_squad', function()
+    local Death = require("libs/death_logic")
+
+    local commands = Death.evaluateEnemy({
+        entityType = "unit",
+        entityName = "small-biter",
+        chunkId = 42,
+        baseId = 1,
+        base = { lostEnemyUnits = 0, damagedBy = {}, deathEvents = 0 },
+        squadId = 10,
+        squadCompressed = false,
+        damageType = "physical",
+        isArtilleryCause = false,
+        deathGeneratorRating = 0.5,
+        retreatThreshold = 0.3,
+        causeValid = true,
+        rallyThreshold = 1.0,
+        randomRoll = 0.5,
+        lostEnemyUnits = 0,
+        isDrainPylon = false,
+    })
+
+    for _, c in ipairs(commands) do
+        assert(c.type ~= "DECOMPRESS_SQUAD",
+            "an uncompressed squad must not be decompressed on a unit loss")
+    end
 end)
 
 my_collection:add('unit_death_triggers_retreat_when_below_threshold', function()

@@ -50,8 +50,10 @@ function Death.evaluateEnemy(data)
     end
 
     if data.entityType == "unit" then
-        -- Decompress squad state
-        if data.squadId then
+        -- Decompress squad state, but only when the squad is actually
+        -- compressed: otherwise the command is a no-op that still costs an
+        -- executor call and an event.
+        if data.squadId and data.squadCompressed then
             table.insert(commands, Command.decompressSquad(data.squadId))
         end
 

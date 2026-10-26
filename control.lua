@@ -570,6 +570,10 @@ local function onDeath(event)
                 baseId = base and base.id or nil,
                 base = base,
                 squadId = squad and squad.id or nil,
+                -- Only a compressed squad needs materialising on a loss; the
+                -- command was being emitted per unit death regardless (460
+                -- commands for 5 real decompressions in 4.4 game-minutes).
+                squadCompressed = (squad and squad.compressionSet) and true or false,
                 damageType = damageTypeName,
                 isArtilleryCause = artilleryBlast,
                 deathGeneratorRating = chunk ~= -1 and SquadLogic.deathGeneratorRating(chunk, tick) or 0,
@@ -1228,6 +1232,8 @@ script.on_event(defines.events.on_tick,
                             { "resource", "resource.registered" },
                             { "resDepleted", "event.onResourceDepleted" },
                             { "kills", "death.commandsEmitted" },
+                            { "registered", "cmd.REGISTER_STRUCTURE" },
+                            { "unregistered", "cmd.UNREGISTER_STRUCTURE" },
                         }
                         for _, entry in ipairs(tracked) do
                             local now = counters[entry[2]] or 0
