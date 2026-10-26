@@ -285,17 +285,6 @@ function MapUtils.removeChunkFromMap(map, chunk)
     Universe.vengenceQueue[chunkId] = nil
     Universe.chunkToVictory[chunkId] = nil
 
-    -- Neighbour-id cache: the removed chunk and its neighbours may hold cached
-    -- adjacency that includes it.
-    RamState.neighborIds[chunk.id] = nil
-    local neighbors = MapUtils.getNeighborChunks(map, chunk.x, chunk.y)
-    for i = 1, 8 do
-        local neighbor = neighbors[i]
-        if neighbor and neighbor ~= -1 then
-            RamState.neighborIds[neighbor.id] = nil
-        end
-    end
-
     local base = chunk.base
     if base then
         base.chunkCount = base.chunkCount - 1
@@ -444,6 +433,7 @@ function MapUtils.releaseSurface(map)
         end
     end
     Universe.maps[map.id] = nil
+    log({"", "[REL] surface=", map.surface and map.surface.name or "?", " chunks=", released, " tick=", game.tick})
     Universe.releasedSurfaces = Universe.releasedSurfaces or {}
     Universe.releasedSurfaces[map.id] = true
     return released

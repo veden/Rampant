@@ -562,36 +562,30 @@ function Runtime.processAll(tick)
     return total
 end
 
--- Neighbour ids. The chunk's own key packs the two chunk indices as digits in
--- base 2^27, so one chunk in x is +2^27 and one in y is +1: the list is built
--- with eight additions and one hash per neighbour, then cached on the chunk.
+-- Neighbour ids, computed on demand into a rotation of scratch arrays: eight
+-- additions on the chunk's own key (one chunk in x is +2^27, one in y is +1),
+-- no allocation, no cache, nothing derived to keep in storage. Multiplayer-safe
+-- by construction: the list is a pure function of the stored chunk records.
 --
--- Measured on the 24MB save (sourceFields, 96 pops/tick budget):
---   cached ids          126us/tick
---   additive, no cache  214us/tick   (+70%: 8 hashes on 52-bit keys per pop)
--- so the cache is worth its 3-5MB. It stores each edge twice and must be
--- invalidated on chunk add/remove; that is the price.
+-- The rotation (not a single array) keeps a nested call - a read that triggers a
+-- solve - from clobbering the caller's list.
 local CHUNK_KEY_X_STEP = MapUtils.CHUNK_KEY_X_STEP
 local EMPTY_IDS = {}
+-- One scratch array: the solver consumes the list immediately and never calls
+-- back into neighborOf while iterating it.
+local NEIGHBOR_SCRATCH = {}
 
 function Runtime.neighborOf(chunkId)
     local chunk = Universe.chunkById[chunkId]
     if not chunk then return EMPTY_IDS end
-    -- Runtime switch so the cache's total cost (fetch vs memory + GC) can be A/B'd
-    -- in one session: defaults on, set Universe.neighborCacheEnabled = false.
-    local cacheEnabled = Universe.neighborCacheEnabled ~= false
-    if cacheEnabled then
-        local ids = RamState.neighborIds[chunkId]
-        if ids then return ids end
-    end
     local map = chunk.map
     local chunks = map and map.chunks
     if not chunks then return EMPTY_IDS end
-    ids = {}
     local key = chunk.key or MapUtils.chunkKey(chunk.x, chunk.y)
+    local ids = NEIGHBOR_SCRATCH
+    local n = 0
     local left = key - CHUNK_KEY_X_STEP
     local right = key + CHUNK_KEY_X_STEP
-    local n = 0
     local neighbor = chunks[left - 1]
     if neighbor then n = n + 1; ids[n] = neighbor.id end
     neighbor = chunks[left]
@@ -608,9 +602,7 @@ function Runtime.neighborOf(chunkId)
     if neighbor then n = n + 1; ids[n] = neighbor.id end
     neighbor = chunks[right + 1]
     if neighbor then n = n + 1; ids[n] = neighbor.id end
-    if cacheEnabled then
-        RamState.neighborIds[chunkId] = ids
-    end
+    for i = n + 1, 8 do ids[i] = nil end
     return ids
 end
 

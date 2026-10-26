@@ -1657,10 +1657,7 @@ remote.add_interface("Rampant", {
         local liveWithCacheKB = collectgarbage("count")
         local collectMs = profilerMs(function() collectgarbage("collect") end)
         local cachedChunks = 0
-        for chunkId in pairs(RamState.neighborIds) do
-            cachedChunks = cachedChunks + 1
-        end
-        RamState.neighborIds = {}
+        cachedChunks = 0
         collectgarbage("collect")
         local liveWithoutKB = collectgarbage("count")
         local cacheKB = liveWithCacheKB - liveWithoutKB
@@ -1732,7 +1729,6 @@ remote.add_interface("Rampant", {
         -- 1. neighbour cache
         collectgarbage("collect")
         local a = kb()
-        RamState.neighborIds = {}
         collectgarbage("collect")
         local b = kb()
         out[#out+1] = "cacheKB=" .. string.format("%.0f", a - b)

@@ -38,8 +38,6 @@ if RamStateG then
 end
 
 local RamState = {
-    -- chunkId -> list of neighbour chunk ids (pure function of stored coordinates).
-    neighborIds = {},
 }
 
 RamStateG = RamState
