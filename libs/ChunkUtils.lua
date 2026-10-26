@@ -281,6 +281,20 @@ local unregisterTypeToRemoveFn = {
     ["unit-spawner"] = removeNestCount
 }
 
+-- Phase timers for one chunk scan, logged only inside a diagnose window. A
+-- dense chunk was measured at 4.87ms against 0.03-0.15ms typical, and the scan
+-- does several kernel queries plus a per-entity registration loop; this says
+-- which phase that time is in so the split is done on evidence.
+local function timedScanPhase(name, fn)
+    if not (Universe and Universe.diagTicks) then
+        return fn()
+    end
+    local profiler = helpers.create_profiler()
+    local result = fn()
+    log({"", "[SUB] tick=", game.tick, " name=scan.", name, " ", profiler})
+    return result
+end
+
 function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
     if MetricsG then
         MetricsG.inc("scan.chunksScanned")
@@ -288,9 +302,11 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
     local surface = map.surface
     setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
     setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
-    local pass = scanPaths(chunk, map)
-    local enemyBuildings = surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
-    local playerObjects = scorePlayerBuildings(map, chunk)
+    local pass = timedScanPhase("paths", function() return scanPaths(chunk, map) end)
+    local enemyBuildings = timedScanPhase("enemyQuery", function()
+        return surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
+    end)
+    local playerObjects = timedScanPhase("playerQuery", function() return scorePlayerBuildings(map, chunk) end)
 
     if (pass ~= CHUNK_IMPASSABLE) or (#enemyBuildings > 0) or (playerObjects > 0) then
         if ((playerObjects > 0) or (#enemyBuildings > 0)) and (pass == CHUNK_IMPASSABLE) then
@@ -309,7 +325,9 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
             -- a loaded save's resource field stays empty and every
             -- resource-seeking scorer reads 0.
             local oldResourceSourceValue = resourceSourceValue(chunk)
-            local resources = surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
+            local resources = timedScanPhase("resourceQuery", function()
+                return surface.count_entities_filtered(Universe.isCountResourcesQuery) * RESOURCE_NORMALIZER
+            end)
             setResourceGenerator(chunk, resources)
             queueResourceSourceChange(chunk, oldResourceSourceValue)
 
@@ -326,7 +344,9 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                 -- units vanished instantly, formations starved, zero death
                 -- events because script destroy() is silent).
                 if purgeUnits ~= false and Universe.NEW_ENEMIES then
-                    local unitList = surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
+                    local unitList = timedScanPhase("unitQuery", function()
+                        return surface.find_entities_filtered(Universe.isFilteredEntitiesUnitQuery)
+                    end)
                     if #unitList > 0 then
                         local killed = 0
                         local dbgMsg = "initialScan: checking " .. #unitList .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
