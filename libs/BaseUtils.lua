@@ -293,6 +293,16 @@ local function findEntityCreation(baseAlignment, evoIndex, position, map, entity
                 chunk.resourceGenerator
             )
         )
+    -- New structures start at the bottom and grow through the base's waves:
+    -- a nest built by a tier-10 base is tier 1, not tier 10. Combined with the
+    -- +1-per-wave step this makes the population ramped by age rather than
+    -- spawned at the cap.
+    local startTier = 1
+    local name = baseAlignment .. "-" .. (makeHive and "hive" or entityType)
+        .. "-v1-t" .. startTier .. "-rampant"
+    if Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[name] then
+        return name
+    end
     return initialEntityUpgrade(baseAlignment, tier, maxTier, (makeHive and "hive"), entityType)
 end
 
@@ -581,22 +591,28 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     -- 0) always takes at least +1 so it gains a rampant identity.
     local gap = base.upgradeVersion - currentTier
     local rolledTier = currentTier
-    if gap > 0 then
+    if currentTier == 0 and gap > 0 then
+        -- A vanilla structure enters at the bottom of its base's range - three
+        -- tiers under the base version, never below 1 - and then grows one wave
+        -- at a time with everything else. A high-evolution base therefore does
+        -- not spawn tier-1 nests forever, but it also does not spawn at the cap.
+        rolledTier = mMax(1, base.upgradeVersion - 3)
+    elseif gap > 0 then
         local h = (mFloor(position.x) * 73856093 + mFloor(position.y) * 19349663
             + wave * 2654435761) % 1000
         local r = h / 1000
+        -- Growth is meant to be slow and uneven, not a race to the base tier:
+        -- +1 is the common case, +2 less common, +3 rare, and a small share
+        -- simply does not move this wave. A 4 -> 7 jump is a big jump.
         local step
         if r < 0.10 then
             step = 0
-        elseif r < 0.40 then
-            step = 1
         elseif r < 0.70 then
+            step = 1
+        elseif r < 0.95 then
             step = 2
         else
             step = 3
-        end
-        if currentTier == 0 and step < 1 then
-            step = 1
         end
         if step > gap then
             step = gap
