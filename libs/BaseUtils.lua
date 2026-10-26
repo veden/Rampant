@@ -296,7 +296,7 @@ local function findEntityCreation(baseAlignment, evoIndex, position, map, entity
     return initialEntityUpgrade(baseAlignment, tier, maxTier, (makeHive and "hive"), entityType)
 end
 
-local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve)
+local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEntity, map, evolve, targetTier)
     local adjCurrentEvo = mMax(
         ((baseAlignment ~= ENEMY_ALIGNMENT_LOOKUP[originalEntity.name]) and 0) or currentEvo,
         0
@@ -350,6 +350,15 @@ local function findEntityUpgrade(baseAlignment, currentEvo, evoIndex, originalEn
                     chunk.resourceGenerator
                 )
             )
+        -- The tier is the base's version, not a roll: the name is built the same
+        -- way the data stage builds it, so IDENTITY_LOOKUP has it.
+        local useTier = targetTier or maxTier
+        if useTier < tier then useTier = tier end
+        local typeName = makeHive and "hive" or entityType
+        local name = baseAlignment .. "-" .. typeName .. "-v1-t" .. useTier .. "-rampant"
+        if Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[name] then
+            return name
+        end
         return initialEntityUpgrade(baseAlignment, tier, maxTier, (makeHive and "hive"), entityType)
     else
         return entityUpgrade(baseAlignment, tier, maxTier, originalEntity)
@@ -461,9 +470,6 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local baseAlignment = base.alignment
     local position = disPos or entity.position
 
-    -- Enqueue-time telemetry: where the SOURCE entity actually is, before the
-    -- replacement path can touch it. Distinguishes "the entity was already at
-    -- the origin when queued" from "the replacement moved it".
     if entity and entity.valid then
         local st = Universe.spawnTelemetry
         if not st then
@@ -474,31 +480,8 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         st.enq = (st.enq or 0) + 1
         if (math.abs(epos.x) < 64) and (math.abs(epos.y) < 64) then
             st.enqNear64 = (st.enqNear64 or 0) + 1
-            -- Name the first few near-origin sources outright: "spawners
-            -- clustered at 0,0" needs to say what they are and where they
-            -- came from, not just how many.
-            if (st.enqNearLogged or 0) < 8 then
-                st.enqNearLogged = (st.enqNearLogged or 0) + 1
-                log({"", "[ENQ] ", tostring(entity.name),
-                     " src=" .. tostring(epos.x) .. "," .. tostring(epos.y),
-                     " req=" .. tostring(position.x) .. "," .. tostring(position.y),
-                     " disPos=" .. tostring(disPos ~= nil),
-                     " evolve=" .. tostring(evolve),
-                     " from=" .. tostring(debug.traceback("", 1):gsub("\n", " | "):sub(1, 260))})
-            end
         end
-        local sdx, sdy = position.x - epos.x, position.y - epos.y
-        local sshift = math.sqrt(sdx * sdx + sdy * sdy)
-        if sshift > (st.enqMaxShift or 0) then st.enqMaxShift = sshift end
-        -- Identity of the source: was it a vanilla spawner placed by map
-        -- generation, or one this mod already created? Distinct unit_numbers
-        -- tell repeated queueing of one entity from many entities.
         local un = entity.unit_number
-        st.enqSeen = st.enqSeen or {}
-        if un and not st.enqSeen[un] then
-            st.enqSeen[un] = true
-            st.enqUnique = (st.enqUnique or 0) + 1
-        end
         if string.find(entity.name, "rampant", 1, true) then
             st.enqRampant = (st.enqRampant or 0) + 1
         else
@@ -506,10 +489,13 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         end
     end
 
-    local pickedBaseAlignment
-    if baseAlignment[2] then
-        if Universe.random() < 0.75 then
-            pickedBaseAlignment = baseAlignment[2]
+    if (base.alignmentHistory and (Universe.evolutionLevel or 0) > 0.5) then
+        if #base.alignmentHistory > 1 then
+            if (tick and (tick % 2 == 0)) then
+                pickedBaseAlignment = baseAlignment[2]
+            else
+                pickedBaseAlignment = baseAlignment[1]
+            end
         else
             pickedBaseAlignment = baseAlignment[1]
         end
@@ -517,24 +503,72 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         pickedBaseAlignment = baseAlignment[1]
     end
 
-    -- build_base_evolution_requirement existed on 1.1 spawner prototypes but
-    -- was removed in 2.x; any access errors (strict prototype metatable).
-    -- Rampant requires Factorio >= 2.0, so the field is absent on every
-    -- supported version — constant fallback 0 (tier 1 baseline), no pcall.
-    local currentEvo = 0
-
+    -- The tier target is the base's version, capped by evolution/distance. A
+    -- structure is a candidate only when the identity it holds differs from the
+    -- base's: one upgrade per identity change, no per-queue random reroll.
     local distance = mMin(
         1,
         euclideanDistancePoints(position.x, position.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
     )
     local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
+    -- Evolution is the CAP and also raises the version when it crosses a tier
+    -- boundary; points can raise it further but never past the cap. The version
+    -- itself never falls here (devolution is an explicit event).
+    local capTier = evoToTier(evoIndex, 4)
+    if not base.upgradeVersion then
+        base.upgradeVersion = capTier
+    end
+    if capTier > base.upgradeVersion then
+        base.upgradeVersion = capTier
+    end
+    if base.upgradeVersion > capTier then
+        capTier = base.upgradeVersion
+    end
+
+    local factionId = Constants.FACTION_INDEX[pickedBaseAlignment] or base.factionId or 0
+    local oldIdentity = base.identity
+    base.factionId = factionId
+    base.identity = factionId * 64 + base.upgradeVersion
+    if oldIdentity and oldIdentity ~= base.identity then
+        if TelemetryG then
+            TelemetryG.emit("base.version", {
+                base = base.id, old = oldIdentity, new = base.identity,
+                tier = base.upgradeVersion, faction = factionId,
+            })
+        end
+        -- One wave per identity change: every structure of the base becomes a
+        -- candidate once. Guarded so the nested queueUpgrade calls do not wave
+        -- again.
+        if not base.waveInProgress then
+            base.waveInProgress = true
+            for unitNumber, packed in pairs(base.structures or {}) do
+                local member = base.structureEntities and base.structureEntities[unitNumber]
+                if packed ~= base.identity and member and member.valid then
+                    BaseUtils.queueUpgrade(member, base, nil, true)
+                end
+            end
+            base.waveInProgress = nil
+        end
+    end
+
+    local unitNumber = entity.unit_number
+    -- 0 means "no rampant identity yet" (a vanilla structure), which never
+    -- equals a real identity, so vanilla structures convert exactly once even
+    -- when the base is already at tier 1.
+    local packed = (unitNumber and base.structures and base.structures[unitNumber])
+        or (Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[entity.name])
+        or 0
+    if packed == base.identity then
+        return
+    end
 
     local name = findEntityUpgrade(pickedBaseAlignment,
-                                   currentEvo,
+                                   capTier,
                                    evoIndex,
                                    entity,
                                    map,
-                                   evolve)
+                                   evolve,
+                                   base.upgradeVersion)
 
     local entityName = entity.name
     if not name or (name == entityName) then
@@ -767,20 +801,36 @@ function BaseUtils.processBaseMutation(chunk, map, base)
         return
     end
 
+    -- Points buy a base version bump, not a random structure upgrade: the base
+    -- "researches" the next tier up to the evolution cap, and every structure it
+    -- owns becomes a candidate exactly once.
     if (base.points >= MINIMUM_BUILDING_COST) then
-        local surface = map.surface
-        setPositionXYInQuery(Universe.pbFilteredEntitiesPointQueryLimited,
-                             chunk.x + (CHUNK_SIZE * Universe.random()),
-                             chunk.y + (CHUNK_SIZE * Universe.random()))
-
-        local entities = surface.find_entities_filtered(Universe.pbFilteredEntitiesPointQueryLimited)
-        if #entities ~= 0 then
-            local entity = entities[1]
-            local cost = (COST_LOOKUP[entity.name] or MAGIC_MAXIMUM_NUMBER)
-            if (base.points >= cost) then
-                local position = entity.position
-                BaseUtils.modifyBaseSpecialPoints(base, -cost, "Scheduling Entity upgrade", position.x, position.y)
-                BaseUtils.queueUpgrade(entity, base, nil, false)
+        local distance = mMin(
+            1,
+            euclideanDistancePoints(chunk.x, chunk.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
+        )
+        local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
+        local capTier = evoToTier(evoIndex, 4)
+        local version = base.upgradeVersion or 1
+        if version < capTier then
+            local cost = (COST_LOOKUP[chunk.nestIds and "biter-spawner"] or MINIMUM_BUILDING_COST)
+            if base.points >= cost then
+                BaseUtils.modifyBaseSpecialPoints(base, -cost, "Base tier research", chunk.x, chunk.y)
+                local oldIdentity = base.identity
+                base.upgradeVersion = version + 1
+                base.identity = (base.factionId or 0) * 64 + base.upgradeVersion
+                if TelemetryG then
+                    TelemetryG.emit("base.version", {
+                        base = base.id, old = oldIdentity, new = base.identity,
+                        tier = base.upgradeVersion, reason = "points",
+                    })
+                end
+                for unitNumber, packed in pairs(base.structures or {}) do
+                    local entity = base.structureEntities and base.structureEntities[unitNumber]
+                    if packed ~= base.identity and entity and entity.valid then
+                        BaseUtils.queueUpgrade(entity, base, nil, true)
+                    end
+                end
             end
         end
     end
@@ -812,9 +862,22 @@ function BaseUtils.createBase(map, chunk, tick)
                                                         Universe.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
 
+    -- The base owns a versioned identity: factionId * 64 + tier target. Every
+    -- structure it owns stores the identity it was built with, so "is this a
+    -- candidate" is an integer comparison and each structure upgrades at most
+    -- once per identity change.
+    local baseFactionType = alignment[1] or "neutral"
+    local baseFactionId = Constants.FACTION_INDEX[baseFactionType] or 0
+    local baseTier = evoToTier(evoIndex, 4)
+
     local base = {
         x = x,
         y = y,
+        factionId = baseFactionId,
+        upgradeVersion = baseTier,
+        identity = baseFactionId * 64 + baseTier,
+        structures = {},
+        structureEntities = {},
         totalX = 0,
         totalY = 0,
         distanceThreshold = distanceThreshold * Universe.baseDistanceModifier,

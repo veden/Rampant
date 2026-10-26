@@ -569,6 +569,16 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
             end
         end
     end
+    -- Record the identity this structure was created with, so later candidate
+    -- tests are integer comparisons. Vanilla mapgen structures enter at tier 1
+    -- of the base's faction and are converted the first time the version rises.
+    if base and base.structures then
+        local pack = Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[name]
+        base.structures[entityUnitNumber] = pack or 0
+        if base.structureEntities then
+            base.structureEntities[entityUnitNumber] = entity
+        end
+    end
     registerHive(base, entity, hiveType, tick)
     if added and (not skipCount) then
         base.builtEnemyBuilding = base.builtEnemyBuilding + 1
@@ -629,6 +639,12 @@ function ChunkUtils.unregisterEnemyBaseStructure(map, entity, damageTypeName, sk
             local oldEnemySourceValue = enemySourceValue(chunk)
             if removeFunc(chunk, entityUnitNumber) then
                 local base = chunk.base
+                if base and base.structures then
+                    base.structures[entityUnitNumber] = nil
+                    if base.structureEntities then
+                        base.structureEntities[entityUnitNumber] = nil
+                    end
+                end
                 local baseId = base.id
                 if not usedBases[baseId] then
                     usedBases[baseId] = true
