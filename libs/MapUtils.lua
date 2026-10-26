@@ -62,12 +62,34 @@ local sFind = string.find
 
 -- module code
 
-function MapUtils.getChunkByXY(map, x, y)
-    local chunkX = map[x]
-    if chunkX then
-        return chunkX[y] or -1
+-- Chunk coordinates are int32 tiles divided by 32, i.e. [-2^26, 2^26-1], and the
+-- engine's map limit is the int32 tile range. Two axes of 27 bits is 54 bits,
+-- one more than a double holds exactly, so the key is signed positional:
+-- id = cx * 2^27 + cy. Every pair in the world except the westernmost column
+-- (cx = -2^26, where the value would sit exactly on 2^53 and odd cy would round)
+-- is exact, and that column asserts.
+local CHUNK_KEY_SHIFT = 2^27
+local CHUNK_KEY_MAX = 2^26
+
+function MapUtils.chunkKey(x, y)
+    local cx = mFloor(x * CHUNK_SIZE_DIVIDER)
+    local cy = mFloor(y * CHUNK_SIZE_DIVIDER)
+    if cx < -CHUNK_KEY_MAX or cx >= CHUNK_KEY_MAX or
+        cy < -CHUNK_KEY_MAX or cy >= CHUNK_KEY_MAX then
+        error("chunk coordinate outside the int32 map: " .. cx .. "," .. cy)
     end
-    return -1
+    return cx * CHUNK_KEY_SHIFT + cy
+end
+
+function MapUtils.chunkKeyToXY(key)
+    local cx = mFloor(key / CHUNK_KEY_SHIFT)
+    return cx * CHUNK_SIZE, (key - cx * CHUNK_KEY_SHIFT) * CHUNK_SIZE
+end
+
+function MapUtils.getChunkByXY(map, x, y)
+    local chunks = map.chunks
+    if not chunks then return -1 end
+    return chunks[MapUtils.chunkKey(x, y)] or -1
 end
 
 --- Find a chunk by its unique id. O(1) via the chunkById reverse index
@@ -86,12 +108,9 @@ function MapUtils.getChunkById(chunkId, universe)
 end
 
 function MapUtils.getChunkByPosition(map, position)
-    local chunkX = map[mFloor(position.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE]
-    if chunkX then
-        local chunkY = mFloor(position.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-        return chunkX[chunkY] or -1
-    end
-    return -1
+    local chunks = map.chunks
+    if not chunks then return -1 end
+    return chunks[MapUtils.chunkKey(position.x, position.y)] or -1
 end
 
 function MapUtils.positionToChunkXY(position)
@@ -224,11 +243,12 @@ function MapUtils.removeChunkFromMap(map, chunk)
     local x = chunk.x
     local y = chunk.y
 
-    if not map[x][y] then
+    local key = MapUtils.chunkKey(x, y)
+    if not map.chunks[key] then
         return
     end
 
-    map[x][y] = nil
+    map.chunks[key] = nil
     local chunkId = chunk.id
     if Universe.chunkById then
         Universe.chunkById[chunkId] = nil
@@ -286,38 +306,18 @@ end
 ]]--
 function MapUtils.getNeighborChunks(map, x, y)
     if not NeighborChunks then return {} end
-    local chunkYRow1 = y - CHUNK_SIZE
-    local chunkYRow3 = y + CHUNK_SIZE
-    local xChunks = map[x-CHUNK_SIZE]
-    if xChunks then
-        NeighborChunks[1] = xChunks[chunkYRow1] or -1
-        NeighborChunks[4] = xChunks[y] or -1
-        NeighborChunks[6] = xChunks[chunkYRow3] or -1
-    else
-        NeighborChunks[1] = -1
-        NeighborChunks[4] = -1
-        NeighborChunks[6] = -1
-    end
-
-    xChunks = map[x+CHUNK_SIZE]
-    if xChunks then
-        NeighborChunks[3] = xChunks[chunkYRow1] or -1
-        NeighborChunks[5] = xChunks[y] or -1
-        NeighborChunks[8] = xChunks[chunkYRow3] or -1
-    else
-        NeighborChunks[3] = -1
-        NeighborChunks[5] = -1
-        NeighborChunks[8] = -1
-    end
-
-    xChunks = map[x]
-    if xChunks then
-        NeighborChunks[2] = xChunks[chunkYRow1] or -1
-        NeighborChunks[7] = xChunks[chunkYRow3] or -1
-    else
-        NeighborChunks[2] = -1
-        NeighborChunks[7] = -1
-    end
+    local chunks = map.chunks
+    if not chunks then return NeighborChunks end
+    local xm = x - CHUNK_SIZE
+    local xp = x + CHUNK_SIZE
+    NeighborChunks[1] = chunks[MapUtils.chunkKey(xm, y - CHUNK_SIZE)] or -1
+    NeighborChunks[4] = chunks[MapUtils.chunkKey(xm, y)] or -1
+    NeighborChunks[6] = chunks[MapUtils.chunkKey(xm, y + CHUNK_SIZE)] or -1
+    NeighborChunks[3] = chunks[MapUtils.chunkKey(xp, y - CHUNK_SIZE)] or -1
+    NeighborChunks[5] = chunks[MapUtils.chunkKey(xp, y)] or -1
+    NeighborChunks[8] = chunks[MapUtils.chunkKey(xp, y + CHUNK_SIZE)] or -1
+    NeighborChunks[2] = chunks[MapUtils.chunkKey(x, y - CHUNK_SIZE)] or -1
+    NeighborChunks[7] = chunks[MapUtils.chunkKey(x, y + CHUNK_SIZE)] or -1
     return NeighborChunks
 end
 

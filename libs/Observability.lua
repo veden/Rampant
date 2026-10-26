@@ -605,10 +605,8 @@ function Observability.onUdpPacket(event)
             if not Universe or not Universe.maps then return end
             for _, mapObj in pairs(Universe.maps) do
                 if type(mapObj) == "table" then
-                    for _, xChunks in pairs(mapObj) do
-                        if type(xChunks) == "table" then
-                            collect_one(xChunks)
-                        end
+                    if type(mapObj.chunks) == "table" then
+                        collect_one(mapObj.chunks)
                     end
                 end
             end

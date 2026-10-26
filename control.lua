@@ -219,14 +219,10 @@ local RESCAN_PER_TICK = 16
 local function buildRescanQueue()
     local queue = {}
     for _, map in pairs(Universe.maps) do
-        if map.surface and map.surface.valid then
-            for _, xChunks in pairs(map) do
-                if type(xChunks) == "table" and xChunks[1] then
-                    for _, chunk in pairs(xChunks) do
-                        if type(chunk) == "table" and chunk.id then
-                            queue[#queue + 1] = { map = map, chunk = chunk }
-                        end
-                    end
+        if map.surface and map.surface.valid and type(map.chunks) == "table" then
+            for _, chunk in pairs(map.chunks) do
+                if type(chunk) == "table" and chunk.id then
+                    queue[#queue + 1] = { map = map, chunk = chunk }
                 end
             end
         end
@@ -1037,12 +1033,10 @@ local function onSurfaceDeleted(event)
     -- chunk.valid to only touch real chunks.
     local map = Universe.maps[surfaceIndex]
     if map and Universe.chunkById then
-        for _, xChunks in pairs(map) do
-            if type(xChunks) == "table" then
-                for _, chunk in pairs(xChunks) do
-                    if chunk.valid and chunk.id then
-                        Universe.chunkById[chunk.id] = nil
-                    end
+        if type(map.chunks) == "table" then
+            for _, chunk in pairs(map.chunks) do
+                if chunk.valid and chunk.id then
+                    Universe.chunkById[chunk.id] = nil
                 end
             end
         end

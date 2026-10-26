@@ -569,22 +569,23 @@ function Processor.processPendingChunks(tick, flush)
         local x = topLeft.x
         local y = topLeft.y
 
-        if not map[x] then
-            map[x] = {}
+        if not map.chunks then
+            map.chunks = {}
         end
+        local chunkKey = MapUtils.chunkKey(x, y)
 
-        if map[x][y] then
-            local oldChunk = map[x][y]
+        if map.chunks[chunkKey] then
+            local oldChunk = map.chunks[chunkKey]
             local chunk = timedInitialScan(oldChunk, map, tick)
             if (chunk == -1) then
                 removeChunkFromMap(map, oldChunk)
             end
         else
             local initialChunk = createChunk(map, x, y)
-            map[x][y] = initialChunk
+            map.chunks[chunkKey] = initialChunk
             local chunk = timedInitialScan(initialChunk, map, tick)
             if (chunk == -1) then
-                map[x][y] = nil
+                map.chunks[chunkKey] = nil
             end
         end
 

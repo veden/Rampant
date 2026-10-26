@@ -529,10 +529,9 @@ function Upgrade.attempt()
 
         -- Reset pheromones for the event-driven system (was: iterate map.processQueue)
         for _, map in pairs(Universe.maps) do
-            for _, xChunks in pairs(map) do
-                if type(xChunks) == "table" then
-                    for _, chunk in pairs(xChunks) do
-                        if type(chunk) == "table" and chunk.id then
+            if type(map.chunks) == "table" then
+                for _, chunk in pairs(map.chunks) do
+                    if type(chunk) == "table" and chunk.id then
                             chunk[CHUNK_TICK] = 0
                             -- Stale slots from a save that ran the H7 scheme:
                             -- nothing writes or reads them any more, so they are
@@ -542,7 +541,6 @@ function Upgrade.attempt()
                             chunk[KAMIKAZE_PHEROMONE] = nil
                             chunk[RESOURCE_PHEROMONE] = nil
                             chunk[ENEMY_PHEROMONE] = nil
-                        end
                     end
                 end
             end
