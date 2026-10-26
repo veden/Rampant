@@ -540,6 +540,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     base.factionId = factionId
     base.identity = factionId * 64 + base.upgradeVersion
     if oldIdentity and oldIdentity ~= base.identity then
+        base.versionCounter = (base.versionCounter or 0) + 1
         if TelemetryG then
             TelemetryG.emit("base.version", {
                 base = base.id, old = oldIdentity, new = base.identity,
@@ -562,14 +563,50 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     end
 
     local unitNumber = entity.unit_number
-    -- 0 means "no rampant identity yet" (a vanilla structure), which never
-    -- equals a real identity, so vanilla structures convert exactly once even
-    -- when the base is already at tier 1.
+    -- 0 means "no rampant identity yet" (a vanilla structure); it never equals a
+    -- real identity, so vanilla structures convert on their first eligible wave.
     local packed = (unitNumber and base.structures and base.structures[unitNumber])
         or (Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[entity.name])
         or 0
-    if packed == base.identity then
+    local currentTier = packed % 64
+    local wave = base.versionCounter or 0
+    base.structureAttempted = base.structureAttempted or {}
+    if unitNumber and base.structureAttempted[unitNumber] == wave then
+        return -- already rolled this wave
+    end
+
+    -- One roll per structure per wave: it decides how far this structure gets,
+    -- and it may decide "not at all". That is what leaves nests at different
+    -- tiers instead of every one converging on the base version.
+    local rolledTier = base.upgradeVersion
+    if (base.upgradeVersion - currentTier) > 1 then
+        local h = (mFloor(position.x) * 73856093 + mFloor(position.y) * 19349663
+            + wave * 2654435761) % 1000
+        local r = h / 1000
+        if r < 0.40 then
+            rolledTier = base.upgradeVersion
+        elseif r < 0.70 then
+            rolledTier = base.upgradeVersion - 1
+        elseif r < 0.90 then
+            rolledTier = base.upgradeVersion - 2
+        else
+            rolledTier = base.upgradeVersion - 3
+        end
+    end
+    if unitNumber then
+        base.structureAttempted[unitNumber] = wave
+    end
+    if rolledTier <= currentTier then
+        if TelemetryG then
+            TelemetryG.emit("upgrade.skipped", {
+                base = base.id, name = entity.name, tier = currentTier, wave = wave,
+            })
+        end
         return
+    end
+    local targetFactionId = Constants.FACTION_INDEX[pickedBaseAlignment] or base.factionId or 0
+    if unitNumber and base.structures then
+        base.structures[unitNumber] = targetFactionId * 64 + rolledTier
     end
 
     local name = findEntityUpgrade(pickedBaseAlignment,
@@ -578,7 +615,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
                                    entity,
                                    map,
                                    evolve,
-                                   base.upgradeVersion)
+                                   rolledTier)
 
     local entityName = entity.name
     if not name or (name == entityName) then
@@ -831,6 +868,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
                 local oldIdentity = base.identity
                 base.upgradeVersion = version + 1
                 base.identity = (base.factionId or 0) * 64 + base.upgradeVersion
+                base.versionCounter = (base.versionCounter or 0) + 1
                 if TelemetryG then
                     TelemetryG.emit("base.version", {
                         base = base.id, old = oldIdentity, new = base.identity,
@@ -888,7 +926,9 @@ function BaseUtils.createBase(map, chunk, tick)
         factionId = baseFactionId,
         upgradeVersion = baseTier,
         identity = baseFactionId * 64 + baseTier,
+        versionCounter = 0,
         structures = {},
+        structureAttempted = {},
         structureEntities = {},
         totalX = 0,
         totalY = 0,
