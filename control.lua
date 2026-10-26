@@ -1805,6 +1805,41 @@ remote.add_interface("Rampant", {
         out[#out+1] = "totalStartKB=" .. string.format("%.0f", start)
         return table.concat(out, " ")
     end,
+    -- Queue every generated chunk of a surface for scanning with the load flush
+    -- on: the diagnostic for "how long does the first-load backlog actually take".
+    chunkQueueStatus = function()
+        local U = storage.universe
+        local n, minTick, maxTick, noBucket = 0, math.huge, -math.huge, 0
+        for _, e in pairs(U.pendingChunks or {}) do
+            n = n + 1
+            local t = e.tick or 0
+            if t < minTick then minTick = t end
+            if t > maxTick then maxTick = t end
+            if not e.bucket then noBucket = noBucket + 1 end
+        end
+        local bucketCounts, bucketTotal = {}, 0
+        for b, bucket in pairs(U.pendingChunkBuckets or {}) do
+            local c = 0
+            for _ in pairs(bucket) do c = c + 1 end
+            bucketCounts[#bucketCounts + 1] = b .. ":" .. c
+            bucketTotal = bucketTotal + c
+        end
+        table.sort(bucketCounts)
+        return "pending=" .. n .. " bucketsTotal=" .. bucketTotal ..
+            " noBucket=" .. noBucket ..
+            " tick=" .. game.tick ..
+            " minDue=" .. tostring(minTick == math.huge and "-" or minTick) ..
+            " maxDue=" .. tostring(maxTick == -math.huge and "-" or maxTick) ..
+            " flush=" .. tostring(U.flushPendingChunks) ..
+            " [" .. table.concat(bucketCounts, " ") .. "]"
+    end,
+    queueAllChunks = function(surface)
+        MapUtils.queueChunks(surface, surface.get_chunks(), true, game.tick)
+        storage.universe.flushPendingChunks = true
+        local n = 0
+        for _ in pairs(storage.universe.pendingChunks or {}) do n = n + 1 end
+        return n
+    end,
     neighborCache = function(on)
         storage.universe.neighborCacheEnabled = on and true or false
         log({"", "[MARK] phase=", (on and "cacheOn" or "cacheOff"), " tick=", game.tick})

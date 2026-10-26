@@ -83,7 +83,11 @@ local initialScan = ChunkUtils.initialScan
 -- but the worst case: a dense chunk reaches 4.9-9.5ms, so two per tick meant two
 -- of those could land together. One per tick bounds a tick to a single chunk.
 local SCAN_PER_TICK = 1
-local FLUSH_SCAN_PER_TICK = 8
+-- Load flush: while the first-load backlog is draining, scan a bounded larger
+-- slice (32/tick ~ 1ms average) instead of trickling one chunk per tick, which
+-- would leave the map half-blind for ~170s. The flush stays on until the queue is
+-- empty, then the rate falls back to 1/tick.
+local FLUSH_SCAN_PER_TICK = 32
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
@@ -546,16 +550,53 @@ end
 
 --- Nearest-first pick: the lowest non-empty bucket whose front event is due.
 --- The visible region comes online in seconds while the far map drains behind.
+local function bucketOf(event)
+    local topLeft = event.area.left_top
+    local dx = topLeft.x - (Universe.scanFocusX or 0)
+    local dy = topLeft.y - (Universe.scanFocusY or 0)
+    local bucket = mFloor(math.sqrt(dx * dx + dy * dy) / 256)
+    if bucket > 15 then bucket = 15 end
+    return bucket
+end
+
+local function addToBucket(event)
+    local buckets = Universe.pendingChunkBuckets
+    if not buckets then
+        buckets = {}
+        Universe.pendingChunkBuckets = buckets
+    end
+    local bucket = bucketOf(event)
+    event.bucket = bucket
+    local bucketTable = buckets[bucket]
+    if not bucketTable then
+        bucketTable = {}
+        buckets[bucket] = bucketTable
+    end
+    bucketTable[event.id] = event
+end
+
 local function pickPendingChunk(tick, pendingChunks)
     local buckets = Universe.pendingChunkBuckets
-    if not buckets then return next(pendingChunks, nil) end
-    for b = 0, 15 do
-        local bucket = buckets[b]
-        if bucket then
-            local id, event = next(bucket, nil)
-            if id and (event.tick <= tick) then
-                return id, event
+    if buckets then
+        for b = 0, 15 do
+            local bucket = buckets[b]
+            if bucket then
+                local id, event = next(bucket, nil)
+                if id and ((event.tick or 0) <= tick) then
+                    return id, event
+                end
             end
+        end
+    end
+    -- Fallback: an event can be in the queue without a bucket entry (queued by an
+    -- older build, so its bucket field did not exist when it was persisted).
+    -- Adopt it into a bucket on the way out so the fast path works again.
+    for id, event in next, pendingChunks do
+        if (event.tick or 0) <= tick then
+            if not event.bucket then
+                addToBucket(event)
+            end
+            return id, event
         end
     end
     return nil, nil
@@ -570,6 +611,7 @@ function Processor.processPendingChunks(tick, flush)
             -- this is needed as the next command remembers the max length a table has been
             Universe.pendingChunks = {}
             Universe.pendingChunkBuckets = nil
+            Universe.flushPendingChunks = false
         end
         return
     end
@@ -580,10 +622,10 @@ function Processor.processPendingChunks(tick, flush)
     -- and leave the rest queued, so moving produces a steady cost instead of a
     -- burst. The flush is merely a larger slice, not an unbounded one.
     local flushAllChunks = flush or Universe.flushPendingChunks
+    Universe.flushPendingChunks = flushAllChunks
     local endCount
     if flushAllChunks then
         endCount = FLUSH_SCAN_PER_TICK
-        Universe.flushPendingChunks = false
     else
         endCount = SCAN_PER_TICK
     end

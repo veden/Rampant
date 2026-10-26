@@ -146,7 +146,8 @@ function MapUtils.queueGeneratedChunk(event)
     event.map = map
     Universe.pendingChunks[event.id] = event
     -- Distance bucket so the queue drains nearest-first; see
-    -- Processor.processPendingChunks.
+    -- Processor.processPendingChunks (which also adopts unbucketed events left in
+    -- an older save).
     local buckets = Universe.pendingChunkBuckets
     if not buckets then
         buckets = {}
