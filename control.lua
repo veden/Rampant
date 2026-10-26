@@ -1295,7 +1295,12 @@ script.on_event(defines.events.on_tick,
                     if rangeSample then
                         log({"", "[RANGE] tick=", tick, " phase=ai ", tAI})
                     end
-                    if tickProfiler then
+                    -- Emitting a [TICK] line every tick costs ~40% of total
+                    -- throughput at max speed (measured 2303 -> 1021 UPS), mostly
+                    -- in the per-tick log call. Per-tick lines are for a diagnose
+                    -- window; outside one, sample every 30th tick and rely on
+                    -- [RANGE] for the rest.
+                    if tickProfiler and (Universe.diagTicks or (tick % 30 == 0)) then
                         log({"", "[TICK] tick=", tick, " ", tickProfiler})
                     end
 end)
