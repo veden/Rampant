@@ -452,12 +452,6 @@ function ChunkUtils.entityForPassScan(map, entity)
     end
 end
 
-local function newChunkId()
-    local id = Universe.chunkId
-    Universe.chunkId = Universe.chunkId + 1
-    return id
-end
-
 function ChunkUtils.createChunk(map, topX, topY)
     local chunk = {
         x = topX,
@@ -466,7 +460,7 @@ function ChunkUtils.createChunk(map, topX, topY)
         -- hash instead of the nested map[x][y] grid (~760k fewer live nodes).
         key = MapUtils.chunkKey(topX, topY),
         dOrigin = euclideanDistancePoints(topX, topY, 0, 0),
-        id = newChunkId(),
+        id = MapUtils.newChunkId(),
         map = map,
         -- Chunks in the grid are always valid; removal is done by
         -- removeChunkFromMap (which nils the grid slot).

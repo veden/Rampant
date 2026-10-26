@@ -683,6 +683,9 @@ function ChunkPropertyUtils.findNearbyBase(chunk)
 end
 
 function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
+    -- A surface can be untracked or released for having no enemies, so callers
+    -- that resolve a map from a surface index can hand us nil.
+    if not map then return nil end
     local foundBase
 
     local closest = MAGIC_MAXIMUM_NUMBER

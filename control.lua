@@ -1714,6 +1714,9 @@ remote.add_interface("Rampant", {
         end
         parts[#parts + 1] = "srcChunks{playerBase=" .. playerGen .. ",player=" .. baseGen ..
             ",resource=" .. resourceGen .. ",enemy=" .. enemyGen .. "}"
+        parts[#parts + 1] = "chunkIds{counter=" .. tostring(storage.universe.chunkId or 0) ..
+            ",live=" .. tostring(count(storage.universe.chunkById or {})) ..
+            ",free=" .. tostring(#(storage.universe.freeChunkIds or {})) .. "}"
         parts[#parts + 1] = "neighborCache{chunks=" .. cachedChunks ..
             ",cacheKB=" .. string.format("%.0f", cacheKB) ..
             ",liveKB=" .. string.format("%.0f", liveWithoutKB) ..
@@ -1895,6 +1898,16 @@ remote.add_interface("Rampant", {
         end)
         return true
     end,
+    -- Force a surface release so the chunk-removal path (and id recycling) can be
+    -- exercised on demand.
+    dropSurface = function(surfaceIndex)
+        local map = storage.universe.maps[surfaceIndex]
+        if not map then return "no map" end
+        local released = MapUtils.releaseSurface(map)
+        local free = #(storage.universe.freeChunkIds or {})
+        return "released=" .. tostring(released) .. " freeIds=" .. tostring(free) ..
+            " counter=" .. tostring(storage.universe.chunkId)
+    end,
     chunkQueueStatus = function()
         local U = storage.universe
         local n, minTick, maxTick, noBucket = 0, math.huge, -math.huge, 0
@@ -1922,6 +1935,9 @@ remote.add_interface("Rampant", {
             " [" .. table.concat(bucketCounts, " ") .. "]"
     end,
     queueAllChunks = function(surface)
+        -- A released surface has no map, so re-acquire it first (queueChunks
+        -- drops events for untracked surfaces).
+        MapUtils.prepMap(surface)
         MapUtils.queueChunks(surface, surface.get_chunks(), true, game.tick)
         storage.universe.flushPendingChunks = true
         local n = 0

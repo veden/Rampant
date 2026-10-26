@@ -283,6 +283,46 @@ function MapUtils.removeChunkToNest(chunkId)
     end
 end
 
+-- Chunk ids are recycled after an age, so the id space is bounded by peak
+-- concurrent chunks rather than by every chunk ever created. The age matters:
+-- a queued executor command or pending upgrade can still hold an id for a few
+-- ticks after its chunk is removed, and handing that id out immediately would
+-- point it at a different chunk.
+local CHUNK_ID_REUSE_AGE = 10 * 60          -- 10 game-seconds
+local CHUNK_ID_FREE_CAP = 200000
+
+function MapUtils.newChunkId()
+    local freeIds = Universe.freeChunkIds
+    local freeTicks = Universe.freeChunkTicks
+    if freeIds and #freeIds > 0 then
+        local tick = freeTicks[#freeIds]
+        if tick and (game.tick - tick) >= CHUNK_ID_REUSE_AGE then
+            local n = #freeIds
+            local id = freeIds[n]
+            freeIds[n] = nil
+            freeTicks[n] = nil
+            return id
+        end
+    end
+    local id = Universe.chunkId
+    Universe.chunkId = Universe.chunkId + 1
+    return id
+end
+
+--- Hand a removed chunk's id back for reuse, aged.
+function MapUtils.recycleChunkId(id)
+    if not id then return end
+    local freeIds = Universe.freeChunkIds
+    if not freeIds then
+        freeIds = {}
+        Universe.freeChunkIds = freeIds
+        Universe.freeChunkTicks = {}
+    end
+    if #freeIds >= CHUNK_ID_FREE_CAP then return end
+    freeIds[#freeIds + 1] = id
+    Universe.freeChunkTicks[#freeIds] = game.tick
+end
+
 function MapUtils.removeChunkFromMap(map, chunk)
     local x = chunk.x
     local y = chunk.y
@@ -329,6 +369,10 @@ function MapUtils.removeChunkFromMap(map, chunk)
         Universe.processMigrationIterator = nil
     end
 
+    -- Hand the id back for reuse once everything keyed by it is cleared below.
+    -- Field entries, registries and pending upgrades for this chunk are dropped
+    -- first, so a recycled id starts clean.
+    -- (recycling is done at the end of this function)
     -- Field metadata is keyed by chunk id and nothing used to clear it here, so
     -- removing a chunk (or releasing a whole surface) traded chunk records for
     -- orphaned field entries - four tables per field plus the frontier, which is
@@ -360,6 +404,8 @@ function MapUtils.removeChunkFromMap(map, chunk)
             end
         end
     end
+    -- Everything keyed by the id is gone now, so it can be recycled (aged).
+    MapUtils.recycleChunkId(chunkId)
 end
 
 --- Release an entire surface: every chunk through removeChunkFromMap, its bases,

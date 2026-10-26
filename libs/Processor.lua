@@ -346,6 +346,12 @@ function Processor.processNests(tick)
         Universe.processNestIterator = nil
         return
     end
+    -- The chunk can be gone between two calls (surface release, chunk removal);
+    -- the stored iterator key then resolves to nil.
+    if not chunk then
+        Universe.processNestIterator = nil
+        return
+    end
 
     Universe.processNestIterator = next(Universe.chunkToNests, chunkId)
     local map = chunk.map

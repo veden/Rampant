@@ -1408,7 +1408,15 @@ function BaseUtils.processBaseAIs(tick)
     if not baseId then
         Universe.processBaseAIIterator = nil
         return
-    else
+    end
+    -- A base can disappear between two calls (surface release, base recycle):
+    -- the stored iterator key then resolves to nil. Restart the walk instead of
+    -- indexing nil.
+    if not base then
+        Universe.processBaseAIIterator = nil
+        return
+    end
+    if true then
         Universe.processBaseAIIterator = next(Universe.bases, baseId)
         if (tick - base.tick) <= BASE_PROCESS_INTERVAL then
             return
