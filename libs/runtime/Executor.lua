@@ -32,6 +32,19 @@ local Executor = {}
 local _Universe
 local _lastCreatedBaseId
 
+-- Cached metric/telemetry names: "cmd." .. type concatenated per command was an
+-- allocation on every command, even with telemetry off.
+local CMD_METRIC = {}
+local REJECT_METRIC = {}
+local function metricName(cache, prefix, suffix)
+    local name = cache[suffix]
+    if not name then
+        name = prefix .. suffix
+        cache[suffix] = name
+    end
+    return name
+end
+
 local Handlers = {}
 
 -- Squad lifecycle
@@ -185,19 +198,6 @@ end
 -- command can do engine work (set_multi_command, create_unit_group, pathing),
 -- so a single expensive command type is the difference between a 1ms tick and
 -- a 20ms spike. Log the slow ones with telemetry on.
--- Cached metric/telemetry names: "cmd." .. type concatenated per command was an
--- allocation on every command, even with telemetry off.
-local CMD_METRIC = {}
-local REJECT_METRIC = {}
-local function metricName(cache, prefix, suffix)
-    local name = cache[suffix]
-    if not name then
-        name = prefix .. suffix
-        cache[suffix] = name
-    end
-    return name
-end
-
 local function runHandler(cmd)
     local handler = Handlers[cmd.type]
     if not handler then return end
