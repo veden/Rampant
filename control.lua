@@ -1043,6 +1043,9 @@ local function onSurfaceCreated(event)
     local surface = game.surfaces[event.surface_index]
     if surface then
         Universe.releasedSurfaces = Universe.releasedSurfaces or {}
+    -- Reclaim chunk records whose surface is no longer tracked (older builds
+    -- removed a map without walking the reverse index).
+    MapUtils.reconcileOrphanChunks()
         Universe.releasedSurfaces[surface.index] = true
         -- A new surface is only worth tracking once it has an enemy; a chunk
         -- generated on it will probe for one (see onChunkGenerated).
@@ -1164,6 +1167,14 @@ script.on_event(defines.events.on_tick,
                     timed(tick, rangeSample, "eventFlush", Telemetry.maybeFlush, tick)
                     if (tick % 60) == 0 then
                         timed(tick, rangeSample, "surfaceSweep", MapUtils.sweepIdleSurfaces, tick)
+                    end
+                    -- Chunk records that are in the reverse index but not reachable
+                    -- from their surface's grid can accumulate (a released surface,
+                    -- a chunk removed from the grid by an older build). One pass
+                    -- every five game-minutes keeps the index honest and returns
+                    -- the ids for reuse.
+                    if (tick % (60 * 60 * 5)) == 0 then
+                        timed(tick, rangeSample, "chunkReconcile", MapUtils.reconcileOrphanChunks)
                     end
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
@@ -1714,6 +1725,25 @@ remote.add_interface("Rampant", {
         end
         parts[#parts + 1] = "srcChunks{playerBase=" .. playerGen .. ",player=" .. baseGen ..
             ",resource=" .. resourceGen .. ",enemy=" .. enemyGen .. "}"
+        -- Chunks per tracked surface, and the id accounting: this is what says
+        -- where a surface's chunks went when it was released.
+        local perSurface = {}
+        local mapCount, chunkTotal = 0, 0
+        for surfaceIndex, map in pairs(storage.universe.maps or {}) do
+            local n = 0
+            for _ in pairs(map.chunks or {}) do n = n + 1 end
+            chunkTotal = chunkTotal + n
+            mapCount = mapCount + 1
+            perSurface[#perSurface + 1] = surfaceIndex .. ":" .. n
+        end
+        table.sort(perSurface)
+        local released = 0
+        for _ in pairs(storage.universe.releasedSurfaces or {}) do released = released + 1 end
+        parts[#parts + 1] = "surfaces{tracked=" .. mapCount ..
+            ",released=" .. released ..
+            ",chunks=" .. chunkTotal ..
+            ",engine=" .. tostring(#game.surfaces) .. "}"
+        parts[#parts + 1] = "perSurface{" .. table.concat(perSurface, ",") .. "}"
         parts[#parts + 1] = "chunkIds{counter=" .. tostring(storage.universe.chunkId or 0) ..
             ",live=" .. tostring(count(storage.universe.chunkById or {})) ..
             ",free=" .. tostring(#(storage.universe.freeChunkIds or {})) .. "}"
@@ -1900,6 +1930,36 @@ remote.add_interface("Rampant", {
     end,
     -- Force a surface release so the chunk-removal path (and id recycling) can be
     -- exercised on demand.
+    -- Diagnose chunk records that are in the reverse index but not reachable
+    -- from their surface's grid: says where the discrepancy actually lives.
+    chunkOrphans = function()
+        local noMap, notInGrid, inGrid = 0, 0, 0
+        local byMap = {}
+        for _, chunk in pairs(storage.universe.chunkById or {}) do
+            local map = chunk.map
+            if not map then
+                noMap = noMap + 1
+            else
+                local key = MapUtils.chunkKey(chunk.x, chunk.y)
+                if map.chunks and map.chunks[key] == chunk then
+                    inGrid = inGrid + 1
+                else
+                    notInGrid = notInGrid + 1
+                    local id = map.id or -1
+                    byMap[id] = (byMap[id] or 0) + 1
+                end
+            end
+        end
+        local parts = {}
+        for id, n in pairs(byMap) do parts[#parts + 1] = id .. ":" .. n end
+        table.sort(parts)
+        return "total=" .. tostring(#(function() local n=0 for _ in pairs(storage.universe.chunkById or {}) do n=n+1 end return {n=n} end)()) ..
+            " noMap=" .. noMap .. " notInGrid=" .. notInGrid .. " inGrid=" .. inGrid ..
+            " byMap[" .. table.concat(parts, ",") .. "]"
+    end,
+    reconcileChunks = function()
+        return MapUtils.reconcileOrphanChunks()
+    end,
     dropSurface = function(surfaceIndex)
         local map = storage.universe.maps[surfaceIndex]
         if not map then return "no map" end

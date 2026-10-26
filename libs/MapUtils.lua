@@ -328,12 +328,14 @@ function MapUtils.removeChunkFromMap(map, chunk)
     local y = chunk.y
 
     local key = MapUtils.chunkKey(x, y)
-    if not map.chunks[key] then
-        return
-    end
-
-    map.chunks[key] = nil
+    -- Do not bail out when the grid slot is already missing: the reverse index
+    -- and the field entries are the authoritative copies, and returning early
+    -- left orphans that held an id and its field entries forever (measured 3,837
+    -- on the 24MB save).
     local chunkId = chunk.id
+    if map.chunks then
+        map.chunks[key] = nil
+    end
     if Universe.chunkById then
         Universe.chunkById[chunkId] = nil
     end
@@ -472,20 +474,62 @@ function MapUtils.sweepIdleSurfaces(tick)
     end
 end
 
+--- Drop chunk records whose surface is no longer tracked. Called on load: a
+--- released surface's chunks can outlive the map if an older build removed the
+--- map without walking the reverse index.
+function MapUtils.reconcileOrphanChunks()
+    local removed = 0
+    local orphan
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        local map = chunk.map
+        -- Three ways a record can be orphaned: no map at all, a map that is no
+        -- longer the tracked one for that index (a re-acquired surface reuses the
+        -- index), or a live map whose grid no longer points at this chunk. The
+        -- last is what the measured 1,673 were.
+        local orphaned = false
+        if not map then
+            orphaned = true
+        elseif Universe.maps[map.id] ~= map then
+            orphaned = true
+        elseif not map.surface or not map.surface.valid then
+            orphaned = true
+        else
+            local key = MapUtils.chunkKey(chunk.x, chunk.y)
+            if not map.chunks or map.chunks[key] ~= chunk then
+                orphaned = true
+            end
+        end
+        if orphaned then
+            orphan = orphan or {}
+            orphan[#orphan + 1] = chunk
+        end
+    end
+    if orphan then
+        for i = 1, #orphan do
+            local chunk = orphan[i]
+            MapUtils.removeChunkFromMap(chunk.map or { chunks = {} }, chunk)
+            removed = removed + 1
+        end
+    end
+    return removed
+end
+
 function MapUtils.releaseSurface(map)
     if not map then return 0 end
     local released = 0
-    if map.chunks then
-        local chunkList = {}
-        for _, chunk in pairs(map.chunks) do
+    -- Walk the reverse index: a chunk whose grid slot was already lost would
+    -- never be visited by walking map.chunks, and would survive the release.
+    local chunkList = {}
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        if chunk.map == map then
             chunkList[#chunkList + 1] = chunk
         end
-        for i = 1, #chunkList do
-            MapUtils.removeChunkFromMap(map, chunkList[i])
-            released = released + 1
-        end
-        map.chunks = {}
     end
+    for i = 1, #chunkList do
+        MapUtils.removeChunkFromMap(map, chunkList[i])
+        released = released + 1
+    end
+    map.chunks = {}
     if Universe.bases then
         for id, base in pairs(Universe.bases) do
             if base.map == map then
