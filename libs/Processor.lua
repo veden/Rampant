@@ -83,11 +83,11 @@ local initialScan = ChunkUtils.initialScan
 -- but the worst case: a dense chunk reaches 4.9-9.5ms, so two per tick meant two
 -- of those could land together. One per tick bounds a tick to a single chunk.
 local SCAN_PER_TICK = 1
--- Load flush: while the first-load backlog is draining, scan a bounded larger
--- slice (32/tick ~ 1ms average) instead of trickling one chunk per tick, which
--- would leave the map half-blind for ~170s. The flush stays on until the queue is
--- empty, then the rate falls back to 1/tick.
-local FLUSH_SCAN_PER_TICK = 32
+-- Load flush: on the FIRST load of a map (prepMap queues every generated chunk
+-- with flush set) the whole backlog is scanned in one call, so the game reaches a
+-- consistent state immediately instead of being half-blind for minutes. After
+-- that the rate is 1/tick. The cap only guards against a pathological queue.
+local FLUSH_SCAN_PER_TICK = 200000
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
