@@ -567,6 +567,13 @@ function Processor.processPendingChunks(tick, flush)
             local chunk = timedInitialScan(oldChunk, map, tick)
             if (chunk == -1) then
                 removeChunkFromMap(map, oldChunk)
+            elseif (chunk == -2) then
+                -- Scan hit its per-tick entity budget: resume this chunk next tick.
+                MapUtils.queueGeneratedChunk({
+                    surface = map.surface,
+                    tick = tick + 1,
+                    area = { left_top = { x = x, y = y } },
+                })
             end
         else
             local initialChunk = createChunk(map, x, y)
@@ -574,6 +581,12 @@ function Processor.processPendingChunks(tick, flush)
             local chunk = timedInitialScan(initialChunk, map, tick)
             if (chunk == -1) then
                 map[x][y] = nil
+            elseif (chunk == -2) then
+                MapUtils.queueGeneratedChunk({
+                    surface = map.surface,
+                    tick = tick + 1,
+                    area = { left_top = { x = x, y = y } },
+                })
             end
         end
 

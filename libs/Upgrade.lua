@@ -187,7 +187,17 @@ local function addCommandSet()
         "artillery-turret", "reactor", "rocket-silo",
     }
     local scanQueryArea = { {0,0}, {0,0} }
-    Universe.chunkScanQuery = { area = scanQueryArea, type = scanTypes }
+    -- Two variants: units are only needed for the load-time purge, and a dense
+    -- chunk can hold hundreds of them, which is what made a single query cost
+    -- 8.5ms. limit bounds the returned array; a query that hits it is subdivided.
+    local scanTypesNoUnits = {}
+    for _, t in ipairs(scanTypes) do
+        if t ~= "unit" then scanTypesNoUnits[#scanTypesNoUnits + 1] = t end
+    end
+    local SCAN_QUERY_LIMIT = 64
+    Universe.chunkScanQuery = { area = scanQueryArea, type = scanTypesNoUnits, limit = SCAN_QUERY_LIMIT }
+    Universe.chunkScanQueryUnits = { area = scanQueryArea, type = scanTypes, limit = SCAN_QUERY_LIMIT }
+    Universe.chunkScanQueryLimit = SCAN_QUERY_LIMIT
 
     -- type -> player pheromone weight, mirroring the four level queries above.
     local playerWeight = {}
