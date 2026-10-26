@@ -94,15 +94,22 @@ local function heapPop(heap)
     return OUT
 end
 
+-- Normalise options IN PLACE when a table is supplied. The solver is called
+-- many times per tick with the same per-field options, and returning a fresh
+-- defaults table each call was 4KB/tick of garbage from the removal path alone.
+-- maxWork is per-call, so callers set it before each call.
 local function options(opts)
-    opts = opts or {}
-    return {
-        decay = opts.decay or DEFAULT_DECAY,
-        eps = opts.eps or DEFAULT_EPS,
-        rating = opts.rating or DEFAULT_RATING,
-        maxRadius = opts.maxRadius,
-        maxWork = opts.maxWork,
-    }
+    if not opts then
+        return {
+            decay = DEFAULT_DECAY,
+            eps = DEFAULT_EPS,
+            rating = DEFAULT_RATING,
+        }
+    end
+    if opts.decay == nil then opts.decay = DEFAULT_DECAY end
+    if opts.eps == nil then opts.eps = DEFAULT_EPS end
+    if opts.rating == nil then opts.rating = DEFAULT_RATING end
+    return opts
 end
 
 -- Solve a set of sources to convergence.

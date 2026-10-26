@@ -220,6 +220,13 @@ local function popScratch()
     ScratchDepth = ScratchDepth - 1
 end
 
+local function allocBump(name, kb)
+    local a = Universe.allocProfile
+    if a then
+        a[name] = (a[name] or 0) + kb * 1024
+    end
+end
+
 local function takeSourceChange(frame, chunk, oldValue, newValue)
     frame.count = frame.count + 1
     local entry = frame.sources[frame.count]
@@ -463,7 +470,11 @@ function Runtime.process(fieldType, budget, opts, workLimit)
 
     local fType = fieldType
     local fOpts = fieldOpts(fType, opts)
+    local kbSolve = Universe.allocProfile and collectgarbage("count") or 0
     local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
+    if Universe.allocProfile then
+        allocBump("sf.ensureSolved", collectgarbage("count") - kbSolve)
+    end
     if not SolvedFields[Runtime.fieldKey(fType)] then
         -- Source list still being built; keep the queue so nothing is lost.
         for i = 1, frame.count do
@@ -484,7 +495,11 @@ function Runtime.process(fieldType, budget, opts, workLimit)
             local oldValue = sourceChange.oldValue
             local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
             if oldValue and newValue < oldValue then
+                local kbRem = Universe.allocProfile and collectgarbage("count") or 0
                 Runtime.removeSource(sourceChange.chunk, fType, oldValue, fOpts)
+                if Universe.allocProfile then
+                    allocBump("sf.removeSource", collectgarbage("count") - kbRem)
+                end
                 removed = true
                 if newValue > 0 then
                     local inc = takeIncreaseItem(frame)
@@ -509,7 +524,11 @@ function Runtime.process(fieldType, budget, opts, workLimit)
         -- field's nest staying 0 in pheromone-dynamics).
         local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
         if #increases > 0 or (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
+            local kbBefore = Universe.allocProfile and collectgarbage("count") or 0
             workUsed = workUsed + (Runtime.propagateIncreases(increases, fType, fOpts, removed, workLimit) or 0)
+            if Universe.allocProfile then
+                allocBump("sf.propagate", collectgarbage("count") - kbBefore)
+            end
         end
     end
 
@@ -734,6 +753,10 @@ function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
         Runtime.neighborOf, opts)
 end
 
+-- Scratch tables for the removal path (see removeSource).
+local REMOVAL_SOURCE = { id = 0, gen = 0 }
+local REMOVAL_OPTS = { maxWork = 0 }
+
 function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
@@ -750,22 +773,30 @@ function Runtime.removeSource(chunk, fieldType, oldValue, opts)
         heaps = {}
         Universe.sourceVersionedRemoval = heaps
     end
-    local pending = heaps[key]
-    local source
-    if not pending then
-        source = { id = chunk.id, gen = oldValue or 0 }
-    end
-    local removalOpts = opts or {}
-    removalOpts.maxWork = allowance
-    local work, heap = Solver.removeSource(
-        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
-        Runtime.neighborOf, removalOpts, pending)
-    Universe.solveWorkLeft = allowance - (work or 0)
-    if heap and #heap > 0 then
+    -- The heap and the options table are reused per field. Allocating them per
+    -- call was 6.6KB/tick in steady state (77% of the drain's allocation):
+    -- removals happen far more often than fields do.
+    local heap = heaps[key]
+    if not heap then
+        heap = {}
         heaps[key] = heap
-    else
-        heaps[key] = nil
     end
+    local hasPending = #heap > 0
+    local source
+    if not hasPending then
+        source = REMOVAL_SOURCE
+        source.id = chunk.id
+        source.gen = oldValue or 0
+    end
+    -- Pass the field's own options through (decay/eps/rating/maxRadius differ per
+    -- field); options() fills defaults in place, so only maxWork changes here.
+    local removalOpts = opts or REMOVAL_OPTS
+    removalOpts.maxWork = allowance
+    local work, leftover = Solver.removeSource(
+        source, field, FieldTopSource[key], FieldSecond[key], FieldSecondSource[key],
+        Runtime.neighborOf, removalOpts, heap)
+    Universe.solveWorkLeft = allowance - (work or 0)
+    heaps[key] = leftover or heap
     return work
 end
 
