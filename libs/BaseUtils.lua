@@ -575,23 +575,33 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         return -- already rolled this wave
     end
 
-    -- One roll per structure per wave: it decides how far this structure gets,
-    -- and it may decide "not at all". That is what leaves nests at different
-    -- tiers instead of every one converging on the base version.
-    local rolledTier = base.upgradeVersion
-    if (base.upgradeVersion - currentTier) > 1 then
+    -- The roll is a STEP from the structure's own tier, capped by the base tier,
+    -- not an absolute target: +0..+3 so a tier-1 nest reaches at most tier 4 in
+    -- one wave instead of jumping straight to the cap. A vanilla structure (tier
+    -- 0) always takes at least +1 so it gains a rampant identity.
+    local gap = base.upgradeVersion - currentTier
+    local rolledTier = currentTier
+    if gap > 0 then
         local h = (mFloor(position.x) * 73856093 + mFloor(position.y) * 19349663
             + wave * 2654435761) % 1000
         local r = h / 1000
-        if r < 0.40 then
-            rolledTier = base.upgradeVersion
+        local step
+        if r < 0.10 then
+            step = 0
+        elseif r < 0.40 then
+            step = 1
         elseif r < 0.70 then
-            rolledTier = base.upgradeVersion - 1
-        elseif r < 0.90 then
-            rolledTier = base.upgradeVersion - 2
+            step = 2
         else
-            rolledTier = base.upgradeVersion - 3
+            step = 3
         end
+        if currentTier == 0 and step < 1 then
+            step = 1
+        end
+        if step > gap then
+            step = gap
+        end
+        rolledTier = currentTier + step
     end
     if unitNumber then
         base.structureAttempted[unitNumber] = wave
