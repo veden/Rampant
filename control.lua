@@ -270,6 +270,20 @@ end
 
 local function onChunkGenerated(event)
     Metrics.inc("event.onChunkGenerated")
+    -- on_chunk_generated carries the surface object, not a surface_index.
+    local surface = event.surface
+    if surface and Universe.releasedSurfaces and Universe.releasedSurfaces[surface.index] then
+        -- This surface was released for having no enemies. Do not re-acquire it
+        -- for a chunk that has none: one cheap filtered count over the new chunk
+        -- decides, and a surface that keeps being built on stays untracked until
+        -- something enemy-force appears.
+        local area = event.area
+        if surface.count_entities_filtered({
+                area = area, force = "enemy", limit = 1 }) == 0 then
+            return
+        end
+        prepMap(surface)
+    end
     -- queue generated chunk for delayed processing, queuing is required because
     -- some mods (RSO) mess with chunk as they are generated, which messes up the
     -- scoring.
@@ -1021,7 +1035,15 @@ local function onForceMerged(event)
 end
 
 local function onSurfaceCreated(event)
-    prepMap(game.surfaces[event.surface_index])
+    local surface = game.surfaces[event.surface_index]
+    if surface then
+        Universe.releasedSurfaces = Universe.releasedSurfaces or {}
+        Universe.releasedSurfaces[surface.index] = true
+        -- A new surface is only worth tracking once it has an enemy; a chunk
+        -- generated on it will probe for one (see onChunkGenerated).
+        prepMap(surface)
+        MapUtils.releaseSurface(Universe.maps[surface.index])
+    end
 end
 
 local function onSurfaceDeleted(event)
@@ -1135,6 +1157,9 @@ script.on_event(defines.events.on_tick,
                     local tick = gameRef.tick
                     timed(tick, rangeSample, "overlay", Observability.updateVisualizers, tick)
                     timed(tick, rangeSample, "eventFlush", Telemetry.maybeFlush, tick)
+                    if (tick % 60) == 0 then
+                        timed(tick, rangeSample, "surfaceSweep", MapUtils.sweepIdleSurfaces, tick)
+                    end
 
                     local pick = tick % 3  -- Spread work across ticks (0, 1, 2)
                     -- Per-range benchmark sample: every RANGE_TICKS ticks, log one
@@ -1616,6 +1641,38 @@ remote.add_interface("Rampant", {
                 parts[#parts + 1] = k .. "=" .. tostring(count(v))
             end
         end
+        -- Per-field entry counts: the four source-versioned tables are keyed by
+        -- chunk id, and knowing how many entries each FIELD holds is what says
+        -- whether the radii or the cleanup are the lever.
+        local perField = {}
+        for _, name in ipairs({ "sourceVersionedFields", "sourceVersionedTop",
+            "sourceVersionedSecond", "sourceVersionedSecondSource",
+            "sourceVersionedFrontier" }) do
+            local t = storage.universe[name]
+            if type(t) == "table" then
+                local row = {}
+                for fieldKey, fieldTable in pairs(t) do
+                    if type(fieldTable) == "table" then
+                        row[#row + 1] = fieldKey .. ":" .. tostring(count(fieldTable))
+                    end
+                end
+                table.sort(row)
+                perField[#perField + 1] = name:gsub("sourceVersioned", "sv") ..
+                    "{" .. table.concat(row, ",") .. "}"
+            end
+        end
+        parts[#parts + 1] = table.concat(perField, " ")
+        -- Source census: a field with no entries is a field with no sources,
+        -- which is either correct or a drift bug. Count the generators.
+        local playerGen, baseGen, resourceGen, enemyGen = 0, 0, 0, 0
+        for _, chunk in pairs(storage.universe.chunkById) do
+            if (chunk.playerBaseGenerator or 0) > 0 then playerGen = playerGen + 1 end
+            if (chunk.playerGenerator or 0) > 0 then baseGen = baseGen + 1 end
+            if (chunk.resourceGenerator or 0) > 0 then resourceGen = resourceGen + 1 end
+            if (chunk.enemyGenerator or 0) > 0 then enemyGen = enemyGen + 1 end
+        end
+        parts[#parts + 1] = "srcChunks{playerBase=" .. playerGen .. ",player=" .. baseGen ..
+            ",resource=" .. resourceGen .. ",enemy=" .. enemyGen .. "}"
         return table.concat(parts, " ")
     end,
     -- Switch the structured event stream on/off for this session without a

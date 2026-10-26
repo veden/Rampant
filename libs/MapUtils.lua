@@ -221,6 +221,9 @@ function MapUtils.prepMap(surface)
     }
 
     Universe.maps[map.id] = map
+    if Universe.releasedSurfaces then
+        Universe.releasedSurfaces[map.id] = nil
+    end
     local tick = game.tick
 
     -- queue all current chunks that wont be generated during play
@@ -295,6 +298,139 @@ function MapUtils.removeChunkFromMap(map, chunk)
     if Universe.processMigrationIterator == chunkId then
         Universe.processMigrationIterator = nil
     end
+
+    -- Field metadata is keyed by chunk id and nothing used to clear it here, so
+    -- removing a chunk (or releasing a whole surface) traded chunk records for
+    -- orphaned field entries - four tables per field plus the frontier, which is
+    -- the larger half of the per-chunk cost.
+    local fields = Universe.sourceVersionedFields
+    if fields then
+        for key, values in pairs(fields) do
+            values[chunkId] = nil
+            local top = Universe.sourceVersionedTop[key]
+            if top then top[chunkId] = nil end
+            local second = Universe.sourceVersionedSecond[key]
+            if second then second[chunkId] = nil end
+            local secondSource = Universe.sourceVersionedSecondSource[key]
+            if secondSource then secondSource[chunkId] = nil end
+            local frontier = Universe.sourceVersionedFrontier[key]
+            if frontier then frontier[chunkId] = nil end
+        end
+    end
+    if Universe.deathGeneratorChunks then
+        Universe.deathGeneratorChunks[chunkId] = nil
+    end
+    -- Pending upgrades referencing this chunk: the entry's entity is about to be
+    -- invalidated, and an orphan would sit in the queue until it was processed.
+    if Universe.pendingUpgrades then
+        for id, entry in pairs(Universe.pendingUpgrades) do
+            if entry.chunkId == chunkId then
+                Universe.pendingUpgrades[id] = nil
+                Universe.pendingUpgradesLength = (Universe.pendingUpgradesLength or 1) - 1
+            end
+        end
+    end
+end
+
+--- Release an entire surface: every chunk through removeChunkFromMap, its bases,
+--- its hives, then the map table itself. This is what an idle-surface sweep and
+--- on_surface_deleted call; without it a surface that stops having enemies keeps
+--- its chunk records and field entries forever.
+-- Any enemy activity on a surface resets its quiet timer; the sweep releases a
+-- surface only after IDLE_SURFACE_TICKS of silence AND an empty registry AND a
+-- confirming entity query.
+local IDLE_SURFACE_TICKS = 5 * 60 * 60
+
+function MapUtils.touchSurface(map)
+    if map then
+        map.lastEnemyTick = game.tick
+    end
+end
+
+--- Cheap gate first (our own registries), expensive confirmation last.
+--- Returns true when the surface was released.
+local function surfaceHasEnemies(map)
+    local chunkToNests = Universe.chunkToNests
+    if chunkToNests then
+        for _, chunk in pairs(chunkToNests) do
+            if chunk.map == map then return true end
+        end
+    end
+    for _, reg in ipairs({ Universe.chunkToHives, Universe.chunkToUtilities }) do
+        if reg then
+            for _, chunk in pairs(reg) do
+                if chunk.map == map then return true end
+            end
+        end
+    end
+    local squads = Universe.groupNumberToSquad
+    if squads then
+        for _, squad in pairs(squads) do
+            if squad.map == map then return true end
+        end
+    end
+    return false
+end
+
+function MapUtils.sweepIdleSurfaces(tick)
+    local maps = Universe.maps
+    if not maps then return end
+    local ids = {}
+    for id in pairs(maps) do ids[#ids + 1] = id end
+    if #ids == 0 then return end
+    Universe.surfaceSweepIndex = (Universe.surfaceSweepIndex or 0) + 1
+    local id = ids[(Universe.surfaceSweepIndex % #ids) + 1]
+    local map = maps[id]
+    if not map or not map.surface or not map.surface.valid then return end
+    if (tick - (map.lastEnemyTick or 0)) < IDLE_SURFACE_TICKS then return end
+    if surfaceHasEnemies(map) then
+        map.lastEnemyTick = tick
+        return
+    end
+    -- Confirmation: one query, only for a surface that is already silent and has
+    -- an empty registry. This is the only expensive step and it is rare.
+    if map.surface.count_entities_filtered({ force = "enemy", limit = 1 }) == 0 then
+        MapUtils.releaseSurface(map)
+    else
+        map.lastEnemyTick = tick
+    end
+end
+
+function MapUtils.releaseSurface(map)
+    if not map then return 0 end
+    local released = 0
+    if map.chunks then
+        local chunkList = {}
+        for _, chunk in pairs(map.chunks) do
+            chunkList[#chunkList + 1] = chunk
+        end
+        for i = 1, #chunkList do
+            MapUtils.removeChunkFromMap(map, chunkList[i])
+            released = released + 1
+        end
+        map.chunks = {}
+    end
+    if Universe.bases then
+        for id, base in pairs(Universe.bases) do
+            if base.map == map then
+                Universe.bases[id] = nil
+                Universe.baseCount = (Universe.baseCount or 1) - 1
+            end
+        end
+    end
+    if Universe.hives then
+        for unitNumber, hive in pairs(Universe.hives) do
+            if hive.map == map then
+                Universe.hives[unitNumber] = nil
+                Universe.hiveData[unitNumber] = nil
+                if Universe.activeHives then Universe.activeHives[unitNumber] = nil end
+            end
+        end
+    end
+    Universe.maps[map.id] = nil
+    Universe.releasedSurfaces = Universe.releasedSurfaces or {}
+    Universe.releasedSurfaces[map.id] = true
+    return released
 end
 
 --[[

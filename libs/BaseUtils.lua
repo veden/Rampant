@@ -672,6 +672,8 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         ["delayTLL"] = timeDelay,
         ["hive"] = Universe.hives[unitNumber] or Universe.hiveData[unitNumber],
         ["base"] = base,
+        ["chunkId"] = (MapUtils.getChunkByPosition(map, position) ~= -1)
+            and MapUtils.getChunkByPosition(map, position).id or nil,
         ["oldUnitNumber"] = unitNumber,
         ["state"] = 1
     }

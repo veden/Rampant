@@ -585,6 +585,7 @@ end
 
 function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
     if not entity or not entity.valid then return end
+    if base and base.map then MapUtils.touchSurface(base.map) end
     local name = entity.name
     local hiveType = BUILDING_HIVE_TYPE_LOOKUP[name]
     if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] registerEnemyBaseStructure: " .. name .. " hiveType=" .. tostring(hiveType) .. " base=" .. (base.id or "?") .. " skipCount=" .. tostring(skipCount)) end
