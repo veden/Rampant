@@ -103,6 +103,9 @@ function MapUtils.chunkKeyToXY(key)
 end
 
 function MapUtils.getChunkByXY(map, x, y)
+    -- A nil map (surface not tracked, or released for having no enemies) is a
+    -- miss, not an error: callers already handle -1.
+    if not map then return -1 end
     local chunks = map.chunks
     if not chunks then return -1 end
     return chunks[MapUtils.chunkKeyFromPosition(x, y)] or -1
@@ -124,6 +127,7 @@ function MapUtils.getChunkById(chunkId, universe)
 end
 
 function MapUtils.getChunkByPosition(map, position)
+    if not map then return -1 end
     local chunks = map.chunks
     if not chunks then return -1 end
     return chunks[MapUtils.chunkKeyFromPosition(position.x, position.y)] or -1

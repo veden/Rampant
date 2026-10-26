@@ -728,6 +728,7 @@ local function timed(tick, rangeSample, name, fn, a, b)
         if b ~= nil then return fn(a, b) elseif a ~= nil then return fn(a) else return fn() end
     end
     local profiler = helpers.create_profiler()
+    local kbBefore = Universe.allocProfile and collectgarbage("count") or 0
     -- Call with only the arguments that were supplied: wrapping a zero-argument
     -- function (helpers.recv_udp, ensureStorage) with fn(a, b) passes two nils
     -- and the engine rejects it.
@@ -737,6 +738,9 @@ local function timed(tick, rangeSample, name, fn, a, b)
         fn(a)
     else
         fn()
+    end
+    if Universe.allocProfile then
+        Metrics.allocAdd(name, (collectgarbage("count") - kbBefore) * 1024)
     end
     log({"", "[SUB] tick=", tick, " name=", name, " ", profiler})
 end
@@ -1811,6 +1815,61 @@ remote.add_interface("Rampant", {
     -- on: the diagnostic for "how long does the first-load backlog actually take".
     -- Compare the cost of COUNTING entities in a chunk with the cost of
     -- RETRIEVING them: counts do not instantiate LuaEntity objects, arrays do.
+    -- Allocation probe in the MOD's Lua state: stop the collector, note the heap
+    -- and the tick, then read again later. Delta / ticks = bytes allocated per
+    -- tick, which is what sets how often a collection cycle runs.
+    -- Allocation profile by subsystem: stop the collector, accumulate the heap
+    -- delta around each timed subsystem, then dump. Bytes are per window; divide
+    -- by allocProfileTicks() for bytes/tick.
+    allocProfile = function(on)
+        if on then
+            collectgarbage("collect")
+            collectgarbage("stop")
+            storage.universe.allocProfile = { ticks = game.tick }
+            storage.universe.diagTicks = 200000
+        else
+            storage.universe.allocProfile = nil
+            collectgarbage("restart")
+        end
+        return on and true or false
+    end,
+    allocProfileDump = function()
+        local a = storage.universe.allocProfile
+        if not a then return "off" end
+        local ticks = math.max(game.tick - (a.ticks or game.tick), 1)
+        local rows = {}
+        for k, v in pairs(a) do
+            if k ~= "ticks" then
+                rows[#rows + 1] = { k, v }
+            end
+        end
+        table.sort(rows, function(x, y) return x[2] > y[2] end)
+        local parts = { "ticks=" .. ticks }
+        for i = 1, math.min(10, #rows) do
+            parts[#parts + 1] = rows[i][1] .. "=" ..
+                string.format("%.0fB/t", rows[i][2] / ticks)
+        end
+        return table.concat(parts, " ")
+    end,
+    allocMark = function()
+        collectgarbage("collect")
+        collectgarbage("stop")
+        storage._allocKB = collectgarbage("count")
+        storage._allocMarkKB = storage._allocKB
+        storage._allocTick = game.tick
+        return true
+    end,
+    allocRead = function()
+        if not storage._allocKB then return "no mark" end
+        local kb = collectgarbage("count")
+        local ticks = game.tick - storage._allocTick
+        local bytes = (kb - storage._allocKB) * 1024
+        collectgarbage("restart")
+        local perTick = bytes / math.max(ticks, 1)
+        storage._allocKB = nil
+        return string.format("ticks=%d deltaKB=%.0f bytesPerTick=%.0f",
+            ticks, (kb - (storage._allocMarkKB or kb)), perTick)
+    end,
     gcControl = function(on)
         collectgarbage(on and "restart" or "stop")
         log({"", "[GC] ", (on and "running" or "stopped"), " at tick=", game.tick})

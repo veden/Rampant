@@ -91,6 +91,17 @@ function Metrics.reset()
 end
 
 --- Increment a named counter.
+-- Allocation accounting: bytes attributed to a named subsystem while the
+-- allocation profile is on. The collector must be stopped for this to mean
+-- anything (see the allocProfile remote), otherwise a cycle landing inside the
+-- call is counted as allocation.
+function Metrics.allocAdd(name, bytes)
+    local a = Universe.allocProfile
+    if not a then return end
+    a[name] = (a[name] or 0) + bytes
+    a.ticks = (a.ticks or 0)
+end
+
 function Metrics.inc(name, amount)
     if not active() then return end
     local c = Universe.metrics.counters
