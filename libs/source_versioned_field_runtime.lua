@@ -571,8 +571,13 @@ local EMPTY_IDS = {}
 function Runtime.neighborOf(chunkId)
     local chunk = Universe.chunkById[chunkId]
     if not chunk then return EMPTY_IDS end
-    local ids = chunk.sourceVersionedNeighborIds
-    if ids then return ids end
+    -- Runtime switch so the cache's total cost (fetch vs memory + GC) can be A/B'd
+    -- in one session: defaults on, set Universe.neighborCacheEnabled = false.
+    local cacheEnabled = Universe.neighborCacheEnabled ~= false
+    if cacheEnabled then
+        local ids = chunk.sourceVersionedNeighborIds
+        if ids then return ids end
+    end
     local map = chunk.map
     local chunks = map and map.chunks
     if not chunks then return EMPTY_IDS end
@@ -597,7 +602,9 @@ function Runtime.neighborOf(chunkId)
     if neighbor then n = n + 1; ids[n] = neighbor.id end
     neighbor = chunks[right + 1]
     if neighbor then n = n + 1; ids[n] = neighbor.id end
-    chunk.sourceVersionedNeighborIds = ids
+    if cacheEnabled then
+        chunk.sourceVersionedNeighborIds = ids
+    end
     return ids
 end
 

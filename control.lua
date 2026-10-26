@@ -1629,7 +1629,42 @@ remote.add_interface("Rampant", {
     -- the Lua heap and the shallow size of every storage.universe key, so the
     -- holder of a large heap can be identified without telemetry.
     heapStats = function()
+        -- How many full collections fit in a second: gives ms per mark without a
+        -- parseable profiler string.
+        heapStatsCollectsPerSec = 0
+        if os and os.time then
+            local t0 = os.time()
+            local n = 0
+            while os.time() == t0 do
+                collectgarbage("collect")
+                n = n + 1
+            end
+            heapStatsCollectsPerSec = n
+        end
+        -- Measure the neighbour-id cache: live heap with and without it, plus how
+        -- long a full mark takes. Collect FIRST, so the delta is the cache and not
+        -- accumulated garbage. os.clock is not available in Factorio's Lua, so the
+        -- mark is timed with a profiler.
+        local function profilerMs(fn)
+            local p = helpers.create_profiler()
+            fn()
+            local raw = tostring(p)
+            local ms = tonumber(raw:match("([%d%.]+)%s*ms"))
+            return ms or 0
+        end
         collectgarbage("collect")
+        local liveWithCacheKB = collectgarbage("count")
+        local collectMs = profilerMs(function() collectgarbage("collect") end)
+        local cachedChunks = 0
+        for _, chunk in pairs(storage.universe.chunkById) do
+            if chunk.sourceVersionedNeighborIds then
+                cachedChunks = cachedChunks + 1
+                chunk.sourceVersionedNeighborIds = nil
+            end
+        end
+        collectgarbage("collect")
+        local liveWithoutKB = collectgarbage("count")
+        local cacheKB = liveWithCacheKB - liveWithoutKB
         local function count(t)
             local n = 0
             if type(t) == "table" then for _ in pairs(t) do n = n + 1 end end
@@ -1673,10 +1708,21 @@ remote.add_interface("Rampant", {
         end
         parts[#parts + 1] = "srcChunks{playerBase=" .. playerGen .. ",player=" .. baseGen ..
             ",resource=" .. resourceGen .. ",enemy=" .. enemyGen .. "}"
+        parts[#parts + 1] = "neighborCache{chunks=" .. cachedChunks ..
+            ",cacheKB=" .. string.format("%.0f", cacheKB) ..
+            ",liveKB=" .. string.format("%.0f", liveWithoutKB) ..
+            ",withCacheKB=" .. string.format("%.0f", liveWithCacheKB) ..
+            ",markMs=" .. string.format("%.2f", collectMs) ..
+            ",collectsPerSec=" .. tostring(heapStatsCollectsPerSec or "?") .. "}"
         return table.concat(parts, " ")
     end,
     -- Switch the structured event stream on/off for this session without a
     -- restart. Writes to script-output/rampant/events.jsonl.
+    neighborCache = function(on)
+        storage.universe.neighborCacheEnabled = on and true or false
+        log({"", "[MARK] phase=", (on and "cacheOn" or "cacheOff"), " tick=", game.tick})
+        return storage.universe.neighborCacheEnabled
+    end,
     eventTelemetry = function(on)
         return Telemetry.setEnabled(on)
     end,
