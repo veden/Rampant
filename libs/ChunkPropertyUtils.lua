@@ -147,7 +147,7 @@ end
 -- refreshed on a pick rather than relying on a chunk being queued.
 local function registerDeathGeneratorChunk(chunk)
     if Universe.deathGeneratorChunks then
-        Universe.deathGeneratorChunks[chunk.id] = chunk
+        Universe.deathGeneratorChunks[chunk.id] = true
     end
 end
 
@@ -162,7 +162,7 @@ end
 -- pointing at where the player used to be.
 local function registerPlayerGeneratorChunk(chunk)
     if Universe.playerGeneratorChunks then
-        Universe.playerGeneratorChunks[chunk.id] = chunk
+        Universe.playerGeneratorChunks[chunk.id] = true
     end
 end
 
@@ -190,7 +190,7 @@ local function registerActiveSpawner(chunk, register, activeType, tick)
 
     local base = chunk.base
     base[activeType] = base[activeType] + 1
-    Universe[register][chunkId] = chunk
+    Universe[register][chunkId] = true
 end
 
 local function unregisterActiveSpawner(chunk, register, iterator, activeType)
@@ -250,7 +250,7 @@ local function addEnemyStructure(chunk, unitNumber, ids, counts, register)
     entityIds[unitNumber] = true
     chunk[counts] = (chunk[counts] or 0) + 1
     if register then
-        Universe[register][chunkId] = chunk
+        Universe[register][chunkId] = true
     end
     return true
 end
@@ -521,10 +521,7 @@ function ChunkPropertyUtils.addVictoryGenerator(chunk, value)
     local chunkId = chunk.id
     
     if not cToV[chunkId] then
-        cToV[chunkId] = {
-            chunk = chunk,
-            v = 0
-        }
+        cToV[chunkId] = { v = 0 }
     end
     cToV[chunkId].v = cToV[chunkId].v + value
 end

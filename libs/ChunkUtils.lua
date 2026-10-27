@@ -447,9 +447,22 @@ function ChunkUtils.entityForPassScan(map, entity)
     for i=1,#overlapArray do
         local chunk = overlapArray[i]
         if (chunk ~= -1) then
-            Universe.chunkToPassScan[chunk.id] = chunk
+            Universe.chunkToPassScan[chunk.id] = true
         end
     end
+end
+
+--- Resolve a chunk id to its record, or nil when the chunk is gone. Every
+--- consumer that holds an id across calls must come through here: presence in
+--- chunkById IS validity, so there is no separate `valid` flag to consult.
+function ChunkUtils.getChunk(chunkId)
+    return MapUtils.getChunk(chunkId)
+end
+
+--- Identity check for a chunk object obtained elsewhere: it is current only when
+--- chunkById still maps its id to THIS record (guards id recycling).
+function ChunkUtils.isCurrent(chunk)
+    return MapUtils.isCurrent(chunk)
 end
 
 function ChunkUtils.createChunk(map, topX, topY)
@@ -464,7 +477,6 @@ function ChunkUtils.createChunk(map, topX, topY)
         map = map,
         -- Chunks in the grid are always valid; removal is done by
         -- removeChunkFromMap (which nils the grid slot).
-        valid = true,
     }
     -- Reverse index: id -> chunk (O(1) lookup for the solver's Executor
     -- handlers; getChunkById must never scan the grid)

@@ -265,7 +265,8 @@ function Observability.getActiveStructures(surface)
         { map = Universe.chunkToHives, type = "hive" },
     }
     for _, reg in ipairs(registries) do
-        for _, chunk in pairs(reg.map or {}) do
+        for chunkId in pairs(reg.map or {}) do
+            local chunk = MapUtils.getChunk(chunkId)
             if chunk and chunk.map == map then
                 local count = (reg.type == "nest" and chunk.nestCount)
                     or (reg.type == "turret" and chunk.turretCount)

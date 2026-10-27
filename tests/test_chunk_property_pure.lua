@@ -177,7 +177,7 @@ my_collection:add('addPlayerGenerator_registers_the_chunk_and_queues_the_source'
 
     assert(chunk.playerGenerator == Constants.PLAYER_PHEROMONE_GENERATOR_AMOUNT,
         "a deposit must set the generator, got " .. tostring(chunk.playerGenerator))
-    assert(universe.playerGeneratorChunks[7] == chunk,
+    assert(universe.playerGeneratorChunks[7] == true,
         "the chunk must be registered so its decay is driven")
     -- The kamikaze field shares the player's sources, so one deposit queues both.
     assert(#queued == 2, "the deposit must queue a player and a kamikaze change")

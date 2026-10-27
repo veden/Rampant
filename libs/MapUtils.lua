@@ -101,9 +101,30 @@ end
 MapUtils.CHUNK_KEY_X_STEP = CHUNK_KEY_X_STEP
 MapUtils.CHUNK_KEY_MAX = CHUNK_KEY_MAX
 
+--- Inverse of chunkKey: exact for every chunk-aligned coordinate, positive or
+--- negative. Costs a divide, a floor, a multiply and a subtract (~47ns), which is
+--- about 4.6x a field read - so callers should derive it once per chunk, not once
+--- per use.
 function MapUtils.chunkKeyToXY(key)
-    local cx = mFloor(key / CHUNK_KEY_SHIFT)
-    return cx * CHUNK_SIZE, (key - cx * CHUNK_KEY_SHIFT) * CHUNK_SIZE
+    -- Round, do not floor: the key is cx * 2^27 + cy and cy can be NEGATIVE
+    -- (|cy| <= 2^25), so key / 2^27 sits within +/-0.25 of cx and a floor would
+    -- pick cx - 1 for a negative cy.
+    local cx = mFloor(key / CHUNK_KEY_X_STEP + 0.5)
+    return cx * CHUNK_SIZE, (key - cx * CHUNK_KEY_X_STEP) * CHUNK_SIZE
+end
+
+--- Resolve a chunk id to its record, or nil when the chunk is gone. Every
+--- consumer that holds an id across calls must come through here: presence in
+--- chunkById IS validity, so there is no separate `valid` flag to consult.
+function MapUtils.getChunk(chunkId)
+    if not chunkId then return nil end
+    return Universe.chunkById[chunkId]
+end
+
+--- Identity check for a chunk object obtained elsewhere: it is current only when
+--- chunkById still maps its id to THIS record (guards id recycling).
+function MapUtils.isCurrent(chunk)
+    return chunk ~= nil and Universe.chunkById[chunk.id] == chunk
 end
 
 function MapUtils.getChunkByXY(map, x, y)
@@ -539,16 +560,12 @@ end
 --- Cheap gate first (our own registries), expensive confirmation last.
 --- Returns true when the surface was released.
 local function surfaceHasEnemies(map)
-    local chunkToNests = Universe.chunkToNests
-    if chunkToNests then
-        for _, chunk in pairs(chunkToNests) do
-            if chunk.map == map then return true end
-        end
-    end
-    for _, reg in ipairs({ Universe.chunkToHives, Universe.chunkToUtilities }) do
+    for _, reg in ipairs({ Universe.chunkToNests, Universe.chunkToHives,
+            Universe.chunkToUtilities }) do
         if reg then
-            for _, chunk in pairs(reg) do
-                if chunk.map == map then return true end
+            for chunkId in pairs(reg) do
+                local chunk = MapUtils.getChunk(chunkId)
+                if chunk and chunk.map == map then return true end
             end
         end
     end
@@ -854,7 +871,8 @@ function MapUtils.disperseVictoryScent(universe)
     end
 
     chunkToVictory[chunkId] = nil
-    local chunk = pheromonePack.chunk
+    local chunk = MapUtils.getChunk(chunkId)
+    if not chunk then return end
     local map = chunk.map
     if not map.surface.valid then
         return

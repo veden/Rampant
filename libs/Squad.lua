@@ -1341,7 +1341,7 @@ function Squad.rallyUnits(chunk, tick)
                     if rallyChunk.nestCount
                         and (base.unitPoints >= AI_VENGENCE_SQUAD_COST)
                     then
-                        vengenceQueue[rallyChunk.id] = rallyChunk
+                        vengenceQueue[rallyChunk.id] = true
                     end
                 end
             end

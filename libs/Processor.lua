@@ -130,6 +130,7 @@ local formVengenceSquad = Squad.formVengenceSquad
 local formVengenceSettler = Squad.formVengenceSettler
 local formSettlers = Squad.formSettlers
 
+local getChunk = ChunkUtils.getChunk
 local getChunkByPosition = MapUtils.getChunkByPosition
 local getChunkByXY = MapUtils.getChunkByXY
 
@@ -165,17 +166,18 @@ function Processor.processDeathGenerators(tick)
     local profile = Universe.allocProfile
     local kbBefore = profile and collectgarbage("count") or 0
     local n = 0
-    for id, chunk in pairs(deathChunks) do
+    for id in pairs(deathChunks) do
         if (id % DECAY_CADENCE) == phase then
-        n = n + 1
-        if chunk.valid then
-            decayDeathGenerator(chunk, tick)
-            if chunk.deathGenerator == nil then
+            n = n + 1
+            local chunk = getChunk(id)
+            if chunk then
+                decayDeathGenerator(chunk, tick)
+                if chunk.deathGenerator == nil then
+                    deathChunks[id] = nil
+                end
+            else
                 deathChunks[id] = nil
             end
-        else
-            deathChunks[id] = nil
-        end
         end
     end
     if profile then
@@ -214,8 +216,9 @@ function Processor.processPlayers(players, tick)
     -- to be. The set is one entry per player-occupied chunk.
     local playerGeneratorChunks = getPlayerGeneratorChunks()
     if playerGeneratorChunks then
-        for id, chunk in pairs(playerGeneratorChunks) do
-            if chunk.valid then
+        for id in pairs(playerGeneratorChunks) do
+            local chunk = getChunk(id)
+            if chunk then
                 decayPlayerGenerator(chunk, tick)
                 if chunk.playerGenerator == nil then
                     playerGeneratorChunks[id] = nil
@@ -293,7 +296,7 @@ function Processor.processPlayers(players, tick)
                     processNestActiveness(chunk, tick)
 
                     if vengence then
-                        Universe.vengenceQueue[chunk.id] = chunk
+                        Universe.vengenceQueue[chunk.id] = true
                     end
                 end
             end
@@ -360,10 +363,11 @@ function Processor.processNests(tick)
     local chunkId = Universe.processNestIterator
     local chunk
     if not chunkId then
-        chunkId,chunk = next(Universe.chunkToNests, nil)
+        chunkId = next(Universe.chunkToNests, nil)
     else
-        chunk = Universe.chunkToNests[chunkId]
+        chunk = getChunk(chunkId)
     end
+    if chunkId then chunk = chunk or getChunk(chunkId) end
     if not chunkId then
         Universe.processNestIterator = nil
         return
@@ -420,9 +424,10 @@ local function processSpawnersBody(iterator, chunks)
     local chunkId = Universe[iterator]
     local chunk
     if not chunkId then
-        chunkId,chunk = next(chunks, nil)
+        chunkId = next(chunks, nil)
+        chunk = getChunk(chunkId)
     else
-        chunk = chunks[chunkId]
+        chunk = getChunk(chunkId)
     end
     if not chunkId then
         Universe[iterator] = nil
@@ -853,7 +858,8 @@ end
 
 
 function Processor.processScanChunks()
-    local chunkId, chunk = next(Universe.chunkToPassScan, nil)
+    local chunkId = next(Universe.chunkToPassScan, nil)
+    local chunk = getChunk(chunkId)
     if not chunkId then
         if (next(Universe.chunkToPassScan) == nil) then
             -- this is needed as the next command remembers the max length a table has been

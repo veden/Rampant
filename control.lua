@@ -749,7 +749,7 @@ local function processSurfaceTile(map, position, chunks, tick)
     local chunk = getChunkByPosition(map, position)
 
     if (chunk ~= -1) then
-        Universe.chunkToPassScan[chunk.id] = chunk
+        Universe.chunkToPassScan[chunk.id] = true
     else
         local x,y = positionToChunkXY(position)
         local addMe = true
@@ -1059,13 +1059,13 @@ local function onSurfaceDeleted(event)
     -- Purge the chunkById reverse index for chunks of the deleted surface.
     -- IMPORTANT: the map table holds BOTH the chunk grid AND registries
     -- (map.bases, map.drainPylons). Base objects have .id too, and base ids
-    -- collide with chunk ids (both counters start at 0), so guard on
-    -- chunk.valid to only touch real chunks.
+    -- collide with chunk ids (both counters start at 0), so identify a real chunk
+    -- by identity (chunkById[id] == this record).
     local map = Universe.maps[surfaceIndex]
     if map and Universe.chunkById then
         if type(map.chunks) == "table" then
             for _, chunk in pairs(map.chunks) do
-                if chunk.valid and chunk.id then
+                if chunk.id and Universe.chunkById[chunk.id] == chunk then
                     Universe.chunkById[chunk.id] = nil
                 end
             end
