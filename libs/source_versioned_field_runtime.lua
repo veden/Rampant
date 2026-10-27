@@ -202,6 +202,9 @@ end
 -- index.
 local SourceItemFree = {}
 local SourceItemFreeCount = 0
+-- Diagnostics for the pool: a regression here (created growing every tick) is the
+-- bug that made the death generator the largest allocator in the mod.
+local SourceItemCreated = 0
 
 local function takeSourceItem(chunk, fieldType, oldValue, newValue)
     local item
@@ -217,6 +220,7 @@ local function takeSourceItem(chunk, fieldType, oldValue, newValue)
         SourceItemFreeCount = SourceItemFreeCount - 1
     else
         item = {}
+        SourceItemCreated = SourceItemCreated + 1
         if profile then profile.queueNew = profile.queueNew + 1 end
     end
     item.chunk = chunk
@@ -460,6 +464,13 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- empty queue would strand it and the field would stay partial forever
     -- (observed as the base field's nest staying 0 in pheromone-dynamics).
     local frontier = Universe.sourceVersionedFrontier[key]
+    -- A stranded removal is work even when the queue and frontier are empty: it
+    -- must be resumed BEFORE the early return below, otherwise a removal with
+    -- nothing else happening on that field is never completed (measured: the base
+    -- field held stale values until the periodic reconcile).
+    if Runtime.hasPendingRemoval(fieldType) then
+        Runtime.resumeRemoval(fieldType, fieldOpts(fieldType, opts))
+    end
     if queueEmpty and not (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
         if queue then
             queue.items = {}
@@ -507,11 +518,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
 
     local fType = fieldType
     local fOpts = fieldOpts(fType, opts)
-    -- Resume a stranded removal even when this tick queued nothing: the leftover
-    -- heap is otherwise only picked up by a later change for the same chunk.
-    if Runtime.hasPendingRemoval(fType) then
-        Runtime.resumeRemoval(fType, fOpts)
-    end
+
     local kbSolve = Universe.allocProfile and collectgarbage("count") or 0
     local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
     if Universe.allocProfile then
@@ -798,6 +805,13 @@ end
 -- Scratch tables for the removal path (see removeSource).
 local REMOVAL_SOURCE = { id = 0, gen = 0 }
 local REMOVAL_OPTS = { maxWork = 0 }
+
+--- Pool statistics, for tests and telemetry: how many queue items exist, how
+--- many are idle, and how many were ever created. A healthy steady state keeps
+--- `created` flat while `free` grows to the working set.
+function Runtime.queueItemStats()
+    return SourceItemCreated, SourceItemFreeCount
+end
 
 --- True when a removal for this field is still in progress (its heap hit the
 --- per-tick allowance). Leftover work used to be resumed only by a later source
