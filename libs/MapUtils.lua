@@ -29,6 +29,7 @@ local MapPosition
 -- imports
 
 local Constants = require("Constants")
+local Utils = require("Utils")
 local ChunkLogic = require("chunk_logic")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local MathUtils = require("MathUtils")
@@ -81,7 +82,7 @@ local TILE_TO_CHUNK = 0.03125        -- 1/32
 local CHUNK_KEY_X_STEP = 134217728   -- 2^27, one chunk in x
 local CHUNK_KEY_MAX = 2^25           -- +/-33.5M chunks keeps +/-1 from carrying
 
---- Key for chunk-aligned coordinates (chunk.x/chunk.y, or x +/- CHUNK_SIZE).
+--- Key for chunk-aligned coordinates (chunk corners, or x +/- CHUNK_SIZE).
 --- Exact, no floor: the caller guarantees alignment. This is the hot form.
 function MapUtils.chunkKey(x, y)
     return x * CHUNK_INDEX_TO_KEY + y * TILE_TO_CHUNK
@@ -101,16 +102,9 @@ end
 MapUtils.CHUNK_KEY_X_STEP = CHUNK_KEY_X_STEP
 MapUtils.CHUNK_KEY_MAX = CHUNK_KEY_MAX
 
---- Inverse of chunkKey: exact for every chunk-aligned coordinate, positive or
---- negative. Costs a divide, a floor, a multiply and a subtract (~47ns), which is
---- about 4.6x a field read - so callers should derive it once per chunk, not once
---- per use.
+--- Inverse of chunkKey (implemented in Utils so leaf modules can use it too).
 function MapUtils.chunkKeyToXY(key)
-    -- Round, do not floor: the key is cx * 2^27 + cy and cy can be NEGATIVE
-    -- (|cy| <= 2^25), so key / 2^27 sits within +/-0.25 of cx and a floor would
-    -- pick cx - 1 for a negative cy.
-    local cx = mFloor(key / CHUNK_KEY_X_STEP + 0.5)
-    return cx * CHUNK_SIZE, (key - cx * CHUNK_KEY_X_STEP) * CHUNK_SIZE
+    return Utils.chunkKeyToXY(key)
 end
 
 --- Resolve a chunk id to its record, or nil when the chunk is gone. Every
@@ -126,6 +120,15 @@ end
 function MapUtils.isCurrent(chunk)
     return chunk ~= nil and Universe.chunkById[chunk.id] == chunk
 end
+
+--- A chunk's corner coordinates, derived from its key (see Utils.chunkX/chunkY).
+--- A pair costs ~47ns, so a hot loop should call this once and keep the locals.
+function MapUtils.chunkXY(chunk)
+    return Utils.chunkKeyToXY(chunk.key)
+end
+
+MapUtils.chunkX = Utils.chunkX
+MapUtils.chunkY = Utils.chunkY
 
 function MapUtils.getChunkByXY(map, x, y)
     -- A nil map (surface not tracked, or released for having no enemies) is a
@@ -252,8 +255,8 @@ function MapUtils.queueChunks(surface, chunks, flush, tick)
                     tick = tick,
                     area = {
                         left_top = {
-                            x = chunk.x * 32,
-                            y = chunk.y * 32
+                            x = MapUtils.chunkX(chunk) * 32,
+                            y = MapUtils.chunkY(chunk) * 32
                         }
                     }
                 }
@@ -456,8 +459,8 @@ function MapUtils.recycleChunkId(id)
 end
 
 function MapUtils.removeChunkFromMap(map, chunk)
-    local x = chunk.x
-    local y = chunk.y
+    local x = MapUtils.chunkX(chunk)
+    local y = MapUtils.chunkY(chunk)
 
     local key = MapUtils.chunkKey(x, y)
     -- Do not bail out when the grid slot is already missing: the reverse index
@@ -601,6 +604,28 @@ function MapUtils.sweepIdleSurfaces(tick)
     MapUtils.releaseSurface(map)
 end
 
+--- Give every stored chunk record a key and drop the fields that are now derived.
+--- Records written by older builds carry x/y and (sometimes) dOrigin; the key is
+--- computed from them once here, after which x/y are gone for good.
+function MapUtils.migrateChunkRecords()
+    local converted, repaired = 0, 0
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        if not chunk.key then
+            if chunk.x and chunk.y then
+                chunk.key = MapUtils.chunkKey(chunk.x, chunk.y)
+                repaired = repaired + 1
+            end
+        end
+        if chunk.x ~= nil or chunk.y ~= nil or chunk.dOrigin ~= nil then
+            chunk.x = nil
+            chunk.y = nil
+            chunk.dOrigin = nil
+            converted = converted + 1
+        end
+    end
+    return converted, repaired
+end
+
 --- Drop chunk records whose surface is no longer tracked. Called on load: a
 --- released surface's chunks can outlive the map if an older build removed the
 --- map without walking the reverse index.
@@ -629,7 +654,7 @@ function MapUtils.reconcileOrphanChunks()
         elseif not map.surface or not map.surface.valid then
             orphaned = true
         else
-            local key = MapUtils.chunkKey(chunk.x, chunk.y)
+            local key = MapUtils.chunkKey(MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
             if not map.chunks or map.chunks[key] ~= chunk then
                 orphaned = true
             end
@@ -877,8 +902,8 @@ function MapUtils.disperseVictoryScent(universe)
     if not map.surface.valid then
         return
     end
-    local chunkX = chunk.x
-    local chunkY = chunk.y
+    local chunkX = MapUtils.chunkX(chunk)
+    local chunkY = MapUtils.chunkY(chunk)
     local i = 1
     for x = chunkX - VICTORY_SCENT_BOUND, chunkX + VICTORY_SCENT_BOUND, 32 do
         for y = chunkY - VICTORY_SCENT_BOUND, chunkY + VICTORY_SCENT_BOUND, 32 do

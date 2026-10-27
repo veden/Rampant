@@ -136,12 +136,39 @@ function Utils.setAreaInQuery(query, topLeftPosition, size)
     area[2][2] = topLeftPosition.y + size
 end
 
-function Utils.setAreaInQueryChunkSize(query, topLeftPosition)
+--- Takes the corner as two numbers: chunk records no longer carry x/y (they are
+--- derived from the key), and this avoids building a position table per call.
+-- Chunk key <-> corner coordinates. The key is cx * 2^27 + cy, so the inverse must
+-- ROUND (cy can be negative and moves the quotient by up to 0.25), and it works for
+-- engine LuaChunkPosition objects too, which carry x/y and no key.
+local CHUNK_KEY_X_STEP = 134217728
+local CHUNK_SIZE = Constants.CHUNK_SIZE
+local mFloor = math.floor
+
+function Utils.chunkKeyToXY(key)
+    local cx = mFloor(key / CHUNK_KEY_X_STEP + 0.5)
+    return cx * CHUNK_SIZE, (key - cx * CHUNK_KEY_X_STEP) * CHUNK_SIZE
+end
+
+function Utils.chunkX(chunk)
+    local key = chunk.key
+    if not key then return chunk.x or 0 end
+    return mFloor(key / CHUNK_KEY_X_STEP + 0.5) * CHUNK_SIZE
+end
+
+function Utils.chunkY(chunk)
+    local key = chunk.key
+    if not key then return chunk.y or 0 end
+    local cx = mFloor(key / CHUNK_KEY_X_STEP + 0.5)
+    return (key - cx * CHUNK_KEY_X_STEP) * CHUNK_SIZE
+end
+
+function Utils.setAreaInQueryChunkSize(query, x, y)
     local area = query.area
-    area[1][1] = topLeftPosition.x
-    area[1][2] = topLeftPosition.y
-    area[2][1] = topLeftPosition.x + CHUNK_SIZE
-    area[2][2] = topLeftPosition.y + CHUNK_SIZE
+    area[1][1] = x
+    area[1][2] = y
+    area[2][1] = x + CHUNK_SIZE
+    area[2][2] = y + CHUNK_SIZE
 end
 
 function Utils.setPointAreaInQuery(query, position, size)

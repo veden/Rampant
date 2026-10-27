@@ -95,14 +95,14 @@ function Observability.queryChunk(position, surface)
     local waterTiles = 0
     -- No pcall: a bug here is a real bug; fail loudly.
     local count = surface.count_tiles_filtered{
-        area = { { chunk.x, chunk.y }, { chunk.x + 31, chunk.y + 31 } },
+        area = { { MapUtils.chunkX(chunk), MapUtils.chunkY(chunk) }, { MapUtils.chunkX(chunk) + 31, MapUtils.chunkY(chunk) + 31 } },
         name = { "water", "deepwater" },
     }
     waterTiles = count
 
     return {
-        x = chunk.x,
-        y = chunk.y,
+        x = MapUtils.chunkX(chunk),
+        y = MapUtils.chunkY(chunk),
         passable = getPassable(chunk),
         waterTiles = waterTiles,
         nestCount = chunk.nestCount or 0,
@@ -275,8 +275,8 @@ function Observability.getActiveStructures(surface)
                 table.insert(structures, {
                     type = reg.type,
                     count = count,
-                    x = chunk.x,
-                    y = chunk.y,
+                    x = MapUtils.chunkX(chunk),
+                    y = MapUtils.chunkY(chunk),
                 })
             end
         end
@@ -339,12 +339,12 @@ local function drawArrows(v, field, peak)
             local chunk = MapUtils.getChunkById(chunkId, Universe)
             if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
                 -- One arrow per 2x2 chunk cell keeps the screen mostly clear.
-                local gx = mFloor(chunk.x / 32)
-                local gy = mFloor(chunk.y / 32)
+                local gx = mFloor(MapUtils.chunkX(chunk) / 32)
+                local gy = mFloor(MapUtils.chunkY(chunk) / 32)
                 if gx % 2 == 0 and gy % 2 == 0 then
                     -- getNeighborChunks(map, x, y) returns 8 slots, -1 for a
                     -- chunk that is not tracked.
-                    local neighbours = MapUtils.getNeighborChunks(chunk.map, chunk.x, chunk.y)
+                    local neighbours = MapUtils.getNeighborChunks(chunk.map, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
                     local bestId, bestValue = nil, value
                     if neighbours then
                         for i = 1, 8 do
@@ -358,10 +358,12 @@ local function drawArrows(v, field, peak)
                     if bestId then
                         local target = MapUtils.getChunkById(bestId, Universe)
                         if target then
-                            local cx, cy = chunk.x + 16, chunk.y + 16
+                            local px, py = MapUtils.chunkX(chunk), MapUtils.chunkY(chunk)
+                            local tx0, ty0 = MapUtils.chunkX(target), MapUtils.chunkY(target)
+                            local cx, cy = px + 16, py + 16
                             local tx, ty = cx, cy
-                            if target.x > chunk.x then tx = cx + 14 elseif target.x < chunk.x then tx = cx - 14 end
-                            if target.y > chunk.y then ty = cy + 14 elseif target.y < chunk.y then ty = cy - 14 end
+                            if tx0 > px then tx = cx + 14 elseif tx0 < px then tx = cx - 14 end
+                            if ty0 > py then ty = cy + 14 elseif ty0 < py then ty = cy - 14 end
                             rendering.draw_line{
                                 surface = chunk.map.surface,
                                 from = { cx, cy },
@@ -387,8 +389,8 @@ local function drawContours(v, field, peak)
                 if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid then
                     rendering.draw_rectangle{
                         surface = chunk.map.surface,
-                        left_top = { chunk.x, chunk.y },
-                        right_bottom = { chunk.x + 32, chunk.y + 32 },
+                        left_top = { MapUtils.chunkX(chunk), MapUtils.chunkY(chunk) },
+                        right_bottom = { MapUtils.chunkX(chunk) + 32, MapUtils.chunkY(chunk) + 32 },
                         color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.7 },
                         filled = false,
                         width = 2,
@@ -443,8 +445,8 @@ function Observability.updateVisualizers(tick)
                     if chunk and chunk.map and chunk.map.surface and chunk.map.surface.valid and t >= 0.05 then
                         rendering.draw_rectangle{
                             surface = chunk.map.surface,
-                            left_top = { chunk.x, chunk.y },
-                            right_bottom = { chunk.x + 32, chunk.y + 32 },
+                            left_top = { MapUtils.chunkX(chunk), MapUtils.chunkY(chunk) },
+                            right_bottom = { MapUtils.chunkX(chunk) + 32, MapUtils.chunkY(chunk) + 32 },
                             color = { r = v.color.r, g = v.color.g, b = v.color.b, a = 0.10 + 0.45 * t },
                             filled = true,
                             only_during_screenshot = false,
@@ -453,7 +455,7 @@ function Observability.updateVisualizers(tick)
                             rendering.draw_text{
                                 surface = chunk.map.surface,
                                 text = string.format("%.0f", value),
-                                target = { chunk.x + 16, chunk.y + 16 },
+                                target = { MapUtils.chunkX(chunk) + 16, MapUtils.chunkY(chunk) + 16 },
                                 color = { r = 1, g = 1, b = 1, a = 0.85 },
                                 scale = 1.1,
                                 alignment = "center",
@@ -591,7 +593,7 @@ function Observability.onUdpPacket(event)
                     -- base/enemy/resource come from the source-versioned solver;
                     -- their chunk slots are no longer written.
                     table.insert(all_chunks, {
-                        x = to_number(chunk.x), y = to_number(chunk.y),
+                        x = to_number(MapUtils.chunkX(chunk)), y = to_number(MapUtils.chunkY(chunk)),
                         b = to_number(SquadLogic.basePheromone(chunk, game.tick)),
                         p = to_number(SquadLogic.playerPheromone(chunk, game.tick)),
                         r = to_number(SquadLogic.resourcePheromone(chunk, game.tick)),

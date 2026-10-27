@@ -880,7 +880,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
     if (base.points >= MINIMUM_BUILDING_COST) then
         local distance = mMin(
             1,
-            euclideanDistancePoints(chunk.x, chunk.y, 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
+            euclideanDistancePoints(MapUtils.chunkX(chunk), MapUtils.chunkY(chunk), 0, 0) * BASE_DISTANCE_TO_EVO_INDEX
         )
         local evoIndex = mMax(distance, Universe.evolutionLevel or 0)
         local capTier = evoToTier(evoIndex, 4)
@@ -888,7 +888,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
         if version < capTier then
             local cost = (COST_LOOKUP[chunk.nestIds and "biter-spawner"] or MINIMUM_BUILDING_COST)
             if base.points >= cost then
-                BaseUtils.modifyBaseSpecialPoints(base, -cost, "Base tier research", chunk.x, chunk.y)
+                BaseUtils.modifyBaseSpecialPoints(base, -cost, "Base tier research", MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
                 local oldIdentity = base.identity
                 base.upgradeVersion = version + 1
                 base.identity = (base.factionId or 0) * Constants.IDENTITY_TIER_STRIDE + base.upgradeVersion
@@ -911,8 +911,8 @@ function BaseUtils.processBaseMutation(chunk, map, base)
 end
 
 function BaseUtils.createBase(map, chunk, tick)
-    local x = chunk.x
-    local y = chunk.y
+    local x = MapUtils.chunkX(chunk)
+    local y = MapUtils.chunkY(chunk)
     local distance = euclideanDistancePoints(x, y, 0, 0)
 
     local meanLevel = mFloor(distance * 0.005)

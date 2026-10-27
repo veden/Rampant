@@ -519,7 +519,7 @@ local function scoreNeighbors(map, chunk, neighborDirectionChunks, scoreFunction
         highest.chunk = -1
         highestPreferred = false
 
-        neighborDirectionChunks = getNeighborChunks(map, lastChunk.x, lastChunk.y)
+        neighborDirectionChunks = getNeighborChunks(map, MapUtils.chunkX(lastChunk), MapUtils.chunkY(lastChunk))
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
             if ((neighborChunk ~= -1) and (neighborChunk.id ~= lastChunk.id) and
@@ -628,8 +628,8 @@ local function settleMove(squad, tick)
         local moveChunk = searchPath[i].chunk
         if (moveChunk ~= -1) then
             distance = euclideanDistancePoints(
-                moveChunk.x + HALF_CHUNK_SIZE,
-                moveChunk.y + HALF_CHUNK_SIZE,
+                MapUtils.chunkX(moveChunk) + HALF_CHUNK_SIZE,
+                MapUtils.chunkY(moveChunk) + HALF_CHUNK_SIZE,
                 originPosition.x,
                 originPosition.y
             )
@@ -970,7 +970,7 @@ local function scoreNeighborsForRetreat(chunk, neighborDirectionChunks, scoreFun
     local nextHighestDirection
 
     if (highestChunk ~= -1) then
-        neighborDirectionChunks = getNeighborChunks(map, highestChunk.x, highestChunk.y)
+        neighborDirectionChunks = getNeighborChunks(map, MapUtils.chunkX(highestChunk), MapUtils.chunkY(highestChunk))
         for x=1,8 do
             local neighborChunk = neighborDirectionChunks[x]
 
@@ -1013,7 +1013,7 @@ local function findNearbyRetreatingSquad(map, chunk)
     if found then
         return found
     end
-    local neighbors = getNeighborChunks(map, chunk.x, chunk.y)
+    local neighbors = getNeighborChunks(map, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
     for i = 1, 8 do
         local neighbor = neighbors[i]
         if neighbor ~= -1 then
@@ -1070,13 +1070,13 @@ function Squad.retreatUnits(chunk, cause, tick, existingSquad, radius)
     local exitPath,exitDirection,
         nextExitPath,nextExitDirection  = scoreNeighborsForRetreat(chunk,
                                                                    getNeighborChunks(map,
-                                                                                     chunk.x,
-                                                                                     chunk.y),
+                                                                                     MapUtils.chunkX(chunk),
+                                                                                     MapUtils.chunkY(chunk)),
                                                                    scoreRetreatLocation,
                                                                    map)
     local position = {
-        x = chunk.x + 16,
-        y = chunk.y + 16
+        x = MapUtils.chunkX(chunk) + 16,
+        y = MapUtils.chunkY(chunk) + 16
     }
     local retreatPosition
     local surface = map.surface
@@ -1303,7 +1303,7 @@ local function scoreNeighborsForFormation(chunk, validFunction, scoreFunction, t
     local highestChunk = -1
     local highestScore = -MAGIC_MAXIMUM_NUMBER
     local highestDirection
-    local neighborChunks = getNeighborChunks(chunk.map, chunk.x, chunk.y)
+    local neighborChunks = getNeighborChunks(chunk.map, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
     for x=1,8 do
         local neighborChunk = neighborChunks[x]
         if (neighborChunk ~= -1)
@@ -1327,8 +1327,8 @@ function Squad.rallyUnits(chunk, tick)
         return
     end
     setRallyTick(chunk, tick)
-    local cX = chunk.x
-    local cY = chunk.y
+    local cX = MapUtils.chunkX(chunk)
+    local cY = MapUtils.chunkY(chunk)
     local startX, endX, stepX, startY, endY, stepY = visitPattern(tick % 4, cX, cY, RALLY_CRY_DISTANCE)
     local vengenceQueue = Universe.vengenceQueue
     local map = chunk.map
@@ -1403,8 +1403,8 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
 
     local map = chunk.map
     local surface = map.surface
-    TargetPosition.x = chunk.x + HALF_CHUNK_SIZE
-    TargetPosition.y = chunk.y + HALF_CHUNK_SIZE
+    TargetPosition.x = MapUtils.chunkX(chunk) + HALF_CHUNK_SIZE
+    TargetPosition.y = MapUtils.chunkY(chunk) + HALF_CHUNK_SIZE
 
     -- Deploy NEAR THE UNITS the formation will gather: the ungrouped units
     -- in the chunk + neighbor area, the group forms at their centroid. The
@@ -1414,8 +1414,8 @@ local function deploySquad(name, chunk, cost, vengence, attacker)
     -- deployment makes the gathering distance ~0.
     local squadPosition
     local unitArea = {
-        { chunk.x - CHUNK_SIZE, chunk.y - CHUNK_SIZE },
-        { chunk.x + 2 * CHUNK_SIZE, chunk.y + 2 * CHUNK_SIZE },
+        { MapUtils.chunkX(chunk) - CHUNK_SIZE, MapUtils.chunkY(chunk) - CHUNK_SIZE },
+        { MapUtils.chunkX(chunk) + 2 * CHUNK_SIZE, MapUtils.chunkY(chunk) + 2 * CHUNK_SIZE },
     }
     local units = surface.find_entities_filtered{
         force = "enemy",

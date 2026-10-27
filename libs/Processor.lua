@@ -99,7 +99,7 @@ local function timedInitialScan(chunk, map, tick)
     end
     local profiler = helpers.create_profiler()
     local result = initialScan(chunk, map, tick)
-    log({"", "[SCAN] tick=", tick, " chunk=", chunk.x, ",", chunk.y, " ", profiler})
+    log({"", "[SCAN] tick=", tick, " chunk=", MapUtils.chunkX(chunk), ",", MapUtils.chunkY(chunk), " ", profiler})
     return result
 end
 
@@ -258,8 +258,8 @@ function Processor.processPlayers(players, tick)
 
     local quadrant = Universe.random(4)
 
-    local pX = playerChunk.x
-    local pY = playerChunk.y
+    local pX = MapUtils.chunkX(playerChunk)
+    local pY = MapUtils.chunkY(playerChunk)
     local pXStart
     local pYStart
     local pXEnd

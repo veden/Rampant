@@ -207,8 +207,8 @@ local function scanPaths(chunk, map)
     local surface = map.surface
     local pass = CHUNK_IMPASSABLE
 
-    local x = chunk.x
-    local y = chunk.y
+    local x = MapUtils.chunkX(chunk)
+    local y = MapUtils.chunkY(chunk)
 
     local filteredEntitiesCliffQuery = Universe.spFilteredEntitiesCliffQuery
     local filteredTilesPathQuery = Universe.spFilteredTilesPathQuery
@@ -265,7 +265,7 @@ end
 
 local function scorePlayerBuildings(map, chunk)
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.spbHasPlayerStructuresQuery, chunk)
+    setAreaInQueryChunkSize(Universe.spbHasPlayerStructuresQuery, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
     if surface.count_entities_filtered(Universe.spbHasPlayerStructuresQuery) > 0 then
         return (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
             (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
@@ -312,8 +312,8 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
         MetricsG.inc("scan.chunksScanned")
     end
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, chunk)
-    setAreaInQueryChunkSize(Universe.isCountResourcesQuery, chunk)
+    setAreaInQueryChunkSize(Universe.isFilteredEntitiesEnemyStructureQuery, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
+    setAreaInQueryChunkSize(Universe.isCountResourcesQuery, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
     local pass = timedScanPhase("paths", function() return scanPaths(chunk, map) end)
     local enemyBuildings = timedScanPhase("enemyQuery", function()
         return surface.find_entities_filtered(Universe.isFilteredEntitiesEnemyStructureQuery)
@@ -365,7 +365,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         -- when DEBUG_ENTITY_EVENTS was off.
                         if Universe.DEBUG_ENTITY_EVENTS then
                             local dbgMsg = "initialScan: checking " .. #unitList
-                                .. " entities in chunk(" .. chunk.x .. "," .. chunk.y .. ")"
+                                .. " entities in chunk(" .. MapUtils.chunkX(chunk) .. "," .. MapUtils.chunkY(chunk) .. ")"
                             for i=1,#unitList do
                                 local u = unitList[i]
                                 if u.valid and u.type == "unit" then
@@ -467,12 +467,9 @@ end
 
 function ChunkUtils.createChunk(map, topX, topY)
     local chunk = {
-        x = topX,
-        y = topY,
         -- Spatial key: the chunk's position is its address, so a lookup is one
         -- hash instead of the nested map[x][y] grid (~760k fewer live nodes).
         key = MapUtils.chunkKey(topX, topY),
-        dOrigin = euclideanDistancePoints(topX, topY, 0, 0),
         id = MapUtils.newChunkId(),
         map = map,
         -- Chunks in the grid are always valid; removal is done by
@@ -494,8 +491,8 @@ function ChunkUtils.createChunk(map, topX, topY)
 end
 
 function ChunkUtils.colorChunk(chunk, surface, color, ttl)
-    local lx = math.floor(chunk.x * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
-    local ly = math.floor(chunk.y * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    local lx = math.floor(MapUtils.chunkX(chunk) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
+    local ly = math.floor(MapUtils.chunkY(chunk) * CHUNK_SIZE_DIVIDER) * CHUNK_SIZE
 
     rendering.draw_rectangle({
             color = color or {0.1, 0.3, 0.1, 0.6},

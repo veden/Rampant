@@ -455,7 +455,7 @@ local function onEnemyBaseBuild(entity, tick)
     if chunk ~= -1 then
         base = findNearbyBase(chunk)
         if not base then
-            if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("  -> creating new base at chunk(" .. chunk.x .. "," .. chunk.y .. ")") end
+            if Universe.DEBUG_ENTITY_EVENTS then dbgEntity("  -> creating new base at chunk(" .. MapUtils.chunkX(chunk) .. "," .. MapUtils.chunkY(chunk) .. ")") end
             isNewBase = true
         end
     end
@@ -469,8 +469,8 @@ local function onEnemyBaseBuild(entity, tick)
         hasMap = true,
         hasChunk = chunk ~= -1,
         chunkId = (chunk ~= -1) and chunk.id or nil,
-        chunkX = (chunk ~= -1) and chunk.x or (function() local x,y = positionToChunkXY(entity.position) return x end)(),
-        chunkY = (chunk ~= -1) and chunk.y or (function() local x,y = positionToChunkXY(entity.position) return y end)(),
+        chunkX = (chunk ~= -1) and MapUtils.chunkX(chunk) or (function() local x,y = positionToChunkXY(entity.position) return x end)(),
+        chunkY = (chunk ~= -1) and MapUtils.chunkY(chunk) or (function() local x,y = positionToChunkXY(entity.position) return y end)(),
         baseId = base and base.id or nil,
         isNewBase = isNewBase,
         newEnemies = Universe.NEW_ENEMIES,
@@ -1045,6 +1045,7 @@ local function onSurfaceCreated(event)
         Universe.releasedSurfaces = Universe.releasedSurfaces or {}
     -- Reclaim chunk records whose surface is no longer tracked (older builds
     -- removed a map without walking the reverse index).
+    MapUtils.migrateChunkRecords()
     MapUtils.reconcileOrphanChunks()
         Universe.releasedSurfaces[surface.index] = true
         -- A new surface is only worth tracking once it has an enemy; a chunk
@@ -2066,7 +2067,7 @@ remote.add_interface("Rampant", {
             if not map then
                 noMap = noMap + 1
             else
-                local key = MapUtils.chunkKey(chunk.x, chunk.y)
+                local key = MapUtils.chunkKey(MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
                 if map.chunks and map.chunks[key] == chunk then
                     inGrid = inGrid + 1
                 else

@@ -164,7 +164,7 @@ end)
 -- Test setAreaInQueryChunkSize
 my_collection:add('setAreaInQueryChunkSize', function()
     local query = { area = { { 0, 0 }, { 0, 0 } } }
-    Utils.setAreaInQueryChunkSize(query, { x = 32, y = 32 })
+    Utils.setAreaInQueryChunkSize(query, 32, 32)
     assert(query.area[1][1] == 32, "Expected area[1][1] = 32")
     assert(query.area[1][2] == 32, "Expected area[1][2] = 32")
     assert(query.area[2][1] == 64, "Expected area[2][1] = 64 (32 + 32)")

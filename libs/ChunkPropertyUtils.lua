@@ -28,6 +28,9 @@ local SourceVersionedFieldReader
 --
 
 local Constants = require("Constants")
+local Utils = require("Utils")
+local chunkX = Utils.chunkX
+local chunkY = Utils.chunkY
 local MathUtils = require("MathUtils")
 
 -- Constants
@@ -350,8 +353,8 @@ function ChunkPropertyUtils.removeChunkBase(chunk, base)
     end
 
     base.chunkCount = base.chunkCount - 1
-    base.totalX = base.totalX - chunk.x
-    base.totalY = base.totalY - chunk.y
+    base.totalX = base.totalX - chunkX(chunk)
+    base.totalY = base.totalY - chunkY(chunk)
     base.x = base.totalX / base.chunkCount
     base.y = base.totalY / base.chunkCount
     chunk.base = nil
@@ -363,8 +366,8 @@ function ChunkPropertyUtils.setChunkBase(chunk, base)
     end
 
     base.chunkCount = base.chunkCount + 1
-    base.totalX = base.totalX + chunk.x
-    base.totalY = base.totalY + chunk.y
+    base.totalX = base.totalX + chunkX(chunk)
+    base.totalY = base.totalY + chunkY(chunk)
     base.x = base.totalX / base.chunkCount
     base.y = base.totalY / base.chunkCount
     chunk.base = base
@@ -688,8 +691,8 @@ function ChunkPropertyUtils.findNearbyBase(chunk)
 
     return ChunkPropertyUtils.findNearbyBaseByPosition(
         chunk.map,
-        chunk.x,
-        chunk.y
+        chunkX(chunk),
+        chunkY(chunk)
     )
 end
 
@@ -724,11 +727,15 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
             registerActiveNest(chunk, tick)
         elseif (basePheromone > 0) then
             local getPollution = surface.get_pollution
-            if (getPollution(chunk) > 0) then
+            local x = chunkX(chunk)
+            local y = chunkY(chunk)
+            -- The record no longer carries x/y, so the corner is written into the
+            -- shared Position scratch for the engine call.
+            Position.x = x
+            Position.y = y
+            if (getPollution(Position) > 0) then
                 registerActiveNest(chunk, tick)
             else
-                local x = chunk.x
-                local y = chunk.y
                 local pollutionThreshold = Universe.pollutionDiffuseMinimum
                 Position.x = x + 32
                 Position.y = y

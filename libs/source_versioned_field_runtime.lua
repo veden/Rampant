@@ -743,7 +743,12 @@ function Runtime.neighborOf(chunkId)
     local map = chunk.map
     local chunks = map and map.chunks
     if not chunks then return EMPTY_IDS end
-    local key = chunk.key or MapUtils.chunkKey(chunk.x, chunk.y)
+    local key = chunk.key
+    if not key then
+        -- Records are key-only now; this covers a hand-built chunk (tests) or one
+        -- written by an older build before migrateChunkRecords ran.
+        key = MapUtils.chunkKey(chunk.x or 0, chunk.y or 0)
+    end
     local ids = NEIGHBOR_SCRATCH
     local n = 0
     local left = key - CHUNK_KEY_X_STEP
