@@ -1046,6 +1046,9 @@ local function onSurfaceCreated(event)
     -- Reclaim chunk records whose surface is no longer tracked (older builds
     -- removed a map without walking the reverse index).
     MapUtils.migrateChunkRecords()
+    -- Recycled ids leave holes; pack them before anything else runs so every
+    -- id-keyed table works over the live range.
+    MapUtils.compactIfSparse()
     MapUtils.reconcileOrphanChunks()
         Universe.releasedSurfaces[surface.index] = true
         -- A new surface is only worth tracking once it has an enemy; a chunk

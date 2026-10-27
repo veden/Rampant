@@ -336,7 +336,7 @@ end
 
 function Processor.processVengence()
     local vengenceQueue = Universe.vengenceQueue
-    local chunkId, chunk = next(vengenceQueue, nil)
+    local chunkId = next(vengenceQueue, nil)
     if not chunkId then
         if (next(vengenceQueue) == nil) then
             Universe.vengenceQueue = {}
@@ -345,6 +345,9 @@ function Processor.processVengence()
     end
 
     vengenceQueue[chunkId] = nil
+    -- The queue is a membership set now; resolve the record or drop a stale id.
+    local chunk = getChunk(chunkId)
+    if not chunk then return end
     local map = chunk.map
     if not map.surface.valid then
         return
