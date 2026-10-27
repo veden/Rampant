@@ -1345,7 +1345,11 @@ script.on_event(defines.events.on_tick,
                     -- in the per-tick log call. Per-tick lines are for a diagnose
                     -- window; outside one, sample every 30th tick and rely on
                     -- [RANGE] for the rest.
-                    if tickProfiler and (Universe.diagTicks or (tick % 30 == 0)) then
+                    -- Gated on telemetry being on at all: outside a diagnose window
+                    -- this used to emit a line every 30th tick unconditionally, and a
+                    -- log call with a formatted string is not free.
+                    if tickProfiler and (Universe.diagTicks or
+                        (MetricsG and MetricsG.isEnabled() and (tick % 30 == 0))) then
                         log({"", "[TICK] tick=", tick, " ", tickProfiler})
                     end
 end)

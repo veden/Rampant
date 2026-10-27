@@ -373,15 +373,21 @@ end
 function MapUtils.compactChunkIds()
     local chunkById = Universe.chunkById
     if not chunkById then return 0 end
+    -- SORTED, not pairs() order: the new id of a chunk must be identical on every
+    -- client, or multiplayer desyncs the moment a compaction runs.
+    local oldIds = {}
+    for oldId in pairs(chunkById) do
+        oldIds[#oldIds + 1] = oldId
+    end
+    table.sort(oldIds)
     local mapping = {}
     local chunks = {}
-    local nextId = 1
-    for oldId, chunk in pairs(chunkById) do
-        mapping[oldId] = nextId
-        chunks[nextId] = chunk
-        nextId = nextId + 1
+    for i = 1, #oldIds do
+        local oldId = oldIds[i]
+        mapping[oldId] = i
+        chunks[i] = chunkById[oldId]
     end
-    local count = nextId - 1
+    local count = #oldIds
 
     -- reverse index and the record's own id
     Universe.chunkById = {}
