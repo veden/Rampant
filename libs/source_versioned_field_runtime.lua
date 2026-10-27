@@ -195,6 +195,43 @@ function Runtime.fieldKey(fieldType)
     return tostring(fieldType)
 end
 
+-- Free list for source-queue items. Every decaying generator queues one change
+-- per chunk per tick (the death generator alone did this for ~83 chunks, and it
+-- was the largest remaining allocator at 3.8KB/tick). Items live from enqueue to
+-- drain, so they are recycled at drain time rather than reused from a monotonic
+-- index.
+local SourceItemFree = {}
+local SourceItemFreeCount = 0
+
+local function takeSourceItem(chunk, fieldType, oldValue, newValue)
+    local item
+    local profile = Universe.allocProfile
+    if profile then
+        profile.queueNew = (profile.queueNew or 0)
+        profile.queueHit = (profile.queueHit or 0)
+    end
+    if SourceItemFreeCount > 0 then
+        if profile then profile.queueHit = profile.queueHit + 1 end
+        item = SourceItemFree[SourceItemFreeCount]
+        SourceItemFree[SourceItemFreeCount] = nil
+        SourceItemFreeCount = SourceItemFreeCount - 1
+    else
+        item = {}
+        if profile then profile.queueNew = profile.queueNew + 1 end
+    end
+    item.chunk = chunk
+    item.fieldType = fieldType
+    item.oldValue = oldValue
+    item.newValue = newValue
+    return item
+end
+
+local function releaseSourceItem(item)
+    if not item then return end
+    SourceItemFreeCount = SourceItemFreeCount + 1
+    SourceItemFree[SourceItemFreeCount] = item
+end
+
 -- Depth-indexed scratch frames for the drain. The drain allocates a scratch table
 -- per field per tick plus one per source change and per increase; measured at
 -- 8.2KB/tick, the single largest allocator in the mod. Frames are indexed by
@@ -272,12 +309,7 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
         SourceQueues[fieldType] = queue
     end
     queue.count = queue.count + 1
-    local item = {
-        chunk = chunk,
-        fieldType = fieldType,
-        oldValue = oldValue,
-        newValue = newValue,
-    }
+    local item = takeSourceItem(chunk, fieldType, oldValue, newValue)
     queue.items[queue.count] = item
     byChunk[chunk.id] = item
     return true
@@ -470,10 +502,16 @@ function Runtime.process(fieldType, budget, opts, workLimit)
                 sourceChange.newValue = item.newValue
             end
         end
+        releaseSourceItem(item)
     end
 
     local fType = fieldType
     local fOpts = fieldOpts(fType, opts)
+    -- Resume a stranded removal even when this tick queued nothing: the leftover
+    -- heap is otherwise only picked up by a later change for the same chunk.
+    if Runtime.hasPendingRemoval(fType) then
+        Runtime.resumeRemoval(fType, fOpts)
+    end
     local kbSolve = Universe.allocProfile and collectgarbage("count") or 0
     local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
     if Universe.allocProfile then
@@ -761,6 +799,42 @@ end
 local REMOVAL_SOURCE = { id = 0, gen = 0 }
 local REMOVAL_OPTS = { maxWork = 0 }
 
+--- True when a removal for this field is still in progress (its heap hit the
+--- per-tick allowance). Leftover work used to be resumed only by a later source
+--- change for the same chunk, so a removal that ran out of budget stranded the
+--- field too high until the periodic reconcile (measured: 1,641 chunks off by up
+--- to 89% on the enemy field).
+function Runtime.hasPendingRemoval(fieldType)
+    local heaps = Universe.sourceVersionedRemoval
+    if not heaps then return false end
+    local heap = heaps[Runtime.fieldKey(fieldType)]
+    return heap ~= nil and #heap > 0
+end
+
+--- Continue a removal that hit the allowance. Same budget and the same reused
+--- heap as removeSource; `source` is nil because the heap is already seeded.
+function Runtime.resumeRemoval(fieldType, opts)
+    local key = Runtime.fieldKey(fieldType)
+    local heaps = Universe.sourceVersionedRemoval
+    local heap = heaps and heaps[key]
+    if not heap or #heap == 0 then return 0 end
+    if Universe.solveWorkTick ~= game.tick then
+        Universe.solveWorkTick = game.tick
+        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
+    end
+    local allowance = Universe.solveWorkLeft or 0
+    if allowance <= 0 then return 0 end
+    local removalOpts = REMOVAL_OPTS
+    removalOpts.maxWork = allowance
+    local work, leftover = Solver.removeSource(
+        nil, Universe.sourceVersionedFields[key],
+        FieldProvenance[key], FieldSecond[key],
+        Runtime.neighborOf, removalOpts, heap)
+    Universe.solveWorkLeft = allowance - (work or 0)
+    heaps[key] = leftover or heap
+    return work or 0
+end
+
 function Runtime.removeSource(chunk, fieldType, oldValue, opts)
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
@@ -864,6 +938,12 @@ function Runtime.verifyField(fieldType, tolerance)
     local iterations = 0
     while iterations < 2000 do
         iterations = iterations + 1
+        -- The per-tick solve allowance is already spent by the first call in this
+        -- tick, so the drain would stall and the comparison would run against a
+        -- PARTIAL field (observed as 0 / 1636 / 0 across consecutive calls).
+        -- verifyField is an oracle, not gameplay: let it spend its own budget.
+        Universe.solveWorkTick = nil
+        Universe.solveWorkLeft = 1e9
         Runtime.process(fieldType, 100000, fieldOpts(fieldType, nil))
         if Runtime.frontierDepth(fieldType) == 0 and Runtime.queueDepth(fieldType) == 0 then
             break

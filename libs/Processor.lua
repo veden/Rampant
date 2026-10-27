@@ -152,7 +152,11 @@ local next = next
 function Processor.processDeathGenerators(tick)
     local deathChunks = getDeathGeneratorChunks()
     if not deathChunks then return end
+    local profile = Universe.allocProfile
+    local kbBefore = profile and collectgarbage("count") or 0
+    local n = 0
     for id, chunk in pairs(deathChunks) do
+        n = n + 1
         if chunk.valid then
             decayDeathGenerator(chunk, tick)
             if chunk.deathGenerator == nil then
@@ -161,6 +165,12 @@ function Processor.processDeathGenerators(tick)
         else
             deathChunks[id] = nil
         end
+    end
+    if profile then
+        if MetricsG then
+            MetricsG.allocAdd("dg.chunks", (collectgarbage("count") - kbBefore) * 1024)
+        end
+        profile["dg.count"] = (profile["dg.count"] or 0) + n
     end
 end
 

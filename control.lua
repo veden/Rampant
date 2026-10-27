@@ -1882,6 +1882,8 @@ remote.add_interface("Rampant", {
             parts[#parts + 1] = rows[i][1] .. "=" ..
                 string.format("%.0fB/t", rows[i][2] / ticks)
         end
+        parts[#parts + 1] = "queueNewPerTick=" .. string.format("%.1f", (a.queueNew or 0) / ticks) ..
+            " queueHitPerTick=" .. string.format("%.1f", (a.queueHit or 0) / ticks)
         return table.concat(parts, " ")
     end,
     allocMark = function()
@@ -1932,6 +1934,107 @@ remote.add_interface("Rampant", {
     -- exercised on demand.
     -- Diagnose chunk records that are in the reverse index but not reachable
     -- from their surface's grid: says where the discrepancy actually lives.
+    -- Break the residual heap down by clearing one group at a time.
+    -- Bytes held by each chunk-keyed registry, measured one at a time.
+    -- Destructive (the tables are emptied), so run it at the end of a session.
+    -- Total bytes held by the 13 chunk-keyed registries, measured as one group.
+    registryTotal = function()
+        local names = { "chunkToNests", "chunkToUtilities", "chunkToHives",
+            "chunkToActiveNest", "chunkToActiveRaidNest", "chunkToDrained",
+            "chunkToRetreats", "chunkToRallys", "chunkToPassScan", "chunkToVictory",
+            "vengenceQueue", "deathGeneratorChunks", "playerGeneratorChunks" }
+        collectgarbage("collect")
+        local before = collectgarbage("count")
+        local entries = 0
+        for _, name in ipairs(names) do
+            local t = storage.universe[name]
+            if type(t) == "table" then
+                for _ in pairs(t) do entries = entries + 1 end
+            end
+            storage.universe[name] = {}
+        end
+        collectgarbage("collect")
+        local after = collectgarbage("count")
+        return "entries=" .. entries .. " freedKB=" .. string.format("%.0f", before - after) ..
+            " heapBeforeKB=" .. string.format("%.0f", before)
+    end,
+    registryCensus = function()
+        local names = { "chunkToNests", "chunkToUtilities", "chunkToHives",
+            "chunkToActiveNest", "chunkToActiveRaidNest", "chunkToDrained",
+            "chunkToRetreats", "chunkToRallys", "chunkToPassScan", "chunkToVictory",
+            "vengenceQueue", "deathGeneratorChunks", "playerGeneratorChunks" }
+        local out = {}
+        local total = 0
+        for _, name in ipairs(names) do
+            collectgarbage("collect")
+            local a = collectgarbage("count")
+            local count = 0
+            local t = storage.universe[name]
+            if type(t) == "table" then
+                for _ in pairs(t) do count = count + 1 end
+            end
+            storage.universe[name] = {}
+            collectgarbage("collect")
+            local b = collectgarbage("count")
+            total = total + (a - b)
+            out[#out + 1] = name:gsub("chunkTo", ""):gsub("Queue", "Q") ..
+                "=" .. count .. "e/" .. string.format("%.0f", a - b) .. "KB"
+        end
+        out[#out + 1] = "TOTAL=" .. string.format("%.0f", total) .. "KB"
+        return table.concat(out, " ")
+    end,
+    residualCensus = function()
+        local out = {}
+        local function kb() return collectgarbage("count") end
+        collectgarbage("collect")
+        local start = kb()
+        local function step(name, fn)
+            collectgarbage("collect")
+            local a = kb()
+            fn()
+            collectgarbage("collect")
+            local b = kb()
+            out[#out + 1] = name .. "=" .. string.format("%.0f", a - b)
+            return b
+        end
+        step("mapsKB", function()
+            for id in pairs(storage.universe.maps or {}) do
+                storage.universe.maps[id] = nil
+            end
+            storage.universe.maps = {}
+        end)
+        step("chunksKB", function()
+            storage.universe.chunkById = {}
+        end)
+        step("fieldsKB", function()
+            storage.universe.sourceVersionedFields = {}
+            storage.universe.sourceVersionedProvenance = {}
+            storage.universe.sourceVersionedSecond = {}
+            storage.universe.sourceVersionedFrontier = {}
+        end)
+        step("registriesKB", function()
+            for _, name in ipairs({ "chunkToNests", "chunkToUtilities", "chunkToHives",
+                "chunkToActiveNest", "chunkToActiveRaidNest", "chunkToDrained",
+                "chunkToRetreats", "chunkToRallys", "chunkToPassScan", "chunkToVictory",
+                "vengenceQueue", "deathGeneratorChunks", "playerGeneratorChunks",
+                "bases", "hives", "hiveData", "activeHives", "groupNumberToSquad",
+                "squadQueries", "gameplaySnapshot", "metrics", "pendingUpgrades",
+                "pendingChunks" }) do
+                storage.universe[name] = {}
+            end
+        end)
+        step("queriesKB", function()
+            for name in pairs(storage.universe) do
+                local v = storage.universe[name]
+                if type(v) == "table" and string.find(name, "Query", 1, true) then
+                    storage.universe[name] = {}
+                end
+            end
+        end)
+        out[#out + 1] = "leftKB=" .. string.format("%.0f", kb())
+        out[#out + 1] = "startKB=" .. string.format("%.0f", start)
+        return table.concat(out, " ")
+    end,
     chunkOrphans = function()
         local noMap, notInGrid, inGrid = 0, 0, 0
         local byMap = {}
