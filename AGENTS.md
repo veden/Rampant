@@ -80,6 +80,36 @@ When a change breaks behaviour, this stream is the thing to read: it shows the
 order of decisions and the values they were made on, which a tick average
 cannot.
 
+## Testing Against a Real Save — NEVER OPEN THE ORIGINAL
+
+A headless run that is stopped with SIGTERM **saves the map in place**
+("Saving map as <path>") and overwrites the file. SIGKILL does not. Always:
+
+- copy the save first and load only the copy (`tools/headless.sh` does this);
+- terminate with `kill -9`, never `pkill`/`kill` (SIGTERM);
+- check the original's md5 and mtime before and after a run.
+
+`tools/headless.sh <save.zip> [seconds] [rcon-port]` enforces all three and
+prints the workdir it used.
+
+## Chunk Records — key-addressed, id-referenced
+
+- A chunk record holds `key` (position encoded as one number), `id`, `map` and
+  its per-chunk state. `x`/`y` are **derived** from the key
+  (`MapUtils.chunkX`/`chunkY`, or `Utils.chunkX` in leaf modules); derive once
+  per function into locals. Never add `x`/`y` back as fields.
+- `key = cx * 2^27 + cy`, so the inverse **rounds**, not floors (cy can be
+  negative).
+- **Validity is presence in `chunkById`**. There is no `valid` flag. Anything
+  that holds a chunk across calls stores the **id** and resolves through
+  `MapUtils.getChunk(id)`; when it returns nil the chunk is gone, so drop the
+  entry. `MapUtils.isCurrent(chunk)` is the identity check for a chunk object
+  obtained elsewhere (guards id recycling).
+- Registries (`chunkToNests`, `chunkToPassScan`, `deathGeneratorChunks`, …) are
+  keyed by id and store `true`; they are membership sets, not chunk stores.
+- Ids are recycled from an aged free list and compacted before the provenance
+  packing bound, so the id space tracks live chunks, not lifetime creations.
+
 ## Linting
 
 ```bash
