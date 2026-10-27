@@ -409,6 +409,16 @@ end
 
 local tiersSet = {}
 constants.TIERS = 10
+
+-- The identity packing (IDENTITY_LOOKUP, base.identity, base.structures) is
+-- factionIndex * IDENTITY_TIER_STRIDE + tier: the tier occupies the low digit,
+-- so it must stay below the stride. TIERS is 10 and both tier settings are
+-- capped at 10, so this holds with 6x headroom; the assertion is here so a future
+-- change to TIERS or to the setting ranges fails at load instead of silently
+-- corrupting every base and structure identity.
+constants.IDENTITY_TIER_STRIDE = 64
+assert(constants.TIERS < constants.IDENTITY_TIER_STRIDE,
+    "TIERS must stay below the identity packing stride")
 local tierStart = settings.startup["rampant--tierStart"].value
 local tierEnd = settings.startup["rampant--tierEnd"].value
 
@@ -535,7 +545,7 @@ constants.FACTION_SET = {}
 -- string parsing. Built once here, where the names themselves are generated.
 constants.IDENTITY_LOOKUP = {}
 constants.FACTION_INDEX = {}
-constants.IDENTITY_TIER_MASK = 63
+constants.IDENTITY_TIER_MASK = constants.IDENTITY_TIER_STRIDE - 1
 
 local neutralTints = convertHexPairs(settings.startup["rampant--neutralTints"].value)
 constants.FACTION_SET[#constants.FACTION_SET+1] = {
@@ -1808,7 +1818,7 @@ for i=1,#constants.FACTION_SET do
                 local entry = faction.type .. "-" .. building.name .. "-v" .. v .. "-t" .. t .. "-rampant"
                 enemyAlignmentLookup[entry] = faction.type
                 constants.FACTION_INDEX[faction.type] = i
-                constants.IDENTITY_LOOKUP[entry] = i * 64 + t
+                constants.IDENTITY_LOOKUP[entry] = i * constants.IDENTITY_TIER_STRIDE + t
                 costLookup[entry] = constants.HIVE_BUILDINGS_COST[building.type]
                 buildingHiveTypeLookup[entry] = building.type
                 buildingHiveTierLookup[entry] = t

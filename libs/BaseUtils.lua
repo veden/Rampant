@@ -548,7 +548,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local factionId = Constants.FACTION_INDEX[pickedBaseAlignment] or base.factionId or 0
     local oldIdentity = base.identity
     base.factionId = factionId
-    base.identity = factionId * 64 + base.upgradeVersion
+    base.identity = factionId * Constants.IDENTITY_TIER_STRIDE + base.upgradeVersion
     if oldIdentity and oldIdentity ~= base.identity then
         base.versionCounter = (base.versionCounter or 0) + 1
         if TelemetryG and TelemetryG.isEnabled() then
@@ -578,7 +578,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     local packed = (unitNumber and base.structures and base.structures[unitNumber])
         or (Constants.IDENTITY_LOOKUP and Constants.IDENTITY_LOOKUP[entity.name])
         or 0
-    local currentTier = packed % 64
+    local currentTier = packed % Constants.IDENTITY_TIER_STRIDE
     local wave = base.versionCounter or 0
     base.structureAttempted = base.structureAttempted or {}
     if unitNumber and base.structureAttempted[unitNumber] == wave then
@@ -632,7 +632,7 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     end
     local targetFactionId = Constants.FACTION_INDEX[pickedBaseAlignment] or base.factionId or 0
     if unitNumber and base.structures then
-        base.structures[unitNumber] = targetFactionId * 64 + rolledTier
+        base.structures[unitNumber] = targetFactionId * Constants.IDENTITY_TIER_STRIDE + rolledTier
     end
 
     local name = findEntityUpgrade(pickedBaseAlignment,
@@ -891,7 +891,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
                 BaseUtils.modifyBaseSpecialPoints(base, -cost, "Base tier research", chunk.x, chunk.y)
                 local oldIdentity = base.identity
                 base.upgradeVersion = version + 1
-                base.identity = (base.factionId or 0) * 64 + base.upgradeVersion
+                base.identity = (base.factionId or 0) * Constants.IDENTITY_TIER_STRIDE + base.upgradeVersion
                 base.versionCounter = (base.versionCounter or 0) + 1
                 if TelemetryG and TelemetryG.isEnabled() then
                     TelemetryG.emit("base.version", {
@@ -936,7 +936,8 @@ function BaseUtils.createBase(map, chunk, tick)
                                                         Universe.random)
     local distanceThreshold = (baseLevel * BASE_DISTANCE_LEVEL_BONUS) + baseDistanceThreshold
 
-    -- The base owns a versioned identity: factionId * 64 + tier target. Every
+    -- The base owns a versioned identity: factionId * IDENTITY_TIER_STRIDE + tier
+    -- target (tiers are capped at 10 and asserted below the stride in Constants). Every
     -- structure it owns stores the identity it was built with, so "is this a
     -- candidate" is an integer comparison and each structure upgrades at most
     -- once per identity change.
@@ -949,7 +950,7 @@ function BaseUtils.createBase(map, chunk, tick)
         y = y,
         factionId = baseFactionId,
         upgradeVersion = baseTier,
-        identity = baseFactionId * 64 + baseTier,
+        identity = baseFactionId * Constants.IDENTITY_TIER_STRIDE + baseTier,
         versionCounter = 0,
         structures = {},
         structureAttempted = {},
