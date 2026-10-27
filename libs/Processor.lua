@@ -87,10 +87,11 @@ local SCAN_PER_TICK = 1
 -- with flush set) the whole backlog is scanned in one call, so the game reaches a
 -- consistent state immediately instead of being half-blind for minutes. After
 -- that the rate is 1/tick. The cap only guards against a pathological queue.
--- Bounded: the first-load flush used to drain the entire backlog in one call,
--- which measured 2.03 SECONDS on a large save. 3,000 chunks per call keeps that
--- near 100-300ms and the rest finishes at 32/tick.
-local FLUSH_SCAN_PER_TICK = 3000
+-- Bounded by MEASURED cost, not by a guess: chunk scans average 55us but p99 is
+-- 289us and the worst chunk 3.7ms on a dense late-game save, so 3,000 per call was
+-- 165ms minimum and 848ms at worst (the user's 40ms+ spike was this). 64 per call
+-- is ~3.5ms average; the backlog then finishes at 32/tick.
+local FLUSH_SCAN_PER_TICK = 64
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
@@ -152,13 +153,20 @@ local next = next
 -- The death generator's decay is time-based and must run whether or not the
 -- chunk is touched by anything else, so its own registry drives it. The set is
 -- one entry per chunk with a live death cloud.
+-- Decay is time-based (rate^elapsed since the chunk was last touched), so it is
+-- exact to run each chunk on a cadence rather than every tick. Spreading the set
+-- over four ticks turns a 350us/tick loop into ~90us/tick with identical values.
+local DECAY_CADENCE = 4
+
 function Processor.processDeathGenerators(tick)
     local deathChunks = getDeathGeneratorChunks()
     if not deathChunks then return end
+    local phase = tick % DECAY_CADENCE
     local profile = Universe.allocProfile
     local kbBefore = profile and collectgarbage("count") or 0
     local n = 0
     for id, chunk in pairs(deathChunks) do
+        if (id % DECAY_CADENCE) == phase then
         n = n + 1
         if chunk.valid then
             decayDeathGenerator(chunk, tick)
@@ -167,6 +175,7 @@ function Processor.processDeathGenerators(tick)
             end
         else
             deathChunks[id] = nil
+        end
         end
     end
     if profile then

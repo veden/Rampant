@@ -587,10 +587,10 @@ end
 --- Drop chunk records whose surface is no longer tracked. Called on load: a
 --- released surface's chunks can outlive the map if an older build removed the
 --- map without walking the reverse index.
--- Chunks examined per call. Walking every chunk and clearing its field entries
--- cost 234-462ms on a large save when done in one go, so the scan is resumable
--- across ticks: remember the last id examined.
-local RECONCILE_PER_CALL = 512
+-- Chunks examined per call. An orphan costs ~115us (it clears its entries in every
+-- field and registry), so 512 per call was 59ms in one tick. 8 per call, resumed
+-- by cursor every tick, sweeps ~9k chunks in ~1,100 ticks at ~1ms/tick worst case.
+local RECONCILE_PER_CALL = 8
 
 function MapUtils.reconcileOrphanChunks()
     local removed = 0
@@ -635,6 +635,12 @@ function MapUtils.reconcileOrphanChunks()
     end
     if examined < RECONCILE_PER_CALL then
         Universe.reconcileCursor = nil      -- full pass finished
+        -- Park the sweep until something can create orphans again (surface
+        -- release, load, or the slow re-check). A clean index should not cost
+        -- 344us every tick.
+        if removed == 0 then
+            Universe.reconcilePaused = true
+        end
     end
     if orphan then
         for i = 1, #orphan do
@@ -679,6 +685,7 @@ function MapUtils.releaseSurface(map)
             end
         end
     end
+    Universe.reconcilePaused = nil        -- a release can orphan chunks
     Universe.maps[map.id] = nil
     log({"", "[REL] surface=", map.surface and map.surface.name or "?", " chunks=", released, " tick=", game.tick})
     Universe.releasedSurfaces = Universe.releasedSurfaces or {}

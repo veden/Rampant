@@ -333,7 +333,10 @@ local SOURCE_BUILD_PER_TICK = 256
 -- verifyField sets the allowance to 1e9, and an unbounded resume then propagated
 -- for 1.16 SECONDS in one tick.
 local REMOVAL_MAX_WORK_Per_CALL = 256
-local SOURCE_SOLVE_WORK_PER_TICK = 256
+-- One pop costs ~13us on a dense field, so 256 pops was a 3.4ms slice inside a
+-- single tick (measured during the periodic field rebuild). 128 halves the worst
+-- slice and doubles the rebuild's spread.
+local SOURCE_SOLVE_WORK_PER_TICK = 128
 local SourceBuilds = {}
 
 -- Ticks between full reconciliations of one field. The incremental path only
@@ -852,6 +855,15 @@ function Runtime.resumeRemoval(fieldType, opts)
     if Universe.solveWorkTick ~= game.tick then
         Universe.solveWorkTick = game.tick
         Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
+    end
+    -- Safety valve: if a removal heap outgrows any plausible field, stop growing
+    -- it and let the field rebuild instead (the resumable solve spreads that).
+    local REMOVAL_HEAP_CAP = 20000
+    if #heap > REMOVAL_HEAP_CAP then
+        heaps[key] = nil
+        SolvedFields[key] = false
+        SourceBuilds[key] = nil
+        return 0
     end
     local allowance = Universe.solveWorkLeft or 0
     if allowance <= 0 then return 0 end

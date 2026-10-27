@@ -1170,10 +1170,14 @@ script.on_event(defines.events.on_tick,
                     end
                     -- Chunk records that are in the reverse index but not reachable
                     -- from their surface's grid can accumulate (a released surface,
-                    -- a chunk removed from the grid by an older build). One pass
-                    -- every five game-minutes keeps the index honest and returns
-                    -- the ids for reuse.
+                    -- a chunk removed from the grid by an older build). Swept every
+                    -- tick with an 8-chunk budget: a periodic 512-chunk pass cost
+                    -- 59ms in one tick, and this costs ~1ms while a sweep is running
+                    -- and ~10us once the index is clean.
                     if (tick % (60 * 60 * 5)) == 0 then
+                        Universe.reconcilePaused = nil    -- slow re-check
+                    end
+                    if not Universe.reconcilePaused then
                         timed(tick, rangeSample, "chunkReconcile", MapUtils.reconcileOrphanChunks)
                     end
 

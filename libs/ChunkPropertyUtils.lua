@@ -114,6 +114,20 @@ local function queueDeathSourceChange(chunk, oldCombined)
     if not chunk or chunk.id == nil then return end
     local newCombined = ChunkPropertyUtils.getCombinedDeathGenerator(chunk)
     if oldCombined == newCombined then return end
+    -- Smooth decay must not queue a removal every tick: each one is a local
+    -- re-propagation, and on a save with 197 decaying generators they arrive
+    -- faster than the per-tick removal budget retires them, so the leftover heaps
+    -- grew without bound (measured 496,018 nodes, 377MB of Lua state, 87KB/tick
+    -- allocated). Only propagate a decrease once it is a visible fraction of the
+    -- value, and always propagate extinction.
+    if newCombined ~= 0 and oldCombined ~= 0 then
+        local delta = newCombined - oldCombined
+        if delta < 0 then delta = -delta end
+        local reference = oldCombined < 0 and -oldCombined or oldCombined
+        if reference > 0 and delta < reference * PLAYER_SOURCE_CHANGE_FRACTION then
+            return
+        end
+    end
     local oldGain = oldCombined > 0 and oldCombined or 0
     local oldLoss = oldCombined < 0 and -oldCombined or 0
     local newGain = newCombined > 0 and newCombined or 0
