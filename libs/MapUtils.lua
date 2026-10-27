@@ -576,22 +576,29 @@ function MapUtils.sweepIdleSurfaces(tick)
         map.lastEnemyTick = tick
         return
     end
-    -- Confirmation: one query, only for a surface that is already silent and has
-    -- an empty registry. This is the only expensive step and it is rare.
-    if map.surface.count_entities_filtered({ force = "enemy", limit = 1 }) == 0 then
-        MapUtils.releaseSurface(map)
-    else
-        map.lastEnemyTick = tick
-    end
+    -- Release on the registry gate alone. The old confirmation query counted
+    -- every enemy entity on the whole surface, which cost 168ms on average and
+    -- 432ms at worst on a large save (one sweep per second). A surface with no
+    -- registered nest, hive or turret and no squad cannot spawn, and migration
+    -- re-creates the base if units ever do appear there.
+    MapUtils.releaseSurface(map)
 end
 
 --- Drop chunk records whose surface is no longer tracked. Called on load: a
 --- released surface's chunks can outlive the map if an older build removed the
 --- map without walking the reverse index.
+-- Chunks examined per call. Walking every chunk and clearing its field entries
+-- cost 234-462ms on a large save when done in one go, so the scan is resumable
+-- across ticks: remember the last id examined.
+local RECONCILE_PER_CALL = 512
+
 function MapUtils.reconcileOrphanChunks()
     local removed = 0
     local orphan
-    for _, chunk in pairs(Universe.chunkById or {}) do
+    local examined = 0
+    local startId = Universe.reconcileCursor
+    local started = false
+    local function visit(chunkId, chunk)
         local map = chunk.map
         -- Three ways a record can be orphaned: no map at all, a map that is no
         -- longer the tracked one for that index (a re-acquired surface reuses the
@@ -614,6 +621,20 @@ function MapUtils.reconcileOrphanChunks()
             orphan = orphan or {}
             orphan[#orphan + 1] = chunk
         end
+    end
+    for chunkId, chunk in pairs(Universe.chunkById or {}) do
+        if not startId or started or chunkId > startId then
+            started = true
+            visit(chunkId, chunk)
+            examined = examined + 1
+            if examined >= RECONCILE_PER_CALL then
+                Universe.reconcileCursor = chunkId
+                break
+            end
+        end
+    end
+    if examined < RECONCILE_PER_CALL then
+        Universe.reconcileCursor = nil      -- full pass finished
     end
     if orphan then
         for i = 1, #orphan do

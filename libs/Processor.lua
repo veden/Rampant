@@ -87,7 +87,10 @@ local SCAN_PER_TICK = 1
 -- with flush set) the whole backlog is scanned in one call, so the game reaches a
 -- consistent state immediately instead of being half-blind for minutes. After
 -- that the rate is 1/tick. The cap only guards against a pathological queue.
-local FLUSH_SCAN_PER_TICK = 200000
+-- Bounded: the first-load flush used to drain the entire backlog in one call,
+-- which measured 2.03 SECONDS on a large save. 3,000 chunks per call keeps that
+-- near 100-300ms and the rest finishes at 32/tick.
+local FLUSH_SCAN_PER_TICK = 3000
 
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then

@@ -1886,6 +1886,25 @@ remote.add_interface("Rampant", {
             " queueHitPerTick=" .. string.format("%.1f", (a.queueHit or 0) / ticks)
         return table.concat(parts, " ")
     end,
+    -- Heap/garbage report with the collector RUNNING: forces a collection to get
+    -- the live set, then later reports how much has accumulated on top of it. The
+    -- difference is the garbage the collector has not reclaimed yet, which is what
+    -- a marking pause has to walk through.
+    heapMark = function()
+        collectgarbage("collect")
+        storage._liveKB = collectgarbage("count")
+        storage._liveTick = game.tick
+        return string.format("liveKB=%.0f", storage._liveKB)
+    end,
+    heapGarbage = function()
+        if not storage._liveKB then return "no mark" end
+        local nowKB = collectgarbage("count")
+        local ticks = game.tick - (storage._liveTick or game.tick)
+        local garbageKB = nowKB - storage._liveKB
+        local perTick = (garbageKB * 1024) / math.max(ticks, 1)
+        return string.format("liveKB=%.0f heapKB=%.0f garbageKB=%.0f ticks=%d bytesPerTick=%.0f",
+            storage._liveKB, nowKB, garbageKB, ticks, perTick)
+    end,
     allocMark = function()
         collectgarbage("collect")
         collectgarbage("stop")
@@ -2075,6 +2094,26 @@ remote.add_interface("Rampant", {
         local free = #(storage.universe.freeChunkIds or {})
         return "released=" .. tostring(released) .. " freeIds=" .. tostring(free) ..
             " counter=" .. tostring(storage.universe.chunkId)
+    end,
+    -- Report scratch keys my headless diagnostic scripts write into storage: if a
+    -- headless run ever saved the file, they are inside it.
+    savedProbe = function()
+        local marks = { "_liveKB", "_liveTick", "_allocKB", "_allocMarkKB",
+            "_allocTick", "_t0", "_a", "_t", "_mark", "_rampantHeapSnap" }
+        local found = {}
+        for _, k in ipairs(marks) do
+            if storage[k] ~= nil then found[#found + 1] = k end
+        end
+        local u = storage.universe or {}
+        local umarks = {}
+        for _, k in ipairs({ "chunkEpoch", "chunkSetVersion", "diagTicks",
+            "allocProfile", "scanFocusX", "drainPooling", "neighborCacheEnabled" }) do
+            if u[k] ~= nil then umarks[#umarks + 1] = k end
+        end
+        return "storage:" .. table.concat(found, ",") ..
+            " universe:" .. table.concat(umarks, ",") ..
+            " chunkId=" .. tostring(u.chunkId) ..
+            " solveVer=" .. tostring(u.sourceVersionedSolveVersion)
     end,
     chunkQueueStatus = function()
         local U = storage.universe

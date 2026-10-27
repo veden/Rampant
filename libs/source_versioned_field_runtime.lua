@@ -329,6 +329,10 @@ end
 local SOURCE_BUILD_PER_TICK = 256
 -- Propagation work allowed per tick while building a field. The solve is spread
 -- like the normal drain so a rebuild cannot spike the tick.
+-- A single removal call never exceeds this, whatever the shared allowance says.
+-- verifyField sets the allowance to 1e9, and an unbounded resume then propagated
+-- for 1.16 SECONDS in one tick.
+local REMOVAL_MAX_WORK_Per_CALL = 256
 local SOURCE_SOLVE_WORK_PER_TICK = 256
 local SourceBuilds = {}
 
@@ -469,7 +473,11 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- nothing else happening on that field is never completed (measured: the base
     -- field held stale values until the periodic reconcile).
     if Runtime.hasPendingRemoval(fieldType) then
+        local rprof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
         Runtime.resumeRemoval(fieldType, fieldOpts(fieldType, opts))
+        if rprof then
+            log({"", "[SUB] tick=", game.tick, " name=sf.resume ", rprof})
+        end
     end
     if queueEmpty and not (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
         if queue then
@@ -484,6 +492,7 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- process() handles ONE field, so the field-keyed `changes` map is
     -- vestigial: one accumulator is equivalent and drops a table plus a keyed
     -- lookup per tick.
+    local prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
     local frame = pushScratch()
     local sources = frame.sources
     -- Reuse the frame's dedupe map too; it is keyed by chunk id.
@@ -516,6 +525,10 @@ function Runtime.process(fieldType, budget, opts, workLimit)
         releaseSourceItem(item)
     end
 
+    if prof then
+        log({"", "[SUB] tick=", game.tick, " name=sf.drain ", prof})
+        prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
+    end
     local fType = fieldType
     local fOpts = fieldOpts(fType, opts)
 
@@ -531,6 +544,10 @@ function Runtime.process(fieldType, budget, opts, workLimit)
         end
         popScratch()
         return 0
+    end
+    if prof then
+        log({"", "[SUB] tick=", game.tick, " name=sf.solve ", prof})
+        prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
     end
     if not solvedNow then
         local increases = frame.increases
@@ -838,6 +855,7 @@ function Runtime.resumeRemoval(fieldType, opts)
     end
     local allowance = Universe.solveWorkLeft or 0
     if allowance <= 0 then return 0 end
+    if allowance > REMOVAL_MAX_WORK_Per_CALL then allowance = REMOVAL_MAX_WORK_Per_CALL end
     local removalOpts = REMOVAL_OPTS
     removalOpts.maxWork = allowance
     local work, leftover = Solver.removeSource(
