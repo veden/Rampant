@@ -539,4 +539,13 @@ function Solver.removeSource(source, field, prov, second, neighborOf, opts, heap
 end
 
 
+-- Diagnostics: decode a packed provenance entry into its two source ids.
+function Solver.provTop(prov, id)
+    return pTop(prov, id)
+end
+
+function Solver.provSecond(prov, id)
+    return pSec(prov, id)
+end
+
 return Solver

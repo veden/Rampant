@@ -348,12 +348,41 @@ local SourceBuilds = {}
 -- it is being rebuilt.
 local RECONCILE_INTERVAL = 30 * 60 * 5
 
+--- Force the field's incremental source build AND its drain to completion. The
+--- rebuild is spread over ticks (SOURCE_BUILD_PER_TICK), so an oracle that only
+--- drains the queue compares against a PARTIALLY BUILT field: measured 7,201
+--- "mismatches" on the base field immediately after a reconcile, and 118 once the
+--- build had finished.
+local function finishBuild(fieldType, opts)
+    local key = Runtime.fieldKey(fieldType)
+    for _ = 1, 400 do
+        local build = SourceBuilds[key]
+        if not build or build.done then break end
+        Universe.solveWorkTick = nil
+        Universe.solveWorkLeft = 1e9
+        Runtime.ensureSolved(fieldType, opts)
+    end
+    for _ = 1, 2000 do
+        Universe.solveWorkTick = nil
+        Universe.solveWorkLeft = 1e9
+        Runtime.process(fieldType, 100000, opts)
+        if Runtime.frontierDepth(fieldType) == 0 and Runtime.queueDepth(fieldType) == 0 then
+            break
+        end
+    end
+end
+
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     if SolvedFields[key] and FieldProvenance[key] then
         local solvedAt = Universe.sourceVersionedSolvedAt
         local last = solvedAt and solvedAt[key]
-        if last and (game.tick - last) > RECONCILE_INTERVAL then
+        -- `last == nil` means the field was restored from a save that predates the
+        -- timestamp (or from a layout change): its values came from another version
+        -- and must be rebuilt once rather than served forever. Measured on the
+        -- user's 2024 save: the base field sat at 2,970 where the exact value was
+        -- 49,010, and nothing ever reconciled it because the age check never fired.
+        if (not last) or (game.tick - last) > RECONCILE_INTERVAL then
             -- Rebuild in place: the stored field stays readable until the fresh
             -- one is swapped in by the rebuild below.
             SolvedFields[key] = false
@@ -470,6 +499,22 @@ function Runtime.process(fieldType, budget, opts, workLimit)
     -- A frontier left by a previous tick is still work: returning early on an
     -- empty queue would strand it and the field would stay partial forever
     -- (observed as the base field's nest staying 0 in pheromone-dynamics).
+    -- A rebuild is spread over ticks and ends by SWAPPING its freshly solved field
+    -- in. Draining the queue while it runs applies the change to the OLD field,
+    -- which the swap then throws away: measured on the base field as 7,201 chunks
+    -- holding 2,970 where the exact value was 49,010, healed only by the next
+    -- reconcile. So while a build is in progress, advance the build and LEAVE the
+    -- queue alone; the first drain after the swap applies every coalesced change to
+    -- the new field.
+    do
+        local build = SourceBuilds[key]
+        if build and not build.done then
+            Universe.solveWorkTick = nil
+            Universe.solveWorkLeft = 1e9
+            Runtime.ensureSolved(fieldType, fieldOpts(fieldType, opts))
+            return 0
+        end
+    end
     local frontier = Universe.sourceVersionedFrontier[key]
     -- A stranded removal is work even when the queue and frontier are empty: it
     -- must be resumed BEFORE the early return below, otherwise a removal with
@@ -843,6 +888,97 @@ end
 --- change for the same chunk, so a removal that ran out of budget stranded the
 --- field too high until the periodic reconcile (measured: 1,641 chunks off by up
 --- to 89% on the enemy field).
+--- Explain one chunk's value: live, exact, and where each came from.
+function Runtime.fieldDiag(fieldType, chunkId)
+    local key = Runtime.fieldKey(fieldType)
+    local opts = fieldOpts(fieldType, nil)
+    local live = (Universe.sourceVersionedFields[key] or {})[chunkId] or 0
+    local prov = FieldProvenance[key] or {}
+    local sec = FieldSecond[key] or {}
+    local expected = Solver.solveWithMetadata(
+        Runtime.buildSources(fieldType), Runtime.neighborOf, opts)
+    local chunk = MapUtils.getChunk(chunkId)
+    local topId = Solver.provTop(prov, chunkId)
+    local secondId = Solver.provSecond(prov, chunkId)
+    local function describe(id)
+        if not id then return "none" end
+        local c = MapUtils.getChunk(id)
+        return string.format("id=%d gen=%.2f key=%.0f", id,
+            (c and Runtime.sourceValue(c, fieldType)) or 0, (c and c.key) or 0)
+    end
+    return string.format(
+        "id=%d key=%.0f live=%.3f exp=%.3f decay=%.3f eps=%.4f radius=%s top={%s} second={%s} ownGen=%.3f",
+        chunkId, (chunk and chunk.key) or 0, live, expected[chunkId] or 0,
+        opts.decay or -1, opts.eps or -1, tostring(opts.maxRadius),
+        describe(topId), describe(secondId),
+        (chunk and Runtime.sourceValue(chunk, fieldType)) or 0)
+end
+
+--- Throw the field away and solve it from scratch, spread over ticks like a normal
+--- reconcile. Then a verifyField comparison says whether the propagation agrees
+--- with the oracle, instead of whether the stored field is stale.
+function Runtime.rebuildField(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    SolvedFields[key] = false
+    SourceBuilds[key] = nil
+    Universe.sourceVersionedFields[key] = {}
+    FieldProvenance[key] = {}
+    FieldSecond[key] = {}
+    Universe.sourceVersionedFrontier[key] = nil
+    Universe.sourceVersionedRemoval[key] = nil
+    local opts = fieldOpts(fieldType, nil)
+    for _ = 1, 400 do
+        local build = SourceBuilds[key]
+        if build and build.done then break end
+        Universe.solveWorkTick = nil
+        Universe.solveWorkLeft = 1e9
+        Runtime.ensureSolved(fieldType, opts)
+    end
+    return true
+end
+
+--- Sample chunks whose live value differs from a fresh exact solve, with the
+--- state of the source that feeds that field. verifyField counts; this says why.
+function Runtime.verifySamples(fieldType, sampleCount)
+    local key = Runtime.fieldKey(fieldType)
+    if not SolvedFields[key] then
+        local field, prov2, sec = Solver.solveWithMetadata(
+            Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
+        Universe.sourceVersionedFields[key] = field
+        FieldProvenance[key], FieldSecond[key] = prov2, sec
+        SolvedFields[key] = true
+    end
+    finishBuild(fieldType, fieldOpts(fieldType, nil))
+    local live = Universe.sourceVersionedFields[key] or {}
+    local expected = Solver.solveWithMetadata(
+        Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
+    local out, shown = {}, 0
+    sampleCount = sampleCount or 6
+    for id, expValue in pairs(expected) do
+        local liveValue = live[id] or 0
+        if math.abs(liveValue - expValue) > 0.001 then
+            local chunk = MapUtils.getChunk(id)
+            out[#out + 1] = string.format(
+                "id=%d live=%.3f exp=%.3f gen=%.4f base=%s nest=%d", id, liveValue, expValue,
+                (chunk and chunk.playerBaseGenerator) or 0,
+                tostring(chunk and chunk.base ~= nil), (chunk and chunk.nestCount) or 0)
+            shown = shown + 1
+            if shown >= sampleCount then break end
+        end
+    end
+    for id, liveValue in pairs(live) do
+        if expected[id] == nil and shown < sampleCount then
+            local chunk = MapUtils.getChunk(id)
+            out[#out + 1] = string.format(
+                "id=%d live=%.3f exp=none gen=%.4f base=%s", id, liveValue,
+                (chunk and chunk.playerBaseGenerator) or 0,
+                tostring(chunk and chunk.base ~= nil))
+            shown = shown + 1
+        end
+    end
+    return table.concat(out, " | ")
+end
+
 function Runtime.hasPendingRemoval(fieldType)
     local heaps = Universe.sourceVersionedRemoval
     if not heaps then return false end
@@ -982,8 +1118,16 @@ function Runtime.verifyField(fieldType, tolerance)
         FieldProvenance[key], FieldSecond[key] = prov2, sec
         SolvedFields[key] = true
     end
-    -- Drain to convergence: process() is bounded by PROPAGATION_MAX_WORK_PER_TICK,
-    -- so one call leaves a frontier and the comparison would see a partial field.
+    -- Go through the same entry point gameplay uses, so the reconcile age rule and
+    -- the once-per-load rebuild of untimestamped (legacy) fields actually run before
+    -- the comparison. Without this the oracle checked whatever the save happened to
+    -- contain and reported it as a mismatch forever.
+    Universe.solveWorkTick = nil
+    Universe.solveWorkLeft = 1e9
+    Runtime.ensureSolved(fieldType, fieldOpts(fieldType, nil))
+    -- Finish any in-progress rebuild before comparing, then drain to convergence:
+    -- process() is bounded, so one call leaves a frontier behind.
+    finishBuild(fieldType, fieldOpts(fieldType, nil))
     local iterations = 0
     while iterations < 2000 do
         iterations = iterations + 1

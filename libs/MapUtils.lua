@@ -537,6 +537,27 @@ function MapUtils.removeChunkFromMap(map, chunk)
     -- Field entries, registries and pending upgrades for this chunk are dropped
     -- first, so a recycled id starts clean.
     -- (recycling is done at the end of this function)
+    -- A removed chunk may itself be a source (a base or player generator, nest
+    -- count, death generator). Dropping its field entries alone leaves every chunk
+    -- that inherited from it holding the old value - measured as 7,201 base-field
+    -- chunks up to 100% too high, healed only by the periodic reconcile. Propagate
+    -- the source removal FIRST, while the record is still resolvable so the walk can
+    -- reach its neighbours.
+    local runtime = SourceVersionedFieldRuntime
+    if runtime and runtime.isInitialized then
+        local fieldTypes = { Constants.PLAYER_PHEROMONE, Constants.BASE_PHEROMONE,
+            Constants.ENEMY_PHEROMONE, Constants.RESOURCE_PHEROMONE,
+            Constants.KAMIKAZE_PHEROMONE, Constants.DEATH_GAIN_PHEROMONE,
+            Constants.DEATH_LOSS_PHEROMONE }
+        for i = 1, #fieldTypes do
+            local fieldType = fieldTypes[i]
+            local value = runtime.sourceValue(chunk, fieldType)
+            if value > 0 then
+                runtime.removeSource(chunk, fieldType, value, nil)
+            end
+        end
+    end
+
     -- Field metadata is keyed by chunk id and nothing used to clear it here, so
     -- removing a chunk (or releasing a whole surface) traded chunk records for
     -- orphaned field entries - four tables per field plus the frontier, which is

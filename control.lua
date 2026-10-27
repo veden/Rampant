@@ -1581,6 +1581,13 @@ local function removeFaction(cmd)
     end
 end
 
+local FIELD_TYPE_BY_NAME = {
+    resource = Constants.RESOURCE_PHEROMONE, base = Constants.BASE_PHEROMONE,
+    enemy = Constants.ENEMY_PHEROMONE, player = Constants.PLAYER_PHEROMONE,
+    kamikaze = Constants.KAMIKAZE_PHEROMONE,
+    deathGain = Constants.DEATH_GAIN_PHEROMONE, deathLoss = Constants.DEATH_LOSS_PHEROMONE,
+}
+
 remote.add_interface("Rampant", {
     addExcludeSurface = addExcludeSurface,
     removeExcludeSurface = removeExcludeSurface,
@@ -2066,6 +2073,23 @@ remote.add_interface("Rampant", {
         out[#out + 1] = "startKB=" .. string.format("%.0f", start)
         return table.concat(out, " ")
     end,
+    fieldDiag = function(name, chunkId)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.fieldDiag(fType, chunkId)
+    end,
+    rebuildField = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.rebuildField(fType)
+    end,
+    -- Sample chunks whose live field value differs from an exact solve, with the
+    -- source state that feeds that field.
+    fieldDiff = function(name, sampleCount)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.verifySamples(fType, sampleCount)
+    end,
     chunkOrphans = function()
         local noMap, notInGrid, inGrid = 0, 0, 0
         local byMap = {}
@@ -2182,13 +2206,7 @@ remote.add_interface("Rampant", {
     end,
     -- Compare a live field against a fresh full solve of its sources.
     verifyField = function(name, tolerance)
-        local map = {
-            resource = Constants.RESOURCE_PHEROMONE, base = Constants.BASE_PHEROMONE,
-            enemy = Constants.ENEMY_PHEROMONE, player = Constants.PLAYER_PHEROMONE,
-            kamikaze = Constants.KAMIKAZE_PHEROMONE,
-            deathGain = Constants.DEATH_GAIN_PHEROMONE, deathLoss = Constants.DEATH_LOSS_PHEROMONE,
-        }
-        local fType = map[name]
+        local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
         local r = SourceVersionedFieldRuntime.verifyField(fType, tolerance)
         local line = string.format("%s sources=%d checked=%d mismatches=%d liveOnly=%d maxRel=%s maxDelta=%s worst=%s livePeak=%s expectedPeak=%s %s frontier=%d queued=%d iter=%d",
