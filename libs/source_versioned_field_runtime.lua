@@ -50,7 +50,7 @@ local FieldSecond = {}
 -- module locals alias the storage tables. `on_load` must not write storage, so
 -- creation and the layout version check live in ensureStorage(), which is called
 -- from init(addProperties=true) and from the tick path.
-local SOLVE_VERSION = 2
+local SOLVE_VERSION = 3
 local EMPTY_SOLVED = {}
 local EMPTY_TOP = {}
 local EMPTY_SECOND = {}
@@ -125,9 +125,9 @@ FIELD_OPTS[FIELD_PLAYER] = { maxRadius = PLAYER_FIELD_RADIUS, relax = true }
 -- Base, enemy and resource change rarely (structure events, chunk scans) but
 -- their nominal reach was also 126 hops, so every one of those rare changes
 -- re-propagated the entire tracked map and paid O(map) work in a single tick.
-FIELD_OPTS[FIELD_BASE] = { maxRadius = REGIONAL_FIELD_RADIUS }
-FIELD_OPTS[FIELD_ENEMY] = { maxRadius = REGIONAL_FIELD_RADIUS }
-FIELD_OPTS[FIELD_RESOURCE] = { maxRadius = RESOURCE_FIELD_RADIUS }
+FIELD_OPTS[FIELD_BASE] = { maxRadius = REGIONAL_FIELD_RADIUS, relax = true }
+FIELD_OPTS[FIELD_ENEMY] = { maxRadius = REGIONAL_FIELD_RADIUS, relax = true }
+FIELD_OPTS[FIELD_RESOURCE] = { maxRadius = RESOURCE_FIELD_RADIUS, relax = true }
 FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS, relax = true }
 -- The death field's whole range is small: a squad wipe step deposits
 -- FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT (0.005) and the source scale is 0.75/8, so
@@ -135,8 +135,8 @@ FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_
 -- vanish from the field and only accumulated deaths (generator clamped at 1 -> 0.094)
 -- were visible. eps per field keeps the threshold meaningful at every magnitude.
 local DEATH_EPS = 1e-6
-FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS }
-FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS }
+FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS, relax = true }
+FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS, relax = true }
 
 local function fieldOpts(fieldType, opts)
     return opts or FIELD_OPTS[fieldType]
@@ -215,7 +215,7 @@ end
 local SourceScratch = {}
 
 -- Defined with the relaxation solver below; queueSource/ensureSolved need them earlier.
-local relaxPush, relaxState
+local relaxPush, relaxState, relaxNode
 
 -- Free list for source-queue items. Every decaying generator queues one change
 -- per chunk per tick (the death generator alone did this for ~83 chunks, and it
@@ -316,7 +316,17 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not Initialized or not chunk or not chunk.id then return false end
     local relaxOpts = FIELD_OPTS[fieldType]
     if relaxOpts and relaxOpts.relax then
-        relaxPush(Runtime.fieldKey(fieldType), chunk.id)
+        -- Recompute THIS node immediately so a write is visible to a read in the same
+        -- tick (one node costs ~13us); neighbours still arrive over the following
+        -- ticks through the frontier.
+        local key = Runtime.fieldKey(fieldType)
+        local st = relaxState(key)
+        if not st.seeded then
+            st.dirty = {}
+            Runtime.relaxSeed(fieldType)
+        end
+        relaxNode(fieldType, key, chunk.id, relaxOpts)
+        relaxPush(key, chunk.id)
         return true
     end
 
@@ -420,6 +430,10 @@ function Runtime.ensureSolved(fieldType, opts)
         if not st.seeded then
             st.dirty = {}
             Runtime.relaxSeed(fieldType)
+            -- Settle a slice before handing the field out, so the first read after a
+            -- load sees sources rather than an empty table. The rest of the frontier
+            -- drains on the normal per-tick budget.
+            Runtime.relaxStep(fieldType, 512, relaxOpts)
         end
         return Universe.sourceVersionedFields[key] or {}, false
     end
@@ -919,13 +933,13 @@ end
 --- One relaxation pop: recompute a chunk from its own source and its neighbours.
 --- Distance is carried alongside the value so maxRadius still applies; the result
 --- REPLACES the stored value (never max with it) or a settled value never falls.
-local function relaxNode(fieldType, key, id, opts)
+relaxNode = function(fieldType, key, id, opts)
     local field = Universe.sourceVersionedFields[key]
     local st = relaxState(key)
     local chunk = Universe.chunkById and Universe.chunkById[id]
     local best = chunk and Runtime.sourceValue(chunk, fieldType) or 0
     local bestDist = 0
-    local decay = opts.decay
+    local decay = opts.decay or Solver.DEFAULT_DECAY
     local maxRadius = opts.maxRadius
     local dist = st.dist
     local nbrs, nbrCount = Runtime.neighborOf(id)
@@ -942,7 +956,7 @@ local function relaxNode(fieldType, key, id, opts)
         end
     end
     local old = field[id]
-    local eps = opts.eps
+    local eps = opts.eps or Solver.DEFAULT_EPS
     local changed = false
     if best > eps then
         if not old or best > old + eps or best < old - eps then
@@ -1030,6 +1044,16 @@ function Runtime.relaxStep(fieldType, budget, opts)
         st.queue = {}
     end
     return popped
+end
+
+--- Test/tuning hook: switch a field between relaxation and the ordered solver at
+--- runtime. Used by the unit tests that pin the ordered path's removal behaviour.
+function Runtime.setRelax(fieldType, enabled)
+    local opts = FIELD_OPTS[fieldType]
+    if not opts then return false end
+    opts.relax = enabled or nil
+    Universe.sourceVersionedRelax[Runtime.fieldKey(fieldType)] = nil
+    return true
 end
 
 function Runtime.relaxDepth(fieldType)

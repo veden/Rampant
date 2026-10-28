@@ -558,6 +558,10 @@ function Solver.removeSource(source, field, prov, second, neighborOf, opts, heap
 end
 
 
+Solver.DEFAULT_DECAY = DEFAULT_DECAY
+Solver.DEFAULT_EPS = DEFAULT_EPS
+Solver.DEFAULT_RATING = DEFAULT_RATING
+
 -- Diagnostics: decode a packed provenance entry into its two source ids.
 function Solver.provTop(prov, id)
     return pTop(prov, id)

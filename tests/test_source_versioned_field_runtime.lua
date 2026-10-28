@@ -53,9 +53,13 @@ end
 
 my_collection:set_setup(function()
     world = makeWorld()
+    -- These tests pin the ORDERED solver (removal heaps, provenance, stranding);
+    -- production now relaxes every field, so opt this one out for the suite.
+    Runtime.setRelax(Constants.ENEMY_PHEROMONE, false)
 end)
 
 my_collection:set_teardown(function()
+    Runtime.setRelax(Constants.ENEMY_PHEROMONE, true)
     restoreWorld()
     world = nil
     testUniverse = nil
