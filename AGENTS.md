@@ -110,6 +110,34 @@ prints the workdir it used.
 - Ids are recycled from an aged free list and compacted before the provenance
   packing bound, so the id space tracks live chunks, not lifetime creations.
 
+## Fields Are Event-Driven, With a Load-Bearing Resync
+
+The model is event-and-propagate: every write queues a source change and the drain
+propagates from those sources each tick. On top of that sits a periodic exact
+rebuild (`RECONCILE_INTERVAL`, 5 game-minutes). It looks like the constant-wave
+system that was removed, and the measurements say it is currently unavoidable:
+
+- ~262 decaying base sources each report 5%-steps, ~1.5 reports/tick, and one report
+  propagates a radius-32 disc (~1,000 pops) while the drain retires 96 pops/tick
+  shared across all fields. The event path is permanently behind its own input.
+- A whole-field solve is 8,850 pops; it is cheaper than the unbounded catch-up it
+  replaces, so the resync acts as compaction, not as the update mechanism.
+
+Drift measured against interval, base field, chunks off by >0.1% (and >6%):
+
+```
+ 2.5 min   116 / 110        maxRel ~5%
+ 5 min     116 / 110        maxRel ~5%      <- current
+15 min   3,262 / 3,249     maxRel 100%      (2x off)
+lag-triggered (queue depth >= 1500)   3,262  (never fired: coalescing keeps the
+                                              queue shallow even while the field lags)
+```
+
+So queue depth is NOT a lag proxy, and neither a longer interval nor a depth trigger
+works at this source density. What WOULD let the resync go away or become rarer:
+more drain throughput, or fewer/coarser source reports (the throttle's flush and
+fraction). That is a propagation-delay trade, not a free win.
+
 ## Iteration Order — Factorio's `pairs()` is Deterministic
 
 `doc-html/auxiliary/libraries.html` ("pairs() / next()"): Factorio reimplements
