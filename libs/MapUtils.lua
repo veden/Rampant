@@ -554,7 +554,11 @@ function MapUtils.removeChunkFromMap(map, chunk)
             local fieldType = fieldTypes[i]
             local value = runtime.sourceValue(chunk, fieldType)
             if value > 0 then
-                runtime.removeSource(chunk, fieldType, value, nil)
+                -- A relaxed field has no provenance ledger to repair: queueing the
+                -- change is the removal (the node recomputes to 0 and the frontier
+                -- repairs its neighbours). Calling the ordered removal walk here
+                -- crashed on the missing provenance tables.
+                runtime.queueSource(chunk, fieldType, value, 0)
             end
         end
     end

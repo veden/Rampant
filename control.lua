@@ -1581,6 +1581,30 @@ local function removeFaction(cmd)
     end
 end
 
+local function afterCensusReset()
+    local u = storage.universe
+    for _, name in ipairs({ "recycleBaseIterator", "processBaseAIIterator",
+        "processNestIterator", "processActiveSpawnerIterator",
+        "processActiveRaidSpawnerIterator", "processMigrationIterator",
+        "surfaceSweepCursor", "reconcileCursor", "hiveIterator",
+        "hiveDataIterator", "squadIterator" }) do
+        u[name] = nil
+    end
+    u.chunkById = {}
+    for _, map in pairs(u.maps or {}) do
+        for _, chunk in pairs(map.chunks or {}) do
+            if chunk.id then u.chunkById[chunk.id] = chunk end
+        end
+    end
+    u.sourceVersionedFields = {}
+    u.sourceVersionedRelax = {}
+    u.sourceVersionedSolved = {}
+    u.sourceVersionedSolvedAt = {}
+    Metrics.init(u)
+    Metrics.reset()
+    return "reset"
+end
+
 local FIELD_TYPE_BY_NAME = {
     resource = Constants.RESOURCE_PHEROMONE, base = Constants.BASE_PHEROMONE,
     enemy = Constants.ENEMY_PHEROMONE, player = Constants.PLAYER_PHEROMONE,
@@ -1861,6 +1885,9 @@ remote.add_interface("Rampant", {
         end
         out[#out+1] = "residualKB=" .. string.format("%.0f", c)
         out[#out+1] = "totalStartKB=" .. string.format("%.0f", start)
+        -- The census emptied the tables it measured; put the game back together before
+        -- returning, or the next tick crashes on a nil counter or a stale iterator.
+        afterCensusReset()
         return table.concat(out, " ")
     end,
     -- Queue every generated chunk of a surface for scanning with the load flush
@@ -1901,6 +1928,7 @@ remote.add_interface("Rampant", {
             parts[#parts + 1] = rows[i][1] .. "=" ..
                 string.format("%.0fB/t", rows[i][2] / ticks)
         end
+        afterCensusReset()
         parts[#parts + 1] = "queueNewPerTick=" .. string.format("%.1f", (a.queueNew or 0) / ticks) ..
             " queueHitPerTick=" .. string.format("%.1f", (a.queueHit or 0) / ticks)
         return table.concat(parts, " ")
@@ -2184,6 +2212,10 @@ remote.add_interface("Rampant", {
     compactIds = function()
         return MapUtils.compactChunkIds()
     end,
+    -- heapCensus empties Universe tables to measure them, which invalidates every
+    -- long-lived iterator and every seeded field. Call this after a census if the game
+    -- is going to keep running.
+    resetAfterCensus = afterCensusReset,
     reconcileChunks = function()
         return MapUtils.reconcileOrphanChunks()
     end,

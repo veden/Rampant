@@ -431,6 +431,10 @@ function BaseUtils.recycleBases()
     end
     if not id then
         Universe.recycleBaseIterator = nil
+    elseif not base then
+        -- The stored cursor can outlive its base (a recycle, a surface release, or a
+        -- diagnostic wiping Universe.bases): restart the sweep rather than indexing nil.
+        Universe.recycleBaseIterator = nil
     else
         Universe.recycleBaseIterator = nextFrom(bases, id)
         local map = base.map
