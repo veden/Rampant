@@ -927,9 +927,12 @@ function BaseUtils.processBaseMutation(chunk, map, base)
                 end
             end
         end
-        -- Next call resumes exactly after the last structure examined. The pass is
-        -- over when next() runs off the end. New structures that register while a
-        -- wave is in flight may be missed by it; the next version bump catches them.
+        -- Next call resumes exactly after the last structure examined; the pass ends
+        -- when next() runs off the end. Factorio's next() iterates in INSERTION order
+        -- (doc-html/auxiliary/libraries.html, "pairs() / next()"), not hash order, so
+        -- a structure that registers while the wave is in flight is appended after the
+        -- cursor and is still visited by this pass - and every client sees the same
+        -- order, so the queued upgrade sequence is deterministic in multiplayer.
         base.upgradeWaveCursor = cursor
         return
     end

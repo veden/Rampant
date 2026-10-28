@@ -110,6 +110,20 @@ prints the workdir it used.
 - Ids are recycled from an aged free list and compacted before the provenance
   packing bound, so the id space tracks live chunks, not lifetime creations.
 
+## Iteration Order — Factorio's `pairs()` is Deterministic
+
+`doc-html/auxiliary/libraries.html` ("pairs() / next()"): Factorio reimplements
+`next()` so iteration is deterministic in **insertion order** (keys inserted first
+are iterated first), with the first 1024 numbered keys always iterated 1..1024.
+Consequences for this codebase:
+
+- Resuming a walk with `next(t, cursor)` is sound: newly inserted keys sort after the
+  cursor and are visited in the same pass.
+- Every client iterates identically, so anything that queues work while iterating
+  (upgrade waves, registries) is deterministic in multiplayer.
+- Do not assume numeric key order: only ids 1..1024 are ordered numerically, larger
+  ids follow insertion order.
+
 ## Linting
 
 ```bash
