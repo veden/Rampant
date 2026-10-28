@@ -358,6 +358,13 @@ local SourceBuilds = {}
 -- chunks on an enemy field. Rebuilding periodically bounds that drift; the swap
 -- happens only when the rebuild completes, so readers keep the old field while
 -- it is being rebuilt.
+-- Safety-net resync interval. The event path keeps the field correct; this only
+-- catches what the event path deliberately skips (source changes under the 5%
+-- throttle) and anything a bug loses. It is a TIMER, so it pays its cost whether
+-- anything drifted or not: at 9,000 ticks that was a 4.6s spread rebuild every
+-- 2.5 game-minutes to correct a bounded <=5% error. 15 minutes is still a backstop
+-- and 6x less work. A field also rebuilds on load (no timestamp), after an id
+-- compaction, when its removal heap overflows, and on demand (rebuildField).
 local RECONCILE_INTERVAL = 30 * 60 * 5
 
 --- Force the field's incremental source build AND its drain to completion. The
