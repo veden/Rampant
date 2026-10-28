@@ -342,7 +342,11 @@ local REMOVAL_MAX_WORK_Per_CALL = 256
 -- One pop costs ~13us on a dense field, so 256 pops was a 3.4ms slice inside a
 -- single tick (measured during the periodic field rebuild). 128 halves the worst
 -- slice and doubles the rebuild's spread.
-local SOURCE_SOLVE_WORK_PER_TICK = 128
+-- Pop slices per rebuild call. A pop costs ~13us on a dense field, so 128 was a
+-- 1.5-3.3ms slice inside whichever tick triggered the rebuild. 64 halves that and
+-- only doubles how long a rebuild takes to finish (~2s of game time), during which
+-- the old field stays readable.
+local SOURCE_SOLVE_WORK_PER_TICK = 64
 local SourceBuilds = {}
 
 -- Ticks between full reconciliations of one field. The incremental path only
@@ -421,10 +425,9 @@ function Runtime.ensureSolved(fieldType, opts)
     -- Entry tables are reused so a rebuild allocates no per-source tables.
     local list = build.list or {}
     build.list = list
-    local examined = 0
     local n = build.scanned or 0
     local iter = build.iterator
-    while examined < SOURCE_BUILD_PER_TICK do
+    for _ = 1, SOURCE_BUILD_PER_TICK do
         local chunkId, chunk = nextFrom(Universe.chunkById or {}, iter)
         if not chunk then
             build.iterator = nil
@@ -432,7 +435,6 @@ function Runtime.ensureSolved(fieldType, opts)
             break
         end
         iter = chunkId
-        examined = examined + 1
         local value = Runtime.sourceValue(chunk, fieldType)
         if value > 0 then
             n = n + 1
@@ -862,8 +864,10 @@ function Runtime.neighborOf(chunkId)
     if neighbor then n = n + 1; ids[n] = neighbor.id end
     neighbor = chunks[right + 1]
     if neighbor then n = n + 1; ids[n] = neighbor.id end
-    for i = n + 1, 8 do ids[i] = nil end
-    return ids
+    -- Return the count: callers iterate 1..n, so the 8-slot tail-clear and the
+    -- ipairs() iterator setup both go away (8 neighbour lookups per pop, and pops
+    -- are the dominant cost at ~13us each).
+    return ids, n
 end
 
 function Runtime.sourceValue(chunk, fieldType)

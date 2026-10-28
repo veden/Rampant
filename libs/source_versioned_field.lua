@@ -185,7 +185,10 @@ function Solver.solve(sources, neighborOf, opts)
         local node = heapPop(heap)
         if node.v >= (field[node.id] or 0) then
             if not (o.maxRadius and node.d >= o.maxRadius) then
-                for _, nid in ipairs(neighborOf(node.id)) do
+                local nbrs, nbrCount = neighborOf(node.id)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local nid = nbrs[nbi]
                     local cand = node.v * o.decay
                     if cand > (field[nid] or 0) + o.eps then
                         field[nid] = cand
@@ -216,7 +219,10 @@ function Solver.propagateIncrease(source, field, neighborOf, opts)
         local node = heapPop(heap)
         if node.v >= (field[node.id] or 0) then
             if not (o.maxRadius and node.d >= o.maxRadius) then
-                for _, nid in ipairs(neighborOf(node.id)) do
+                local nbrs, nbrCount = neighborOf(node.id)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local nid = nbrs[nbi]
                     local cand = node.v * o.decay
                     if cand > (field[nid] or 0) + o.eps then
                         field[nid] = cand
@@ -272,7 +278,10 @@ function Solver.solveWithMetadata(sources, neighborOf, opts)
     while #heap > 0 do
         local node = heapPop(heap)
         if not (o.maxRadius and node.d >= o.maxRadius) then
-            for _, nid in ipairs(neighborOf(node.id)) do
+            local nbrs, nbrCount = neighborOf(node.id)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local nid = nbrs[nbi]
                 relax(nid, node.v * o.decay, node.src, node.d + 1)
             end
         end
@@ -314,14 +323,17 @@ function Solver.propagateIncreaseWithMetadata(source, field, prov, second, neigh
         local stillTop = (not node.second) and node.v >= topValue
         local stillSecond = node.second and node.v >= secValue and node.src ~= pTop(prov, nid)
         if (stillTop or stillSecond) and not (o.maxRadius and node.d >= o.maxRadius) then
-            for _, neighborId in ipairs(neighborOf(nid)) do
+            local nbrs, nbrCount = neighborOf(nid)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local neighborId = nbrs[nbi]
                 local cand = node.v * o.decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
                 if (not node.second) and cand > neighborTop + o.eps then
                     if node.src ~= pTop(prov, neighborId) then
                         second[neighborId] = neighborTop
-                        pSetSec(prov, neighborId, pTop(prov, neighborId))
+                        pSetSec(prov, neighborId, neighborSrc)
                     end
                     field[neighborId] = cand
                     pSetTop(prov, neighborId, node.src)
@@ -467,20 +479,24 @@ function Solver.propagateIncreasesWithMetadata(sources, field, prov, second, nei
         local stillTop = (not useSecond) and v >= topValue
         local stillSecond = useSecond and v >= secValue and src ~= pTop(prov, nid)
         if (stillTop or stillSecond) and not (maxRadius and d >= maxRadius) then
-            for _, neighborId in ipairs(neighborOf(nid)) do
+            local nbrs, nbrCount = neighborOf(nid)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local neighborId = nbrs[nbi]
                 local cand = v * decay
                 local neighborTop = field[neighborId] or 0
                 local neighborSecond = second[neighborId] or 0
+                local neighborSrc = pTop(prov, neighborId)
                 if (not useSecond) and cand > neighborTop + eps then
-                    if src ~= pTop(prov, neighborId) then
+                    if src ~= neighborSrc then
                         second[neighborId] = neighborTop
-                        pSetSec(prov, neighborId, pTop(prov, neighborId))
+                        pSetSec(prov, neighborId, neighborSrc)
                     end
                     field[neighborId] = cand
                     pSetTop(prov, neighborId, src)
                     ihPush(hTop, neighborId, cand, d + 1, src)
                     work = work + 1
-                elseif src ~= pTop(prov, neighborId) and cand > neighborSecond + eps then
+                elseif src ~= neighborSrc and cand > neighborSecond + eps then
                     second[neighborId] = cand
                     pSetSec(prov, neighborId, src)
                     ihPush(hSec, neighborId, cand, d + 1, src)
@@ -513,7 +529,10 @@ function Solver.removeSource(source, field, prov, second, neighborOf, opts, heap
         local node = heapPop(heap)
         work = work + 1
         if not (o.maxRadius and node.d >= o.maxRadius) then
-            for _, nid in ipairs(neighborOf(node.id)) do
+            local nbrs, nbrCount = neighborOf(node.id)
+            if not nbrCount then nbrCount = #nbrs end
+            for nbi = 1, nbrCount do
+                local nid = nbrs[nbi]
                 local cand = node.v * o.decay
                 if cand > o.eps then
                     local isTop = pTop(prov, nid) == node.src
