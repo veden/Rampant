@@ -2118,6 +2118,42 @@ remote.add_interface("Rampant", {
         end
         return table.concat(out, " | ")
     end,
+    -- Order-independent digest of a field: enough to compare two builds, two runs, or
+    -- two points in time without shipping the whole table. The hash mixes id and value
+    -- so a swapped pair does not collide, and it is plain arithmetic, so two clients
+    -- (or two runs of the same inputs) produce the same number.
+    fieldDigest = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        local t = storage.universe.sourceVersionedFields[tostring(fType)]
+        if not t then return name .. " n=0" end
+        local n, sum, mins, maxs, h = 0, 0, nil, nil, 0
+        for id, v in pairs(t) do
+            n = n + 1
+            sum = sum + v
+            if not mins or v < mins then mins = v end
+            if not maxs or v > maxs then maxs = v end
+            h = (h + id * 2654435761 + math.floor(v * 1000)) % 4294967296
+        end
+        return string.format("%s n=%d sum=%.3f min=%s max=%s hash=%d",
+            name, n, sum, tostring(mins), tostring(maxs), h)
+    end,
+    -- Export one field as id,value lines for offline diffing (script-output/rampant).
+    fieldExport = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        local t = storage.universe.sourceVersionedFields[tostring(fType)] or {}
+        local ids = {}
+        for id in pairs(t) do ids[#ids + 1] = id end
+        table.sort(ids)
+        local lines = {}
+        for i = 1, #ids do
+            lines[i] = ids[i] .. "," .. string.format("%.6f", t[ids[i]])
+        end
+        local path = "rampant/field-" .. name .. ".csv"
+        helpers.write_file(path, table.concat(lines, "\n"))
+        return path .. " rows=" .. #ids
+    end,
     chunkOrphans = function()
         local noMap, notInGrid, inGrid = 0, 0, 0
         local byMap = {}
