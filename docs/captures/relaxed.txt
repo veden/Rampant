@@ -1,0 +1,7 @@
+# relaxed build (all fields), save 697ee0a83f66971b111035581e26050c
+heap: liveKB=20707
+verify base/enemy/resource: mismatches=0 / mismatches=0 / mismatches=0
+census: fieldTablesKB=1137 registriesKB=224 chunkRecordsKB=3318 residualKB=18401 
+alive after census, tick=13486427
+alloc: bytesPerTick=298
+[TICK] n=350 avg=214us p50=126 p90=561 p99=972 max=1125 over5ms=0

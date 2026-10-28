@@ -1,0 +1,15 @@
+# baseline: relaxation for player+kamikaze, Dijkstra for base/enemy/resource/death
+heap: liveKB=24067
+census: fieldTablesKB=2763 registriesKB=217 chunkRecordsKB=3506 residualKB=18171 
+digest base: 
+digest enemy: 
+digest resource: 
+verify base: 
+verify enemy: 
+alloc: 
+[TICK] n=189 avg=471us p50=323 p90=1063 p99=1885 max=1940 over5ms=0
+digest base: base n=781 sum=4152387.294 min=314.63430324766 max=23220 hash=190146635
+digest enemy: enemy n=8131 sum=38905161.322 min=0 max=19500 hash=318467475
+digest resource: resource n=7907 sum=83284493.215 min=2352.5575161297 max=19799.8046875 hash=1272143176
+verify base: mismatches=3262 liveOnly=4 
+verify enemy: mismatches=1684 liveOnly=1121 
