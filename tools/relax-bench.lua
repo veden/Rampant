@@ -14,7 +14,7 @@ local N = W * W
 
 local function key(x, y) return y * W + x end
 local function neigh(i)
-    local x, y = i % W, i // W
+    local x, y = i % W, math.floor(i / W)
     local out, n = {}, 0
     for dy = -1, 1 do
         for dx = -1, 1 do
@@ -47,7 +47,7 @@ local function heapPush(h, id, v, d, src)
     h[#h + 1] = { id = id, v = v, d = d, src = src }
     local i = #h
     while i > 1 do
-        local p = i // 2
+        local p = math.floor(i / 2)
         if h[p].v >= h[i].v then break end
         h[p], h[i] = h[i], h[p]
         i = p
@@ -223,7 +223,7 @@ for id = 0, N - 1 do
 end
 
 -- one increase and one decrease, at a source in the middle of the grid
-local testId = (SOURCES // 2) * 7919 % N
+local testId = math.floor(SOURCES / 2) * 7919 % N
 local testGen = sources[testId]
 
 sources[testId] = testGen + 5000

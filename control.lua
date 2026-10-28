@@ -2095,6 +2095,29 @@ remote.add_interface("Rampant", {
         if not fType then return "unknown field: " .. tostring(name) end
         return SourceVersionedFieldRuntime.verifySamples(fType, sampleCount)
     end,
+    -- Value distribution per field: count, smallest non-zero, and how many entries sit
+    -- near the eps threshold. Answers "is eps negligible against our magnitudes".
+    fieldRanges = function()
+        local out = {}
+        for _, name in ipairs({ "base", "enemy", "resource", "player", "kamikaze", "deathGain", "deathLoss" }) do
+            local fType = FIELD_TYPE_BY_NAME[name]
+            local t = storage.universe.sourceVersionedFields[tostring(fType)]
+            local c, mn, lt1, under = 0, nil, 0, 0
+            if t then
+                for _, v in pairs(t) do
+                    c = c + 1
+                    if v > 0 then
+                        if not mn or v < mn then mn = v end
+                        if v < 1 then lt1 = lt1 + 1 end
+                        if v < 5e-4 then under = under + 1 end
+                    end
+                end
+            end
+            out[#out + 1] = string.format("%s n=%d min=%s under1=%d underEps=%d",
+                name, c, tostring(mn), lt1, under)
+        end
+        return table.concat(out, " | ")
+    end,
     chunkOrphans = function()
         local noMap, notInGrid, inGrid = 0, 0, 0
         local byMap = {}

@@ -123,8 +123,14 @@ FIELD_OPTS[FIELD_BASE] = { maxRadius = REGIONAL_FIELD_RADIUS }
 FIELD_OPTS[FIELD_ENEMY] = { maxRadius = REGIONAL_FIELD_RADIUS }
 FIELD_OPTS[FIELD_RESOURCE] = { maxRadius = RESOURCE_FIELD_RADIUS }
 FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS }
-FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
-FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS }
+-- The death field's whole range is small: a squad wipe step deposits
+-- FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT (0.005) and the source scale is 0.75/8, so
+-- one death is 4.7e-4 - BELOW the shared eps of 5e-4, meaning a single death used to
+-- vanish from the field and only accumulated deaths (generator clamped at 1 -> 0.094)
+-- were visible. eps per field keeps the threshold meaningful at every magnitude.
+local DEATH_EPS = 1e-6
+FIELD_OPTS[FIELD_DEATH_GAIN] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS }
+FIELD_OPTS[FIELD_DEATH_LOSS] = { decay = DEATH_DECAY, maxRadius = DEATH_RADIUS, eps = DEATH_EPS }
 
 local function fieldOpts(fieldType, opts)
     return opts or FIELD_OPTS[fieldType]
