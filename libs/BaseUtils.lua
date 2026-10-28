@@ -893,6 +893,13 @@ end
 -- candidate at once; queueing them all in one tick cost 3.8ms.
 local UPGRADE_WAVE_PER_CALL = 4
 
+-- A structure queued by the current wave. base.structures maps unitNumber to the
+-- identity it was last upgraded to, and queueUpgrade does not change it, so a plain
+-- scan would queue the same structures again on the next call. Marking the entry
+-- makes the wave self-describing: no snapshot list, no cursor, and a structure can
+-- only be in flight once.
+local STRUCT_UPGRADE_PENDING = -1
+
 function BaseUtils.processBaseMutation(chunk, map, base)
     if not base.alignment[1]
         or (base.stateGeneration ~= BASE_GENERATION_STATE_ACTIVE)
@@ -904,24 +911,28 @@ function BaseUtils.processBaseMutation(chunk, map, base)
 
     -- Drain a pending version wave first: bounded work per call, so a big base
     -- levels up over several ticks instead of in one.
-    local wave = base.upgradeWave
-    if wave then
-        local i = base.upgradeWaveIndex or 1
+    if base.upgradeWave then
+        local target = base.identity
+        local structures = base.structures
+        local entities = base.structureEntities
         local queued = 0
-        while i <= #wave and queued < UPGRADE_WAVE_PER_CALL do
-            local unitNumber = wave[i]
-            local packed = base.structures and base.structures[unitNumber]
-            local entity = base.structureEntities and base.structureEntities[unitNumber]
-            if entity and entity.valid and packed ~= base.identity then
-                BaseUtils.queueUpgrade(entity, base, nil, true)
-                queued = queued + 1
+        if structures then
+            for unitNumber, packed in pairs(structures) do
+                if queued >= UPGRADE_WAVE_PER_CALL then break end
+                if packed >= 0 and packed ~= target then
+                    local entity = entities and entities[unitNumber]
+                    if entity and entity.valid then
+                        structures[unitNumber] = STRUCT_UPGRADE_PENDING
+                        BaseUtils.queueUpgrade(entity, base, nil, true)
+                        queued = queued + 1
+                    end
+                end
             end
-            i = i + 1
         end
-        base.upgradeWaveIndex = i
-        if i > #wave then
+        -- Nothing left to queue: the wave is done. Structures in flight are marked
+        -- pending, so this also covers the normal end of a wave.
+        if queued == 0 then
             base.upgradeWave = nil
-            base.upgradeWaveIndex = nil
         end
         return
     end
@@ -951,19 +962,12 @@ function BaseUtils.processBaseMutation(chunk, map, base)
                         tier = base.upgradeVersion, reason = "points",
                     })
                 end
-                -- Snapshot the wave instead of queueing it inline: a large base
-                -- queued every mismatched structure in ONE nest tick, and each
-                -- queueUpgrade does prototype work plus telemetry (measured 3.8ms
-                -- in a single `nests` sample). The wave list is drained a few per
-                -- call below.
-                local wave = {}
-                for unitNumber, packed in pairs(base.structures or {}) do
-                    if packed ~= base.identity then
-                        wave[#wave + 1] = unitNumber
-                    end
-                end
-                base.upgradeWave = wave
-                base.upgradeWaveIndex = 1
+                -- Flag a wave instead of queueing every structure inline: a large
+                -- base queued all of them in ONE nest tick, and each queueUpgrade
+                -- does prototype work plus telemetry (measured 3.8ms in a single
+                -- `nests` sample). The wave reads base.structures directly, a few
+                -- structures per call, marking each one pending as it queues it.
+                base.upgradeWave = true
             end
         end
     end
