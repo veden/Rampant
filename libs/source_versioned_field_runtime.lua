@@ -195,6 +195,10 @@ function Runtime.fieldKey(fieldType)
     return tostring(fieldType)
 end
 
+-- Reusable entry tables for buildSources: the diagnostic path and every read that
+-- needs a fresh source list would otherwise allocate one table per source.
+local SourceScratch = {}
+
 -- Free list for source-queue items. Every decaying generator queues one change
 -- per chunk per tick (the death generator alone did this for ~83 chunks, and it
 -- was the largest remaining allocator at 3.8KB/tick). Items live from enqueue to
@@ -413,13 +417,27 @@ function Runtime.ensureSolved(fieldType, opts)
     -- chunks one decay step above the exact solve at the radius boundary, still
     -- 116 after a natural reconcile but 0 after a one-shot scan). The SOLVE is still
     -- spread below, which is the expensive half.
-    build.list = {}
+    -- Reuse the entry tables: a rebuild allocates one per source otherwise (262 on
+    -- the user's save, thousands on a large one), and the list is rebuilt every
+    -- reconcile. Entries past the new count are dropped so a shrinking source set
+    -- does not keep stale tables alive.
+    local list = build.list or {}
+    local n = 0
     for _, chunk in pairs(Universe.chunkById or {}) do
         local value = Runtime.sourceValue(chunk, fieldType)
         if value > 0 then
-            build.list[#build.list + 1] = { id = chunk.id, gen = value }
+            n = n + 1
+            local entry = list[n]
+            if entry then
+                entry.id = chunk.id
+                entry.gen = value
+            else
+                list[n] = { id = chunk.id, gen = value }
+            end
         end
     end
+    for i = #list, n + 1, -1 do list[i] = nil end
+    build.list = list
     build.iterator = nil
     build.done = true
     if not build.done then
@@ -846,9 +864,18 @@ function Runtime.buildSources(fieldType)
     for _, chunk in pairs(Universe.chunkById or {}) do
         local value = Runtime.sourceValue(chunk, fieldType)
         if value > 0 then
-            sources[#sources + 1] = { id = chunk.id, gen = value }
+            local n = #sources + 1
+            local entry = SourceScratch[fieldType] and SourceScratch[fieldType][n]
+            if entry then
+                entry.id = chunk.id
+                entry.gen = value
+                sources[n] = entry
+            else
+                sources[n] = { id = chunk.id, gen = value }
+            end
         end
     end
+    SourceScratch[fieldType] = sources
     return sources
 end
 
