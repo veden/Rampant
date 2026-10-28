@@ -689,6 +689,12 @@ end
 -- by cursor every tick, sweeps ~9k chunks in ~1,100 ticks at ~1ms/tick worst case.
 local RECONCILE_PER_CALL = 8
 
+-- Reclaims per call. Examining a chunk is cheap, but RECLAIMING one is not: it
+-- clears the chunk's entries in every field and propagates a source removal, which
+-- measured 15.5ms in a single tick when a sweep found several at once. The scan
+-- looks at 8, but only this many are reclaimed per call.
+local RECONCILE_RECLAIMS_PER_CALL = 2
+
 function MapUtils.reconcileOrphanChunks()
     local removed = 0
     local orphan
@@ -744,7 +750,8 @@ function MapUtils.reconcileOrphanChunks()
         end
     end
     if orphan then
-        for i = 1, #orphan do
+        local reclaims = math.min(#orphan, RECONCILE_RECLAIMS_PER_CALL)
+        for i = 1, reclaims do
             local chunk = orphan[i]
             MapUtils.removeChunkFromMap(chunk.map or { chunks = {} }, chunk)
             removed = removed + 1
