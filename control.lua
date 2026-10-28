@@ -2078,6 +2078,11 @@ remote.add_interface("Rampant", {
         if not fType then return "unknown field: " .. tostring(name) end
         return SourceVersionedFieldRuntime.fieldDiag(fType, chunkId)
     end,
+    buildState = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.buildState(fType)
+    end,
     rebuildField = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end

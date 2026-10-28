@@ -888,6 +888,19 @@ end
 --- change for the same chunk, so a removal that ran out of budget stranded the
 --- field too high until the periodic reconcile (measured: 1,641 chunks off by up
 --- to 89% on the enemy field).
+--- Build state for a field: is a rebuild in progress, how far, is it done?
+function Runtime.buildState(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    local build = SourceBuilds[key]
+    local solvedAt = Universe.sourceVersionedSolvedAt
+    return string.format("solved=%s prov=%s build=%s done=%s list=%d iterKey=%s solvedAt=%s tick=%d",
+        tostring(SolvedFields[key]), tostring(FieldProvenance[key] ~= nil),
+        tostring(build ~= nil), tostring(build and build.done),
+        (build and build.list and #build.list) or -1,
+        tostring(build and build.iterator),
+        tostring(solvedAt and solvedAt[key]), game.tick)
+end
+
 --- Explain one chunk's value: live, exact, and where each came from.
 function Runtime.fieldDiag(fieldType, chunkId)
     local key = Runtime.fieldKey(fieldType)

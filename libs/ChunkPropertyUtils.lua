@@ -92,19 +92,46 @@ local KAMIKAZE_SCALE = 0.95
 -- and it cuts the propagation rate by roughly 5x.
 local PLAYER_SOURCE_CHANGE_FRACTION = 0.05
 
+-- A source change is queued when it differs from what the FIELD was last told, by
+-- at least this fraction of that value, or when this many ticks have passed (so a
+-- slow decay still tracks). Throttling against the current value instead compounds:
+-- each step is measured against an already-lagging value, and the field drifts
+-- arbitrarily far under the exact solve (measured: 116 base chunks 12% low, then
+-- 7,201 chunks with maxRel 100% once the throttle also filtered increases).
+local SOURCE_CHANGE_FLUSH_TICKS = 300
+
+local function shouldQueue(chunk, stateKey, value, tick)
+    local queued = chunk[stateKey]
+    local queuedTick = chunk[stateKey .. "Tick"]
+    if queued == nil then
+        chunk[stateKey] = value
+        chunk[stateKey .. "Tick"] = tick
+        return true
+    end
+    local delta = value - queued
+    if delta < 0 then delta = -delta end
+    local reference = queued < 0 and -queued or queued
+    local flush = not queuedTick or (tick - queuedTick) >= SOURCE_CHANGE_FLUSH_TICKS
+    if reference == 0 or delta >= reference * PLAYER_SOURCE_CHANGE_FRACTION or flush then
+        chunk[stateKey] = value
+        chunk[stateKey .. "Tick"] = tick
+        return true
+    end
+    return false
+end
+
 local function queuePlayerSourceChange(chunk, oldValue, newValue)
     local runtime = SourceVersionedFieldRuntime
     if not runtime or not runtime.isInitialized() then return end
     if not chunk or chunk.id == nil then return end
     if oldValue == newValue then return end
-    if oldValue and oldValue > 0 and newValue and newValue > 0 then
-        local delta = newValue - oldValue
-        if delta < 0 then delta = -delta end
-        if delta < oldValue * PLAYER_SOURCE_CHANGE_FRACTION then return end
-    end
-    runtime.queueSource(chunk, PLAYER_PHEROMONE, oldValue, newValue)
+    if not shouldQueue(chunk, "playerGenReported", newValue, game.tick) then return end
+    -- Report the delta since the LAST REPORTED value, not since the previous tick.
+    local reported = chunk.playerGenReportedPrev or oldValue
+    chunk.playerGenReportedPrev = newValue
+    runtime.queueSource(chunk, PLAYER_PHEROMONE, reported, newValue)
     runtime.queueSource(chunk, KAMIKAZE_PHEROMONE,
-        oldValue * KAMIKAZE_SCALE, newValue * KAMIKAZE_SCALE)
+        reported * KAMIKAZE_SCALE, newValue * KAMIKAZE_SCALE)
 end
 
 -- The death field is signed, so one generator write queues two fields (the
@@ -123,14 +150,11 @@ local function queueDeathSourceChange(chunk, oldCombined)
     -- grew without bound (measured 496,018 nodes, 377MB of Lua state, 87KB/tick
     -- allocated). Only propagate a decrease once it is a visible fraction of the
     -- value, and always propagate extinction.
-    if newCombined ~= 0 and oldCombined ~= 0 then
-        local delta = newCombined - oldCombined
-        if delta < 0 then delta = -delta end
-        local reference = oldCombined < 0 and -oldCombined or oldCombined
-        if reference > 0 and delta < reference * PLAYER_SOURCE_CHANGE_FRACTION then
-            return
-        end
-    end
+    -- Same rule as the player generator: throttle against the last reported value
+    -- so the drift is bounded, and flush periodically so slow decay still tracks.
+    if not shouldQueue(chunk, "deathGenReported", newCombined, game.tick) then return end
+    oldCombined = chunk.deathGenReportedPrev or oldCombined
+    chunk.deathGenReportedPrev = newCombined
     local oldGain = oldCombined > 0 and oldCombined or 0
     local oldLoss = oldCombined < 0 and -oldCombined or 0
     local newGain = newCombined > 0 and newCombined or 0
