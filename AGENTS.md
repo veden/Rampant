@@ -9,7 +9,7 @@ Rampant is a Factorio mod that implements advanced enemy AI using pheromone-base
 ## How the AI Works
 
 1. **Pheromone System**: Enemies use potential fields (not standard pathfinding) for single-step pathfinding
-2. **Source-Versioned Fields**: every field (base, enemy, resource, player, kamikaze, and the signed death gain/loss pair) is a max-plus potential field solved by `libs/source_versioned_field.lua`. There is no periodic sweep and no dirty queue: a write is a queued source change, and each field drains its own queue on a per-tick budget, propagating from the changed sources. Fields are solved lazily on first read and kept in `storage.universe.sourceVersionedFields`.
+2. **Source-Versioned Fields**: every field (base, enemy, resource, player, kamikaze, and the signed death gain/loss pair) is a max-plus potential field solved by `libs/source_versioned_field.lua`. There is no dirty-chunk queue: a write is a queued source change, and each field drains its own queue on a per-tick budget, propagating from the changed sources. Fields are solved lazily on first read and kept in `storage.universe.sourceVersionedFields`. On top of the event path there IS a periodic exact rebuild (default every 5 game-minutes); see "Fields Are Event-Driven, With a Load-Bearing Resync" for why it cannot be removed at the current source density.
 3. **Squads**: Unit groups that probe defenses, retreat when outnumbered, call reinforcements, and hunt players
 4. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
 5. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
