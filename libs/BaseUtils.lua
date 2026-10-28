@@ -26,6 +26,7 @@ local Universe
 -- imports
 
 local Utils = require("Utils")
+local nextFrom = Utils.nextFrom
 local MathUtils = require("MathUtils")
 local Constants = require("Constants")
 local MapUtils = require("MapUtils")
@@ -431,7 +432,7 @@ function BaseUtils.recycleBases()
     if not id then
         Universe.recycleBaseIterator = nil
     else
-        Universe.recycleBaseIterator = next(bases, id)
+        Universe.recycleBaseIterator = nextFrom(bases, id)
         local map = base.map
         if (base.chunkCount == 0) or not map.surface.valid then
             bases[id] = nil
@@ -912,7 +913,7 @@ function BaseUtils.processBaseMutation(chunk, map, base)
         local cursor = base.upgradeWaveCursor
         local queued = 0
         while queued < UPGRADE_WAVE_PER_CALL do
-            local unitNumber, packed = next(structures, cursor)
+            local unitNumber, packed = nextFrom(structures, cursor)
             if unitNumber == nil then
                 base.upgradeWave = nil
                 base.upgradeWaveCursor = nil
@@ -1481,7 +1482,7 @@ function BaseUtils.processBaseAIs(tick)
         return
     end
     if true then
-        Universe.processBaseAIIterator = next(Universe.bases, baseId)
+        Universe.processBaseAIIterator = nextFrom(Universe.bases, baseId)
         if (tick - base.tick) <= BASE_PROCESS_INTERVAL then
             return
         end

@@ -138,6 +138,19 @@ end
 
 --- Takes the corner as two numbers: chunk records no longer carry x/y (they are
 --- derived from the key), and this avoids building a position table per call.
+--- next(t, cursor), tolerating a cursor whose key has been REMOVED since the last
+--- call. Lua raises "invalid key to 'next'" for a stale key - the same error that
+--- killed an earlier iterator after an id compaction - and every cross-tick cursor
+--- in this mod walks a table that removals can shrink (bases, structures, chunk
+--- registries). A vanished cursor restarts the pass from the beginning, which is
+--- safe because every such pass is idempotent per entry.
+function Utils.nextFrom(t, cursor)
+    if cursor ~= nil and t[cursor] == nil then
+        return next(t, nil)
+    end
+    return next(t, cursor)
+end
+
 -- Chunk key <-> corner coordinates. The key is cx * 2^27 + cy, so the inverse must
 -- ROUND (cy can be negative and moves the quotient by up to 0.25), and it works for
 -- engine LuaChunkPosition objects too, which carry x/y and no key.

@@ -235,4 +235,30 @@ my_collection:add('setPositionInQuery_array_and_named', function()
     assert(query.position.x == 12 and query.position.y == 34, "query named slots updated")
 end)
 
+-- A cursor whose key was removed since the last call is what a mid-wave structure
+-- removal (or an id compaction) leaves behind; plain next() raises
+-- "invalid key to 'next'" on it.
+my_collection:add('nextFrom_tolerates_a_removed_cursor', function()
+    local t = { a = 1, b = 2, c = 3 }
+    -- An absent key is what a rebuilt table (id compaction) or a removed structure
+    -- leaves behind. Lua keeps tombstones for a while, so it has to be genuinely
+    -- absent for next() to raise "invalid key to 'next'".
+    local k2, v2 = Utils.nextFrom(t, "gone")
+    assert(k2 ~= nil and v2 ~= nil, "nextFrom must restart instead of erroring on an absent cursor")
+end)
+
+my_collection:add('nextFrom_with_valid_cursor_resumes_after_it', function()
+    local t = { a = 1, b = 2, c = 3 }
+    local first = next(t, nil)
+    local k2 = Utils.nextFrom(t, first)
+    assert(k2 ~= nil and k2 ~= first, "a live cursor must continue, not restart")
+end)
+
+my_collection:add('nextFrom_with_nil_cursor_starts_at_the_beginning', function()
+    local t = { a = 1 }
+    local k = Utils.nextFrom(t, nil)
+    assert(k == "a", "nil cursor starts the pass")
+    assert(Utils.nextFrom(t, k) == nil, "a finished pass returns nil")
+end)
+
 return my_collection

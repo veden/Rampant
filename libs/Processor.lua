@@ -28,6 +28,7 @@ local Queries
 -- imports
 
 local Utils = require("Utils")
+local nextFrom = Utils.nextFrom
 local MapUtils = require("MapUtils")
 local Squad = require("Squad")
 local SquadLogic = require("squad_logic")
@@ -382,7 +383,7 @@ function Processor.processNests(tick)
         return
     end
 
-    Universe.processNestIterator = next(Universe.chunkToNests, chunkId)
+    Universe.processNestIterator = nextFrom(Universe.chunkToNests, chunkId)
     local map = chunk.map
     if not map.surface.valid then
         removeChunkToNest(chunkId)
@@ -436,7 +437,7 @@ local function processSpawnersBody(iterator, chunks)
         Universe[iterator] = nil
         return
     end
-    Universe[iterator] = next(chunks, chunkId)
+    Universe[iterator] = nextFrom(chunks, chunkId)
     local map = chunk.map
     if not map.surface.valid then
         if (iterator == "processMigrationIterator") then
@@ -506,7 +507,7 @@ function Processor.processHives(tick)
     if tick < hiveData.tick then
         return
     end
-    Universe.hiveIterator = next(Universe.activeHives, entityId)
+    Universe.hiveIterator = nextFrom(Universe.activeHives, entityId)
     local base = hiveData.base
     local map = base.map
     if not map.surface.valid then
@@ -567,7 +568,7 @@ function Processor.cleanHivesData()
         return
     end
 
-    Universe.hiveDataIterator = next(Universe.hiveData, entityId)
+    Universe.hiveDataIterator = nextFrom(Universe.hiveData, entityId)
     if not Universe.hives[hiveData.hiveId] then
         Universe.hiveData[entityId] = nil
     end

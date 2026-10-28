@@ -34,6 +34,7 @@ local BaseUtils = require("BaseUtils")
 local MathUtils = require("MathUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local Utils = require("Utils")
+local nextFrom = Utils.nextFrom
 local SquadLogic = require("squad_logic")
 local Executor = require("runtime/Executor")
 
@@ -850,7 +851,7 @@ function Squad.cleanSquads(tick)
             Universe.groupNumberToSquad = {}
         end
     else
-        Universe.squadIterator = next(squads, groupId)
+        Universe.squadIterator = nextFrom(squads, groupId)
         local group = squad.group
         if not group.valid then
             if squad.chunk ~= -1 then
