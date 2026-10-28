@@ -893,12 +893,6 @@ end
 -- candidate at once; queueing them all in one tick cost 3.8ms.
 local UPGRADE_WAVE_PER_CALL = 4
 
--- A structure queued by the current wave. base.structures maps unitNumber to the
--- identity it was last upgraded to, and queueUpgrade does not change it, so a plain
--- scan would queue the same structures again on the next call. Marking the entry
--- makes the wave self-describing: no snapshot list, no cursor, and a structure can
--- only be in flight once.
-local STRUCT_UPGRADE_PENDING = -1
 
 function BaseUtils.processBaseMutation(chunk, map, base)
     if not base.alignment[1]
@@ -912,28 +906,31 @@ function BaseUtils.processBaseMutation(chunk, map, base)
     -- Drain a pending version wave first: bounded work per call, so a big base
     -- levels up over several ticks instead of in one.
     if base.upgradeWave then
-        local target = base.identity
         local structures = base.structures
         local entities = base.structureEntities
+        local target = base.identity
+        local cursor = base.upgradeWaveCursor
         local queued = 0
-        if structures then
-            for unitNumber, packed in pairs(structures) do
-                if queued >= UPGRADE_WAVE_PER_CALL then break end
-                if packed >= 0 and packed ~= target then
-                    local entity = entities and entities[unitNumber]
-                    if entity and entity.valid then
-                        structures[unitNumber] = STRUCT_UPGRADE_PENDING
-                        BaseUtils.queueUpgrade(entity, base, nil, true)
-                        queued = queued + 1
-                    end
+        while queued < UPGRADE_WAVE_PER_CALL do
+            local unitNumber, packed = next(structures, cursor)
+            if unitNumber == nil then
+                base.upgradeWave = nil
+                base.upgradeWaveCursor = nil
+                return
+            end
+            cursor = unitNumber
+            if packed ~= target then
+                local entity = entities and entities[unitNumber]
+                if entity and entity.valid then
+                    BaseUtils.queueUpgrade(entity, base, nil, true)
+                    queued = queued + 1
                 end
             end
         end
-        -- Nothing left to queue: the wave is done. Structures in flight are marked
-        -- pending, so this also covers the normal end of a wave.
-        if queued == 0 then
-            base.upgradeWave = nil
-        end
+        -- Next call resumes exactly after the last structure examined. The pass is
+        -- over when next() runs off the end. New structures that register while a
+        -- wave is in flight may be missed by it; the next version bump catches them.
+        base.upgradeWaveCursor = cursor
         return
     end
 
