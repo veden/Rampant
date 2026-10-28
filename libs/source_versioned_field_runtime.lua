@@ -407,23 +407,21 @@ function Runtime.ensureSolved(fieldType, opts)
         build = { list = {}, iterator = nil, epoch = epoch }
         SourceBuilds[key] = build
     end
-    local examined = 0
-    local iter = build.iterator
-    while examined < SOURCE_BUILD_PER_TICK do
-        local chunkId, chunk = next(Universe.chunkById or {}, iter)
-        if not chunk then
-            build.iterator = nil
-            build.done = true
-            break
-        end
-        iter = chunkId
-        examined = examined + 1
+    -- ONE scan, not a spread one. Walking chunkById costs about a microsecond per
+    -- chunk with no entity queries, and spreading it let a source disappear between
+    -- two scan ticks: the stale entry survived into the rebuilt field (measured: 110
+    -- chunks one decay step above the exact solve at the radius boundary, still
+    -- 116 after a natural reconcile but 0 after a one-shot scan). The SOLVE is still
+    -- spread below, which is the expensive half.
+    build.list = {}
+    for _, chunk in pairs(Universe.chunkById or {}) do
         local value = Runtime.sourceValue(chunk, fieldType)
         if value > 0 then
             build.list[#build.list + 1] = { id = chunk.id, gen = value }
         end
     end
-    build.iterator = iter
+    build.iterator = nil
+    build.done = true
     if not build.done then
         -- Still scanning: readers see the (empty) field for a few ticks rather
         -- than one tick paying for the whole map.
@@ -893,7 +891,10 @@ function Runtime.buildState(fieldType)
     local key = Runtime.fieldKey(fieldType)
     local build = SourceBuilds[key]
     local solvedAt = Universe.sourceVersionedSolvedAt
-    return string.format("solved=%s prov=%s build=%s done=%s list=%d iterKey=%s solvedAt=%s tick=%d",
+    local counts = Universe.sourceVersionedSourceCount or {}
+    local scanned = #Runtime.buildSources(fieldType)
+    return string.format("solvedSources=%d scannedSources=%d solved=%s prov=%s build=%s done=%s list=%d iterKey=%s solvedAt=%s tick=%d",
+        counts[key] or -1, scanned,
         tostring(SolvedFields[key]), tostring(FieldProvenance[key] ~= nil),
         tostring(build ~= nil), tostring(build and build.done),
         (build and build.list and #build.list) or -1,
@@ -927,27 +928,33 @@ function Runtime.fieldDiag(fieldType, chunkId)
         (chunk and Runtime.sourceValue(chunk, fieldType)) or 0)
 end
 
---- Throw the field away and solve it from scratch, spread over ticks like a normal
---- reconcile. Then a verifyField comparison says whether the propagation agrees
---- with the oracle, instead of whether the stored field is stale.
+--- Solve the field from scratch in ONE call. A diagnostic: the incremental build
+--- (SOURCE_BUILD_PER_TICK) plus 400 ensureSolved calls is heavy enough to stall the
+--- game for many seconds, so this assigns the exact solve directly and lets the
+--- caller compare from a known-exact state.
 function Runtime.rebuildField(fieldType)
     local key = Runtime.fieldKey(fieldType)
-    SolvedFields[key] = false
-    SourceBuilds[key] = nil
-    Universe.sourceVersionedFields[key] = {}
-    FieldProvenance[key] = {}
-    FieldSecond[key] = {}
-    Universe.sourceVersionedFrontier[key] = nil
-    Universe.sourceVersionedRemoval[key] = nil
     local opts = fieldOpts(fieldType, nil)
-    for _ = 1, 400 do
-        local build = SourceBuilds[key]
-        if build and build.done then break end
-        Universe.solveWorkTick = nil
-        Universe.solveWorkLeft = 1e9
-        Runtime.ensureSolved(fieldType, opts)
+    local sources = Runtime.buildSources(fieldType)
+    local field, prov, second = Solver.solveWithMetadata(sources, Runtime.neighborOf, opts)
+    Universe.sourceVersionedFields[key] = field
+    FieldProvenance[key] = prov
+    FieldSecond[key] = second
+    SolvedFields[key] = true
+    SourceBuilds[key] = nil
+    local solvedAt = Universe.sourceVersionedSolvedAt
+    if not solvedAt then
+        solvedAt = {}
+        Universe.sourceVersionedSolvedAt = solvedAt
     end
-    return true
+    solvedAt[key] = game.tick
+    local counts = Universe.sourceVersionedSourceCount
+    if not counts then
+        counts = {}
+        Universe.sourceVersionedSourceCount = counts
+    end
+    counts[key] = #sources
+    return #sources
 end
 
 --- Sample chunks whose live value differs from a fresh exact solve, with the
