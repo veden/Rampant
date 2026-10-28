@@ -342,11 +342,13 @@ local REMOVAL_MAX_WORK_Per_CALL = 256
 -- One pop costs ~13us on a dense field, so 256 pops was a 3.4ms slice inside a
 -- single tick (measured during the periodic field rebuild). 128 halves the worst
 -- slice and doubles the rebuild's spread.
--- Pop slices per rebuild call. A pop costs ~13us on a dense field, so 128 was a
--- 1.5-3.3ms slice inside whichever tick triggered the rebuild. 64 halves that and
--- only doubles how long a rebuild takes to finish (~2s of game time), during which
--- the old field stays readable.
-local SOURCE_SOLVE_WORK_PER_TICK = 64
+-- Pop slices per rebuild call. Sized against the SIMULATION, not just the tick: a
+-- full field is ~8,850 nodes, so 64 pops/tick refreshes it in 2.3s of game time,
+-- while a behemoth biter (0.3 tiles/tick) needs 1.8s to cross ONE chunk. At 32 it
+-- takes 4.6s - about 2.5 chunk-crossings - which is still faster than any squad can
+-- outrun the gradient it is steering by. A pop costs ~13us, so this is also the
+-- per-tick slice: 32 x 13us ~ 0.4ms.
+local SOURCE_SOLVE_WORK_PER_TICK = 32
 local SourceBuilds = {}
 
 -- Ticks between full reconciliations of one field. The incremental path only
