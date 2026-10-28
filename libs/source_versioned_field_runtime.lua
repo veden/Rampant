@@ -33,14 +33,8 @@ local Runtime = {}
 local Universe
 -- Per-field source-change queues. Each field drains on its own budget so a
 -- slow field (resource) cannot starve a decision-critical one (base/enemy).
-local SourceQueues = {}
-local QueueIndex = {}
-local DRAIN_PER_TICK = 40
-local FIELD_DRAIN_PER_TICK = {}
-local FIELD_DRAIN_ACC = {}
 local FIELD_CADENCE = {}
-local PROPAGATION_MAX_WORK_PER_TICK = Constants.PROPAGATION_MAX_WORK_PER_TICK
-local BOUNDED_OPTS = { maxWork = PROPAGATION_MAX_WORK_PER_TICK }
+local FIELD_DRAIN_PER_TICK = {}
 local Initialized = false
 local SolvedFields = {}
 local FieldProvenance = {}
@@ -51,23 +45,6 @@ local FieldSecond = {}
 -- creation and the layout version check live in ensureStorage(), which is called
 -- from init(addProperties=true) and from the tick path.
 local SOLVE_VERSION = 3
-local EMPTY_SOLVED = {}
-local EMPTY_TOP = {}
-local EMPTY_SECOND = {}
-local EMPTY_SECOND_SOURCE = {}
-
-local function bindSolvedState()
-    -- The field tables MUST live in storage: multiplayer transfers storage, and
-    -- a late-joining client re-executes the module code with empty module tables.
-    -- The incremental solver does not reproduce a full solve exactly (measured:
-    -- 21 mismatches, 606 live-only chunks), so a client that re-derived them
-    -- locally would disagree with the host. Only pure derivations may live
-    -- outside storage (see RamState.neighborIds).
-    SolvedFields = Universe.sourceVersionedSolved
-    FieldProvenance = Universe.sourceVersionedProvenance or EMPTY_TOP
-    FieldSecond = Universe.sourceVersionedSecond
-end
-
 local FIELD_PLAYER = Constants.PLAYER_PHEROMONE
 local FIELD_BASE = Constants.BASE_PHEROMONE
 local FIELD_ENEMY = Constants.ENEMY_PHEROMONE
@@ -110,11 +87,6 @@ local DEATH_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
 -- value(v) = max(ownSource(v), max(neighbour) * decay), recomputed only where
 -- something changed. Cheap to reason about and exact at quiescence, at the cost of
 -- reaching it iteratively - test/tune per field via FIELD_OPTS[field].relax.
-local RELAX_POPS_PER_TICK = 128
-
--- Per-field solver options. A field's reach is log(eps/source)/log(decay), so
--- leaving decay at the shared default makes every field's extent an accident of
--- its source magnitude; the kamikaze field needs its own.
 local FIELD_OPTS = {}
 -- Radius caps on the two fields the player writes every tick. Nominal reach at
 -- decay 0.9 / eps 5e-4 is 126 hops (~4000 tiles), so one step improved most of
@@ -149,8 +121,7 @@ function Runtime.ensureStorage()
     if not U then return end
     if U.sourceVersionedSolveVersion == SOLVE_VERSION
         and U.sourceVersionedProvenance then
-        bindSolvedState()
-        return
+            return
     end
     -- New save, or state from an older layout. The field values and the top-two
     -- metadata must be dropped together: the decrease path is only exact while the
@@ -164,7 +135,6 @@ function Runtime.ensureStorage()
     U.sourceVersionedSolveVersion = SOLVE_VERSION
     SourceQueues = {}
     QueueIndex = {}
-    bindSolvedState()
 end
 
 function Runtime.init(universe, addProperties)
@@ -190,7 +160,6 @@ function Runtime.init(universe, addProperties)
     FIELD_DRAIN_PER_TICK[FIELD_KAMIKAZE] = 10
     FIELD_DRAIN_PER_TICK[FIELD_DEATH_GAIN] = 10
     FIELD_DRAIN_PER_TICK[FIELD_DEATH_LOSS] = 10
-    bindSolvedState()
     if addProperties then
         Runtime.ensureStorage()
     end
@@ -212,147 +181,20 @@ end
 
 -- Reusable entry tables for buildSources: the diagnostic path and every read that
 -- needs a fresh source list would otherwise allocate one table per source.
-local SourceScratch = {}
-
--- Defined with the relaxation solver below; queueSource/ensureSolved need them earlier.
-local relaxPush, relaxState, relaxNode
-
--- Free list for source-queue items. Every decaying generator queues one change
--- per chunk per tick (the death generator alone did this for ~83 chunks, and it
--- was the largest remaining allocator at 3.8KB/tick). Items live from enqueue to
--- drain, so they are recycled at drain time rather than reused from a monotonic
--- index.
-local SourceItemFree = {}
-local SourceItemFreeCount = 0
--- Diagnostics for the pool: a regression here (created growing every tick) is the
--- bug that made the death generator the largest allocator in the mod.
-local SourceItemCreated = 0
-
-local function takeSourceItem(chunk, fieldType, oldValue, newValue)
-    local item
-    local profile = Universe.allocProfile
-    if profile then
-        profile.queueNew = (profile.queueNew or 0)
-        profile.queueHit = (profile.queueHit or 0)
-    end
-    if SourceItemFreeCount > 0 then
-        if profile then profile.queueHit = profile.queueHit + 1 end
-        item = SourceItemFree[SourceItemFreeCount]
-        SourceItemFree[SourceItemFreeCount] = nil
-        SourceItemFreeCount = SourceItemFreeCount - 1
-    else
-        item = {}
-        SourceItemCreated = SourceItemCreated + 1
-        if profile then profile.queueNew = profile.queueNew + 1 end
-    end
-    item.chunk = chunk
-    item.fieldType = fieldType
-    item.oldValue = oldValue
-    item.newValue = newValue
-    return item
-end
-
-local function releaseSourceItem(item)
-    if not item then return end
-    SourceItemFreeCount = SourceItemFreeCount + 1
-    SourceItemFree[SourceItemFreeCount] = item
-end
-
--- Depth-indexed scratch frames for the drain. The drain allocates a scratch table
--- per field per tick plus one per source change and per increase; measured at
--- 8.2KB/tick, the single largest allocator in the mod. Frames are indexed by
--- nesting depth because process() can re-enter (removeSource/ensureSolved read a
--- field), and a shared frame would be clobbered mid-iteration.
-local ScratchFrames = {}
-local ScratchDepth = 0
-
-local function pushScratch()
-    ScratchDepth = ScratchDepth + 1
-    local frame = ScratchFrames[ScratchDepth]
-    if not frame then
-        frame = { sources = {}, count = 0, items = {}, increaseCount = 0 }
-        ScratchFrames[ScratchDepth] = frame
-    end
-    frame.count = 0
-    frame.increaseCount = 0
-    return frame
-end
-
-local function popScratch()
-    ScratchDepth = ScratchDepth - 1
-end
-
-local function allocBump(name, kb)
-    local a = Universe.allocProfile
-    if a then
-        a[name] = (a[name] or 0) + kb * 1024
-    end
-end
-
-local function takeSourceChange(frame, chunk, oldValue, newValue)
-    frame.count = frame.count + 1
-    local entry = frame.sources[frame.count]
-    if not entry then
-        entry = {}
-        frame.sources[frame.count] = entry
-    end
-    entry.chunk = chunk
-    entry.oldValue = oldValue
-    entry.newValue = newValue
-    return entry
-end
-
-local function takeIncreaseItem(frame)
-    frame.increaseCount = frame.increaseCount + 1
-    local inc = frame.items[frame.increaseCount]
-    if not inc then
-        inc = {}
-        frame.items[frame.increaseCount] = inc
-    end
-    return inc
-end
-
 function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not Initialized or not chunk or not chunk.id then return false end
-    local relaxOpts = FIELD_OPTS[fieldType]
-    if relaxOpts and relaxOpts.relax then
-        -- Recompute THIS node immediately so a write is visible to a read in the same
-        -- tick (one node costs ~13us); neighbours still arrive over the following
-        -- ticks through the frontier.
-        local key = Runtime.fieldKey(fieldType)
-        local st = relaxState(key)
-        if not st.seeded then
-            st.dirty = {}
-            Runtime.relaxSeed(fieldType)
-        end
-        relaxNode(fieldType, key, chunk.id, relaxOpts)
-        relaxPush(key, chunk.id)
-        return true
+    local fopts = FIELD_OPTS[fieldType]
+    if not fopts then return false end
+    local key = Runtime.fieldKey(fieldType)
+    local st = relaxState(key)
+    if not st.seeded then
+        st.dirty = {}
+        Runtime.relaxSeed(fieldType)
     end
-
-    -- Coalesce at enqueue time as well as at drain time. A source chunk
-    -- may be touched several times before the queue is drained; keep only the
-    -- first old value and the latest new value.
-    local byChunk = QueueIndex[fieldType]
-    if not byChunk then
-        byChunk = {}
-        QueueIndex[fieldType] = byChunk
-    end
-    local existing = byChunk[chunk.id]
-    if existing then
-        existing.newValue = newValue
-        return true
-    end
-
-    local queue = SourceQueues[fieldType]
-    if not queue then
-        queue = { items = {}, head = 1, count = 0 }
-        SourceQueues[fieldType] = queue
-    end
-    queue.count = queue.count + 1
-    local item = takeSourceItem(chunk, fieldType, oldValue, newValue)
-    queue.items[queue.count] = item
-    byChunk[chunk.id] = item
+    -- Apply THIS node now so a write is visible to a read in the same tick (one node,
+    -- ~13us); neighbours arrive through the frontier over the following ticks.
+    relaxNode(fieldType, key, chunk.id, fopts)
+    relaxPush(key, chunk.id)
     return true
 end
 
@@ -363,12 +205,6 @@ end
 -- solve used to scan every tracked chunk and run a full Dijkstra in one tick:
 -- measured 12.4ms on a ~1k-chunk map (and 40-50ms on the whole tick), once per
 -- field, which is what produced the early-game maximum.
-local SOURCE_BUILD_PER_TICK = 256
--- Propagation work allowed per tick while building a field. The solve is spread
--- like the normal drain so a rebuild cannot spike the tick.
--- A single removal call never exceeds this, whatever the shared allowance says.
--- verifyField sets the allowance to 1e9, and an unbounded resume then propagated
--- for 1.16 SECONDS in one tick.
 local REMOVAL_MAX_WORK_Per_CALL = 256
 -- One pop costs ~13us on a dense field, so 256 pops was a 3.4ms slice inside a
 -- single tick (measured during the periodic field rebuild). 128 halves the worst
@@ -379,7 +215,6 @@ local REMOVAL_MAX_WORK_Per_CALL = 256
 -- takes 4.6s - about 2.5 chunk-crossings - which is still faster than any squad can
 -- outrun the gradient it is steering by. A pop costs ~13us, so this is also the
 -- per-tick slice: 32 x 13us ~ 0.4ms.
-local SOURCE_SOLVE_WORK_PER_TICK = 32
 local SourceBuilds = {}
 
 -- Ticks between full reconciliations of one field. The incremental path only
@@ -396,198 +231,18 @@ local SourceBuilds = {}
 -- 2.5 game-minutes to correct a bounded <=5% error. 15 minutes is still a backstop
 -- and 6x less work. A field also rebuilds on load (no timestamp), after an id
 -- compaction, when its removal heap overflows, and on demand (rebuildField).
-local RECONCILE_INTERVAL = 30 * 60 * 5
-
---- Force the field's incremental source build AND its drain to completion. The
---- rebuild is spread over ticks (SOURCE_BUILD_PER_TICK), so an oracle that only
---- drains the queue compares against a PARTIALLY BUILT field: measured 7,201
---- "mismatches" on the base field immediately after a reconcile, and 118 once the
---- build had finished.
-local function finishBuild(fieldType, opts)
-    local key = Runtime.fieldKey(fieldType)
-    for _ = 1, 400 do
-        local build = SourceBuilds[key]
-        if not build or build.done then break end
-        Universe.solveWorkTick = nil
-        Universe.solveWorkLeft = 1e9
-        Runtime.ensureSolved(fieldType, opts)
-    end
-    for _ = 1, 2000 do
-        Universe.solveWorkTick = nil
-        Universe.solveWorkLeft = 1e9
-        Runtime.process(fieldType, 100000, opts)
-        if Runtime.frontierDepth(fieldType) == 0 and Runtime.queueDepth(fieldType) == 0 then
-            break
-        end
-    end
-end
-
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
-    local relaxOpts = FIELD_OPTS[fieldType]
-    if relaxOpts and relaxOpts.relax then
-        local st = relaxState(key)
-        if not st.seeded then
-            st.dirty = {}
-            Runtime.relaxSeed(fieldType)
-            -- Settle a slice before handing the field out, so the first read after a
-            -- load sees sources rather than an empty table. The rest of the frontier
-            -- drains on the normal per-tick budget.
-            Runtime.relaxStep(fieldType, 512, relaxOpts)
-        end
-        return Universe.sourceVersionedFields[key] or {}, false
+    local fopts = FIELD_OPTS[fieldType] or opts
+    local st = relaxState(key)
+    if not st.seeded then
+        st.dirty = {}
+        Runtime.relaxSeed(fieldType)
+        -- Settle a slice before handing the field out, so the first read after a load
+        -- sees sources rather than an empty table; the rest drains on the tick budget.
+        Runtime.relaxStep(fieldType, 512, fopts)
     end
-    if SolvedFields[key] and FieldProvenance[key] then
-        local solvedAt = Universe.sourceVersionedSolvedAt
-        local last = solvedAt and solvedAt[key]
-        -- `last == nil` means the field was restored from a save that predates the
-        -- timestamp (or from a layout change): its values came from another version
-        -- and must be rebuilt once rather than served forever. Measured on the
-        -- user's 2024 save: the base field sat at 2,970 where the exact value was
-        -- 49,010, and nothing ever reconciled it because the age check never fired.
-        if (not last) or (game.tick - last) > RECONCILE_INTERVAL then
-            -- Rebuild in place: the stored field stays readable until the fresh
-            -- one is swapped in by the rebuild below.
-            SolvedFields[key] = false
-            SourceBuilds[key] = nil
-            if TelemetryG and TelemetryG.isEnabled() then
-                TelemetryG.emit("field.reconcile", { field = key, age = game.tick - last })
-            end
-        else
-            return Universe.sourceVersionedFields[key] or {}, false
-        end
-    end
-    -- A chunk-id compaction re-keys every chunk, so an in-progress build's
-    -- iterator key and source ids belong to the old id space. The epoch makes
-    -- such a build detectable: discard it and restart from the new ids.
-    local epoch = Universe.chunkEpoch or 0
-    local build = SourceBuilds[key]
-    if build and build.epoch ~= epoch then
-        SourceBuilds[key] = nil
-        build = nil
-    end
-    if not build then
-        build = { list = {}, iterator = nil, epoch = epoch }
-        SourceBuilds[key] = build
-    end
-    -- Spread again: a one-pass scan of the whole index is a 1-2ms burst inside
-    -- whichever subsystem happened to trigger the rebuild (measured 4.1ms attributed
-    -- to attackWaves and 2.8ms to sourceFields, both actually this). A spread scan
-    -- let a source disappear between two scan ticks, which is why the completed list
-    -- is REFRESHED against live source values - O(#sources), not O(#chunks).
-    -- Entry tables are reused so a rebuild allocates no per-source tables.
-    local list = build.list or {}
-    build.list = list
-    local n = build.scanned or 0
-    local iter = build.iterator
-    for _ = 1, SOURCE_BUILD_PER_TICK do
-        local chunkId, chunk = nextFrom(Universe.chunkById or {}, iter)
-        if not chunk then
-            build.iterator = nil
-            build.done = true
-            break
-        end
-        iter = chunkId
-        local value = Runtime.sourceValue(chunk, fieldType)
-        if value > 0 then
-            n = n + 1
-            local entry = list[n]
-            if entry then
-                entry.id = chunk.id
-                entry.gen = value
-            else
-                list[n] = { id = chunk.id, gen = value }
-            end
-        end
-    end
-    build.iterator = iter
-    build.scanned = n
-    if not build.done then
-        return Universe.sourceVersionedFields[key] or {}, false
-    end
-    for i = #list, n + 1, -1 do list[i] = nil end
-    -- Compact in one forward pass: keep the sources that still exist (with their
-    -- current generator) and drop the ones that vanished during the scan. A
-    -- swap-with-last here moved an unexamined entry into the slot just passed.
-    local write = 0
-    for read = 1, n do
-        local entry = list[read]
-        local chunk = entry and Universe.chunkById and Universe.chunkById[entry.id]
-        local value = chunk and Runtime.sourceValue(chunk, fieldType) or 0
-        if value > 0 then
-            write = write + 1
-            entry.gen = value
-            if write ~= read then
-                list[write] = entry
-                list[read] = nil
-            end
-        else
-            list[read] = nil
-        end
-    end
-    build.list = list
-    build.count = write
-    if not build.done then
-        -- Still scanning: readers see the (empty) field for a few ticks rather
-        -- than one tick paying for the whole map.
-        return Universe.sourceVersionedFields[key] or {}, false
-    end
-    -- Solve incrementally too, not with one Dijkstra over the whole map. A
-    -- one-shot solve cost 115-154ms on a large save (measured at ticks
-    -- 13484423/39/75), and the reconcile runs about every 30 seconds, so that
-    -- was the periodic spike. Seeding the resumable propagator and draining it
-    -- on a per-tick budget spreads the same work; the swap happens only when
-    -- the heaps empty, so readers keep the old field meanwhile.
-    if not build.field then
-        build.field = {}
-        build.provenance = {}
-        build.second = {}
-        build.hTop = Solver.newIncrementalHeap()
-        build.hSec = Solver.newIncrementalHeap()
-    end
-    -- The solve budget is per TICK, shared by every field and every read:
-    -- scoring a settle reads four fields per neighbour, and a per-call budget of
-    -- 256 pops let one 32-read scoring pass spend 8192 pops in a single tick
-    -- (measured 151ms in squad.settleMove -> squad.score).
-    if Universe.solveWorkTick ~= game.tick then
-        Universe.solveWorkTick = game.tick
-        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
-    end
-    local allowance = Universe.solveWorkLeft or 0
-    if allowance > 0 then
-        local profiler = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
-        local used = Solver.propagateIncreasesWithMetadata(
-            build.list, build.field, build.provenance, build.second,
-            Runtime.neighborOf, { maxWork = allowance,
-                decay = opts and opts.decay, eps = opts and opts.eps,
-                maxRadius = opts and opts.maxRadius },
-            build.hTop, build.hSec)
-        Universe.solveWorkLeft = allowance - (used or 0)
-        if profiler then
-            log({"", "[SUB] tick=", game.tick, " name=field.solve ", profiler})
-        end
-    end
-    if build.hTop.n > 0 or build.hSec.n > 0 then
-        return Universe.sourceVersionedFields[key] or {}, false
-    end
-    local field, prov, second = build.field, build.provenance, build.second
-    Universe.sourceVersionedFields[key] = field
-    FieldProvenance[key] = prov
-    FieldSecond[key] = second
-    SolvedFields[key] = true
-    SourceBuilds[key] = nil
-    local solvedAt = Universe.sourceVersionedSolvedAt
-    if not solvedAt then
-        solvedAt = {}
-        Universe.sourceVersionedSolvedAt = solvedAt
-    end
-    solvedAt[key] = game.tick
-    if TelemetryG and TelemetryG.isEnabled() then
-        TelemetryG.emit("field.solved", {
-            field = key, sources = #build.list, chunks = #field,
-        })
-    end
-    return field, true
+    return Universe.sourceVersionedFields[key] or {}, false
 end
 
 -- Drain ONE field's source-change queue. `budget` is that field's own
@@ -596,201 +251,11 @@ end
 -- one old -> final transition, then runs one multi-source increase propagation.
 function Runtime.process(fieldType, budget, opts, workLimit)
     if not Initialized then return 0 end
-    local key = Runtime.fieldKey(fieldType)
-    local relaxOpts = FIELD_OPTS[fieldType]
-    if relaxOpts and relaxOpts.relax then
-        return Runtime.relaxStep(fieldType, budget, opts or relaxOpts)
-    end
-    local queue = SourceQueues[fieldType]
-    local queueEmpty = (not queue) or queue.head > queue.count
-    -- A frontier left by a previous tick is still work: returning early on an
-    -- empty queue would strand it and the field would stay partial forever
-    -- (observed as the base field's nest staying 0 in pheromone-dynamics).
-    -- A rebuild is spread over ticks and ends by SWAPPING its freshly solved field
-    -- in. Draining the queue while it runs applies the change to the OLD field,
-    -- which the swap then throws away: measured on the base field as 7,201 chunks
-    -- holding 2,970 where the exact value was 49,010, healed only by the next
-    -- reconcile. So while a build is in progress, advance the build and LEAVE the
-    -- queue alone; the first drain after the swap applies every coalesced change to
-    -- the new field.
-    do
-        local build = SourceBuilds[key]
-        if build and not build.done then
-            Universe.solveWorkTick = nil
-            Universe.solveWorkLeft = 1e9
-            Runtime.ensureSolved(fieldType, fieldOpts(fieldType, opts))
-            return 0
-        end
-    end
-    local frontier = Universe.sourceVersionedFrontier[key]
-    -- A stranded removal is work even when the queue and frontier are empty: it
-    -- must be resumed BEFORE the early return below, otherwise a removal with
-    -- nothing else happening on that field is never completed (measured: the base
-    -- field held stale values until the periodic reconcile).
-    if Runtime.hasPendingRemoval(fieldType) then
-        local rprof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
-        Runtime.resumeRemoval(fieldType, fieldOpts(fieldType, opts))
-        if rprof then
-            log({"", "[SUB] tick=", game.tick, " name=sf.resume ", rprof})
-        end
-    end
-    if queueEmpty and not (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
-        if queue then
-            queue.items = {}
-            queue.head = 1
-            queue.count = 0
-        end
-        return 0
-    end
-    if not budget or budget < 1 then budget = DRAIN_PER_TICK end
-
-    -- process() handles ONE field, so the field-keyed `changes` map is
-    -- vestigial: one accumulator is equivalent and drops a table plus a keyed
-    -- lookup per tick.
-    local prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
-    local frame = pushScratch()
-    local sources = frame.sources
-    -- Reuse the frame's dedupe map too; it is keyed by chunk id.
-    local byChunkId = frame.byChunkId
-    if not byChunkId then
-        byChunkId = {}
-        frame.byChunkId = byChunkId
-    end
-    local processed = 0
-    local workUsed = 0
-    while queue and queue.head <= queue.count and processed < budget do
-        local item = queue.items[queue.head]
-        queue.items[queue.head] = nil
-        local byChunk = QueueIndex[fieldType]
-        if byChunk and byChunk[item.chunk.id] == item then
-            byChunk[item.chunk.id] = nil
-        end
-        queue.head = queue.head + 1
-        processed = processed + 1
-
-        if item.chunk and item.chunk.id then
-            local sourceChange = byChunkId[item.chunk.id]
-            if not sourceChange then
-                sourceChange = takeSourceChange(frame, item.chunk, item.oldValue, item.newValue)
-                byChunkId[item.chunk.id] = sourceChange
-            else
-                sourceChange.newValue = item.newValue
-            end
-        end
-        releaseSourceItem(item)
-    end
-
-    if prof then
-        log({"", "[SUB] tick=", game.tick, " name=sf.drain ", prof})
-        prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
-    end
-    local fType = fieldType
-    local fOpts = fieldOpts(fType, opts)
-
-    local kbSolve = Universe.allocProfile and collectgarbage("count") or 0
-    local _, solvedNow = Runtime.ensureSolved(fType, fOpts)
-    if Universe.allocProfile then
-        allocBump("sf.ensureSolved", collectgarbage("count") - kbSolve)
-    end
-    if not SolvedFields[Runtime.fieldKey(fType)] then
-        -- Source list still being built; keep the queue so nothing is lost.
-        for i = 1, frame.count do
-            byChunkId[sources[i].chunk.id] = nil
-        end
-        popScratch()
-        return 0
-    end
-    if prof then
-        log({"", "[SUB] tick=", game.tick, " name=sf.solve ", prof})
-        prof = (Universe.diagTicks and helpers) and helpers.create_profiler() or nil
-    end
-    if not solvedNow then
-        local increases = frame.increases
-        if not increases then
-            increases = {}
-            frame.increases = increases
-        end
-        local removed = false
-        for i = 1, frame.count do
-            local sourceChange = sources[i]
-            local oldValue = sourceChange.oldValue
-            local newValue = Runtime.sourceValue(sourceChange.chunk, fType)
-            if oldValue and newValue < oldValue then
-                local kbRem = Universe.allocProfile and collectgarbage("count") or 0
-                Runtime.removeSource(sourceChange.chunk, fType, oldValue, fOpts)
-                if Universe.allocProfile then
-                    allocBump("sf.removeSource", collectgarbage("count") - kbRem)
-                end
-                removed = true
-                if newValue > 0 then
-                    local inc = takeIncreaseItem(frame)
-                    inc.id = sourceChange.chunk.id
-                    inc.gen = newValue
-                    increases[frame.increaseCount] = inc
-                end
-            elseif newValue > 0 then
-                local inc = takeIncreaseItem(frame)
-                inc.id = sourceChange.chunk.id
-                inc.gen = newValue
-                increases[frame.increaseCount] = inc
-            end
-        end
-        -- Clear the tail so #increases reports the count we filled.
-        for i = frame.increaseCount + 1, #increases do
-            increases[i] = nil
-        end
-        -- Resume a frontier left by a previous tick even when this tick has no
-        -- new changes: otherwise a single change that hit the work budget never
-        -- completes, and the field stays partial forever (observed as the base
-        -- field's nest staying 0 in pheromone-dynamics).
-        local frontier = Universe.sourceVersionedFrontier[Runtime.fieldKey(fType)]
-        if #increases > 0 or (frontier and (frontier.top.n > 0 or frontier.second.n > 0)) then
-            local kbBefore = Universe.allocProfile and collectgarbage("count") or 0
-            workUsed = workUsed + (Runtime.propagateIncreases(increases, fType, fOpts, removed, workLimit) or 0)
-            if Universe.allocProfile then
-                allocBump("sf.propagate", collectgarbage("count") - kbBefore)
-            end
-        end
-    end
-
-    if queue and queue.head > queue.count then
-        -- Keep the array (it is reused every tick); just reset the counters.
-        queue.head = 1
-        queue.count = 0
-    end
-    for i = 1, frame.count do
-        byChunkId[sources[i].chunk.id] = nil
-    end
-    popScratch()
-    return workUsed
+    return Runtime.relaxStep(fieldType, budget, opts or FIELD_OPTS[fieldType])
 end
 
 -- Work left in a field's propagation frontier (0 = converged). A non-zero
 -- frontier means the field is still partial, which reads can observe.
-function Runtime.frontierDepth(fieldType)
-    if FIELD_OPTS[fieldType] and FIELD_OPTS[fieldType].relax then
-        return Runtime.relaxDepth(fieldType)
-    end
-    local frontier = Universe and Universe.sourceVersionedFrontier
-        and Universe.sourceVersionedFrontier[Runtime.fieldKey(fieldType)]
-    if not frontier then return 0 end
-    return frontier.top.n + frontier.second.n
-end
-
--- Queued source changes not yet drained for a field.
-function Runtime.queueDepth(fieldType)
-    local queue = SourceQueues[fieldType]
-    if not queue then return 0 end
-    return queue.count - queue.head + 1
-end
-
--- A burst (the initial scan, the evolution rescan, a mass build or destroy)
--- queues thousands of source changes at once. Draining that at
--- FIELD_DRAIN_PER_TICK leaves the field stale for hundreds of ticks -- measured
--- as a 1,500-tick tail on a 15k-chunk rescan -- during which every read sees a
--- partially updated field. Flush a burst in the tick it appears instead: the
--- cost is one-time and proportional to the burst, which is the trade the cadence
--- exists to make. Below the threshold the per-field cadence is unchanged.
 local FLUSH_QUEUE_DEPTH = 64
 local FRONTIER_FLUSH_DEPTH = 512
 local FRONTIER_FLUSH_WORK = 512
@@ -817,7 +282,7 @@ function Runtime.processScheduled(fieldType, opts)
         FIELD_DRAIN_ACC[fieldType] = 0
         return Runtime.process(fieldType, depth, opts)
     end
-    local perTick = (FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK) * (cadence or 1)
+    local perTick = (FIELD_DRAIN_PER_TICK and FIELD_DRAIN_PER_TICK[fieldType] or DRAIN_PER_TICK) * (cadence or 1)
     local acc = (FIELD_DRAIN_ACC[fieldType] or 0) + perTick
     local whole = math.floor(acc)
     FIELD_DRAIN_ACC[fieldType] = acc - whole
@@ -863,7 +328,7 @@ function Runtime.processAll(tick)
         if budget <= 0 then break end
         local fType = FIELD_ROTATION[((start + i - 1) % n) + 1]
         local slice = budget < FIELD_QUANTUM and budget or FIELD_QUANTUM
-        local used = Runtime.process(fType, DRAIN_PER_TICK, FIELD_OPTS[fType], slice)
+        local used = Runtime.relaxStep(fType, slice, FIELD_OPTS[fType])
         Runtime.lastFieldWork[fType] = used
         budget = budget - used
         total = total + used
@@ -933,6 +398,10 @@ end
 --- One relaxation pop: recompute a chunk from its own source and its neighbours.
 --- Distance is carried alongside the value so maxRadius still applies; the result
 --- REPLACES the stored value (never max with it) or a settled value never falls.
+-- Reusable entry tables for buildSources: the oracle rebuilds the source list on
+-- every comparison, which allocated one table per source before.
+local SourceScratch = {}
+
 relaxNode = function(fieldType, key, id, opts)
     local field = Universe.sourceVersionedFields[key]
     local st = relaxState(key)
@@ -1025,9 +494,9 @@ function Runtime.relaxStep(fieldType, budget, opts)
     local key = Runtime.fieldKey(fieldType)
     local st = relaxState(key)
     local popped = 0
+    opts = opts or FIELD_OPTS[fieldType]
     budget = budget or RELAX_POPS_PER_TICK
     local field = Universe.sourceVersionedFields[key]
-    local eps = opts.eps
     while popped < budget and st.head <= st.tail do
         local id = st.queue[st.head]
         st.queue[st.head] = nil
@@ -1107,41 +576,12 @@ function Runtime.buildSources(fieldType)
     return sources
 end
 
-function Runtime.solveFieldWithMetadata(fieldType, opts)
-    local sources = Runtime.buildSources(fieldType)
-    return Solver.solveWithMetadata(sources, Runtime.neighborOf, opts)
-end
-
--- The optional third argument may be either the old API's `field` argument
--- or the new options table. The metadata-backed field is always local, so the
--- old `field` value is accepted and ignored for compatibility.
-function Runtime.propagateIncrease(chunk, fieldType, fieldOrOpts, maybeOpts)
-    local opts = maybeOpts or fieldOrOpts
-    local key = Runtime.fieldKey(fieldType)
-    local field = Universe.sourceVersionedFields[key]
-    local source = { id = chunk.id, gen = Runtime.sourceValue(chunk, fieldType) }
-    return Solver.propagateIncreaseWithMetadata(
-        source, field, FieldProvenance[key], FieldSecond[key],
-        Runtime.neighborOf, opts)
-end
-
--- Scratch tables for the removal path (see removeSource).
 local REMOVAL_SOURCE = { id = 0, gen = 0 }
 local REMOVAL_OPTS = { maxWork = 0 }
 
 --- Pool statistics, for tests and telemetry: how many queue items exist, how
 --- many are idle, and how many were ever created. A healthy steady state keeps
 --- `created` flat while `free` grows to the working set.
-function Runtime.queueItemStats()
-    return SourceItemCreated, SourceItemFreeCount
-end
-
---- True when a removal for this field is still in progress (its heap hit the
---- per-tick allowance). Leftover work used to be resumed only by a later source
---- change for the same chunk, so a removal that ran out of budget stranded the
---- field too high until the periodic reconcile (measured: 1,641 chunks off by up
---- to 89% on the enemy field).
---- Build state for a field: is a rebuild in progress, how far, is it done?
 function Runtime.buildState(fieldType)
     local key = Runtime.fieldKey(fieldType)
     local build = SourceBuilds[key]
@@ -1255,133 +695,6 @@ function Runtime.verifySamples(fieldType, sampleCount)
     return table.concat(out, " | ")
 end
 
-function Runtime.hasPendingRemoval(fieldType)
-    local heaps = Universe.sourceVersionedRemoval
-    if not heaps then return false end
-    local heap = heaps[Runtime.fieldKey(fieldType)]
-    return heap ~= nil and #heap > 0
-end
-
---- Continue a removal that hit the allowance. Same budget and the same reused
---- heap as removeSource; `source` is nil because the heap is already seeded.
-function Runtime.resumeRemoval(fieldType, opts)
-    local key = Runtime.fieldKey(fieldType)
-    local heaps = Universe.sourceVersionedRemoval
-    local heap = heaps and heaps[key]
-    if not heap or #heap == 0 then return 0 end
-    if Universe.solveWorkTick ~= game.tick then
-        Universe.solveWorkTick = game.tick
-        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
-    end
-    -- Safety valve: if a removal heap outgrows any plausible field, stop growing
-    -- it and let the field rebuild instead (the resumable solve spreads that).
-    local REMOVAL_HEAP_CAP = 20000
-    if #heap > REMOVAL_HEAP_CAP then
-        heaps[key] = nil
-        SolvedFields[key] = false
-        SourceBuilds[key] = nil
-        return 0
-    end
-    local allowance = Universe.solveWorkLeft or 0
-    if allowance <= 0 then return 0 end
-    if allowance > REMOVAL_MAX_WORK_Per_CALL then allowance = REMOVAL_MAX_WORK_Per_CALL end
-    local removalOpts = REMOVAL_OPTS
-    removalOpts.maxWork = allowance
-    local work, leftover = Solver.removeSource(
-        nil, Universe.sourceVersionedFields[key],
-        FieldProvenance[key], FieldSecond[key],
-        Runtime.neighborOf, removalOpts, heap)
-    Universe.solveWorkLeft = allowance - (work or 0)
-    heaps[key] = leftover or heap
-    return work or 0
-end
-
-function Runtime.removeSource(chunk, fieldType, oldValue, opts)
-    local key = Runtime.fieldKey(fieldType)
-    local field = Universe.sourceVersionedFields[key]
-    -- Removal is budgeted like the rest of the field work, and resumes from the
-    -- leftover heap next tick: one removed source re-propagated the whole field
-    -- in a single call (measured 25ms inside the drain).
-    if Universe.solveWorkTick ~= game.tick then
-        Universe.solveWorkTick = game.tick
-        Universe.solveWorkLeft = SOURCE_SOLVE_WORK_PER_TICK
-    end
-    local allowance = Universe.solveWorkLeft or 0
-    local heaps = Universe.sourceVersionedRemoval
-    if not heaps then
-        heaps = {}
-        Universe.sourceVersionedRemoval = heaps
-    end
-    -- The heap and the options table are reused per field. Allocating them per
-    -- call was 6.6KB/tick in steady state (77% of the drain's allocation):
-    -- removals happen far more often than fields do.
-    local heap = heaps[key]
-    if not heap then
-        heap = {}
-        heaps[key] = heap
-    end
-    local hasPending = #heap > 0
-    local source
-    if not hasPending then
-        source = REMOVAL_SOURCE
-        source.id = chunk.id
-        source.gen = oldValue or 0
-    end
-    -- Pass the field's own options through (decay/eps/rating/maxRadius differ per
-    -- field); options() fills defaults in place, so only maxWork changes here.
-    local removalOpts = opts or REMOVAL_OPTS
-    removalOpts.maxWork = allowance
-    local work, leftover = Solver.removeSource(
-        source, field, FieldProvenance[key], FieldSecond[key],
-        Runtime.neighborOf, removalOpts, heap)
-    Universe.solveWorkLeft = allowance - (work or 0)
-    heaps[key] = leftover or heap
-    return work
-end
-
--- Bounded increase propagation. A frontier left over from the previous tick
--- means the last propagation hit the work budget, so resume it. Re-seeding is
--- idempotent (a source already at its value pushes nothing), so passing
--- `sources` again is safe and the field still converges exactly.
--- `flush` drops the per-call work bound and runs to completion. A removal needs
--- it: removeSource drops every chunk that had the removed source as its top to
--- its second source, which leaves a hole only the re-propagation fills, and
--- bounded that hole persists for several ticks -- reads then see a field that
--- has lost its extent. Observed as pheromone-dynamics failing 1 run in 6 with
--- the base field 0 at the nest while the wall still read 550. A removal is a
--- one-time event, like a burst, so it pays the one-time cost.
-function Runtime.propagateIncreases(sources, fieldType, opts, flush, workLimit)
-    local key = Runtime.fieldKey(fieldType)
-    local field = Universe.sourceVersionedFields[key]
-    -- The frontier is two indexed heaps (top and second-best paths), one entry
-    -- per chunk per side, arrays reused every tick. It cannot grow with activity:
-    -- bounded by field size, no node tables, no dedupe map.
-    local frontier = Universe.sourceVersionedFrontier[key]
-    if not frontier or not frontier.top then
-        frontier = { top = Solver.newIncrementalHeap(), second = Solver.newIncrementalHeap() }
-        Universe.sourceVersionedFrontier[key] = frontier
-    end
-    local backlog = frontier.top.n + frontier.second.n
-    if workLimit and workLimit > 0 then
-        BOUNDED_OPTS.maxWork = workLimit
-    elseif flush or backlog > FRONTIER_FLUSH_DEPTH then
-        BOUNDED_OPTS.maxWork = FRONTIER_FLUSH_WORK
-    else
-        BOUNDED_OPTS.maxWork = PROPAGATION_MAX_WORK_PER_TICK
-    end
-    BOUNDED_OPTS.decay = opts and opts.decay
-    BOUNDED_OPTS.eps = opts and opts.eps
-    BOUNDED_OPTS.maxRadius = opts and opts.maxRadius
-    local work = Solver.propagateIncreasesWithMetadata(
-        sources, field, FieldProvenance[key], FieldSecond[key],
-        Runtime.neighborOf, BOUNDED_OPTS, frontier.top, frontier.second)
-    return work or 0
-end
-
--- Correctness check: solve the field from its sources with the pure solver and
--- compare against the incrementally maintained live field. The incremental path
--- (queues, dedupe, indexed heap, radius caps) must converge to the same values;
--- a mismatch means a change was dropped or a cap is being applied inconsistently.
 function Runtime.verifyField(fieldType, tolerance)
     local key = Runtime.fieldKey(fieldType)
     -- The comparison is only meaningful on a complete field: solve it if it has

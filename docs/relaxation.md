@@ -34,6 +34,17 @@ heaps and their resume budget, the 5% report throttle, the periodic resync, and 
 epoch/stale-build handling — and with them the drift bug class (stranded removals, lost
 increases, compounding throttle, rebuild-swap loss, unpropagated chunk removal).
 
+## Convergence and the residual
+
+A decrease converges geometrically: each pass multiplies the far value by `decay`, and a
+two-node loop by `decay^2`. The frontier stops when a pass moves a value by less than
+`eps`, so it settles at a **bounded residual of about `eps / (1 - decay)`** (measured
+0.00246 for eps 5e-4, decay 0.9, i.e. `eps/(1-decay^2)` in the two-node case) rather
+than exactly zero. Against field values in the hundreds that is ~1e-5 relative; against
+the death field's 1e-4..1e-1 it is ~1e-2 relative, which is why death gets its own eps.
+Decreases are therefore bounded-accurate, not exact, and slower than increases (73
+passes for 1.0 to reach eps at decay 0.9).
+
 ## Knobs
 
 ```

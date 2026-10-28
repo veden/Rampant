@@ -1241,21 +1241,15 @@ script.on_event(defines.events.on_tick,
                         -- The source-versioned fields are the only pheromone
                         -- state left: report each field's undrained queue depth,
                         -- which is the backlog that would make a read stale.
-                        local q = SourceVersionedFieldRuntime.queueDepth
-                        local f = SourceVersionedFieldRuntime.frontierDepth
+                        local d = SourceVersionedFieldRuntime.relaxDepth
                         log({"", "[RANGE] tick=", tick, " phase=sourceField ",
-                             " qResource=" .. q(Constants.RESOURCE_PHEROMONE) ..
-                             " fResource=" .. f(Constants.RESOURCE_PHEROMONE) ..
-                             " qBase=" .. q(Constants.BASE_PHEROMONE) ..
-                             " fBase=" .. f(Constants.BASE_PHEROMONE) ..
-                             " qEnemy=" .. q(Constants.ENEMY_PHEROMONE) ..
-                             " qPlayer=" .. q(Constants.PLAYER_PHEROMONE) ..
-                             " qKamikaze=" .. q(Constants.KAMIKAZE_PHEROMONE) ..
-                             " qDeathGain=" .. q(Constants.DEATH_GAIN_PHEROMONE) ..
-                             " qDeathLoss=" .. q(Constants.DEATH_LOSS_PHEROMONE) ..
-                             " fEnemy=" .. f(Constants.ENEMY_PHEROMONE) ..
-                             " fPlayer=" .. f(Constants.PLAYER_PHEROMONE) ..
-                             " fKamikaze=" .. f(Constants.KAMIKAZE_PHEROMONE) ..
+                             " fResource=" .. d(Constants.RESOURCE_PHEROMONE) ..
+                             " fBase=" .. d(Constants.BASE_PHEROMONE) ..
+                             " fEnemy=" .. d(Constants.ENEMY_PHEROMONE) ..
+                             " fPlayer=" .. d(Constants.PLAYER_PHEROMONE) ..
+                             " fKamikaze=" .. d(Constants.KAMIKAZE_PHEROMONE) ..
+                             " fDeathGain=" .. d(Constants.DEATH_GAIN_PHEROMONE) ..
+                             " fDeathLoss=" .. d(Constants.DEATH_LOSS_PHEROMONE) ..
                              " workAvg=" .. string.format("%.2f", (function()
                                  local st = SourceVersionedFieldRuntime.workStats
                                  local avg = st.n > 0 and (st.sum / st.n) or 0
