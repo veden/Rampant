@@ -27,6 +27,8 @@
     They return cached modules at event time (no file I/O).
 ]]
 
+local Command = require("libs/command")
+
 local Executor = {}
 
 local _Universe
@@ -231,6 +233,7 @@ function Executor.run(commands)
             MetricsG.inc(metricName(CMD_METRIC, "cmd.", commands.type))
         end
         runHandler(commands)
+        Command.release(commands)
         return
     end
 
@@ -244,6 +247,7 @@ function Executor.run(commands)
             MetricsG.inc(metricName(CMD_METRIC, "cmd.", cmd.type))
         end
         runHandler(cmd)
+        Command.release(cmd)
     end
 end
 

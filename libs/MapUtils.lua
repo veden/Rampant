@@ -584,6 +584,9 @@ function MapUtils.removeChunkFromMap(map, chunk)
     if Universe.pendingUpgrades then
         for id, entry in pairs(Universe.pendingUpgrades) do
             if entry.chunkId == chunkId then
+                if BaseUtils and BaseUtils.releasePendingUpgradeEntry then
+                    BaseUtils.releasePendingUpgradeEntry(Universe.pendingUpgrades[id])
+                end
                 Universe.pendingUpgrades[id] = nil
                 Universe.pendingUpgradesLength = (Universe.pendingUpgradesLength or 1) - 1
             end

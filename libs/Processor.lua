@@ -717,6 +717,9 @@ function Processor.processPendingChunks(tick, flush)
 end
 
 function Processor.processPendingUpgrades(tick)
+    -- The entry is recycled at the END of this call: the branches below keep
+    -- reading entityData after they drop it from the queue.
+    local toRelease
     local upgradeId, entityData = next(Universe.pendingUpgrades, nil)
     if not upgradeId then
         if Universe.pendingUpgradesLength == 0 then
@@ -726,8 +729,11 @@ function Processor.processPendingUpgrades(tick)
     end
     local entity = entityData.entity
     if (entityData.state ~= 2) and not entity.valid then
+        toRelease = Universe.pendingUpgrades[upgradeId]
         Universe.pendingUpgrades[upgradeId] = nil
         Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
+        BaseUtils.releasePendingUpgradeEntry(toRelease)
+        toRelease = nil
         return
     end
 
@@ -741,12 +747,14 @@ function Processor.processPendingUpgrades(tick)
         unregisterEnemyBaseStructure(map, entity, nil, true)
         entity.destroy()
         if not entityData.name or not entityData.position then
+            toRelease = Universe.pendingUpgrades[upgradeId]
             Universe.pendingUpgrades[upgradeId] = nil
             Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
             return
         end
         entityData.state = 2
     else
+        toRelease = Universe.pendingUpgrades[upgradeId]
         Universe.pendingUpgrades[upgradeId] = nil
         Universe.pendingUpgradesLength = Universe.pendingUpgradesLength - 1
         local query = Queries.createEntityQuery
@@ -857,6 +865,7 @@ function Processor.processPendingUpgrades(tick)
             )
         end
     end
+    BaseUtils.releasePendingUpgradeEntry(toRelease)
 end
 
 

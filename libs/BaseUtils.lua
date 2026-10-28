@@ -42,6 +42,30 @@ local EVO_TO_TIER_MAPPING = Constants.EVO_TO_TIER_MAPPING
 local BUILDING_HIVE_TYPE_LOOKUP = Constants.BUILDING_HIVE_TYPE_LOOKUP
 local COST_LOOKUP = Constants.COST_LOOKUP
 local UPGRADE_LOOKUP = Constants.UPGRADE_LOOKUP
+-- Free list for pendingUpgrades entries. Each entry is a 7-12 field table that lives
+-- from queue to execution, and a version-upgrade wave creates them in batches;
+-- recycling removes that churn. The two creation paths use different fields, so
+-- release clears every key.
+local PendingUpgradeFree = {}
+local PendingUpgradeFreeCount = 0
+
+local function takePendingUpgradeEntry()
+    if PendingUpgradeFreeCount > 0 then
+        local entry = PendingUpgradeFree[PendingUpgradeFreeCount]
+        PendingUpgradeFree[PendingUpgradeFreeCount] = nil
+        PendingUpgradeFreeCount = PendingUpgradeFreeCount - 1
+        return entry
+    end
+    return {}
+end
+
+function BaseUtils.releasePendingUpgradeEntry(entry)
+    if not entry then return end
+    for key in pairs(entry) do entry[key] = nil end
+    PendingUpgradeFreeCount = PendingUpgradeFreeCount + 1
+    PendingUpgradeFree[PendingUpgradeFreeCount] = entry
+end
+
 
 local ENEMY_ALIGNMENT_LOOKUP = Constants.ENEMY_ALIGNMENT_LOOKUP
 
@@ -663,20 +687,20 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
     -- retries with find_non_colliding_position radius 16). Doing it here as well
     -- cost ~0.9ms per queued upgrade, measured inside the chunk scan.
 
-    Universe.pendingUpgrades[Universe.upgradeId] = {
-        ["kind"] = "upgrade",
-        ["position"] = position,
-        ["map"] = map,
-        ["name"] = name,
-        ["entity"] = entity,
-        ["delayTLL"] = timeDelay,
-        ["hive"] = Universe.hives[unitNumber] or Universe.hiveData[unitNumber],
-        ["base"] = base,
-        ["chunkId"] = (MapUtils.getChunkByPosition(map, position) ~= -1)
-            and MapUtils.getChunkByPosition(map, position).id or nil,
-        ["oldUnitNumber"] = unitNumber,
-        ["state"] = 1
-    }
+    local entry = takePendingUpgradeEntry()
+    entry.kind = "upgrade"
+    entry.position = position
+    entry.map = map
+    entry.name = name
+    entry.entity = entity
+    entry.delayTLL = timeDelay
+    entry.hive = Universe.hives[unitNumber] or Universe.hiveData[unitNumber]
+    entry.base = base
+    local placed = MapUtils.getChunkByPosition(map, position)
+    entry.chunkId = (placed ~= -1) and placed.id or nil
+    entry.oldUnitNumber = unitNumber
+    entry.state = 1
+    Universe.pendingUpgrades[Universe.upgradeId] = entry
     Universe.pendingUpgradesLength = Universe.pendingUpgradesLength + 1
     Universe.upgradeId = Universe.upgradeId + 1
 end
@@ -730,15 +754,15 @@ function BaseUtils.queueCreation(base, position, entityType, timeDelay, hiveData
         return
     end
 
-    Universe.pendingUpgrades[Universe.upgradeId] = {
-        ["kind"] = (entityType == "hive" and "hive") or (entityType == "turret" and "turret") or "nest",
-        ["position"] = position,
-        ["map"] = map,
-        ["name"] = name,
-        ["delayTLL"] = timeDelay,
-        ["hive"] = hiveData,
-        ["state"] = 2
-    }
+    local entry = takePendingUpgradeEntry()
+    entry.kind = (entityType == "hive" and "hive") or (entityType == "turret" and "turret") or "nest"
+    entry.position = position
+    entry.map = map
+    entry.name = name
+    entry.delayTLL = timeDelay
+    entry.hive = hiveData
+    entry.state = 2
+    Universe.pendingUpgrades[Universe.upgradeId] = entry
     Universe.pendingUpgradesLength = Universe.pendingUpgradesLength + 1
     Universe.upgradeId = Universe.upgradeId + 1
 end
