@@ -22,6 +22,8 @@ local Solver = require("source_versioned_field")
 local MapUtils = require("MapUtils")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local Constants = require("Constants")
+local Utils = require("Utils")
+local nextFrom = Utils.nextFrom
 local RamState = require("libs/RamState")
 local SquadLogic = require("squad_logic")
 local MathUtils = require("MathUtils")
@@ -411,19 +413,26 @@ function Runtime.ensureSolved(fieldType, opts)
         build = { list = {}, iterator = nil, epoch = epoch }
         SourceBuilds[key] = build
     end
-    -- ONE scan, not a spread one. Walking chunkById costs about a microsecond per
-    -- chunk with no entity queries, and spreading it let a source disappear between
-    -- two scan ticks: the stale entry survived into the rebuilt field (measured: 110
-    -- chunks one decay step above the exact solve at the radius boundary, still
-    -- 116 after a natural reconcile but 0 after a one-shot scan). The SOLVE is still
-    -- spread below, which is the expensive half.
-    -- Reuse the entry tables: a rebuild allocates one per source otherwise (262 on
-    -- the user's save, thousands on a large one), and the list is rebuilt every
-    -- reconcile. Entries past the new count are dropped so a shrinking source set
-    -- does not keep stale tables alive.
+    -- Spread again: a one-pass scan of the whole index is a 1-2ms burst inside
+    -- whichever subsystem happened to trigger the rebuild (measured 4.1ms attributed
+    -- to attackWaves and 2.8ms to sourceFields, both actually this). A spread scan
+    -- let a source disappear between two scan ticks, which is why the completed list
+    -- is REFRESHED against live source values - O(#sources), not O(#chunks).
+    -- Entry tables are reused so a rebuild allocates no per-source tables.
     local list = build.list or {}
-    local n = 0
-    for _, chunk in pairs(Universe.chunkById or {}) do
+    build.list = list
+    local examined = 0
+    local n = build.scanned or 0
+    local iter = build.iterator
+    while examined < SOURCE_BUILD_PER_TICK do
+        local chunkId, chunk = nextFrom(Universe.chunkById or {}, iter)
+        if not chunk then
+            build.iterator = nil
+            build.done = true
+            break
+        end
+        iter = chunkId
+        examined = examined + 1
         local value = Runtime.sourceValue(chunk, fieldType)
         if value > 0 then
             n = n + 1
@@ -436,10 +445,33 @@ function Runtime.ensureSolved(fieldType, opts)
             end
         end
     end
+    build.iterator = iter
+    build.scanned = n
+    if not build.done then
+        return Universe.sourceVersionedFields[key] or {}, false
+    end
     for i = #list, n + 1, -1 do list[i] = nil end
+    -- Compact in one forward pass: keep the sources that still exist (with their
+    -- current generator) and drop the ones that vanished during the scan. A
+    -- swap-with-last here moved an unexamined entry into the slot just passed.
+    local write = 0
+    for read = 1, n do
+        local entry = list[read]
+        local chunk = entry and Universe.chunkById and Universe.chunkById[entry.id]
+        local value = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+        if value > 0 then
+            write = write + 1
+            entry.gen = value
+            if write ~= read then
+                list[write] = entry
+                list[read] = nil
+            end
+        else
+            list[read] = nil
+        end
+    end
     build.list = list
-    build.iterator = nil
-    build.done = true
+    build.count = write
     if not build.done then
         -- Still scanning: readers see the (empty) field for a few ticks rather
         -- than one tick paying for the whole map.
