@@ -30,6 +30,7 @@ local MapPosition
 
 local Constants = require("Constants")
 local Utils = require("Utils")
+local nextFrom = Utils.nextFrom
 local ChunkLogic = require("chunk_logic")
 local ChunkPropertyUtils = require("ChunkPropertyUtils")
 local MathUtils = require("MathUtils")
@@ -635,12 +636,15 @@ end
 function MapUtils.sweepIdleSurfaces(tick)
     local maps = Universe.maps
     if not maps then return end
-    local ids = {}
-    for id in pairs(maps) do ids[#ids + 1] = id end
-    if #ids == 0 then return end
-    Universe.surfaceSweepIndex = (Universe.surfaceSweepIndex or 0) + 1
-    local id = ids[(Universe.surfaceSweepIndex % #ids) + 1]
-    local map = maps[id]
+    -- One surface per call, resumed with next(): no ids array to build and no modulo
+    -- counter to keep. Factorio iterates in insertion order, so every surface is
+    -- visited in turn.
+    local id, map = nextFrom(maps, Universe.surfaceSweepCursor)
+    if id == nil then
+        Universe.surfaceSweepCursor = nil       -- pass finished, start over next call
+        return
+    end
+    Universe.surfaceSweepCursor = id
     if not map or not map.surface or not map.surface.valid then return end
     if (tick - (map.lastEnemyTick or 0)) < IDLE_SURFACE_TICKS then return end
     if surfaceHasEnemies(map) then
@@ -689,8 +693,8 @@ function MapUtils.reconcileOrphanChunks()
     local removed = 0
     local orphan
     local examined = 0
-    local startId = Universe.reconcileCursor
-    local started = false
+    local cursor = Universe.reconcileCursor
+    local finished = false
     local function visit(chunkId, chunk)
         local map = chunk.map
         -- Three ways a record can be orphaned: no map at all, a map that is no
@@ -715,19 +719,23 @@ function MapUtils.reconcileOrphanChunks()
             orphan[#orphan + 1] = chunk
         end
     end
-    for chunkId, chunk in pairs(Universe.chunkById or {}) do
-        if not startId or started or chunkId > startId then
-            started = true
-            visit(chunkId, chunk)
-            examined = examined + 1
-            if examined >= RECONCILE_PER_CALL then
-                Universe.reconcileCursor = chunkId
-                break
-            end
+    -- next() resumes exactly where the last call stopped, so the sweep costs its 8
+    -- chunks instead of walking the whole index to find them. (The previous version
+    -- compared ids against a stored number, which also assumed numeric order - only
+    -- ids 1..1024 have that.)
+    local chunkById = Universe.chunkById or {}
+    while examined < RECONCILE_PER_CALL do
+        local chunkId, chunk = nextFrom(chunkById, cursor)
+        if chunkId == nil then
+            finished = true
+            break
         end
+        cursor = chunkId
+        visit(chunkId, chunk)
+        examined = examined + 1
     end
-    if examined < RECONCILE_PER_CALL then
-        Universe.reconcileCursor = nil      -- full pass finished
+    Universe.reconcileCursor = finished and nil or cursor
+    if finished then
         -- Park the sweep until something can create orphans again (surface
         -- release, load, or the slow re-check). A clean index should not cost
         -- 344us every tick.
