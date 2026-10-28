@@ -106,6 +106,12 @@ local DEATH_DECAY = Constants.DEATH_FIELD_DECAY
 local DEATH_RADIUS = Constants.DEATH_FIELD_RADIUS
 local DEATH_SCALE = Constants.DEATH_FIELD_SOURCE_SCALE
 
+-- Relaxation fields (docs/relaxation.md): the field is kept as the fixed point of
+-- value(v) = max(ownSource(v), max(neighbour) * decay), recomputed only where
+-- something changed. Cheap to reason about and exact at quiescence, at the cost of
+-- reaching it iteratively - test/tune per field via FIELD_OPTS[field].relax.
+local RELAX_POPS_PER_TICK = 128
+
 -- Per-field solver options. A field's reach is log(eps/source)/log(decay), so
 -- leaving decay at the shared default makes every field's extent an accident of
 -- its source magnitude; the kamikaze field needs its own.
@@ -115,14 +121,14 @@ local FIELD_OPTS = {}
 -- the map and the field filled every tracked chunk (991 chunks measured). 8 hops
 -- is 256 tiles: far more than a hunter needs, and it bounds the work per move and
 -- the field's memory to a fixed neighbourhood.
-FIELD_OPTS[FIELD_PLAYER] = { maxRadius = PLAYER_FIELD_RADIUS }
+FIELD_OPTS[FIELD_PLAYER] = { maxRadius = PLAYER_FIELD_RADIUS, relax = true }
 -- Base, enemy and resource change rarely (structure events, chunk scans) but
 -- their nominal reach was also 126 hops, so every one of those rare changes
 -- re-propagated the entire tracked map and paid O(map) work in a single tick.
 FIELD_OPTS[FIELD_BASE] = { maxRadius = REGIONAL_FIELD_RADIUS }
 FIELD_OPTS[FIELD_ENEMY] = { maxRadius = REGIONAL_FIELD_RADIUS }
 FIELD_OPTS[FIELD_RESOURCE] = { maxRadius = RESOURCE_FIELD_RADIUS }
-FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS }
+FIELD_OPTS[FIELD_KAMIKAZE] = { decay = KAMIKAZE_DECAY, maxRadius = PLAYER_FIELD_RADIUS, relax = true }
 -- The death field's whole range is small: a squad wipe step deposits
 -- FIVE_DEATH_PHEROMONE_GENERATOR_AMOUNT (0.005) and the source scale is 0.75/8, so
 -- one death is 4.7e-4 - BELOW the shared eps of 5e-4, meaning a single death used to
@@ -154,6 +160,7 @@ function Runtime.ensureStorage()
     Universe.sourceVersionedSolved, Universe.sourceVersionedSolvedAt = {}, {}
     -- A frontier from a dropped field is meaningless: the field restarts.
     Universe.sourceVersionedFrontier, Universe.sourceVersionedRemoval = {}, {}
+    Universe.sourceVersionedRelax = {}
     U.sourceVersionedSolveVersion = SOLVE_VERSION
     SourceQueues = {}
     QueueIndex = {}
@@ -206,6 +213,9 @@ end
 -- Reusable entry tables for buildSources: the diagnostic path and every read that
 -- needs a fresh source list would otherwise allocate one table per source.
 local SourceScratch = {}
+
+-- Defined with the relaxation solver below; queueSource/ensureSolved need them earlier.
+local relaxPush, relaxState
 
 -- Free list for source-queue items. Every decaying generator queues one change
 -- per chunk per tick (the death generator alone did this for ~83 chunks, and it
@@ -304,6 +314,11 @@ end
 
 function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not Initialized or not chunk or not chunk.id then return false end
+    local relaxOpts = FIELD_OPTS[fieldType]
+    if relaxOpts and relaxOpts.relax then
+        relaxPush(Runtime.fieldKey(fieldType), chunk.id)
+        return true
+    end
 
     -- Coalesce at enqueue time as well as at drain time. A source chunk
     -- may be touched several times before the queue is drained; keep only the
@@ -399,6 +414,15 @@ end
 
 function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
+    local relaxOpts = FIELD_OPTS[fieldType]
+    if relaxOpts and relaxOpts.relax then
+        local st = relaxState(key)
+        if not st.seeded then
+            st.dirty = {}
+            Runtime.relaxSeed(fieldType)
+        end
+        return Universe.sourceVersionedFields[key] or {}, false
+    end
     if SolvedFields[key] and FieldProvenance[key] then
         local solvedAt = Universe.sourceVersionedSolvedAt
         local last = solvedAt and solvedAt[key]
@@ -559,6 +583,10 @@ end
 function Runtime.process(fieldType, budget, opts, workLimit)
     if not Initialized then return 0 end
     local key = Runtime.fieldKey(fieldType)
+    local relaxOpts = FIELD_OPTS[fieldType]
+    if relaxOpts and relaxOpts.relax then
+        return Runtime.relaxStep(fieldType, budget, opts or relaxOpts)
+    end
     local queue = SourceQueues[fieldType]
     local queueEmpty = (not queue) or queue.head > queue.count
     -- A frontier left by a previous tick is still work: returning early on an
@@ -726,6 +754,9 @@ end
 -- Work left in a field's propagation frontier (0 = converged). A non-zero
 -- frontier means the field is still partial, which reads can observe.
 function Runtime.frontierDepth(fieldType)
+    if FIELD_OPTS[fieldType] and FIELD_OPTS[fieldType].relax then
+        return Runtime.relaxDepth(fieldType)
+    end
     local frontier = Universe and Universe.sourceVersionedFrontier
         and Universe.sourceVersionedFrontier[Runtime.fieldKey(fieldType)]
     if not frontier then return 0 end
@@ -885,6 +916,128 @@ function Runtime.neighborOf(chunkId)
     return ids, n
 end
 
+--- One relaxation pop: recompute a chunk from its own source and its neighbours.
+--- Distance is carried alongside the value so maxRadius still applies; the result
+--- REPLACES the stored value (never max with it) or a settled value never falls.
+local function relaxNode(fieldType, key, id, opts)
+    local field = Universe.sourceVersionedFields[key]
+    local st = relaxState(key)
+    local chunk = Universe.chunkById and Universe.chunkById[id]
+    local best = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+    local bestDist = 0
+    local decay = opts.decay
+    local maxRadius = opts.maxRadius
+    local dist = st.dist
+    local nbrs, nbrCount = Runtime.neighborOf(id)
+    if not nbrCount then nbrCount = #nbrs end
+    for k = 1, nbrCount do
+        local nid = nbrs[k]
+        local v = field[nid]
+        if v and v > 0 then
+            local d = (dist[nid] or 0) + 1
+            if not maxRadius or d <= maxRadius then
+                local cand = v * decay
+                if cand > best then best = cand; bestDist = d end
+            end
+        end
+    end
+    local old = field[id]
+    local eps = opts.eps
+    local changed = false
+    if best > eps then
+        if not old or best > old + eps or best < old - eps then
+            field[id] = best
+            dist[id] = bestDist
+            changed = true
+        end
+    elseif old then
+        if old > eps then
+            field[id] = nil
+            dist[id] = nil
+            changed = true
+        end
+    end
+    if changed then
+        local dirty = st.dirty
+        for k = 1, nbrCount do
+            local nid = nbrs[k]
+            if not dirty[nid] then
+                dirty[nid] = true
+                st.tail = st.tail + 1
+                st.queue[st.tail] = nid
+            end
+        end
+    end
+    return changed
+end
+
+--- Push a chunk onto a relaxed field's frontier (membership-guarded).
+relaxState = function(key)
+    local st = Universe.sourceVersionedRelax[key]
+    if not st then
+        st = { queue = {}, head = 1, tail = 0, dirty = {}, dist = {}, seeded = false }
+        Universe.sourceVersionedRelax[key] = st
+    end
+    return st
+end
+
+relaxPush = function(key, id)
+    local st = relaxState(key)
+    local dirty = st.dirty
+    if dirty[id] then return end
+    dirty[id] = true
+    st.tail = st.tail + 1
+    st.queue[st.tail] = id
+end
+
+--- Seed a relaxed field from scratch: every source is dirty, and the frontier is
+--- drained by process() over the following ticks.
+function Runtime.relaxSeed(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    local st = Universe.sourceVersionedRelax[key]
+    st.queue = {}; st.head = 1; st.tail = 0; st.dirty = {}; st.dist = {}
+    Universe.sourceVersionedFields[key] = {}
+    st.seeded = true
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        if Runtime.sourceValue(chunk, fieldType) > 0 then
+            relaxPush(key, chunk.id)
+        end
+    end
+    return st.tail
+end
+
+--- Drain up to `budget` nodes of a relaxed field's frontier.
+function Runtime.relaxStep(fieldType, budget, opts)
+    local key = Runtime.fieldKey(fieldType)
+    local st = relaxState(key)
+    local popped = 0
+    budget = budget or RELAX_POPS_PER_TICK
+    local field = Universe.sourceVersionedFields[key]
+    local eps = opts.eps
+    while popped < budget and st.head <= st.tail do
+        local id = st.queue[st.head]
+        st.queue[st.head] = nil
+        st.head = st.head + 1
+        st.dirty[id] = nil
+        if field[id] or (Universe.chunkById and Universe.chunkById[id]) then
+            relaxNode(fieldType, key, id, opts)
+        end
+        popped = popped + 1
+    end
+    if st.head > st.tail then
+        st.head = 1
+        st.tail = 0
+        st.queue = {}
+    end
+    return popped
+end
+
+function Runtime.relaxDepth(fieldType)
+    local st = Universe.sourceVersionedRelax[Runtime.fieldKey(fieldType)]
+    if not st then return 0 end
+    return st.tail - st.head + 1
+end
+
 function Runtime.sourceValue(chunk, fieldType)
     if not chunk then return 0 end
     if fieldType == FIELD_DEATH_GAIN or fieldType == FIELD_DEATH_LOSS then
@@ -1012,6 +1165,7 @@ end
 --- caller compare from a known-exact state.
 function Runtime.rebuildField(fieldType)
     local key = Runtime.fieldKey(fieldType)
+    Universe.sourceVersionedRelax[key] = nil
     local opts = fieldOpts(fieldType, nil)
     local sources = Runtime.buildSources(fieldType)
     local field, prov, second = Solver.solveWithMetadata(sources, Runtime.neighborOf, opts)
