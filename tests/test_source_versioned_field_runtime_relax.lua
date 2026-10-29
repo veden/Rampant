@@ -239,6 +239,46 @@ my_collection:add('removing_a_chunk_record_drops_its_value_and_its_cone', functi
             field[4] or 0, kept))
 end)
 
+-- The removal path end to end. removeChunkFromMap reached the runtime through a local
+-- that nothing injected, and every use was nil-guarded, so a chunk removal queued no
+-- source change at all and the field kept the disc it had been holding up. Nothing failed
+-- loudly; the field just drifted. This test fails if the injection goes missing again.
+my_collection:add('removeChunkFromMap_queues_the_source_removal', function()
+    MapUtils.setSourceVersionedFieldRuntime(Runtime)
+    -- removeChunkFromMap clears a pile of id-keyed registries, so MapUtils needs a
+    -- universe with them present.
+    universe.chunkToActiveNest, universe.chunkToActiveRaidNest = {}, {}
+    universe.chunkToDrained, universe.chunkToRetreats = {}, {}
+    universe.chunkToRallys, universe.chunkToPassScan = {}, {}
+    universe.chunkToNests, universe.chunkToUtilities = {}, {}
+    universe.chunkToHives, universe.vengenceQueue = {}, {}
+    universe.chunkToVictory, universe.pendingUpgrades = {}, {}
+    universe.maps = {}
+    MapUtils.init(universe)
+    -- Chunk 5 has to carry its own source: removeChunkFromMap only queues a change for a
+    -- chunk whose source is above zero, and it is that call which proves the runtime is
+    -- wired in (every use of it here is nil-guarded, so a missing injection is silent).
+    local removed = world[5]
+    removed.playerGenerator = 200
+    Runtime.queueSource(removed, PLAYER, 0, 200)
+    for _ = 1, 200 do Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 }) end
+    local key = tostring(PLAYER)
+    local field = universe.sourceVersionedFields[key]
+    local kept = field[4]
+    assert(kept and kept > 0, "fixture: chunk 4 has a value")
+    local reports = Runtime.sourceReports[PLAYER] or 0
+    MapUtils.removeChunkFromMap(removed.map, removed)
+    assert(universe.chunkById[5] == nil, "the record must be gone")
+    assert((Runtime.sourceReports[PLAYER] or 0) > reports,
+        "removal must reach the runtime as a source change")
+    for _ = 1, 400 do
+        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    end
+    assert(field[5] == nil, "a removed chunk must hold no value: " .. tostring(field[5]))
+    assert(math.abs((field[4] or 0) - kept) < 1e-6,
+        "the near side must refill to its supported value")
+end)
+
 my_collection:add('audit_leaves_a_settled_field_alone', function()
     settle()
     local stats = auditStats()

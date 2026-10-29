@@ -25,6 +25,17 @@ local RamState = require("libs/RamState")
 local Universe
 local NeighborChunks
 local MapPosition
+-- Injected by control.lua at init, like ChunkUtils and ChunkPropertyUtils. It used to be a
+-- bare local here that nothing ever assigned, so removeChunkFromMap's source-removal loop
+-- (and the drop below) never ran: a removed chunk kept the field entries it was removed
+-- from, and the disc it had been holding up decayed by one factor per round instead of
+-- collapsing. Silent because every call site is nil-guarded.
+local SourceVersionedFieldRuntime
+
+--- Wire the field runtime in. Called from control.lua's init.
+function MapUtils.setSourceVersionedFieldRuntime(runtime)
+    SourceVersionedFieldRuntime = runtime
+end
 
 -- imports
 

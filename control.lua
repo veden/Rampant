@@ -209,6 +209,10 @@ local function initializeLibraries(addProperties)
     SourceVersionedFieldRuntime.init(Universe, addProperties)
     ChunkUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
     ChunkPropertyUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
+    -- Without this, removeChunkFromMap's source removal is dead code: the guard is
+    -- `if runtime and ...`, so a nil runtime means a removed chunk's source change was
+    -- never queued and the field kept the whole disc it was holding up.
+    MapUtils.setSourceVersionedFieldRuntime(SourceVersionedFieldRuntime)
 end
 
 -- Chunks rescanned per tick when evolution crosses 0.3. Scanning every chunk
