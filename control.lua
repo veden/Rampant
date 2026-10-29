@@ -2264,6 +2264,89 @@ remote.add_interface("Rampant", {
         end
         return table.concat(out, " ")
     end,
+    -- Diagnostic: is the cost of scoring a chunk's player structures the QUERY, or the number
+    -- of entities in the chunk? A factory chunk measured 6-7.5ms for scan.playerQuery both
+    -- with four count_entities_filtered calls and with one find over their union, which does
+    -- not distinguish the two. This runs both shapes plus the raw entity count on one chunk.
+    benchScoring = function(cx, cy, reps)
+        local surface = game.surfaces[1]
+        reps = tonumber(reps) or 20
+        local x0, y0 = cx * 32, cy * 32
+        local area = { { x0, y0 }, { x0 + 32, y0 + 32 } }
+        local universe = storage.universe
+        local playerForces = universe.playerForces
+        local union = {}
+        for _, query in pairs({ universe.spbFilteredEntitiesPlayerQueryLowest,
+                universe.spbFilteredEntitiesPlayerQueryLow,
+                universe.spbFilteredEntitiesPlayerQueryHigh,
+                universe.spbFilteredEntitiesPlayerQueryHighest }) do
+            if query and query.type then
+                for _, t in pairs(query.type) do union[#union + 1] = t end
+            end
+        end
+        local function time(label, fn)
+            local profiler = helpers.create_profiler()
+            for _ = 1, reps do fn() end
+            log({"", "[SCORE] chunk=", cx, ",", cy, " kind=", label, " reps=", reps, " ", profiler})
+        end
+        local total = 0
+        time("allEntities", function()
+            total = surface.count_entities_filtered({ area = area })
+        end)
+        local function one(query)
+            return surface.count_entities_filtered({
+                area = area, force = playerForces, collision_mask = "player",
+                type = query.type })
+        end
+        time("counts4", function()
+            return one(universe.spbFilteredEntitiesPlayerQueryLowest)
+                + one(universe.spbFilteredEntitiesPlayerQueryLow)
+                + one(universe.spbFilteredEntitiesPlayerQueryHigh)
+                + one(universe.spbFilteredEntitiesPlayerQueryHighest)
+        end)
+        local found
+        time("findUnion", function()
+            found = surface.find_entities_filtered({ area = area, force = playerForces,
+                collision_mask = "player", type = union })
+        end)
+        time("findUnionLimit1", function()
+            return surface.find_entities_filtered({ area = area, force = playerForces,
+                collision_mask = "player", type = union, limit = 1 })
+        end)
+        local unionCount = 0
+        time("countUnion", function()
+            unionCount = surface.count_entities_filtered({ area = area, force = playerForces,
+                collision_mask = "player", type = union })
+        end)
+        time("countWalls", function()
+            return surface.count_entities_filtered({ area = area, force = playerForces,
+                collision_mask = "player", type = "wall" })
+        end)
+        time("findWalls", function()
+            return surface.find_entities_filtered({ area = area, force = playerForces,
+                collision_mask = "player", type = "wall" })
+        end)
+        return string.format("chunk %d,%d allEntities=%d union=%d foundByFind=%d",
+            cx, cy, total, unionCount, found and #found or 0)
+    end,
+    -- Diagnostic: scan the SAME chunk several times and look at the spread of the per-scan
+    -- cost. A chunk whose content costs X ms should cost X every time; a histogram that runs
+    -- from a tenth of a millisecond to ten milliseconds for one chunk is a pause (GC or the
+    -- host), not the chunk.
+    benchScanSameChunk = function(cx, cy, times)
+        local map = storage.universe.maps[1]
+        if not map then return "no map" end
+        local x, y = cx * 32, cy * 32
+        times = tonumber(times) or 20
+        for _ = 1, times do
+            MapUtils.queueGeneratedChunk({
+                surface = map.surface,
+                tick = game.tick,
+                area = { left_top = { x = x, y = y } },
+            })
+        end
+        return string.format("queued %d scans of tile (%d,%d)", times, x, y)
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
