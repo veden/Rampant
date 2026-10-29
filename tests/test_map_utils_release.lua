@@ -101,13 +101,18 @@ end)
 
 my_collection:add('a_surface_with_queued_scans_is_not_judged_idle', function()
     local chunkMap = makeUniverse(4)
-    universe.pendingChunks = {
-        [1] = { id = 1, map = chunkMap, bucket = 1, tick = 1 },
-        [2] = { id = 2, map = { id = 9 }, bucket = 1, tick = 1 },
-    }
+    -- The test is the counter that queueGeneratedChunk maintains and scanPopped drains; it
+    -- is O(1), because walking the whole queue here cost 5.7ms inside the surface sweep.
+    assert(not MapUtils.hasPendingScans(chunkMap), "a fresh surface has nothing queued")
+    chunkMap.pendingScans = 3
     assert(MapUtils.hasPendingScans(chunkMap), "queued scans must block the idle judgement")
-    universe.pendingChunks = { [2] = { id = 2, map = { id = 9 }, bucket = 1, tick = 1 } }
+    MapUtils.scanPopped(chunkMap)
+    assert(MapUtils.hasPendingScans(chunkMap), "still queued while the count is positive")
+    MapUtils.scanPopped(chunkMap)
+    MapUtils.scanPopped(chunkMap)
     assert(not MapUtils.hasPendingScans(chunkMap), "cleared queue means it can be judged")
+    MapUtils.scanPopped(chunkMap)
+    assert(not MapUtils.hasPendingScans(chunkMap), "the counter never goes negative")
 end)
 
 my_collection:add('drain_finishes_every_queued_release', function()

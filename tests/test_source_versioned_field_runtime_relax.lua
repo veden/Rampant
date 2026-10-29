@@ -122,6 +122,14 @@ local function settle()
     for _ = 1, 200 do Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 }) end
 end
 
+-- A removal queues a disc clear (it is spread over ticks in game); the tests drain both.
+local function settleWithClears(rounds)
+    for _ = 1, rounds or 400 do
+        Runtime.processDiscClears()
+        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    end
+end
+
 my_collection:add('diag_chain_walks_to_the_source_that_grounds_the_value', function()
     settle()
     local chain = Runtime.liveChain(PLAYER, 5)
@@ -220,9 +228,7 @@ my_collection:add('removing_a_chunk_record_drops_its_value_and_its_cone', functi
     Runtime.dropChunk(removed)           -- what MapUtils.removeChunkFromMap calls first
     universe.chunkById[5] = nil
     Runtime.queueSource(removed, PLAYER, field[5] or 0, 0)
-    for _ = 1, 400 do
-        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
-    end
+    settleWithClears(400)
     assert(field[5] == nil, "a removed chunk must hold no value: " .. tostring(field[5]))
     for id = 6, 9 do
         assert((field[id] or 0) == 0,
@@ -231,9 +237,7 @@ my_collection:add('removing_a_chunk_record_drops_its_value_and_its_cone', functi
     end
     -- The disc clear also re-queues the near side, which refills from the source; it must
     -- land back on exactly the value it had.
-    for _ = 1, 400 do
-        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
-    end
+    settleWithClears(400)
     assert(math.abs((field[4] or 0) - kept) < 1e-6,
         string.format("the near side must refill to its supported value: %.6f vs %.6f",
             field[4] or 0, kept))
@@ -271,9 +275,7 @@ my_collection:add('removeChunkFromMap_queues_the_source_removal', function()
     assert(universe.chunkById[5] == nil, "the record must be gone")
     assert((Runtime.sourceReports[PLAYER] or 0) > reports,
         "removal must reach the runtime as a source change")
-    for _ = 1, 400 do
-        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
-    end
+    settleWithClears(400)
     assert(field[5] == nil, "a removed chunk must hold no value: " .. tostring(field[5]))
     assert(math.abs((field[4] or 0) - kept) < 1e-6,
         "the near side must refill to its supported value")

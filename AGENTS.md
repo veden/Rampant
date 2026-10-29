@@ -248,6 +248,18 @@ p99 10-12ms for the first few game-minutes after load and settles to p99 1.3ms /
 ten minutes in, with the map still shedding chunk records in between:
 
 ```
+whole-tick samples, non-diagnose, after the load-path fixes below
+  first 60 s of load    n=121  p50 1.83  p90 3.54  p99 5.51  max 5.58   over5ms 3, over10ms 0
+  during the flush      n= 63  p50 2.63  p90 4.26  p99 5.58  max 5.58
+  after the flush       n= 99  p50 0.79  p90 2.41  p99 4.70  max 4.70   over5ms 0
+  scan work per flush tick n=1692 p50 0.80 p90 1.92 p99 3.89 max 6.04
+```
+
+Before those fixes the same window read p99 10-12ms / max 25.46ms with 35 ticks over 10ms,
+and four adjacent windows alternating the GC setting showed the tail was the map still
+settling rather than the collector:
+
+```
 4 adjacent 100 s windows, same run, GC setting alternating stock/spread
   stock    p99 11.72  max 13.98  over5ms 4
   spread   p99  9.63  max 11.26  over5ms 3
@@ -265,10 +277,31 @@ helped in both directions in the adjacent pairs above, but it is a small effect:
 ~40MB of Lua storage makes the collector visible, and nothing per-subsystem can see it — the
 subsystem timers account for ~1.3ms of a 19ms tick.
 
+**Load-path work is bounded too** (same rule, same reason — each of these was one tick):
+
+```
+queueChunks at load    55.6ms in the init tick (5 surfaces, 26,622 chunks)  -> 512 chunks/call
+                        from the tick loop, ~0.1ms/tick until each backlog is queued
+disc clear on removal  11-24.5ms inside chunkReconcile                     -> resumable, 384
+                        nodes/tick (a disc is up to 3,200 nodes PER FIELD, and a removal
+                        clears one per field)
+dropPendingScans       18-20ms inside surfaceSweep                         -> mark the map
+                        and let the pops drop its events (O(1)); hasPendingScans went from
+                        a queue walk (5.7ms) to a per-map counter
+per-removal upgrade scan 5-6ms/tick during a release                       -> one sweep per
+                        12-chunk slice, not per chunk
+dense chunk scan       ONE chunk costs up to 5.3-9.1ms (a base cluster's find_entities_filtered
+                       over one chunk). 5 chunks of 26,622 exceed 4ms, so a tick that scans
+                       one is ~6-9ms whatever the slice size; that is the floor until
+                       initialScan is split across ticks.
+```
+
 **Measurement caveat:** a `rampantTests.diagnose(n)` window logs every subsystem every tick
 (~20 profilers plus log lines per tick) and roughly doubles the tick it measures — p50
 0.86ms with a diagnose window versus 0.39-0.60ms sampled without one. Use range sampling
-(no diagnose) for gameplay numbers and a diagnose window only to attribute a phase.
+(no diagnose) for gameplay numbers and a diagnose window only to attribute a phase. The
+first-minute figures above are non-diagnose; the attribution that found the four phases
+above needed one.
 
 ## Iteration Order — Factorio's `pairs()` is Deterministic
 

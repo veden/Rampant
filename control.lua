@@ -1209,6 +1209,15 @@ script.on_event(defines.events.on_tick,
                     if Universe.surfaceReleases then
                         timed(tick, rangeSample, "surfaceRelease", MapUtils.processSurfaceReleases)
                     end
+                    -- A chunk removal clears the field disc its value was holding up; the
+                    -- clear is thousands of nodes per field, so it runs a bounded slice
+                    -- per tick (doing it inline cost 11-24ms in `chunkReconcile`).
+                    if Universe.sourceVersionedDiscClears then
+                        timed(tick, rangeSample, "discClear", SourceVersionedFieldRuntime.processDiscClears)
+                    end
+                    -- Queueing every chunk of every surface was 55.6ms in the init tick; it
+                    -- runs a bounded slice per tick until each surface's backlog is queued.
+                    timed(tick, rangeSample, "queueChunks", MapUtils.processChunkQueueingAll, 256, tick)
                     -- Chunk records that are in the reverse index but not reachable
                     -- from their surface's grid can accumulate (a released surface,
                     -- a chunk removed from the grid by an older build). Swept every

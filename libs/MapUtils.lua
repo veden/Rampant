@@ -185,6 +185,7 @@ function MapUtils.queueGeneratedChunk(event)
         return
     end
     if MetricsG then MetricsG.inc("scan.queued") end
+    map.pendingScans = (map.pendingScans or 0) + 1
     event.tick = (event.tick or game.tick) + 20
     Universe.eventId = Universe.eventId + 1
     event.id = Universe.eventId
@@ -258,9 +259,48 @@ function MapUtils.isExcludedSurface(surfaceName)
         sFind(surfaceName, "bpsb%-lab%-")
 end
 
-function MapUtils.queueChunks(surface, chunks, flush, tick)
-    for chunk in chunks do
+-- Chunks queued per call. This queues EVERY generated chunk of a surface, and it runs in
+-- the init tick: measured 55.6ms across five surfaces (nauvis 17.5, gleba 21.3,
+-- vulcanus 7.9, fulgora 7.1, platforms 1.8). The iterator is kept on the map and resumed
+-- from the tick loop, so the same work costs a few hundred microseconds per tick.
+local QUEUE_CHUNKS_PER_CALL = 512
+
+--- Queue the generated chunks of a surface for scanning, resumably.
+--- @param keepIterator keep `chunks` as the resume point (the load path); otherwise this is
+---        a one-shot pass over the iterator, as before.
+function MapUtils.queueChunks(surface, chunks, flush, tick, keepIterator)
+    local map = Universe.maps[surface.index]
+    if map and chunks then
+        map.queueIterator = chunks
+        map.queuedScans = 0
+    end
+    local queued = MapUtils.processChunkQueueing(surface, QUEUE_CHUNKS_PER_CALL, tick)
+    if not keepIterator and queued then
+        -- Drain the rest now: a caller that did not ask for resumability (an excluded
+        -- surface being re-acquired) wants the whole surface queued.
+        while MapUtils.processChunkQueueing(surface, QUEUE_CHUNKS_PER_CALL, tick) > 0 do end
+    end
+    Universe.flushPendingChunks = flush
+    return queued
+end
+
+--- Advance one surface's chunk queueing by at most `budget` chunks. Returns how many
+--- generated chunks were queued (0 when the iterator is done).
+function MapUtils.processChunkQueueing(surface, budget, tick)
+    local map = Universe.maps[surface.index]
+    if not map or not map.queueIterator then return 0 end
+    local chunks = map.queueIterator
+    local queued, examined = 0, 0
+    while examined < budget do
+        local chunk = chunks()
+        if chunk == nil then
+            map.queueIterator = nil
+            return queued
+        end
+        examined = examined + 1
         if surface.is_chunk_generated(chunk) then
+            queued = queued + 1
+            map.queuedScans = (map.queuedScans or 0) + 1
             MapUtils.queueGeneratedChunk(
                 {
                     surface = surface,
@@ -275,8 +315,21 @@ function MapUtils.queueChunks(surface, chunks, flush, tick)
             )
         end
     end
+    return queued
+end
 
-    Universe.flushPendingChunks = flush
+--- Keep queueing every surface's chunk backlog, one bounded slice per tick. Called from the
+--- tick loop; returns how many chunks were queued this tick.
+function MapUtils.processChunkQueueingAll(budget, tick)
+    local maps = Universe.maps
+    if not maps then return 0 end
+    local total = 0
+    for _, map in next, maps do
+        if map.queueIterator then
+            total = total + MapUtils.processChunkQueueing(map.surface, budget, tick)
+        end
+    end
+    return total
 end
 
 function MapUtils.prepMap(surface)
@@ -308,7 +361,7 @@ function MapUtils.prepMap(surface)
     local tick = game.tick
 
     -- queue all current chunks that wont be generated during play
-    MapUtils.queueChunks(surface, surface.get_chunks(), true, tick)
+    MapUtils.queueChunks(surface, surface.get_chunks(), true, tick, true)
 
     return map
 end
@@ -504,7 +557,7 @@ function MapUtils.recycleChunkId(id)
     freeTicks[#freeIds] = game.tick
 end
 
-function MapUtils.removeChunkFromMap(map, chunk)
+function MapUtils.removeChunkFromMap(map, chunk, dropUpgrades)
     local x = MapUtils.chunkX(chunk)
     local y = MapUtils.chunkY(chunk)
 
@@ -619,7 +672,10 @@ function MapUtils.removeChunkFromMap(map, chunk)
     end
     -- Pending upgrades referencing this chunk: the entry's entity is about to be
     -- invalidated, and an orphan would sit in the queue until it was processed.
-    if Universe.pendingUpgrades then
+    -- `dropUpgrades` is set by the caller when it has already swept the queue for a whole
+    -- slice: this scan is O(pending upgrades) and a surface release removes 12 chunks per
+    -- tick, which cost 5-6ms/tick with the scan per chunk.
+    if Universe.pendingUpgrades and not dropUpgrades then
         for id, entry in pairs(Universe.pendingUpgrades) do
             if entry.chunkId == chunkId then
                 if BaseUtils and BaseUtils.releasePendingUpgradeEntry then
@@ -675,16 +731,15 @@ end
 function MapUtils.processSurfaceReleases()
     local releases = Universe.surfaceReleases
     if not releases then return 0 end
+    -- ONE slice per tick across all releases: with four surfaces releasing at load, a slice
+    -- each cost 2-4ms in the tick. `releaseSurface` removes a finished map from `releases`.
     local total = 0
-    local i = 1
-    while i <= #releases do
+    for i = 1, #releases do
         local map = releases[i]
-        local released = MapUtils.releaseSurface(map)
-        total = total + released
-        if map.releasing then
-            i = i + 1              -- still going; one slice per surface per tick
+        if map.releasing or map.releaseChunks == nil then
+            total = MapUtils.releaseSurface(map)
+            break
         end
-        -- releaseSurface removes the finished map from `releases` itself
     end
     if #releases == 0 then Universe.surfaceReleases = nil end
     return total
@@ -828,17 +883,23 @@ end
 -- ticks, before anything else in the mod ran, i.e. ~93us per removed chunk. 12 per call is
 -- ~1.1ms, and a 1,900-chunk surface is gone in ~160 ticks (2.7 s).
 local RELEASE_CHUNKS_PER_CALL = 12
+local RELEASE_BUILD_PER_CALL = 2000
 
 --- Is this surface still waiting on chunk scans? A surface is judged idle from its
 --- registries, and those are only filled by the scan: while scans are queued the gate is
 --- empty because nothing has been registered yet, not because nothing is there.
 function MapUtils.hasPendingScans(map)
-    local pending = Universe.pendingChunks
-    if not pending or not map then return false end
-    for _, event in next, pending do
-        if event.map == map then return true end
+    -- O(1): a per-map counter maintained where events are queued and popped. Walking the
+    -- queue here cost 5.7ms inside the 60-tick surface sweep once the load had 14,000
+    -- events queued.
+    return map ~= nil and (map.pendingScans or 0) > 0
+end
+
+--- Account for one popped scan event of this map.
+function MapUtils.scanPopped(map)
+    if map and map.pendingScans and map.pendingScans > 0 then
+        map.pendingScans = map.pendingScans - 1
     end
-    return false
 end
 
 --- Drop the queued chunk scans of one surface.
@@ -874,6 +935,16 @@ function MapUtils.dropPendingScans(map)
     return dropped
 end
 
+--- Mark a surface as released so the scan queue drops its chunks as it pops them.
+---
+--- This is the cheap half of `dropPendingScans`: that walk cost 18-20ms in `surfaceSweep`
+--- when the load flush had 14,000 events queued for the main surface. Pops are already
+--- being spent on those events; refusing to scan them is free, and the queue is empty
+--- within a second either way.
+function MapUtils.markReleasedForScan(map)
+    if map then map.skipScans = true end
+end
+
 --- Release a whole surface: its chunk records, its bases, its hives, then the map.
 ---
 --- Resumable. The first call builds the chunk list and starts removing; later calls
@@ -891,23 +962,73 @@ function MapUtils.releaseSurface(map)
         -- 24-26ms in the tick a release started. A record whose grid slot was already lost
         -- is an orphan, and reconcileOrphanChunks reclaims those once the map is dropped
         -- (it tests Universe.maps[chunk.map.id] ~= chunk.map).
+        -- Built in slices too: the main surface has 6,349 chunks and a one-shot build was
+        -- ~2ms inside a tick that already had work.
         chunkList = {}
-        for _, chunk in next, map.chunks or {} do
+        local built = 0
+        local cursor = map.releaseBuildCursor
+        local chunks = map.chunks or {}
+        while built < RELEASE_BUILD_PER_CALL do
+            -- nextFrom: the cursor is a key of a table that removals (and a previous
+            -- release) can empty, and next(t, absentKey) raises "invalid key to 'next'".
+            local key, chunk = nextFrom(chunks, cursor)
+            if chunk == nil then
+                map.releaseBuildDone = true
+                break
+            end
+            cursor = key           -- the key we were handed, never a recomputed one
             chunkList[#chunkList + 1] = chunk
+            built = built + 1
         end
+        map.releaseBuildCursor = cursor
         map.releaseChunks = chunkList
-        map.releaseIndex = 1
+        map.releaseIndex = 1              -- nothing removed yet
         map.releasing = true
         map.releasedTotal = 0
-        map.releasedScans = MapUtils.dropPendingScans(map)
+        map.releasedScans = 0
+        -- Cheap: the pops that would have scanned these chunks now drop them (see
+        -- processPendingChunks). A bulk walk here cost 18-20ms with the load queue full.
+        MapUtils.markReleasedForScan(map)
         Universe.surfaceReleases = Universe.surfaceReleases or {}
         Universe.surfaceReleases[#Universe.surfaceReleases + 1] = map
+        if not map.releaseBuildDone then
+            return 0                      -- keep building on the next call
+        end
+        map.releaseBuildCursor = nil
     end
     local index = map.releaseIndex or 1
     local last = index + RELEASE_CHUNKS_PER_CALL - 1
     if last > #chunkList then last = #chunkList end
+    -- One sweep of the upgrade queue for the whole slice (see removeChunkFromMap).
+    if Universe.pendingUpgrades and next(Universe.pendingUpgrades) then
+        local sliceIds = {}
+        for i = index, last do
+            local chunk = chunkList[i]
+            if chunk then sliceIds[chunk.id] = true end
+        end
+        local doomed
+        for id, entry in pairs(Universe.pendingUpgrades) do
+            if entry.chunkId and sliceIds[entry.chunkId] then
+                doomed = doomed or {}
+                doomed[#doomed + 1] = id
+            end
+        end
+        if doomed then
+            for i = 1, #doomed do
+                local id = doomed[i]
+                local entry = Universe.pendingUpgrades[id]
+                if entry then
+                    if BaseUtils and BaseUtils.releasePendingUpgradeEntry then
+                        BaseUtils.releasePendingUpgradeEntry(entry)
+                    end
+                    Universe.pendingUpgrades[id] = nil
+                    Universe.pendingUpgradesLength = (Universe.pendingUpgradesLength or 1) - 1
+                end
+            end
+        end
+    end
     for i = index, last do
-        MapUtils.removeChunkFromMap(map, chunkList[i])
+        MapUtils.removeChunkFromMap(map, chunkList[i], true)
         chunkList[i] = nil
         released = released + 1
     end

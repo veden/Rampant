@@ -93,8 +93,11 @@ local SCAN_PER_TICK = 1
 -- 165ms minimum and 848ms at worst (the user's 40ms+ spike was this). 64 per call
 -- is ~3.5ms average; the backlog then finishes at 32/tick.
 local FLUSH_SCAN_PER_TICK = 16
--- 64 was 3.0-17.9ms per tick for 8 s of load; 16 is ~0.8ms median and leaves room for a
--- dense chunk without losing a fifth of a tick. The flush takes ~30 s instead of 8 s.
+-- 64 was 3.0-17.9ms per tick for 8 s of load; 16 got the median to 0.8ms but a slice still
+-- reached 10-12ms when a dense chunk landed in it (one chunk costs up to 9.1ms, and dense
+-- chunks CLUSTER: a base occupies adjacent chunks and the queue is ordered by distance, so
+-- a slice can hold several of them). 8 halves the exposure; the flush takes ~60 s instead
+-- of 8 s, which is the "indexing surface" window the player already sees.
 
 -- NOTE: there is NO readable clock in the control stage. `helpers.create_profiler()` is
 -- opaque (tostring gives "[LuaProfiler]", and the docs say the raw values are not readable
@@ -692,34 +695,44 @@ function Processor.processPendingChunks(tick, flush)
             if bucket then bucket[eventId] = nil end
         end
         local map = event.map
+        MapUtils.scanPopped(map)
         if not map.surface.valid then
             return
         end
-
-        local topLeft = event.area.left_top
-        local x = topLeft.x
-        local y = topLeft.y
-
-        if not map.chunks then
-            map.chunks = {}
-        end
-        local chunkKey = MapUtils.chunkKey(x, y)
-
-        if map.chunks[chunkKey] then
-            -- A chunk that already exists is being scanned again: either a
-            -- re-queue (rescan) or a duplicate queue entry.
-            if MetricsG then MetricsG.inc("scan.repeat") end
-            local oldChunk = map.chunks[chunkKey]
-            local chunk = timedInitialScan(oldChunk, map, tick)
-            if (chunk == -1) then
-                removeChunkFromMap(map, oldChunk)
-            end
+        -- A released (or no longer tracked) surface: the pop is already spent, so drop the
+        -- event instead of scanning a chunk into a map that no longer exists. This replaces
+        -- the bulk walk `releaseSurface` used to do, which cost 18-20ms in one tick when the
+        -- load flush held 14,000 events, and it also fixes the scan itself: those chunks got
+        -- scanned into a map that was already gone, and came back as orphan records.
+        local live = not map.skipScans and Universe.maps[map.id] == map
+        if not live then
+            if MetricsG then MetricsG.inc("scan.dropped") end
         else
-            local initialChunk = createChunk(map, x, y)
-            map.chunks[chunkKey] = initialChunk
-            local chunk = timedInitialScan(initialChunk, map, tick)
-            if (chunk == -1) then
-                map.chunks[chunkKey] = nil
+            local topLeft = event.area.left_top
+            local x = topLeft.x
+            local y = topLeft.y
+
+            if not map.chunks then
+                map.chunks = {}
+            end
+            local chunkKey = MapUtils.chunkKey(x, y)
+
+            if map.chunks[chunkKey] then
+                -- A chunk that already exists is being scanned again: either a
+                -- re-queue (rescan) or a duplicate queue entry.
+                if MetricsG then MetricsG.inc("scan.repeat") end
+                local oldChunk = map.chunks[chunkKey]
+                local chunk = timedInitialScan(oldChunk, map, tick)
+                if (chunk == -1) then
+                    removeChunkFromMap(map, oldChunk)
+                end
+            else
+                local initialChunk = createChunk(map, x, y)
+                map.chunks[chunkKey] = initialChunk
+                local chunk = timedInitialScan(initialChunk, map, tick)
+                if (chunk == -1) then
+                    map.chunks[chunkKey] = nil
+                end
             end
         end
 

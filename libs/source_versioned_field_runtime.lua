@@ -381,6 +381,11 @@ Runtime.sourceReports = {}
 function Runtime.processAll(tick)
     if not Initialized then return 0 end
     local budget = GLOBAL_FIELD_WORK_PER_TICK
+    -- While the load flush is indexing a surface, the field is fed a report per scanned
+    -- chunk and a cleared disc queues behind them: measured, a cleared disc read 0 for
+    -- ~60s against 0 in a rebuild-and-play run. Doubling the slice only while flushing
+    -- halves that window and costs ~0.5ms/tick, and only until indexing finishes.
+    if Universe.flushPendingChunks then budget = budget * 2 end
     local n = #FIELD_ROTATION
     local start = (tick % n) + 1
     local total = 0
@@ -651,37 +656,87 @@ end
 --- 1,052 field entries at ids that are not chunks, and a rebuild - which only visits real
 --- chunks - removed every one of them).
 --- MapUtils.removeChunkFromMap calls this before it clears the record.
---- Clear every entry within `maxRadius` hops of a chunk and re-queue them, so the wave
---- refills the disc from the sources that are still there.
+--- Clear every entry within `maxRadius` hops of a chunk, so the wave refills the disc from
+--- the sources that are still there.
 ---
---- This is what makes a REMOVAL cheap. A fossil disc (the cone of a vanished source) is a
---- ring of mutually supporting values: each node is 0.9 of its neighbour, so a point re-pop
---- lowers the disc by one decay factor per propagation round and the peak has to be
---- re-populated ten times before the disc reaches the truth. Measured on a real save: a
---- single removed source chunk took the resource field from 73 to ~600 mismatched chunks and
---- healed by ~10% per round, which is minutes of a field reading several times too high.
---- Clearing the disc is one bounded BFS (~1,800 nodes at radius 24, ~3,200 at 32) and the
---- refill then runs in one pass from the boundary.
-local function clearDisc(fieldType, centerId, opts)
-    local maxRadius = opts.maxRadius
-    if not maxRadius then return 0 end
+--- This is what makes a REMOVAL cheap in field terms. A fossil disc (the cone of a vanished
+--- source) is a ring of mutually supporting values: each node is 0.9 of its neighbour, so a
+--- point re-pop lowers the disc by one decay factor per propagation round and the truth takes
+--- ten rounds. Clearing the disc re-derives it in one pass from the boundary.
+---
+--- Resumable, because a disc is thousands of nodes per field and a removal enqueues one per
+--- field: doing them inline cost 11-24ms in a single tick (measured, `chunkReconcile`, which
+--- reclaims up to two chunks per call and each removal clears base + enemy + resource discs).
+--- The queue lives in storage so a save mid-clear does not strand a fossil; the audit sweep
+--- repairs anything that is still left behind.
+local DISC_CLEAR_NODES_PER_TICK = 384
+local DISC_CLEAR_NODES_PER_CALL = 96
+
+local function discQueue()
+    local queue = Universe.sourceVersionedDiscClears
+    if not queue then
+        queue = {}
+        Universe.sourceVersionedDiscClears = queue
+    end
+    return queue
+end
+
+--- Queue a disc clear for one field around a chunk. Cheap: allocates the BFS state and
+--- returns. `processDiscClears` advances it.
+local function enqueueDiscClear(fieldType, centerId, opts)
+    if not opts.maxRadius then return end
     local key = Runtime.fieldKey(fieldType)
     local field = Universe.sourceVersionedFields[key]
     local st = Universe.sourceVersionedRelax[key]
-    if not field or not st then return 0 end
+    if not field or not st then return end
+    -- Expand the FIRST ring here, while the record still resolves: the clear finishes over
+    -- the following ticks, and by then neighborOf(center) returns nothing (it resolves
+    -- through the chunk record), which would leave the BFS with no way out of the centre.
+    local front, seen = { centerId }, { [centerId] = 0 }
+    local nbrs, nbrCount = Runtime.neighborOf(centerId)
+    if not nbrCount then nbrCount = #nbrs end
+    for k = 1, nbrCount do
+        local nid = nbrs[k]
+        if seen[nid] == nil then
+            seen[nid] = 1
+            front[#front + 1] = nid
+        end
+    end
+    local queue = discQueue()
+    queue[#queue + 1] = {
+        key = key,
+        fieldType = fieldType,
+        maxRadius = opts.maxRadius,
+        centerId = centerId,
+        front = front,
+        head = 2,             -- the centre is already dealt with by dropChunk
+        tail = #front,
+        seen = seen,
+        cleared = 0,
+    }
+end
+
+local function stepDiscClear(clear, budget)
+    local key = clear.key
+    local field = Universe.sourceVersionedFields[key]
+    local st = Universe.sourceVersionedRelax[key]
+    if not field or not st then return true end
     local dist = st.dist
-    local front, tail = { centerId }, 1
-    local seen = { [centerId] = 0 }
-    local head, cleared = 1, 0
-    while head <= tail do
-        local id = front[head]
-        head = head + 1
+    local maxRadius = clear.maxRadius
+    local front = clear.front
+    local seen = clear.seen
+    local processed = 0
+    while clear.head <= clear.tail and processed < budget do
+        local id = front[clear.head]
+        front[clear.head] = nil
+        clear.head = clear.head + 1
+        processed = processed + 1
         local d = seen[id]
         if field[id] then
             field[id] = nil
             dist[id] = nil
             relaxPush(key, id)
-            cleared = cleared + 1
+            clear.cleared = clear.cleared + 1
         end
         if d < maxRadius then
             local nbrs, nbrCount = Runtime.neighborOf(id)
@@ -690,19 +745,44 @@ local function clearDisc(fieldType, centerId, opts)
                 local nid = nbrs[k]
                 if seen[nid] == nil then
                     seen[nid] = d + 1
-                    tail = tail + 1
-                    front[tail] = nid
+                    clear.tail = clear.tail + 1
+                    front[clear.tail] = nid
                 end
             end
+        end
+    end
+    if clear.head <= clear.tail then return false end
+    if st.dist then st.dist[clear.centerId] = nil end
+    return true
+end
+
+--- Advance every queued disc clear by one bounded slice. Called from the tick.
+function Runtime.processDiscClears()
+    local queue = Universe.sourceVersionedDiscClears
+    if not queue or #queue == 0 then return 0 end
+    local budget = DISC_CLEAR_NODES_PER_TICK
+    local cleared = 0
+    local i = 1
+    while i <= #queue and budget > 0 do
+        local clear = queue[i]
+        local slice = budget < DISC_CLEAR_NODES_PER_CALL and budget or DISC_CLEAR_NODES_PER_CALL
+        local before = clear.cleared
+        local done = stepDiscClear(clear, slice)
+        local used = clear.cleared - before
+        cleared = cleared + used
+        if used == 0 then budget = budget - slice else budget = budget - math.min(slice, used + 1) end
+        if done then
+            table.remove(queue, i)
+        else
+            i = i + 1
         end
     end
     return cleared
 end
 
--- A removed chunk takes a disc with it, but a mass removal (an idle surface sweep of a
--- thousand chunks) would clear a thousand overlapping discs in one tick. The first ones
--- have already cleared most of the area, so after this many the single-node drop is
--- equivalent: it is the same disc, already empty.
+-- A removed chunk takes a disc with it, and a mass removal (an idle surface sweep of a
+-- thousand chunks) would queue a thousand overlapping discs in one tick. After the first
+-- few the area is already cleared, so the single-node drop is equivalent there.
 local DISC_CLEARS_PER_TICK = 3
 Runtime.dropStats = { discs = 0, clears = 0 }
 
@@ -712,7 +792,8 @@ function Runtime.dropChunk(chunk)
     local nbrs, nbrCount = Runtime.neighborOf(id)
     if not nbrCount then nbrCount = #nbrs end
     local tick = game and game.tick or 0
-    local canClear = (Runtime.dropStats.tick ~= tick) or (Runtime.dropStats.discs < DISC_CLEARS_PER_TICK)
+    local canClear = (Runtime.dropStats.tick ~= tick)
+        or (Runtime.dropStats.discs < DISC_CLEARS_PER_TICK)
     if canClear then
         Runtime.dropStats.tick = tick
         Runtime.dropStats.discs = Runtime.dropStats.discs + 1
@@ -723,17 +804,15 @@ function Runtime.dropChunk(chunk)
             local field = Universe.sourceVersionedFields[key]
             local st = Universe.sourceVersionedRelax[key]
             if field and st then
-                if canClear and (field[id] or 0) > 1e-9 then
-                    local cleared = clearDisc(fieldType, id, opts)
-                    if cleared > 0 then
-                        Runtime.dropStats.clears = Runtime.dropStats.clears + cleared
-                        if MetricsG then MetricsG.inc("field.dropDisc") end
-                    end
-                    field[id] = nil
-                    if st.dist then st.dist[id] = nil end
+                local hadValue = (field[id] or 0) > 1e-9
+                field[id] = nil
+                if st.dist then st.dist[id] = nil end
+                if hadValue and canClear then
+                    -- The disc is cleared over the next few ticks; see enqueueDiscClear.
+                    enqueueDiscClear(fieldType, id, opts)
+                    Runtime.dropStats.clears = Runtime.dropStats.clears + 1
+                    if MetricsG then MetricsG.inc("field.dropDisc") end
                 else
-                    field[id] = nil
-                    if st.dist then st.dist[id] = nil end
                     local dirty = st.dirty
                     for k = 1, nbrCount do
                         local nid = nbrs[k]
@@ -785,7 +864,12 @@ function Runtime.relaxAudit(fieldType)
     local key = Runtime.fieldKey(fieldType)
     local st = Universe.sourceVersionedRelax[key]
     if not st or not st.seeded then return false end
-    if Runtime.relaxDepth(fieldType) > 0 then return false end
+    -- No "only when quiescent" gate: a node whose value is MISSING while its neighbours
+    -- justify one is out of sync whether or not a wave is in flight (mid-wave a stored
+    -- value lags, which is a different case and just costs a redundant push). Skipping the
+    -- sweep while the frontier was deep left a cleared disc reading 0 for 90s after a load,
+    -- because the field is busy for the whole indexing window.
+
     local field = Universe.sourceVersionedFields[key]
     local chunks = Universe.chunkById
     if not field or not chunks then return false end
