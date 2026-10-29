@@ -683,11 +683,16 @@ function Processor.processPendingChunks(tick, flush)
     else
         endCount = SCAN_PER_TICK
     end
+    -- Pop the event BEFORE scanning it, and pick the next one after. The old loop picked
+    -- the next event first and removed the previous one afterwards, so `pickPendingChunk`
+    -- kept handing back the event that was still in the queue and the same chunk was
+    -- scanned again and again: measured 10,616 [SCAN] lines for 1,431 unique chunks (7.4x)
+    -- on one load, and exactly 2x on another. Every one of those was full chunk work, so it
+    -- was also the largest single contributor to the load window.
     for _=1,endCount do
-        if not flushAllChunks and (event.tick > tick) then
+        if not flushAllChunks and ((event.tick or 0) > tick) then
             return
         end
-        local newEventId, newEvent = pickPendingChunk(tick, pendingChunks)
         pendingChunks[eventId] = nil
         local buckets = Universe.pendingChunkBuckets
         if buckets and event.bucket then
@@ -736,8 +741,7 @@ function Processor.processPendingChunks(tick, flush)
             end
         end
 
-        eventId = newEventId
-        event = newEvent
+        eventId, event = pickPendingChunk(tick, pendingChunks)
         if not eventId then
             return
         end

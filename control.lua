@@ -2153,6 +2153,117 @@ remote.add_interface("Rampant", {
             r1.mismatches, r1.liveOnly, r1.maxDelta) ..
             string.format("peaks live=%s expected=%s", r1.livePeak, r1.expectedPeak)
     end,
+    -- Diagnostic: what does a chunk scan's expensive query actually cost, and why?
+    --
+    -- The scan asks the engine for the chunk's enemy structures with
+    -- find_entities_filtered (it needs the entities, not just a number: the base is created
+    -- and each structure registered). One chunk costs up to 9ms for that in a base cluster.
+    -- This runs the variants side by side, `reps` times each inside one profiler, and logs
+    -- a [PROBE] line per variant so the answer is measured rather than assumed:
+    --
+    --   find        the query the scan uses
+    --   count       count_entities_filtered, same filter (no LuaEntity objects made)
+    --   findLimit1  find with limit=1 (does the engine stop early?)
+    --   findLimit8  find with limit=8
+    --   spawners    find, spawners only
+    --   turrets     find, turrets only
+    --   resources   count, the resource filter the scan also uses
+    --   quadrant1..4 find over each quarter of the chunk (is a split scan proportional?)
+    benchQueries = function(cx, cy, reps)
+        local surface = game.surfaces[1]
+        reps = tonumber(reps) or 20
+        local x0, y0 = cx * 32, cy * 32
+        local area = { { x0, y0 }, { x0 + 32, y0 + 32 } }
+        local enemyForces = storage.universe.enemyForces
+        local function time(label, fn)
+            local profiler = helpers.create_profiler()
+            for _ = 1, reps do fn() end
+            log({"", "[PROBE] chunk=", cx, ",", cy, " kind=", label, " reps=", reps, " ", profiler})
+        end
+        local entities
+        time("find", function()
+            entities = surface.find_entities_filtered({ area = area, force = enemyForces,
+                type = { "turret", "unit-spawner" } })
+        end)
+        local n = entities and #entities or 0
+        time("count", function()
+            return surface.count_entities_filtered({ area = area, force = enemyForces,
+                type = { "turret", "unit-spawner" } })
+        end)
+        time("findLimit1", function()
+            return surface.find_entities_filtered({ area = area, force = enemyForces,
+                type = { "turret", "unit-spawner" }, limit = 1 })
+        end)
+        time("findLimit8", function()
+            return surface.find_entities_filtered({ area = area, force = enemyForces,
+                type = { "turret", "unit-spawner" }, limit = 8 })
+        end)
+        time("spawners", function()
+            return surface.find_entities_filtered({ area = area, force = enemyForces,
+                type = "unit-spawner" })
+        end)
+        time("turrets", function()
+            return surface.find_entities_filtered({ area = area, force = enemyForces,
+                type = "turret" })
+        end)
+        time("resources", function()
+            return surface.count_entities_filtered({ area = area, type = "resource" })
+        end)
+        local h = 16
+        local quads = {
+            { x0, y0, x0 + h, y0 + h }, { x0 + h, y0, x0 + 32, y0 + h },
+            { x0, y0 + h, x0 + h, y0 + 32 }, { x0 + h, y0 + h, x0 + 32, y0 + 32 },
+        }
+        for i = 1, 4 do
+            local q = quads[i]
+            time("quadrant" .. i, function()
+                return surface.find_entities_filtered({ area = { { q[1], q[2] }, { q[3], q[4] } },
+                    force = enemyForces, type = { "turret", "unit-spawner" } })
+            end)
+        end
+        return string.format("chunk %d,%d entities=%d", cx, cy, n)
+    end,
+    -- Diagnostic: find the densest chunks on the surface, then run benchQueries on them.
+    --
+    -- The scan's expensive query is find_entities_filtered for enemy structures, and the
+    -- question "is it the query or the number returned" needs chunks that actually hold a
+    -- lot of them: the chunks a [SCAN] line flags as slow are not necessarily dense (most of
+    -- a chunk's cost is fixed per-chunk work). This buckets every enemy structure on the
+    -- surface by chunk, then probes the top `top` and the median by count.
+    benchTopChunks = function(top, reps)
+        top = tonumber(top) or 3
+        local surface = game.surfaces[1]
+        local counts = {}
+        local all = surface.find_entities_filtered({ force = storage.universe.enemyForces,
+            type = { "turret", "unit-spawner" } })
+        for _, entity in pairs(all) do
+            if entity.valid then
+                local p = entity.position
+                local cx = math.floor(p.x / 32)
+                local cy = math.floor(p.y / 32)
+                local key = cx .. "," .. cy
+                local entry = counts[key]
+                if not entry then
+                    entry = { cx = cx, cy = cy, n = 0 }
+                    counts[key] = entry
+                end
+                entry.n = entry.n + 1
+            end
+        end
+        local list = {}
+        for _, entry in pairs(counts) do list[#list + 1] = entry end
+        table.sort(list, function(a, b) return a.n > b.n end)
+        local out = { string.format("chunks=%d structures=%d", #list, #all) }
+        for i = 1, math.min(top, #list) do
+            local e = list[i]
+            out[#out + 1] = string.format("top%d=%d,%d n=%d", i, e.cx, e.cy, e.n)
+        end
+        if #list > 2 then
+            local mid = list[math.floor(#list / 2)]
+            out[#out + 1] = string.format("median=%d,%d n=%d", mid.cx, mid.cy, mid.n)
+        end
+        return table.concat(out, " ")
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end

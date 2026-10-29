@@ -290,11 +290,40 @@ dropPendingScans       18-20ms inside surfaceSweep                         -> ma
                         a queue walk (5.7ms) to a per-map counter
 per-removal upgrade scan 5-6ms/tick during a release                       -> one sweep per
                         12-chunk slice, not per chunk
-dense chunk scan       ONE chunk costs up to 5.3-9.1ms (a base cluster's find_entities_filtered
-                       over one chunk). 5 chunks of 26,622 exceed 4ms, so a tick that scans
-                       one is ~6-9ms whatever the slice size; that is the floor until
-                       initialScan is split across ticks.
+rescan loop            10,616 [SCAN] lines for 1,431 unique chunks = 7.4x the work
+                       -> the loop picked the next event before removing the previous one,
+                       so pickPendingChunk kept handing back an event that was still queued
+                       and the same chunk was scanned again (exactly 2x on one load, 7.4x on
+                       another). Pop before scanning: 26,622 scans -> 15,168, flush 31.6s ->
+                       15.8s, and `scan.repeat` should now be zero.
+dense chunk scan       NOT the query: see below. The worst single chunk scan is 5.1ms, and one
+                       chunk's fixed cost is ~0.04ms median.
 ```
+
+**A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with
+`benchQueries` / `benchTopChunks` (remotes in `control.lua`) on the densest chunks the save
+has (10,370 enemy structures over 1,385 chunks; the densest holds 33-38):
+
+```
+chunk      entities   find    count   findLimit1   spawners  turrets  resources
+-15,-32       38     0.009    0.003     0.002        0.005     0.005    0.003
+-31,23        39     0.009    0.004     0.002        0.006     0.006    0.003
+29,-11        33     0.008    0.003     0.002        0.005     0.004    0.003
+-26,18         7     0.007    0.004     0.003        0.004     0.004    0.003
+0,0            0     0.008    0.006     0.006        0.006     0.005    0.005
+```
+
+All in MICROseconds, and an empty chunk costs about as much as a dense one: the per-query
+overhead dominates and the entity count adds ~0.02us per structure. So:
+
+- `count_entities_filtered` is ~2.5x cheaper than `find` (0.003 vs 0.009ms) but the saving is
+  ~6us per chunk, ~0.1s over a 15,000-chunk load — not worth changing a filter that the scan
+  needs entities from anyway (it creates the base and registers each structure).
+- `limit = 1` is the cheapest variant (the engine stops early), ~0.002ms.
+- Splitting a chunk query into four quadrants costs MORE than one query (0.014 vs 0.009ms),
+  because per-call overhead dominates: do not split areas to smooth a tick.
+- What a chunk actually costs is its fixed work — paths scan, four queries, the record, the
+  registrations — about 0.04ms median, p99 0.5ms.
 
 **Measurement caveat:** a `rampantTests.diagnose(n)` window logs every subsystem every tick
 (~20 profilers plus log lines per tick) and roughly doubles the tick it measures — p50
