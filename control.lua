@@ -2124,6 +2124,18 @@ remote.add_interface("Rampant", {
         if not fType then return "unknown field: " .. tostring(name) end
         return SourceVersionedFieldRuntime.fieldDiag(fType, chunkId)
     end,
+    -- Classify a field's mismatches: radius truncation, carried-distance error, or an
+    -- unsupported value. Counts alone cannot tell those apart.
+    fieldSupport = function(name, sampleCount, tolerance)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.supportDiag(fType, sampleCount, tolerance)
+    end,
+    -- Per-field frontier depth plus cumulative pops and source reports: tells lag
+    -- (deep frontier still being fed) apart from a wrong field.
+    fieldLoad = function()
+        return SourceVersionedFieldRuntime.fieldLoad()
+    end,
     buildState = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end

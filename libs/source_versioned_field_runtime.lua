@@ -114,6 +114,12 @@ local function fieldOpts(fieldType, opts)
     return opts or FIELD_OPTS[fieldType]
 end
 
+-- Resolve a chunk id through the runtime's own Universe, not MapUtils: the runtime holds
+-- the table it was initialised with, and the unit tests drive it without MapUtils.
+local function chunkFor(id)
+    return Universe.chunkById and Universe.chunkById[id]
+end
+
 -- Create or version-check the persisted solved state. Writes storage, so it
 -- must NOT run on the load path; init(addProperties=true) and the tick path call it.
 function Runtime.ensureStorage()
@@ -179,6 +185,14 @@ function Runtime.init(universe, addProperties)
     QueueIndex = {}
     FIELD_DRAIN_ACC = {}
     FIELD_DRAIN_PER_TICK = {}
+    Runtime.workStats = { sum = 0, n = 0, max = 0, byField = {} }
+    Runtime.sourceReports = {}
+    Runtime.auditStats = { ghosts = 0, starved = 0, sweeps = 0 }
+-- Audit totals since init: how often the sweep found a node the frontier lost (ghosts:
+-- value above its justification) or a wave that stopped short (starved), and how many
+-- full sweeps it completed. fieldLoad reports them.
+Runtime.auditStats = { ghosts = 0, starved = 0, sweeps = 0 }
+    Runtime.lastFieldWork = {}
     -- Per-field drain budgets (source changes per tick). Round 1 keeps the sum
     -- at the old single budget (40) so the work is equivalent; the split is
     -- what makes each field's cadence independently tunable.
@@ -223,6 +237,7 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
         st.dirty = {}
         Runtime.relaxSeed(fieldType)
     end
+    Runtime.sourceReports[fieldType] = (Runtime.sourceReports[fieldType] or 0) + 1
     -- Apply THIS node now so a write is visible to a read in the same tick (one node,
     -- ~13us); neighbours arrive through the frontier over the following ticks.
     relaxNode(fieldType, key, chunk.id, fopts)
@@ -349,6 +364,10 @@ Runtime.lastFieldWork = {}
 -- Flatness accounting: work spent per tick, so the report can show whether the
 -- load is uniform (avg close to max) rather than bursty.
 Runtime.workStats = { sum = 0, n = 0, max = 0 }
+-- Per-field cumulative pops and reported source changes since init. fieldLoad reports
+-- them: a deep frontier that keeps receiving reports is a starved field (lag), not a
+-- wrong one, and the two look identical in a before/after comparison.
+Runtime.sourceReports = {}
 
 function Runtime.processAll(tick)
     if not Initialized then return 0 end
@@ -361,7 +380,12 @@ function Runtime.processAll(tick)
         local fType = FIELD_ROTATION[((start + i - 1) % n) + 1]
         local slice = budget < FIELD_QUANTUM and budget or FIELD_QUANTUM
         local used = Runtime.relaxStep(fType, slice, FIELD_OPTS[fType])
-        Runtime.relaxAudit(fType, tick)
+        local byField = Runtime.workStats.byField
+        if not byField then
+            byField = {}
+            Runtime.workStats.byField = byField
+        end
+        byField[fType] = (byField[fType] or 0) + used
         Runtime.lastFieldWork[fType] = used
         budget = budget - used
         total = total + used
@@ -370,6 +394,11 @@ function Runtime.processAll(tick)
         local fType = FIELD_ROTATION[(start + i - 1) % n + 1]
         if Runtime.lastFieldWork[fType] == nil then Runtime.lastFieldWork[fType] = 0 end
     end
+    -- The self-healing sweep runs OUTSIDE the pop budget: inside it, a busy tick spent the
+    -- budget on the first fields of the rotation and the rest were never swept. One field
+    -- per tick, in rotation, so every field is swept about every 7 x (nodes/128) ticks
+    -- (~8 s on a settled map) at a flat ~0.1ms slice instead of one big pass.
+    Runtime.relaxAudit(FIELD_ROTATION[((tick % n) + 1)])
     local stats = Runtime.workStats
     stats.sum = stats.sum + total
     stats.n = stats.n + 1
@@ -453,7 +482,13 @@ relaxNode = function(fieldType, key, id, opts)
             local d = (dist[nid] or 0) + 1
             if not maxRadius or d <= maxRadius then
                 local cand = v * decay
-                if cand > best then best = cand; bestDist = d end
+                -- Equal candidates are a tie between two paths of different length; take
+                -- the shorter one. The distance is what the radius cap is enforced against,
+                -- so a long-path tie eats reach that the exact solve keeps.
+                if cand > best or (cand == best and d < bestDist) then
+                    best = cand
+                    bestDist = d
+                end
             end
         end
     end
@@ -465,12 +500,13 @@ relaxNode = function(fieldType, key, id, opts)
             field[id] = best
             dist[id] = bestDist
             changed = true
-        elseif dist[id] ~= bestDist and bestDist < (dist[id] or math.huge) then
-            -- The value did not move beyond eps but a SHORTER path justifies it. The
-            -- distance feeds the radius check for this node's neighbours, so taking it
-            -- matters: without this, a node can keep a long-path distance and be
-            -- truncated at the fringe (measured: 95 base chunks that the exact solve
-            -- keeps and relaxation dropped, maxDelta 1.7% of peak).
+        elseif dist[id] ~= bestDist then
+            -- The value did not move beyond eps but its justification did. The distance
+            -- feeds the radius check for this node's neighbours, so it has to track the
+            -- CURRENT best path in both directions: keeping only shorter paths leaves a
+            -- too-small distance behind (measured: 421 resource chunks holding values
+            -- beyond the exact solve's reach, live up to 15,438 where 5,243 was justified,
+            -- carried distance 1 against a true distance of 11).
             dist[id] = bestDist
             changed = true
         end
@@ -567,52 +603,89 @@ function Runtime.setRelax(fieldType, enabled)
     return true
 end
 
---- Self-healing invariant. No entry can exceed `largestSource * decay^dist`, because
---- a value is either a source (distance 0) or a neighbour's value decayed one hop. That
---- bound catches ghosts BELOW the field maximum too - a chunk holding 18 structures'
---- worth of pheromone when the exact solve says 1 (measured: live 9,000 vs expected 500
---- at one chunk, maxDelta 43% of peak on the enemy field).
+--- Self-healing sweep. Every stored value must equal `max(ownSource, bestNeighbour *
+--- decay)` - that is what relaxNode writes, so any node that disagrees with its own
+--- recompute is one the frontier lost. Two shapes matter, and both were measured on a
+--- real save after the fields looked settled (frontier 0, drained comparison still wrong):
 ---
---- Checking it costs one pass over the field plus one pass over the sources, so it runs
---- on a cadence. Violations are counted (Metrics "field.auditGhost") and repaired by a
---- reseed.
-local AUDIT_CHECK_TICKS = 600
+---   ghost     value ABOVE its justification with no own source: a local peak holding
+---             15,438 with neighbours at 13,894 and no source at all. A value like that is
+---             only writable while a neighbour is high, so it means the node was never
+---             re-popped when the support fell away.
+---   starved   value BELOW its justification: a wave that stopped short.
+---
+--- The repair is a re-pop of the offending node, not a reseed: it clamps the node to what
+--- its neighbours justify and dirties them, so the correction spreads exactly as far as it
+--- needs to. A reseed would throw away a whole field (8,850 pops) to fix a handful of nodes.
+---
+--- The sweep is spread across ticks with a resumable cursor (AUDIT_NODES_PER_TICK), so it
+--- costs a flat slice instead of one 1-2ms pass per cadence. It only sweeps a QUESCENT
+--- field: mid-wave, a stored value legitimately lags its neighbours and every node would
+--- look out of sync.
+local AUDIT_NODES_PER_TICK = 128
 
-function Runtime.relaxAudit(fieldType, tick)
+function Runtime.relaxAudit(fieldType)
     local key = Runtime.fieldKey(fieldType)
     local st = Universe.sourceVersionedRelax[key]
     if not st or not st.seeded then return false end
-    local last = st.auditTick or 0
-    if tick - last < AUDIT_CHECK_TICKS then return false end
-    st.auditTick = tick
+    if Runtime.relaxDepth(fieldType) > 0 then return false end
+    local field = Universe.sourceVersionedFields[key]
+    if not field then return false end
 
     local opts = FIELD_OPTS[fieldType]
-    local decay = (opts and opts.decay) or Solver.DEFAULT_DECAY
     local eps = (opts and opts.eps) or Solver.DEFAULT_EPS
-    local maxSource = 0
-    for _, chunk in pairs(Universe.chunkById or {}) do
-        local v = Runtime.sourceValue(chunk, fieldType)
-        if v > maxSource then maxSource = v end
-    end
-    local field = Universe.sourceVersionedFields[key] or {}
     local dist = st.dist
-    local ghosts = 0
-    for id, v in pairs(field) do
-        local d = dist[id] or 0
-        local bound = maxSource * (decay ^ d)
-        if v > bound + eps then
-            ghosts = ghosts + 1
-            if ghosts > 8 then break end
+    local checked, repaired = 0, 0
+    local id = st.auditCursor
+    local stats = Runtime.auditStats
+    while checked < AUDIT_NODES_PER_TICK do
+        local nextId, value = nextFrom(field, id)
+        if nextId == nil then
+            if id ~= nil and stats then stats.sweeps = stats.sweeps + 1 end
+            st.auditCursor = nil
+            break
+        end
+        id = nextId
+        checked = checked + 1
+        -- Same recompute relaxNode does, without writing: what SHOULD this node hold?
+        local chunk = chunkFor(id)
+        local best = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+        local bestDist = 0
+        local decay = (opts and opts.decay) or Solver.DEFAULT_DECAY
+        local maxRadius = opts and opts.maxRadius
+        local nbrs, nbrCount = Runtime.neighborOf(id)
+        if not nbrCount then nbrCount = #nbrs end
+        for k = 1, nbrCount do
+            local nid = nbrs[k]
+            local v = field[nid]
+            if v and v > 0 then
+                local d = (dist[nid] or 0) + 1
+                if not maxRadius or d <= maxRadius then
+                    local cand = v * decay
+                    if cand > best or (cand == best and d < bestDist) then
+                        best = cand
+                        bestDist = d
+                    end
+                end
+            end
+        end
+        local delta = value - best
+        if delta < 0 then delta = -delta end
+        if delta > eps or (best > eps and dist[id] ~= bestDist) then
+            repaired = repaired + 1
+            if stats then
+                if value > best + eps then
+                    stats.ghosts = stats.ghosts + 1
+                else
+                    stats.starved = stats.starved + 1
+                end
+            end
+            relaxPush(key, id)
         end
     end
-    if ghosts > 0 then
-        if MetricsG then MetricsG.inc("field.auditGhost", ghosts) end
-        Universe.sourceVersionedFields[key] = nil
-        st.seeded = false
-        Runtime.ensureSolved(fieldType, opts)
-        return true
-    end
-    return false
+    st.auditCursor = id
+    if repaired > 0 and MetricsG then MetricsG.inc("field.auditRepair", repaired) end
+    return repaired > 0
 end
 
 function Runtime.relaxDepth(fieldType)
@@ -700,30 +773,289 @@ function Runtime.buildState(fieldType)
         game.tick)
 end
 
---- Explain one chunk's value: live, exact, and where each came from.
+--- One local recompute, using the same rule relaxNode uses: what should this chunk's
+--- value be, given its own source and its neighbours' current values? Returns the stored
+--- value, the own source, the full best (the local recompute), and BOTH parents: the
+--- neighbour with the highest candidate value, and the neighbour that is one step CLOSER
+--- to a source.
+---
+--- The descent parent has to prefer the nearer one. With a value that its neighbours do
+--- not support, the highest-candidate neighbour is the node we came from, and following it
+--- walks a cycle (measured: chunk 7 poked to 999 walked 7 <-> 6 until maxHops).
+local function chainStep(fieldType, field, dist, id, opts)
+    local chunk = chunkFor(id)
+    local own = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+    local value = field[id] or 0
+    local best = own
+    local bestId = nil
+    local downId = nil
+    local decay = opts.decay or Solver.DEFAULT_DECAY
+    local maxRadius = opts.maxRadius
+    local myDist = dist[id]
+    local downBest = -1
+    local nbrs, count = Runtime.neighborOf(id)
+    if not count then count = #nbrs end
+    for k = 1, count do
+        local nid = nbrs[k]
+        local nv = field[nid]
+        if nv and nv > 0 then
+            local nDist = dist[nid]
+            local d = (nDist or 0) + 1
+            if not maxRadius or d <= maxRadius then
+                local cand = nv * decay
+                if cand > best then best = cand; bestId = nid end
+                if (myDist == nil or (nDist or 0) < myDist) and cand > downBest then
+                    downBest = cand
+                    downId = nid
+                end
+            end
+        end
+    end
+    return value, own, best, bestId, downId
+end
+
+--- Follow the live support chain from one chunk. Returns the hops (for printing), the
+--- root chunk id, the verdict for the STARTING node (`consistent`, `aboveSupport`,
+--- `belowSupport`, `unsupported`, or `source` when it carries its own source), and how the
+--- walk ended (`source`, `unsupported`, `cycle`, `maxHops`).
+---
+--- Two separate answers, because they fail differently: the verdict says whether this
+--- chunk's value is locally justified, and the root says which source the chain reaches.
+--- A value can be locally consistent all the way down and still be wrong, if the chain
+--- grounds in a source that has since decreased.
+local function walkChain(fieldType, field, dist, chunkId, opts, maxHops)
+    local eps = opts.eps or Solver.DEFAULT_EPS
+    local hops = {}
+    local seen = {}
+    local id = chunkId
+    local startVerdict = nil
+    local terminal = "maxHops"
+    for _ = 1, maxHops or 32 do
+        local value, own, best, _, downId = chainStep(fieldType, field, dist, id, opts)
+        local verdict
+        if own > 0 and value <= own + eps then
+            verdict = "source" -- carries its own source
+        elseif best <= eps and value > eps then
+            verdict = "unsupported" -- nothing justifies this value at all
+        elseif best > value + eps then
+            verdict = "belowSupport" -- live is BELOW what its neighbour justifies
+        elseif best < value - eps then
+            verdict = "aboveSupport" -- live is ABOVE what its neighbour justifies
+        else
+            verdict = "consistent"
+        end
+        hops[#hops + 1] = { id = id, value = value, dist = dist[id], root = verdict == "source" }
+        if not startVerdict then startVerdict = verdict end
+        if verdict == "source" then terminal = "source"; break end
+        if not downId then terminal = "unsupported"; break end
+        if seen[downId] then terminal = "cycle"; break end
+        seen[id] = true
+        id = downId
+    end
+    return hops, id, startVerdict, terminal
+end
+
+--- Render a support chain for one chunk: every hop's id, value and carried distance,
+--- then the root and the verdict. This is what a relaxed field can answer and the oracle
+--- cannot: whether a value is grounded in a source that is still there, grounded in a
+--- source that has SINCE DECREASED, or not grounded at all. Relaxation carries no
+--- provenance, so before this the only support evidence was the last exact solve's,
+--- which is stale by construction.
+function Runtime.liveChain(fieldType, chunkId, maxHops)
+    local key = Runtime.fieldKey(fieldType)
+    local opts = fieldOpts(fieldType, nil)
+    local field = Universe.sourceVersionedFields[key] or {}
+    local st = Universe.sourceVersionedRelax[key]
+    local hops, root, verdict, terminal = walkChain(fieldType, field, (st and st.dist) or {},
+        chunkId, opts, maxHops)
+    local parts = {}
+    for i = 1, #hops do
+        local h = hops[i]
+        parts[i] = string.format("%d:%.1f(d%s)%s", h.id, h.value,
+            tostring(h.dist or 0), h.root and "*" or "")
+    end
+    return string.format("chain=%s root=%d verdict=%s grounded=%s",
+        table.concat(parts, " <- "), root, verdict, terminal)
+end
+
+--- Explain one chunk's value: live, exact, and how the live value is supported.
 function Runtime.fieldDiag(fieldType, chunkId)
     local key = Runtime.fieldKey(fieldType)
     local opts = fieldOpts(fieldType, nil)
     local live = (Universe.sourceVersionedFields[key] or {})[chunkId] or 0
-    local prov = FieldProvenance[key] or {}
-    local sec = FieldSecond[key] or {}
     local expected = Solver.solveWithMetadata(
         Runtime.buildSources(fieldType), Runtime.neighborOf, opts)
-    local chunk = MapUtils.getChunk(chunkId)
-    local topId = Solver.provTop(prov, chunkId)
-    local secondId = Solver.provSecond(prov, chunkId)
+    local chunk = chunkFor(chunkId)
+    local head = string.format(
+        "id=%d key=%.0f live=%.3f exp=%.3f ownGen=%.3f decay=%.2f eps=%s radius=%s relax=%s",
+        chunkId, (chunk and chunk.key) or 0, live, expected[chunkId] or 0,
+        (chunk and Runtime.sourceValue(chunk, fieldType)) or 0,
+        opts.decay or Solver.DEFAULT_DECAY, tostring(opts.eps or Solver.DEFAULT_EPS),
+        tostring(opts.maxRadius), tostring(opts.relax ~= nil))
+    if opts.relax then
+        return head .. " | " .. Runtime.liveChain(fieldType, chunkId)
+    end
+    -- Ordered fields do carry provenance, so report the solver's own answer.
+    local prov = FieldProvenance[key] or {}
     local function describe(id)
         if not id then return "none" end
         local c = MapUtils.getChunk(id)
         return string.format("id=%d gen=%.2f key=%.0f", id,
             (c and Runtime.sourceValue(c, fieldType)) or 0, (c and c.key) or 0)
     end
+    return head .. string.format(" | top={%s} second={%s}",
+        describe(Solver.provTop(prov, chunkId)), describe(Solver.provSecond(prov, chunkId)))
+end
+
+--- Multi-source breadth-first distance from every chunk that carries a source. This is
+--- the distance the radius cap MEANS; the relaxed field carries its own per-node `dist`
+--- along the max-plus path, and the two can disagree.
+local function bfsDistance(fieldType, cap)
+    local dist = {}
+    local queue, head, tail = {}, 1, 0
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        if Runtime.sourceValue(chunk, fieldType) > 0 then
+            dist[chunk.id] = 0
+            tail = tail + 1
+            queue[tail] = chunk.id
+        end
+    end
+    while head <= tail do
+        local id = queue[head]
+        head = head + 1
+        local d = dist[id]
+        if not cap or d < cap then
+            local nbrs, count = Runtime.neighborOf(id)
+            if not count then count = #nbrs end
+            for k = 1, count do
+                local nid = nbrs[k]
+                if dist[nid] == nil then
+                    dist[nid] = d + 1
+                    tail = tail + 1
+                    queue[tail] = nid
+                end
+            end
+        end
+    end
+    return dist
+end
+
+--- Diagnose a field's disagreement with an exact solve: for each mismatched chunk,
+--- compare the carried distance with the true distance to the nearest source, and say
+--- which of the two the mismatch blames. Answers the question verifyField can only
+--- count: is this truncation at the radius, a distance error, or an unsupported value?
+function Runtime.supportDiag(fieldType, sampleCount, tolerance)
+    local key = Runtime.fieldKey(fieldType)
+    local fopts = fieldOpts(fieldType, nil)
+    Runtime.ensureSolved(fieldType, fopts)
+    local guard = 0
+    while Runtime.relaxDepth(fieldType) > 0 and guard < 4000 do
+        guard = guard + 1
+        Runtime.relaxStep(fieldType, 4096, fopts)
+    end
+    local live = Universe.sourceVersionedFields[key] or {}
+    local st = Universe.sourceVersionedRelax[key]
+    local dist = (st and st.dist) or {}
+    local expected, prov = Solver.solveWithMetadata(Runtime.buildSources(fieldType),
+        Runtime.neighborOf, fopts)
+    local radius = fopts and fopts.maxRadius
+    local bfs = bfsDistance(fieldType, radius)
+    tolerance = tolerance or 0.10
+    sampleCount = sampleCount or 6
+    local mismatches, liveOnly = 0, 0
+    local counts = { sameDist = 0, carriedTooFar = 0, carriedTooNear = 0, noDist = 0, outOfReach = 0 }
+    local worst, worstDelta = {}, {}
+    -- Keep the `sampleCount` largest deltas, sorted descending, without sorting the
+    -- whole mismatch set: one insertion-sorted array of that size.
+    local function note(delta, line)
+        local n = #worst
+        if n < sampleCount then
+            worst[n + 1], worstDelta[n + 1] = line, delta
+        elseif delta > worstDelta[n] then
+            worst[n], worstDelta[n] = line, delta
+        else
+            return
+        end
+        local i = #worst
+        while i > 1 and worstDelta[i - 1] < worstDelta[i] do
+            worst[i], worst[i - 1] = worst[i - 1], worst[i]
+            worstDelta[i], worstDelta[i - 1] = worstDelta[i - 1], worstDelta[i]
+            i = i - 1
+        end
+    end
+    for id, ev in pairs(expected) do
+        local lv = live[id] or 0
+        local delta = lv - ev
+        if delta < 0 then delta = -delta end
+        local rel = ev > 0 and (delta / ev) or (lv > 0 and 1 or 0)
+        if rel > tolerance then
+            mismatches = mismatches + 1
+            local ld = dist[id]
+            local bd = bfs[id]
+            local kind
+            if not bd then kind = "outOfReach"
+            elseif not ld then kind = "noDist"
+            elseif ld > bd then kind = "carriedTooFar"
+            elseif ld < bd then kind = "carriedTooNear"
+            else kind = "sameDist" end
+            counts[kind] = counts[kind] + 1
+            local chunk = chunkFor(id)
+            -- Whose support is it? The exact solve names the source it grounds the value
+            -- in (prov), the relaxation names the root its chain walks to. If those are
+            -- different sources, the LIVE value is grounded in a source the exact solve
+            -- rejected, which is the difference between "truncation" and "stale value".
+            local srcId = Solver.provTop(prov, id)
+            local hops, root, verdict, terminal = walkChain(fieldType, live, dist, id, fopts, radius or 32)
+            -- The root's own source is the load-bearing number: a chain that grounds in
+            -- a chunk whose source has dropped to zero is a STALE value (an unreported
+            -- decrease), not a truncation.
+            local rootChunk = chunkFor(root)
+            note(delta, string.format(
+                "id=%d live=%.1f exp=%.1f liveDist=%s bfsDist=%s root=%d rootGen=%.1f "
+                    .. "rootLive=%.1f hops=%d expSrc=%d verdict=%s grounded=%s radius=%s "
+                    .. "ownGen=%.1f kind=%s",
+                id, lv, ev, tostring(ld), tostring(bd), root,
+                (rootChunk and Runtime.sourceValue(rootChunk, fieldType)) or 0,
+                live[root] or 0, #hops, srcId or 0, verdict, terminal, tostring(radius),
+                (chunk and Runtime.sourceValue(chunk, fieldType)) or 0, kind))
+        end
+    end
+    local eps = (fopts and fopts.eps) or Solver.DEFAULT_EPS
+    for id, lv in pairs(live) do
+        if not expected[id] and lv > eps then
+            liveOnly = liveOnly + 1
+        end
+    end
     return string.format(
-        "id=%d key=%.0f live=%.3f exp=%.3f decay=%.3f eps=%.4f radius=%s top={%s} second={%s} ownGen=%.3f",
-        chunkId, (chunk and chunk.key) or 0, live, expected[chunkId] or 0,
-        opts.decay or -1, opts.eps or -1, tostring(opts.maxRadius),
-        describe(topId), describe(secondId),
-        (chunk and Runtime.sourceValue(chunk, fieldType)) or 0)
+        "mismatches=%d liveOnly=%d sameDist=%d carriedTooFar=%d carriedTooNear=%d "
+            .. "noDist=%d outOfReach=%d frontier=%d | %s",
+        mismatches, liveOnly, counts.sameDist, counts.carriedTooFar, counts.carriedTooNear,
+        counts.noDist, counts.outOfReach, Runtime.relaxDepth(fieldType),
+        table.concat(worst, " | "))
+end
+
+--- Work accounting per field: how much frontier each field is carrying, and how much
+--- propagation the scheduler has given it since init. A field whose frontier stays deep
+--- while its reports keep arriving is starved (its input rate exceeds its share of the
+--- shared quantum), which reads exactly like "the field is wrong" in a comparison and is
+--- not: it is lag.
+function Runtime.fieldLoad()
+    local out = {}
+    local byField = Runtime.workStats.byField or {}
+    for _, fieldType in ipairs({ FIELD_DEATH_GAIN, FIELD_DEATH_LOSS, FIELD_PLAYER,
+        FIELD_KAMIKAZE, FIELD_BASE, FIELD_ENEMY, FIELD_RESOURCE }) do
+        local key = Runtime.fieldKey(fieldType)
+        out[#out + 1] = string.format("%s depth=%d pops=%d reports=%d last=%s",
+            key, Runtime.relaxDepth(fieldType),
+            math.floor(byField[fieldType] or 0),
+            math.floor((Runtime.sourceReports and Runtime.sourceReports[fieldType]) or 0),
+            tostring(Runtime.lastFieldWork[fieldType]))
+    end
+    local audit = Runtime.auditStats or {}
+    out[#out + 1] = string.format("audit ghosts=%d starved=%d sweeps=%d",
+        math.floor(audit.ghosts or 0), math.floor(audit.starved or 0),
+        math.floor(audit.sweeps or 0))
+    return table.concat(out, " | ")
 end
 
 --- Solve the field from scratch in ONE call. A diagnostic: the incremental build

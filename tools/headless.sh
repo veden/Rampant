@@ -32,7 +32,9 @@ for d in sounds locale libs graphics prototypes migrations; do
 done
 cp "$SAVE" "$WORK/world.zip"                 # <- only the copy is ever loaded
 
-printf 'write-data=%s/ud\n' "$WORK" > "$WORK/config.ini"
+# read-data must be explicit: Factorio 2.1.23 no longer derives it from the executable
+# directory, and without it the server dies at t=0 with "no package core".
+printf '[path]\nread-data=%s/data\nwrite-data=%s/ud\n' "$(dirname "$(dirname "$(dirname "$FAC")")")" "$WORK" > "$WORK/config.ini"
 printf '{"name":"headless","description":"","visibility":{"public":false,"lan":false},"require_user_verification":false,"max_players":5,"auto_pause":false,"autosave_interval":0}\n' \
     > "$WORK/server.json"
 

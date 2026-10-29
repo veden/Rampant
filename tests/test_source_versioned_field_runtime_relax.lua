@@ -115,4 +115,96 @@ my_collection:add('relax_is_quiescent_when_nothing_changes', function()
     assert(Runtime.relaxDepth(PLAYER) == 0, "a settled field must stay settled")
 end)
 
+-- Diagnostics. A relaxed field carries no provenance, so the support chain is the only
+-- way to say WHY a value is what it is; it has to walk to the source that grounds it.
+local function settle()
+    Runtime.ensureSolved(PLAYER, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    for _ = 1, 200 do Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 }) end
+end
+
+my_collection:add('diag_chain_walks_to_the_source_that_grounds_the_value', function()
+    settle()
+    local chain = Runtime.liveChain(PLAYER, 5)
+    assert(chain:find("root=1", 1, true), "the chain must end at the source chunk: " .. chain)
+    assert(chain:find("verdict=consistent", 1, true), "a settled value is consistent: " .. chain)
+    assert(chain:find("grounded=source", 1, true), "the chain must ground in a source: " .. chain)
+end)
+
+my_collection:add('diag_support_reports_no_mismatch_on_a_settled_field', function()
+    settle()
+    local report = Runtime.supportDiag(PLAYER, 4)
+    assert(report:find("mismatches=0", 1, true), "settled field must match: " .. report)
+    assert(report:find("liveOnly=0", 1, true), "settled field must have no extra chunks: " .. report)
+end)
+
+my_collection:add('diag_support_flags_an_unsupported_value_and_names_its_root', function()
+    settle()
+    local key = tostring(PLAYER)
+    local field = universe.sourceVersionedFields[key]
+    field[7] = 999 -- no neighbour justifies this; the chain should say so
+    local report = Runtime.supportDiag(PLAYER, 4)
+    assert(report:find("mismatches=1", 1, true), "the poked value must count: " .. report)
+    assert(report:find("root=1", 1, true), "the chain still walks to the source: " .. report)
+    local chain = Runtime.liveChain(PLAYER, 7)
+    assert(chain:find("verdict=aboveSupport", 1, true),
+        "a value above its neighbours must be flagged: " .. chain)
+end)
+
+my_collection:add('diag_field_diag_prints_the_live_chain_for_a_relaxed_field', function()
+    settle()
+    local report = Runtime.fieldDiag(PLAYER, 3)
+    assert(report:find("relax=true", 1, true), "the field is relaxed: " .. report)
+    assert(report:find("chain=", 1, true), "relaxed fields print a live chain: " .. report)
+    assert(report:find("root=1", 1, true), report)
+end)
+
+-- The audit is the backstop for a value the frontier lost. A ghost is repaired by
+-- re-popping it, so the sweep plus a drain has to land on the exact solve again.
+local function sweep(rounds)
+    for _ = 1, rounds do
+        Runtime.relaxAudit(PLAYER)
+        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    end
+end
+
+my_collection:add('audit_repairs_a_ghost_the_frontier_lost', function()
+    settle()
+    local key = tostring(PLAYER)
+    local field = universe.sourceVersionedFields[key]
+    local honest = field[5]
+    field[5] = honest * 3 -- a local peak nothing supports
+    Runtime.auditStats.ghosts = 0
+    sweep(400)
+    assert(Runtime.auditStats.ghosts > 0, "the sweep must see the ghost")
+    assert(math.abs((field[5] or 0) - honest) < 1e-3,
+        string.format("the sweep must restore the supported value: %.6f vs %.6f",
+            field[5] or 0, honest))
+    local report = Runtime.supportDiag(PLAYER, 4)
+    assert(report:find("mismatches=0", 1, true), "repaired field must match: " .. report)
+end)
+
+my_collection:add('audit_repairs_a_starved_value_below_its_justification', function()
+    settle()
+    local key = tostring(PLAYER)
+    local field = universe.sourceVersionedFields[key]
+    local honest = field[5]
+    field[5] = honest * 0.5 -- a wave that stopped short
+    Runtime.auditStats.starved = 0
+    sweep(400)
+    assert(Runtime.auditStats.starved > 0, "the sweep must see the starved value")
+    assert(math.abs((field[5] or 0) - honest) < 1e-3,
+        string.format("the sweep must restore the supported value: %.6f vs %.6f",
+            field[5] or 0, honest))
+end)
+
+my_collection:add('audit_leaves_a_settled_field_alone', function()
+    settle()
+    Runtime.auditStats.ghosts, Runtime.auditStats.starved = 0, 0
+    sweep(400)
+    assert(Runtime.auditStats.ghosts == 0 and Runtime.auditStats.starved == 0,
+        string.format("a settled field must not be touched (ghosts=%d starved=%d)",
+            Runtime.auditStats.ghosts, Runtime.auditStats.starved))
+    assert(Runtime.relaxDepth(PLAYER) == 0, "the sweep must not leave work queued")
+end)
+
 return my_collection
