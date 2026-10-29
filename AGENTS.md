@@ -234,8 +234,14 @@ Rules that bite:
 
 Read the pipeline from the log, not from intuition: `[SCAN]` gives one line per chunk with
 its coordinates and cost, `[REL]` gives a surface release with its chunk and dropped-scan
-totals. `.bench/drive_chunks2.py` drives a copy of the save, parses both, and reports
-per-tick ranges for the flush, the release and steady state.
+totals. `tools/measure-chunk-pipeline.py` drives a copy of the save, parses both, and reports
+per-tick ranges for the flush, the release and the buckets after it.
+
+Field correctness is measured the same way: `tools/measure-field-drift.py` compares the live
+field against a fresh exact solve every 15 s through play and through a rebuild.
+`tools/save_drive.py` is the shared piece - it copies the save, starts the server, talks to
+the mod over UDP exec (`d.call("fieldLoad")`, `d.lua("return game.tick")`), and on close
+SIGKILLs it and verifies the original save's md5 and mtime.
 
 **Separate the load aftermath from steady state.** On the Starting2 save the tick tail is
 p99 10-12ms for the first few game-minutes after load and settles to p99 1.3ms / max 1.4ms
