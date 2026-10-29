@@ -160,7 +160,13 @@ Handlers.REGISTER_STRUCTURE = function(cmd)
     if not cmd.entityRef or not cmd.entityRef.valid then return end
     local base = _Universe.bases[cmd.baseId]
     if base then
-        ChunkUtilsG.registerEnemyBaseStructure(cmd.entityRef, base, cmd.tick or game.tick)
+        -- The activeness decision is per CHUNK, so it is taken here for the chunks this
+        -- structure registered into, not inside registration itself.
+        local touched = {}
+        ChunkUtilsG.registerEnemyBaseStructure(cmd.entityRef, base, cmd.tick or game.tick, nil, touched)
+        for _, touchedChunk in pairs(touched) do
+            ChunkUtilsG.refreshNestActiveness(touchedChunk, cmd.tick or game.tick)
+        end
     end
 end
 

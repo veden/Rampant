@@ -440,13 +440,14 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         end
                     end
 
+                    local touched = {}
                     timedScanPhase("register", function()
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
                         if enemyBuilding.valid then
                             local entityName = enemyBuilding.name
                             if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: registerEnemyBaseStructure(" .. entityName .. ") base=" .. (base.id or "?")) end
-                            ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick)
+                            ChunkUtils.registerEnemyBaseStructure(enemyBuilding, base, tick, nil, touched)
                             local isVanilla = VANILLA_ENTITY_TYPE_LOOKUP[entityName]
                             if isVanilla or (not isVanilla and not BUILDING_HIVE_TYPE_LOOKUP[entityName]) then
                                 if Universe.DEBUG_ENTITY_EVENTS then game.print("[RAMPANT] initialScan: queueUpgrade(" .. entityName .. ")") end
@@ -460,12 +461,25 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         end
                     end
                     end)
+                    -- Chunk-level activeness, once per chunk this pass touched: the check
+                    -- samples the chunk corner and four neighbours, so it is one answer for
+                    -- every nest in the chunk. It used to run inside registration, i.e. once
+                    -- per spawner (5,161 nests took ~25,800 pollution samples at load).
+                    timedScanPhase("activeness", function()
+                        for _, touchedChunk in pairs(touched) do
+                            processNestActiveness(touchedChunk, tick)
+                        end
+                    end)
                 else
+                    local touched = {}
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]
                         if building.valid then
-                            ChunkUtils.registerEnemyBaseStructure(building, base, tick)
+                            ChunkUtils.registerEnemyBaseStructure(building, base, tick, nil, touched)
                         end
+                    end
+                    for _, touchedChunk in pairs(touched) do
+                        processNestActiveness(touchedChunk, tick)
                     end
                 end
             end
@@ -628,7 +642,18 @@ local function registerHive(base, entity, hiveType, tick)
     end
 end
 
-function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
+--- Chunk-level nest activeness, for callers that register structures outside a scan.
+--- The check samples the chunk corner and its four neighbours, so it is one answer for every
+--- nest in the chunk; keep it out of the per-structure registration path.
+function ChunkUtils.refreshNestActiveness(chunk, tick)
+    processNestActiveness(chunk, tick)
+end
+
+--- Register one enemy structure with its base.
+--- @param touch optional table: chunk ids this structure added a nest to are recorded in it
+---        (as id -> chunk), for the caller to refresh chunk-level activeness once per chunk
+---        instead of once per structure.
+function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount, touch)
     if not entity or not entity.valid then return end
     if base and base.map then MapUtils.touchSurface(base.map) end
     local name = entity.name
@@ -655,8 +680,8 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount)
                 added = true
                 setChunkBase(chunk, base)
                 addBaseResourceChunk(base, chunk)
-                if (hiveType == "spitter-spawner") or (hiveType == "biter-spawner") then
-                    processNestActiveness(chunk, tick)
+                if touch and ((hiveType == "spitter-spawner") or (hiveType == "biter-spawner")) then
+                    touch[chunk.id] = chunk
                 end
                 queueSourceChange(chunk, ENEMY_PHEROMONE, oldEnemySourceValue, enemySourceValue(chunk))
             end

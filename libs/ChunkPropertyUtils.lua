@@ -738,17 +738,8 @@ function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     return foundBase
 end
 
--- How long a chunk's "nothing is active here" answer is trusted. The pollution sampling is
--- up to five surface.get_pollution calls for the chunk and its four neighbours, and the
--- negative answer clears chunk.activeTick, so without this every spawner in the chunk re-ran
--- them (measured: 14.8ms for one base-cluster chunk in scan.register at load).
-local NEGATIVE_ACTIVENESS_TICKS = 600
-
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     if getActiveTick(chunk) > tick then
-        return
-    end
-    if (chunk.pollutionCheckedTick or 0) > tick then
         return
     end
 
@@ -781,7 +772,6 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
                 or pollutionAt(x, y + 32) > pollutionThreshold then
                 registerActiveNest(chunk, tick)
             else
-                chunk.pollutionCheckedTick = tick + NEGATIVE_ACTIVENESS_TICKS
                 unregisterActiveNest(chunk)
                 if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
                     registerActiveRaidNest(chunk, tick)
