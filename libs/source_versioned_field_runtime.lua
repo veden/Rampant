@@ -563,33 +563,49 @@ function Runtime.setRelax(fieldType, enabled)
     return true
 end
 
---- Self-healing invariant: a field's maximum can never exceed its largest source.
---- A value above it means a source decreased without notifying (measured: a base field
---- entry of 47,075 with ownSource 0 at dist 4 after its source vanished), and nothing
---- would ever revisit it. Detecting it costs one pass over the field, so it is checked
---- on a cadence and repaired with a reseed.
-local MAX_SOURCE_CHECK_TICKS = 600
+--- Self-healing invariant. No entry can exceed `largestSource * decay^dist`, because
+--- a value is either a source (distance 0) or a neighbour's value decayed one hop. That
+--- bound catches ghosts BELOW the field maximum too - a chunk holding 18 structures'
+--- worth of pheromone when the exact solve says 1 (measured: live 9,000 vs expected 500
+--- at one chunk, maxDelta 43% of peak on the enemy field).
+---
+--- Checking it costs one pass over the field plus one pass over the sources, so it runs
+--- on a cadence. Violations are counted (Metrics "field.auditGhost") and repaired by a
+--- reseed.
+local AUDIT_CHECK_TICKS = 600
 
 function Runtime.relaxAudit(fieldType, tick)
     local key = Runtime.fieldKey(fieldType)
     local st = Universe.sourceVersionedRelax[key]
     if not st or not st.seeded then return false end
     local last = st.auditTick or 0
-    if tick - last < MAX_SOURCE_CHECK_TICKS then return false end
+    if tick - last < AUDIT_CHECK_TICKS then return false end
     st.auditTick = tick
-    local field = Universe.sourceVersionedFields[key] or {}
-    local bestField = 0
-    for _, v in pairs(field) do if v > bestField then bestField = v end end
-    local bestSource = 0
+
+    local opts = FIELD_OPTS[fieldType]
+    local decay = (opts and opts.decay) or Solver.DEFAULT_DECAY
+    local eps = (opts and opts.eps) or Solver.DEFAULT_EPS
+    local maxSource = 0
     for _, chunk in pairs(Universe.chunkById or {}) do
         local v = Runtime.sourceValue(chunk, fieldType)
-        if v > bestSource then bestSource = v end
+        if v > maxSource then maxSource = v end
     end
-    if bestField > bestSource + (st.tolerance or 1e-3) then
+    local field = Universe.sourceVersionedFields[key] or {}
+    local dist = st.dist
+    local ghosts = 0
+    for id, v in pairs(field) do
+        local d = dist[id] or 0
+        local bound = maxSource * (decay ^ d)
+        if v > bound + eps then
+            ghosts = ghosts + 1
+            if ghosts > 8 then break end
+        end
+    end
+    if ghosts > 0 then
+        if MetricsG then MetricsG.inc("field.auditGhost", ghosts) end
         Universe.sourceVersionedFields[key] = nil
         st.seeded = false
-        if MetricsG then MetricsG.inc("field.auditReseed") end
-        Runtime.ensureSolved(fieldType, FIELD_OPTS[fieldType])
+        Runtime.ensureSolved(fieldType, opts)
         return true
     end
     return false
