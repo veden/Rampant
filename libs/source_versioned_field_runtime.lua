@@ -512,9 +512,11 @@ relaxNode = function(fieldType, key, id, opts)
     end
     local best = Runtime.sourceValue(chunk, fieldType)
     local bestDist = 0
+    local nearDist = 0
     local decay = opts.decay or Solver.DEFAULT_DECAY
     local maxRadius = opts.maxRadius
     local dist = st.dist
+    local eps = opts.eps or Solver.DEFAULT_EPS
     local nbrs, nbrCount = Runtime.neighborOf(id)
     if not nbrCount then nbrCount = #nbrs end
     for k = 1, nbrCount do
@@ -524,18 +526,25 @@ relaxNode = function(fieldType, key, id, opts)
             local d = (dist[nid] or 0) + 1
             if not maxRadius or d <= maxRadius then
                 local cand = v * decay
-                -- Equal candidates are a tie between two paths of different length; take
-                -- the shorter one. The distance is what the radius cap is enforced against,
-                -- so a long-path tie eats reach that the exact solve keeps.
                 if cand > best or (cand == best and d < bestDist) then
                     best = cand
                     bestDist = d
                 end
+                -- The distance the radius cap is enforced against. Two paths whose values
+                -- are within eps justify this node equally well, so take the SHORTER one:
+                -- the value is what matters and the reach it buys is otherwise decided by
+                -- which path happened to arrive first. The ordered solver pops in value
+                -- order and so keeps the short one, which is why the two disagreed at the
+                -- cap boundary (measured: 95 base chunks the exact solve fills at distance
+                -- 28 and the relaxation truncated, 1.7% of peak).
+                if cand >= best - eps and (nearDist == 0 or d < nearDist) then
+                    nearDist = d
+                end
             end
         end
     end
+    if nearDist > 0 and nearDist < bestDist then bestDist = nearDist end
     local old = field[id]
-    local eps = opts.eps or Solver.DEFAULT_EPS
     local changed = false
     if best > eps then
         if not old or best > old + eps or best < old - eps then
@@ -642,26 +651,97 @@ end
 --- 1,052 field entries at ids that are not chunks, and a rebuild - which only visits real
 --- chunks - removed every one of them).
 --- MapUtils.removeChunkFromMap calls this before it clears the record.
+--- Clear every entry within `maxRadius` hops of a chunk and re-queue them, so the wave
+--- refills the disc from the sources that are still there.
+---
+--- This is what makes a REMOVAL cheap. A fossil disc (the cone of a vanished source) is a
+--- ring of mutually supporting values: each node is 0.9 of its neighbour, so a point re-pop
+--- lowers the disc by one decay factor per propagation round and the peak has to be
+--- re-populated ten times before the disc reaches the truth. Measured on a real save: a
+--- single removed source chunk took the resource field from 73 to ~600 mismatched chunks and
+--- healed by ~10% per round, which is minutes of a field reading several times too high.
+--- Clearing the disc is one bounded BFS (~1,800 nodes at radius 24, ~3,200 at 32) and the
+--- refill then runs in one pass from the boundary.
+local function clearDisc(fieldType, centerId, opts)
+    local maxRadius = opts.maxRadius
+    if not maxRadius then return 0 end
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key]
+    local st = Universe.sourceVersionedRelax[key]
+    if not field or not st then return 0 end
+    local dist = st.dist
+    local front, tail = { centerId }, 1
+    local seen = { [centerId] = 0 }
+    local head, cleared = 1, 0
+    while head <= tail do
+        local id = front[head]
+        head = head + 1
+        local d = seen[id]
+        if field[id] then
+            field[id] = nil
+            dist[id] = nil
+            relaxPush(key, id)
+            cleared = cleared + 1
+        end
+        if d < maxRadius then
+            local nbrs, nbrCount = Runtime.neighborOf(id)
+            if not nbrCount then nbrCount = #nbrs end
+            for k = 1, nbrCount do
+                local nid = nbrs[k]
+                if seen[nid] == nil then
+                    seen[nid] = d + 1
+                    tail = tail + 1
+                    front[tail] = nid
+                end
+            end
+        end
+    end
+    return cleared
+end
+
+-- A removed chunk takes a disc with it, but a mass removal (an idle surface sweep of a
+-- thousand chunks) would clear a thousand overlapping discs in one tick. The first ones
+-- have already cleared most of the area, so after this many the single-node drop is
+-- equivalent: it is the same disc, already empty.
+local DISC_CLEARS_PER_TICK = 3
+Runtime.dropStats = { discs = 0, clears = 0 }
+
 function Runtime.dropChunk(chunk)
     if not Initialized or not chunk or not chunk.id then return false end
     local id = chunk.id
     local nbrs, nbrCount = Runtime.neighborOf(id)
     if not nbrCount then nbrCount = #nbrs end
+    local tick = game and game.tick or 0
+    local canClear = (Runtime.dropStats.tick ~= tick) or (Runtime.dropStats.discs < DISC_CLEARS_PER_TICK)
+    if canClear then
+        Runtime.dropStats.tick = tick
+        Runtime.dropStats.discs = Runtime.dropStats.discs + 1
+    end
     for fieldType, opts in pairs(FIELD_OPTS) do
         if opts.relax then
             local key = Runtime.fieldKey(fieldType)
             local field = Universe.sourceVersionedFields[key]
             local st = Universe.sourceVersionedRelax[key]
             if field and st then
-                field[id] = nil
-                if st.dist then st.dist[id] = nil end
-                local dirty = st.dirty
-                for k = 1, nbrCount do
-                    local nid = nbrs[k]
-                    if not dirty[nid] then
-                        dirty[nid] = true
-                        st.tail = st.tail + 1
-                        st.queue[st.tail] = nid
+                if canClear and (field[id] or 0) > 1e-9 then
+                    local cleared = clearDisc(fieldType, id, opts)
+                    if cleared > 0 then
+                        Runtime.dropStats.clears = Runtime.dropStats.clears + cleared
+                        if MetricsG then MetricsG.inc("field.dropDisc") end
+                    end
+                    field[id] = nil
+                    if st.dist then st.dist[id] = nil end
+                else
+                    field[id] = nil
+                    if st.dist then st.dist[id] = nil end
+                    local dirty = st.dirty
+                    for k = 1, nbrCount do
+                        local nid = nbrs[k]
+                        if not dirty[nid] then
+                            dirty[nid] = true
+                            st.tail = st.tail + 1
+                            st.queue[st.tail] = nid
+                        end
                     end
                 end
             end

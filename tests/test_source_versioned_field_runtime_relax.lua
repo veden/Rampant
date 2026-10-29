@@ -229,7 +229,14 @@ my_collection:add('removing_a_chunk_record_drops_its_value_and_its_cone', functi
             "the cone beyond the removed chunk must fall away, chunk " .. id ..
                 " = " .. tostring(field[id]))
     end
-    assert(math.abs((field[4] or 0) - kept) < 1e-6, "the near side must be untouched")
+    -- The disc clear also re-queues the near side, which refills from the source; it must
+    -- land back on exactly the value it had.
+    for _ = 1, 400 do
+        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    end
+    assert(math.abs((field[4] or 0) - kept) < 1e-6,
+        string.format("the near side must refill to its supported value: %.6f vs %.6f",
+            field[4] or 0, kept))
 end)
 
 my_collection:add('audit_leaves_a_settled_field_alone', function()
