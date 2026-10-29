@@ -169,7 +169,12 @@ function Runtime.init(universe, addProperties)
         Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
         Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
     end
-    Runtime.resetRelaxState()
+    -- Reseed here, not only on the load path: queueSource ignores writes until
+    -- Initialized is true, so a reseed performed during on_load (before init) can miss
+    -- the scan's writes. init runs after storage is available, which is exactly the
+    -- state reseedAll produces when it repairs a field by hand.
+    Runtime.reseedRelaxedFields()
+    Initialized = true
     SourceQueues = {}
     QueueIndex = {}
     FIELD_DRAIN_ACC = {}
