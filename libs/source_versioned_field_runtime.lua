@@ -169,6 +169,19 @@ function Runtime.reseedRelaxedFields()
     end
 end
 
+-- Audit totals per field, since init: how often the sweep found a node the frontier
+-- lost (ghosts: value above its justification) or a wave that stopped short (starved),
+-- and how many full sweeps it completed. fieldLoad reports them.
+Runtime.auditStats = {}
+local function auditStat(key)
+    local stats = Runtime.auditStats[key]
+    if not stats then
+        stats = { ghosts = 0, starved = 0, sweeps = 0, orphans = 0 }
+        Runtime.auditStats[key] = stats
+    end
+    return stats
+end
+
 function Runtime.init(universe, addProperties)
     Universe = universe
     if addProperties then
@@ -187,11 +200,7 @@ function Runtime.init(universe, addProperties)
     FIELD_DRAIN_PER_TICK = {}
     Runtime.workStats = { sum = 0, n = 0, max = 0, byField = {} }
     Runtime.sourceReports = {}
-    Runtime.auditStats = { ghosts = 0, starved = 0, sweeps = 0 }
--- Audit totals since init: how often the sweep found a node the frontier lost (ghosts:
--- value above its justification) or a wave that stopped short (starved), and how many
--- full sweeps it completed. fieldLoad reports them.
-Runtime.auditStats = { ghosts = 0, starved = 0, sweeps = 0 }
+    Runtime.auditStats = {}
     Runtime.lastFieldWork = {}
     -- Per-field drain budgets (source changes per tick). Round 1 keeps the sum
     -- at the old single budget (40) so the work is equivalent; the split is
@@ -468,7 +477,40 @@ relaxNode = function(fieldType, key, id, opts)
     local field = Universe.sourceVersionedFields[key]
     local st = relaxState(key)
     local chunk = Universe.chunkById and Universe.chunkById[id]
-    local best = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+    local distTable = st.dist
+    if not chunk then
+        -- No chunk record, no value. A field entry belongs to a chunk, and an id that is
+        -- no longer a chunk is never read (readers resolve through chunk.id) and never
+        -- revisits its neighbours. Without this rule a pop QUEUED BEFORE the record was
+        -- removed recomputes the node from its neighbours and leaves a value behind that
+        -- nothing will ever touch again; its cone then decays from it forever, so one
+        -- removal fossilises a whole disc. Measured on a settled field: 1,052 entries at
+        -- ids that are not chunks, and a rebuild (which only visits real chunks) removed
+        -- every one of them.
+        local old = field[id]
+        if old then
+            field[id] = nil
+            distTable[id] = nil
+            -- This cannot reach the neighbours: neighborOf resolves through the chunk
+            -- record, which is exactly what is missing. dropChunk() does the dirtying at
+            -- removal time, while the record is still resolvable; this branch is the
+            -- safety net for an id that slipped through.
+            local nbrs, nbrCount = Runtime.neighborOf(id)
+            if not nbrCount then nbrCount = #nbrs end
+            local dirty = st.dirty
+            for k = 1, nbrCount do
+                local nid = nbrs[k]
+                if not dirty[nid] then
+                    dirty[nid] = true
+                    st.tail = st.tail + 1
+                    st.queue[st.tail] = nid
+                end
+            end
+            return true
+        end
+        return false
+    end
+    local best = Runtime.sourceValue(chunk, fieldType)
     local bestDist = 0
     local decay = opts.decay or Solver.DEFAULT_DECAY
     local maxRadius = opts.maxRadius
@@ -593,6 +635,41 @@ function Runtime.relaxStep(fieldType, budget, opts)
     return popped
 end
 
+--- Remove a chunk from every relaxed field, in the right order: drop its entries and
+--- dirty its neighbours while the record is STILL resolvable. A pop for an already removed
+--- id cannot find its neighbours (neighborOf resolves through the record), so doing this at
+--- pop time dropped the value and left its whole cone standing (measured on a real save:
+--- 1,052 field entries at ids that are not chunks, and a rebuild - which only visits real
+--- chunks - removed every one of them).
+--- MapUtils.removeChunkFromMap calls this before it clears the record.
+function Runtime.dropChunk(chunk)
+    if not Initialized or not chunk or not chunk.id then return false end
+    local id = chunk.id
+    local nbrs, nbrCount = Runtime.neighborOf(id)
+    if not nbrCount then nbrCount = #nbrs end
+    for fieldType, opts in pairs(FIELD_OPTS) do
+        if opts.relax then
+            local key = Runtime.fieldKey(fieldType)
+            local field = Universe.sourceVersionedFields[key]
+            local st = Universe.sourceVersionedRelax[key]
+            if field and st then
+                field[id] = nil
+                if st.dist then st.dist[id] = nil end
+                local dirty = st.dirty
+                for k = 1, nbrCount do
+                    local nid = nbrs[k]
+                    if not dirty[nid] then
+                        dirty[nid] = true
+                        st.tail = st.tail + 1
+                        st.queue[st.tail] = nid
+                    end
+                end
+            end
+        end
+    end
+    return nbrCount
+end
+
 --- Test/tuning hook: switch a field between relaxation and the ordered solver at
 --- runtime. Used by the unit tests that pin the ordered path's removal behaviour.
 function Runtime.setRelax(fieldType, enabled)
@@ -630,23 +707,62 @@ function Runtime.relaxAudit(fieldType)
     if not st or not st.seeded then return false end
     if Runtime.relaxDepth(fieldType) > 0 then return false end
     local field = Universe.sourceVersionedFields[key]
-    if not field then return false end
+    local chunks = Universe.chunkById
+    if not field or not chunks then return false end
 
     local opts = FIELD_OPTS[fieldType]
     local eps = (opts and opts.eps) or Solver.DEFAULT_EPS
     local dist = st.dist
     local checked, repaired = 0, 0
+    -- Walk the CHUNK records, not the field: a value the frontier lost is usually a value
+    -- that is still there (a ghost), but the same loss also leaves a chunk with NO value
+    -- while its neighbours justify one (measured: 95 base chunks the exact solve fills at
+    -- distance 28 with the live field empty). Walking the field can never see those.
+    -- Odd passes clean ORPHANS out of the field (ids with no chunk record), even passes
+    -- check chunk records for lost values. Two cursors, so each pass stays a flat slice.
+    local passField = (st.auditPass or 0) == 1
+    st.auditPass = passField and 0 or 1
+    if passField then
+        local orphans = 0
+        local fieldId = st.orphanCursor
+        local scanned = 0
+        while scanned < AUDIT_NODES_PER_TICK do
+            local nextId, nextValue = nextFrom(field, fieldId)
+            if nextId == nil then
+                st.orphanCursor = nil
+                break
+            end
+            fieldId = nextId
+            scanned = scanned + 1
+            if chunkFor(fieldId) == nil then
+                -- Leave the value: relaxNode drops it when the frontier reaches it, and
+                -- pushing the id is what makes that happen.
+                orphans = orphans + 1
+                relaxPush(key, fieldId)
+            elseif nextValue == nil then
+                st.orphanCursor = nextId
+            end
+        end
+        st.orphanCursor = fieldId
+        if orphans > 0 then
+            local statsO = auditStat(key)
+            statsO.orphans = (statsO.orphans or 0) + orphans
+            if MetricsG then MetricsG.inc("field.auditOrphan", orphans) end
+        end
+        return orphans > 0
+    end
     local id = st.auditCursor
-    local stats = Runtime.auditStats
+    local stats = auditStat(key)
     while checked < AUDIT_NODES_PER_TICK do
-        local nextId, value = nextFrom(field, id)
+        local nextId = nextFrom(chunks, id)
         if nextId == nil then
-            if id ~= nil and stats then stats.sweeps = stats.sweeps + 1 end
+            if id ~= nil then stats.sweeps = stats.sweeps + 1 end
             st.auditCursor = nil
             break
         end
         id = nextId
         checked = checked + 1
+        local value = field[id] or 0
         -- Same recompute relaxNode does, without writing: what SHOULD this node hold?
         local chunk = chunkFor(id)
         local best = chunk and Runtime.sourceValue(chunk, fieldType) or 0
@@ -673,12 +789,10 @@ function Runtime.relaxAudit(fieldType)
         if delta < 0 then delta = -delta end
         if delta > eps or (best > eps and dist[id] ~= bestDist) then
             repaired = repaired + 1
-            if stats then
-                if value > best + eps then
-                    stats.ghosts = stats.ghosts + 1
-                else
-                    stats.starved = stats.starved + 1
-                end
+            if value > best + eps then
+                stats.ghosts = stats.ghosts + 1
+            else
+                stats.starved = stats.starved + 1
             end
             relaxPush(key, id)
         end
@@ -907,6 +1021,38 @@ function Runtime.fieldDiag(fieldType, chunkId)
         describe(Solver.provTop(prov, chunkId)), describe(Solver.provSecond(prov, chunkId)))
 end
 
+--- Dump the live field around one chunk as a grid: for each cell, `live/dist/own` and
+--- whether the chunk record exists. The numbers either explain a mismatch or rule out the
+--- shapes a count cannot distinguish (a peak with no source, a plateau of mutually
+--- supporting values, a truncation edge).
+function Runtime.fieldNeighborhood(fieldType, chunkId, radius)
+    local key = Runtime.fieldKey(fieldType)
+    local field = Universe.sourceVersionedFields[key] or {}
+    local st = Universe.sourceVersionedRelax[key]
+    local dist = (st and st.dist) or {}
+    local center = chunkFor(chunkId)
+    if not center then return "no such chunk: " .. tostring(chunkId) end
+    local cx, cy = MapUtils.chunkX(center), MapUtils.chunkY(center)
+    radius = radius or 2
+    local rows = {}
+    for dy = -radius, radius do
+        local cells = {}
+        for dx = -radius, radius do
+            local chunk = MapUtils.getChunkByXY(center.map, cx + dx * CHUNK_SIZE, cy + dy * CHUNK_SIZE)
+            if type(chunk) == "number" or not chunk then
+                cells[#cells + 1] = "--"
+            else
+                local own = Runtime.sourceValue(chunk, fieldType)
+                cells[#cells + 1] = string.format("%d:%.0f/d%s/g%.0f", chunk.id,
+                    field[chunk.id] or 0, tostring(dist[chunk.id] or "-"), own)
+            end
+        end
+        rows[#rows + 1] = table.concat(cells, " ")
+    end
+    return string.format("field=%s center=%d(%d,%d) live=%.1f | %s",
+        key, chunkId, cx, cy, field[chunkId] or 0, table.concat(rows, " || "))
+end
+
 --- Multi-source breadth-first distance from every chunk that carries a source. This is
 --- the distance the radius cap MEANS; the relaxed field carries its own per-node `dist`
 --- along the max-plus path, and the two can disagree.
@@ -960,6 +1106,33 @@ function Runtime.supportDiag(fieldType, sampleCount, tolerance)
         Runtime.neighborOf, fopts)
     local radius = fopts and fopts.maxRadius
     local bfs = bfsDistance(fieldType, radius)
+    -- A carried distance is the length of the path that delivered the value, so it can
+    -- never be SHORTER than the hop distance to the nearest source. When it is, the node
+    -- claims support it does not have, which is exactly how values appear beyond the
+    -- radius cap (measured: liveDist 1 where the true distance was 11). This count is the
+    -- rigorous version of the carriedTooNear sample below: it covers the whole field.
+    local uncapped = radius and bfsDistance(fieldType, nil) or bfs
+    local distTooNear, distTooFar, worstShort = 0, 0, 0
+    -- A field entry whose chunk record is GONE is a value nothing can ever recompute:
+    -- relaxNode is only ever called for an id that is popped, and nothing pops an id that
+    -- no longer exists. The entry and its cone then survive forever with no source, which
+    -- is the one ghost shape a re-pop can never reach.
+    local orphans = 0
+    for id, _ in pairs(live) do
+        if chunkFor(id) == nil then orphans = orphans + 1 end
+    end
+    for id, _ in pairs(live) do
+        local d = dist[id]
+        local trueDist = uncapped[id]
+        if d and trueDist then
+            if d < trueDist then
+                distTooNear = distTooNear + 1
+                if trueDist - d > worstShort then worstShort = trueDist - d end
+            elseif d > trueDist then
+                distTooFar = distTooFar + 1
+            end
+        end
+    end
     tolerance = tolerance or 0.10
     sampleCount = sampleCount or 6
     local mismatches, liveOnly = 0, 0
@@ -1006,6 +1179,21 @@ function Runtime.supportDiag(fieldType, sampleCount, tolerance)
             -- rejected, which is the difference between "truncation" and "stale value".
             local srcId = Solver.provTop(prov, id)
             local hops, root, verdict, terminal = walkChain(fieldType, live, dist, id, fopts, radius or 32)
+            -- For a chunk with NO value the interesting numbers are on its neighbours:
+            -- the smallest distance they carry (does the radius gate reach this node at
+            -- all?) and the largest value it would inherit if it did.
+            local nbrMinDist, nbrMaxVal = nil, 0
+            local nbrs, nbrCount = Runtime.neighborOf(id)
+            if not nbrCount then nbrCount = #nbrs end
+            for k = 1, nbrCount do
+                local nid = nbrs[k]
+                local nv = live[nid]
+                if nv and nv > 0 then
+                    local nd = dist[nid]
+                    if nd and (nbrMinDist == nil or nd < nbrMinDist) then nbrMinDist = nd end
+                    if nv > nbrMaxVal then nbrMaxVal = nv end
+                end
+            end
             -- The root's own source is the load-bearing number: a chain that grounds in
             -- a chunk whose source has dropped to zero is a STALE value (an unreported
             -- decrease), not a truncation.
@@ -1013,11 +1201,12 @@ function Runtime.supportDiag(fieldType, sampleCount, tolerance)
             note(delta, string.format(
                 "id=%d live=%.1f exp=%.1f liveDist=%s bfsDist=%s root=%d rootGen=%.1f "
                     .. "rootLive=%.1f hops=%d expSrc=%d verdict=%s grounded=%s radius=%s "
-                    .. "ownGen=%.1f kind=%s",
+                    .. "ownGen=%.1f nbrDist=%s nbrVal=%.1f kind=%s",
                 id, lv, ev, tostring(ld), tostring(bd), root,
                 (rootChunk and Runtime.sourceValue(rootChunk, fieldType)) or 0,
                 live[root] or 0, #hops, srcId or 0, verdict, terminal, tostring(radius),
-                (chunk and Runtime.sourceValue(chunk, fieldType)) or 0, kind))
+                (chunk and Runtime.sourceValue(chunk, fieldType)) or 0,
+                tostring(nbrMinDist), nbrMaxVal, kind))
         end
     end
     local eps = (fopts and fopts.eps) or Solver.DEFAULT_EPS
@@ -1028,10 +1217,11 @@ function Runtime.supportDiag(fieldType, sampleCount, tolerance)
     end
     return string.format(
         "mismatches=%d liveOnly=%d sameDist=%d carriedTooFar=%d carriedTooNear=%d "
-            .. "noDist=%d outOfReach=%d frontier=%d | %s",
+            .. "noDist=%d outOfReach=%d distTooNear=%d(worst %d) distTooFar=%d "
+            .. "orphans=%d frontier=%d | %s",
         mismatches, liveOnly, counts.sameDist, counts.carriedTooFar, counts.carriedTooNear,
-        counts.noDist, counts.outOfReach, Runtime.relaxDepth(fieldType),
-        table.concat(worst, " | "))
+        counts.noDist, counts.outOfReach, distTooNear, worstShort, distTooFar, orphans,
+        Runtime.relaxDepth(fieldType), table.concat(worst, " | "))
 end
 
 --- Work accounting per field: how much frontier each field is carrying, and how much
@@ -1045,16 +1235,15 @@ function Runtime.fieldLoad()
     for _, fieldType in ipairs({ FIELD_DEATH_GAIN, FIELD_DEATH_LOSS, FIELD_PLAYER,
         FIELD_KAMIKAZE, FIELD_BASE, FIELD_ENEMY, FIELD_RESOURCE }) do
         local key = Runtime.fieldKey(fieldType)
-        out[#out + 1] = string.format("%s depth=%d pops=%d reports=%d last=%s",
+        local stats = (Runtime.auditStats or {})[key] or {}
+        out[#out + 1] = string.format("%s depth=%d pops=%d reports=%d last=%s ghosts=%d starved=%d orphans=%d",
             key, Runtime.relaxDepth(fieldType),
             math.floor(byField[fieldType] or 0),
             math.floor((Runtime.sourceReports and Runtime.sourceReports[fieldType]) or 0),
-            tostring(Runtime.lastFieldWork[fieldType]))
+            tostring(Runtime.lastFieldWork[fieldType]),
+            math.floor(stats.ghosts or 0), math.floor(stats.starved or 0),
+            math.floor(stats.orphans or 0))
     end
-    local audit = Runtime.auditStats or {}
-    out[#out + 1] = string.format("audit ghosts=%d starved=%d sweeps=%d",
-        math.floor(audit.ghosts or 0), math.floor(audit.starved or 0),
-        math.floor(audit.sweeps or 0))
     return table.concat(out, " | ")
 end
 

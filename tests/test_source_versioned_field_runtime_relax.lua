@@ -160,6 +160,13 @@ end)
 
 -- The audit is the backstop for a value the frontier lost. A ghost is repaired by
 -- re-popping it, so the sweep plus a drain has to land on the exact solve again.
+local function auditStats()
+    local key = tostring(PLAYER)
+    Runtime.auditStats[key] = Runtime.auditStats[key]
+        or { ghosts = 0, starved = 0, sweeps = 0 }
+    return Runtime.auditStats[key]
+end
+
 local function sweep(rounds)
     for _ = 1, rounds do
         Runtime.relaxAudit(PLAYER)
@@ -173,9 +180,10 @@ my_collection:add('audit_repairs_a_ghost_the_frontier_lost', function()
     local field = universe.sourceVersionedFields[key]
     local honest = field[5]
     field[5] = honest * 3 -- a local peak nothing supports
-    Runtime.auditStats.ghosts = 0
+    local stats = auditStats()
+    stats.ghosts = 0
     sweep(400)
-    assert(Runtime.auditStats.ghosts > 0, "the sweep must see the ghost")
+    assert(stats.ghosts > 0, "the sweep must see the ghost")
     assert(math.abs((field[5] or 0) - honest) < 1e-3,
         string.format("the sweep must restore the supported value: %.6f vs %.6f",
             field[5] or 0, honest))
@@ -189,21 +197,49 @@ my_collection:add('audit_repairs_a_starved_value_below_its_justification', funct
     local field = universe.sourceVersionedFields[key]
     local honest = field[5]
     field[5] = honest * 0.5 -- a wave that stopped short
-    Runtime.auditStats.starved = 0
+    local stats = auditStats()
+    stats.starved = 0
     sweep(400)
-    assert(Runtime.auditStats.starved > 0, "the sweep must see the starved value")
+    assert(stats.starved > 0, "the sweep must see the starved value")
     assert(math.abs((field[5] or 0) - honest) < 1e-3,
         string.format("the sweep must restore the supported value: %.6f vs %.6f",
             field[5] or 0, honest))
 end)
 
+-- A chunk record can be removed after a pop for it was queued. Recomputing from the
+-- neighbours then leaves a value at an id that is not a chunk: nothing visits it again,
+-- so it and its cone fossilise (measured 1,052 entries on a settled field). The rule is
+-- that a field entry belongs to a chunk, so no chunk means no value.
+my_collection:add('removing_a_chunk_record_drops_its_value_and_its_cone', function()
+    settle()
+    local key = tostring(PLAYER)
+    local field = universe.sourceVersionedFields[key]
+    local kept = field[4]
+    assert(kept and kept > 0 and (field[6] or 0) > 0, "fixture: the strip has a cone")
+    local removed = world[5]              -- the record object survives its removal
+    Runtime.dropChunk(removed)           -- what MapUtils.removeChunkFromMap calls first
+    universe.chunkById[5] = nil
+    Runtime.queueSource(removed, PLAYER, field[5] or 0, 0)
+    for _ = 1, 400 do
+        Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
+    end
+    assert(field[5] == nil, "a removed chunk must hold no value: " .. tostring(field[5]))
+    for id = 6, 9 do
+        assert((field[id] or 0) == 0,
+            "the cone beyond the removed chunk must fall away, chunk " .. id ..
+                " = " .. tostring(field[id]))
+    end
+    assert(math.abs((field[4] or 0) - kept) < 1e-6, "the near side must be untouched")
+end)
+
 my_collection:add('audit_leaves_a_settled_field_alone', function()
     settle()
-    Runtime.auditStats.ghosts, Runtime.auditStats.starved = 0, 0
+    local stats = auditStats()
+    stats.ghosts, stats.starved = 0, 0
     sweep(400)
-    assert(Runtime.auditStats.ghosts == 0 and Runtime.auditStats.starved == 0,
+    assert(stats.ghosts == 0 and stats.starved == 0,
         string.format("a settled field must not be touched (ghosts=%d starved=%d)",
-            Runtime.auditStats.ghosts, Runtime.auditStats.starved))
+            stats.ghosts, stats.starved))
     assert(Runtime.relaxDepth(PLAYER) == 0, "the sweep must not leave work queued")
 end)
 

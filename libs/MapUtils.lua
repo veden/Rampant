@@ -496,6 +496,12 @@ function MapUtils.removeChunkFromMap(map, chunk)
     -- left orphans that held an id and its field entries forever (measured 3,837
     -- on the 24MB save).
     local chunkId = chunk.id
+    -- Every relaxed field drops this chunk's entry and dirties its neighbours HERE, while
+    -- the record is still resolvable: a pop for a removed id cannot look up its neighbours,
+    -- so it could drop the value but not the cone standing on it.
+    if SourceVersionedFieldRuntime and SourceVersionedFieldRuntime.dropChunk then
+        SourceVersionedFieldRuntime.dropChunk(chunk)
+    end
     if map.chunks then
         map.chunks[key] = nil
     end
@@ -579,6 +585,15 @@ function MapUtils.removeChunkFromMap(map, chunk)
             
             local frontier = Universe.sourceVersionedFrontier[key]
             if frontier then frontier[chunkId] = nil end
+        end
+    end
+    -- The relaxed fields carry a per-node distance beside the value. Ids are RECYCLED
+    -- (recycleChunkId below), so a leftover distance would hand the next chunk a gate
+    -- that says it is one hop from a source it has never been near.
+    local relax = Universe.sourceVersionedRelax
+    if relax then
+        for _, st in pairs(relax) do
+            if st.dist then st.dist[chunkId] = nil end
         end
     end
     if Universe.deathGeneratorChunks then

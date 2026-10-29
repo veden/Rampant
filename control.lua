@@ -2136,6 +2136,13 @@ remote.add_interface("Rampant", {
     fieldLoad = function()
         return SourceVersionedFieldRuntime.fieldLoad()
     end,
+    -- The live field as a grid around one chunk: id, value, carried distance, own source.
+    -- A count says a field is wrong; the grid says which shape is wrong.
+    fieldNeighborhood = function(name, chunkId, radius)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.fieldNeighborhood(fType, chunkId, radius)
+    end,
     buildState = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
