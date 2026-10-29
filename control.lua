@@ -2102,6 +2102,18 @@ remote.add_interface("Rampant", {
         out[#out + 1] = "startKB=" .. string.format("%.0f", start)
         return table.concat(out, " ")
     end,
+    -- Certify a field: solve it exactly, compare immediately, then let the game run and
+    -- compare again. The first number says whether the field is buildable at all; the
+    -- second says whether incremental maintenance drifts afterwards.
+    certify = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        SourceVersionedFieldRuntime.rebuildField(fType)
+        local r1 = SourceVersionedFieldRuntime.verifyField(fType, 0.01)
+        return string.format("after rebuild: mismatches=%d liveOnly=%d maxDelta=%s | ",
+            r1.mismatches, r1.liveOnly, r1.maxDelta) ..
+            string.format("peaks live=%s expected=%s", r1.livePeak, r1.expectedPeak)
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end

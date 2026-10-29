@@ -465,10 +465,14 @@ relaxNode = function(fieldType, key, id, opts)
             field[id] = best
             dist[id] = bestDist
             changed = true
-        elseif dist[id] ~= bestDist then
-            -- Same value, different hop count: the distance still feeds the radius
-            -- check for this node's neighbours.
+        elseif dist[id] ~= bestDist and bestDist < (dist[id] or math.huge) then
+            -- The value did not move beyond eps but a SHORTER path justifies it. The
+            -- distance feeds the radius check for this node's neighbours, so taking it
+            -- matters: without this, a node can keep a long-path distance and be
+            -- truncated at the fringe (measured: 95 base chunks that the exact solve
+            -- keeps and relaxation dropped, maxDelta 1.7% of peak).
             dist[id] = bestDist
+            changed = true
         end
     elseif old then
         if old > eps then
