@@ -9,7 +9,7 @@ Rampant is a Factorio mod that implements advanced enemy AI using pheromone-base
 ## How the AI Works
 
 1. **Pheromone System**: Enemies use potential fields (not standard pathfinding) for single-step pathfinding
-2. **Source-Versioned Fields**: every field (base, enemy, resource, player, kamikaze, and the signed death gain/loss pair) is a max-plus potential field solved by `libs/source_versioned_field.lua`. There is no dirty-chunk queue: a write is a queued source change, and each field drains its own queue on a per-tick budget, propagating from the changed sources. Fields are solved lazily on first read and kept in `storage.universe.sourceVersionedFields`. On top of the event path there IS a periodic exact rebuild (default every 5 game-minutes); see "Fields Are Event-Driven, With a Load-Bearing Resync" for why it cannot be removed at the current source density.
+2. **Source-Versioned Fields**: every field (base, enemy, resource, player, kamikaze, and the signed death gain/loss pair) is a max-plus potential field. The PRODUCTION solver is relaxation (`libs/source_versioned_field_runtime.lua`): the field is kept as the fixed point of `value(v) = max(ownSource(v), max(neighbour) * decay)`, recomputed only where something changed, drained from a per-field frontier on a shared per-tick budget. The ordered solver (`libs/source_versioned_field.lua`) is the ORACLE - it runs only in diagnostics (`verifyField`, `rebuildField`, `fieldDiag`) and is what makes every claim about the field measurable. Fields live in `storage.universe.sourceVersionedFields`. See "Fields Are Event-Driven, With a Self-Healing Sweep".
 3. **Squads**: Unit groups that probe defenses, retreat when outnumbered, call reinforcements, and hunt players
 4. **AI States**: Raiding (pollution-based attacks), Migration (resource-seeking), Sieging (builds toward player), Onslaught (double credits)
 5. **Tactical Behaviors**: Swarming, breaching, player hunting, rallying death cry, counterattacks
@@ -109,34 +109,85 @@ prints the workdir it used.
   keyed by id and store `true`; they are membership sets, not chunk stores.
 - Ids are recycled from an aged free list and compacted before the provenance
   packing bound, so the id space tracks live chunks, not lifetime creations.
+- **Dependencies are injected from `control.lua`.** `ChunkUtils`,
+  `ChunkPropertyUtils` and `MapUtils` each hold the field runtime in a module local with a
+  `setSourceVersionedFieldRuntime` setter, and every use of it is nil-guarded. A missing
+  setter is therefore SILENT: `removeChunkFromMap` queued no source removal for a year of
+  field work without anyone noticing. When you add a module that has to talk to the field
+  runtime, add the setter AND the call AND a test that observes the effect.
 
-## Fields Are Event-Driven, With a Load-Bearing Resync
+## Fields Are Event-Driven, With a Self-Healing Sweep
 
-The model is event-and-propagate: every write queues a source change and the drain
-propagates from those sources each tick. On top of that sits a periodic exact
-rebuild (`RECONCILE_INTERVAL`, 5 game-minutes). It looks like the constant-wave
-system that was removed, and the measurements say it is currently unavoidable:
+Every write queues a source change, and the drain propagates from those sources on a
+shared budget (`GLOBAL_FIELD_WORK_PER_TICK` = 96 pops split in 32-pop slices, rotating
+priority). Two things keep the field honest on top of that:
 
-- ~262 decaying base sources each report 5%-steps, ~1.5 reports/tick, and one report
-  propagates a radius-32 disc (~1,000 pops) while the drain retires 96 pops/tick
-  shared across all fields. The event path is permanently behind its own input.
-- A whole-field solve is 8,850 pops; it is cheaper than the unbounded catch-up it
-  replaces, so the resync acts as compaction, not as the update mechanism.
+- **The audit sweep** (`relaxAudit`): a resumable cursor walk, 128 nodes per tick, one
+  field per tick, alternating between two sets - chunk records (a value that is missing,
+  above its justification, or below it) and field ids (entries with no chunk record). Any
+  node that disagrees with its own recompute is RE-POPPED, which clamps it and dirties its
+  neighbours, so the repair spreads exactly as far as it needs to. It only runs on a
+  QUIESCENT field: mid-wave every node's stored value legitimately lags its neighbours.
+- **Truncation on removal**: a vanished source leaves a fossil disc - a ring of mutually
+  supporting values each one decay factor below its neighbour - and re-popping its peak
+  lowers the disc by one decay factor per round, so the truth takes ~10 rounds. A removal
+  therefore CLEARS the disc (`clearDisc` in `dropChunk`, bounded BFS to `maxRadius`) and
+  re-queues it; the wave refills from the sources that are still there in one pass.
 
-Drift measured against interval, base field, chunks off by >0.1% (and >6%):
+Measured on the `Starting2` save (10,000 tracked chunks, md5 `697ee0a8...`), comparing the
+live field against a fresh exact solve every 15 s through continuous chunk removal:
 
 ```
- 2.5 min   116 / 110        maxRel ~5%
- 5 min     116 / 110        maxRel ~5%      <- current
-15 min   3,262 / 3,249     maxRel 100%      (2x off)
-lag-triggered (queue depth >= 1500)   3,262  (never fired: coalescing keeps the
-                                              queue shallow even while the field lags)
+play, 120 s                  resource 0 mismatched chunks (3 blips), distTooNear=0
+rebuild, then 90 s           resource 0 mismatches; liveOnly 185 of 5,019 compared
+base field, always          95 chunks missing at the radius fringe, maxDelta
+                             267 = 1.7% of peak (a tie at the cap, see below)
 ```
 
-So queue depth is NOT a lag proxy, and neither a longer interval nor a depth trigger
-works at this source density. What WOULD let the resync go away or become rarer:
-more drain throughput, or fewer/coarser source reports (the throttle's flush and
-fraction). That is a propagation-delay trade, not a free win.
+Before the removal path was wired up the same measurement read 73 -> 606 mismatched
+chunks with the live field up to 2x the exact solve, healing ~10% per round and exact
+again only after a reseed. Two separate bugs produced that, and both were silent:
+
+- `MapUtils.removeChunkFromMap` reached the runtime through a module local that nothing
+  injected (every use nil-guarded), so a chunk removal queued no source change at all.
+  `MapUtils.setSourceVersionedFieldRuntime` now exists and `control.lua` calls it;
+  `tests/test_source_versioned_field_runtime_relax.lua` exercises the path end to end.
+- even when queued, a removal only re-popped the removed node, so the disc its value was
+  holding up stayed and decayed one factor per round (`clearDisc` now truncates it).
+
+Rules that a measurement has already broken once:
+
+- **A field entry belongs to a chunk.** No chunk record, no value. A pop queued before a
+  removal used to recompute from the neighbours and leave a value at an id nothing would
+  ever visit again; `Runtime.dropChunk` runs at removal time, while the record still
+  resolves, because `neighborOf` goes through the record.
+- **A carried distance is the length of the path that delivered the value**, so it can
+  never be shorter than the hop distance to the nearest source. Check it with
+  `fieldSupport`, which reports `distTooNear` (a violation) and `distTooFar` (normal).
+- **A ring of values supporting each other is not a fixed point** unless the values
+  satisfy every node's own recompute; see the fossil disc above.
+- The base field's 95-chunk fringe difference is not a drift: relaxation and the ordered
+  solver break an exact tie between two equally good paths at the radius cap differently.
+  It is 1.7% of peak and it survives a reseed, so it is a model difference, not a bug.
+
+Diagnostics (RCON/UDP remotes, see `control.lua`):
+
+```
+certify <field>            rebuild exactly, compare, and say liveOnly/peaks
+verifyField <field> [tol]  drain, compare against the oracle, count mismatches
+fieldSupport <field> [n]   classify mismatches: sameDist / carriedTooFar /
+                           carriedTooNear / noDist / outOfReach, plus distTooNear,
+                           distTooFar, orphans, and the worst n with their chains
+fieldDiag <field> <id>     one chunk: live, expected, own source, and the LIVE support
+                           chain (root, verdict, grounded) - relaxed fields carry no
+                           provenance, so the chain is the only support evidence
+fieldNeighborhood <f> <id> [r]  the live field as a grid around a chunk: id:value/dist/gen
+fieldLoad                  per field: frontier depth, cumulative pops and source
+                           reports, audit ghosts/starved/orphans - tells LAG (deep
+                           frontier still being fed) apart from a wrong field
+fieldMax / fieldDiff / fieldRanges / fieldDigest / fieldExport / rebuildField
+reseedAll                  clear every relaxed field and rebuild from sources
+```
 
 ## Iteration Order — Factorio's `pairs()` is Deterministic
 

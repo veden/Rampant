@@ -779,7 +779,7 @@ end
 --- costs a flat slice instead of one 1-2ms pass per cadence. It only sweeps a QUESCENT
 --- field: mid-wave, a stored value legitimately lags its neighbours and every node would
 --- look out of sync.
-local AUDIT_NODES_PER_TICK = 128
+local AUDIT_NODES_PER_TICK = 64
 
 function Runtime.relaxAudit(fieldType)
     local key = Runtime.fieldKey(fieldType)
@@ -798,6 +798,9 @@ function Runtime.relaxAudit(fieldType)
     -- that is still there (a ghost), but the same loss also leaves a chunk with NO value
     -- while its neighbours justify one (measured: 95 base chunks the exact solve fills at
     -- distance 28 with the live field empty). Walking the field can never see those.
+    -- A whole field (10,000 chunks) is swept in ~156 ticks of this field's rotation, so
+    -- every field is swept about every 18 s. The sweep is a backstop: the event path is
+    -- what keeps the field right, and this only has to catch what it loses.
     -- Odd passes clean ORPHANS out of the field (ids with no chunk record), even passes
     -- check chunk records for lost values. Two cursors, so each pass stays a flat slice.
     local passField = (st.auditPass or 0) == 1
@@ -807,9 +810,9 @@ function Runtime.relaxAudit(fieldType)
         local fieldId = st.orphanCursor
         local scanned = 0
         while scanned < AUDIT_NODES_PER_TICK do
-            local nextId, nextValue = nextFrom(field, fieldId)
+            local nextId = nextFrom(field, fieldId)
             if nextId == nil then
-                st.orphanCursor = nil
+                fieldId = nil -- a finished sweep restarts from the beginning
                 break
             end
             fieldId = nextId
@@ -819,8 +822,6 @@ function Runtime.relaxAudit(fieldType)
                 -- pushing the id is what makes that happen.
                 orphans = orphans + 1
                 relaxPush(key, fieldId)
-            elseif nextValue == nil then
-                st.orphanCursor = nextId
             end
         end
         st.orphanCursor = fieldId

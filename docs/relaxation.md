@@ -76,6 +76,39 @@ A change is accepted only if all four hold.
                  wall-defense (known flake: reachedState4=nil on some runs)
 ```
 
+## Removals are the expensive direction — truncate, do not decay
+
+An increase propagates outward from the new source and is exact after one wave. A removal
+leaves a FOSSIL DISC: the cone that the vanished source was holding up is a ring of
+mutually supporting values, each exactly one decay factor below its neighbour. Re-popping
+the peak of that ring lowers it by one decay factor; the next node follows; and the disc
+needs ~10 rounds (at decay 0.9) before it falls from 15,438 to the 5,243 the exact solve
+justifies. Every round is a pop per node in the disc.
+
+Measured on the `Starting2` save (radius-24 resource field, ~1,800 nodes per disc):
+
+```
+single removed source chunk      73 -> ~600 mismatched chunks, maxDelta 10,194
+                                 (live 15,438 where the exact solve justifies 5,243)
+rate of healing                  ~10% per propagation round, i.e. minutes
+after `reseedAll` (clear+rebuild) 0 mismatched chunks
+```
+
+So `Runtime.dropChunk` CLEARS every entry within `maxRadius` of the removed chunk (bounded
+BFS) and re-queues it, and the wave refills from the sources that are still there in one
+pass. Capped at `DISC_CLEARS_PER_TICK` discs: a mass removal (an idle surface sweep) has
+already cleared the area after the first few, and the single-node drop is equivalent there.
+
+Two consequences worth knowing:
+
+- The sweep that clears a disc also re-queues it, so the refill is bounded by the
+  propagation budget. A disc refills in ~40 ticks at a 32-pop slice, which is why the
+  cleared side heals in a second or two while the fossil side took minutes.
+- A *source decrease* that is reported through `queueSource` still takes the slow path. In
+  the save measured, no resource source decreased during play (reports flat at 774), so the
+  removals were the whole story; if a decrease ever shows up as drift, it takes the same
+  truncation treatment.
+
 ## Diagnostics
 
 ```
@@ -84,7 +117,17 @@ fieldExport(name)              script-output/rampant/field-<name>.csv
 fieldRanges()                  per-field count/min/under1/underEps
 verifyField(name, tol)         counts vs a fresh exact solve
 fieldDiff(name, n)             sample mismatched chunks with source state
-fieldDiag(name, chunkId)       one chunk: live, exact, decay, radius, top/second
+fieldDiag(name, chunkId)       one chunk: live, exact, decay, radius, and the LIVE
+                               support chain (root/verdict/grounded) for relaxed fields
+fieldSupport(name, n)          classify mismatches vs the true distance to a source:
+                               sameDist/carriedTooFar/carriedTooNear/noDist/outOfReach,
+                               plus distTooNear (carried distance BELOW the true one,
+                               which is impossible and therefore a bug), distTooFar,
+                               orphans, and the worst n with their chains
+fieldNeighborhood(name, id, r) the live field as a grid of id:value/dist/gen
+fieldLoad()                    per field: frontier depth, cumulative pops and reports,
+                               audit ghosts/starved/orphans (lag vs wrong, per field)
+certify(name)                  rebuild exactly, compare, report liveOnly and peaks
 rebuildField(name)             one-shot exact solve now
 tools/relax-bench.lua          standalone comparison of the three algorithms
 ```
