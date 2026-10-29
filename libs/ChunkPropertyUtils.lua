@@ -30,6 +30,7 @@ local SourceVersionedFieldReader
 local Constants = require("Constants")
 local Utils = require("Utils")
 local chunkX = Utils.chunkX
+local setAreaInQueryChunkSize = Utils.setAreaInQueryChunkSize
 local chunkY = Utils.chunkY
 local MathUtils = require("MathUtils")
 
@@ -738,54 +739,84 @@ function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     return foundBase
 end
 
+-- Bound on pollution samples per chunk visit. A nest chunk holds a handful of spawners
+-- (5,161 spawners over 1,157 nest chunks on the reference save), so this is a guard, not a
+-- normal limit.
+local MAX_POLLUTION_SAMPLES = 8
+
+--- The spawners on one chunk, resolved once per activeness check.
+local function chunkSpawners(chunk)
+    local query = Universe.isFilteredEntitiesSpawnerQuery
+    local map = chunk.map
+    if not query or not map or not map.surface then return nil end
+    setAreaInQueryChunkSize(query, chunkX(chunk), chunkY(chunk))
+    return map.surface.find_entities_filtered(query)
+end
+
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     if getActiveTick(chunk) > tick then
         return
     end
-
-    if chunk.nestCount then
-        local surface = chunk.map.surface
-        local playerPheromone = readField(PLAYER_PHEROMONE, chunk, chunk[PLAYER_PHEROMONE] or 0)
-        local basePheromone = readField(BASE_PHEROMONE, chunk, chunk[BASE_PHEROMONE] or 0)
-        if Universe.attackUsePlayer and (playerPheromone > Universe.attackPlayerThreshold) then
-            registerActiveNest(chunk, tick)
-        elseif (basePheromone > 0) then
-            -- One pollution answer per CHUNK, not per nest: the five samples below are the
-            -- chunk's corner plus its four neighbours, so every nest in the chunk gets the
-            -- same verdict. The original code re-ran them for each spawner because the
-            -- negative answer cleared chunk.activeTick, which was the only "already
-            -- checked" marker there was; the fix is to remember the negative answer.
-            local getPollution = surface.get_pollution
-            local x = chunkX(chunk)
-            local y = chunkY(chunk)
-            local function pollutionAt(px, py)
-                Position.x = px
-                Position.y = py
-                if MetricsG then MetricsG.inc("pollution.samples") end
-                return getPollution(Position)
-            end
-            local pollutionThreshold = Universe.pollutionDiffuseMinimum
-            if pollutionAt(x, y) > 0
-                or pollutionAt(x + 32, y) > pollutionThreshold
-                or pollutionAt(x - 32, y) > pollutionThreshold
-                or pollutionAt(x, y - 32) > pollutionThreshold
-                or pollutionAt(x, y + 32) > pollutionThreshold then
-                registerActiveNest(chunk, tick)
-            else
-                unregisterActiveNest(chunk)
-                if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
-                    registerActiveRaidNest(chunk, tick)
-                else
-                    unregisterActiveRaidNest(chunk)
-                end
-            end
-        else
-            unregisterActiveNest(chunk)
-            unregisterActiveRaidNest(chunk)
-        end
-    else
+    if not chunk.nestCount then
         unregisterActiveNest(chunk)
         unregisterActiveRaidNest(chunk)
+        return
+    end
+    -- The entities say whether there is anything to be active about. A chunk whose nests are
+    -- all gone (a destroyed spawner between two passes) must not keep an active mark.
+    local spawners = chunkSpawners(chunk)
+    if not spawners or #spawners == 0 then
+        if MetricsG then MetricsG.inc("nest.noEntity") end
+        unregisterActiveNest(chunk)
+        unregisterActiveRaidNest(chunk)
+        return
+    end
+    local surface = chunk.map.surface
+    local playerPheromone = readField(PLAYER_PHEROMONE, chunk, chunk[PLAYER_PHEROMONE] or 0)
+    local basePheromone = readField(BASE_PHEROMONE, chunk, chunk[BASE_PHEROMONE] or 0)
+
+    if Universe.attackUsePlayer and (playerPheromone > Universe.attackPlayerThreshold) then
+        registerActiveNest(chunk, tick)
+        return
+    end
+    if not (basePheromone > 0) then
+        unregisterActiveNest(chunk)
+        unregisterActiveRaidNest(chunk)
+        return
+    end
+
+    -- Pollution, asked at the nests themselves: a spawner absorbs the cloud at its own tile,
+    -- so that tile is the question. This replaces sampling the chunk's corner plus four
+    -- neighbours, which could miss a cloud sitting in the middle of a chunk and could never
+    -- see a nest that straddles a chunk border (it is registered in both chunks, and each
+    -- chunk now asks about its own spawners).
+    local getPollution = surface.get_pollution
+    local active = false
+    local sampled = 0
+    for i = 1, #spawners do
+        local entity = spawners[i]
+        if entity.valid then
+            Position.x = entity.position.x
+            Position.y = entity.position.y
+            if MetricsG then MetricsG.inc("pollution.samples") end
+            sampled = sampled + 1
+            if getPollution(Position) > 0 then
+                active = true
+                break
+            end
+            if sampled >= MAX_POLLUTION_SAMPLES then break end
+        end
+    end
+
+    if active then
+        registerActiveNest(chunk, tick)
+    else
+        unregisterActiveNest(chunk)
+        if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
+            registerActiveRaidNest(chunk, tick)
+        else
+            unregisterActiveRaidNest(chunk)
+        end
     end
 end
 

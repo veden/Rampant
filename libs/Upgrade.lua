@@ -189,6 +189,17 @@ local function addCommandSet()
         area=isSharedChunkArea,
         type="resource"
     }
+    -- Spawners on one chunk, for the activeness check: a nest absorbs the pollution cloud at
+    -- its own tile, so the check asks at the entities rather than at a grid of chunk corners.
+    local spawnerSharedChunkArea = {
+        {0,0},
+        {0,0}
+    }
+    Universe.isFilteredEntitiesSpawnerQuery = {
+        area=spawnerSharedChunkArea,
+        force=Universe.enemyForces,
+        type="unit-spawner"
+    }
     Universe.isFilteredEntitiesUnitQuery = {
         area=isSharedChunkArea,
         force=Universe.enemyForces,
