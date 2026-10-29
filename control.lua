@@ -2347,6 +2347,28 @@ remote.add_interface("Rampant", {
         end
         return string.format("queued %d scans of tile (%d,%d)", times, x, y)
     end,
+    -- Diagnostic: isolate the FIRST-scan path on one chunk. Re-scanning an existing chunk
+    -- skips the expensive part (chunk record + base creation + per-structure registration),
+    -- so it measures 0.14-0.19ms while the load's first scan of the same chunk measured
+    -- 8.9ms. This drops the chunk record and re-queues it `times` times, so every scan the
+    -- scanner runs is a first scan; each one logs its own [SCAN] line and phase breakdown.
+    benchFirstScan = function(tx, ty, times)
+        local map = storage.universe.maps[1]
+        if not map then return "no map" end
+        times = tonumber(times) or 8
+        local key = MapUtils.chunkKey(tx, ty)
+        local chunk = map.chunks[key]
+        if not chunk then return "no tracked chunk at tile " .. tx .. "," .. ty end
+        for _ = 1, times do
+            MapUtils.removeChunkFromMap(map, chunk)
+            MapUtils.queueGeneratedChunk({
+                surface = map.surface,
+                tick = game.tick,
+                area = { left_top = { x = tx, y = ty } },
+            })
+        end
+        return string.format("queued %d first scans at tile (%d,%d)", times, tx, ty)
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
