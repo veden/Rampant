@@ -705,6 +705,10 @@ function MapUtils.sweepIdleSurfaces(tick)
     if not map or not map.surface or not map.surface.valid then return end
     if (tick - (map.lastEnemyTick or 0)) < IDLE_SURFACE_TICKS then return end
     if map.releasing then return end
+    -- Not before the scan: measured on the Starting2 load, the MAIN surface was released
+    -- with chunks=0 while 5,042 of its scans were still queued, then re-acquired and
+    -- re-scanned - a blind window on the surface the player is standing on.
+    if MapUtils.hasPendingScans(map) then return end
     if surfaceHasEnemies(map) then
         map.lastEnemyTick = tick
         return
@@ -825,6 +829,18 @@ end
 -- ~1.1ms, and a 1,900-chunk surface is gone in ~160 ticks (2.7 s).
 local RELEASE_CHUNKS_PER_CALL = 12
 
+--- Is this surface still waiting on chunk scans? A surface is judged idle from its
+--- registries, and those are only filled by the scan: while scans are queued the gate is
+--- empty because nothing has been registered yet, not because nothing is there.
+function MapUtils.hasPendingScans(map)
+    local pending = Universe.pendingChunks
+    if not pending or not map then return false end
+    for _, event in next, pending do
+        if event.map == map then return true end
+    end
+    return false
+end
+
 --- Drop the queued chunk scans of one surface.
 ---
 --- The load flush queues every generated chunk of every surface, and it runs over ~1,900
@@ -870,13 +886,14 @@ function MapUtils.releaseSurface(map)
     local released = 0
     local chunkList = map.releaseChunks
     if not chunkList then
-        -- Walk the reverse index: a chunk whose grid slot was already lost would
-        -- never be visited by walking map.chunks, and would survive the release.
+        -- Walk the surface's OWN grid, not the reverse index: the index holds every chunk
+        -- of every surface (40,000 entries after a load flush), and walking it here cost
+        -- 24-26ms in the tick a release started. A record whose grid slot was already lost
+        -- is an orphan, and reconcileOrphanChunks reclaims those once the map is dropped
+        -- (it tests Universe.maps[chunk.map.id] ~= chunk.map).
         chunkList = {}
-        for _, chunk in pairs(Universe.chunkById or {}) do
-            if chunk.map == map then
-                chunkList[#chunkList + 1] = chunk
-            end
+        for _, chunk in next, map.chunks or {} do
+            chunkList[#chunkList + 1] = chunk
         end
         map.releaseChunks = chunkList
         map.releaseIndex = 1

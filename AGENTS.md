@@ -189,6 +189,81 @@ fieldMax / fieldDiff / fieldRanges / fieldDigest / fieldExport / rebuildField
 reseedAll                  clear every relaxed field and rebuild from sources
 ```
 
+## Chunk Pipeline — the two phases, and neither clocks itself
+
+`pendingChunks` and the surface release are the same kind of work (per-chunk queries over a
+surface) and both used to be unbounded in one tick. Both are now sliced, and both slices are
+COUNTS, because **the control stage has no readable clock**:
+
+- `helpers.create_profiler()` is opaque — `tostring()` gives `"[LuaProfiler]"`, and the docs
+  say the raw values "don't allow reading ... from Lua" (`doc-html/classes/LuaProfiler.html`).
+  You can log it, not read it.
+- `os` is not exposed at all (`os.clock` is nil), `io` likewise.
+- `game.tick` only resolves whole ticks, which is far too coarse for a sub-millisecond slice.
+
+So size a slice from the measured cost distribution instead:
+
+```
+per-chunk chunk scan, Starting2 load (30,334 chunks)
+  p50 0.031ms   p90 0.100ms   p99 0.331ms   max 4.04ms   over 1ms: 12 chunks
+load flush at 64 chunks/tick (474 ticks, 7.9 s)
+  p50 3.02ms    p90 6.03ms    p99 9.49ms    max 17.91ms
+load flush at 16 chunks/tick (769 ticks, 12.8 s)
+  p50 0.62ms    p90 1.28ms    p99 2.15ms    max 2.77ms   over 4ms: none
+surface release, whole surface in one call
+  fulgora 1,665 chunks = 155ms in ONE tick, vulcanus 1,910 = 75ms   (~93us/chunk)
+surface release at 12 chunks/call (~1.1ms), drained every tick
+```
+
+Rules that bite:
+
+- **`SCAN_PER_TICK` = 1 in steady state** (a moving player generates a few chunks/tick;
+  one dense chunk is already 4ms). `FLUSH_SCAN_PER_TICK` = 16 only for the load flush, so
+  the map is consistent in ~13 s instead of being half-blind for an hour.
+- **`MapUtils.releaseSurface` is resumable.** It builds the chunk list once, removes
+  `RELEASE_CHUNKS_PER_CALL` per call, and finishes the teardown (grid, bases, hives, the map
+  entry) when the list empties. `MapUtils.processSurfaceReleases` drains it from the tick
+  loop; keep that call, or a release simply stalls half-done.
+- **Do not judge a surface idle while its chunk scans are queued** (`hasPendingScans`). The
+  idle gate is the nest/hive/turret registries, and those are only filled BY the scan: at
+  load the main surface was released with `chunks=0` while 5,042 of its scans were still
+  queued, then re-acquired and re-scanned.
+- **A release drops that surface's queued scans** (`dropPendingScans`). Otherwise the flush
+  keeps scanning chunks of a map that is no longer tracked, and every one of them comes
+  back as an orphan record to be reclaimed one call at a time.
+
+Read the pipeline from the log, not from intuition: `[SCAN]` gives one line per chunk with
+its coordinates and cost, `[REL]` gives a surface release with its chunk and dropped-scan
+totals. `.bench/drive_chunks2.py` drives a copy of the save, parses both, and reports
+per-tick ranges for the flush, the release and steady state.
+
+**Separate the load aftermath from steady state.** On the Starting2 save the tick tail is
+p99 10-12ms for the first few game-minutes after load and settles to p99 1.3ms / max 1.4ms
+ten minutes in, with the map still shedding chunk records in between:
+
+```
+4 adjacent 100 s windows, same run, GC setting alternating stock/spread
+  stock    p99 11.72  max 13.98  over5ms 4
+  spread   p99  9.63  max 11.26  over5ms 3
+  stock    p99  1.32  max  1.38  over5ms 0
+  spread   p99  0.72  max  0.77  over5ms 0
+```
+
+Two lessons: a single A/B window pair cannot tell an improvement from the map quietening
+down (a first pass read the GC spread as 6x, and it is 15-45% at best), and "steady state"
+has to be defined as *after* the load work drains (`chunkQueueStatus` shows
+`pending=0 releases=0`) or the number measures the load.
+
+`tuneGarbageCollector` (`control.lua`, setpause 100 / setstepmul 100) is kept because it
+helped in both directions in the adjacent pairs above, but it is a small effect: the mod's
+~40MB of Lua storage makes the collector visible, and nothing per-subsystem can see it — the
+subsystem timers account for ~1.3ms of a 19ms tick.
+
+**Measurement caveat:** a `rampantTests.diagnose(n)` window logs every subsystem every tick
+(~20 profilers plus log lines per tick) and roughly doubles the tick it measures — p50
+0.86ms with a diagnose window versus 0.39-0.60ms sampled without one. Use range sampling
+(no diagnose) for gameplay numbers and a diagnose window only to attribute a phase.
+
 ## Iteration Order — Factorio's `pairs()` is Deterministic
 
 `doc-html/auxiliary/libraries.html` ("pairs() / next()"): Factorio reimplements

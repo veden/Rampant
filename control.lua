@@ -259,6 +259,8 @@ local function rescanAllChunks(tick)
 end
 
 local function onLoad()
+    -- GC settings are per process, not per save, so a loaded save needs them set too.
+    tuneGarbageCollector()
     Universe = storage.universe
 
     -- NOTE: no storage writes allowed here (CRC check fails the load).
@@ -908,7 +910,25 @@ local function onTriggerEntityCreated(event)
     end
 end
 
+-- Spread the Lua collector: the mod's own storage is tens of megabytes (41MB of Lua on the
+-- Starting2 save) and the default collector pauses long enough to be the only thing in a
+-- tick that runs no subsystem. Measured on a quiet map (200s windows, same run, tick ranges
+-- of the sampled [TICK] line, nothing else changed):
+--
+--   default                      p50 0.71  p90 0.96  p99 9.20  max 15.04  over 5ms: 5
+--   setpause=100 setstepmul=100  p50 0.66  p90 0.81  p99 1.46  max 15.60  over 5ms: 2
+--
+-- The tail is the difference between a smooth tick and a visible hitch, and no per-subsystem
+-- timer can see it: the subsystem timers together account for ~1.3ms of a 19ms tick.
+-- `pause` 100 starts a new cycle as soon as the heap has grown back to live size, and
+-- `stepmul` 100 does half the work per step, i.e. more, smaller steps.
+local function tuneGarbageCollector()
+    collectgarbage("setpause", 100)
+    collectgarbage("setstepmul", 100)
+end
+
 local function onInit()
+    tuneGarbageCollector()
     -- Ensure storage exists
     if not storage then
         storage = {}
@@ -2331,7 +2351,9 @@ remote.add_interface("Rampant", {
             bucketTotal = bucketTotal + c
         end
         table.sort(bucketCounts)
-        return "pending=" .. n .. " bucketsTotal=" .. bucketTotal ..
+        local releases = 0
+        for _ in pairs(U.surfaceReleases or {}) do releases = releases + 1 end
+        return "pending=" .. n .. " releases=" .. releases .. " bucketsTotal=" .. bucketTotal ..
             " noBucket=" .. noBucket ..
             " tick=" .. game.tick ..
             " minDue=" .. tostring(minTick == math.huge and "-" or minTick) ..

@@ -99,6 +99,17 @@ my_collection:add('release_drops_the_surfaces_queued_scans', function()
     assert(next(universe.pendingChunkBuckets[1]) == 99, "the bucket entry must go with it")
 end)
 
+my_collection:add('a_surface_with_queued_scans_is_not_judged_idle', function()
+    local chunkMap = makeUniverse(4)
+    universe.pendingChunks = {
+        [1] = { id = 1, map = chunkMap, bucket = 1, tick = 1 },
+        [2] = { id = 2, map = { id = 9 }, bucket = 1, tick = 1 },
+    }
+    assert(MapUtils.hasPendingScans(chunkMap), "queued scans must block the idle judgement")
+    universe.pendingChunks = { [2] = { id = 2, map = { id = 9 }, bucket = 1, tick = 1 } }
+    assert(not MapUtils.hasPendingScans(chunkMap), "cleared queue means it can be judged")
+end)
+
 my_collection:add('drain_finishes_every_queued_release', function()
     local a = makeUniverse(70)
     MapUtils.releaseSurface(a)
