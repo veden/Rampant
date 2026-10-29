@@ -137,12 +137,39 @@ function Runtime.ensureStorage()
     QueueIndex = {}
 end
 
+--- Force a reseed of every relaxed field. Called on every load: a save can carry a
+--- frontier and a `seeded` flag written mid-settle (ours did: the base field came back
+--- with a peak of 47,075 against a largest source of 15,500, i.e. values from an older
+--- build that nothing would ever revisit). Rebuilding from sources is cheap and is the
+--- only state a field needs to be correct.
+function Runtime.resetRelaxState()
+    Universe.sourceVersionedRelax = {}
+    for fieldType, opts in pairs(FIELD_OPTS) do
+        if opts.relax then
+            Universe.sourceVersionedFields[tostring(fieldType)] = nil
+        end
+    end
+end
+
+--- Reseed every relaxed field now, and settle a slice of each. The load path calls
+--- this: clearing the state alone was not enough (measured liveOnly 2,909 and a live
+--- peak of 47,075 against a largest source of 15,500 until the fields were reseeded).
+function Runtime.reseedRelaxedFields()
+    Runtime.resetRelaxState()
+    for fieldType, opts in pairs(FIELD_OPTS) do
+        if opts.relax then
+            Runtime.ensureSolved(fieldType, opts)
+        end
+    end
+end
+
 function Runtime.init(universe, addProperties)
     Universe = universe
     if addProperties then
         Universe.sourceVersionedFields = Universe.sourceVersionedFields or {}
         Universe.sourceVersionedRefresh = Universe.sourceVersionedRefresh or {}
     end
+    Runtime.resetRelaxState()
     SourceQueues = {}
     QueueIndex = {}
     FIELD_DRAIN_ACC = {}
@@ -187,7 +214,7 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
     if not fopts then return false end
     local key = Runtime.fieldKey(fieldType)
     local st = relaxState(key)
-    if not st.seeded then
+    if not st.seeded or st.version ~= RELAX_VERSION then
         st.dirty = {}
         Runtime.relaxSeed(fieldType)
     end
@@ -235,7 +262,7 @@ function Runtime.ensureSolved(fieldType, opts)
     local key = Runtime.fieldKey(fieldType)
     local fopts = FIELD_OPTS[fieldType] or opts
     local st = relaxState(key)
-    if not st.seeded then
+    if not st.seeded or st.version ~= RELAX_VERSION then
         st.dirty = {}
         Runtime.relaxSeed(fieldType)
         -- Settle a slice before handing the field out, so the first read after a load
@@ -329,6 +356,7 @@ function Runtime.processAll(tick)
         local fType = FIELD_ROTATION[((start + i - 1) % n) + 1]
         local slice = budget < FIELD_QUANTUM and budget or FIELD_QUANTUM
         local used = Runtime.relaxStep(fType, slice, FIELD_OPTS[fType])
+        Runtime.relaxAudit(fType, tick)
         Runtime.lastFieldWork[fType] = used
         budget = budget - used
         total = total + used
@@ -432,6 +460,10 @@ relaxNode = function(fieldType, key, id, opts)
             field[id] = best
             dist[id] = bestDist
             changed = true
+        elseif dist[id] ~= bestDist then
+            -- Same value, different hop count: the distance still feeds the radius
+            -- check for this node's neighbours.
+            dist[id] = bestDist
         end
     elseif old then
         if old > eps then
@@ -477,10 +509,11 @@ end
 --- drained by process() over the following ticks.
 function Runtime.relaxSeed(fieldType)
     local key = Runtime.fieldKey(fieldType)
-    local st = Universe.sourceVersionedRelax[key]
+    local st = relaxState(key)
     st.queue = {}; st.head = 1; st.tail = 0; st.dirty = {}; st.dist = {}
     Universe.sourceVersionedFields[key] = {}
     st.seeded = true
+    st.version = RELAX_VERSION
     for _, chunk in pairs(Universe.chunkById or {}) do
         if Runtime.sourceValue(chunk, fieldType) > 0 then
             relaxPush(key, chunk.id)
@@ -525,10 +558,60 @@ function Runtime.setRelax(fieldType, enabled)
     return true
 end
 
+--- Self-healing invariant: a field's maximum can never exceed its largest source.
+--- A value above it means a source decreased without notifying (measured: a base field
+--- entry of 47,075 with ownSource 0 at dist 4 after its source vanished), and nothing
+--- would ever revisit it. Detecting it costs one pass over the field, so it is checked
+--- on a cadence and repaired with a reseed.
+local MAX_SOURCE_CHECK_TICKS = 600
+
+function Runtime.relaxAudit(fieldType, tick)
+    local key = Runtime.fieldKey(fieldType)
+    local st = Universe.sourceVersionedRelax[key]
+    if not st or not st.seeded then return false end
+    local last = st.auditTick or 0
+    if tick - last < MAX_SOURCE_CHECK_TICKS then return false end
+    st.auditTick = tick
+    local field = Universe.sourceVersionedFields[key] or {}
+    local bestField = 0
+    for _, v in pairs(field) do if v > bestField then bestField = v end end
+    local bestSource = 0
+    for _, chunk in pairs(Universe.chunkById or {}) do
+        local v = Runtime.sourceValue(chunk, fieldType)
+        if v > bestSource then bestSource = v end
+    end
+    if bestField > bestSource + (st.tolerance or 1e-3) then
+        Universe.sourceVersionedFields[key] = nil
+        st.seeded = false
+        if MetricsG then MetricsG.inc("field.auditReseed") end
+        Runtime.ensureSolved(fieldType, FIELD_OPTS[fieldType])
+        return true
+    end
+    return false
+end
+
 function Runtime.relaxDepth(fieldType)
     local st = Universe.sourceVersionedRelax[Runtime.fieldKey(fieldType)]
     if not st then return 0 end
     return st.tail - st.head + 1
+end
+
+--- Diagnostic: the largest entry in a field and whether its chunk still exists and
+--- still supports that value.
+function Runtime.fieldMax(fieldType)
+    local key = Runtime.fieldKey(fieldType)
+    local live = Universe.sourceVersionedFields[key] or {}
+    local bestId, bestV = nil, 0
+    for id, v in pairs(live) do
+        if v > bestV then bestId, bestV = id, v end
+    end
+    if not bestId then return "empty" end
+    local chunk = Universe.chunkById and Universe.chunkById[bestId]
+    local own = chunk and Runtime.sourceValue(chunk, fieldType) or 0
+    local st = Universe.sourceVersionedRelax and Universe.sourceVersionedRelax[key]
+    return string.format("id=%d live=%.3f ownSource=%.3f inChunkById=%s dist=%s",
+        bestId, bestV, own, tostring(chunk ~= nil),
+        tostring(st and st.dist and st.dist[bestId]))
 end
 
 function Runtime.sourceValue(chunk, fieldType)
@@ -722,10 +805,26 @@ function Runtime.verifyField(fieldType, tolerance)
             end
         end
     end
+    local eps = fopts and (fopts.eps or Solver.DEFAULT_EPS) or Solver.DEFAULT_EPS
     for id, liveV in pairs(live) do
-        if not expected[id] then
+        if not expected[id] and liveV > eps then
             extra = extra + 1
             if not sampleId then sampleId, sampleLive, sampleExpected = id, liveV, 0 end
+        end
+    end
+    -- Diagnostic: entries whose carried distance exceeds the cap can only exist if the
+    -- distance bookkeeping is wrong; entries the exact solve lacks but inside the cap
+    -- are residuals.
+    local overRadius, noDist = 0, 0
+    local stR = Universe.sourceVersionedRelax[key]
+    local maxR = fopts and fopts.maxRadius
+    if stR then
+        for id, v in pairs(live) do
+            if v > eps then
+                local d = stR.dist[id]
+                if not d then noDist = noDist + 1
+                elseif maxR and d > maxR then overRadius = overRadius + 1 end
+            end
         end
     end
     local sample = ""
@@ -739,7 +838,7 @@ function Runtime.verifyField(fieldType, tolerance)
         livePeak = string.format("%.1f", livePeak),
         expectedPeak = string.format("%.1f", expectedPeak),
         sample = sample, frontier = Runtime.relaxDepth(fieldType), queued = 0,
-        iterations = iterations,
+        iterations = iterations, overRadius = overRadius, noDist = noDist,
     }
 end
 

@@ -69,6 +69,44 @@ my_collection:add('relax_decrease_falls_to_the_exact_value', function()
     end
 end)
 
+-- The radius cap is where the two solvers can disagree: the ordered solve truncates
+-- at maxRadius, and relaxation has to arrive at the same truncation through the
+-- per-node distance it carries.
+my_collection:add('relax_truncates_at_the_same_radius_as_the_ordered_solve', function()
+    for _, radius in ipairs({ 2, 4, 6 }) do
+        local opts = { decay = 0.9, eps = 5e-4, maxRadius = radius }
+        -- ordered: exact solve with the cap
+        local exact = Solver.solveWithMetadata(Runtime.buildSources(PLAYER), Runtime.neighborOf, opts)
+        -- relaxed: seed and drain to quiescence with the same cap
+        universe.sourceVersionedRelax = {}
+        universe.sourceVersionedFields[tostring(PLAYER)] = {}
+        Runtime.relaxSeed(PLAYER)
+        local guard = 0
+        while Runtime.relaxDepth(PLAYER) > 0 and guard < 5000 do
+            guard = guard + 1
+            Runtime.relaxStep(PLAYER, 64, opts)
+        end
+        local relaxed = universe.sourceVersionedFields[tostring(PLAYER)] or {}
+
+        -- support must match exactly: no entry beyond the cap, none missing inside it
+        for id = 1, 9 do
+            local e, r = exact[id], relaxed[id]
+            if e then
+                assert(r, "radius " .. radius .. ": relaxed field is missing chunk " .. id)
+            elseif r and r > opts.eps then
+                assert(false, string.format(
+                    "radius %d: relaxed field has chunk %d (value %.6f) that the exact solve truncated",
+                    radius, id, r))
+            end
+        end
+        for id = 1, 9 do
+            local e, r = exact[id] or 0, relaxed[id] or 0
+            assert(math.abs(e - r) <= opts.eps * 10,
+                string.format("radius %d: chunk %d differs (exact %.9f relaxed %.9f)", radius, id, e, r))
+        end
+    end
+end)
+
 my_collection:add('relax_is_quiescent_when_nothing_changes', function()
     Runtime.ensureSolved(PLAYER, { decay = 0.9, eps = 0.0005, maxRadius = 32 })
     for _ = 1, 200 do Runtime.process(PLAYER, 64, { decay = 0.9, eps = 0.0005, maxRadius = 32 }) end

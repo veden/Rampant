@@ -262,6 +262,13 @@ local function onLoad()
 
     initializeLibraries()
 
+    -- A save can carry a relaxation frontier and a `seeded` flag written while a field
+    -- was mid-settle, and the stored field then holds values from that build with
+    -- nothing to revisit them. Rebuilding from sources is cheap and is the only state
+    -- a field needs: measured a base field coming back with a peak of 47,075 against a
+    -- largest source of 15,500.
+    SourceVersionedFieldRuntime.reseedRelaxedFields()
+
     -- NOTE: `game` is nil during on_load (Factorio restriction); no game
     -- object access is allowed here. Structure registration persists in
     -- storage (event-driven), so no re-scan is needed on load.
@@ -2095,6 +2102,11 @@ remote.add_interface("Rampant", {
         out[#out + 1] = "startKB=" .. string.format("%.0f", start)
         return table.concat(out, " ")
     end,
+    fieldMax = function(name)
+        local fType = FIELD_TYPE_BY_NAME[name]
+        if not fType then return "unknown field: " .. tostring(name) end
+        return SourceVersionedFieldRuntime.fieldMax(fType)
+    end,
     fieldDiag = function(name, chunkId)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
@@ -2155,7 +2167,7 @@ remote.add_interface("Rampant", {
             sum = sum + v
             if not mins or v < mins then mins = v end
             if not maxs or v > maxs then maxs = v end
-            h = (h + id * 2654435761 + math.floor(v * 1000)) % 4294967296
+            h = (h + id * 2654435761 + math.floor(v * 1000000)) % 4294967296
         end
         return string.format("%s n=%d sum=%.3f min=%s max=%s hash=%d",
             name, n, sum, tostring(mins), tostring(maxs), h)
@@ -2210,6 +2222,25 @@ remote.add_interface("Rampant", {
     -- long-lived iterator and every seeded field. Call this after a census if the game
     -- is going to keep running.
     resetAfterCensus = afterCensusReset,
+    -- Force every relaxed field to reseed from its sources (the load path does this
+    -- automatically; the remote is for diagnosis).
+    reseedAll = function()
+        SourceVersionedFieldRuntime.reseedRelaxedFields()
+        local names = { "base", "enemy", "resource", "player", "kamikaze", "deathGain", "deathLoss" }
+        local out = {}
+        for _, name in ipairs(names) do
+            local fType = FIELD_TYPE_BY_NAME[name]
+            if fType then
+                SourceVersionedFieldRuntime.ensureSolved(fType, nil)
+                out[#out + 1] = name .. ":n=" .. tostring(#(function()
+                    local n = 0
+                    for _ in pairs(storage.universe.sourceVersionedFields[tostring(fType)] or {}) do n = n + 1 end
+                    return { n = n }
+                end)())
+            end
+        end
+        return table.concat(out, " ")
+    end,
     reconcileChunks = function()
         return MapUtils.reconcileOrphanChunks()
     end,
@@ -2302,6 +2333,7 @@ remote.add_interface("Rampant", {
         local line = string.format("%s sources=%d checked=%d mismatches=%d liveOnly=%d maxRel=%s maxDelta=%s worst=%s livePeak=%s expectedPeak=%s %s frontier=%d queued=%d iter=%d",
             r.field, r.sources, r.checked, r.mismatches, r.liveOnly, r.maxRel, r.maxDelta, r.worstChunk,
             r.livePeak, r.expectedPeak, r.sample, r.frontier, r.queued, r.iterations)
+        line = line .. string.format(" overRadius=%d noDist=%d", r.overRadius or -1, r.noDist or -1)
         log({"", "[VERIFY] ", line})
         return line
     end,
