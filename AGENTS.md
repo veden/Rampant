@@ -296,8 +296,15 @@ rescan loop            10,616 [SCAN] lines for 1,431 unique chunks = 7.4x the wo
                        and the same chunk was scanned again (exactly 2x on one load, 7.4x on
                        another). Pop before scanning: 26,622 scans -> 15,168, flush 31.6s ->
                        15.8s, and `scan.repeat` should now be zero.
-dense chunk scan       NOT the query: see below. The worst single chunk scan is 5.1ms, and one
-                       chunk's fixed cost is ~0.04ms median.
+dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan is 0.2ms
+                       median over 54 forced first scans, unchanged with the collector
+                       stopped. The multi-millisecond ones were per-spawner pollution
+                       sampling: processNestActiveness samples the chunk corner and its four
+                       neighbours (up to five surface.get_pollution calls) and the NEGATIVE
+                       answer cleared chunk.activeTick, the only "already checked" marker, so
+                       every spawner in the chunk re-ran them. Now one verdict per chunk
+                       (pollutionCheckedTick debounce, 600 ticks). Counted: 5,161 nests in
+                       1,157 chunks take ~5 samples per nest CHUNK per re-check, not per nest.
 ```
 
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with

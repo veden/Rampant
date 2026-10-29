@@ -738,8 +738,17 @@ function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     return foundBase
 end
 
+-- How long a chunk's "nothing is active here" answer is trusted. The pollution sampling is
+-- up to five surface.get_pollution calls for the chunk and its four neighbours, and the
+-- negative answer clears chunk.activeTick, so without this every spawner in the chunk re-ran
+-- them (measured: 14.8ms for one base-cluster chunk in scan.register at load).
+local NEGATIVE_ACTIVENESS_TICKS = 600
+
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     if getActiveTick(chunk) > tick then
+        return
+    end
+    if (chunk.pollutionCheckedTick or 0) > tick then
         return
     end
 
@@ -750,44 +759,34 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         if Universe.attackUsePlayer and (playerPheromone > Universe.attackPlayerThreshold) then
             registerActiveNest(chunk, tick)
         elseif (basePheromone > 0) then
+            -- One pollution answer per CHUNK, not per nest: the five samples below are the
+            -- chunk's corner plus its four neighbours, so every nest in the chunk gets the
+            -- same verdict. The original code re-ran them for each spawner because the
+            -- negative answer cleared chunk.activeTick, which was the only "already
+            -- checked" marker there was; the fix is to remember the negative answer.
             local getPollution = surface.get_pollution
             local x = chunkX(chunk)
             local y = chunkY(chunk)
-            -- The record no longer carries x/y, so the corner is written into the
-            -- shared Position scratch for the engine call.
-            Position.x = x
-            Position.y = y
-            if (getPollution(Position) > 0) then
+            local function pollutionAt(px, py)
+                Position.x = px
+                Position.y = py
+                if MetricsG then MetricsG.inc("pollution.samples") end
+                return getPollution(Position)
+            end
+            local pollutionThreshold = Universe.pollutionDiffuseMinimum
+            if pollutionAt(x, y) > 0
+                or pollutionAt(x + 32, y) > pollutionThreshold
+                or pollutionAt(x - 32, y) > pollutionThreshold
+                or pollutionAt(x, y - 32) > pollutionThreshold
+                or pollutionAt(x, y + 32) > pollutionThreshold then
                 registerActiveNest(chunk, tick)
             else
-                local pollutionThreshold = Universe.pollutionDiffuseMinimum
-                Position.x = x + 32
-                Position.y = y
-                if (getPollution(Position) > pollutionThreshold) then
-                    registerActiveNest(chunk, tick)
+                chunk.pollutionCheckedTick = tick + NEGATIVE_ACTIVENESS_TICKS
+                unregisterActiveNest(chunk)
+                if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
+                    registerActiveRaidNest(chunk, tick)
                 else
-                    Position.x = x - 32
-                    if (getPollution(Position) > pollutionThreshold) then
-                        registerActiveNest(chunk, tick)
-                    else
-                        Position.x = x
-                        Position.y = y - 32
-                        if (getPollution(Position) > pollutionThreshold) then
-                            registerActiveNest(chunk, tick)
-                        else
-                            Position.y = y + 32
-                            if (getPollution(Position) > pollutionThreshold) then
-                                registerActiveNest(chunk, tick)
-                            else
-                                unregisterActiveNest(chunk)
-                                if (basePheromone > RAIDING_MINIMUM_BASE_THRESHOLD) then
-                                    registerActiveRaidNest(chunk, tick)
-                                else
-                                    unregisterActiveRaidNest(chunk)
-                                end
-                            end
-                        end
-                    end
+                    unregisterActiveRaidNest(chunk)
                 end
             end
         else
