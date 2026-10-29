@@ -1,0 +1,7 @@
+# after cleanup (60078f8 ), save 697ee0a83f66971b111035581e26050c
+heap: liveKB=21377
+base: mismatches=95 liveOnly=1833 
+enemy: mismatches=62 liveOnly=27 
+resource: mismatches=666 liveOnly=114 
+alloc: bytesPerTick=41
+[TICK] n=321 avg=245us p50=126 p90=548 p99=1185 max=1352 over5ms=0

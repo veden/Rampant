@@ -584,17 +584,12 @@ local REMOVAL_OPTS = { maxWork = 0 }
 --- `created` flat while `free` grows to the working set.
 function Runtime.buildState(fieldType)
     local key = Runtime.fieldKey(fieldType)
-    local build = SourceBuilds[key]
-    local solvedAt = Universe.sourceVersionedSolvedAt
-    local counts = Universe.sourceVersionedSourceCount or {}
-    local scanned = #Runtime.buildSources(fieldType)
-    return string.format("solvedSources=%d scannedSources=%d solved=%s prov=%s build=%s done=%s list=%d iterKey=%s solvedAt=%s tick=%d",
-        counts[key] or -1, scanned,
-        tostring(SolvedFields[key]), tostring(FieldProvenance[key] ~= nil),
-        tostring(build ~= nil), tostring(build and build.done),
-        (build and build.list and #build.list) or -1,
-        tostring(build and build.iterator),
-        tostring(solvedAt and solvedAt[key]), game.tick)
+    local st = Universe.sourceVersionedRelax and Universe.sourceVersionedRelax[key]
+    return string.format("relax=%s seeded=%s frontier=%d chunks=%d fieldEntries=%d tick=%d",
+        tostring(st ~= nil), tostring(st and st.seeded), Runtime.relaxDepth(fieldType),
+        (function() local n = 0 for _ in pairs(Universe.chunkById or {}) do n = n + 1 end return n end)(),
+        (function() local n = 0 for _ in pairs(Universe.sourceVersionedFields[key] or {}) do n = n + 1 end return n end)(),
+        game.tick)
 end
 
 --- Explain one chunk's value: live, exact, and where each came from.
@@ -657,14 +652,12 @@ end
 --- state of the source that feeds that field. verifyField counts; this says why.
 function Runtime.verifySamples(fieldType, sampleCount)
     local key = Runtime.fieldKey(fieldType)
-    if not SolvedFields[key] then
-        local field, prov2, sec = Solver.solveWithMetadata(
-            Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
-        Universe.sourceVersionedFields[key] = field
-        FieldProvenance[key], FieldSecond[key] = prov2, sec
-        SolvedFields[key] = true
+    Runtime.ensureSolved(fieldType, fieldOpts(fieldType, nil))
+    local guard = 0
+    while Runtime.relaxDepth(fieldType) > 0 and guard < 4000 do
+        guard = guard + 1
+        Runtime.relaxStep(fieldType, 4096, fieldOpts(fieldType, nil))
     end
-    finishBuild(fieldType, fieldOpts(fieldType, nil))
     local live = Universe.sourceVersionedFields[key] or {}
     local expected = Solver.solveWithMetadata(
         Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
@@ -697,46 +690,18 @@ end
 
 function Runtime.verifyField(fieldType, tolerance)
     local key = Runtime.fieldKey(fieldType)
-    -- The comparison is only meaningful on a complete field: solve it if it has
-    -- never been read, and drain any queued source changes, otherwise the live
-    -- field is legitimately behind and every entry looks like a mismatch.
-    if not SolvedFields[key] then
-        local field, prov2, sec = Solver.solveWithMetadata(
-            Runtime.buildSources(fieldType), Runtime.neighborOf, fieldOpts(fieldType, nil))
-        Universe.sourceVersionedFields[key] = field
-        FieldProvenance[key], FieldSecond[key] = prov2, sec
-        SolvedFields[key] = true
-    end
-    -- Go through the same entry point gameplay uses, so the reconcile age rule and
-    -- the once-per-load rebuild of untimestamped (legacy) fields actually run before
-    -- the comparison. Without this the oracle checked whatever the save happened to
-    -- contain and reported it as a mismatch forever.
-    Universe.solveWorkTick = nil
-    Universe.solveWorkLeft = 1e9
-    Runtime.ensureSolved(fieldType, fieldOpts(fieldType, nil))
-    -- Finish any in-progress rebuild before comparing, then drain to convergence:
-    -- process() is bounded, so one call leaves a frontier behind.
-    finishBuild(fieldType, fieldOpts(fieldType, nil))
+    local fopts = fieldOpts(fieldType, nil)
+    -- Drain the frontier to quiescence first: the comparison is only meaningful on a
+    -- settled field, and the oracle is allowed to spend its own budget.
+    Runtime.ensureSolved(fieldType, fopts)
     local iterations = 0
-    while iterations < 2000 do
+    while Runtime.relaxDepth(fieldType) > 0 and iterations < 4000 do
         iterations = iterations + 1
-        -- The per-tick solve allowance is already spent by the first call in this
-        -- tick, so the drain would stall and the comparison would run against a
-        -- PARTIAL field (observed as 0 / 1636 / 0 across consecutive calls).
-        -- verifyField is an oracle, not gameplay: let it spend its own budget.
-        Universe.solveWorkTick = nil
-        Universe.solveWorkLeft = 1e9
-        Runtime.process(fieldType, 100000, fieldOpts(fieldType, nil))
-        if Runtime.frontierDepth(fieldType) == 0 and Runtime.queueDepth(fieldType) == 0 then
-            break
-        end
+        Runtime.relaxStep(fieldType, 4096, fopts)
     end
     local live = Universe.sourceVersionedFields[key] or {}
-    local sources = Runtime.buildSources(fieldType)
-    local expected = Solver.solveWithMetadata(sources, Runtime.neighborOf, fieldOpts(fieldType, nil))
-    -- Relative tolerance: absolute 0.5 is meaningless for a resource field in
-    -- the thousands. A chunk is wrong when it differs from the exact solve by
-    -- more than `tolerance` (default 10%) of the exact value.
+    local expected = Solver.solveWithMetadata(Runtime.buildSources(fieldType),
+        Runtime.neighborOf, fopts)
     tolerance = tolerance or 0.10
     local checked, mismatches, extra, maxDelta, maxRel, worstId = 0, 0, 0, 0, 0, nil
     local livePeak, expectedPeak, sampleId, sampleLive, sampleExpected = 0, 0, nil, 0, 0
@@ -752,22 +717,29 @@ function Runtime.verifyField(fieldType, tolerance)
         if rel > maxRel then maxRel = rel end
         if rel > tolerance then
             mismatches = mismatches + 1
-            if not sampleId then sampleId, sampleLive, sampleExpected = id, liveV, v end
+            if not sampleId then
+                sampleId, sampleLive, sampleExpected = id, liveV, v
+            end
         end
     end
-    for id, v in pairs(live) do
-        if not expected[id] and v > 0 then extra = extra + 1 end
+    for id, liveV in pairs(live) do
+        if not expected[id] then
+            extra = extra + 1
+            if not sampleId then sampleId, sampleLive, sampleExpected = id, liveV, 0 end
+        end
+    end
+    local sample = ""
+    if sampleId then
+        sample = string.format("%d live=%.3f expected=%.3f", sampleId, sampleLive, sampleExpected)
     end
     return {
-        field = tostring(fieldType), sources = #sources, checked = checked,
-        mismatches = mismatches, liveOnly = extra,
+        field = key, sources = 0, checked = checked, mismatches = mismatches,
+        liveOnly = extra, maxRel = string.format("%.2f%%", maxRel * 100),
         maxDelta = string.format("%.3f", maxDelta), worstChunk = tostring(worstId),
-        livePeak = string.format("%.1f", livePeak), expectedPeak = string.format("%.1f", expectedPeak),
-        sample = tostring(sampleId) .. " live=" .. string.format("%.1f", sampleLive) ..
-            " expected=" .. string.format("%.1f", sampleExpected),
-        frontier = Runtime.frontierDepth(fieldType), queued = Runtime.queueDepth(fieldType),
+        livePeak = string.format("%.1f", livePeak),
+        expectedPeak = string.format("%.1f", expectedPeak),
+        sample = sample, frontier = Runtime.relaxDepth(fieldType), queued = 0,
         iterations = iterations,
-        maxRel = string.format("%.1f%%", maxRel * 100),
     }
 end
 
