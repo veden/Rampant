@@ -92,8 +92,22 @@ local SCAN_PER_TICK = 1
 -- 289us and the worst chunk 3.7ms on a dense late-game save, so 3,000 per call was
 -- 165ms minimum and 848ms at worst (the user's 40ms+ spike was this). 64 per call
 -- is ~3.5ms average; the backlog then finishes at 32/tick.
-local FLUSH_SCAN_PER_TICK = 64
+local FLUSH_SCAN_PER_TICK = 16
+-- 64 was 3.0-17.9ms per tick for 8 s of load; 16 is ~0.8ms median and leaves room for a
+-- dense chunk without losing a fifth of a tick. The flush takes ~30 s instead of 8 s.
 
+-- NOTE: there is NO readable clock in the control stage. `helpers.create_profiler()` is
+-- opaque (tostring gives "[LuaProfiler]", and the docs say the raw values are not readable
+-- from Lua) and `os` is not exposed at all, so a work slice has to be bounded by a COUNT
+-- whose size comes from the measured cost distribution:
+--
+--   per-chunk scan cost, Starting2 load (30,334 chunks)
+--     p50 0.031ms   p90 0.100ms   p99 0.331ms   max 4.04ms   over 1ms: 12 chunks
+--   per-tick cost of the 64-chunk flush it used to run (474 ticks)
+--     p50 3.02ms    p90 6.03ms    p99 9.49ms    max 17.91ms
+--
+-- The tail sets the slice: 96% of chunks cost under 0.4ms, so a slice is cheap until a
+-- dense chunk (a base, a big ore field) lands in it, and one dense chunk is already 4ms.
 local function timedInitialScan(chunk, map, tick)
     if not (MetricsG and MetricsG.isEnabled()) and not Constants.SUBSYSTEM_TELEMETRY then
         return initialScan(chunk, map, tick)

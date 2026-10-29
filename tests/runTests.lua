@@ -435,6 +435,9 @@ local test_collections = {}
     local test_query_keys = require("tests.test_query_keys")
     table.insert(test_collections, { name = "Query Keys", collection = test_query_keys })
 
+    local test_map_utils_release = require("tests.test_map_utils_release")
+    table.insert(test_collections, { name = "MapUtils Release", collection = test_map_utils_release })
+
     -- Run all tests
     local total_passed = 0
 

@@ -490,11 +490,18 @@ function MapUtils.recycleChunkId(id)
     if not freeIds then
         freeIds = {}
         Universe.freeChunkIds = freeIds
-        Universe.freeChunkTicks = {}
+    end
+    -- Created independently: a save can carry one table without the other (the pair was
+    -- only ever created together, so an interrupted write or an older build leaves one),
+    -- and the nils were a crash on the removal path rather than a missing timestamp.
+    local freeTicks = Universe.freeChunkTicks
+    if not freeTicks then
+        freeTicks = {}
+        Universe.freeChunkTicks = freeTicks
     end
     if #freeIds >= CHUNK_ID_FREE_CAP then return end
     freeIds[#freeIds + 1] = id
-    Universe.freeChunkTicks[#freeIds] = game.tick
+    freeTicks[#freeIds] = game.tick
 end
 
 function MapUtils.removeChunkFromMap(map, chunk)
@@ -663,6 +670,26 @@ local function surfaceHasEnemies(map)
     return false
 end
 
+--- Continue any release in progress. Called every tick from the control stage: one slice
+--- per surface per call, so a 1,900-chunk release costs ~1ms/tick instead of 75-155ms once.
+function MapUtils.processSurfaceReleases()
+    local releases = Universe.surfaceReleases
+    if not releases then return 0 end
+    local total = 0
+    local i = 1
+    while i <= #releases do
+        local map = releases[i]
+        local released = MapUtils.releaseSurface(map)
+        total = total + released
+        if map.releasing then
+            i = i + 1              -- still going; one slice per surface per tick
+        end
+        -- releaseSurface removes the finished map from `releases` itself
+    end
+    if #releases == 0 then Universe.surfaceReleases = nil end
+    return total
+end
+
 function MapUtils.sweepIdleSurfaces(tick)
     local maps = Universe.maps
     if not maps then return end
@@ -677,6 +704,7 @@ function MapUtils.sweepIdleSurfaces(tick)
     Universe.surfaceSweepCursor = id
     if not map or not map.surface or not map.surface.valid then return end
     if (tick - (map.lastEnemyTick or 0)) < IDLE_SURFACE_TICKS then return end
+    if map.releasing then return end
     if surfaceHasEnemies(map) then
         map.lastEnemyTick = tick
         return
@@ -790,21 +818,89 @@ function MapUtils.reconcileOrphanChunks()
     return removed
 end
 
+-- Chunk records removed per call while releasing a surface. A release removes EVERY chunk
+-- of the surface, and the old loop did it in one tick: measured on the Starting2 load,
+-- releasing fulgora (1,665 chunks) cost 155ms and vulcanus (1,910) cost 75ms, in single
+-- ticks, before anything else in the mod ran, i.e. ~93us per removed chunk. 12 per call is
+-- ~1.1ms, and a 1,900-chunk surface is gone in ~160 ticks (2.7 s).
+local RELEASE_CHUNKS_PER_CALL = 12
+
+--- Drop the queued chunk scans of one surface.
+---
+--- The load flush queues every generated chunk of every surface, and it runs over ~1,900
+--- ticks now. A release that happens while that queue still holds the surface's chunks is
+--- undone by it: each queued scan re-creates the chunk record on a map that is no longer
+--- tracked, and those records then have to be reclaimed as orphans one call at a time
+--- (measured: the released surfaces came back as 1,665 + 1,910 orphan records).
+function MapUtils.dropPendingScans(map)
+    local pending = Universe.pendingChunks
+    if not pending or not map then return 0 end
+    local buckets = Universe.pendingChunkBuckets
+    local dropped = 0
+    local doomed
+    for id, event in next, pending do
+        if event.map == map then
+            doomed = doomed or {}
+            doomed[#doomed + 1] = id
+        end
+    end
+    if not doomed then return 0 end
+    for i = 1, #doomed do
+        local id = doomed[i]
+        local event = pending[id]
+        pending[id] = nil
+        dropped = dropped + 1
+        if buckets and event and event.bucket then
+            local bucket = buckets[event.bucket]
+            if bucket then bucket[id] = nil end
+        end
+    end
+    return dropped
+end
+
+--- Release a whole surface: its chunk records, its bases, its hives, then the map.
+---
+--- Resumable. The first call builds the chunk list and starts removing; later calls
+--- continue where it stopped and finish the teardown when the list is empty, so the cost
+--- is a bounded slice per tick instead of one multi-hundred-millisecond tick. The grid and
+--- the map stay intact until the last chunk is gone, because everything that resolves a
+--- neighbour or a field entry still goes through them (`dropChunk` walks the grid).
 function MapUtils.releaseSurface(map)
     if not map then return 0 end
     local released = 0
-    -- Walk the reverse index: a chunk whose grid slot was already lost would
-    -- never be visited by walking map.chunks, and would survive the release.
-    local chunkList = {}
-    for _, chunk in pairs(Universe.chunkById or {}) do
-        if chunk.map == map then
-            chunkList[#chunkList + 1] = chunk
+    local chunkList = map.releaseChunks
+    if not chunkList then
+        -- Walk the reverse index: a chunk whose grid slot was already lost would
+        -- never be visited by walking map.chunks, and would survive the release.
+        chunkList = {}
+        for _, chunk in pairs(Universe.chunkById or {}) do
+            if chunk.map == map then
+                chunkList[#chunkList + 1] = chunk
+            end
         end
+        map.releaseChunks = chunkList
+        map.releaseIndex = 1
+        map.releasing = true
+        map.releasedTotal = 0
+        map.releasedScans = MapUtils.dropPendingScans(map)
+        Universe.surfaceReleases = Universe.surfaceReleases or {}
+        Universe.surfaceReleases[#Universe.surfaceReleases + 1] = map
     end
-    for i = 1, #chunkList do
+    local index = map.releaseIndex or 1
+    local last = index + RELEASE_CHUNKS_PER_CALL - 1
+    if last > #chunkList then last = #chunkList end
+    for i = index, last do
         MapUtils.removeChunkFromMap(map, chunkList[i])
+        chunkList[i] = nil
         released = released + 1
     end
+    map.releaseIndex = last + 1
+    map.releasedTotal = (map.releasedTotal or 0) + released
+    if map.releaseIndex <= #chunkList then
+        return released            -- more to do on the next call
+    end
+    map.releaseChunks = nil
+    map.releaseIndex = nil
     map.chunks = {}
     if Universe.bases then
         for id, base in pairs(Universe.bases) do
@@ -825,7 +921,17 @@ function MapUtils.releaseSurface(map)
     end
     Universe.reconcilePaused = nil        -- a release can orphan chunks
     Universe.maps[map.id] = nil
-    log({"", "[REL] surface=", map.surface and map.surface.name or "?", " chunks=", released, " tick=", game.tick})
+    map.releasing = nil
+    if Universe.surfaceReleases then
+        for i = #Universe.surfaceReleases, 1, -1 do
+            if Universe.surfaceReleases[i] == map then
+                table.remove(Universe.surfaceReleases, i)
+            end
+        end
+    end
+    log({"", "[REL] surface=", map.surface and map.surface.name or "?", " chunks=",
+        map.releasedTotal or released, " queuedScans=", map.releasedScans or 0,
+        " tick=", game.tick})
     Universe.releasedSurfaces = Universe.releasedSurfaces or {}
     Universe.releasedSurfaces[map.id] = true
     return released

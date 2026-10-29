@@ -1183,6 +1183,12 @@ script.on_event(defines.events.on_tick,
                     if (tick % 60) == 0 then
                         timed(tick, rangeSample, "surfaceSweep", MapUtils.sweepIdleSurfaces, tick)
                     end
+                    -- A release removes every chunk of a surface; it runs a bounded slice
+                    -- per tick so it cannot cost 75-155ms in one (measured on load, for
+                    -- fulgora and vulcanus).
+                    if Universe.surfaceReleases then
+                        timed(tick, rangeSample, "surfaceRelease", MapUtils.processSurfaceReleases)
+                    end
                     -- Chunk records that are in the reverse index but not reachable
                     -- from their surface's grid can accumulate (a released surface,
                     -- a chunk removed from the grid by an older build). Swept every
