@@ -82,6 +82,8 @@ local GENERATOR_PHEROMONE_LEVEL_1 = Constants.GENERATOR_PHEROMONE_LEVEL_1
 local GENERATOR_PHEROMONE_LEVEL_3 = Constants.GENERATOR_PHEROMONE_LEVEL_3
 local GENERATOR_PHEROMONE_LEVEL_5 = Constants.GENERATOR_PHEROMONE_LEVEL_5
 local GENERATOR_PHEROMONE_LEVEL_6 = Constants.GENERATOR_PHEROMONE_LEVEL_6
+-- Built on first use: the union type list for the player-structure query.
+local UNION_TYPES
 
 local ENEMY_PHEROMONE_MULTIPLER = Constants.ENEMY_PHEROMONE_MULTIPLER
 
@@ -263,16 +265,60 @@ local function buildMetric(typeName)
     return name
 end
 
+-- Entity type -> pheromone weight, built once from the four query type sets. The scoring used
+-- to run four count_entities_filtered calls per chunk with player structures; a factory
+-- chunk measured 6.3ms for that, which is the single most expensive chunk phase on this
+-- save. One find over the union of the four type sets plus this lookup is one engine call.
+-- The sets are disjoint by construction (Upgrade.init), so the last write wins harmlessly.
+local PLAYER_STRUCTURE_WEIGHT
+local function playerStructureWeights()
+    if PLAYER_STRUCTURE_WEIGHT then return PLAYER_STRUCTURE_WEIGHT end
+    local weights = {}
+    local function add(query, weight)
+        if not query or not query.type then return end
+        for _, entityType in pairs(query.type) do
+            weights[entityType] = weight
+        end
+    end
+    add(Universe.spbFilteredEntitiesPlayerQueryLowest, GENERATOR_PHEROMONE_LEVEL_1)
+    add(Universe.spbFilteredEntitiesPlayerQueryLow, GENERATOR_PHEROMONE_LEVEL_3)
+    add(Universe.spbFilteredEntitiesPlayerQueryHigh, GENERATOR_PHEROMONE_LEVEL_5)
+    add(Universe.spbFilteredEntitiesPlayerQueryHighest, GENERATOR_PHEROMONE_LEVEL_6)
+    PLAYER_STRUCTURE_WEIGHT = weights
+    return weights
+end
+
 local function scorePlayerBuildings(map, chunk)
     local surface = map.surface
-    setAreaInQueryChunkSize(Universe.spbHasPlayerStructuresQuery, MapUtils.chunkX(chunk), MapUtils.chunkY(chunk))
-    if surface.count_entities_filtered(Universe.spbHasPlayerStructuresQuery) > 0 then
-        return (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryLowest) * GENERATOR_PHEROMONE_LEVEL_1) +
-            (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryLow) * GENERATOR_PHEROMONE_LEVEL_3) +
-            (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryHigh) * GENERATOR_PHEROMONE_LEVEL_5) +
-            (surface.count_entities_filtered(Universe.spbFilteredEntitiesPlayerQueryHighest) * GENERATOR_PHEROMONE_LEVEL_6)
+    local cx = MapUtils.chunkX(chunk)
+    local cy = MapUtils.chunkY(chunk)
+    setAreaInQueryChunkSize(Universe.spbHasPlayerStructuresQuery, cx, cy)
+    if surface.count_entities_filtered(Universe.spbHasPlayerStructuresQuery) == 0 then
+        return 0
     end
-    return 0
+    local weights = playerStructureWeights()
+    local unionTypes
+    if not UNION_TYPES then
+        unionTypes = {}
+        for entityType in pairs(weights) do unionTypes[#unionTypes + 1] = entityType end
+        UNION_TYPES = unionTypes
+    else
+        unionTypes = UNION_TYPES
+    end
+    local query = Universe.spbPlayerStructureUnionQuery
+    if not query then
+        query = { area = { { 0, 0 }, { 0, 0 } }, force = Universe.playerForces, collision_mask = "player" }
+        Universe.spbPlayerStructureUnionQuery = query
+    end
+    query.area = Universe.spbFilteredEntitiesPlayerQueryLowest.area
+    query.type = unionTypes
+    local found = surface.find_entities_filtered(query)
+    local score = 0
+    for i = 1, #found do
+        local weight = weights[found[i].type]
+        if weight then score = score + weight end
+    end
+    return score
 end
 
 local registerTypeToAddFn = {
@@ -344,10 +390,17 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
             queueResourceSourceChange(chunk, oldResourceSourceValue)
 
             if (#enemyBuildings > 0) then
-                local base = findNearbyBase(chunk)
-                if not base then
-                    base = createBase(map, chunk, tick)
-                end
+                -- Timed: this is the only large part of a chunk scan that was not already
+                -- phased, and a chunk measured 14.05ms with all five query phases totalling
+                -- 0.12ms - so the cost is here (base lookup/creation and the registration
+                -- loop below), not in the entity queries.
+                local base = timedScanPhase("baseLookup", function()
+                    local found = findNearbyBase(chunk)
+                    if not found then
+                        found = createBase(map, chunk, tick)
+                    end
+                    return found
+                end)
 
                 -- Unit purge: clears PRE-MOD units at map load (the initial
                 -- scan). The one-time evolution RESCAN must NOT purge — it
@@ -387,6 +440,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         end
                     end
 
+                    timedScanPhase("register", function()
                     for i = 1, #enemyBuildings do
                         local enemyBuilding = enemyBuildings[i]
                         if enemyBuilding.valid then
@@ -405,6 +459,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                             end
                         end
                     end
+                    end)
                 else
                     for i=1,#enemyBuildings do
                         local building = enemyBuildings[i]

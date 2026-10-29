@@ -669,8 +669,13 @@ end
 --- reclaims up to two chunks per call and each removal clears base + enemy + resource discs).
 --- The queue lives in storage so a save mid-clear does not strand a fossil; the audit sweep
 --- repairs anything that is still left behind.
-local DISC_CLEAR_NODES_PER_TICK = 384
-local DISC_CLEAR_NODES_PER_CALL = 96
+---
+--- 96 nodes per tick, not 384: a cleared node is a `neighborOf` (8 chunk lookups) plus a
+--- `relaxPush`, so 384 nodes measured 10.2ms in the flush window - 5x what the estimate said.
+--- The number is a NODE count across every clear in flight, so it also bounds the case of
+--- several removals landing together.
+local DISC_CLEAR_NODES_PER_TICK = 96
+local DISC_CLEAR_NODES_PER_CALL = 32
 
 local function discQueue()
     local queue = Universe.sourceVersionedDiscClears
@@ -762,8 +767,8 @@ function Runtime.processDiscClears()
     if not queue or #queue == 0 then return 0 end
     local budget = DISC_CLEAR_NODES_PER_TICK
     local cleared = 0
-    local i = 1
-    while i <= #queue and budget > 0 do
+    local i, clears = 1, 0
+    while i <= #queue and budget > 0 and clears < 4 do
         local clear = queue[i]
         local slice = budget < DISC_CLEAR_NODES_PER_CALL and budget or DISC_CLEAR_NODES_PER_CALL
         local before = clear.cleared
@@ -771,6 +776,7 @@ function Runtime.processDiscClears()
         local used = clear.cleared - before
         cleared = cleared + used
         if used == 0 then budget = budget - slice else budget = budget - math.min(slice, used + 1) end
+        clears = clears + 1
         if done then
             table.remove(queue, i)
         else
