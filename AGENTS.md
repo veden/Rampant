@@ -303,17 +303,18 @@ dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan 
                        value for all positions in one chunk" (LuaSurface.get_pollution, 2.1
                        docs), and processNestActiveness ran per spawner because the NEGATIVE
                        answer cleared chunk.activeTick, the only "already checked" marker.
-                       Now one get_pollution per nest-chunk visit, AND the nests' own
-                       holdings: active iff chunk pollution > 0 and some spawner on the chunk
-                       has LuaEntity.absorbed_pollution > 0. Pollution has to gate it because
-                       absorbed_pollution drains at spawn rate and can stall - measured after
-                       a pollute of 10,000: chunk pollution 0.00 at t+70 while the spawners
-                       still held 298, flat at 119.7 for 30 s with units capped, so
-                       absorbed-only would keep the chunk active for as long as anything is
-                       held (it only cleared when the spawners were upgraded and reset).
-                       With the gate, activeness falls at the next rotation visit after
-                       DURATION_ACTIVE_NEST (120 s sticky) expires: measured active
-                       t+40..t+150, false from t+160 and stable after.
+                       Now activeness is this CHUNK's pollution > 0, one get_pollution per
+                       nest-chunk visit, inside the base-pheromone gate.
+                       LuaEntity.absorbed_pollution was tried and rejected as a state test: it
+                       rises with pollution (0.0000 -> 14-144 per spawner within 5 s of a
+                       pollute of 10,000) but it does NOT return to zero - five of six
+                       spawners drained to 0 and one held a 1.947 residual for 180 s with the
+                       chunk at 0.00 pollution, and before that the sum sat flat at 119.7 for
+                       30 s with units capped. So "holding anything" is true for any chunk
+                       that ever absorbed; only the chunk's pollution comes back to 0, which
+                       is what lets activeness fall (next rotation visit after
+                       DURATION_ACTIVE_NEST = 120 s sticky; measured active t+40..t+150, false
+                       from t+160, stable after).
 ```
 
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with

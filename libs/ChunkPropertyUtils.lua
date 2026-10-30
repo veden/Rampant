@@ -789,26 +789,18 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         return
     end
 
-    -- Pollution, two halves:
+    -- Pollution: the CHUNK's own value, one read. It is per chunk ("Pollution is stored per
+    -- chunk, so this will return the same value for all positions in one chunk"), so the
+    -- position only has to be inside it, and it is the only part of this that returns to
+    -- zero: measured after a pollute of 10,000, chunk pollution reached exactly 0.00 and
+    -- stayed there, which is what lets a nest go inactive again.
     --
-    --   * the CHUNK's pollution, one read (it is per chunk: "Pollution is stored per chunk, so
-    --     this will return the same value for all positions in one chunk"). This is the gate
-    --     that makes activeness fall again - without it a nest that ever absorbed stays active
-    --     for as long as it still holds anything, and it drains at spawn rate: measured after
-    --     the cloud left, chunk pollution 0.00 while the spawners still read 234.5 and were
-    --     active for another 80 s, 30 of those stalled at 52.5 with units capped.
-    --   * what THIS spawner is holding (LuaEntity.absorbed_pollution, spawner only), so a
-    --     polluted chunk whose nests are not absorbing is not called active.
-    local absorbing = false
-    if pollutionAt(surface, chunkX(chunk), chunkY(chunk)) > 0 then
-        for i = 1, #spawners do
-            local entity = spawners[i]
-            if entity.valid and entity.absorbed_pollution > 0 then
-                absorbing = true
-                break
-            end
-        end
-    end
+    -- LuaEntity.absorbed_pollution is deliberately NOT part of the test. It rises with the
+    -- pollution (0.0000 -> 14-144 per spawner within 5 s of that pollute) but it does not
+    -- drain to zero: five of six spawners reached 0 and one held a 1.947 residual for the
+    -- next 180 s with the chunk at 0.00 pollution, so "holding anything" stays true for any
+    -- chunk that ever absorbed and cannot be used to decide that a nest stopped.
+    local absorbing = pollutionAt(surface, chunkX(chunk), chunkY(chunk)) > 0
 
     if absorbing then
         registerActiveNest(chunk, tick)
