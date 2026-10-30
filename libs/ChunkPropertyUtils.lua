@@ -739,18 +739,26 @@ function ChunkPropertyUtils.findNearbyBaseByPosition(map, x, y)
     return foundBase
 end
 
--- Bound on pollution samples per chunk visit. A nest chunk holds a handful of spawners
--- (5,161 spawners over 1,157 nest chunks on the reference save), so this is a guard, not a
--- normal limit.
-local MAX_POLLUTION_SAMPLES = 8
-
 --- The spawners on one chunk, resolved once per activeness check.
+---
+--- Pollution itself is per CHUNK, not per tile: "Pollution is stored per chunk, so this will
+--- return the same value for all positions in one chunk" (LuaSurface.get_pollution, 2.1
+--- docs). So one read answers for every nest in the chunk, and the entities are used for what
+--- they are good for - knowing whether there is anything to be active about at all.
 local function chunkSpawners(chunk)
     local query = Universe.isFilteredEntitiesSpawnerQuery
     local map = chunk.map
     if not query or not map or not map.surface then return nil end
     setAreaInQueryChunkSize(query, chunkX(chunk), chunkY(chunk))
     return map.surface.find_entities_filtered(query)
+end
+
+--- Pollution of the chunk at (x, y). The position only has to be inside the chunk.
+local function pollutionAt(surface, x, y)
+    Position.x = x
+    Position.y = y
+    if MetricsG then MetricsG.inc("pollution.samples") end
+    return surface.get_pollution(Position)
 end
 
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
@@ -762,8 +770,8 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         unregisterActiveRaidNest(chunk)
         return
     end
-    -- The entities say whether there is anything to be active about. A chunk whose nests are
-    -- all gone (a destroyed spawner between two passes) must not keep an active mark.
+    -- A chunk whose nests are all gone (a destroyed spawner between two passes) must not keep
+    -- an active mark; the registry count alone cannot tell.
     local spawners = chunkSpawners(chunk)
     if not spawners or #spawners == 0 then
         if MetricsG then MetricsG.inc("nest.noEntity") end
@@ -785,27 +793,18 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         return
     end
 
-    -- Pollution, asked at the nests themselves: a spawner absorbs the cloud at its own tile,
-    -- so that tile is the question. This replaces sampling the chunk's corner plus four
-    -- neighbours, which could miss a cloud sitting in the middle of a chunk and could never
-    -- see a nest that straddles a chunk border (it is registered in both chunks, and each
-    -- chunk now asks about its own spawners).
-    local getPollution = surface.get_pollution
-    local active = false
-    local sampled = 0
-    for i = 1, #spawners do
-        local entity = spawners[i]
-        if entity.valid then
-            Position.x = entity.position.x
-            Position.y = entity.position.y
-            if MetricsG then MetricsG.inc("pollution.samples") end
-            sampled = sampled + 1
-            if getPollution(Position) > 0 then
-                active = true
-                break
-            end
-            if sampled >= MAX_POLLUTION_SAMPLES then break end
-        end
+    -- This chunk's own pollution first: any at all means the nests are absorbing.
+    local x = chunkX(chunk)
+    local y = chunkY(chunk)
+    local active = pollutionAt(surface, x, y) > 0
+    if not active then
+        -- Otherwise a cloud one chunk away: the neighbouring chunks' values, at the diffuse
+        -- threshold. These are the same four corners the rule always used.
+        local pollutionThreshold = Universe.pollutionDiffuseMinimum
+        active = pollutionAt(surface, x + 32, y) > pollutionThreshold
+            or pollutionAt(surface, x - 32, y) > pollutionThreshold
+            or pollutionAt(surface, x, y - 32) > pollutionThreshold
+            or pollutionAt(surface, x, y + 32) > pollutionThreshold
     end
 
     if active then

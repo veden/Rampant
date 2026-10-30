@@ -299,12 +299,15 @@ rescan loop            10,616 [SCAN] lines for 1,431 unique chunks = 7.4x the wo
 dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan is 0.2ms
                        median over 54 forced first scans, unchanged with the collector
                        stopped. The multi-millisecond ones were per-spawner pollution
-                       sampling: processNestActiveness samples the chunk corner and its four
-                       neighbours (up to five surface.get_pollution calls) and the NEGATIVE
-                       answer cleared chunk.activeTick, the only "already checked" marker, so
-                       every spawner in the chunk re-ran them. Now one verdict per chunk
-                       (pollutionCheckedTick debounce, 600 ticks). Counted: 5,161 nests in
-                       1,157 chunks take ~5 samples per nest CHUNK per re-check, not per nest.
+                       sampling: "Pollution is stored per chunk, so this will return the same
+                       value for all positions in one chunk" (LuaSurface.get_pollution, 2.1
+                       docs), and processNestActiveness ran per spawner because the NEGATIVE
+                       answer cleared chunk.activeTick, the only "already checked" marker.
+                       Now one verdict per chunk: this chunk's pollution once, then the four
+                       orthogonal NEIGHBOUR CHUNKS at the diffuse threshold (the cloud one
+                       chunk away), gated on the chunk actually holding spawner entities.
+                       Counted: ~1.2 samples/tick over the 1,157-chunk rotation, i.e. ~5 per
+                       clean nest chunk, 1 for a polluted one.
 ```
 
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with
