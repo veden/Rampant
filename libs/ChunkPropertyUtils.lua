@@ -748,6 +748,14 @@ local function chunkSpawners(chunk)
     return map.surface.find_entities_filtered(query)
 end
 
+--- The chunk's pollution. Pollution is per chunk, so the position only has to be inside it.
+local function pollutionAt(surface, x, y)
+    Position.x = x
+    Position.y = y
+    if MetricsG then MetricsG.inc("pollution.samples") end
+    return surface.get_pollution(Position)
+end
+
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     if getActiveTick(chunk) > tick then
         return
@@ -767,6 +775,7 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         unregisterActiveRaidNest(chunk)
         return
     end
+    local surface = chunk.map.surface
     local playerPheromone = readField(PLAYER_PHEROMONE, chunk, chunk[PLAYER_PHEROMONE] or 0)
     local basePheromone = readField(BASE_PHEROMONE, chunk, chunk[BASE_PHEROMONE] or 0)
 
@@ -780,19 +789,24 @@ function ChunkPropertyUtils.processNestActiveness(chunk, tick)
         return
     end
 
-    -- Pollution, read from the nests instead of the map. `LuaEntity.absorbed_pollution`
-    -- (spawner only, read double) is what THIS spawner is holding, and it moves with the
-    -- chunk's pollution: polluting one nest chunk with 10,000 took six spawners from 0.0000 to
-    -- 14-144 each within 5 s, then the values shifted as units were spawned from what they
-    -- held. So this replaces the chunk reading and the four neighbour-chunk readings that
-    -- were the only way to ask the question before: no get_pollution calls at all, and it is
-    -- the nest's own consumption rather than a proxy for the cloud near it.
+    -- Pollution, two halves:
+    --
+    --   * the CHUNK's pollution, one read (it is per chunk: "Pollution is stored per chunk, so
+    --     this will return the same value for all positions in one chunk"). This is the gate
+    --     that makes activeness fall again - without it a nest that ever absorbed stays active
+    --     for as long as it still holds anything, and it drains at spawn rate: measured after
+    --     the cloud left, chunk pollution 0.00 while the spawners still read 234.5 and were
+    --     active for another 80 s, 30 of those stalled at 52.5 with units capped.
+    --   * what THIS spawner is holding (LuaEntity.absorbed_pollution, spawner only), so a
+    --     polluted chunk whose nests are not absorbing is not called active.
     local absorbing = false
-    for i = 1, #spawners do
-        local entity = spawners[i]
-        if entity.valid and entity.absorbed_pollution > 0 then
-            absorbing = true
-            break
+    if pollutionAt(surface, chunkX(chunk), chunkY(chunk)) > 0 then
+        for i = 1, #spawners do
+            local entity = spawners[i]
+            if entity.valid and entity.absorbed_pollution > 0 then
+                absorbing = true
+                break
+            end
         end
     end
 

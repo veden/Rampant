@@ -303,14 +303,17 @@ dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan 
                        value for all positions in one chunk" (LuaSurface.get_pollution, 2.1
                        docs), and processNestActiveness ran per spawner because the NEGATIVE
                        answer cleared chunk.activeTick, the only "already checked" marker.
-                       Now the nests are asked directly: LuaEntity.absorbed_pollution (spawner
-                       only, read double) is what THAT spawner is holding, and it tracks the
-                       chunk's pollution - polluting one nest chunk with 10,000 took six
-                       spawners from 0.0000 to 14-144 each within 5 s, and the values then
-                       moved as units were spawned from what they held. So there are now ZERO
-                       surface.get_pollution calls in the mod: activeness is "some spawner on
-                       this chunk is holding pollution". Verified end to end by polluting a
-                       nest chunk: activeNest false -> true on the next rotation visit.
+                       Now one get_pollution per nest-chunk visit, AND the nests' own
+                       holdings: active iff chunk pollution > 0 and some spawner on the chunk
+                       has LuaEntity.absorbed_pollution > 0. Pollution has to gate it because
+                       absorbed_pollution drains at spawn rate and can stall - measured after
+                       a pollute of 10,000: chunk pollution 0.00 at t+70 while the spawners
+                       still held 298, flat at 119.7 for 30 s with units capped, so
+                       absorbed-only would keep the chunk active for as long as anything is
+                       held (it only cleared when the spawners were upgraded and reset).
+                       With the gate, activeness falls at the next rotation visit after
+                       DURATION_ACTIVE_NEST (120 s sticky) expires: measured active
+                       t+40..t+150, false from t+160 and stable after.
 ```
 
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with
