@@ -237,11 +237,33 @@ local function unregisterActiveSpawner(chunk, register, iterator, activeType)
     end
 end
 
+-- The three nest sets are:
+--   chunkToNests          every chunk with nests - the round-robin work list
+--   chunkToActiveNest     nests producing now (player in range, or absorbing pollution)
+--   chunkToActiveRaidNest nests with a strong base field but no pollution
+-- A chunk is in at most ONE of the two active sets: they are two passes of the same wave
+-- processor, so a chunk in both was counted twice in maxExpansionGroups
+-- (activeNests + activeRaidNests) and processed by both passes in one tick. The pollution
+-- branch and the player branch both set "active", so the clearing has to live here rather
+-- than in a caller: entering active leaves raid, entering raid leaves active. One mark also
+-- means chunk.activeTick unambiguously belongs to it.
 local function registerActiveNest(chunk, tick)
+    unregisterActiveSpawner(
+        chunk,
+        "chunkToActiveRaidNest",
+        "processActiveRaidSpawnerIterator",
+        "activeRaidNests"
+    )
     registerActiveSpawner(chunk, "chunkToActiveNest", "activeNests", tick)
 end
 
 local function registerActiveRaidNest(chunk, tick)
+    unregisterActiveSpawner(
+        chunk,
+        "chunkToActiveNest",
+        "processActiveSpawnerIterator",
+        "activeNests"
+    )
     registerActiveSpawner(chunk, "chunkToActiveRaidNest", "activeRaidNests", tick)
 end
 

@@ -2437,14 +2437,15 @@ remote.add_interface("Rampant", {
         end
         local map = storage.universe.maps[1]
         local chunk = map.chunks[MapUtils.chunkKey(x, y)]
-        local active = "noChunk"
+        local active, raid = "noChunk", "noChunk"
         if chunk then
             active = tostring(storage.universe.chunkToActiveNest[chunk.id] ~= nil)
+            raid = tostring(storage.universe.chunkToActiveRaidNest[chunk.id] ~= nil)
         end
         return string.format(
-            "tick=%d chunkPol=%.2f spawners=%d absorbed>0=%d sumAbs=%.4f activeNest=%s | %s",
+            "tick=%d chunkPol=%.2f spawners=%d absorbed>0=%d sumAbs=%.4f active=%s raid=%s | %s",
             game.tick, surface.get_pollution({ x = x + 16, y = y + 16 }), #spawners, positive,
-            absorbed, active, table.concat(parts, " ; "))
+            absorbed, active, raid, table.concat(parts, " ; "))
     end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
