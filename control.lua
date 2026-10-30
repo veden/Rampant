@@ -2369,6 +2369,83 @@ remote.add_interface("Rampant", {
         end
         return string.format("queued %d first scans at tile (%d,%d)", times, tx, ty)
     end,
+    -- Diagnostic: can `entity.absorbed_pollution` (LuaEntity, Read double, Spawner only) tell
+    -- us a nest is consuming pollution, replacing the chunk pollution reads? It reports, per
+    -- nest CHUNK, the chunk's pollution and the spawners' absorbed_pollution, so two calls
+    -- 30 s apart show whether the value tracks pollution and whether it moves.
+    benchSpawnerPollution = function()
+        local surface = game.surfaces[1]
+        local force = storage.universe.enemyForces
+        local spawners = surface.find_entities_filtered({ force = force, type = "unit-spawner" })
+        local byChunk = {}
+        local order = {}
+        for _, entity in pairs(spawners) do
+            if entity.valid then
+                local p = entity.position
+                local cx = math.floor(p.x / 32) * 32
+                local cy = math.floor(p.y / 32) * 32
+                local key = cx .. "," .. cy
+                local entry = byChunk[key]
+                if not entry then
+                    entry = { cx = cx, cy = cy, n = 0, absorbed = 0, maxA = 0 }
+                    byChunk[key] = entry
+                    order[#order + 1] = entry
+                end
+                local a = entity.absorbed_pollution
+                entry.n = entry.n + 1
+                entry.absorbed = entry.absorbed + a
+                if a > entry.maxA then entry.maxA = a end
+            end
+        end
+        local polluted, clean, total = 0, 0, 0
+        local examples = {}
+        for _, entry in pairs(order) do
+            entry.pol = surface.get_pollution({ x = entry.cx + 16, y = entry.cy + 16 })
+            total = total + (entry.pol or 0)
+            if entry.pol > 0 then
+                polluted = polluted + 1
+                if #examples < 6 then
+                    examples[#examples + 1] = string.format("[%d,%d n=%d pol=%.2f abs=%.1f max=%.1f]",
+                        entry.cx, entry.cy, entry.n, entry.pol, entry.absorbed, entry.maxA)
+                end
+            else
+                clean = clean + 1
+            end
+        end
+        return string.format("chunks=%d polluted=%d clean=%d totalPol=%.1f tick=%d %s",
+            #order, polluted, clean, total, game.tick, table.concat(examples, " "))
+    end,
+    -- Diagnostic: one nest chunk's spawners, their absorbed_pollution, and the chunk's
+    -- pollution. Paired with a pollute() in the driver, this says whether absorbed_pollution
+    -- is a lifetime total or what the spawner is currently holding.
+    benchNestPollutionAt = function(tx, ty)
+        local surface = game.surfaces[1]
+        local force = storage.universe.enemyForces
+        local x, y = tx * 1, ty * 1
+        local spawners = surface.find_entities_filtered({ force = force, type = "unit-spawner",
+            area = { { x, y }, { x + 32, y + 32 } } })
+        local parts = {}
+        local absorbed, positive = 0, 0
+        for _, entity in pairs(spawners) do
+            local a = entity.absorbed_pollution
+            absorbed = absorbed + a
+            if a > 0 then positive = positive + 1 end
+            if #parts < 8 then
+                parts[#parts + 1] = string.format("%s a=%.4f cd=%.2f", entity.name, a,
+                    entity.spawning_cooldown or -1)
+            end
+        end
+        local map = storage.universe.maps[1]
+        local chunk = map.chunks[MapUtils.chunkKey(x, y)]
+        local active = "noChunk"
+        if chunk then
+            active = tostring(storage.universe.chunkToActiveNest[chunk.id] ~= nil)
+        end
+        return string.format(
+            "tick=%d chunkPol=%.2f spawners=%d absorbed>0=%d sumAbs=%.4f activeNest=%s | %s",
+            game.tick, surface.get_pollution({ x = x + 16, y = y + 16 }), #spawners, positive,
+            absorbed, active, table.concat(parts, " ; "))
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end

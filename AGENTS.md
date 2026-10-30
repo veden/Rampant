@@ -303,11 +303,14 @@ dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan 
                        value for all positions in one chunk" (LuaSurface.get_pollution, 2.1
                        docs), and processNestActiveness ran per spawner because the NEGATIVE
                        answer cleared chunk.activeTick, the only "already checked" marker.
-                       Now one verdict per chunk: this chunk's pollution once, then the four
-                       orthogonal NEIGHBOUR CHUNKS at the diffuse threshold (the cloud one
-                       chunk away), gated on the chunk actually holding spawner entities.
-                       Counted: ~1.2 samples/tick over the 1,157-chunk rotation, i.e. ~5 per
-                       clean nest chunk, 1 for a polluted one.
+                       Now the nests are asked directly: LuaEntity.absorbed_pollution (spawner
+                       only, read double) is what THAT spawner is holding, and it tracks the
+                       chunk's pollution - polluting one nest chunk with 10,000 took six
+                       spawners from 0.0000 to 14-144 each within 5 s, and the values then
+                       moved as units were spawned from what they held. So there are now ZERO
+                       surface.get_pollution calls in the mod: activeness is "some spawner on
+                       this chunk is holding pollution". Verified end to end by polluting a
+                       nest chunk: activeNest false -> true on the next rotation visit.
 ```
 
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with
