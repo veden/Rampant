@@ -2447,6 +2447,62 @@ remote.add_interface("Rampant", {
             game.tick, surface.get_pollution({ x = x + 16, y = y + 16 }), #spawners, positive,
             absorbed, active, raid, table.concat(parts, " ; "))
     end,
+    -- Diagnostic: Lua-side cost of the visual layers, measured in the tick they run
+    -- (the profiler logs Elapsed). Draw cost itself is not measurable headless, so the
+    -- design bounds the number of live objects; this measures the API calls.
+    benchRender = function(n)
+        n = tonumber(n) or 500
+        local surface = game.surfaces[1]
+        local tags = {}
+        local p1 = helpers.create_profiler()
+        for i = 1, n do
+            tags[i] = game.forces.player.add_chart_tag(surface, {
+                position = { x = i * 4, y = 0 },
+                text = "t" .. i,
+            })
+        end
+        local p2 = helpers.create_profiler()
+        for i = 1, n do
+            if tags[i] then tags[i].text = "u" .. i end
+        end
+        local p3 = helpers.create_profiler()
+        for i = 1, n do
+            if tags[i] then tags[i].destroy() end
+        end
+        local texts = {}
+        local p4 = helpers.create_profiler()
+        for i = 1, n do
+            texts[i] = rendering.draw_text({
+                text = "x" .. i,
+                surface = surface,
+                target = { x = i * 4, y = 100 },
+                color = { r = 1, g = 1, b = 1 },
+                scale = 1,
+                forces = { "player" },
+                only_in_alt_mode = true,
+            })
+        end
+        local p5 = helpers.create_profiler()
+        for i = 1, n do
+            if texts[i] and texts[i].valid then texts[i].destroy() end
+        end
+        local p6 = helpers.create_profiler()
+        for i = 1, n do
+            rendering.draw_circle({
+                surface = surface,
+                target = { x = i * 4, y = 200 },
+                radius = 8,
+                color = { r = 1, g = 0, b = 0 },
+                filled = false,
+                forces = { "player" },
+                only_in_alt_mode = true,
+            })
+        end
+        rendering.clear("Rampant")
+        log({ "", "[BENCHRENDER] n=", n, " tagsAdd=", p1, " tagsUpdate=", p2, " tagsDestroy=", p3,
+              " textAdd=", p4, " textDestroy=", p5, " circleAdd=", p6 })
+        return string.format("n=%d (see [BENCHRENDER] in the log)", n)
+    end,
     fieldMax = function(name)
         local fType = FIELD_TYPE_BY_NAME[name]
         if not fType then return "unknown field: " .. tostring(name) end
