@@ -247,6 +247,23 @@ function Runtime.queueSource(chunk, fieldType, oldValue, newValue)
         Runtime.relaxSeed(fieldType)
     end
     Runtime.sourceReports[fieldType] = (Runtime.sourceReports[fieldType] or 0) + 1
+    -- Measurement only (Universe.writeProbe): how often a source write is a repeat to a
+    -- chunk written within the last 100 ticks. That is the quantity a time-based settle
+    -- window would collapse; if it is near zero, batching buys nothing.
+    local probe = Universe.writeProbe
+    if probe then
+        local ps = probe[key]
+        if not ps then ps = { writes = 0, repeats = 0, unique = 0, last = {} }; probe[key] = ps end
+        local id = chunk.id
+        ps.writes = ps.writes + 1
+        local last = ps.last[id]
+        if last then
+            if game.tick - last <= 100 then ps.repeats = ps.repeats + 1 end
+        else
+            ps.unique = ps.unique + 1
+        end
+        ps.last[id] = game.tick
+    end
     -- Apply THIS node now so a write is visible to a read in the same tick (one node,
     -- ~13us); neighbours arrive through the frontier over the following ticks.
     relaxNode(fieldType, key, chunk.id, fopts)

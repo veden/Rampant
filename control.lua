@@ -2522,6 +2522,27 @@ remote.add_interface("Rampant", {
     end,
     -- Per-field frontier depth plus cumulative pops and source reports: tells lag
     -- (deep frontier still being fed) apart from a wrong field.
+    -- Measurement: source-write pattern per field. Repeats are writes to a chunk that was
+    -- already written within the last 100 ticks - the work a 100-tick settle window would
+    -- collapse into one propagation event.
+    writeProbe = function(action)
+        local u = storage.universe
+        if action == "start" then
+            u.writeProbe = {}
+            return "started tick=" .. game.tick
+        end
+        local probe = u.writeProbe
+        if not probe then return "not running" end
+        local parts = {}
+        for key, ps in pairs(probe) do
+            parts[#parts + 1] = string.format("%s writes=%d repeats100=%d chunks=%d",
+                key, ps.writes, ps.repeats, ps.unique)
+        end
+        table.sort(parts)
+        local out = "tick=" .. game.tick .. " " .. table.concat(parts, " | ")
+        if action == "stop" then u.writeProbe = nil end
+        return out
+    end,
     fieldLoad = function()
         return SourceVersionedFieldRuntime.fieldLoad()
     end,
