@@ -317,6 +317,30 @@ dense chunk scan       NOT the query: see below. Isolated, a chunk's first scan 
                        from t+160, stable after).
 ```
 
+**Tempo is a chaotic roll, not a number to preserve.** Measured with `tools/measure-tempo.py`
+(twice per build, deterministic within a build):
+
+```
+build                         groups / 9.8 game-min   attempts   base AI states
+(pre-session 0c0370d)         22                       21,389     1:2 2:2 4:3 5:4  (3 RAIDING)
+HEAD after the activeness move  6                       12,022     1:2 2:6 5:3     (0 RAIDING)
+HEAD + registration-site parity 8                       14,146     1:4 2:3 4:1 5:3 (1 RAIDING)
+```
+
+RAIDING is the only state that can attack when `activeNests = 0`, because
+`maxAggressiveGroups = ceil(0/30) = 0`, so the tempo follows the state distribution. The state
+machine is temperament-banded x a random roll: deterministic per build, chaotic across builds,
+because a timing change shifts the roll sequence and the feedback (attempts -> rolls -> states)
+amplifies it. Two consequences:
+
+- do not use raw tempo as a regression gate for a code change that touches timing; use the
+  behaviour scenarios, and compare tempo *shape* (bursts, quiet, live squads) within one build;
+- this is the argument for the heat layer: tempo becomes a function of banked pressure instead
+  of a roll, which makes it tunable and A/B-able at all.
+
+Measured on the same save at 60 s: attempts 1,922 (456 attacker) pre-session, 1,684 (10
+attacker) with the parity fix, 1,037 (0 attacker) after the activeness move.
+
 **A chunk's cost is fixed per-chunk work, not the entities it returns.** Measured with
 `benchQueries` / `benchTopChunks` (remotes in `control.lua`) on the densest chunks the save
 has (10,370 enemy structures over 1,385 chunks; the densest holds 33-38):
