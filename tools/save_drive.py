@@ -31,7 +31,8 @@ import sys
 import tempfile
 import time
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.environ.get("RAMPANT_REPO",
+                       os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SAVE = os.environ.get("SAVE", "/mnt/gallery/gameFiles/factorio/saves/Starting2.zip")
 FAC = os.environ.get("FACTORIO_BIN", "/mnt/gallery/gameFiles/factorio/bin/x64/factorio")
 UDP_PORT = int(os.environ.get("DRIVE_UDP", "5200"))

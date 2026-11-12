@@ -461,15 +461,7 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         end
                     end
                     end)
-                    -- Chunk-level activeness, once per chunk this pass touched: the check
-                    -- samples the chunk corner and four neighbours, so it is one answer for
-                    -- every nest in the chunk. It used to run inside registration, i.e. once
-                    -- per spawner (5,161 nests took ~25,800 pollution samples at load).
-                    timedScanPhase("activeness", function()
-                        for _, touchedChunk in pairs(touched) do
-                            processNestActiveness(touchedChunk, tick)
-                        end
-                    end)
+
                 else
                     local touched = {}
                     for i=1,#enemyBuildings do
@@ -477,9 +469,6 @@ function ChunkUtils.initialScan(chunk, map, tick, purgeUnits)
                         if building.valid then
                             ChunkUtils.registerEnemyBaseStructure(building, base, tick, nil, touched)
                         end
-                    end
-                    for _, touchedChunk in pairs(touched) do
-                        processNestActiveness(touchedChunk, tick)
                     end
                 end
             end
@@ -681,7 +670,13 @@ function ChunkUtils.registerEnemyBaseStructure(entity, base, tick, skipCount, to
                 setChunkBase(chunk, base)
                 addBaseResourceChunk(base, chunk)
                 if touch and ((hiveType == "spitter-spawner") or (hiveType == "biter-spawner")) then
-                    touch[chunk.id] = chunk
+                    -- Timing parity with the pre-session build: activeness is evaluated at
+                    -- the registration position, not after the loop. The per-chunk guard is
+                    -- all that changes, so one chunk costs one check instead of one per nest.
+                    if not touch[chunk.id] then
+                        touch[chunk.id] = chunk
+                        processNestActiveness(chunk, tick)
+                    end
                 end
                 queueSourceChange(chunk, ENEMY_PHEROMONE, oldEnemySourceValue, enemySourceValue(chunk))
             end

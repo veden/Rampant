@@ -778,10 +778,19 @@ local function pollutionAt(surface, x, y)
     return surface.get_pollution(Position)
 end
 
+local POLLUTION_REFRESH_TICKS = 600
+
 function ChunkPropertyUtils.processNestActiveness(chunk, tick)
     if getActiveTick(chunk) > tick then
         return
     end
+    -- Parity with the pre-session build: a chunk's activeness was re-evaluated at most once
+    -- per 600 ticks. Without it the base AI state trajectory diverges (measured: 3 RAIDING
+    -- bases and 22 groups per 9.8 min before, 0 RAIDING and 6 after).
+    if chunk.pollutionCheckedTick and chunk.pollutionCheckedTick > tick then
+        return
+    end
+    chunk.pollutionCheckedTick = tick + POLLUTION_REFRESH_TICKS
     if not chunk.nestCount then
         unregisterActiveNest(chunk)
         unregisterActiveRaidNest(chunk)
