@@ -28,7 +28,7 @@ function thiefUtils.makeDrainCrystal(attributes)
                 name = itemName,
                 icon = "__Rampant__/graphics/icons/thief/crystal-drain.png",
                 icon_size = 32,
-                flags = {"hidden"},
+                flags = {}, hidden = true,
                 subgroup = "energy",
                 order = "e[accumulator]-a[accumulator]",
                 place_result = name,
