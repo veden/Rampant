@@ -134,7 +134,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryLowest = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "wall",
             "transport-belt"
@@ -143,7 +143,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryLow = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "splitter",
             "pump",
@@ -160,7 +160,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryHigh = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "furnace",
             "lab",
@@ -177,7 +177,7 @@ local function addCommandSet()
     Universe.spbFilteredEntitiesPlayerQueryHighest = {
         area=spbSharedChunkArea,
         force=Universe.playerForces,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "artillery-turret",
             "reactor",
@@ -191,12 +191,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.isFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=isSharedChunkArea
     }
     Universe.isFilteredEntitiesChunkNeutral = {
         area=isSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -226,12 +226,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.cpsFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=cpsSharedChunkArea
     }
     Universe.cpsFilteredEntitiesChunkNeutral = {
         area=cpsSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -253,12 +253,12 @@ local function addCommandSet()
         {0,0}
     }
     Universe.msrcFilteredTilesQuery = {
-        collision_mask="player-layer",
+        collision_mask="player",
         area=msrcSharedChunkArea
     }
     Universe.msrcFilteredEntitiesChunkNeutral = {
         area=msrcSharedChunkArea,
-        collision_mask = "player-layer",
+        collision_mask = "player",
         type={
             "tree",
             "simple-entity"
@@ -281,7 +281,7 @@ local function addCommandSet()
     }
     Universe.spFilteredTilesPathQuery = {
         area=spSharedAreaChunk,
-        collision_mask="player-layer",
+        collision_mask="player",
         limit = 1
     }
 
