@@ -985,7 +985,7 @@ function Squad.createSquad(position, map, group, settlers, base)
         frenzyPosition = {x = 0,
                           y = 0},
         maxDistance = 0,
-        groupNumber = unitGroup.group_number,
+        groupNumber = unitGroup.unique_id,
         originPosition = {x = 0,
                           y = 0},
         commandTick = nil,

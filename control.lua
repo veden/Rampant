@@ -419,6 +419,17 @@ local function onMine(event)
     end
 end
 
+-- 2.0 replaced LuaEntity.unit_group with LuaEntity.commandable (the group when
+-- is_unit_group is set).
+local function entityUnitGroup(entity)
+    if not (entity and entity.valid) then return nil end
+    local commandable = entity.commandable
+    if commandable and commandable.valid and commandable.is_unit_group then
+        return commandable
+    end
+    return nil
+end
+
 local function onDeath(event)
     local entity = event.entity
     if not entity.valid then
@@ -454,9 +465,9 @@ local function onDeath(event)
                 unregisterEnemyBaseStructure(map, entity, damageTypeName)
             end
         else
-            local group = entity.unit_group
+            local group = entityUnitGroup(entity)
             if group and group.valid then
-                squad = Universe.groupNumberToSquad[group.group_number]
+                squad = Universe.groupNumberToSquad[group.unique_id]
                 if squad then
                     decompressSquad(squad, tick)
                     if damageTypeName then
@@ -533,9 +544,9 @@ local function onDeath(event)
                 victoryScent(chunk, entityType)
                 drained = (entityType == "electric-turret") and isDrained(chunk, tick)
                 if cause and cause.type == "unit" then
-                    local group = cause.unit_group
+                    local group = entityUnitGroup(cause)
                     if group and group.valid then
-                        squad = Universe.groupNumberToSquad[group.group_number]
+                        squad = Universe.groupNumberToSquad[group.unique_id]
                         if squad then
                             base = squad.base
                         end
@@ -762,7 +773,7 @@ local function onUnitGroupCreated(event)
         end
 
         squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
+        Universe.groupNumberToSquad[group.unique_id] = squad
 
         if settler then
             Universe.builderCount = Universe.builderCount + 1
@@ -790,7 +801,7 @@ local function onUnitGroupCreated(event)
         end
 
         squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
+        Universe.groupNumberToSquad[group.unique_id] = squad
 
         if settler then
             Universe.builderCount = Universe.builderCount + 1
@@ -814,7 +825,7 @@ local function onGroupFinishedGathering(event)
         return
     end
     activateMap(map)
-    local squad = Universe.groupNumberToSquad[group.group_number]
+    local squad = Universe.groupNumberToSquad[group.unique_id]
     if squad then
         if squad.settler then
             if (Universe.builderCount <= Universe.AI_MAX_BUILDER_COUNT) then
@@ -863,7 +874,7 @@ local function onGroupFinishedGathering(event)
         end
 
         squad = createSquad(nil, map, group, settler, base)
-        Universe.groupNumberToSquad[group.group_number] = squad
+        Universe.groupNumberToSquad[group.unique_id] = squad
         if settler then
             Universe.builderCount = Universe.builderCount + 1
         else
@@ -947,7 +958,7 @@ local function onBuilderArrived(event)
     end
     activateMap(map)
     if not usingUnit then
-        local squad = Universe.groupNumberToSquad[builder.group_number]
+        local squad = Universe.groupNumberToSquad[builder.unique_id]
         squad.commandTick = event.tick + COMMAND_TIMEOUT * 10
     end
     if Universe.PRINT_BASE_SETTLING then
