@@ -240,6 +240,13 @@ function beamUtils.makeBeam(attributes)
     local name = attributes.name .. "-beam-rampant"
     result.name = name
 
+    -- 2.0 moved the beam sprites under graphics_set.beam
+    result.graphics_set = { beam = {} }
+    for _, key in ipairs({"start", "ending", "head", "tail", "body"}) do
+        result.graphics_set.beam[key] = result[key]
+        result[key] = nil
+    end
+
     data:extend({result})
     return name
 end
