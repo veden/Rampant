@@ -40,7 +40,7 @@ makeSmokeAddingFuel({name="the"})
 require("prototypes/buildings/ChunkScanner")
 
 RampantGlobalVariables = {}
-RampantGlobalVariables.projectileCollisionLayer = collision_mask_util.get_first_unused_layer()
+RampantGlobalVariables.projectileCollisionLayer = "rampant_projectile"
 
 if not data.raw["corpse"]["acid-splash-purple"] then
     local attributes = {}

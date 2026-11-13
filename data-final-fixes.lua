@@ -1,3 +1,6 @@
+-- 2.0 collision layers are named prototypes; a mod declares the one it uses.
+data:extend({ { type = "collision-layer", name = "rampant_projectile" } })
+
 -- Copyright (C) 2022  veden
 
 -- This program is free software: you can redistribute it and/or modify
