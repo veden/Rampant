@@ -385,7 +385,7 @@ function biterUtils.makeSpitter(attributes)
         movement_speed = attributes.movement,
         spawning_time_modifier = attributes.spawningTimeModifer or nil,
         distance_per_frame = attributes.distancePerFrame or 0.1,
-        pollution_to_join_attack = attributes.pollutionToAttack or 200,
+        absorptions_to_join_attack = { pollution = attributes.pollutionToAttack or 200 },
         distraction_cooldown = attributes.distractionCooldown or 300,
         alternative_attacking_frame_sequence = spitter_alternative_attacking_animation_sequence(),
         corpse = makeSpitterCorpse(attributes),
