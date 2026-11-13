@@ -543,7 +543,7 @@ function Upgrade.attempt()
     if not storage.gameVersion then
         storage.gameVersion = 1
 
-        Universe.evolutionLevel = game.forces.enemy.evolution_factor
+        Universe.evolutionLevel = game.forces.enemy.get_evolution_factor(game.surfaces[1])
 
         Universe.random = game.create_random_generator(Constants.ENEMY_SEED)
 

@@ -981,7 +981,7 @@ script.on_event(defines.events.on_tick,
                             recycleBases()
                         end
                         cleanUpMapTables(tick)
-                        planning(gameRef.forces.enemy.evolution_factor)
+                        planning(gameRef.forces.enemy.get_evolution_factor(gameRef.surfaces[1]))
                         processHives(tick)
                         cleanHivesData()
                     elseif (pick == 1) then
