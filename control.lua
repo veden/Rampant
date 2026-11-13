@@ -159,7 +159,7 @@ local sFind = string.find
 
 local mRandom = math.random
 
--- local references to global
+-- local references to storage
 
 local Universe -- manages the chunks that make up the game Universe
 
@@ -222,7 +222,7 @@ local function initializeLibraries(addProperties)
 end
 
 local function onLoad()
-    Universe = global.universe
+    Universe = storage.universe
 
     initializeLibraries()
 
@@ -706,9 +706,9 @@ local function onTriggerEntityCreated(event)
 end
 
 local function onInit()
-    global.universe = {}
+    storage.universe = {}
 
-    Universe = global.universe
+    Universe = storage.universe
 
     hookEvents()
     onConfigChanged()
