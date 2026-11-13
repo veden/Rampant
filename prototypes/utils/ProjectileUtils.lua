@@ -24,7 +24,7 @@ function projectileUtils.makeProjectile(attributes, attack)
                 name = n,
                 flags = {"not-on-map"},
                 collision_box = attributes.attackCollisionBox or {{-0.025, -0.025}, {0.025, 0.025}},
-                hit_collision_mask = attributes.attackCollisionMask or {"player-layer", "train-layer", RampantGlobalVariables.projectileCollisionLayer},
+                hit_collision_mask = attributes.attackCollisionMask or { layers = { ["player"] = true, ["train"] = true, [RampantGlobalVariables.projectileCollisionLayer] = true } },
                 direction_only = attributes.attackDirectionOnly,
                 hit_at_collision_position = true,
                 piercing_damage = attributes.attackPiercingDamage or 0,

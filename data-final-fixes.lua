@@ -1,3 +1,68 @@
+-- 2.0 collision masks are dictionaries ({ layers = { name = true } }) and the layer names
+-- changed: "player-layer" -> "player", "water-tile" -> "water_tile". Convert every mask the
+-- 1.1 prototypes still carry, nested ones included (action target_effects hold tile masks).
+local function entityLayerName(name)
+    if type(name) ~= "string" then return name end
+    if name:sub(-6) == "-layer" then name = name:sub(1, -7) end
+    return (name:gsub("%-", "_"))
+end
+
+local function tileLayerName(name)
+    if type(name) ~= "string" then return name end
+    if name:sub(-5) == "-tile" then return (name:gsub("%-", "_")) end
+    return name
+end
+
+local function toLayers(mask, isTile)
+    if type(mask) ~= "table" then return mask end
+    local map = isTile and tileLayerName or entityLayerName
+    if mask.layers then
+        local mapped = {}
+        for name, value in pairs(mask.layers) do mapped[map(name)] = value end
+        mask.layers = mapped
+        return mask
+    end
+    local layers = {}
+    for _, entry in pairs(mask) do
+        if type(entry) == "string" then
+            layers[map(entry)] = true
+        elseif type(entry) == "table" and entry.name then
+            layers[map(entry.name)] = true
+        end
+    end
+    if next(layers) then return { layers = layers } end
+    return mask
+end
+
+local function convertMasks(t, seen)
+    if type(t) ~= "table" or seen[t] then return end
+    seen[t] = true
+    if t.collision_mask then t.collision_mask = toLayers(t.collision_mask) end
+    if t.hit_collision_mask then t.hit_collision_mask = toLayers(t.hit_collision_mask) end
+    if t.tile_collision_mask then t.tile_collision_mask = toLayers(t.tile_collision_mask, true) end
+    for _, v in pairs(t) do
+        if type(v) == "table" then convertMasks(v, seen) end
+    end
+end
+
+do
+    -- fire used collision_mask as a tile mask in 1.1
+    for _, fire in pairs(data.raw["fire"] or {}) do
+        if fire.collision_mask and not fire.tile_collision_mask then
+            fire.tile_collision_mask = toLayers(fire.collision_mask, true)
+            fire.collision_mask = nil
+        end
+    end
+    local seen = {}
+    for _, group in pairs(data.raw) do
+        if type(group) == "table" then
+            for _, proto in pairs(group) do
+                if type(proto) == "table" then convertMasks(proto, seen) end
+            end
+        end
+    end
+end
+
 -- 2.0 collision layers are named prototypes; a mod declares the one it uses.
 data:extend({ { type = "collision-layer", name = "rampant_projectile" } })
 
