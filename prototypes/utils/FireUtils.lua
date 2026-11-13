@@ -144,7 +144,7 @@ function fireUtils.makeFire(attributes)
                 flame_alpha = 0.35,
                 flame_alpha_deviation = 0.05,
 
-                emissions_per_second = 0.005,
+                emissions_per_second = { pollution = 0.005 },
 
                 add_fuel_cooldown = 10,
                 fade_in_duration = 30,
