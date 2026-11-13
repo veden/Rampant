@@ -1,3 +1,13 @@
+-- 2.0 dropped LuaEntityPrototype.build_base_evolution_requirement. `order` is a supported
+-- runtime-readable field, so the value rides there and BaseUtils parses it back out.
+for _, proto in pairs(data.raw["unit-spawner"] or {}) do
+    local req = proto.build_base_evolution_requirement
+    if req then
+        proto.order = (proto.order or "") .. "|evo:" .. tostring(req)
+        proto.build_base_evolution_requirement = nil
+    end
+end
+
 -- 2.0 moved spawner and turret pictures under graphics_set.
 do
     for _, proto in pairs(data.raw["unit-spawner"] or {}) do

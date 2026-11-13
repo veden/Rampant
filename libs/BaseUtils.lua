@@ -440,7 +440,12 @@ function BaseUtils.queueUpgrade(entity, base, disPos, evolve, timeDelay)
         pickedBaseAlignment = baseAlignment[1]
     end
 
-    local currentEvo = entity.prototype.build_base_evolution_requirement or 0
+    -- 2.0 has no prototype field for this; data-final-fixes carries it in `order`.
+    local currentEvo = 0
+    local order = entity.prototype.order
+    if order then
+        currentEvo = tonumber(order:match("|evo:([%d%.]+)$")) or 0
+    end
 
     local distance = mMin(
         1,
