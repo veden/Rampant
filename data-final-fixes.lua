@@ -1,3 +1,31 @@
+-- 2.0 moved spawner and turret pictures under graphics_set.
+do
+    for _, proto in pairs(data.raw["unit-spawner"] or {}) do
+        if not proto.graphics_set then
+            proto.graphics_set = {}
+            if proto.animations then
+                proto.graphics_set.animations = proto.animations
+                proto.animations = nil
+            end
+            if proto.integration then
+                proto.graphics_set.integration = proto.integration
+                proto.integration = nil
+            end
+        end
+    end
+    for _, proto in pairs(data.raw["turret"] or {}) do
+        if not proto.graphics_set then
+            local base = proto.base_picture or proto.animations
+            proto.graphics_set = {}
+            if base then
+                proto.graphics_set.base_visualisation = { animation = base }
+                proto.base_picture = nil
+                proto.animations = nil
+            end
+        end
+    end
+end
+
 -- 2.0 has no hr_version sprites (one set, always high-res) and no "compressed" flag.
 local function reduceSprites(t, seen)
     if type(t) ~= "table" or seen[t] then return end
