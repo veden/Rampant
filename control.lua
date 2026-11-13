@@ -325,7 +325,7 @@ local function onConfigChanged()
         ["neutral"]=true
     }
 
-    if game.active_mods["AbandonedRuins"] then
+    if script.active_mods["AbandonedRuins"] then
         npcForces["AbandonedRuins:enemy"] = true
     end
 
@@ -338,7 +338,7 @@ local function onConfigChanged()
     end
 
     if not Universe.ranIncompatibleMessage and Universe.newEnemies and
-        (game.active_mods["bobenemies"] or game.active_mods["Natural_Evolution_Enemies"]) then
+        (script.active_mods["bobenemies"] or script.active_mods["Natural_Evolution_Enemies"]) then
         Universe.ranIncompatibleMessage = true
         game.print({"description.rampant-bobs-nee-newEnemies"})
     end
