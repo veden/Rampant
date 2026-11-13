@@ -1,3 +1,33 @@
+-- 2.0 has no hr_version sprites (one set, always high-res) and no "compressed" flag.
+local function reduceSprites(t, seen)
+    if type(t) ~= "table" or seen[t] then return end
+    seen[t] = true
+    if type(t.hr_version) == "table" then
+        local hr = t.hr_version
+        t.hr_version = nil
+        for k, v in pairs(hr) do t[k] = v end
+    end
+    if type(t.flags) == "table" then
+        for i = #t.flags, 1, -1 do
+            if t.flags[i] == "compressed" then table.remove(t.flags, i) end
+        end
+    end
+    for _, v in pairs(t) do
+        if type(v) == "table" then reduceSprites(v, seen) end
+    end
+end
+
+do
+    local seen = {}
+    for _, group in pairs(data.raw) do
+        if type(group) == "table" then
+            for _, proto in pairs(group) do
+                if type(proto) == "table" then reduceSprites(proto, seen) end
+            end
+        end
+    end
+end
+
 -- 2.0 collision masks are dictionaries ({ layers = { name = true } }) and the layer names
 -- changed: "player-layer" -> "player", "water-tile" -> "water_tile". Convert every mask the
 -- 1.1 prototypes still carry, nested ones included (action target_effects hold tile masks).
